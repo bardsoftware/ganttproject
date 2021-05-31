@@ -1176,6 +1176,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   @Override
+  public TreeCollapseView<Task> getTaskCollapseView() {
+    return myTaskCollapseView;
+  }
+
+  @Override
   public ResourceTreeUIFacade getResourceTree() {
     return getResourcePanel();
   }

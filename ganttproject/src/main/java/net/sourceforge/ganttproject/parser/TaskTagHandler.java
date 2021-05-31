@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.parser;
 
+import biz.ganttproject.app.TreeCollapseView;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.GanttCalendar;
 import com.google.common.base.Charsets;
@@ -25,7 +26,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
@@ -41,10 +41,10 @@ import java.util.Map;
 public class TaskTagHandler extends AbstractTagHandler implements ParsingListener {
   private final ParsingContext myContext;
   private final TaskManager myManager;
-  private final TaskTreeUIFacade myTreeFacade;
+  private final TreeCollapseView<Task> myTreeFacade;
   private final Map<Integer, Boolean> myTaskIdToExpansionState = Maps.newHashMap();
 
-  public TaskTagHandler(TaskManager mgr, ParsingContext context, TaskTreeUIFacade treeFacade) {
+  public TaskTagHandler(TaskManager mgr, ParsingContext context, TreeCollapseView<Task> treeFacade) {
     super("task");
     myManager = mgr;
     myContext = context;

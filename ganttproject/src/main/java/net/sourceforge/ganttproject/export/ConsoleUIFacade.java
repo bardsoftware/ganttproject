@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
+import biz.ganttproject.app.TreeCollapseView;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -29,6 +30,7 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -205,6 +207,11 @@ public class ConsoleUIFacade implements UIFacade {
   @Override
   public TaskTreeUIFacade getTaskTree() {
     return myRealFacade.getTaskTree();
+  }
+
+  @Override
+  public TreeCollapseView<Task> getTaskCollapseView() {
+    return myRealFacade.getTaskCollapseView();
   }
 
   @Override

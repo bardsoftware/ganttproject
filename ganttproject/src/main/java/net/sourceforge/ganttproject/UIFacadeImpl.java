@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.TreeCollapseView;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -67,6 +68,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.LanguageOption;
 import net.sourceforge.ganttproject.language.ShortDateFormatOption;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
@@ -556,6 +558,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public TaskTreeUIFacade getTaskTree() {
     return myFallbackDelegate.getTaskTree();
+  }
+
+  @Override
+  public TreeCollapseView<Task> getTaskCollapseView() {
+    return myFallbackDelegate.getTaskCollapseView();
   }
 
   @Override

@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
+import biz.ganttproject.app.TreeCollapseView;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -28,6 +29,7 @@ import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -43,7 +45,7 @@ import java.util.Locale;
 public interface UIFacade {
   ImageIcon DEFAULT_LOGO = new ImageIcon(UIFacade.class.getResource("/icons/big.png"));
 
-   interface Dialog {
+  interface Dialog {
     void show();
 
     void hide();
@@ -144,6 +146,7 @@ public interface UIFacade {
   TaskView getCurrentTaskView();
 
   TaskTreeUIFacade getTaskTree();
+  TreeCollapseView<Task> getTaskCollapseView();
 
   ResourceTreeUIFacade getResourceTree();
 

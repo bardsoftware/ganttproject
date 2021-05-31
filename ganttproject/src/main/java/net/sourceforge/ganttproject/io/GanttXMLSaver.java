@@ -139,7 +139,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
   }
 
   private void saveTasks(TransformerHandler handler) throws SAXException, IOException {
-    new TaskSaver().save(getProject(), handler);
+    new TaskSaver(getUIFacade().getTaskCollapseView()).save(getProject(), handler);
   }
 
   private void saveAssignments(TransformerHandler handler) throws SAXException {
