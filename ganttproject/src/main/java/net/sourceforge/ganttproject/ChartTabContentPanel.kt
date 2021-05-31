@@ -188,7 +188,6 @@ internal abstract class ChartTabContentPanel(
     //val timelineHeight = toolbar.component.height /* + myImageHeight*/
     SwingUtilities.invokeLater {
       val timelineHeight = myHeaderHeight() + myImageHeight
-      println("new timeline height=$timelineHeight")
       myChart.setTimelineHeight(timelineHeight)
       myChart.reset();
     }

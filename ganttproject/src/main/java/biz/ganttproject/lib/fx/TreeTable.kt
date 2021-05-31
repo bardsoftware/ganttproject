@@ -19,12 +19,14 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     columnResizePolicy = CONSTRAINED_RESIZE_POLICY;
     stylesheets.add("/biz/ganttproject/lib/fx/TreeTable.css")
     styleClass.add("gp-tree-table-view")
-    tableMenu.items.add(MenuItem("Manage columns"))
+    tableMenu.items.add(MenuItem(RootLocalizer.formatText("columns.manage.label")))
   }
   override fun createDefaultSkin(): Skin<*>? {
     return GPTreeTableViewSkin(this).also {
       it.scrollValue.addListener { _, _, newValue -> this.scrollListener(newValue.toDouble()) }
-      it.headerHeight.addListener { _, _, newValue -> headerHeight.value = newValue.toDouble() }
+      it.headerHeight.addListener { _, _, _ ->
+        headerHeight.value = it.fullHeaderHeight
+      }
     }
   }
 
@@ -45,6 +47,7 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   val scrollValue = SimpleDoubleProperty()
   val headerHeight: ReadOnlyDoubleProperty
   get() = tableHeaderRow.heightProperty()
+  val fullHeaderHeight: Double get() = headerHeight.value + tableHeaderRow.boundsInParent.minX
 
   init {
     this.virtualFlow.positionProperty().addListener { _, _, newValue ->

@@ -55,7 +55,6 @@ class TaskTable(
   private val taskTableModel = TaskTableModel(taskManager, taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
 
-  //val headerHeight: Int get() = treeTable.headerHeight.toInt()
   val control: Parent get() = treeTable
   val actionConnector by lazy {
     TaskTableActionConnector(
@@ -86,7 +85,6 @@ class TaskTable(
         } else {
           taskTableChartConnector.visibleTasks.clear()
           getExpandedTasks().also {
-            println(it)
             taskTableChartConnector.visibleTasks.addAll(it)
           }
         }
@@ -97,10 +95,8 @@ class TaskTable(
   private fun initKeyboardEventHandlers() {
     treeTable.onKeyPressed = EventHandler { event ->
       taskActions.all().firstOrNull { action ->
-        action.triggeredBy(event)
-      }?.let {
-        it.actionPerformed(null)
-      }
+            action.triggeredBy(event)
+          }?.actionPerformed(null)
     }
   }
 
@@ -167,9 +163,7 @@ class TaskTable(
               null
             }
           } ?: return@keepSelection
-          task2treeItem[e.newContainer]?.let {
-            it.children.add(e.indexAtNew, taskTreeItem)
-          }
+          task2treeItem[e.newContainer]?.children?.add(e.indexAtNew, taskTreeItem)
           taskTableChartConnector.visibleTasks.clear()
           taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
         }
