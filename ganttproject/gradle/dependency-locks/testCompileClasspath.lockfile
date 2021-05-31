@@ -33,7 +33,7 @@ com.vladsch.flexmark:flexmark-util:0.62.2
 com.vladsch.flexmark:flexmark:0.62.2
 com.zaxxer:SparseBitSet:1.2
 commons-codec:commons-codec:1.15
-commons-io:commons-io:2.8.0
+commons-io:commons-io:2.9.0
 commons-logging:commons-logging:1.2
 de.jensd:fontawesomefx-commons:11.0
 de.jensd:fontawesomefx-fontawesome:4.7.0-11
@@ -51,7 +51,7 @@ org.checkerframework:checker-qual:2.0.0
 org.codehaus.mojo:animal-sniffer-annotations:1.14
 org.controlsfx:controlsfx:11.1.0
 org.easymock:easymock:4.3
-org.jdom:jdom:2.0.2
+org.jdom:jdom:1.1.3
 org.jetbrains.kotlin:kotlin-stdlib-common:1.5.0
 org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.5.0
 org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.0
