@@ -419,8 +419,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     private ColumnStub createStub(ColumnList.Column stub) {
-      return new ColumnList.ColumnStub(stub.getID(), stub.getName(), stub.isVisible(),
-          stub.getOrder(), stub.getWidth());
+      return new ColumnList.ColumnStub(stub);
     }
 
     void createDefaultColumns(List<ColumnList.Column> stubs) {

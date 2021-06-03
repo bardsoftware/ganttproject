@@ -62,6 +62,9 @@ public interface ColumnList {
     private boolean isVisible;
     private SortOrder mySortOrder = SortOrder.UNSORTED;
 
+    public ColumnStub(Column copy) {
+      this(copy.getID(), copy.getName(), copy.isVisible(), copy.getOrder(), copy.getWidth());
+    }
     public ColumnStub(String id, String name, boolean visible, int order, int width) {
       myName = name;
       myID = id;
