@@ -183,7 +183,7 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     //myMoveDownAction = new TaskMoveDownAction(taskManager, selectionManager, uiFacade, this);
     getTreeTable().setupActionMaps(
             newAction, myProject.getCutAction(), myProject.getCopyAction(),
-            myProject.getPasteAction(), propertiesAction, deleteAction);
+            myProject.getPasteAction(), propertiesAction);
   }
 
   @Override

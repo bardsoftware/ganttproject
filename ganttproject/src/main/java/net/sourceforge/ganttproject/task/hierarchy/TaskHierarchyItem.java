@@ -110,4 +110,8 @@ public class TaskHierarchyItem {
   public boolean hasNested() {
     return myFirstNestedItem != null;
   }
+
+  public void clearChildren() {
+    myFirstNestedItem = null;
+  }
 }

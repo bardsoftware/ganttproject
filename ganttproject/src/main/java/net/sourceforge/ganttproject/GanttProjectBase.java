@@ -35,12 +35,15 @@ import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.ganttview.TaskTable;
+import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
 import biz.ganttproject.task.TaskActions;
 import com.bardsoftware.eclipsito.update.Updater;
+import com.google.common.base.Suppliers;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
+import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.client.RssFeedChecker;
@@ -118,6 +121,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   private final TaskManager myTaskManager;
   private Updater myUpdater;
   final TaskActions myTaskActions;
+
   TaskTableChartConnector myTaskTableChartConnector = new TaskTableChartConnector(
       new SimpleIntegerProperty(-1),
       FXCollections.observableArrayList(),
@@ -126,18 +130,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
       new SimpleDoubleProperty(0.0)
   );
   private TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
-  Supplier<TaskTable> myTaskTableSupplier = new Supplier<>() {
-    private TaskTable value;
+  final Supplier<TaskTable> myTaskTableSupplier;
 
-    @Override
-    public TaskTable get() {
-      if (value == null) {
-        value = new TaskTable(getProject(), getTaskManager(),
-            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions);
-      }
-      return value;
-    }
-  };
 
   class TaskManagerConfigImpl implements TaskManagerConfig {
     final DefaultColorOption myDefaultColorOption = new GanttProjectImpl.DefaultTaskColorOption();
@@ -205,9 +199,16 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
     myUIFacade = new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
     GPLogger.setUIFacade(myUIFacade);
-    myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
-        () -> myTaskTableSupplier.get().getActionConnector()
-    );
+    myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(), new Function0<>() {
+      @Override
+      public TaskTableActionConnector invoke() {
+        return myTaskTableSupplier.get().getActionConnector();
+      }
+    });
+    myTaskTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(
+        () -> new TaskTable(getProject(), getTaskManager(),
+            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions)
+    ));
     myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
       @Override
       protected ParserFactory getParserFactory() {

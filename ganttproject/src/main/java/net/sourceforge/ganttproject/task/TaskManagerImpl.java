@@ -98,7 +98,7 @@ public class TaskManagerImpl implements TaskManager {
 
   private AtomicInteger myMaxID = new AtomicInteger(0);
 
-  private final Task myRoot;
+  private final TaskImpl myRoot;
 
   private final TaskManagerConfig myConfig;
 
@@ -299,10 +299,10 @@ public class TaskManagerImpl implements TaskManager {
     return myTaskMap.getTasks();
   }
 
-  private Task createRootTask() {
+  private TaskImpl createRootTask() {
     Calendar c = CalendarFactory.newCalendar();
     Date today = c.getTime();
-    Task root = new GanttTask(null, CalendarFactory.createGanttCalendar(today), 1, this, -1);
+    TaskImpl root = new GanttTask(null, CalendarFactory.createGanttCalendar(today), 1, this, -1);
     root.setStart(CalendarFactory.createGanttCalendar(today));
     root.setDuration(createLength(getConfig().getTimeUnitStack().getDefaultTimeUnit(), 1));
     root.setExpand(true);
@@ -315,6 +315,7 @@ public class TaskManagerImpl implements TaskManager {
     myTaskMap.clear();
     myMaxID.set(0);
     myDependencyCollection.clear();
+    myRoot.myTaskHierarchyItem.clearChildren();
     // createRootTask();
     fireTaskModelReset();
   }

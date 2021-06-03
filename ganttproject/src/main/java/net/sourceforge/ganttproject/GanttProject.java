@@ -534,7 +534,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     final ArtefactAction deleteAction;
     {
-      final GPAction taskDeleteAction = getTaskTree().getDeleteAction().asToolbarAction();
+      final GPAction taskDeleteAction = myTaskActions.getDeleteAction();
       final GPAction resourceDeleteAction = getResourceTree().getDeleteAction().asToolbarAction();
       deleteAction = new ArtefactDeleteAction(new ActiveActionProvider() {
         @Override

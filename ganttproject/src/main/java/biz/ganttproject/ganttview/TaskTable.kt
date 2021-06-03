@@ -39,6 +39,7 @@ import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 import java.util.*
+import javax.swing.SwingUtilities
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -84,7 +85,9 @@ class TaskTable(
     initKeyboardEventHandlers()
     treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
     treeTable.selectionModel.selectedItems.addListener(ListChangeListener {  c ->
-      selectionManager.selectedTasks = treeTable.selectionModel.selectedItems.map { it.value }
+      SwingUtilities.invokeLater {
+        selectionManager.selectedTasks = treeTable.selectionModel.selectedItems.map { it.value }
+      }
     })
     treeTable.onSort = EventHandler {
       GlobalScope.launch(Dispatchers.JavaFx) {
@@ -184,14 +187,15 @@ class TaskTable(
               null
             }
           } ?: return@keepSelection
-          task2treeItem[e.newContainer]?.children?.add(e.indexAtNew, taskTreeItem)
+          task2treeItem[e.newContainer]?.children?.add(e.indexAtNew, taskTreeItem).also {
+          }// ?: run {println("new container not found")}
           taskTableChartConnector.visibleTasks.clear()
           taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
         }
       }
 
       override fun taskRemoved(e: TaskHierarchyEvent) {
-        GlobalScope.launch(Dispatchers.JavaFx) {
+        keepSelection {
           task2treeItem[e.oldContainer]?.let {
             val idx = it.children.indexOfFirst { it.value == e.task }
             if (idx >= 0) {
@@ -312,11 +316,12 @@ class TaskTable(
 
   private fun keepSelection(code: ()->Unit) {
     Platform.runLater {
-      val selectedTasks = treeTable.selectionModel.selectedItems.map { it.value }.toList()
+      val selectedTasks = treeTable.selectionModel.selectedItems.map { it.value to (it.previousSibling() ?: it.parent) }.toMap()
       code()
       treeTable.selectionModel.clearSelection()
-      val selectedItems = selectedTasks.map { task2treeItem[it] }
-      selectedItems.mapNotNull { treeTable.selectionModel.select(it) }
+      selectedTasks.forEach { task, parentTreeItem ->
+        treeTable.selectionModel.select(task2treeItem[task] ?: parentTreeItem)
+      }
       treeTable.requestFocus()
     }
   }

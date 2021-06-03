@@ -112,7 +112,7 @@ public class TaskImpl implements Task {
 
   private boolean myEventsEnabled;
 
-  private final TaskHierarchyItem myTaskHierarchyItem;
+  final TaskHierarchyItem myTaskHierarchyItem;
 
   private ShapePaint myShape;
 
