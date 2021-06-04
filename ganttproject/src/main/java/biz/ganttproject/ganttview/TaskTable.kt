@@ -171,7 +171,7 @@ class TaskTable(
 
       override fun taskAdded(e: TaskHierarchyEvent) {
         keepSelection {
-          e.newContainer.addChildTreeItem(e.task)
+          e.newContainer.addChildTreeItem(e.task, e.indexAtNew)
           taskTableChartConnector.visibleTasks.clear()
           taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
         }
@@ -202,6 +202,7 @@ class TaskTable(
               it.children.removeAt(idx)
             }
           }
+          task2treeItem.remove(e.task)
           taskTableChartConnector.visibleTasks.clear()
           taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
         }
@@ -284,10 +285,14 @@ class TaskTable(
     }
   }
 
-  private fun Task.addChildTreeItem(child: Task) {
+  private fun Task.addChildTreeItem(child: Task, pos: Int = -1) {
     val parentItem = task2treeItem[this]!!
     val childItem = createTreeItem(child)
-    parentItem.children.add(childItem)
+    if (pos == -1) {
+      parentItem.children.add(childItem)
+    } else {
+      parentItem.children.add(pos, childItem)
+    }
     task2treeItem[child] = childItem
   }
 
@@ -320,7 +325,8 @@ class TaskTable(
       code()
       treeTable.selectionModel.clearSelection()
       selectedTasks.forEach { task, parentTreeItem ->
-        treeTable.selectionModel.select(task2treeItem[task] ?: parentTreeItem)
+        val whatSelect = task2treeItem[task] ?: parentTreeItem
+        treeTable.selectionModel.select(whatSelect)
       }
       treeTable.requestFocus()
     }
