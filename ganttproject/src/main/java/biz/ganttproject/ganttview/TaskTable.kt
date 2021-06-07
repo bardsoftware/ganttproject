@@ -1,6 +1,7 @@
 package biz.ganttproject.ganttview
 
 import biz.ganttproject.app.GPTreeTableView
+import biz.ganttproject.app.TextCell
 import biz.ganttproject.app.TreeCollapseView
 import biz.ganttproject.app.triggeredBy
 import biz.ganttproject.core.model.task.TaskDefaultColumn
@@ -21,7 +22,9 @@ import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
 import javafx.scene.control.cell.TextFieldTreeTableCell
+import javafx.util.Callback
 import javafx.util.StringConverter
+import javafx.util.converter.DefaultStringConverter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
@@ -69,7 +72,7 @@ class TaskTable(
   }
   private val columns = FXCollections.observableArrayList(TaskDefaultColumn.getColumnStubs().map { ColumnStub(it) }.toList())
   val columnList: ColumnList = ColumnListImpl(columns, taskManager.customPropertyManager) { treeTable.columns }
-
+  var requestSwingFocus: () -> Unit = {}
   init {
     initTaskEventHandlers()
     GlobalScope.launch(Dispatchers.JavaFx) {
@@ -170,10 +173,23 @@ class TaskTable(
       }
 
       override fun taskAdded(e: TaskHierarchyEvent) {
-        keepSelection {
-          e.newContainer.addChildTreeItem(e.task, e.indexAtNew)
-          taskTableChartConnector.visibleTasks.clear()
-          taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
+        if (e.taskSource == TaskManager.EventSource.USER) {
+          val nameColumn = treeTable.columns.find { (it.userData as ColumnStub).id == TaskDefaultColumn.NAME.stub.id }
+          Platform.runLater {
+            treeTable.selectionModel.clearSelection()
+            val treeItem = e.newContainer.addChildTreeItem(e.task, e.indexAtNew)
+            taskTableChartConnector.visibleTasks.clear()
+            taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
+            treeTable.selectionModel.select(treeItem)
+            treeTable.edit(treeTable.getRow(treeItem), nameColumn)
+            requestSwingFocus()
+          }
+        } else {
+          keepSelection {
+            e.newContainer.addChildTreeItem(e.task, e.indexAtNew)
+            taskTableChartConnector.visibleTasks.clear()
+            taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
+          }
         }
       }
 
@@ -220,7 +236,7 @@ class TaskTable(
                 setCellValueFactory {
                   ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal).toString())
                 }
-                cellFactory = TextFieldTreeTableCell.forTreeTableColumn()
+                cellFactory = Callback { TextCell(DefaultStringConverter()) }
                 if (taskDefaultColumn == TaskDefaultColumn.NAME) {
                   treeTable.treeColumn = this
                 }
@@ -285,7 +301,7 @@ class TaskTable(
     }
   }
 
-  private fun Task.addChildTreeItem(child: Task, pos: Int = -1) {
+  private fun Task.addChildTreeItem(child: Task, pos: Int = -1): TreeItem<Task> {
     val parentItem = task2treeItem[this]!!
     val childItem = createTreeItem(child)
     if (pos == -1) {
@@ -294,6 +310,7 @@ class TaskTable(
       parentItem.children.add(pos, childItem)
     }
     task2treeItem[child] = childItem
+    return childItem
   }
 
   private fun createTreeItem(task: Task) = TreeItem(task).also {

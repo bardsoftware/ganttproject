@@ -62,9 +62,12 @@ public class TaskNewAction extends GPAction {
         }
 
         Task selectedTask = selection.isEmpty() ? null : selection.get(0);
-        Task newTask = getTaskManager().newTaskBuilder()
-            .withPrevSibling(selectedTask).withStartDate(getUIFacade().getGanttChart().getStartDate()).build();
-        myUiFacade.getTaskTree().startDefaultEditing(newTask);
+        getTaskManager().newTaskBuilder()
+            .withPrevSibling(selectedTask)
+            .withStartDate(getUIFacade().getGanttChart().getStartDate())
+            .withSource(TaskManager.EventSource.USER)
+            .build();
+        //myUiFacade.getTaskTree().startDefaultEditing(newTask);
       }
     });
   }

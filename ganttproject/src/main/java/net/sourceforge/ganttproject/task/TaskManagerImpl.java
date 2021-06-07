@@ -421,7 +421,7 @@ public class TaskManagerImpl implements TaskManager {
         if (isLegacyMilestone) {
           task.setMilestone(isLegacyMilestone);
         }
-        fireTaskAdded(task);
+        fireTaskAdded(task, this.mySource);
         return task;
       }
     };
@@ -762,10 +762,10 @@ public class TaskManagerImpl implements TaskManager {
     }
   }
 
-  private void fireTaskAdded(Task task) {
+  private void fireTaskAdded(Task task, EventSource source) {
     if (areEventsEnabled) {
       var newContainer = getTaskHierarchy().getContainer(task);
-      TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, null, newContainer, getTaskHierarchy().getTaskIndex(task));
+      TaskHierarchyEvent e = new TaskHierarchyEvent(source, task, null, newContainer, getTaskHierarchy().getTaskIndex(task));
       for (int i = 0; i < myListeners.size(); i++) {
         TaskListener next = myListeners.get(i);
         next.taskAdded(e);
@@ -776,7 +776,7 @@ public class TaskManagerImpl implements TaskManager {
   private void fireTaskRemoved(Task container, Task task) {
     myDependencyGraph.removeTask(task);
     if (areEventsEnabled) {
-      TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, container, null, -1);
+      TaskHierarchyEvent e = new TaskHierarchyEvent(EventSource.UNDEFINED, task, container, null, -1);
       for (TaskListener l : myListeners) {
         l.taskRemoved(e);
       }
@@ -785,7 +785,7 @@ public class TaskManagerImpl implements TaskManager {
 
   void fireTaskMoved(Task task, Task movedFrom, Task movedTo) {
     if (areEventsEnabled) {
-      TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, movedFrom, movedTo, getTaskHierarchy().getTaskIndex(task));
+      TaskHierarchyEvent e = new TaskHierarchyEvent(EventSource.UNDEFINED, task, movedFrom, movedTo, getTaskHierarchy().getTaskIndex(task));
       for (TaskListener l : myListeners) {
         l.taskMoved(e);
       }

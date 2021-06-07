@@ -38,7 +38,7 @@ import java.awt.*;
 import java.util.function.Supplier;
 
 class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
-  private final Container myTaskTree;
+  //private final Container myTaskTree;
   private final JComponent myGanttChart;
   private final TreeTableContainer myTreeFacade;
   private final UIFacade myWorkbenchFacade;
@@ -53,13 +53,13 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     myTaskTableSupplier = taskTableSupplier;
     myWorkbenchFacade = workbenchFacade;
     myTreeFacade = treeFacade;
-    myTaskTree = (Container) treeFacade.getTreeComponent();
+    //myTaskTree = (Container) treeFacade.getTreeComponent();
     myGanttChart = ganttChart;
     // FIXME KeyStrokes of these 2 actions are not working...
     myCriticalPathAction = new CalculateCriticalPathAction(project.getTaskManager(), uiConfiguration, workbenchFacade);
     myBaselineAction = new BaselineDialogAction(project, workbenchFacade);
     addChartPanel(createSchedulePanel());
-    addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());
+    //addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());
   }
 
   private Component createSchedulePanel() {
@@ -118,8 +118,13 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
         return myTaskTableSupplier.get().getHeaderHeightProperty().intValue();
       });
     });
-    myTaskTableSupplier.get().getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> {
+    var taskTable = myTaskTableSupplier.get();
+    taskTable.getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> {
       updateTimelineHeight();
+    });
+    taskTable.setRequestSwingFocus(() -> {
+      jfxPanel.requestFocus();
+      return null;
     });
     return jfxPanel;
     //return myTaskTree;
@@ -131,7 +136,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   @Override
   public void setActive(boolean active) {
     if (active) {
-      myTaskTree.requestFocus();
+      //myTaskTree.requestFocus();
       myTreeFacade.getNewAction().updateAction();
     }
   }

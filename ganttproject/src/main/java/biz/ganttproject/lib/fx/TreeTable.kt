@@ -1,13 +1,20 @@
 package biz.ganttproject.app
 
+import javafx.application.Platform
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
+import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Side
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.skin.TreeTableViewSkin
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Region
+import javafx.util.StringConverter
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -85,5 +92,105 @@ class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
 
   override fun setExpanded(node: T, value: Boolean) {
     node2value[node] = value
+  }
+}
+
+class TextCell<T>(private val converter: StringConverter<String>) : TreeTableCell<T, String>() {
+  private val textField: TextField = createTextField(this, converter)
+
+  override fun startEdit() {
+    if (!isEditable) {
+      return
+    }
+    super.startEdit()
+
+    if (isEditing) {
+      Platform.runLater {
+        treeTableView.requestFocus()
+        startEdit(this, converter, null, null, textField)
+      }
+    }
+  }
+
+  override fun cancelEdit() {
+    super.cancelEdit()
+    cancelEdit(this, converter, null)
+    treeTableView.requestFocus()
+  }
+
+  override fun commitEdit(newValue: String?) {
+    super.commitEdit(newValue)
+    treeTableView.requestFocus()
+  }
+
+  override fun updateItem(item: String?, empty: Boolean) {
+    super.updateItem(item, empty)
+    updateItem(this, converter, null, null, textField)
+  }
+}
+
+fun <T> startEdit(cell: Cell<T>, converter: StringConverter<T>, hbox: HBox?, graphic: Node?, textField: TextField) {
+  textField.text = getItemText(cell, converter)
+  cell.text = null
+  if (graphic != null) {
+    hbox?.children?.setAll(graphic, textField)
+    cell.setGraphic(hbox)
+  } else {
+    cell.setGraphic(textField)
+  }
+
+  // requesting focus so that key input can immediately go into the
+  // TextField (see RT-28132)
+  Platform.runLater {
+    textField.selectAll()
+    textField.requestFocus()
+  }
+}
+
+fun <T> cancelEdit(cell: Cell<T>, converter: StringConverter<T>, graphic: Node?) {
+  cell.text = getItemText(cell, converter)
+  cell.graphic = graphic
+}
+
+fun <T> createTextField(cell: Cell<T>, converter: StringConverter<T>) =
+  TextField(getItemText(cell, converter)).also { textField ->
+    // Use onAction here rather than onKeyReleased (with check for Enter),
+    // as otherwise we encounter RT-34685
+    textField.onAction = EventHandler { event: ActionEvent ->
+      cell.commitEdit(converter.fromString(textField.text))
+      event.consume()
+    }
+    textField.onKeyReleased = EventHandler { t: KeyEvent ->
+      if (t.code == KeyCode.ESCAPE) {
+        cell.cancelEdit()
+        t.consume()
+      }
+    }
+  }
+
+private fun <T> getItemText(cell: Cell<T>?, converter: StringConverter<T>?) =
+  converter?.toString(cell?.item) ?: cell?.item?.toString() ?: ""
+
+
+private fun <T> updateItem(cell: Cell<T>, converter: StringConverter<T>, hbox: HBox?, graphic: Node?, textField: TextField?) {
+  if (cell.isEmpty) {
+    cell.text = null
+    cell.setGraphic(null)
+  } else {
+    if (cell.isEditing) {
+      if (textField != null) {
+        textField.text = getItemText(cell, converter)
+      }
+      cell.text = null
+      if (graphic != null) {
+        hbox!!.children.setAll(graphic, textField)
+        cell.setGraphic(hbox)
+      } else {
+        cell.setGraphic(textField)
+      }
+    } else {
+      cell.text = getItemText(cell, converter)
+      cell.setGraphic(graphic)
+    }
   }
 }
