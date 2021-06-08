@@ -1,9 +1,6 @@
 package biz.ganttproject.ganttview
 
-import biz.ganttproject.app.GPTreeTableView
-import biz.ganttproject.app.TextCell
-import biz.ganttproject.app.TreeCollapseView
-import biz.ganttproject.app.triggeredBy
+import biz.ganttproject.app.*
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.table.ColumnList.ColumnStub
@@ -22,6 +19,7 @@ import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
 import javafx.scene.control.cell.TextFieldTreeTableCell
+import javafx.scene.input.KeyCode
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.DefaultStringConverter
@@ -92,6 +90,11 @@ class TaskTable(
         selectionManager.selectedTasks = treeTable.selectionModel.selectedItems.map { it.value }
       }
     })
+    treeTable.focusModel.focusedCellProperty().addListener { observable, oldValue, newValue ->
+      if (newValue.column == -1) {
+        treeTable.focusModel.focus(newValue.row, findNameColumn())
+      }
+    }
     treeTable.onSort = EventHandler {
       GlobalScope.launch(Dispatchers.JavaFx) {
         if (treeTable.sortOrder.isEmpty()) {
@@ -120,9 +123,19 @@ class TaskTable(
 
   private fun initKeyboardEventHandlers() {
     treeTable.onKeyPressed = EventHandler { event ->
-      taskActions.all().firstOrNull { action ->
-            action.triggeredBy(event)
-          }?.actionPerformed(null)
+      val action = taskActions.all().firstOrNull { action ->
+        action.triggeredBy(event)
+      }
+      if (action != null) {
+        action.actionPerformed(null)
+      } else {
+        if (event.getModifiers() == 0) {
+          when (event.code) {
+            KeyCode.LEFT -> treeTable.focusModel.focusLeftCell()
+            KeyCode.RIGHT -> treeTable.focusModel.focusRightCell()
+          }
+        }
+      }
     }
   }
 
@@ -174,7 +187,7 @@ class TaskTable(
 
       override fun taskAdded(e: TaskHierarchyEvent) {
         if (e.taskSource == TaskManager.EventSource.USER) {
-          val nameColumn = treeTable.columns.find { (it.userData as ColumnStub).id == TaskDefaultColumn.NAME.stub.id }
+          val nameColumn = findNameColumn()
           Platform.runLater {
             treeTable.selectionModel.clearSelection()
             val treeItem = e.newContainer.addChildTreeItem(e.task, e.indexAtNew)
@@ -225,6 +238,8 @@ class TaskTable(
       }
     })
   }
+
+  private fun findNameColumn() = treeTable.columns.find { (it.userData as ColumnStub).id == TaskDefaultColumn.NAME.stub.id }
 
   private fun buildColumns(idxStart: Int, columns: List<ColumnList.Column>) {
     for (idx in 0 until columns.size) {

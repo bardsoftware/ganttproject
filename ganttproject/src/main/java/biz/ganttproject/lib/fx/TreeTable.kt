@@ -27,6 +27,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     stylesheets.add("/biz/ganttproject/lib/fx/TreeTable.css")
     styleClass.add("gp-tree-table-view")
     tableMenu.items.add(MenuItem(RootLocalizer.formatText("columns.manage.label")))
+
   }
   override fun createDefaultSkin(): Skin<*>? {
     return GPTreeTableViewSkin(this).also {
@@ -46,6 +47,14 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
 
   fun scrollBy(value: Double) {
     skin?.let { (it as GPTreeTableViewSkin<T>).scrollBy(value) }
+  }
+
+  override fun requestFocus() {
+    super.requestFocus()
+    val focusedCell = this.focusModel.focusedCell
+    if (focusedCell.tableColumn == null) {
+      this.focusModel.focus(focusedCell.row, columns[0])
+    }
   }
 }
 
@@ -164,6 +173,9 @@ fun <T> createTextField(cell: Cell<T>, converter: StringConverter<T>) =
       if (t.code == KeyCode.ESCAPE) {
         cell.cancelEdit()
         t.consume()
+      }
+      if (t.code == KeyCode.INSERT) {
+        cell.cancelEdit()
       }
     }
   }
