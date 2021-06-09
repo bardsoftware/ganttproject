@@ -17,9 +17,10 @@ import javafx.event.EventHandler
 import javafx.scene.Parent
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
+import javafx.scene.control.TreeTableCell
 import javafx.scene.control.TreeTableColumn
 import javafx.scene.control.cell.TextFieldTreeTableCell
-import javafx.scene.input.KeyCode
+import javafx.scene.input.*
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.DefaultStringConverter
@@ -30,17 +31,17 @@ import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.CustomPropertyManager
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
+import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
+import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
 import net.sourceforge.ganttproject.gui.UIUtil
 import net.sourceforge.ganttproject.language.GanttLanguage
-import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
-import net.sourceforge.ganttproject.task.TaskManager
-import net.sourceforge.ganttproject.task.TaskSelectionManager
+import net.sourceforge.ganttproject.task.*
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 import java.util.*
 import javax.swing.SwingUtilities
+
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -251,7 +252,12 @@ class TaskTable(
                 setCellValueFactory {
                   ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal).toString())
                 }
-                cellFactory = Callback { TextCell(DefaultStringConverter()) }
+                cellFactory = TextCellFactory(
+                  dragndropSupport = if (taskDefaultColumn == TaskDefaultColumn.NAME) {
+                    DragAndDropSupport()
+                  } else null
+                )
+
                 if (taskDefaultColumn == TaskDefaultColumn.NAME) {
                   treeTable.treeColumn = this
                 }
@@ -461,3 +467,67 @@ fun ColumnList.copyOf(): List<ColumnStub> {
   return importedList
 }
 
+class DragAndDropSupport {
+  private lateinit var clipboardContent: ClipboardContents
+  private lateinit var clipboardProcessor: ClipboardTaskProcessor
+  fun dragDetected(cell: TextCell<Task>) {
+    val task = cell.treeTableRow.treeItem.value
+    clipboardContent = ClipboardContents(task.manager).also {
+      it.addTasks(listOf(task))
+    }
+    clipboardProcessor = ClipboardTaskProcessor(task.manager)
+    val db = cell.startDragAndDrop(TransferMode.COPY)
+    val content = ClipboardContent()
+    content.put(TEXT_FORMAT, cell.treeTableRow.treeItem.value.taskID)
+    db.setContent(content)
+    db.dragView = cell.snapshot(null, null)
+    cell.setOnDragExited { db.clear() }
+  }
+
+  fun dragOver(event: DragEvent, cell: TextCell<Task>) {
+    if (!event.dragboard.hasContent(TEXT_FORMAT)) return
+    val thisItem = cell.treeTableRow.treeItem
+
+    if (!clipboardProcessor.canMove(thisItem.value, clipboardContent)) {
+      clearDropLocation()
+      return
+    }
+
+    event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE)
+//    if (dropZone != treeCell) {
+//      clearDropLocation()
+//      this.dropZone = treeCell
+//      dropZone.setStyle(DROP_HINT_STYLE)
+//    }
+  }
+
+  private fun clearDropLocation() {
+  }
+
+  fun drop(event: DragEvent, cell: TextCell<Task>) {
+    val dropTarget = cell.treeTableRow.treeItem.value
+    clipboardContent.cut()
+    clipboardProcessor.pasteAsChild(dropTarget, clipboardContent)
+  }
+
+}
+
+class TextCellFactory(private val dragndropSupport: DragAndDropSupport?)
+  : Callback<TreeTableColumn<Task, String>, TreeTableCell<Task, String>> {
+  override fun call(param: TreeTableColumn<Task, String>?) =
+    TextCell<Task>(DefaultStringConverter()).also { cell ->
+      if (dragndropSupport != null) {
+        cell.setOnDragDetected { event ->
+          dragndropSupport.dragDetected(cell)
+          event.consume()
+        }
+        cell.setOnDragOver { event -> dragndropSupport.dragOver(event, cell) }
+        cell.setOnDragDropped { event -> dragndropSupport.drop(event, cell) }
+        cell.setOnDragExited {
+
+        }
+      }
+    }
+}
+
+private val TEXT_FORMAT = DataFormat("text/ganttproject-task-node")
