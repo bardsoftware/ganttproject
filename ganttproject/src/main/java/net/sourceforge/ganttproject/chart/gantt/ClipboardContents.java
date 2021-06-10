@@ -32,7 +32,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -164,14 +163,14 @@ public class ClipboardContents {
   public void cut() {
     isCut = true;
     build();
-    for (Task t : getTasks()) {
-      myAssignments.addAll(Arrays.asList(t.getAssignments()));
-      myTaskManager.deleteTask(t);
-      t.delete();
-    }
-    for (ResourceAssignment ra : myAssignments) {
-      myResources.add(ra.getResource());
-    }
+//    for (Task t : getTasks()) {
+//      myAssignments.addAll(Arrays.asList(t.getAssignments()));
+//      myTaskManager.deleteTask(t);
+//      t.delete();
+//    }
+//    for (ResourceAssignment ra : myAssignments) {
+//      myResources.add(ra.getResource());
+//    }
   }
 
   /**
