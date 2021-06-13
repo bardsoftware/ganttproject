@@ -18,16 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.undo;
 
-import java.io.IOException;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.document.Document.DocumentException;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
+import java.io.IOException;
 
 /**
  * @author bard
@@ -88,21 +86,7 @@ class UndoableEditImpl extends AbstractUndoableEdit {
   }
 
   private void restoreDocument(Document document) throws IOException, DocumentException {
-    Document projectDocument = myManager.getProject().getDocument();
-    myManager.getProject().close();
-    AlgorithmCollection algs = myManager.getProject().getTaskManager().getAlgorithmCollection();
-    try {
-      algs.getScheduler().setEnabled(false);
-      algs.getRecalculateTaskScheduleAlgorithm().setEnabled(false);
-      algs.getAdjustTaskBoundsAlgorithm().setEnabled(false);
-      document.read();
-    } finally {
-      algs.getRecalculateTaskScheduleAlgorithm().setEnabled(true);
-      algs.getAdjustTaskBoundsAlgorithm().setEnabled(true);
-      algs.getScheduler().setEnabled(true);
-    }
-    myManager.getProject().setDocument(projectDocument);
-
+    myManager.getProject().restore(document);
   }
 
   @Override

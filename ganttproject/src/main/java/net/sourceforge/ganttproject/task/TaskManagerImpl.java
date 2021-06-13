@@ -75,12 +75,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author bard
@@ -140,6 +142,7 @@ public class TaskManagerImpl implements TaskManager {
     private final Map<Integer, Task> myId2task = new HashMap<Integer, Task>();
     private TaskDocumentOrderComparator myComparator;
     private boolean isModified = true;
+    private List<Task> myList;
     private Task[] myArray;
     private final TaskManagerImpl myManager;
 
@@ -159,8 +162,9 @@ public class TaskManagerImpl implements TaskManager {
 
     public Task[] getTasks() {
       if (isModified) {
-        myArray = myId2task.values().toArray(new Task[myId2task.size()]);
-        Arrays.sort(myArray, myComparator);
+        myList = myId2task.values().stream().filter(t -> !t.isDeleted()).collect(Collectors.toList());
+        myList.sort(myComparator);
+        myArray = myList.toArray(new Task[myList.size()]);
         isModified = false;
       }
       return myArray;
@@ -168,15 +172,6 @@ public class TaskManagerImpl implements TaskManager {
 
     public void clear() {
       myId2task.clear();
-      isModified = true;
-    }
-
-    public void removeTask(Task task) {
-      myId2task.remove(new Integer(task.getTaskID()));
-      Task[] nestedTasks = myManager.getTaskHierarchy().getNestedTasks(task);
-      for (int i = 0; i < nestedTasks.length; i++) {
-        removeTask(nestedTasks[i]);
-      }
       isModified = true;
     }
 
@@ -189,6 +184,11 @@ public class TaskManagerImpl implements TaskManager {
     }
 
     void setDirty() {
+      isModified = true;
+    }
+
+    public void removeAllTasks(Iterable<Task> tasks) {
+      tasks.forEach(t -> myId2task.remove(t.getTaskID()));
       isModified = true;
     }
   }
@@ -331,8 +331,9 @@ public class TaskManagerImpl implements TaskManager {
     for (Task t : nestedTasks) {
       t.delete();
     }
+    myTaskMap.removeAllTasks(Arrays.asList(nestedTasks));
     Task container = getTaskHierarchy().getContainer(tasktoRemove);
-    myTaskMap.removeTask(tasktoRemove);
+    myTaskMap.removeAllTasks(Collections.singleton(tasktoRemove));
     tasktoRemove.delete();
     fireTaskRemoved(container, tasktoRemove);
   }

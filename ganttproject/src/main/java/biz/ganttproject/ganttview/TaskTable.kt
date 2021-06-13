@@ -26,6 +26,7 @@ import javafx.util.StringConverter
 import javafx.util.converter.DefaultStringConverter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.CustomPropertyManager
@@ -33,26 +34,34 @@ import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
+import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.gui.UIUtil
 import net.sourceforge.ganttproject.language.GanttLanguage
-import net.sourceforge.ganttproject.task.*
+import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
+import net.sourceforge.ganttproject.task.TaskManager
+import net.sourceforge.ganttproject.task.TaskSelectionManager
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
+import net.sourceforge.ganttproject.undo.GPUndoManager
+import org.jetbrains.annotations.NotNull
 import java.util.*
-import javax.swing.SwingUtilities
+import java.util.List.copyOf
 
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 class TaskTable(
-  private val project: IGanttProject,
-  private val taskManager: TaskManager,
-  private val taskTableChartConnector: TaskTableChartConnector,
-  private val treeCollapseView: TreeCollapseView<Task>,
-  private val selectionManager: TaskSelectionManager,
-  private val taskActions: TaskActions
+  private val project: @NotNull IGanttProject,
+  private val taskManager: @NotNull TaskManager,
+  private val taskTableChartConnector: @NotNull TaskTableChartConnector,
+  private val treeCollapseView: @NotNull TreeCollapseView<Task>,
+  private val selectionManager: @NotNull TaskSelectionManager,
+  private val taskActions: @NotNull TaskActions,
+  private val undoManager: @NotNull GPUndoManager,
+  private val observableDocument: ReadOnlyObjectProperty<Document>
 ) {
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   private val treeModel = taskManager.taskHierarchy
@@ -87,8 +96,10 @@ class TaskTable(
     initKeyboardEventHandlers()
     treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
     treeTable.selectionModel.selectedItems.addListener(ListChangeListener {  c ->
-      SwingUtilities.invokeLater {
-        selectionManager.selectedTasks = treeTable.selectionModel.selectedItems.map { it.value }
+      Platform.runLater {
+        val selectedItems = copyOf(treeTable.selectionModel.selectedItems)
+        selectionManager.selectedTasks = selectedItems
+          .map { it.value }.filter { it.manager.taskHierarchy.contains(it) }
       }
     })
     treeTable.focusModel.focusedCellProperty().addListener { observable, oldValue, newValue ->
@@ -128,7 +139,9 @@ class TaskTable(
         action.triggeredBy(event)
       }
       if (action != null) {
-        action.actionPerformed(null)
+        undoManager.undoableEdit(action.name) {
+          action.actionPerformed(null)
+        }
       } else {
         if (event.getModifiers() == 0) {
           when (event.code) {
@@ -161,16 +174,21 @@ class TaskTable(
   }
 
   private fun initProjectEventHandlers() {
-    project.addProjectEventListener(object : ProjectEventListener {
-      override fun projectModified() {
+    project.addProjectEventListener(object : ProjectEventListener.Stub() {
+      override fun projectRestoring(completion: BroadcastChannel<Document>) {
+        completion.openSubscription().let {
+          GlobalScope.launch {
+            it.receive()
+            sync()
+          }
+        }
       }
-      override fun projectSaved() {}
-      override fun projectClosed() {
-        reload()
-      }
-      override fun projectCreated() {}
 
       override fun projectOpened() {
+        reload()
+      }
+
+      override fun projectCreated() {
         reload()
       }
     })
@@ -183,7 +201,7 @@ class TaskTable(
       }
 
       override fun taskModelReset() {
-        reload()
+        //reload()
       }
 
       override fun taskAdded(e: TaskHierarchyEvent) {
@@ -227,14 +245,16 @@ class TaskTable(
       override fun taskRemoved(e: TaskHierarchyEvent) {
         keepSelection {
           task2treeItem[e.oldContainer]?.let {
+            it.depthFirstWalk { treeItem ->
+              task2treeItem.remove(treeItem.value)
+              true
+            }
             val idx = it.children.indexOfFirst { it.value == e.task }
             if (idx >= 0) {
               it.children.removeAt(idx)
             }
           }
-          task2treeItem.remove(e.task)
-          taskTableChartConnector.visibleTasks.clear()
-          taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
+          taskTableChartConnector.visibleTasks.setAll(getExpandedTasks())
         }
       }
     })
@@ -313,8 +333,8 @@ class TaskTable(
       task2treeItem.clear()
       task2treeItem[treeModel.rootTask] = rootItem
 
-      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child ->
-        parent.addChildTreeItem(child)
+      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, _ ->
+        if (child != null) parent.addChildTreeItem(child)
         true
       }
       taskTableChartConnector.visibleTasks.clear()
@@ -322,6 +342,35 @@ class TaskTable(
     }
   }
 
+  fun sync() {
+    Platform.runLater {
+      val treeModel = taskManager.taskHierarchy
+      task2treeItem.clear()
+      task2treeItem[treeModel.rootTask] = rootItem
+      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx ->
+        if (child == null) {
+          val parentItem = task2treeItem[parent]!!
+          parentItem.children.remove(idx, parentItem.children.size)
+        } else {
+          val parentItem = task2treeItem[parent]!!
+          if (parentItem.children.size > idx) {
+            val childItem = parentItem.children[idx]
+            if (childItem.value.taskID == child.taskID) {
+              childItem.value = child
+              task2treeItem[child] = childItem
+            } else {
+              parentItem.children.removeAt(idx)
+              parent.addChildTreeItem(child, idx)
+            }
+          } else {
+            parent.addChildTreeItem(child)
+          }
+        }
+        true
+      }
+      taskTableChartConnector.visibleTasks.setAll(getExpandedTasks())
+    }
+  }
   private fun Task.addChildTreeItem(child: Task, pos: Int = -1): TreeItem<Task> {
     val parentItem = task2treeItem[this]!!
     val childItem = createTreeItem(child)
@@ -385,12 +434,16 @@ data class TaskTableActionConnector(
   val scrollTo: (task: Task) -> Unit
 )
 
-private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (Task, Task) -> Boolean) {
-  this.getNestedTasks(root).forEach { child ->
-    if (visitor(root, child)) {
-      this.depthFirstWalk(child, visitor)
+private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (Task, Task?, Int) -> Boolean) {
+  getNestedTasks(root).let { children ->
+    children.forEachIndexed { idx, child ->
+      if (visitor(root, child, idx)) {
+        this.depthFirstWalk(child, visitor)
+      }
     }
+    visitor(root, null, children.size)
   }
+
 }
 
 private fun TreeItem<Task>.depthFirstWalk(visitor: (TreeItem<Task>) -> Boolean) {

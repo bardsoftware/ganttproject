@@ -33,7 +33,6 @@ import com.beust.jcommander.Parameter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Scene;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.action.ActiveActionProvider;
@@ -124,7 +123,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private final ProjectMenu myProjectMenu;
 
-  private SimpleObjectProperty<Document> myObservableDocument = new SimpleObjectProperty<>();
   /**
    * Informations for the current project.
    */

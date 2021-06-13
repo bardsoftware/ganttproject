@@ -18,6 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import kotlinx.coroutines.channels.BroadcastChannel;
+import net.sourceforge.ganttproject.document.Document;
+
 public interface ProjectEventListener {
   void projectModified();
 
@@ -28,6 +31,8 @@ public interface ProjectEventListener {
   void projectOpened();
 
   void projectCreated();
+
+  void projectRestoring(BroadcastChannel<Document> completion);
 
   class Stub implements ProjectEventListener {
     @Override
@@ -48,6 +53,11 @@ public interface ProjectEventListener {
 
     @Override
     public void projectCreated() {
+    }
+
+    @Override
+    public void projectRestoring(BroadcastChannel<Document> completion) {
+
     }
   }
 }

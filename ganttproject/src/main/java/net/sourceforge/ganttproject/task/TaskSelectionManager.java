@@ -107,7 +107,9 @@ public class TaskSelectionManager implements TaskSelectionContext {
     SwingUtilities.invokeLater(() -> {
       clear();
       for (Task t : tasks) {
-        addTask(t);
+        if (!t.isDeleted()) {
+          addTask(t);
+        }
       }
     });
   }

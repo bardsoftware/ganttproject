@@ -28,6 +28,7 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
 import com.google.common.collect.Lists;
+import kotlinx.coroutines.channels.BroadcastChannel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartOptionGroup;
@@ -38,6 +39,7 @@ import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.gantt.GanttChartController;
 import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
+import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -355,6 +357,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   public void projectCreated() {
     // TODO Auto-generated method stub
 
+  }
+
+  @Override
+  public void projectRestoring(BroadcastChannel<Document> completion) {
   }
 
   @Override

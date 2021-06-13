@@ -134,8 +134,8 @@ Path2=$buffer2"""
     }
   }
 
-  override fun contains(task: Task?): Boolean {
-    throw UnsupportedOperationException()
+  override fun contains(task: Task): Boolean {
+    return task.supertask != null
   }
 
   override fun getTasksInDocumentOrder(): List<Task> {

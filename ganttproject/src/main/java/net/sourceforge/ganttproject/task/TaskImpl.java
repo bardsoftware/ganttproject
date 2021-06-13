@@ -139,6 +139,7 @@ public class TaskImpl implements Task {
   private static final GPCalendarCalc RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
 
   private static final TimeDuration EMPTY_DURATION = new TimeDurationImpl(GPTimeUnitStack.DAY, 0);
+  private boolean isDeleted;
 
   protected TaskImpl(TaskManagerImpl taskManager, int taskID) {
     myManager = taskManager;
@@ -485,7 +486,7 @@ public class TaskImpl implements Task {
   @Override
   public Task getSupertask() {
     TaskHierarchyItem container = myTaskHierarchyItem.getContainerItem();
-    return container.getTask();
+    return container == null ? null : container.getTask();
   }
 
   @Override
@@ -513,7 +514,10 @@ public class TaskImpl implements Task {
   }
 
   @Override
+  public boolean isDeleted() { return this.isDeleted; }
+  @Override
   public void delete() {
+    isDeleted = true;
     getDependencies().clear();
     getAssignmentCollection().clear();
     myTaskHierarchyItem.delete();

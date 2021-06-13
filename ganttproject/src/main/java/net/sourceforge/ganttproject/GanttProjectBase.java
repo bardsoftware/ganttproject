@@ -42,6 +42,7 @@ import com.bardsoftware.eclipsito.update.Updater;
 import com.google.common.base.Suppliers;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -82,6 +83,7 @@ import net.sourceforge.ganttproject.undo.UndoManagerImpl;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -109,6 +111,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   private final TimeUnitStack myTimeUnitStack = new GPTimeUnitStack();;
   private final ProjectUIFacadeImpl myProjectUIFacade;
   private final DocumentManager myDocumentManager;
+  protected final SimpleObjectProperty<Document> myObservableDocument = new SimpleObjectProperty<>();
   /** The tabbed pane with the different parts of the project */
   private final GanttTabbedPane myTabPane;
   private final GPUndoManager myUndoManager;
@@ -207,7 +210,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     });
     myTaskTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(
         () -> new TaskTable(getProject(), getTaskManager(),
-            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions)
+            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions, getUndoManager(), myObservableDocument)
     ));
     myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
       @Override
@@ -235,6 +238,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
     myUIFacade.addOptions(myRssChecker.getUiOptions());
+  }
+
+  @Override
+  public void restore(Document fromDocument) throws Document.DocumentException, IOException {
+    GanttProjectImplKt.restoreProject(this, fromDocument, myModifiedStateChangeListeners);
   }
 
   @Override

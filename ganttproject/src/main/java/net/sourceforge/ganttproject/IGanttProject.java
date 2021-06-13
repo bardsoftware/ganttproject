@@ -63,8 +63,6 @@ public interface IGanttProject {
 
   TaskManager getTaskManager();
 
-  //TaskContainmentHierarchyFacade getTaskContainment();
-
   GPCalendarCalc getActiveCalendar();
 
   TimeUnitStack getTimeUnitStack();
@@ -93,7 +91,7 @@ public interface IGanttProject {
 
   CustomPropertyManager getTaskCustomColumnManager();
 
-  // CustomColumnsStorage getCustomColumnsStorage();
-
   List<GanttPreviousState> getBaselines();
+
+  void restore(Document fromDocument) throws DocumentException, IOException;
 }

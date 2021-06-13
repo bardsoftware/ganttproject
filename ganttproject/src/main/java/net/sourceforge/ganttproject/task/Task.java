@@ -162,6 +162,7 @@ public interface Task extends MutableTask, IdentifiableRow {
 
   void move(Task targetSupertask, int position);
 
+  boolean isDeleted();
   void delete();
 
   TaskManager getManager();
