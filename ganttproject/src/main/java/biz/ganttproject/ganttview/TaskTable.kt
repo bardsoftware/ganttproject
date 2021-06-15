@@ -29,6 +29,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.CustomPropertyManager
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
@@ -81,6 +82,9 @@ class TaskTable(
   private val columns = FXCollections.observableArrayList(TaskDefaultColumn.getColumnStubs().map { ColumnStub(it) }.toList())
   val columnList: ColumnList = ColumnListImpl(columns, taskManager.customPropertyManager) { treeTable.columns }
   var requestSwingFocus: () -> Unit = {}
+  val newTaskActor = NewTaskActor().also { it.start() }
+
+
   init {
     initTaskEventHandlers()
     GlobalScope.launch(Dispatchers.JavaFx) {
@@ -131,6 +135,23 @@ class TaskTable(
         }
       }
     })
+    GlobalScope.launch(Dispatchers.JavaFx) {
+      for (cmd in newTaskActor.commandChannel) {
+        when (cmd) {
+          is StartEditing -> {
+            requestSwingFocus()
+            if (treeTable.editingCell == null) treeTable.edit(treeTable.getRow(cmd.treeItem), findNameColumn())
+          }
+          is CommitEditing -> {
+            ourEditingCell?.let {
+              it as TextCell<Task>
+              it.commitEdit()
+            }
+            newTaskActor.inboxChannel.send(EditingCompleted())
+          }
+        }
+      }
+    }
   }
 
   private fun initKeyboardEventHandlers() {
@@ -207,14 +228,14 @@ class TaskTable(
       override fun taskAdded(e: TaskHierarchyEvent) {
         if (e.taskSource == TaskManager.EventSource.USER) {
           val nameColumn = findNameColumn()
-          Platform.runLater {
+          runBlocking { newTaskActor.inboxChannel.send(TaskReady(e.task)) }
+          GlobalScope.launch(Dispatchers.JavaFx) {
             treeTable.selectionModel.clearSelection()
             val treeItem = e.newContainer.addChildTreeItem(e.task, e.indexAtNew)
             taskTableChartConnector.visibleTasks.clear()
             taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
             treeTable.selectionModel.select(treeItem)
-            treeTable.edit(treeTable.getRow(treeItem), nameColumn)
-            requestSwingFocus()
+            newTaskActor.inboxChannel.send(TreeItemReady(treeItem))
           }
         } else {
           keepSelection {

@@ -12,6 +12,7 @@ import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeUnitStack;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.chart.gantt.ITaskActivity;
@@ -75,7 +76,7 @@ public class ChartModelImpl extends ChartModelBase {
 
   @Override
   public void setVisibleTasks(List<Task> visibleTasks) {
-    myVisibleTasks = visibleTasks;
+    myVisibleTasks = ImmutableList.copyOf(visibleTasks);
   }
 
   @Override

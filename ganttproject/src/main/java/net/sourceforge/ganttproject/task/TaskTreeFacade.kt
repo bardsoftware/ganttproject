@@ -46,7 +46,7 @@ class FacadeImpl(private val taskManager: TaskManagerImpl, private val root: Tas
 
   override fun getPreviousSibling(nestedTask: Task): Task? {
     val pos = getTaskIndex(nestedTask)
-    return if (pos == 0) null else nestedTask.supertask.nestedTasks[pos - 1]
+    return if (pos <= 0) null else nestedTask.supertask.nestedTasks[pos - 1]
   }
 
   override fun getNextSibling(nestedTask: Task): Task? {

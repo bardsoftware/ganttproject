@@ -104,7 +104,10 @@ class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
   }
 }
 
-class TextCell<T>(private val converter: StringConverter<String>) : TreeTableCell<T, String>() {
+var ourEditingCell: TextCell<*>? = null
+
+class TextCell<T>(
+  private val converter: StringConverter<String>) : TreeTableCell<T, String>() {
   private val textField: TextField = createTextField(this, converter)
 
   override fun startEdit() {
@@ -114,20 +117,27 @@ class TextCell<T>(private val converter: StringConverter<String>) : TreeTableCel
     super.startEdit()
 
     if (isEditing) {
-      Platform.runLater {
+      ourEditingCell = this
+      //Platform.runLater {
         treeTableView.requestFocus()
         startEdit(this, converter, null, null, textField)
-      }
+      //}
     }
   }
 
   override fun cancelEdit() {
     super.cancelEdit()
+    ourEditingCell = null
     cancelEdit(this, converter, null)
     treeTableView.requestFocus()
   }
 
+  fun commitEdit() {
+    commitEdit(converter.fromString(textField.text))
+  }
+
   override fun commitEdit(newValue: String?) {
+    ourEditingCell = null
     super.commitEdit(newValue)
     treeTableView.requestFocus()
   }
@@ -173,9 +183,6 @@ fun <T> createTextField(cell: Cell<T>, converter: StringConverter<T>) =
       if (t.code == KeyCode.ESCAPE) {
         cell.cancelEdit()
         t.consume()
-      }
-      if (t.code == KeyCode.INSERT) {
-        cell.cancelEdit()
       }
     }
   }
