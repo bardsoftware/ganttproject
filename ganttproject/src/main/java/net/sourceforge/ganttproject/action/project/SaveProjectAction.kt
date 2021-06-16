@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project
 
-import kotlinx.coroutines.channels.BroadcastChannel
+import net.sourceforge.ganttproject.CompletionPromise
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.action.GPAction
@@ -73,7 +73,7 @@ class SaveProjectAction private constructor(
     isEnabled = false
   }
 
-  override fun projectRestoring(completion: BroadcastChannel<Document>) {}
+  override fun projectRestoring(completion: CompletionPromise<Document>) {}
 
   override fun asToolbarAction(): SaveProjectAction {
     val result = SaveProjectAction(myProject, myProjectUiFacade)

@@ -104,30 +104,30 @@ class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
   }
 }
 
-var ourEditingCell: TextCell<*>? = null
-
 class TextCell<T>(
-  private val converter: StringConverter<String>) : TreeTableCell<T, String>() {
+  private val converter: StringConverter<String>,
+  private val editingCellController: (TextCell<T>?) -> Boolean
+) : TreeTableCell<T, String>() {
   private val textField: TextField = createTextField(this, converter)
 
+  init {
+    styleClass.add("gp-tree-table-cell")
+  }
   override fun startEdit() {
     if (!isEditable) {
       return
     }
     super.startEdit()
 
-    if (isEditing) {
-      ourEditingCell = this
-      //Platform.runLater {
-        treeTableView.requestFocus()
-        startEdit(this, converter, null, null, textField)
-      //}
+    if (isEditing && editingCellController(this)) {
+      treeTableView.requestFocus()
+      startEdit(this, converter, null, null, textField)
     }
   }
 
   override fun cancelEdit() {
     super.cancelEdit()
-    ourEditingCell = null
+    editingCellController(null)
     cancelEdit(this, converter, null)
     treeTableView.requestFocus()
   }
@@ -137,13 +137,19 @@ class TextCell<T>(
   }
 
   override fun commitEdit(newValue: String?) {
-    ourEditingCell = null
+    editingCellController(null)
     super.commitEdit(newValue)
     treeTableView.requestFocus()
   }
 
   override fun updateItem(item: String?, empty: Boolean) {
     super.updateItem(item, empty)
+    if (treeTableView.focusModel.isFocused(treeTableRow.index, tableColumn)) {
+      println("Cell $this is focused")
+      styleClass.add("focused")
+    } else {
+      styleClass.remove("focused")
+    }
     updateItem(this, converter, null, null, textField)
   }
 }

@@ -29,6 +29,7 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import com.google.common.base.Strings
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
@@ -274,8 +275,8 @@ open class GanttProjectImpl : IGanttProject {
 }
 
 internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: List<ProjectEventListener>) {
-  val channel = BroadcastChannel<Document>(1)
-  listeners.forEach { it.projectRestoring(channel) }
+  val completionPromise = CompletionPromise<Document>()
+  listeners.forEach { it.projectRestoring(completionPromise) }
   val projectDocument = document
   close()
   val algs = taskManager.algorithmCollection
@@ -289,8 +290,14 @@ internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: L
     algs.adjustTaskBoundsAlgorithm.setEnabled(true)
     algs.scheduler.setEnabled(true)
   }
-  GlobalScope.launch {
-    channel.send(projectDocument)
-    document = projectDocument
-  }
+  completionPromise.resolve(projectDocument)
+  document = projectDocument
+}
+
+typealias Subscriber<T> = (T)->Unit
+class CompletionPromise<T> {
+  private val subscribers = mutableListOf<Subscriber<T>>()
+  fun await(code: Subscriber<T>) = subscribers.add(code)
+  internal fun resolve(value: T) = subscribers.forEach { it(value) }
+
 }

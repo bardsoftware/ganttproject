@@ -66,7 +66,7 @@ public interface ColumnList {
       this(copy.getID(), copy.getName(), copy.isVisible(), copy.getOrder(), copy.getWidth());
     }
     public ColumnStub(String id, String name, boolean visible, int order, int width) {
-      myName = name;
+      myName = name == null ? id : name;
       myID = id;
       myOrder = order;
       myWidth = width;
@@ -128,6 +128,29 @@ public interface ColumnList {
       return String.format("id=%s name=%s visible=%b", myID, myName, isVisible);
     }
 
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      ColumnStub that = (ColumnStub) o;
+
+      if (myOrder != that.myOrder) return false;
+      if (myWidth != that.myWidth) return false;
+      if (isVisible != that.isVisible) return false;
+      if (myID != null ? !myID.equals(that.myID) : that.myID != null) return false;
+      return myName != null ? myName.equals(that.myName) : that.myName == null;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = myID != null ? myID.hashCode() : 0;
+      result = 31 * result + myOrder;
+      result = 31 * result + myWidth;
+      result = 31 * result + (myName != null ? myName.hashCode() : 0);
+      result = 31 * result + (isVisible ? 1 : 0);
+      return result;
+    }
   }
 
   class Immutable {

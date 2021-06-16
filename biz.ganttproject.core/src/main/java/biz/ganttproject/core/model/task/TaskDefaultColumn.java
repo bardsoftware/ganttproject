@@ -46,7 +46,7 @@ public enum TaskDefaultColumn {
   COORDINATOR(new ColumnList.ColumnStub("tpd8", null, false, -1, 200), String.class, "tableColCoordinator", Functions.NOT_EDITABLE),
   PREDECESSORS(new ColumnList.ColumnStub("tpd9", null, false, -1, 200), String.class, "tableColPredecessors"),
   ID(new ColumnList.ColumnStub("tpd10", null, false, -1, 20), Integer.class, "tableColID", Functions.NOT_EDITABLE),
-  OUTLINE_NUMBER(new ColumnList.ColumnStub("tpd11", null, false, 4, 20), String.class, "tableColOutline", Functions.NOT_EDITABLE),
+  OUTLINE_NUMBER(new ColumnList.ColumnStub("tpd11", null, true, 4, 20), String.class, "tableColOutline", Functions.NOT_EDITABLE),
   COST(new ColumnList.ColumnStub("tpd12", null, false, -1, 20), Double.class, "tableColCost"),
   RESOURCES(new ColumnList.ColumnStub("tpd13", null, false, -1, 20), String.class, "resources", Functions.NOT_EDITABLE),
   COLOR(new ColumnList.ColumnStub("tpd14", null, false, -1, 20), Color.class, "option.taskDefaultColor.label");

@@ -17,7 +17,6 @@ class EditingCompleted : NewTaskMsg()
 sealed class NewTaskActorCommand
 class StartEditing(val treeItem: TreeItem<Task>) : NewTaskActorCommand()
 class CommitEditing(val treeItem: TreeItem<Task>) : NewTaskActorCommand()
-class ToggleNewTask(val isEnabled: Boolean) : NewTaskActorCommand()
 
 enum class NewTaskState { IDLE, TASK_READY, TREE_ITEM_READY, EDIT_STARTING, EDIT_COMPLETING }
 

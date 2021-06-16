@@ -24,12 +24,9 @@ import javafx.scene.input.*
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.DefaultStringConverter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.javafx.JavaFx
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import net.sourceforge.ganttproject.CompletionPromise
 import net.sourceforge.ganttproject.CustomPropertyManager
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
@@ -46,7 +43,6 @@ import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 import net.sourceforge.ganttproject.undo.GPUndoManager
-import org.jetbrains.annotations.NotNull
 import java.util.*
 import java.util.List.copyOf
 
@@ -55,13 +51,13 @@ import java.util.List.copyOf
  * @author dbarashev@bardsoftware.com
  */
 class TaskTable(
-  private val project: @NotNull IGanttProject,
-  private val taskManager: @NotNull TaskManager,
-  private val taskTableChartConnector: @NotNull TaskTableChartConnector,
-  private val treeCollapseView: @NotNull TreeCollapseView<Task>,
-  private val selectionManager: @NotNull TaskSelectionManager,
-  private val taskActions: @NotNull TaskActions,
-  private val undoManager: @NotNull GPUndoManager,
+  private val project: IGanttProject,
+  private val taskManager: TaskManager,
+  private val taskTableChartConnector: TaskTableChartConnector,
+  private val treeCollapseView: TreeCollapseView<Task>,
+  private val selectionManager: TaskSelectionManager,
+  private val taskActions: TaskActions,
+  private val undoManager: GPUndoManager,
   private val observableDocument: ReadOnlyObjectProperty<Document>
 ) {
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
@@ -79,15 +75,16 @@ class TaskTable(
       scrollTo = {}
     )
   }
-  private val columns = FXCollections.observableArrayList(TaskDefaultColumn.getColumnStubs().map { ColumnStub(it) }.toList())
+  private val columns = FXCollections.observableArrayList(
+    TaskDefaultColumn.getColumnStubs().filter { it.isVisible }.map { ColumnStub(it) }.toList()
+  )
   val columnList: ColumnList = ColumnListImpl(columns, taskManager.customPropertyManager) { treeTable.columns }
   var requestSwingFocus: () -> Unit = {}
   val newTaskActor = NewTaskActor().also { it.start() }
 
 
   init {
-    initTaskEventHandlers()
-    GlobalScope.launch(Dispatchers.JavaFx) {
+    Platform.runLater {
       treeTable.isShowRoot = false
       treeTable.isEditable = true
       treeTable.isTableMenuButtonVisible = true
@@ -95,36 +92,35 @@ class TaskTable(
       buildColumns(0, columns)
       reload()
     }
+    initTaskEventHandlers()
     initProjectEventHandlers()
     initChartConnector()
     initKeyboardEventHandlers()
     treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
-    treeTable.selectionModel.selectedItems.addListener(ListChangeListener {  c ->
-      Platform.runLater {
-        val selectedItems = copyOf(treeTable.selectionModel.selectedItems)
-        selectionManager.selectedTasks = selectedItems
-          .map { it.value }.filter { it.manager.taskHierarchy.contains(it) }
-      }
+    treeTable.selectionModel.selectedItems.addListener(ListChangeListener {
+      val selectedItems = copyOf(treeTable.selectionModel.selectedItems)
+      selectionManager.selectedTasks = selectedItems
+        .map { it.value }
+        .filter { it.manager.taskHierarchy.contains(it) }
     })
-    treeTable.focusModel.focusedCellProperty().addListener { observable, oldValue, newValue ->
+    treeTable.focusModel.focusedCellProperty().addListener { _, _, newValue ->
       if (newValue.column == -1) {
         treeTable.focusModel.focus(newValue.row, findNameColumn())
       }
+      treeTable.refresh()
     }
     treeTable.onSort = EventHandler {
-      GlobalScope.launch(Dispatchers.JavaFx) {
-        if (treeTable.sortOrder.isEmpty()) {
-          reload()
-        } else {
-          taskTableChartConnector.visibleTasks.clear()
-          getExpandedTasks().also {
-            taskTableChartConnector.visibleTasks.addAll(it)
-          }
+      if (treeTable.sortOrder.isEmpty()) {
+        reload()
+      } else {
+        taskTableChartConnector.visibleTasks.clear()
+        getExpandedTasks().also {
+          taskTableChartConnector.visibleTasks.addAll(it)
         }
       }
     }
     columns.addListener(ListChangeListener { change ->
-      GlobalScope.launch(Dispatchers.JavaFx) {
+      Platform.runLater {
         while (change.next()) {
           change.removed.forEach { column ->
             treeTable.columns.removeIf { (it.userData as ColumnStub).id == column.id }
@@ -135,23 +131,7 @@ class TaskTable(
         }
       }
     })
-    GlobalScope.launch(Dispatchers.JavaFx) {
-      for (cmd in newTaskActor.commandChannel) {
-        when (cmd) {
-          is StartEditing -> {
-            requestSwingFocus()
-            if (treeTable.editingCell == null) treeTable.edit(treeTable.getRow(cmd.treeItem), findNameColumn())
-          }
-          is CommitEditing -> {
-            ourEditingCell?.let {
-              it as TextCell<Task>
-              it.commitEdit()
-            }
-            newTaskActor.inboxChannel.send(EditingCompleted())
-          }
-        }
-      }
-    }
+    initNewTaskActor()
   }
 
   private fun initKeyboardEventHandlers() {
@@ -168,6 +148,7 @@ class TaskTable(
           when (event.code) {
             KeyCode.LEFT -> treeTable.focusModel.focusLeftCell()
             KeyCode.RIGHT -> treeTable.focusModel.focusRightCell()
+            else -> {}
           }
         }
       }
@@ -184,7 +165,7 @@ class TaskTable(
       }
     }
     taskTableChartConnector.chartScrollOffset.addListener { _, _, newValue ->
-      GlobalScope.launch(Dispatchers.JavaFx) {
+      Platform.runLater {
         treeTable.scrollBy(newValue.toDouble())
       }
     }
@@ -196,12 +177,9 @@ class TaskTable(
 
   private fun initProjectEventHandlers() {
     project.addProjectEventListener(object : ProjectEventListener.Stub() {
-      override fun projectRestoring(completion: BroadcastChannel<Document>) {
-        completion.openSubscription().let {
-          GlobalScope.launch {
-            it.receive()
-            sync()
-          }
+      override fun projectRestoring(completion: CompletionPromise<Document>) {
+        completion.await {
+          sync()
         }
       }
 
@@ -218,18 +196,13 @@ class TaskTable(
   private fun initTaskEventHandlers() {
     taskManager.addTaskListener(object : TaskListenerAdapter() {
       override fun taskPropertiesChanged(e: TaskPropertyEvent) {
-        GlobalScope.launch(Dispatchers.JavaFx) { treeTable.refresh() }
-      }
-
-      override fun taskModelReset() {
-        //reload()
+        Platform.runLater { treeTable.refresh() }
       }
 
       override fun taskAdded(e: TaskHierarchyEvent) {
         if (e.taskSource == TaskManager.EventSource.USER) {
-          val nameColumn = findNameColumn()
           runBlocking { newTaskActor.inboxChannel.send(TaskReady(e.task)) }
-          GlobalScope.launch(Dispatchers.JavaFx) {
+          CoroutineScope(Dispatchers.JavaFx).launch {
             treeTable.selectionModel.clearSelection()
             val treeItem = e.newContainer.addChildTreeItem(e.task, e.indexAtNew)
             taskTableChartConnector.visibleTasks.clear()
@@ -248,16 +221,15 @@ class TaskTable(
 
       override fun taskMoved(e: TaskHierarchyEvent)  {
         keepSelection {
-          val taskTreeItem = task2treeItem[e.oldContainer]?.let {
-            val idx = it.children.indexOfFirst { it.value == e.task }
+          val taskTreeItem = task2treeItem[e.oldContainer]?.let { containerItem ->
+            val idx = containerItem.children.indexOfFirst { it.value == e.task }
             if (idx >= 0) {
-              it.children.removeAt(idx)
+              containerItem.children.removeAt(idx)
             } else {
               null
             }
           } ?: return@keepSelection
-          task2treeItem[e.newContainer]?.children?.add(e.indexAtNew, taskTreeItem).also {
-          }// ?: run {println("new container not found")}
+          task2treeItem[e.newContainer]?.children?.add(e.indexAtNew, taskTreeItem)
           taskTableChartConnector.visibleTasks.clear()
           taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
         }
@@ -281,10 +253,30 @@ class TaskTable(
     })
   }
 
+  // Launches a coroutine which is reading command messages from the New Task Actor and
+  // starts or commits tree cell edits.
+  private fun initNewTaskActor() {
+    CoroutineScope(Dispatchers.JavaFx).launch {
+      for (cmd in newTaskActor.commandChannel) {
+        when (cmd) {
+          is StartEditing -> {
+            requestSwingFocus()
+            if (treeTable.editingCell == null) {
+              treeTable.edit(treeTable.getRow(cmd.treeItem), findNameColumn())
+            }
+          }
+          is CommitEditing -> {
+            ourNameCellFactory.editingCell?.commitEdit()
+            newTaskActor.inboxChannel.send(EditingCompleted())
+          }
+        }
+      }
+    }
+  }
   private fun findNameColumn() = treeTable.columns.find { (it.userData as ColumnStub).id == TaskDefaultColumn.NAME.stub.id }
 
   private fun buildColumns(idxStart: Int, columns: List<ColumnList.Column>) {
-    for (idx in 0 until columns.size) {
+    for (idx in columns.indices) {
       val column = columns[idx]
         TaskDefaultColumn.find(column.id)?.let { taskDefaultColumn ->
           when {
@@ -293,11 +285,7 @@ class TaskTable(
                 setCellValueFactory {
                   ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal).toString())
                 }
-                cellFactory = TextCellFactory(
-                  dragndropSupport = if (taskDefaultColumn == TaskDefaultColumn.NAME) {
-                    DragAndDropSupport()
-                  } else null
-                )
+                cellFactory = if (taskDefaultColumn == TaskDefaultColumn.NAME) ourNameCellFactory else ourTextCellFactory
 
                 if (taskDefaultColumn == TaskDefaultColumn.NAME) {
                   treeTable.treeColumn = this
@@ -337,7 +325,7 @@ class TaskTable(
                 ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal).toString())
               }
             }
-          }?.let {
+          }.let {
             treeTable.columns.add(idxStart + idx, it)
             it.isEditable = taskDefaultColumn.isEditable(null)
             it.isVisible = column.isVisible
@@ -364,7 +352,7 @@ class TaskTable(
   }
 
   fun sync() {
-    Platform.runLater {
+    keepSelection {
       val treeModel = taskManager.taskHierarchy
       task2treeItem.clear()
       task2treeItem[treeModel.rootTask] = rootItem
@@ -406,10 +394,10 @@ class TaskTable(
 
   private fun createTreeItem(task: Task) = TreeItem(task).also {
     it.isExpanded = treeCollapseView.isExpanded(task)
-    it.expandedProperty().addListener(this@TaskTable::onExpanded)
+    it.expandedProperty().addListener { _, _, _ -> onExpanded() }
   }
 
-  private fun onExpanded(observableValue: Any, old: Boolean, new: Boolean) {
+  private fun onExpanded() {
     rootItem.depthFirstWalk { child ->
       treeCollapseView.setExpanded(child.value, child.isExpanded)
       true
@@ -429,11 +417,13 @@ class TaskTable(
 
   private fun keepSelection(code: ()->Unit) {
     Platform.runLater {
-      val selectedTasks = treeTable.selectionModel.selectedItems.map { it.value to (it.previousSibling() ?: it.parent) }.toMap()
+      val selectedTasks =
+        treeTable.selectionModel.selectedItems.associate { it.value to (it.previousSibling() ?: it.parent) }
       code()
       treeTable.selectionModel.clearSelection()
-      selectedTasks.forEach { task, parentTreeItem ->
-        val whatSelect = task2treeItem[task] ?: parentTreeItem
+      for ((task, parentTreeItem) in selectedTasks) {
+        val liveTask = taskManager.getTask(task.taskID)
+        val whatSelect = task2treeItem[liveTask] ?: parentTreeItem
         treeTable.selectionModel.select(whatSelect)
       }
       treeTable.requestFocus()
@@ -477,7 +467,7 @@ class GanttCalendarStringConverter : StringConverter<GanttCalendar>() {
   }
   override fun toString(value: GanttCalendar): String = value.toString()
 
-  override fun fromString(text: String) =
+  override fun fromString(text: String): GanttCalendar =
     CalendarFactory.createGanttCalendar(validator.parse(text))
 }
 
@@ -517,18 +507,39 @@ class ColumnListImpl(
       importedList = ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs()).copyOf()
     }
     importedList = importedList.sortedWith { left, right ->
+      // test1 places visible columns before invisible
       val test1 = (if (left.isVisible) -1 else 0) + if (right.isVisible) 1 else 0
       when {
         test1 != 0 -> test1
+        // Invisible columns are compared by name (why?)
         !left.isVisible && !right.isVisible && left.name != null && right.name != null -> {
           left.name.compareTo(right.name)
         }
+        // If both columns are visible and their order value happens to be the same (may happen when importing
+        // one project into another) then we compare ids (what we do if they are equal too?)
         left.order == right.order -> left.id.compareTo(right.id)
+        // Otherwise we use order value
         else -> left.order - right.order
       }
     }
-    columnList.clear()
-    columnList.addAll(importedList)
+
+    importedList.forEachIndexed { idxImported, column ->
+      val idxCurrent = columnList.indexOfFirst { it.id == column.id }
+      if (idxCurrent >= 0) {
+        if (idxCurrent != idxImported) {
+          columnList.subList(idxImported, idxCurrent).clear()
+        }
+        if (columnList[idxImported] != column) {
+          columnList[idxImported] = column
+        }
+      } else {
+        columnList.add(idxImported, column)
+      }
+      assert(columnList.subList(0, idxImported) == importedList.subList(0, idxImported))
+    }
+    if (columnList.size > importedList.size) {
+      columnList.subList(importedList.size, columnList.size).clear()
+    }
   }
 }
 
@@ -578,7 +589,7 @@ class DragAndDropSupport {
   private fun clearDropLocation() {
   }
 
-  fun drop(event: DragEvent, cell: TextCell<Task>) {
+  fun drop(cell: TextCell<Task>) {
     val dropTarget = cell.treeTableRow.treeItem.value
     clipboardContent.cut()
     clipboardProcessor.pasteAsChild(dropTarget, clipboardContent)
@@ -588,20 +599,45 @@ class DragAndDropSupport {
 
 class TextCellFactory(private val dragndropSupport: DragAndDropSupport?)
   : Callback<TreeTableColumn<Task, String>, TreeTableCell<Task, String>> {
+  internal var editingCell: TextCell<Task>? = null
+
+  private fun setEditingCell(cell: TextCell<Task>?): Boolean =
+    when {
+      editingCell == null && cell == null -> true
+      editingCell == null && cell != null -> {
+        editingCell = cell
+        true
+      }
+      editingCell != null && cell == null -> {
+        editingCell = cell
+        true
+      }
+      editingCell != null && cell != null -> {
+        // new editing cell when old is not yet releases
+        false
+      }
+      else -> true
+    }
+
   override fun call(param: TreeTableColumn<Task, String>?) =
-    TextCell<Task>(DefaultStringConverter()).also { cell ->
+    TextCell(DefaultStringConverter(), this::setEditingCell).also { cell ->
       if (dragndropSupport != null) {
         cell.setOnDragDetected { event ->
           dragndropSupport.dragDetected(cell)
           event.consume()
         }
         cell.setOnDragOver { event -> dragndropSupport.dragOver(event, cell) }
-        cell.setOnDragDropped { event -> dragndropSupport.drop(event, cell) }
+        cell.setOnDragDropped { _ -> dragndropSupport.drop(cell) }
         cell.setOnDragExited {
 
         }
       }
     }
 }
+
+private val ourNameCellFactory = TextCellFactory(
+  dragndropSupport = DragAndDropSupport()
+)
+private val ourTextCellFactory = TextCellFactory(dragndropSupport = null)
 
 private val TEXT_FORMAT = DataFormat("text/ganttproject-task-node")

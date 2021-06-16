@@ -1,6 +1,7 @@
 @import "../../app/theme";
 
 .gp-tree-table-view {
+    // Hamburger icon in the header
     .show-hide-column-image {
         -fx-scale-x: 1.3;
         -fx-scale-y: 1.3;
@@ -11,41 +12,43 @@
             -fx-cursor: hand;
         }
     }
+
+    // Vertical scroll bar visually appears on hover
     &:hover > .virtual-flow > .scroll-bar:vertical {
         -fx-opacity: 1;
     }
-    & > .virtual-flow > .scroll-bar:vertical {
-        //-fx-background-insets: 0, 0 0 0 1;
-        //-fx-padding: -1 -1 -1 0;
-        -fx-background-color: transparent;
-        -fx-opacity: 0.2;
-        -fx-pref-width: 15;
-
-        & > .track {
+    & > .virtual-flow {
+        & > .scroll-bar:vertical {
             -fx-background-color: transparent;
-            -fx-background-insets:  0, 1;
-            -fx-background-radius: 0.5em; /* makes sure this remains circular */
-        }
+            -fx-opacity: 0.2;
+            -fx-pref-width: 15;
 
-        & > .track-background {
-            -fx-background-color: transparent;
-            -fx-background-insets:  0, 1;
-        }
+            & > .track {
+                -fx-background-color: transparent;
+                -fx-background-insets: 0, 1;
+                -fx-background-radius: 0.5em;
+            }
 
-        & > .thumb {
-            -fx-background-color: $gp-light-gray;
-        }
+            & > .track-background {
+                -fx-background-color: transparent;
+                -fx-background-insets: 0, 1;
+            }
 
-        & > .increment-button,.decrement-button {
-            -fx-background-color:transparent;
-            -fx-background-radius: 0em;
-            -fx-padding:0 10 0 0;
-            & > .increment-arrow,.decrement-arrow {
-                -fx-shape: " ";
-                -fx-padding:0;
+            & > .thumb {
+                -fx-background-color: $gp-light-gray;
+            }
+
+            & > .increment-button, .decrement-button {
+                -fx-background-color: transparent;
+                -fx-background-radius: 0em;
+                -fx-padding: 0 10 0 0;
+
+                & > .increment-arrow, .decrement-arrow {
+                    -fx-shape: " ";
+                    -fx-padding: 0;
+                }
             }
         }
-
     }
     & > .scroll-bar {
         & > .increment-arrow,.decrement-arrow {
@@ -53,4 +56,28 @@
             -fx-padding:0;
         }
     }
+
+    &:focused:row-selection {
+        .virtual-flow {
+            & > .tree-table-row-cell:selected, .tree-table-row-cell:focused {
+                -fx-background-color: $gp-medium-gray;
+                -fx-table-cell-border-color: derive($gp-medium-gray, 20%);
+                .tree-table-cell.focused {
+                    -fx-border-width: 0 0 2 0;
+                    -fx-border-color: $gp-orange;
+                    -fx-background: $gp-medium-gray;
+                }
+            }
+            & > .tree-table-row-cell {
+                -fx-background: $gp-light-gray;
+                -fx-table-cell-border-color: derive($gp-medium-gray, 20%);
+            }
+        }
+    }
+}
+
+.gp-tree-table-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-table-row-cell:filled:selected,
+.gp-tree-table-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-table-row-cell .tree-table-cell:selected {
+    -fx-background: $gp-medium-gray;
+    -fx-table-cell-border-color: $gp-medium-gray;
 }

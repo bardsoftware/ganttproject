@@ -28,7 +28,6 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
 import com.google.common.collect.Lists;
-import kotlinx.coroutines.channels.BroadcastChannel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartOptionGroup;
@@ -360,7 +359,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   }
 
   @Override
-  public void projectRestoring(BroadcastChannel<Document> completion) {
+  public void projectRestoring(CompletionPromise<Document> completion) {
   }
 
   @Override
