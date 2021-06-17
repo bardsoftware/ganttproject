@@ -40,7 +40,6 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.chart.TaskRendererImpl2;
-import net.sourceforge.ganttproject.chart.VisibleNodesFilter;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
@@ -73,7 +72,6 @@ public class GanttChartController extends AbstractChartImplementation implements
   private final TaskManager myTaskManager;
   private final ChartModelImpl myChartModel;
   private final ChartViewState myChartViewState;
-  //private final GanttTree2 myTree;
   private final MouseListenerImpl myMouseListener;
   private final MouseMotionListenerImpl myMouseMotionListener;
   private final TaskTableChartConnector myTaskTableConnector;
@@ -84,14 +82,13 @@ public class GanttChartController extends AbstractChartImplementation implements
                               ChartComponentBase chartComponent, GanttTree2 tree, ChartViewState chartViewState,
                               TaskTableChartConnector taskTableConnector) {
     super(project, uiFacade, chartModel, chartComponent);
-    //myTree = tree;
     myChartViewState = chartViewState;
     myTaskManager = project.getTaskManager();
     myChartModel = chartModel;
     myMouseListener = new MouseListenerImpl(this, myChartModel, uiFacade, chartComponent, tree);
     myMouseMotionListener = new MouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);
-    mySelection = new GanttChartSelection(project, tree, myTaskManager);
     mySelectionManager = uiFacade.getTaskSelectionManager();
+    mySelection = new GanttChartSelection(myTaskManager, mySelectionManager);
     myTaskTableConnector = taskTableConnector;
     myTaskTableConnector.getVisibleTasks().addListener(
         (ListChangeListener<Task>) c -> SwingUtilities.invokeLater(() -> reset())
@@ -187,8 +184,6 @@ public class GanttChartController extends AbstractChartImplementation implements
       model.setRowHeight(myTaskTableConnector.getRowHeight().getValue().intValue());
       model.setTopTimeUnit(getViewState().getTopTimeUnit());
       model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
-      VisibleNodesFilter visibleNodesFilter = new VisibleNodesFilter();
-      // List<Task> visibleTasks = myTree.getVisibleNodes(visibleNodesFilter);
       List<Task> visibleTasks = myTaskTableConnector.getVisibleTasks();
       model.setVisibleTasks(visibleTasks);
       myChartModel.setTimelineTasks(getUIFacade().getCurrentTaskView().getTimelineTasks());
@@ -223,14 +218,11 @@ public class GanttChartController extends AbstractChartImplementation implements
 
   @Override
   public void paste(ChartSelection selection) {
-//    DefaultMutableTreeTableNode[] selectedNodes = myTree.getSelectedNodes();
-//    if (selectedNodes.length > 1) {
-//      return;
-//    }
-//    DefaultMutableTreeTableNode pasteRoot = selectedNodes.length == 0 ? myTree.getRoot() : selectedNodes[0];
-//    for (Task t : mySelection.paste((Task)pasteRoot.getUserObject())) {
-//      mySelectionManager.addTask(t);
-//    }
+    if (mySelectionManager.getSelectedTasks().size() != 1) {
+      return;
+    }
+    mySelection.paste(mySelectionManager.getSelectedTasks().get(0));
+
   }
 
   public Task findTaskUnderPointer(int xpos, int ypos) {

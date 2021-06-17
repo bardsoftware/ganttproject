@@ -564,7 +564,7 @@ class DragAndDropSupport {
     clipboardProcessor = ClipboardTaskProcessor(task.manager)
     val db = cell.startDragAndDrop(TransferMode.COPY)
     val content = ClipboardContent()
-    content.put(TEXT_FORMAT, cell.treeTableRow.treeItem.value.taskID)
+    content[TEXT_FORMAT] = cell.treeTableRow.treeItem.value.taskID
     db.setContent(content)
     db.dragView = cell.snapshot(null, null)
     cell.setOnDragExited { db.clear() }
