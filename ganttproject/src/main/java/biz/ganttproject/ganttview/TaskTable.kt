@@ -142,6 +142,7 @@ class TaskTable(
       }
     })
     initNewTaskActor()
+    treeTable.contextMenuActions = this::contextMenuActions
   }
 
   private fun initKeyboardEventHandlers() {
@@ -443,6 +444,38 @@ class TaskTable(
       treeTable.requestFocus()
     }
   }
+
+  private fun contextMenuActions(builder: MenuBuilder) {
+    builder.apply {
+      items(taskActions.createAction)
+    }
+    if (selectionManager.selectedTasks.isNotEmpty()) {
+      builder.apply {
+        items(taskActions.propertiesAction)
+        separator()
+        items(
+          taskActions.unindentAction,
+          taskActions.indentAction,
+          taskActions.moveUpAction,
+          taskActions.moveDownAction,
+        )
+        separator()
+        items(
+          taskActions.copyAction,
+          taskActions.cutAction,
+          taskActions.pasteAction,
+          taskActions.deleteAction
+        )
+        if (selectionManager.selectedTasks.size == 1) {
+          separator()
+          submenu(RootLocalizer.formatText("assignments")) {
+            items(taskActions.assignments(selectionManager.selectedTasks[0], project.humanResourceManager, undoManager))
+          }
+        }
+      }
+    }
+  }
+
 }
 
 data class TaskTableChartConnector(

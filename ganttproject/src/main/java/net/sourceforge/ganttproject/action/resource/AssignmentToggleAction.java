@@ -19,11 +19,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.action.resource;
 
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.ResourceAssignmentMutator;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -35,13 +35,13 @@ import java.awt.event.ActionEvent;
 public class AssignmentToggleAction extends GPAction {
   private final HumanResource myHumanResource;
   private final Task myTask;
-  private final UIFacade myUIFacade;
+  private final GPUndoManager myUndoManager;
 
-  public AssignmentToggleAction(HumanResource hr, Task task, UIFacade uiFacade) {
+  public AssignmentToggleAction(HumanResource hr, Task task, GPUndoManager undoManager) {
     super(hr.getName(), IconSize.TOOLBAR_SMALL);
     myHumanResource = hr;
     myTask = task;
-    myUIFacade = uiFacade;
+    myUndoManager = undoManager;
   }
 
   private void createAssignment() {
@@ -60,7 +60,7 @@ public class AssignmentToggleAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
+    myUndoManager.undoableEdit(getLocalizedDescription(), new Runnable() {
       @Override
       public void run() {
         if (getValue(Action.SELECTED_KEY) == Boolean.TRUE) {

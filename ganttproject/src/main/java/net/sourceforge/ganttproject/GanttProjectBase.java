@@ -202,7 +202,9 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
     myUIFacade = new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
     GPLogger.setUIFacade(myUIFacade);
-    myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(), new Function0<>() {
+    myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
+        () -> getViewManager(),
+        new Function0<>() {
       @Override
       public TaskTableActionConnector invoke() {
         return myTaskTableSupplier.get().getActionConnector();

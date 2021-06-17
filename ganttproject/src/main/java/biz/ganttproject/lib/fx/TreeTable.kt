@@ -11,6 +11,7 @@ import javafx.scene.control.*
 import javafx.scene.control.skin.TreeTableViewSkin
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
+import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Region
@@ -21,6 +22,7 @@ import javafx.util.StringConverter
  */
 class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   internal val tableMenu = ContextMenu()
+  var contextMenuActions: (MenuBuilder) -> Unit = { }
 
   init {
     columnResizePolicy = CONSTRAINED_RESIZE_POLICY;
@@ -32,6 +34,13 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
         focusModel.focus(newValue.row, columns[0])
       }
       refresh()
+    }
+    addEventHandler(MouseEvent.MOUSE_CLICKED) { event ->
+      if (event.button == MouseButton.SECONDARY) {
+        val contextMenu = ContextMenu()
+        contextMenuActions(MenuBuilder(contextMenu))
+        contextMenu.show(this, event.screenX, event.screenY)
+      }
     }
 
   }

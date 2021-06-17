@@ -321,25 +321,25 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
   private void addHumanResourcesSubmenu(List<Action> actions) {
     // TODO: enable when multiple tasks are selected
-    if (getTaskSelectionManager().getSelectedTasks().size() == 1) {
-      Task task = getTaskSelectionManager().getSelectedTasks().get(0);
-      List<HumanResource> resources = myProject.getHumanResourceManager().getResources();
-
-      HashMap<HumanResource, AssignmentToggleAction> human2action = new HashMap<>();
-
-      for (HumanResource hr : resources) {
-        AssignmentToggleAction assignmentAction = new AssignmentToggleAction(hr, task, myUIFacade);
-        assignmentAction.putValue(Action.SELECTED_KEY, false);
-        human2action.put(hr, assignmentAction);
-        actions.add(assignmentAction);
-      }
-
-      ResourceAssignment[] assignments = task.getAssignmentCollection().getAssignments();
-      for (ResourceAssignment ra : assignments) {
-        AssignmentToggleAction assignmentAction = human2action.get(ra.getResource());
-        assignmentAction.putValue(Action.SELECTED_KEY, true);
-      }
-    }
+//    if (getTaskSelectionManager().getSelectedTasks().size() == 1) {
+//      Task task = getTaskSelectionManager().getSelectedTasks().get(0);
+//      List<HumanResource> resources = myProject.getHumanResourceManager().getResources();
+//
+//      HashMap<HumanResource, AssignmentToggleAction> human2action = new HashMap<>();
+//
+//      for (HumanResource hr : resources) {
+//        AssignmentToggleAction assignmentAction = new AssignmentToggleAction(hr, task, myUIFacade);
+//        assignmentAction.putValue(Action.SELECTED_KEY, false);
+//        human2action.put(hr, assignmentAction);
+//        actions.add(assignmentAction);
+//      }
+//
+//      ResourceAssignment[] assignments = task.getAssignmentCollection().getAssignments();
+//      for (ResourceAssignment ra : assignments) {
+//        AssignmentToggleAction assignmentAction = human2action.get(ra.getResource());
+//        assignmentAction.putValue(Action.SELECTED_KEY, true);
+//      }
+//    }
   }
 
   /** Create a popup menu when mouse click */

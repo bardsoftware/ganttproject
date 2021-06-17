@@ -351,4 +351,6 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
       }
     };
   }
+
+  public static GPAction SEPARATOR = createVoidAction("separator");
 }
