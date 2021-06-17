@@ -104,7 +104,7 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
       TaskDefaultColumn.DURATION -> {
         val tl = task.duration
         task.createMutator().let {
-          it.setDuration(task.manager.createLength(tl.timeUnit, (value as Int).toInt().toFloat()))
+          it.setDuration(task.manager.createLength(tl.timeUnit, (value as Number).toInt().toFloat()))
           it.commit()
         }
       }

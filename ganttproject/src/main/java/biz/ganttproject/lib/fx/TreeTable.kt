@@ -27,6 +27,12 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     stylesheets.add("/biz/ganttproject/lib/fx/TreeTable.css")
     styleClass.add("gp-tree-table-view")
     tableMenu.items.add(MenuItem(RootLocalizer.formatText("columns.manage.label")))
+    focusModel.focusedCellProperty().addListener { _, _, newValue ->
+      if (newValue.column == -1) {
+        focusModel.focus(newValue.row, columns[0])
+      }
+      refresh()
+    }
 
   }
   override fun createDefaultSkin(): Skin<*>? {
@@ -104,10 +110,10 @@ class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
   }
 }
 
-class TextCell<T>(
-  private val converter: StringConverter<String>,
-  private val editingCellController: (TextCell<T>?) -> Boolean
-) : TreeTableCell<T, String>() {
+class TextCell<T, S>(
+  private val converter: StringConverter<S>,
+  private val editingCellController: (TextCell<T, S>?) -> Boolean
+) : TreeTableCell<T, S>() {
   private val textField: TextField = createTextField(this, converter)
 
   init {
@@ -136,19 +142,18 @@ class TextCell<T>(
     commitEdit(converter.fromString(textField.text))
   }
 
-  override fun commitEdit(newValue: String?) {
+  override fun commitEdit(newValue: S?) {
     editingCellController(null)
     super.commitEdit(newValue)
     treeTableView.requestFocus()
   }
 
-  override fun updateItem(item: String?, empty: Boolean) {
+  override fun updateItem(item: S?, empty: Boolean) {
     super.updateItem(item, empty)
     if (treeTableView.focusModel.isFocused(treeTableRow.index, tableColumn)) {
-      println("Cell $this is focused")
       styleClass.add("focused")
     } else {
-      styleClass.remove("focused")
+      styleClass.removeAll("focused")
     }
     updateItem(this, converter, null, null, textField)
   }

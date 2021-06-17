@@ -57,27 +57,55 @@
         }
     }
 
+    // This is a normal operational mode: the treetable is :focused,
+    // rows automatically become :selected or :focused as user changes the selection,
+    // a cell becomes .focused as row focus position changes (".focused" class is controlled by our TextCell)
     &:focused:row-selection {
         .virtual-flow {
             & > .tree-table-row-cell:selected, .tree-table-row-cell:focused {
-                -fx-background-color: $gp-medium-gray;
-                -fx-table-cell-border-color: derive($gp-medium-gray, 20%);
-                .tree-table-cell.focused {
+                & > .tree-table-cell {
+                    -fx-alignment: center-left;
+                    -fx-text-fill: white;
                     -fx-border-width: 0 0 2 0;
-                    -fx-border-color: $gp-orange;
-                    -fx-background: $gp-medium-gray;
+                    -fx-border-color: transparent;
+
+                    &.focused {
+                      -fx-border-width: 0 0 2 0;
+                      -fx-border-color: $gp-orange;
+                    }
                 }
-            }
-            & > .tree-table-row-cell {
-                -fx-background: $gp-light-gray;
+                -fx-background-color: $gp-medium-gray;
                 -fx-table-cell-border-color: derive($gp-medium-gray, 20%);
             }
         }
     }
+
+    // This is when editing starts. The treetable itself is not :focused anymore because the focus
+    // is now in the text field.
+    & > .virtual-flow {
+        & > .tree-table-row-cell, .tree-table-row-cell:selected {
+            -fx-background: $gp-light-gray;
+            & > .tree-table-cell {
+                -fx-alignment: center-left;
+                -fx-border-width: 0 0 2 0;
+                -fx-border-color: transparent;
+                &.focused {
+                    -fx-alignment: center-left;
+                    -fx-border-width: 0 0 2 0;
+                    -fx-border-color: $gp-orange;
+                }
+            }
+        }
+        & > .tree-table-row-cell:selected, .tree-table-row-cell:focused {
+            .gp-tree-table-cell {
+                .text-field {
+                    -fx-padding: 0;
+                    -fx-background-color: transparent;
+                    -fx-border-color: transparent;
+                }
+            }
+        }
+    }
+
 }
 
-.gp-tree-table-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-table-row-cell:filled:selected,
-.gp-tree-table-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-table-row-cell .tree-table-cell:selected {
-    -fx-background: $gp-medium-gray;
-    -fx-table-cell-border-color: $gp-medium-gray;
-}

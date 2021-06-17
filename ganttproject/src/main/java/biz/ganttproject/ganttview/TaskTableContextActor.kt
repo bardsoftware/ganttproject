@@ -1,6 +1,7 @@
 package biz.ganttproject.ganttview
 
 import biz.ganttproject.ganttview.NewTaskState.*
+import com.google.common.collect.Queues
 import javafx.scene.control.TreeItem
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -29,20 +30,22 @@ class NewTaskActor() {
     field = value
   }
   var newTask: Task? = null
-  var newTreeItem: TreeItem<Task>? = null
-  val inboxQueue = mutableListOf<NewTaskMsg>()
+  private var newTreeItem: TreeItem<Task>? = null
+  private val inboxQueue = Queues.newConcurrentLinkedQueue<NewTaskMsg>()
   fun start() = GlobalScope.launch(Executors.newFixedThreadPool(1).asCoroutineDispatcher()) {
     for (msg in inboxChannel) {
       processMessage(msg)
     }
   }
 
-  suspend fun processQueue() {
-    inboxQueue.forEach { processMessage(it) }
-    inboxQueue.clear()
+  private suspend fun processQueue() {
+    do {
+      val msg = inboxQueue.poll() ?: break
+      processMessage(msg)
+    } while (true)
   }
 
-  suspend fun processMessage(msg: NewTaskMsg) {
+  private suspend fun processMessage(msg: NewTaskMsg) {
     when (msg) {
       is TaskReady -> {
         when (state) {

@@ -19,13 +19,16 @@ import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableCell
 import javafx.scene.control.TreeTableColumn
-import javafx.scene.control.cell.TextFieldTreeTableCell
 import javafx.scene.input.*
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.DefaultStringConverter
-import kotlinx.coroutines.*
+import javafx.util.converter.NumberStringConverter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.CompletionPromise
 import net.sourceforge.ganttproject.CustomPropertyManager
 import net.sourceforge.ganttproject.IGanttProject
@@ -103,12 +106,6 @@ class TaskTable(
         .map { it.value }
         .filter { it.manager.taskHierarchy.contains(it) }
     })
-    treeTable.focusModel.focusedCellProperty().addListener { _, _, newValue ->
-      if (newValue.column == -1) {
-        treeTable.focusModel.focus(newValue.row, findNameColumn())
-      }
-      treeTable.refresh()
-    }
     treeTable.onSort = EventHandler {
       if (treeTable.sortOrder.isEmpty()) {
         reload()
@@ -303,7 +300,7 @@ class TaskTable(
                   )
                 }
                 val converter = GanttCalendarStringConverter()
-                cellFactory = TextFieldTreeTableCell.forTreeTableColumn(converter)
+                cellFactory = Callback { TextCell<Task, GanttCalendar>(converter, { true }) }
                 onEditCommit = EventHandler { event ->
                   taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn.ordinal)
                 }
@@ -317,6 +314,10 @@ class TaskTable(
                   } else {
                     ReadOnlyIntegerWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal) as Int)
                   }
+                }
+                cellFactory = Callback { TextCell<Task, Number>(NumberStringConverter(), { true }) }
+                onEditCommit = EventHandler { event ->
+                  taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn.ordinal)
                 }
               }
             }
@@ -465,7 +466,7 @@ class GanttCalendarStringConverter : StringConverter<GanttCalendar>() {
   private val validator = UIUtil.createStringDateValidator(null) {
     listOf(GanttLanguage.getInstance().shortDateFormat)
   }
-  override fun toString(value: GanttCalendar): String = value.toString()
+  override fun toString(value: GanttCalendar?) = value?.toString() ?: ""
 
   override fun fromString(text: String): GanttCalendar =
     CalendarFactory.createGanttCalendar(validator.parse(text))
@@ -555,7 +556,7 @@ fun ColumnList.copyOf(): List<ColumnStub> {
 class DragAndDropSupport {
   private lateinit var clipboardContent: ClipboardContents
   private lateinit var clipboardProcessor: ClipboardTaskProcessor
-  fun dragDetected(cell: TextCell<Task>) {
+  fun dragDetected(cell: TextCell<Task, String>) {
     val task = cell.treeTableRow.treeItem.value
     clipboardContent = ClipboardContents(task.manager).also {
       it.addTasks(listOf(task))
@@ -569,7 +570,7 @@ class DragAndDropSupport {
     cell.setOnDragExited { db.clear() }
   }
 
-  fun dragOver(event: DragEvent, cell: TextCell<Task>) {
+  fun dragOver(event: DragEvent, cell: TextCell<Task, String>) {
     if (!event.dragboard.hasContent(TEXT_FORMAT)) return
     val thisItem = cell.treeTableRow.treeItem
 
@@ -589,7 +590,7 @@ class DragAndDropSupport {
   private fun clearDropLocation() {
   }
 
-  fun drop(cell: TextCell<Task>) {
+  fun drop(cell: TextCell<Task, String>) {
     val dropTarget = cell.treeTableRow.treeItem.value
     clipboardContent.cut()
     clipboardProcessor.pasteAsChild(dropTarget, clipboardContent)
@@ -599,9 +600,9 @@ class DragAndDropSupport {
 
 class TextCellFactory(private val dragndropSupport: DragAndDropSupport?)
   : Callback<TreeTableColumn<Task, String>, TreeTableCell<Task, String>> {
-  internal var editingCell: TextCell<Task>? = null
+  internal var editingCell: TextCell<Task, String>? = null
 
-  private fun setEditingCell(cell: TextCell<Task>?): Boolean =
+  private fun setEditingCell(cell: TextCell<Task, String>?): Boolean =
     when {
       editingCell == null && cell == null -> true
       editingCell == null && cell != null -> {
