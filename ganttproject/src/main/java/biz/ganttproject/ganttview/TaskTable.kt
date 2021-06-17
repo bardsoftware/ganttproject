@@ -128,6 +128,19 @@ class TaskTable(
         }
       }
     })
+    treeTable.columns.addListener( ListChangeListener { change ->
+      while (change.next()) {
+        println(change)
+        if (change.wasPermutated() || change.wasReplaced()) {
+          treeTable.columns.forEachIndexed { index, column ->
+            (column.userData as ColumnStub).let {
+              it.order = index
+              it.width = column.width.toInt()
+            }
+          }
+        }
+      }
+    })
     initNewTaskActor()
   }
 

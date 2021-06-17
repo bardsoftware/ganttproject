@@ -1069,7 +1069,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     @Override
     public GPSaver newSaver() {
-      return new GanttXMLSaver(GanttProject.this, getTree(), getResourcePanel(), getArea(), getUIFacade());
+      return new GanttXMLSaver(GanttProject.this, getArea(), getUIFacade(), () -> myTaskTableSupplier.get().getColumnList());
     }
   }
 
