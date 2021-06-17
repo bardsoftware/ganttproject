@@ -182,7 +182,7 @@ Path2=$buffer2"""
 
   override fun getOutlinePath(task: Task): List<Int> {
     return task.ancestors().asReversed().zipWithNext().map { (parent, child) ->
-      parent.nestedTasks.indexOf(child)
+      parent.nestedTasks.indexOf(child) + 1
     }.toList()
   }
 
