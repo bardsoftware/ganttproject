@@ -1,8 +1,29 @@
-package biz.ganttproject.app
+/*
+Copyright 2021 BarD Software s.r.o
 
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package biz.ganttproject.lib.fx
+
+import biz.ganttproject.app.MenuBuilder
+import biz.ganttproject.app.RootLocalizer
 import javafx.application.Platform
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
+import javafx.collections.MapChangeListener
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Side
@@ -25,7 +46,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   var contextMenuActions: (MenuBuilder) -> Unit = { }
 
   init {
-    columnResizePolicy = CONSTRAINED_RESIZE_POLICY;
+    columnResizePolicy = CONSTRAINED_RESIZE_POLICY
     stylesheets.add("/biz/ganttproject/lib/fx/TreeTable.css")
     styleClass.add("gp-tree-table-view")
     tableMenu.items.add(MenuItem(RootLocalizer.formatText("columns.manage.label")))
@@ -44,7 +65,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     }
 
   }
-  override fun createDefaultSkin(): Skin<*>? {
+  override fun createDefaultSkin(): Skin<*> {
     return GPTreeTableViewSkin(this).also {
       it.scrollValue.addListener { _, _, newValue -> this.scrollListener(newValue.toDouble()) }
       it.headerHeight.addListener { _, _, _ ->
@@ -79,9 +100,10 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   val headerHeight: ReadOnlyDoubleProperty
   get() = tableHeaderRow.heightProperty()
   val fullHeaderHeight: Double get() = headerHeight.value + tableHeaderRow.boundsInParent.minX
+  private val contentWidthListener = mutableMapOf<Double, ()->Unit>()
 
   init {
-    this.virtualFlow.positionProperty().addListener { _, _, newValue ->
+    this.virtualFlow.positionProperty().addListener { _, _, _ ->
       var totalCellHeight = 0.0
       for (idx in 0 until virtualFlow.cellCount) {
         totalCellHeight += virtualFlow.getCell(idx).height
@@ -91,11 +113,19 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
     }
     val cornerRegion = this.tableHeaderRow.lookup(".show-hide-columns-button") as Region
     cornerRegion.onMousePressed = EventHandler { me: MouseEvent ->
-      // show a popupMenu which lists all columns
       control.tableMenu.show(cornerRegion, Side.BOTTOM, 0.0, 0.0)
       me.consume()
     }
+    skinnable.properties.addListener(MapChangeListener { change ->
+      if (change.key == "TableView.contentWidth" && change.wasAdded()) {
+        val value = change.valueAdded as Double
+        contentWidthListener.remove(value)?.invoke()
+      }
+    })
+  }
 
+  fun onContentWidthChange(expected: Double, code: () -> Unit) {
+    contentWidthListener[expected] = code
   }
 
   fun scrollBy(value: Double) {

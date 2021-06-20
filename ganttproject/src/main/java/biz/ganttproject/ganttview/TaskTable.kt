@@ -1,3 +1,21 @@
+/*
+Copyright 2021 BarD Software s.r.o
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.ganttview
 
 import biz.ganttproject.app.*
@@ -7,6 +25,10 @@ import biz.ganttproject.core.table.ColumnList.ColumnStub
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
+import biz.ganttproject.lib.fx.GPTreeTableView
+import biz.ganttproject.lib.fx.GPTreeTableViewSkin
+import biz.ganttproject.lib.fx.TextCell
+import biz.ganttproject.lib.fx.TreeCollapseView
 import biz.ganttproject.task.TaskActions
 import javafx.application.Platform
 import javafx.beans.property.*
@@ -48,6 +70,7 @@ import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.util.*
 import java.util.List.copyOf
+import kotlin.math.floor
 
 
 /**
@@ -81,7 +104,7 @@ class TaskTable(
   private val columns = FXCollections.observableArrayList(
     TaskDefaultColumn.getColumnStubs().filter { it.isVisible }.map { ColumnStub(it) }.toList()
   )
-  val columnList: ColumnList = ColumnListImpl(columns, taskManager.customPropertyManager) { treeTable.columns }
+  val columnList: ColumnListImpl = ColumnListImpl(columns, taskManager.customPropertyManager) { treeTable.columns }
   var requestSwingFocus: () -> Unit = {}
   val newTaskActor = NewTaskActor().also { it.start() }
 
@@ -92,7 +115,7 @@ class TaskTable(
       treeTable.isEditable = true
       treeTable.isTableMenuButtonVisible = true
       treeTable.columns.clear()
-      buildColumns(0, columns)
+      buildColumns(columnList.columns())
       reload()
     }
     initTaskEventHandlers()
@@ -116,29 +139,9 @@ class TaskTable(
         }
       }
     }
-    columns.addListener(ListChangeListener { change ->
+    columns.addListener(ListChangeListener {
       Platform.runLater {
-        while (change.next()) {
-          change.removed.forEach { column ->
-            treeTable.columns.removeIf { (it.userData as ColumnStub).id == column.id }
-          }
-          if (change.wasAdded()) {
-            buildColumns(change.from, change.addedSubList)
-          }
-        }
-      }
-    })
-    treeTable.columns.addListener( ListChangeListener { change ->
-      while (change.next()) {
-        println(change)
-        if (change.wasPermutated() || change.wasReplaced()) {
-          treeTable.columns.forEachIndexed { index, column ->
-            (column.userData as ColumnStub).let {
-              it.order = index
-              it.width = column.width.toInt()
-            }
-          }
-        }
+        buildColumns(columnList.columns())
       }
     })
     initNewTaskActor()
@@ -286,9 +289,17 @@ class TaskTable(
   }
   private fun findNameColumn() = treeTable.columns.find { (it.userData as ColumnStub).id == TaskDefaultColumn.NAME.stub.id }
 
-  private fun buildColumns(idxStart: Int, columns: List<ColumnList.Column>) {
-    for (idx in columns.indices) {
-      val column = columns[idx]
+  private fun buildColumns(columns: List<ColumnList.Column>) {
+    val tableColumns = // There are a few issues with the TreeTableView:
+      // - if the sum total width of all columns exceed the table content width, the constrained
+      // resize policy makes width of all columns the same
+      // - the table and its contents resize only to the specified width, but it happens after resizing the
+      // columns. In the result we get a table with equal to the total column width, but the columns become
+      // equal-width.
+      // The solution is to set the min width of the columns. It shall be cleared afterwards, otherwise
+      // the columns become non-resizeable. We clear the min width when we receive table's contentWidth property
+      // change.
+      columns.mapNotNull { column ->
         TaskDefaultColumn.find(column.id)?.let { taskDefaultColumn ->
           when {
             taskDefaultColumn.valueClass == java.lang.String::class.java -> {
@@ -296,7 +307,8 @@ class TaskTable(
                 setCellValueFactory {
                   ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal).toString())
                 }
-                cellFactory = if (taskDefaultColumn == TaskDefaultColumn.NAME) ourNameCellFactory else ourTextCellFactory
+                cellFactory =
+                  if (taskDefaultColumn == TaskDefaultColumn.NAME) ourNameCellFactory else ourTextCellFactory
 
                 if (taskDefaultColumn == TaskDefaultColumn.NAME) {
                   treeTable.treeColumn = this
@@ -314,22 +326,27 @@ class TaskTable(
                   )
                 }
                 val converter = GanttCalendarStringConverter()
-                cellFactory = Callback { TextCell<Task, GanttCalendar>(converter, { true }) }
+                cellFactory = Callback { TextCell<Task, GanttCalendar>(converter) { true } }
                 onEditCommit = EventHandler { event ->
                   taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn.ordinal)
                 }
               }
             }
-            taskDefaultColumn.valueClass == java.lang.Integer::class.java -> {
+            taskDefaultColumn.valueClass == Integer::class.java -> {
               TreeTableColumn<Task, Number>(taskDefaultColumn.getName()).apply {
                 setCellValueFactory {
                   if (taskDefaultColumn == TaskDefaultColumn.DURATION) {
-                    ReadOnlyIntegerWrapper((taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal) as TimeDuration).length)
+                    ReadOnlyIntegerWrapper(
+                      (taskTableModel.getValueAt(
+                        it.value.value,
+                        taskDefaultColumn.ordinal
+                      ) as TimeDuration).length
+                    )
                   } else {
                     ReadOnlyIntegerWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal) as Int)
                   }
                 }
-                cellFactory = Callback { TextCell<Task, Number>(NumberStringConverter(), { true }) }
+                cellFactory = Callback { TextCell<Task, Number>(NumberStringConverter()) { true } }
                 onEditCommit = EventHandler { event ->
                   taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn.ordinal)
                 }
@@ -340,14 +357,30 @@ class TaskTable(
                 ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal).toString())
               }
             }
-          }.let {
-            treeTable.columns.add(idxStart + idx, it)
+          }.also {
             it.isEditable = taskDefaultColumn.isEditable(null)
             it.isVisible = column.isVisible
             it.userData = column
+            // There are a few issues with the TreeTableView:
+            // - if the sum total width of all columns exceed the table content width, the constrained
+            // resize policy makes width of all columns the same
+            // - the table and its contents resize only to the specified width, but it happens after resizing the
+            // columns. In the result we get a table with equal to the total column width, but the columns become
+            // equal-width.
+            // The solution is to set the min width of the columns. It shall be cleared afterwards, otherwise
+            // the columns become non-resizeable. We clear the min width when we receive table's contentWidth property
+            // change.
+            it.prefWidth = column.width.toDouble()
+            it.minWidth = column.width.toDouble()
           }
         }
+      }.toList()
+    (treeTable.skin as GPTreeTableViewSkin<*>).onContentWidthChange(floor(columnList.totalWidth.toDouble())) {
+        tableColumns.forEach {
+          it.minWidth = 0.0
+        }
     }
+    treeTable.columns.setAll(tableColumns)
   }
 
   fun reload() {
@@ -524,6 +557,8 @@ class ColumnListImpl(
   private val tableColumns: () -> List<TreeTableColumn<*,*>>
 ) : ColumnList {
 
+  val totalWidth get() = columnList.filter { it.isVisible }.sumOf { it.width }
+
   override fun getSize(): Int = columnList.size
 
   override fun getField(index: Int): ColumnList.Column = columnList[index]
@@ -531,15 +566,17 @@ class ColumnListImpl(
   override fun clear() = columnList.clear()
 
   override fun add(id: String, order: Int, width: Int) {
-    (this.columnList.firstOrNull { it.id == id } ?: run {
-      customPropertyManager.getCustomPropertyDefinition(id)?.let { def ->
-        ColumnStub(id, def.name, true,
-          if (order == -1) tableColumns().count { it.isVisible } else order,
-          if (width == -1) 75 else width
-        )
+    synchronized(columnList) {
+      (this.columnList.firstOrNull { it.id == id } ?: run {
+        customPropertyManager.getCustomPropertyDefinition(id)?.let { def ->
+          ColumnStub(id, def.name, true,
+            if (order == -1) tableColumns().count { it.isVisible } else order,
+            if (width == -1) 75 else width
+          )
+        }
+      })?.let {
+        this.columnList.add(it)
       }
-    })?.let {
-      this.columnList.add(it)
     }
   }
 
@@ -570,33 +607,67 @@ class ColumnListImpl(
       }
     }
 
-    importedList.forEachIndexed { idxImported, column ->
-      val idxCurrent = columnList.indexOfFirst { it.id == column.id }
-      if (idxCurrent >= 0) {
-        if (idxCurrent != idxImported) {
-          columnList.subList(idxImported, idxCurrent).clear()
+    // Here we merge the imported list with the currently available one.
+    // We maintain the invariant: the list prefix [0, idxImported) is the same in the imported list and
+    // in the result list.
+    synchronized(columnList) {
+      val currentList = columnList.map { it }.toMutableList()
+      importedList.forEachIndexed { idxImported, column ->
+        val idxCurrent = currentList.indexOfFirst { it.id == column.id }
+        if (idxCurrent >= 0) {
+          if (idxCurrent != idxImported) {
+            // Because of the invariant, it can only be greater. We will remove all
+            // the columns between the imported and existing. This may be an excessive measure
+            // because the removed columns may be found later in the imported list, but that's ok.
+            assert(idxCurrent > idxImported) {
+              "Unexpected column indices: imported=$idxImported current=$idxCurrent for column=$column"
+            }
+            currentList.subList(idxImported, idxCurrent).clear()
+          }
+          if (currentList[idxImported] != column) {
+            currentList[idxImported] = column
+          }
+        } else {
+          currentList.add(idxImported, column)
         }
-        if (columnList[idxImported] != column) {
-          columnList[idxImported] = column
-        }
-      } else {
-        columnList.add(idxImported, column)
+        assert(currentList.subList(0, idxImported) == importedList.subList(0, idxImported))
       }
-      assert(columnList.subList(0, idxImported) == importedList.subList(0, idxImported))
+      // Finally clear the remaining tail.
+      if (currentList.size > importedList.size) {
+        currentList.subList(importedList.size, currentList.size).clear()
+      }
+      columnList.clear()
+      columnList.addAll(currentList)
     }
-    if (columnList.size > importedList.size) {
-      columnList.subList(importedList.size, columnList.size).clear()
+  }
+
+  override fun exportData(): List<ColumnList.Column> {
+    synchronized(columnList) {
+      tableColumns().forEachIndexed { index, column ->
+        (column.userData as ColumnStub).let { userData ->
+          columnList.firstOrNull { it.id == userData.id }?.let {
+            it.order = index
+            it.width = column.width.toInt()
+          }
+        }
+      }
+      return copyOf()
+    }
+  }
+
+  fun columns(): List<ColumnList.Column> {
+    synchronized(columnList) {
+      return copyOf()
     }
   }
 }
 
 fun ColumnList.copyOf(): List<ColumnStub> {
-  val importedList = mutableListOf<ColumnStub>()
+  val copy = mutableListOf<ColumnStub>()
   for (i in 0 until this.size) {
-    val foreign = this.getField(i)
-    importedList.add(ColumnStub(foreign))
+    copy.add(ColumnStub(this.getField(i)))
   }
-  return importedList
+  return copy
 }
 
 class DragAndDropSupport {
@@ -674,7 +745,7 @@ class TextCellFactory(private val dragndropSupport: DragAndDropSupport?)
           event.consume()
         }
         cell.setOnDragOver { event -> dragndropSupport.dragOver(event, cell) }
-        cell.setOnDragDropped { _ -> dragndropSupport.drop(cell) }
+        cell.setOnDragDropped { dragndropSupport.drop(cell) }
         cell.setOnDragExited {
 
         }

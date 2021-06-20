@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
-import biz.ganttproject.app.TreeCollapseView;
+import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.core.time.GanttCalendar;
 import com.google.common.base.Charsets;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;

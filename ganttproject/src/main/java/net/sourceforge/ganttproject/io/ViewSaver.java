@@ -85,8 +85,7 @@ class ViewSaver extends SaverBase {
 
   protected void writeColumns(ColumnList visibleFields, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
-    for (int i = 0; i < visibleFields.getSize(); i++) {
-      ColumnList.Column field = visibleFields.getField(i);
+    for (ColumnList.Column field : visibleFields.exportData()) {
       if (field.isVisible()) {
         addAttribute("id", field.getID(), attrs);
         addAttribute("name", field.getName(), attrs);

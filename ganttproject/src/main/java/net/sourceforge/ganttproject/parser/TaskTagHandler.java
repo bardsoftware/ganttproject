@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.parser;
 
-import biz.ganttproject.app.TreeCollapseView;
+import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.GanttCalendar;
 import com.google.common.base.Charsets;

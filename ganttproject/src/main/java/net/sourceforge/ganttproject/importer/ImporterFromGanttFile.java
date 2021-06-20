@@ -209,6 +209,11 @@ public class ImporterFromGanttFile extends ImporterBase {
         myFields.add(nextField);
       }
     }
+
+    @Override
+    public List<Column> exportData() {
+      return List.copyOf(myFields);
+    }
   }
 
   private BufferProject createBufferProject(final IGanttProject targetProject, final UIFacade uiFacade) {

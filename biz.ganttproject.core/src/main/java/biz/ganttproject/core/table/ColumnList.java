@@ -32,6 +32,8 @@ public interface ColumnList {
 
   void importData(ColumnList source, boolean keepVisibleColumns);
 
+  List<Column> exportData();
+
   public interface Column {
     SortOrder getSort();
 
@@ -125,7 +127,7 @@ public interface ColumnList {
 
     @Override
     public String toString() {
-      return String.format("id=%s name=%s visible=%b", myID, myName, isVisible);
+      return String.format("id=%s name=%s visible=%b width=%d", myID, myName, isVisible, myWidth);
     }
 
     @Override
@@ -179,6 +181,11 @@ public interface ColumnList {
         @Override
         public void importData(ColumnList source, boolean keepVisibleColumns) {
           throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Column> exportData() {
+          return columns;
         }
       };
     }
