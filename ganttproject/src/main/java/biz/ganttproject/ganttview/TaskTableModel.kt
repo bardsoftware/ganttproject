@@ -24,64 +24,57 @@ import javax.swing.ImageIcon
  * @author dbarashev@bardsoftware.com
  */
 class TaskTableModel(private val taskManager: TaskManager, private val customColumnsManager: CustomPropertyManager) {
-  fun getValueAt(t: Task, column: Int): Any? {
-    if (column < 0) {
-      return ""
-    }
+  fun getValueAt(t: Task, defaultColumn: TaskDefaultColumn): Any? {
     var res: Any? = null
-    if (column < STANDARD_COLUMN_COUNT) {
-      val defaultColumn = TaskDefaultColumn.values()[column]
-      when (defaultColumn) {
-        TaskDefaultColumn.PRIORITY -> {
-          res = ImageIcon(javaClass.getResource(t.priority.iconPath))
-        }
-        TaskDefaultColumn.NAME -> res = t.name
-        TaskDefaultColumn.BEGIN_DATE -> res = t.start
-        TaskDefaultColumn.END_DATE -> res = t.displayEnd
-        TaskDefaultColumn.DURATION -> res = t.duration
-        TaskDefaultColumn.COMPLETION -> res = t.completionPercentage
-        TaskDefaultColumn.COORDINATOR -> {
-          val tAssign = t.assignments
-          val sb = StringBuffer()
-          var nb = 0
-          var i = 0
-          while (i < tAssign.size) {
-            val resAss = tAssign[i]
-            if (resAss.isCoordinator) {
-              sb.append(if (nb++ == 0) "" else ", ").append(resAss.resource.name)
-            }
-            i++
+    when (defaultColumn) {
+      TaskDefaultColumn.PRIORITY -> {
+        res = ImageIcon(javaClass.getResource(t.priority.iconPath))
+      }
+      TaskDefaultColumn.NAME -> res = t.name
+      TaskDefaultColumn.BEGIN_DATE -> res = t.start
+      TaskDefaultColumn.END_DATE -> res = t.displayEnd
+      TaskDefaultColumn.DURATION -> res = t.duration
+      TaskDefaultColumn.COMPLETION -> res = t.completionPercentage
+      TaskDefaultColumn.COORDINATOR -> {
+        val tAssign = t.assignments
+        val sb = StringBuffer()
+        var nb = 0
+        var i = 0
+        while (i < tAssign.size) {
+          val resAss = tAssign[i]
+          if (resAss.isCoordinator) {
+            sb.append(if (nb++ == 0) "" else ", ").append(resAss.resource.name)
           }
-          res = sb.toString()
+          i++
         }
-        TaskDefaultColumn.PREDECESSORS -> res = TaskProperties.formatPredecessors(t, ",", true)
-        TaskDefaultColumn.ID -> res = t.taskID
-        TaskDefaultColumn.OUTLINE_NUMBER -> {
-          val outlinePath = t.manager.taskHierarchy.getOutlinePath(t)
-          res = Joiner.on('.').join(outlinePath)
+        res = sb.toString()
+      }
+      TaskDefaultColumn.PREDECESSORS -> res = TaskProperties.formatPredecessors(t, ",", true)
+      TaskDefaultColumn.ID -> res = t.taskID
+      TaskDefaultColumn.OUTLINE_NUMBER -> {
+        val outlinePath = t.manager.taskHierarchy.getOutlinePath(t)
+        res = Joiner.on('.').join(outlinePath)
+      }
+      TaskDefaultColumn.COST -> res = t.cost.value
+      TaskDefaultColumn.COLOR -> res = t.color
+      TaskDefaultColumn.RESOURCES -> {
+        val resources = Lists.transform(Arrays.asList(*t.assignments)) { ra ->
+          ra?.resource?.name ?: ""
         }
-        TaskDefaultColumn.COST -> res = t.cost.value
-        TaskDefaultColumn.COLOR -> res = t.color
-        TaskDefaultColumn.RESOURCES -> {
-          val resources = Lists.transform(Arrays.asList(*t.assignments)) { ra ->
-            ra?.resource?.name ?: ""
-          }
-          res = Joiner.on(',').join(resources)
-        }
-        else -> {
-        }
+        res = Joiner.on(',').join(resources)
+      }
+      else -> {
       }
     }
     // if(tn.getParent()!=null){
     return res
   }
 
-  fun setValue(value: Any, task: Task, column: Int) {
-    if (column >= STANDARD_COLUMN_COUNT) {
-      setCustomPropertyValue(value, task, column)
-      return
-    }
-    val property = TaskDefaultColumn.values()[column]
+  fun getValue(t: Task, customProperty: CustomPropertyDefinition): Any? {
+    return t.customValues.getValue(customProperty)
+  }
+
+  fun setValue(value: Any, task: Task, property: TaskDefaultColumn) {
     when (property) {
       TaskDefaultColumn.NAME -> task.name = value.toString()
       TaskDefaultColumn.BEGIN_DATE -> {
@@ -147,9 +140,9 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
     }
   }
 
-  private fun setCustomPropertyValue(value: Any, node: Any, column: Int) {
+  fun setValue(value: Any, task: Task, column: CustomPropertyDefinition) {
     try {
-      ((node as TaskNode).userObject as Task).customValues.setValue(getCustomProperty(column), value)
+      task.customValues.setValue(column, value)
     } catch (e: CustomColumnsException) {
       if (!GPLogger.log(e)) {
         e.printStackTrace(System.err)
@@ -177,5 +170,5 @@ val NOT_SUPERTASK: Predicate<Task> = Predicate<Task> { task ->
 }
 
 val NOT_MILESTONE: Predicate<Task> = Predicate<Task> { task ->
-   task?.isMilestone?.not() ?: false
+  task?.isMilestone?.not() ?: false
 }

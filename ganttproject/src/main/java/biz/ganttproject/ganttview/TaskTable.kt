@@ -42,6 +42,7 @@ import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableCell
 import javafx.scene.control.TreeTableColumn
 import javafx.scene.input.*
+import javafx.scene.layout.Region
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.DefaultStringConverter
@@ -51,10 +52,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import net.sourceforge.ganttproject.CompletionPromise
-import net.sourceforge.ganttproject.CustomPropertyManager
-import net.sourceforge.ganttproject.IGanttProject
-import net.sourceforge.ganttproject.ProjectEventListener
+import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
 import net.sourceforge.ganttproject.document.Document
@@ -98,13 +96,15 @@ class TaskTable(
     TaskTableActionConnector(
       commitEdit = {},
       runKeepingExpansion = { task, code -> code(task) },
-      scrollTo = {}
+      scrollTo = {},
+      columnList = { columnList }
     )
   }
   private val columns = FXCollections.observableArrayList(
     TaskDefaultColumn.getColumnStubs().filter { it.isVisible }.map { ColumnStub(it) }.toList()
   )
   val columnList: ColumnListImpl = ColumnListImpl(columns, taskManager.customPropertyManager) { treeTable.columns }
+  val columnListWidthProperty = columnList.totalWidthProperty
   var requestSwingFocus: () -> Unit = {}
   val newTaskActor = NewTaskActor().also { it.start() }
 
@@ -146,6 +146,7 @@ class TaskTable(
     })
     initNewTaskActor()
     treeTable.contextMenuActions = this::contextMenuActions
+    treeTable.tableMenuActions = this::tableMenuActions
   }
 
   private fun initKeyboardEventHandlers() {
@@ -290,7 +291,86 @@ class TaskTable(
   private fun findNameColumn() = treeTable.columns.find { (it.userData as ColumnStub).id == TaskDefaultColumn.NAME.stub.id }
 
   private fun buildColumns(columns: List<ColumnList.Column>) {
-    val tableColumns = // There are a few issues with the TreeTableView:
+    val tableColumns =
+      columns.mapNotNull { column ->
+        TaskDefaultColumn.find(column.id)?.let { taskDefaultColumn ->
+          createDefaultColumn(column, taskDefaultColumn)
+        } ?: createCustomColumn(column)
+      }.toList()
+    println("Expecting content width=${floor(columnList.totalWidth.toDouble())}")
+    (treeTable.skin as GPTreeTableViewSkin<*>).onContentWidthChange(floor(columnList.totalWidth.toDouble())) {
+      println("received!")
+        tableColumns.forEach {
+          it.minWidth = 0.0
+          treeTable.minWidth = 0.0
+          (treeTable.lookup(".virtual-flow") as Region).minWidth = 0.0
+        }
+    }
+    treeTable.prefWidth = columnList.totalWidth.toDouble() + 15.0
+    treeTable.minWidth = columnList.totalWidth.toDouble() + 15.0
+    (treeTable.lookup(".virtual-flow") as Region).minWidth = columnList.totalWidth.toDouble()
+    treeTable.columns.setAll(tableColumns)
+  }
+
+  private fun createDefaultColumn(column: ColumnList.Column, taskDefaultColumn: TaskDefaultColumn) =
+    when {
+      taskDefaultColumn.valueClass == java.lang.String::class.java -> {
+        TreeTableColumn<Task, String>(taskDefaultColumn.getName()).apply {
+          setCellValueFactory {
+            ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn).toString())
+          }
+          cellFactory =
+            if (taskDefaultColumn == TaskDefaultColumn.NAME) ourNameCellFactory else ourTextCellFactory
+
+          if (taskDefaultColumn == TaskDefaultColumn.NAME) {
+            treeTable.treeColumn = this
+          }
+          onEditCommit = EventHandler { event ->
+            taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn)
+          }
+        }
+      }
+      GregorianCalendar::class.java.isAssignableFrom(taskDefaultColumn.valueClass) -> {
+        TreeTableColumn<Task, GanttCalendar>(taskDefaultColumn.getName()).apply {
+          setCellValueFactory {
+            ReadOnlyObjectWrapper(
+              (taskTableModel.getValueAt(it.value.value, taskDefaultColumn) as GanttCalendar)
+            )
+          }
+          val converter = GanttCalendarStringConverter()
+          cellFactory = Callback { TextCell<Task, GanttCalendar>(converter) { true } }
+          onEditCommit = EventHandler { event ->
+            taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn)
+          }
+        }
+      }
+      taskDefaultColumn.valueClass == Integer::class.java -> {
+        TreeTableColumn<Task, Number>(taskDefaultColumn.getName()).apply {
+          setCellValueFactory {
+            if (taskDefaultColumn == TaskDefaultColumn.DURATION) {
+              ReadOnlyIntegerWrapper(
+                (taskTableModel.getValueAt(it.value.value, taskDefaultColumn) as TimeDuration).length
+              )
+            } else {
+              ReadOnlyIntegerWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn) as Int)
+            }
+          }
+          cellFactory = Callback { TextCell<Task, Number>(NumberStringConverter()) { true } }
+          onEditCommit = EventHandler { event ->
+            taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn)
+          }
+        }
+      }
+      else -> TreeTableColumn<Task, String>(taskDefaultColumn.getName()).apply {
+        setCellValueFactory {
+          ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn).toString())
+        }
+      }
+    }.also {
+      it.isEditable = taskDefaultColumn.isEditable(null)
+      it.isVisible = column.isVisible
+      it.userData = column
+      // There are a few issues with the TreeTableView:
       // - if the sum total width of all columns exceed the table content width, the constrained
       // resize policy makes width of all columns the same
       // - the table and its contents resize only to the specified width, but it happens after resizing the
@@ -299,88 +379,60 @@ class TaskTable(
       // The solution is to set the min width of the columns. It shall be cleared afterwards, otherwise
       // the columns become non-resizeable. We clear the min width when we receive table's contentWidth property
       // change.
-      columns.mapNotNull { column ->
-        TaskDefaultColumn.find(column.id)?.let { taskDefaultColumn ->
-          when {
-            taskDefaultColumn.valueClass == java.lang.String::class.java -> {
-              TreeTableColumn<Task, String>(taskDefaultColumn.getName()).apply {
-                setCellValueFactory {
-                  ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal).toString())
-                }
-                cellFactory =
-                  if (taskDefaultColumn == TaskDefaultColumn.NAME) ourNameCellFactory else ourTextCellFactory
+      it.prefWidth = column.width.toDouble()
+      it.minWidth = column.width.toDouble()
+    }
 
-                if (taskDefaultColumn == TaskDefaultColumn.NAME) {
-                  treeTable.treeColumn = this
-                }
-                onEditCommit = EventHandler { event ->
-                  taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn.ordinal)
-                }
-              }
-            }
-            GregorianCalendar::class.java.isAssignableFrom(taskDefaultColumn.valueClass) -> {
-              TreeTableColumn<Task, GanttCalendar>(taskDefaultColumn.getName()).apply {
-                setCellValueFactory {
-                  ReadOnlyObjectWrapper(
-                    (taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal) as GanttCalendar)
-                  )
-                }
-                val converter = GanttCalendarStringConverter()
-                cellFactory = Callback { TextCell<Task, GanttCalendar>(converter) { true } }
-                onEditCommit = EventHandler { event ->
-                  taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn.ordinal)
-                }
-              }
-            }
-            taskDefaultColumn.valueClass == Integer::class.java -> {
-              TreeTableColumn<Task, Number>(taskDefaultColumn.getName()).apply {
-                setCellValueFactory {
-                  if (taskDefaultColumn == TaskDefaultColumn.DURATION) {
-                    ReadOnlyIntegerWrapper(
-                      (taskTableModel.getValueAt(
-                        it.value.value,
-                        taskDefaultColumn.ordinal
-                      ) as TimeDuration).length
-                    )
-                  } else {
-                    ReadOnlyIntegerWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal) as Int)
-                  }
-                }
-                cellFactory = Callback { TextCell<Task, Number>(NumberStringConverter()) { true } }
-                onEditCommit = EventHandler { event ->
-                  taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn.ordinal)
-                }
-              }
-            }
-            else -> TreeTableColumn<Task, String>(taskDefaultColumn.getName()).apply {
-              setCellValueFactory {
-                ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn.ordinal).toString())
-              }
-            }
-          }.also {
-            it.isEditable = taskDefaultColumn.isEditable(null)
-            it.isVisible = column.isVisible
-            it.userData = column
-            // There are a few issues with the TreeTableView:
-            // - if the sum total width of all columns exceed the table content width, the constrained
-            // resize policy makes width of all columns the same
-            // - the table and its contents resize only to the specified width, but it happens after resizing the
-            // columns. In the result we get a table with equal to the total column width, but the columns become
-            // equal-width.
-            // The solution is to set the min width of the columns. It shall be cleared afterwards, otherwise
-            // the columns become non-resizeable. We clear the min width when we receive table's contentWidth property
-            // change.
-            it.prefWidth = column.width.toDouble()
-            it.minWidth = column.width.toDouble()
+  private fun createCustomColumn(column: ColumnList.Column): TreeTableColumn<Task, *>? {
+    val customProperty = taskManager.customPropertyManager.getCustomPropertyDefinition(column.id) ?: return null
+    return when (customProperty.propertyClass) {
+      CustomPropertyClass.TEXT -> {
+        TreeTableColumn<Task, String>(customProperty.name).apply {
+          setCellValueFactory {
+            ReadOnlyStringWrapper(taskTableModel.getValue(it.value.value, customProperty)?.toString() ?: "")
+          }
+          cellFactory = ourTextCellFactory
+          onEditCommit = EventHandler { event ->
+            taskTableModel.setValue(event.newValue, event.rowValue.value, customProperty)
+          }
+          userData = column
+        }
+      }
+      CustomPropertyClass.BOOLEAN -> {
+        null
+      }
+      CustomPropertyClass.INTEGER -> {
+        TreeTableColumn<Task, Number>(customProperty.name).apply {
+          setCellValueFactory {
+            ReadOnlyIntegerWrapper(taskTableModel.getValue(it.value.value, customProperty) as Int)
+          }
+          cellFactory = Callback { TextCell<Task, Number>(NumberStringConverter()) { true } }
+          onEditCommit = EventHandler { event ->
+            taskTableModel.setValue(event.newValue, event.rowValue.value, customProperty)
           }
         }
-      }.toList()
-    (treeTable.skin as GPTreeTableViewSkin<*>).onContentWidthChange(floor(columnList.totalWidth.toDouble())) {
-        tableColumns.forEach {
-          it.minWidth = 0.0
+      }
+      CustomPropertyClass.DOUBLE -> {
+        TreeTableColumn<Task, Number>(customProperty.name).apply {
+          setCellValueFactory {
+            ReadOnlyDoubleWrapper(taskTableModel.getValue(it.value.value, customProperty) as Double)
+          }
+          cellFactory = Callback { TextCell<Task, Number>(NumberStringConverter()) { true } }
+          onEditCommit = EventHandler { event ->
+            taskTableModel.setValue(event.newValue, event.rowValue.value, customProperty)
+          }
         }
+      }
+      CustomPropertyClass.DATE -> {
+        null
+      }
+    }?.also {
+      it.isEditable = true
+      it.isVisible = column.isVisible
+      it.userData = column
+      it.prefWidth = column.width.toDouble()
+      it.minWidth = column.width.toDouble()
     }
-    treeTable.columns.setAll(tableColumns)
   }
 
   fun reload() {
@@ -509,6 +561,11 @@ class TaskTable(
     }
   }
 
+  private fun tableMenuActions(builder: MenuBuilder) {
+    builder.apply {
+      items(taskActions.manageColumnsAction)
+    }
+  }
 }
 
 data class TaskTableChartConnector(
@@ -522,7 +579,8 @@ data class TaskTableChartConnector(
 data class TaskTableActionConnector(
   val commitEdit: ()->Unit,
   val runKeepingExpansion: ((task: Task, code: (Task)->Void) -> Unit),
-  val scrollTo: (task: Task) -> Unit
+  val scrollTo: (task: Task) -> Unit,
+  val columnList: () -> ColumnList
 )
 
 private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (Task, Task?, Int) -> Boolean) {
@@ -557,13 +615,18 @@ class ColumnListImpl(
   private val tableColumns: () -> List<TreeTableColumn<*,*>>
 ) : ColumnList {
 
-  val totalWidth get() = columnList.filter { it.isVisible }.sumOf { it.width }
+  val totalWidth get()  = totalWidthProperty.value
+
+  val totalWidthProperty = SimpleDoubleProperty()
 
   override fun getSize(): Int = columnList.size
 
   override fun getField(index: Int): ColumnList.Column = columnList[index]
 
-  override fun clear() = columnList.clear()
+  override fun clear() = synchronized(columnList) {
+    columnList.clear()
+    updateTotalWidth()
+  }
 
   override fun add(id: String, order: Int, width: Int) {
     synchronized(columnList) {
@@ -577,6 +640,7 @@ class ColumnListImpl(
       })?.let {
         this.columnList.add(it)
       }
+      updateTotalWidth()
     }
   }
 
@@ -638,6 +702,7 @@ class ColumnListImpl(
       }
       columnList.clear()
       columnList.addAll(currentList)
+      updateTotalWidth()
     }
   }
 
@@ -659,6 +724,10 @@ class ColumnListImpl(
     synchronized(columnList) {
       return copyOf()
     }
+  }
+
+  private fun updateTotalWidth() {
+    totalWidthProperty.value = columnList.filter { it.isVisible  }.sumOf { it.width }.toDouble()
   }
 }
 

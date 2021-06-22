@@ -1,7 +1,10 @@
 package biz.ganttproject.task
 
+import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.ganttview.TaskTableActionConnector
+import net.sourceforge.ganttproject.CustomPropertyManager
 import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.ShowHideColumnsDialog
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction
 import net.sourceforge.ganttproject.action.task.*
@@ -11,6 +14,7 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskSelectionManager
 import net.sourceforge.ganttproject.undo.GPUndoManager
+import java.awt.event.ActionEvent
 import javax.swing.Action
 
 /**
@@ -20,7 +24,7 @@ class TaskActions(private val project: IGanttProject,
                   private val uiFacade: UIFacade,
                   private val selectionManager: TaskSelectionManager,
                   private val viewManager: () -> GPViewManager,
-                  tableConnector: () -> TaskTableActionConnector) {
+                  private val tableConnector: () -> TaskTableActionConnector) {
   val createAction = TaskNewAction(project, uiFacade)
   val propertiesAction = TaskPropertiesAction(project, selectionManager, uiFacade)
   val deleteAction = TaskDeleteAction(project.taskManager, selectionManager, uiFacade)
@@ -31,6 +35,7 @@ class TaskActions(private val project: IGanttProject,
   val copyAction get() = viewManager().copyAction
   val cutAction get() = viewManager().cutAction
   val pasteAction get() = viewManager().pasteAction
+  val manageColumnsAction get() = ManageColumnsAction(uiFacade, tableConnector().columnList(), project.taskCustomColumnManager)
 
   fun all() = listOf(propertiesAction, indentAction, unindentAction, moveDownAction, moveUpAction)
   fun assignments(task: Task, hrManager: HumanResourceManager, undoManager: GPUndoManager): List<GPAction> {
@@ -44,5 +49,18 @@ class TaskActions(private val project: IGanttProject,
       human2action[ra.resource]?.putValue(Action.SELECTED_KEY, true)
     }
     return human2action.values.toList()
+  }
+}
+
+class ManageColumnsAction(
+  private val uiFacade: UIFacade,
+  private val columnList: ColumnList,
+  private val customPropertyManager: CustomPropertyManager) : GPAction("columns.manage.label") {
+
+  override fun actionPerformed(e: ActionEvent?) {
+    val dialog = ShowHideColumnsDialog(
+      uiFacade, columnList, customPropertyManager
+    )
+    dialog.show()
   }
 }

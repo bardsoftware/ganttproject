@@ -30,6 +30,7 @@ import javafx.geometry.Side
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.skin.TreeTableViewSkin
+import javafx.scene.control.skin.VirtualFlow
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
@@ -44,12 +45,12 @@ import javafx.util.StringConverter
 class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   internal val tableMenu = ContextMenu()
   var contextMenuActions: (MenuBuilder) -> Unit = { }
+  var tableMenuActions: (MenuBuilder) -> Unit = {}
 
   init {
     columnResizePolicy = CONSTRAINED_RESIZE_POLICY
     stylesheets.add("/biz/ganttproject/lib/fx/TreeTable.css")
     styleClass.add("gp-tree-table-view")
-    tableMenu.items.add(MenuItem(RootLocalizer.formatText("columns.manage.label")))
     focusModel.focusedCellProperty().addListener { _, _, newValue ->
       if (newValue.column == -1) {
         focusModel.focus(newValue.row, columns[0])
@@ -113,17 +114,24 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
     }
     val cornerRegion = this.tableHeaderRow.lookup(".show-hide-columns-button") as Region
     cornerRegion.onMousePressed = EventHandler { me: MouseEvent ->
+      control.tableMenu.items.clear()
+      control.tableMenuActions(MenuBuilder(control.tableMenu))
       control.tableMenu.show(cornerRegion, Side.BOTTOM, 0.0, 0.0)
       me.consume()
     }
     skinnable.properties.addListener(MapChangeListener { change ->
       if (change.key == "TableView.contentWidth" && change.wasAdded()) {
-        val value = change.valueAdded as Double
-        contentWidthListener.remove(value)?.invoke()
+        var value = change.valueAdded as Double
+        println("contentWidth=$value vbar width=${(virtualFlow as MyVirtualFlow).vbarWidth()}")
+        value += (virtualFlow as MyVirtualFlow).vbarWidth()
+        contentWidthListener.remove(value)?.invoke() ?: run {"Nobody expects this"}
       }
     })
   }
 
+  override fun createVirtualFlow(): VirtualFlow<TreeTableRow<T>> {
+    return MyVirtualFlow();
+  }
   fun onContentWidthChange(expected: Double, code: () -> Unit) {
     contentWidthListener[expected] = code
   }
@@ -262,4 +270,8 @@ private fun <T> updateItem(cell: Cell<T>, converter: StringConverter<T>, hbox: H
       cell.setGraphic(graphic)
     }
   }
+}
+
+class MyVirtualFlow<T: IndexedCell<*>> : VirtualFlow<T>() {
+  fun vbarWidth() = vbar.width
 }
