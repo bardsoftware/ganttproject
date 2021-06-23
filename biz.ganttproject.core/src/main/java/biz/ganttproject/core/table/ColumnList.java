@@ -63,6 +63,7 @@ public interface ColumnList {
     private final String myName;
     private boolean isVisible;
     private SortOrder mySortOrder = SortOrder.UNSORTED;
+    private Runnable onChange = () -> {};
 
     public ColumnStub(Column copy) {
       this(copy.getID(), copy.getName(), copy.isVisible(), copy.getOrder(), copy.getWidth());
@@ -113,6 +114,7 @@ public interface ColumnList {
     @Override
     public void setVisible(boolean visible) {
       isVisible = visible;
+      onChange.run();
     }
 
     @Override
@@ -130,6 +132,9 @@ public interface ColumnList {
       return String.format("id=%s name=%s visible=%b width=%d", myID, myName, isVisible, myWidth);
     }
 
+    public void setOnChange(Runnable listener) {
+      onChange = listener;
+    }
     @Override
     public boolean equals(Object o) {
       if (this == o) return true;

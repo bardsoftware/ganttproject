@@ -100,10 +100,12 @@ class TaskTable(
       columnList = { columnList }
     )
   }
-  private val columns = FXCollections.observableArrayList(
+  private val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList(
     TaskDefaultColumn.getColumnStubs().map { ColumnStub(it) }.toList()
   )
-  val columnList: ColumnListImpl = ColumnListImpl(columns, taskManager.customPropertyManager) { treeTable.columns }
+  val columnList: ColumnListImpl = ColumnListImpl(columns, taskManager.customPropertyManager,
+    { treeTable.columns },
+    { onColumnsChange() })
   val columnListWidthProperty = columnList.totalWidthProperty
   var requestSwingFocus: () -> Unit = {}
   val newTaskActor = NewTaskActor().also { it.start() }
@@ -140,15 +142,16 @@ class TaskTable(
       }
     }
     columns.addListener(ListChangeListener {
-      Platform.runLater {
-        buildColumns(columnList.columns())
-      }
+      onColumnsChange()
     })
     initNewTaskActor()
     treeTable.contextMenuActions = this::contextMenuActions
     treeTable.tableMenuActions = this::tableMenuActions
   }
 
+  private fun onColumnsChange() = Platform.runLater {
+    buildColumns(columnList.columns())
+  }
   private fun initKeyboardEventHandlers() {
     treeTable.onKeyPressed = EventHandler { event ->
       val action = taskActions.all().firstOrNull { action ->
@@ -288,7 +291,7 @@ class TaskTable(
       }
     }
   }
-  private fun findNameColumn() = treeTable.columns.find { (it.userData as ColumnStub).id == TaskDefaultColumn.NAME.stub.id }
+  private fun findNameColumn() = treeTable.columns.find { (it.userData as ColumnList.Column).id == TaskDefaultColumn.NAME.stub.id }
 
   private fun buildColumns(columns: List<ColumnList.Column>) {
     val tableColumns =
@@ -608,9 +611,10 @@ class GanttCalendarStringConverter : StringConverter<GanttCalendar>() {
 }
 
 class ColumnListImpl(
-  private val columnList: MutableList<ColumnStub>,
+  private val columnList: MutableList<ColumnList.Column>,
   private val customPropertyManager: CustomPropertyManager,
-  private val tableColumns: () -> List<TreeTableColumn<*,*>>
+  private val tableColumns: () -> List<TreeTableColumn<*,*>>,
+  private val onColumnChange: () -> Unit = {}
 ) : ColumnList {
 
   val totalWidth get()  = totalWidthProperty.value
@@ -643,7 +647,7 @@ class ColumnListImpl(
 
   override fun importData(source: ColumnList, keepVisibleColumns: Boolean) {
     val remainVisible = if (keepVisibleColumns) {
-      tableColumns().filter { it.isVisible }.map { it.userData as ColumnStub }
+      tableColumns().filter { it.isVisible }.map { it.userData as ColumnList.Column }
     } else emptyList()
 
     var importedList = source.copyOf()
@@ -672,7 +676,7 @@ class ColumnListImpl(
     // We maintain the invariant: the list prefix [0, idxImported) is the same in the imported list and
     // in the result list.
     synchronized(columnList) {
-      val currentList = columnList.map { it }.toMutableList()
+      val currentList = columnList.map { it as ColumnList.Column }.toMutableList()
       importedList.forEachIndexed { idxImported, column ->
         val idxCurrent = currentList.indexOfFirst { it.id == column.id }
         if (idxCurrent >= 0) {
@@ -686,10 +690,14 @@ class ColumnListImpl(
             currentList.subList(idxImported, idxCurrent).clear()
           }
           if (currentList[idxImported] != column) {
-            currentList[idxImported] = column
+            currentList[idxImported] = ColumnStub(column).also {
+              it.setOnChange { onColumnChange() }
+            }
           }
         } else {
-          currentList.add(idxImported, column)
+          currentList.add(idxImported, ColumnStub(column).also {
+            it.setOnChange { onColumnChange() }
+          })
         }
         assert(currentList.subList(0, idxImported) == importedList.subList(0, idxImported))
       }
@@ -706,7 +714,7 @@ class ColumnListImpl(
   override fun exportData(): List<ColumnList.Column> {
     synchronized(columnList) {
       tableColumns().forEachIndexed { index, column ->
-        (column.userData as ColumnStub).let { userData ->
+        (column.userData as ColumnList.Column).let { userData ->
           columnList.firstOrNull { it.id == userData.id }?.let {
             it.order = index
             it.width = column.width.toInt()
@@ -728,7 +736,7 @@ class ColumnListImpl(
   }
 }
 
-fun ColumnList.copyOf(): List<ColumnStub> {
+fun ColumnList.copyOf(): List<ColumnList.Column> {
   val copy = mutableListOf<ColumnStub>()
   for (i in 0 until this.size) {
     copy.add(ColumnStub(this.getField(i)))
