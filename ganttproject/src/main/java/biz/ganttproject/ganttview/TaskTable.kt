@@ -101,7 +101,7 @@ class TaskTable(
     )
   }
   private val columns = FXCollections.observableArrayList(
-    TaskDefaultColumn.getColumnStubs().filter { it.isVisible }.map { ColumnStub(it) }.toList()
+    TaskDefaultColumn.getColumnStubs().map { ColumnStub(it) }.toList()
   )
   val columnList: ColumnListImpl = ColumnListImpl(columns, taskManager.customPropertyManager) { treeTable.columns }
   val columnListWidthProperty = columnList.totalWidthProperty
@@ -306,8 +306,6 @@ class TaskTable(
           (treeTable.lookup(".virtual-flow") as Region).minWidth = 0.0
         }
     }
-    treeTable.prefWidth = columnList.totalWidth.toDouble() + 15.0
-    treeTable.minWidth = columnList.totalWidth.toDouble() + 15.0
     (treeTable.lookup(".virtual-flow") as Region).minWidth = columnList.totalWidth.toDouble()
     treeTable.columns.setAll(tableColumns)
   }
@@ -616,7 +614,6 @@ class ColumnListImpl(
 ) : ColumnList {
 
   val totalWidth get()  = totalWidthProperty.value
-
   val totalWidthProperty = SimpleDoubleProperty()
 
   override fun getSize(): Int = columnList.size

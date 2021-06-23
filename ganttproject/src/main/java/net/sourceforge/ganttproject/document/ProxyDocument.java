@@ -323,7 +323,7 @@ public class ProxyDocument implements Document {
       TaskDisplayColumnsTagHandler resourceFieldsHandler = new TaskDisplayColumnsTagHandler(
           "field", "id", "order", "width", "visible");
       opener.addTagHandler(resourceFieldsHandler);
-      opener.addParsingListener(TaskDisplayColumnsTagHandler.createTaskDisplayColumnsWrapper(myResourceVisibleFields, resourceFieldsHandler));
+      opener.addParsingListener(TaskDisplayColumnsTagHandler.createResourceDisplayColumnsWrapper(myResourceVisibleFields, resourceFieldsHandler));
       opener.addTagHandler(new ViewTagHandler("resource-table", getUIFacade(), resourceFieldsHandler));
 
       opener.addTagHandler(taskHandler);

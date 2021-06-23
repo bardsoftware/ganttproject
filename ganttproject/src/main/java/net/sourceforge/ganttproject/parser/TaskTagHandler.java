@@ -18,12 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.parser;
 
-import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.GanttCalendar;
+import biz.ganttproject.lib.fx.TreeCollapseView;
 import com.google.common.base.Charsets;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
@@ -35,7 +33,6 @@ import java.awt.*;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
-import java.util.List;
 import java.util.Map;
 
 public class TaskTagHandler extends AbstractTagHandler implements ParsingListener {
@@ -207,10 +204,10 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
 
   @Override
   public void parsingFinished() {
-    List<Task> tasksBottomUp = Lists.reverse(myManager.getTaskHierarchy().breadthFirstSearch(null, false));
-
-    for (Task t : tasksBottomUp) {
-      myTreeFacade.setExpanded(t, MoreObjects.firstNonNull(myTaskIdToExpansionState.get(t.getTaskID()), Boolean.TRUE));
-    }
+//    List<Task> tasksBottomUp = Lists.reverse(myManager.getTaskHierarchy().breadthFirstSearch(null, false));
+//
+//    for (Task t : tasksBottomUp) {
+//      myTreeFacade.setExpanded(t, MoreObjects.firstNonNull(myTaskIdToExpansionState.get(t.getTaskID()), Boolean.TRUE));
+//    }
   }
 }

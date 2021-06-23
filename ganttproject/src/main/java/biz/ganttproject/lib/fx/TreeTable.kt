@@ -124,7 +124,7 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
         var value = change.valueAdded as Double
         println("contentWidth=$value vbar width=${(virtualFlow as MyVirtualFlow).vbarWidth()}")
         value += (virtualFlow as MyVirtualFlow).vbarWidth()
-        contentWidthListener.remove(value)?.invoke() ?: run {"Nobody expects this"}
+        contentWidthListener.remove(value)?.invoke()
       }
     })
   }
