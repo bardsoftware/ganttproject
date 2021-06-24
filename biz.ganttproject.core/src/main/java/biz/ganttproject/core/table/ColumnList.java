@@ -113,8 +113,11 @@ public interface ColumnList {
 
     @Override
     public void setVisible(boolean visible) {
+      var wasVisible = isVisible;
       isVisible = visible;
-      onChange.run();
+      if (wasVisible != isVisible) {
+        onChange.run();
+      }
     }
 
     @Override

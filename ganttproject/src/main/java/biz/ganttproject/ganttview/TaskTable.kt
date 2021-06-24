@@ -94,25 +94,26 @@ class TaskTable(
       columnList = { columnList }
     )
   }
-  private val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList(
-    TaskDefaultColumn.getColumnStubs().map { ColumnStub(it) }.toList()
-  )
+  private val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
   val columnList: ColumnListImpl = ColumnListImpl(columns, taskManager.customPropertyManager,
     { treeTable.columns },
     { onColumnsChange() })
-  val columnListWidthProperty = columnList.totalWidthProperty
+  val columnListWidthProperty = SimpleDoubleProperty()
   var requestSwingFocus: () -> Unit = {}
   val newTaskActor = NewTaskActor().also { it.start() }
 
 
   init {
+    columnList.totalWidthProperty.addListener { _, oldValue, newValue ->
+      if (oldValue != newValue) {
+        // We add vertical scroll bar width to the sum width of all columns
+        columnListWidthProperty.value = newValue.toDouble() + treeTable.vbarWidth()
+      }
+    }
     Platform.runLater {
       treeTable.isShowRoot = false
       treeTable.isEditable = true
       treeTable.isTableMenuButtonVisible = true
-      treeTable.columns.clear()
-      buildColumns(columnList.columns())
-      reload()
     }
     initTaskEventHandlers()
     initProjectEventHandlers()
@@ -141,6 +142,15 @@ class TaskTable(
     initNewTaskActor()
     treeTable.contextMenuActions = this::contextMenuActions
     treeTable.tableMenuActions = this::tableMenuActions
+  }
+
+  fun loadDefaultColumns() = Platform.runLater {
+    treeTable.columns.clear()
+    columnList.importData(ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs().map { ColumnStub(it) }.toList()), false)
+    buildColumns(columnList.columns())
+    //treeTable.applyCss()
+    //treeTable.layout()
+    reload()
   }
 
   private fun onColumnsChange() = Platform.runLater {
@@ -295,6 +305,8 @@ class TaskTable(
           createDefaultColumn(column, taskDefaultColumn)
         } ?: createCustomColumn(column)
       }.toList()
+    //println(columnList.exportData())
+    //println(treeTable.columns)
     println("Expecting content width=${floor(columnList.totalWidth.toDouble())}")
     (treeTable.skin as GPTreeTableViewSkin<*>).onContentWidthChange(floor(columnList.totalWidth.toDouble())) {
       println("received!")
@@ -304,7 +316,12 @@ class TaskTable(
           (treeTable.lookup(".virtual-flow") as Region).minWidth = 0.0
         }
     }
+    //treeTable.minWidth = columnList.totalWidth.toDouble()
+    //treeTable.prefWidth = columnList.totalWidth.toDouble()
     (treeTable.lookup(".virtual-flow") as Region).minWidth = columnList.totalWidth.toDouble()
+    //(treeTable.lookup(".placeholder") as Region).minWidth = columnList.totalWidth.toDouble()
+    //(treeTable.lookup(".column-header-background") as Region).minWidth = columnList.totalWidth.toDouble()
+
     treeTable.columns.setAll(tableColumns)
   }
 
@@ -584,6 +601,9 @@ class ColumnListImpl(
   val totalWidth get()  = totalWidthProperty.value
   val totalWidthProperty = SimpleDoubleProperty()
 
+  init {
+    updateTotalWidth()
+  }
   override fun getSize(): Int = columnList.size
 
   override fun getField(index: Int): ColumnList.Column = columnList[index]
@@ -655,12 +675,18 @@ class ColumnListImpl(
           }
           if (currentList[idxImported] != column) {
             currentList[idxImported] = ColumnStub(column).also {
-              it.setOnChange { onColumnChange() }
+              it.setOnChange {
+                updateTotalWidth()
+                onColumnChange()
+              }
             }
           }
         } else {
           currentList.add(idxImported, ColumnStub(column).also {
-            it.setOnChange { onColumnChange() }
+            it.setOnChange {
+              updateTotalWidth()
+              onColumnChange()
+            }
           })
         }
         assert(currentList.subList(0, idxImported) == importedList.subList(0, idxImported))

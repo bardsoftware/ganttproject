@@ -19,25 +19,17 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 import biz.ganttproject.app.MenuBuilder
-import biz.ganttproject.app.RootLocalizer
-import javafx.application.Platform
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.collections.MapChangeListener
-import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Side
-import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.skin.TreeTableViewSkin
 import javafx.scene.control.skin.VirtualFlow
-import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
-import javafx.scene.layout.HBox
 import javafx.scene.layout.Region
-import javafx.util.StringConverter
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -64,7 +56,6 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
         contextMenu.show(this, event.screenX, event.screenY)
       }
     }
-
   }
   override fun createDefaultSkin(): Skin<*> {
     return GPTreeTableViewSkin(this).also {
@@ -93,6 +84,8 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
       this.focusModel.focus(focusedCell.row, columns[0])
     }
   }
+
+  fun vbarWidth(): Double = skin?.let { (it as GPTreeTableViewSkin<T>).vbarWidth() } ?: 0.0
 }
 
 class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>(control) {
@@ -102,6 +95,7 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   get() = tableHeaderRow.heightProperty()
   val fullHeaderHeight: Double get() = headerHeight.value + tableHeaderRow.boundsInParent.minX
   private val contentWidthListener = mutableMapOf<Double, ()->Unit>()
+  private val contentWidth: Double get() = skinnable.properties["TableView.contentWidth"]?.toString()?.toDoubleOrNull() ?: 0.0
 
   init {
     this.virtualFlow.positionProperty().addListener { _, _, _ ->
@@ -122,9 +116,19 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
     skinnable.properties.addListener(MapChangeListener { change ->
       if (change.key == "TableView.contentWidth" && change.wasAdded()) {
         var value = change.valueAdded as Double
-        println("contentWidth=$value vbar width=${(virtualFlow as MyVirtualFlow).vbarWidth()}")
+        //println("contentWidth=$value vbar width=${(virtualFlow as MyVirtualFlow).vbarWidth()} #listeners=${contentWidthListener}")
+        //println("pseuidoclasses: ${skinnable.pseudoClassStates}")
+        //println("insets: ${skinnable.insets} width=${skinnable.width}")
+        //skinnable.childrenUnmodifiable.forEach { println("$it width=${(it as Region).width} insets=${it.insets}") }
         value += (virtualFlow as MyVirtualFlow).vbarWidth()
-        contentWidthListener.remove(value)?.invoke()
+
+        // Sometimes borders or insets add a few pixels to the content width,
+        // e.g. it may become 349 when we expect 350. It is difficult to track such
+        // errors, so we just do a sort of "approximate match" here.
+        for (key in value.toInt()-5 .. value.toInt()+5) {
+          contentWidthListener.remove(key.toDouble())?.invoke()
+
+        }
       }
     })
   }
@@ -132,13 +136,20 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   override fun createVirtualFlow(): VirtualFlow<TreeTableRow<T>> {
     return MyVirtualFlow();
   }
+
   fun onContentWidthChange(expected: Double, code: () -> Unit) {
-    contentWidthListener[expected] = code
+    if (contentWidth == expected) {
+      code()
+    } else {
+      contentWidthListener[expected] = code
+    }
   }
 
   fun scrollBy(value: Double) {
     this.virtualFlow.scrollPixels(value)
   }
+
+  fun vbarWidth() = (this.virtualFlow as MyVirtualFlow).vbarWidth()
 }
 
 interface TreeCollapseView<T> {
@@ -159,5 +170,6 @@ class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
 
 
 class MyVirtualFlow<T: IndexedCell<*>> : VirtualFlow<T>() {
-  fun vbarWidth() = vbar.width
+  fun vbarWidth() = if (this.width > 0.0) vbar.width else 0.0
+
 }
