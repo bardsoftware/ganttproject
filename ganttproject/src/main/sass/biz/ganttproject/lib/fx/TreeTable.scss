@@ -93,6 +93,12 @@
                     -fx-alignment: center-left;
                     -fx-border-width: 0 0 2 0;
                     -fx-border-color: $gp-orange;
+                    &.validation-error {
+                        -fx-background-color: lighten(red, 30%);
+                        -fx-border-color: red;
+                        -fx-border-width: 2 2 2 2;
+                        -fx-border-radius: 2;
+                    }
                 }
             }
         }
@@ -106,6 +112,5 @@
             }
         }
     }
-
 }
 

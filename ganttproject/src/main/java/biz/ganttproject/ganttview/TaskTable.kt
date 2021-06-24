@@ -18,17 +18,16 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.ganttview
 
-import biz.ganttproject.app.*
+import biz.ganttproject.app.MenuBuilder
+import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.getModifiers
+import biz.ganttproject.app.triggeredBy
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.table.ColumnList.ColumnStub
-import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
-import biz.ganttproject.lib.fx.GPTreeTableView
-import biz.ganttproject.lib.fx.GPTreeTableViewSkin
-import biz.ganttproject.lib.fx.TextCell
-import biz.ganttproject.lib.fx.TreeCollapseView
+import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
 import javafx.application.Platform
 import javafx.beans.property.*
@@ -39,14 +38,11 @@ import javafx.event.EventHandler
 import javafx.scene.Parent
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
-import javafx.scene.control.TreeTableCell
 import javafx.scene.control.TreeTableColumn
+import javafx.scene.control.cell.CheckBoxTreeTableCell
 import javafx.scene.input.*
 import javafx.scene.layout.Region
 import javafx.util.Callback
-import javafx.util.StringConverter
-import javafx.util.converter.DefaultStringConverter
-import javafx.util.converter.NumberStringConverter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
@@ -56,8 +52,6 @@ import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
 import net.sourceforge.ganttproject.document.Document
-import net.sourceforge.ganttproject.gui.UIUtil
-import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
 import net.sourceforge.ganttproject.task.TaskManager
@@ -152,6 +146,7 @@ class TaskTable(
   private fun onColumnsChange() = Platform.runLater {
     buildColumns(columnList.columns())
   }
+
   private fun initKeyboardEventHandlers() {
     treeTable.onKeyPressed = EventHandler { event ->
       val action = taskActions.all().firstOrNull { action ->
@@ -316,51 +311,33 @@ class TaskTable(
   private fun createDefaultColumn(column: ColumnList.Column, taskDefaultColumn: TaskDefaultColumn) =
     when {
       taskDefaultColumn.valueClass == java.lang.String::class.java -> {
-        TreeTableColumn<Task, String>(taskDefaultColumn.getName()).apply {
-          setCellValueFactory {
-            ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn).toString())
-          }
-          cellFactory =
-            if (taskDefaultColumn == TaskDefaultColumn.NAME) ourNameCellFactory else ourTextCellFactory
-
+        createTextColumn<Task>(taskDefaultColumn.getName(),
+          { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
+          { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
+        ).apply {
           if (taskDefaultColumn == TaskDefaultColumn.NAME) {
             treeTable.treeColumn = this
-          }
-          onEditCommit = EventHandler { event ->
-            taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn)
+            cellFactory = ourNameCellFactory
           }
         }
       }
       GregorianCalendar::class.java.isAssignableFrom(taskDefaultColumn.valueClass) -> {
-        TreeTableColumn<Task, GanttCalendar>(taskDefaultColumn.getName()).apply {
-          setCellValueFactory {
-            ReadOnlyObjectWrapper(
-              (taskTableModel.getValueAt(it.value.value, taskDefaultColumn) as GanttCalendar)
-            )
-          }
-          val converter = GanttCalendarStringConverter()
-          cellFactory = Callback { TextCell<Task, GanttCalendar>(converter) { true } }
-          onEditCommit = EventHandler { event ->
-            taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn)
-          }
-        }
+        createDateColumn(taskDefaultColumn.getName(),
+          { taskTableModel.getValueAt(it, taskDefaultColumn) as GanttCalendar? },
+          { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
+        )
       }
       taskDefaultColumn.valueClass == Integer::class.java -> {
-        TreeTableColumn<Task, Number>(taskDefaultColumn.getName()).apply {
-          setCellValueFactory {
+        createIntegerColumn(taskDefaultColumn.getName(),
+          {
             if (taskDefaultColumn == TaskDefaultColumn.DURATION) {
-              ReadOnlyIntegerWrapper(
-                (taskTableModel.getValueAt(it.value.value, taskDefaultColumn) as TimeDuration).length
-              )
+              (taskTableModel.getValueAt(it, taskDefaultColumn) as TimeDuration).length
             } else {
-              ReadOnlyIntegerWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn) as Int)
+              taskTableModel.getValueAt(it, taskDefaultColumn) as Int
             }
-          }
-          cellFactory = Callback { TextCell<Task, Number>(NumberStringConverter()) { true } }
-          onEditCommit = EventHandler { event ->
-            taskTableModel.setValue(event.newValue, event.rowValue.value, taskDefaultColumn)
-          }
-        }
+          },
+          { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
+        )
       }
       else -> TreeTableColumn<Task, String>(taskDefaultColumn.getName()).apply {
         setCellValueFactory {
@@ -388,44 +365,41 @@ class TaskTable(
     val customProperty = taskManager.customPropertyManager.getCustomPropertyDefinition(column.id) ?: return null
     return when (customProperty.propertyClass) {
       CustomPropertyClass.TEXT -> {
-        TreeTableColumn<Task, String>(customProperty.name).apply {
-          setCellValueFactory {
-            ReadOnlyStringWrapper(taskTableModel.getValue(it.value.value, customProperty)?.toString() ?: "")
-          }
-          cellFactory = ourTextCellFactory
-          onEditCommit = EventHandler { event ->
-            taskTableModel.setValue(event.newValue, event.rowValue.value, customProperty)
-          }
-          userData = column
-        }
+        createTextColumn(customProperty.name,
+          { taskTableModel.getValue(it, customProperty)?.toString() },
+          { task, value -> taskTableModel.setValue(value, task, customProperty) }
+        )
       }
       CustomPropertyClass.BOOLEAN -> {
-        null
+        TreeTableColumn<Task, Boolean>(customProperty.name).apply {
+          setCellValueFactory {
+            val task = it.value.value
+            SimpleBooleanProperty((taskTableModel.getValue(task, customProperty) ?: false) as Boolean).also {
+              it.addListener { _, _, newValue ->
+                taskTableModel.setValue(newValue, task, customProperty)
+              }
+            }
+          }
+          cellFactory =  Callback { CheckBoxTreeTableCell() }
+        }
       }
       CustomPropertyClass.INTEGER -> {
-        TreeTableColumn<Task, Number>(customProperty.name).apply {
-          setCellValueFactory {
-            ReadOnlyIntegerWrapper(taskTableModel.getValue(it.value.value, customProperty) as Int)
-          }
-          cellFactory = Callback { TextCell<Task, Number>(NumberStringConverter()) { true } }
-          onEditCommit = EventHandler { event ->
-            taskTableModel.setValue(event.newValue, event.rowValue.value, customProperty)
-          }
-        }
+        createIntegerColumn(customProperty.name,
+          { taskTableModel.getValue(it, customProperty) as Int },
+          { task, value -> taskTableModel.setValue(value, task, customProperty) }
+        )
       }
       CustomPropertyClass.DOUBLE -> {
-        TreeTableColumn<Task, Number>(customProperty.name).apply {
-          setCellValueFactory {
-            ReadOnlyDoubleWrapper(taskTableModel.getValue(it.value.value, customProperty) as Double)
-          }
-          cellFactory = Callback { TextCell<Task, Number>(NumberStringConverter()) { true } }
-          onEditCommit = EventHandler { event ->
-            taskTableModel.setValue(event.newValue, event.rowValue.value, customProperty)
-          }
-        }
+        createDoubleColumn(customProperty.name,
+          { taskTableModel.getValue(it, customProperty) as Double },
+          { task, value -> taskTableModel.setValue(value, task, customProperty) }
+        )
       }
       CustomPropertyClass.DATE -> {
-        null
+        createDateColumn(customProperty.name,
+          { taskTableModel.getValue(it, customProperty) as GanttCalendar? },
+          { task, value -> taskTableModel.setValue(value, task, customProperty) }
+        )
       }
     }?.also {
       it.isEditable = true
@@ -600,16 +574,6 @@ private fun TreeItem<Task>.depthFirstWalk(visitor: (TreeItem<Task>) -> Boolean) 
   this.children.forEach { if (visitor(it)) it.depthFirstWalk(visitor) }
 }
 
-class GanttCalendarStringConverter : StringConverter<GanttCalendar>() {
-  private val validator = UIUtil.createStringDateValidator(null) {
-    listOf(GanttLanguage.getInstance().shortDateFormat)
-  }
-  override fun toString(value: GanttCalendar?) = value?.toString() ?: ""
-
-  override fun fromString(text: String): GanttCalendar =
-    CalendarFactory.createGanttCalendar(validator.parse(text))
-}
-
 class ColumnListImpl(
   private val columnList: MutableList<ColumnList.Column>,
   private val customPropertyManager: CustomPropertyManager,
@@ -747,6 +711,17 @@ fun ColumnList.copyOf(): List<ColumnList.Column> {
 class DragAndDropSupport {
   private lateinit var clipboardContent: ClipboardContents
   private lateinit var clipboardProcessor: ClipboardTaskProcessor
+
+  fun install(cell: TextCell<Task, String>) {
+    cell.setOnDragDetected { event ->
+      dragDetected(cell)
+      event.consume()
+    }
+    cell.setOnDragOver { event -> dragOver(event, cell) }
+    cell.setOnDragDropped { drop(cell) }
+    cell.setOnDragExited {
+    }
+  }
   fun dragDetected(cell: TextCell<Task, String>) {
     val task = cell.treeTableRow.treeItem.value
     clipboardContent = ClipboardContents(task.manager).also {
@@ -789,47 +764,9 @@ class DragAndDropSupport {
 
 }
 
-class TextCellFactory(private val dragndropSupport: DragAndDropSupport?)
-  : Callback<TreeTableColumn<Task, String>, TreeTableCell<Task, String>> {
-  internal var editingCell: TextCell<Task, String>? = null
-
-  private fun setEditingCell(cell: TextCell<Task, String>?): Boolean =
-    when {
-      editingCell == null && cell == null -> true
-      editingCell == null && cell != null -> {
-        editingCell = cell
-        true
-      }
-      editingCell != null && cell == null -> {
-        editingCell = cell
-        true
-      }
-      editingCell != null && cell != null -> {
-        // new editing cell when old is not yet releases
-        false
-      }
-      else -> true
-    }
-
-  override fun call(param: TreeTableColumn<Task, String>?) =
-    TextCell(DefaultStringConverter(), this::setEditingCell).also { cell ->
-      if (dragndropSupport != null) {
-        cell.setOnDragDetected { event ->
-          dragndropSupport.dragDetected(cell)
-          event.consume()
-        }
-        cell.setOnDragOver { event -> dragndropSupport.dragOver(event, cell) }
-        cell.setOnDragDropped { dragndropSupport.drop(cell) }
-        cell.setOnDragExited {
-
-        }
-      }
-    }
+private val dragAndDropSupport = DragAndDropSupport()
+private val ourNameCellFactory = TextCellFactory<Task>() {
+  dragAndDropSupport.install(it)
 }
-
-private val ourNameCellFactory = TextCellFactory(
-  dragndropSupport = DragAndDropSupport()
-)
-private val ourTextCellFactory = TextCellFactory(dragndropSupport = null)
 
 private val TEXT_FORMAT = DataFormat("text/ganttproject-task-node")
