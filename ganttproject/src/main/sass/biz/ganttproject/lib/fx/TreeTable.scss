@@ -84,6 +84,9 @@
                       -fx-border-color: $gp-orange;
                     }
                 }
+                & > .tree-disclosure-node > .glyph-icon {
+                    -fx-fill: white;
+                }
                 -fx-background-color: $gp-medium-gray;
                 -fx-table-cell-border-color: derive($gp-medium-gray, 20%);
             }
@@ -120,6 +123,17 @@
                     -fx-border-color: transparent;
                 }
             }
+        }
+    }
+
+    .tree-table-row-cell {
+        &:expanded > .tree-disclosure-node {
+            .arrow {
+                -fx-rotate: 90;
+            }
+        }
+        & > .tree-disclosure-node {
+            -fx-padding: 0 5 5 5;
         }
     }
 }

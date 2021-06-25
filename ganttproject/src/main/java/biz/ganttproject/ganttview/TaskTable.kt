@@ -120,7 +120,7 @@ class TaskTable(
     initProjectEventHandlers()
     initChartConnector()
     initKeyboardEventHandlers()
-    treeTable.  selectionModel.selectionMode = SelectionMode.MULTIPLE
+    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
     treeTable.selectionModel.selectedItems.addListener(ListChangeListener {
       val selectedItems = copyOf(treeTable.selectionModel.selectedItems)
       selectionManager.selectedTasks = selectedItems
@@ -149,8 +149,6 @@ class TaskTable(
     treeTable.columns.clear()
     columnList.importData(ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs().map { ColumnStub(it) }.toList()), false)
     buildColumns(columnList.columns())
-    //treeTable.applyCss()
-    //treeTable.layout()
     reload()
   }
 
@@ -290,6 +288,8 @@ class TaskTable(
             requestSwingFocus()
             if (treeTable.editingCell == null) {
               treeTable.edit(treeTable.getRow(cmd.treeItem), findNameColumn())
+            } else {
+              //println("editing cell is ${treeTable.editingCell}")
             }
           }
           is CommitEditing -> {

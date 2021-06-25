@@ -24,15 +24,19 @@ import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
 import biz.ganttproject.lib.fx.treetable.VirtualFlow
 import com.sun.javafx.scene.control.inputmap.InputMap
 import com.sun.javafx.scene.control.inputmap.KeyBinding
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.collections.MapChangeListener
 import javafx.event.EventHandler
+import javafx.geometry.Pos
 import javafx.geometry.Side
 import javafx.scene.control.*
 import javafx.scene.input.KeyCode
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Region
 import javafx.util.Callback
 
@@ -197,4 +201,17 @@ class MyVirtualFlow<T: IndexedCell<*>> : VirtualFlow<T>() {
 
 class MyTreeTableRow<T> : TreeTableRow<T>() {
   override fun createDefaultSkin() = TreeTableRowSkin<T>(this)
+
+  init {
+    disclosureNode = HBox().also { hbox ->
+      hbox.styleClass.setAll("tree-disclosure-node")
+      hbox.isMouseTransparent = true
+      hbox.alignment = Pos.CENTER
+      FontAwesomeIconView(FontAwesomeIcon.CHEVRON_RIGHT).also {
+        it.styleClass.add("arrow")
+        hbox.children.add(it)
+      }
+
+    }
+  }
 }

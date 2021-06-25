@@ -21,6 +21,7 @@ package biz.ganttproject.lib.fx
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import javafx.application.Platform
 import javafx.beans.property.ReadOnlyDoubleWrapper
 import javafx.beans.property.ReadOnlyIntegerWrapper
@@ -29,12 +30,7 @@ import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.Node
-import javafx.scene.control.Cell
-import javafx.scene.control.TextField
-import javafx.scene.control.TreeTableCell
-import javafx.scene.control.TreeTableColumn
-import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyEvent
+import javafx.scene.control.*
 import javafx.scene.layout.HBox
 import javafx.util.Callback
 import javafx.util.StringConverter
@@ -42,8 +38,8 @@ import javafx.util.converter.DefaultStringConverter
 import javafx.util.converter.NumberStringConverter
 import net.sourceforge.ganttproject.gui.UIUtil
 import net.sourceforge.ganttproject.language.GanttLanguage
-import net.sourceforge.ganttproject.task.Task
 
+private var count = 0
 class TextCell<T, S>(
   private val converter: StringConverter<S>,
   private val editingCellController: (TextCell<T, S>?) -> Boolean
@@ -51,8 +47,15 @@ class TextCell<T, S>(
   private val textField: TextField = createTextField(this, converter)
 
   init {
+    id = "${count++}"
     styleClass.add("gp-tree-table-cell")
   }
+
+  override fun createDefaultSkin(): Skin<*> {
+    return TreeTableCellSkin(this)
+  }
+
+
   override fun startEdit() {
     if (!isEditable) {
       return
@@ -62,6 +65,8 @@ class TextCell<T, S>(
     if (isEditing && editingCellController(this)) {
       treeTableView.requestFocus()
       startEdit(this, converter, null, null, textField)
+    } else {
+      println("NOPE!")
     }
   }
 
@@ -95,6 +100,7 @@ class TextCell<T, S>(
 }
 
 fun <T> startEdit(cell: Cell<T>, converter: StringConverter<T>, hbox: HBox?, graphic: Node?, textField: TextField) {
+  //println("start edit: text=${getItemText(cell, converter)}")
   textField.text = getItemText(cell, converter)
   cell.text = null
   if (graphic != null) {
@@ -220,8 +226,9 @@ fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S,
 class TextCellFactory<S>(private val cellSetup: (TextCell<S, String>) -> Unit = {}): Callback<TreeTableColumn<S, String>, TreeTableCell<S, String>> {
   internal var editingCell: TextCell<S, String>? = null
 
-  private fun setEditingCell(cell: TextCell<S, String>?): Boolean =
-    when {
+  private fun setEditingCell(cell: TextCell<S, String>?): Boolean {
+    //println("editingcell=$editingCell cell=$cell")
+    return when {
       editingCell == null && cell == null -> true
       editingCell == null && cell != null -> {
         editingCell = cell
@@ -232,12 +239,12 @@ class TextCellFactory<S>(private val cellSetup: (TextCell<S, String>) -> Unit = 
         true
       }
       editingCell != null && cell != null -> {
-        // new editing cell when old is not yet releases
-        false
+        // new editing cell when old is not yet released
+        editingCell?.treeTableRow?.index != cell.treeTableRow.index
       }
       else -> true
     }
-
+  }
   override fun call(param: TreeTableColumn<S, String>?) =
     TextCell(DefaultStringConverter(), this::setEditingCell).also(cellSetup)
 }
