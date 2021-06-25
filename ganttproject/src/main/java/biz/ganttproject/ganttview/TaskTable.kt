@@ -106,7 +106,8 @@ class TaskTable(
   init {
     columnList.totalWidthProperty.addListener { _, oldValue, newValue ->
       if (oldValue != newValue) {
-        // We add vertical scroll bar width to the sum width of all columns
+        // We add vertical scroll bar width to the sum width of all columns, so that the split pane
+        // which contains the table was resized appropriately.
         columnListWidthProperty.value = newValue.toDouble() + treeTable.vbarWidth()
       }
     }
@@ -119,7 +120,7 @@ class TaskTable(
     initProjectEventHandlers()
     initChartConnector()
     initKeyboardEventHandlers()
-    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
+    treeTable.  selectionModel.selectionMode = SelectionMode.MULTIPLE
     treeTable.selectionModel.selectedItems.addListener(ListChangeListener {
       val selectedItems = copyOf(treeTable.selectionModel.selectedItems)
       selectionManager.selectedTasks = selectedItems
@@ -169,7 +170,10 @@ class TaskTable(
       } else {
         if (event.getModifiers() == 0) {
           when (event.code) {
-            KeyCode.LEFT -> treeTable.focusModel.focusLeftCell()
+            KeyCode.LEFT -> {
+              treeTable.focusModel.focusLeftCell()
+              event.consume()
+            }
             KeyCode.RIGHT -> treeTable.focusModel.focusRightCell()
             else -> {}
           }

@@ -19,17 +19,22 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 import biz.ganttproject.app.MenuBuilder
+import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
+import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
+import biz.ganttproject.lib.fx.treetable.VirtualFlow
+import com.sun.javafx.scene.control.inputmap.InputMap
+import com.sun.javafx.scene.control.inputmap.KeyBinding
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.collections.MapChangeListener
 import javafx.event.EventHandler
 import javafx.geometry.Side
 import javafx.scene.control.*
-import javafx.scene.control.skin.TreeTableViewSkin
-import javafx.scene.control.skin.VirtualFlow
+import javafx.scene.input.KeyCode
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Region
+import javafx.util.Callback
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -40,6 +45,9 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   var tableMenuActions: (MenuBuilder) -> Unit = {}
 
   init {
+    rowFactory = Callback { view ->
+      MyTreeTableRow()
+    }
     columnResizePolicy = CONSTRAINED_RESIZE_POLICY
     stylesheets.add("/biz/ganttproject/lib/fx/TreeTable.css")
     styleClass.add("gp-tree-table-view")
@@ -131,8 +139,21 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
         }
       }
     })
+    behavior.inputMap.removeKey {
+      (it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)
+        && it.alt != KeyBinding.OptionalBoolean.TRUE
+        && it.shift != KeyBinding.OptionalBoolean.TRUE
+        && it.meta != KeyBinding.OptionalBoolean.TRUE
+        && it.ctrl != KeyBinding.OptionalBoolean.TRUE
+    }
   }
 
+  private fun (InputMap<*>).removeKey(predicate: (KeyBinding) -> Boolean) {
+    this.mappings.filter {
+      it.mappingKey.let { it is KeyBinding && predicate(it) }
+    }.forEach { it.isDisabled = true }
+    this.childInputMaps.forEach { it.removeKey(predicate) }
+  }
   override fun createVirtualFlow(): VirtualFlow<TreeTableRow<T>> {
     return MyVirtualFlow();
   }
@@ -172,4 +193,8 @@ class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
 class MyVirtualFlow<T: IndexedCell<*>> : VirtualFlow<T>() {
   fun vbarWidth() = if (this.width > 0.0) vbar.width else 0.0
 
+}
+
+class MyTreeTableRow<T> : TreeTableRow<T>() {
+  override fun createDefaultSkin() = TreeTableRowSkin<T>(this)
 }
