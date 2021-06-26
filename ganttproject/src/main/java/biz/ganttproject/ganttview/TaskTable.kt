@@ -36,12 +36,15 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
 import javafx.scene.Parent
+import javafx.scene.control.ContentDisplay
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
 import javafx.scene.control.cell.CheckBoxTreeTableCell
 import javafx.scene.input.*
 import javafx.scene.layout.Region
+import javafx.scene.paint.Color.rgb
+import javafx.scene.shape.Circle
 import javafx.util.Callback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -60,6 +63,7 @@ import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 import net.sourceforge.ganttproject.undo.GPUndoManager
+import java.math.BigDecimal
 import java.util.*
 import java.util.List.copyOf
 import kotlin.math.floor
@@ -153,6 +157,7 @@ class TaskTable(
   }
 
   private fun onColumnsChange() = Platform.runLater {
+    columnList.columns().forEach { it.taskDefaultColumn()?.isVisible = it.isVisible }
     buildColumns(columnList.columns())
   }
 
@@ -305,9 +310,11 @@ class TaskTable(
   private fun buildColumns(columns: List<ColumnList.Column>) {
     val tableColumns =
       columns.mapNotNull { column ->
-        TaskDefaultColumn.find(column.id)?.let { taskDefaultColumn ->
-          createDefaultColumn(column, taskDefaultColumn)
-        } ?: createCustomColumn(column)
+        when (val taskDefaultColumn = TaskDefaultColumn.find(column.id)) {
+          TaskDefaultColumn.COLOR -> null
+          null -> createCustomColumn(column)
+          else -> createDefaultColumn(column, taskDefaultColumn)
+        }
       }.toList()
     //println(columnList.exportData())
     //println(treeTable.columns)
@@ -332,14 +339,24 @@ class TaskTable(
   private fun createDefaultColumn(column: ColumnList.Column, taskDefaultColumn: TaskDefaultColumn) =
     when {
       taskDefaultColumn.valueClass == java.lang.String::class.java -> {
-        createTextColumn<Task>(taskDefaultColumn.getName(),
-          { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
-          { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
-        ).apply {
-          if (taskDefaultColumn == TaskDefaultColumn.NAME) {
-            treeTable.treeColumn = this
+        if (taskDefaultColumn == TaskDefaultColumn.NAME) {
+          TreeTableColumn<Task, Task>(taskDefaultColumn.getName()).apply {
+            setCellValueFactory {
+              ReadOnlyObjectWrapper<Task>(it.value.value)
+            }
             cellFactory = ourNameCellFactory
+            onEditCommit = EventHandler { event ->
+              val targetTask: Task = event.rowValue.value
+              val copyTask: Task = event.newValue
+              taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
+            }
+            treeTable.treeColumn = this
           }
+        } else {
+          createTextColumn<Task>(taskDefaultColumn.getName(),
+            { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
+            { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
+          )
         }
       }
       GregorianCalendar::class.java.isAssignableFrom(taskDefaultColumn.valueClass) -> {
@@ -348,7 +365,7 @@ class TaskTable(
           { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
         )
       }
-      taskDefaultColumn.valueClass == Integer::class.java -> {
+      taskDefaultColumn.valueClass == java.lang.Integer::class.java -> {
         createIntegerColumn(taskDefaultColumn.getName(),
           {
             if (taskDefaultColumn == TaskDefaultColumn.DURATION) {
@@ -357,6 +374,18 @@ class TaskTable(
               taskTableModel.getValueAt(it, taskDefaultColumn) as Int
             }
           },
+          { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
+        )
+      }
+      taskDefaultColumn.valueClass == java.lang.Double::class.java -> {
+        createDoubleColumn(taskDefaultColumn.getName(),
+          { taskTableModel.getValueAt(it, taskDefaultColumn) as Double },
+          { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
+        )
+      }
+      taskDefaultColumn.valueClass == java.math.BigDecimal::class.java -> {
+        createDecimalColumn(taskDefaultColumn.getName(),
+          { taskTableModel.getValueAt(it, taskDefaultColumn) as BigDecimal },
           { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
         )
       }
@@ -742,7 +771,7 @@ class DragAndDropSupport {
   private lateinit var clipboardContent: ClipboardContents
   private lateinit var clipboardProcessor: ClipboardTaskProcessor
 
-  fun install(cell: TextCell<Task, String>) {
+  fun install(cell: TextCell<Task, Task>) {
     cell.setOnDragDetected { event ->
       dragDetected(cell)
       event.consume()
@@ -752,7 +781,7 @@ class DragAndDropSupport {
     cell.setOnDragExited {
     }
   }
-  fun dragDetected(cell: TextCell<Task, String>) {
+  fun dragDetected(cell: TextCell<Task, Task>) {
     val task = cell.treeTableRow.treeItem.value
     clipboardContent = ClipboardContents(task.manager).also {
       it.addTasks(listOf(task))
@@ -766,7 +795,7 @@ class DragAndDropSupport {
     cell.setOnDragExited { db.clear() }
   }
 
-  fun dragOver(event: DragEvent, cell: TextCell<Task, String>) {
+  fun dragOver(event: DragEvent, cell: TextCell<Task, Task>) {
     if (!event.dragboard.hasContent(TEXT_FORMAT)) return
     val thisItem = cell.treeTableRow.treeItem
 
@@ -786,7 +815,7 @@ class DragAndDropSupport {
   private fun clearDropLocation() {
   }
 
-  fun drop(cell: TextCell<Task, String>) {
+  fun drop(cell: TextCell<Task, Task>) {
     val dropTarget = cell.treeTableRow.treeItem.value
     clipboardContent.cut()
     clipboardProcessor.pasteAsChild(dropTarget, clipboardContent)
@@ -794,9 +823,25 @@ class DragAndDropSupport {
 
 }
 
+private fun ColumnList.Column.taskDefaultColumn() = TaskDefaultColumn.find(this.id).stub
+
+private val taskNameConverter = MyStringConverter<Task, Task>(
+  toString = { cell, task -> task?.name },
+  fromString = { cell, text -> cell.item.unpluggedClone().also { it.name = text }}
+)
+
 private val dragAndDropSupport = DragAndDropSupport()
-private val ourNameCellFactory = TextCellFactory<Task>() {
-  dragAndDropSupport.install(it)
+private val ourNameCellFactory = TextCellFactory<Task, Task>(converter = taskNameConverter) { cell ->
+  dragAndDropSupport.install(cell)
+  cell.graphicSupplier = { task: Task ->
+    if (TaskDefaultColumn.COLOR.stub.isVisible) {
+      Circle().also {
+        it.fill = rgb(task.color.red, task.color.green, task.color.blue)
+        it.radius = 4.0
+      }
+    } else null
+  }
+  cell.contentDisplay = ContentDisplay.RIGHT
 }
 
 private val TEXT_FORMAT = DataFormat("text/ganttproject-task-node")

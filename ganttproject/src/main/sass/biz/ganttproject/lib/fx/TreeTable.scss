@@ -1,4 +1,5 @@
 @import "../../app/theme";
+@import "../../app/typography";
 
 .gp-tree-table-view {
     -fx-border-width: 0;
@@ -85,7 +86,6 @@
     }
 
     .gp-tree-table-cell {
-        -fx-alignment: center-left;
         -fx-border-width: 0 0 2 0;
         -fx-border-color: transparent;
 

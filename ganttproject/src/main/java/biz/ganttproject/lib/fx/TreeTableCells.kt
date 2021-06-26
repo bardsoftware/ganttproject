@@ -18,10 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
+//import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
-//import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import javafx.application.Platform
 import javafx.beans.property.ReadOnlyDoubleWrapper
 import javafx.beans.property.ReadOnlyIntegerWrapper
@@ -30,31 +30,41 @@ import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.Node
-import javafx.scene.control.*
-import javafx.scene.layout.HBox
+import javafx.scene.control.TextField
+import javafx.scene.control.TreeTableCell
+import javafx.scene.control.TreeTableColumn
 import javafx.util.Callback
 import javafx.util.StringConverter
+import javafx.util.converter.BigDecimalStringConverter
 import javafx.util.converter.DefaultStringConverter
 import javafx.util.converter.NumberStringConverter
 import net.sourceforge.ganttproject.gui.UIUtil
 import net.sourceforge.ganttproject.language.GanttLanguage
+import java.awt.Color
+import java.math.BigDecimal
 
-private var count = 0
-class TextCell<T, S>(
-  private val converter: StringConverter<S>,
-  private val editingCellController: (TextCell<T, S>?) -> Boolean
-) : TreeTableCell<T, S>() {
-  private val textField: TextField = createTextField(this, converter)
+data class MyStringConverter<S, T>(
+  val toString: (cell: TextCell<S, T>, cellValue: T?) -> String?,
+  val fromString: (cell: TextCell<S, T>, stringValue: String) -> T?
+)
+fun <S, T> StringConverter<T>.adapt(): MyStringConverter<S, T> =
+  MyStringConverter(
+    toString = { _, cellValue -> this.toString(cellValue) },
+    fromString = { _, stringValue -> this.fromString(stringValue) }
+  )
+
+class TextCell<S, T>(
+  private val converter: MyStringConverter<S, T>,
+  private val editingCellController: (TextCell<S, T>?) -> Boolean
+) : TreeTableCell<S, T>() {
+  private var savedGraphic: Node? = null
+  var colorSupplier: (T) -> Color? = { null }
+  var graphicSupplier: (T) -> Node? = { null }
+  private val textField: TextField = createTextField()
 
   init {
-    id = "${count++}"
     styleClass.add("gp-tree-table-cell")
   }
-
-//  override fun createDefaultSkin(): Skin<*> {
-//    return TreeTableCellSkin(this)
-//  }
-
 
   override fun startEdit() {
     if (!isEditable) {
@@ -64,9 +74,23 @@ class TextCell<T, S>(
 
     if (isEditing && editingCellController(this)) {
       treeTableView.requestFocus()
-      startEdit(this, converter, textField)
+      doStartEdit()
     } else {
       println("NOPE!")
+    }
+  }
+
+  private fun doStartEdit() {
+    textField.text = getItemText()
+    text = " "
+    savedGraphic = graphic
+    graphic = textField
+
+    // requesting focus so that key input can immediately go into the
+    // TextField (see RT-28132)
+    Platform.runLater {
+      textField.selectAll()
+      textField.requestFocus()
     }
   }
 
@@ -74,105 +98,77 @@ class TextCell<T, S>(
     super.cancelEdit()
     styleClass.remove("validation-error")
     editingCellController(null)
-    cancelEdit(this, converter, null)
+    doCancelEdit()
     treeTableView.requestFocus()
   }
 
-  fun commitEdit() {
-    commitEdit(converter.fromString(textField.text))
+  private fun doCancelEdit() {
+    text = getItemText()
+    graphic = savedGraphic
+    savedGraphic = null
   }
 
-  override fun commitEdit(newValue: S?) {
+  override fun commitEdit(newValue: T?) {
     editingCellController(null)
     super.commitEdit(newValue)
     treeTableView.requestFocus()
+    graphic = savedGraphic
+    savedGraphic = null
   }
 
-  override fun updateItem(item: S?, empty: Boolean) {
-    super.updateItem(item, empty)
+  fun commitEdit() {
+    commitEdit(converter.fromString(this, textField.text))
+  }
+
+  private fun commitText(text: String) = commitEdit(converter.fromString(this, text))
+
+  override fun updateItem(cellValue: T?, empty: Boolean) {
+    super.updateItem(cellValue, empty)
     if (treeTableView.focusModel.isFocused(treeTableRow.index, tableColumn)) {
       styleClass.add("focused")
     } else {
       styleClass.removeAll("focused")
     }
-    updateItem(this, converter, null, null, textField)
-  }
-}
-
-fun <T> startEdit(cell: Cell<T>, converter: StringConverter<T>, textField: TextField) {
-  //println("start edit: text=${getItemText(cell, converter)}")
-  textField.text = getItemText(cell, converter)
-  cell.text = " "
-//  if (graphic != null) {
-//    hbox?.children?.setAll(graphic, textField)
-//    cell.setGraphic(hbox)
-//  } else {
-  cell.graphic = textField
-//  }
-
-
-  // requesting focus so that key input can immediately go into the
-  // TextField (see RT-28132)
-  Platform.runLater {
-    textField.selectAll()
-    textField.requestFocus()
-  }
-}
-
-fun <T> cancelEdit(cell: Cell<T>, converter: StringConverter<T>, graphic: Node?) {
-  cell.text = getItemText(cell, converter)
-  cell.graphic = graphic
-}
-
-fun <T> createTextField(cell: Cell<T>, converter: StringConverter<T>) =
-  TextField(getItemText(cell, converter)).also { textField ->
-    // Use onAction here rather than onKeyReleased (with check for Enter),
-    // as otherwise we encounter RT-34685
-    textField.onAction = EventHandler { event: ActionEvent ->
-      try {
-        cell.commitEdit(converter.fromString(textField.text))
-        cell.styleClass.remove("validation-error")
-      } catch (ex: ValidationException) {
-        cell.styleClass.add("validation-error")
-      }
-      finally {
-        event.consume()
-      }
-    }
-//    textField.onKeyTyped = EventHandler { t: KeyEvent ->
-//      if (t.code == KeyCode.ESCAPE) {
-//        cell.cancelEdit()
-//        println("styleclass=${cell.styleClass}")
-//        t.consume()
-//      }
-//    }
+    doUpdateItem()
   }
 
-private fun <T> getItemText(cell: Cell<T>?, converter: StringConverter<T>?) =
-  converter?.toString(cell?.item) ?: cell?.item?.toString() ?: ""
-
-
-private fun <T> updateItem(cell: Cell<T>, converter: StringConverter<T>, hbox: HBox?, graphic: Node?, textField: TextField?) {
-  if (cell.isEmpty) {
-    cell.text = null
-    cell.setGraphic(null)
-  } else {
-    if (cell.isEditing) {
-      if (textField != null) {
-        textField.text = getItemText(cell, converter)
-      }
-      cell.text = null
-      if (graphic != null) {
-        hbox!!.children.setAll(graphic, textField)
-        cell.setGraphic(hbox)
-      } else {
-        cell.setGraphic(textField)
-      }
+  private fun doUpdateItem() {
+    if (isEmpty) {
+      text = null
+      graphic = null
     } else {
-      cell.text = getItemText(cell, converter)
-      cell.setGraphic(graphic)
+      doUpdateFilledItem()
     }
   }
+
+  private fun doUpdateFilledItem() {
+    if (isEditing) {
+      textField.text = getItemText()
+      text = null
+      graphic = textField
+    } else {
+      text = getItemText()
+      graphic = graphicSupplier(this.item)
+    }
+  }
+
+  private fun getItemText() = converter.toString(this, this.item)
+  private fun createTextField() =
+    TextField(getItemText()).also { textField ->
+      // Use onAction here rather than onKeyReleased (with check for Enter),
+      // as otherwise we encounter RT-34685
+      textField.onAction = EventHandler { event: ActionEvent ->
+        try {
+          commitText(textField.text)
+          styleClass.remove("validation-error")
+        } catch (ex: ValidationException) {
+          styleClass.add("validation-error")
+        }
+        finally {
+          event.consume()
+        }
+      }
+    }
 }
 
 fun <S> createTextColumn(name: String, getValue: (S) -> String?, setValue: (S, String) -> Unit): TreeTableColumn<S, String> =
@@ -180,7 +176,9 @@ fun <S> createTextColumn(name: String, getValue: (S) -> String?, setValue: (S, S
     setCellValueFactory {
       ReadOnlyStringWrapper(getValue(it.value.value) ?: "")
     }
-    cellFactory = TextCellFactory<S>()
+    cellFactory = TextCellFactory<S, String>(converter = DefaultStringConverter().adapt()) {
+      it.styleClass.add("text-left")
+    }
     onEditCommit = EventHandler { event ->
       setValue(event.rowValue.value, event.newValue)
     }
@@ -202,7 +200,9 @@ fun <S> createDateColumn(name: String, getValue: (S) -> GanttCalendar?, setValue
       ReadOnlyObjectWrapper(getValue(it.value.value))
     }
     val converter = GanttCalendarStringConverter()
-    cellFactory = Callback { TextCell<S, GanttCalendar>(converter) { true } }
+    cellFactory = Callback { TextCell<S, GanttCalendar>(converter.adapt(), { true }).also {
+      it.styleClass.add("text-left")
+    } }
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue) }
   }
 
@@ -211,7 +211,11 @@ fun <S> createIntegerColumn(name: String, getValue: (S) -> Int?, setValue: (S, I
     setCellValueFactory {
       ReadOnlyIntegerWrapper(getValue(it.value.value) ?: 0)
     }
-    cellFactory = Callback { TextCell<S, Number>(NumberStringConverter()) { true } }
+    cellFactory = Callback {
+      TextCell<S, Number>(NumberStringConverter().adapt(), { true }).also {
+        it.styleClass.add("text-right")
+      }
+    }
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toInt()) }
   }
 
@@ -220,14 +224,35 @@ fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S,
     setCellValueFactory {
       ReadOnlyDoubleWrapper(getValue(it.value.value) ?: 0.0)
     }
-    cellFactory = Callback { TextCell<S, Number>(NumberStringConverter()) { true } }
+    cellFactory = Callback {
+      TextCell<S, Number>(NumberStringConverter().adapt(), { true }).also {
+        it.styleClass.add("text-right")
+      }
+    }
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toDouble()) }
   }
 
-class TextCellFactory<S>(private val cellSetup: (TextCell<S, String>) -> Unit = {}): Callback<TreeTableColumn<S, String>, TreeTableCell<S, String>> {
-  internal var editingCell: TextCell<S, String>? = null
+fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue: (S, BigDecimal) -> Unit) =
+  TreeTableColumn<S, BigDecimal>(name).apply {
+    setCellValueFactory {
+      ReadOnlyObjectWrapper<BigDecimal>(getValue(it.value.value) ?: 0.toBigDecimal())
+    }
+    cellFactory = Callback {
+      TextCell<S, BigDecimal>(BigDecimalStringConverter().adapt(), { true }).also {
+        it.styleClass.add("text-right")
+      }
+    }
+    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toDouble().toBigDecimal()) }
+  }
 
-  private fun setEditingCell(cell: TextCell<S, String>?): Boolean {
+
+class TextCellFactory<S, T>(
+  private val converter: MyStringConverter<S, T>,
+  private val cellSetup: (TextCell<S, T>) -> Unit = {}
+): Callback<TreeTableColumn<S, T>, TreeTableCell<S, T>> {
+  internal var editingCell: TextCell<S, T>? = null
+
+  private fun setEditingCell(cell: TextCell<S, T>?): Boolean {
     //println("editingcell=$editingCell cell=$cell")
     return when {
       editingCell == null && cell == null -> true
@@ -246,7 +271,7 @@ class TextCellFactory<S>(private val cellSetup: (TextCell<S, String>) -> Unit = 
       else -> true
     }
   }
-  override fun call(param: TreeTableColumn<S, String>?) =
-    TextCell(DefaultStringConverter(), this::setEditingCell).also(cellSetup)
+  override fun call(param: TreeTableColumn<S, T>?) =
+    TextCell(converter, this::setEditingCell).also(cellSetup)
 }
 

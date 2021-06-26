@@ -3,3 +3,11 @@
   -fx-text-fill: dimgray;
   -fx-wrap-text: true;
 }
+
+.text-left {
+  -fx-alignment: center-left;
+}
+
+.text-right {
+  -fx-alignment: center-right;
+}
