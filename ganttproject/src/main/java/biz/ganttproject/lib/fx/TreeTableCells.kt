@@ -21,7 +21,7 @@ package biz.ganttproject.lib.fx
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
-import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
+//import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import javafx.application.Platform
 import javafx.beans.property.ReadOnlyDoubleWrapper
 import javafx.beans.property.ReadOnlyIntegerWrapper
@@ -51,9 +51,9 @@ class TextCell<T, S>(
     styleClass.add("gp-tree-table-cell")
   }
 
-  override fun createDefaultSkin(): Skin<*> {
-    return TreeTableCellSkin(this)
-  }
+//  override fun createDefaultSkin(): Skin<*> {
+//    return TreeTableCellSkin(this)
+//  }
 
 
   override fun startEdit() {
@@ -64,7 +64,7 @@ class TextCell<T, S>(
 
     if (isEditing && editingCellController(this)) {
       treeTableView.requestFocus()
-      startEdit(this, converter, null, null, textField)
+      startEdit(this, converter, textField)
     } else {
       println("NOPE!")
     }
@@ -99,16 +99,17 @@ class TextCell<T, S>(
   }
 }
 
-fun <T> startEdit(cell: Cell<T>, converter: StringConverter<T>, hbox: HBox?, graphic: Node?, textField: TextField) {
+fun <T> startEdit(cell: Cell<T>, converter: StringConverter<T>, textField: TextField) {
   //println("start edit: text=${getItemText(cell, converter)}")
   textField.text = getItemText(cell, converter)
-  cell.text = null
-  if (graphic != null) {
-    hbox?.children?.setAll(graphic, textField)
-    cell.setGraphic(hbox)
-  } else {
-    cell.setGraphic(textField)
-  }
+  cell.text = " "
+//  if (graphic != null) {
+//    hbox?.children?.setAll(graphic, textField)
+//    cell.setGraphic(hbox)
+//  } else {
+  cell.graphic = textField
+//  }
+
 
   // requesting focus so that key input can immediately go into the
   // TextField (see RT-28132)

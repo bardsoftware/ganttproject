@@ -19,9 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 import biz.ganttproject.app.MenuBuilder
-import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
-import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
-import biz.ganttproject.lib.fx.treetable.VirtualFlow
+//import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
+import com.sun.javafx.scene.control.behavior.TreeTableViewBehavior
+//import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
+//import biz.ganttproject.lib.fx.treetable.VirtualFlow
 import com.sun.javafx.scene.control.inputmap.InputMap
 import com.sun.javafx.scene.control.inputmap.KeyBinding
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -33,12 +34,16 @@ import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.geometry.Side
 import javafx.scene.control.*
+import javafx.scene.control.skin.TreeTableRowSkin
+import javafx.scene.control.skin.TreeTableViewSkin
+import javafx.scene.control.skin.VirtualFlow
 import javafx.scene.input.KeyCode
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Region
 import javafx.util.Callback
+import org.apache.commons.lang3.reflect.FieldUtils
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -143,6 +148,7 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
         }
       }
     })
+    val behavior = FieldUtils.readField(this, "behavior", true) as TreeTableViewBehavior<T>
     behavior.inputMap.removeKey {
       (it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)
         && it.alt != KeyBinding.OptionalBoolean.TRUE
@@ -211,7 +217,7 @@ class MyTreeTableRow<T> : TreeTableRow<T>() {
         it.styleClass.add("arrow")
         hbox.children.add(it)
       }
-
+      hbox.prefHeightProperty().bind(heightProperty());
     }
   }
 }
