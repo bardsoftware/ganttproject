@@ -75,10 +75,6 @@
             & > .tree-table-row-cell:selected, .tree-table-row-cell:focused {
                 & > .tree-table-cell {
                     -fx-text-fill: white;
-
-                    &.focused {
-                      -fx-border-color: $gp-orange;
-                    }
                 }
                 & > .tree-disclosure-node > .glyph-icon {
                     -fx-fill: white;
@@ -92,51 +88,49 @@
         -fx-alignment: center-left;
         -fx-border-width: 0 0 2 0;
         -fx-border-color: transparent;
+
+        &.focused {
+            -fx-border-color: $gp-orange;
+        }
+        &.validation-error {
+            -fx-background-color: lighten(red, 30%);
+            -fx-border-color: red;
+            -fx-border-width: 2 2 2 2;
+            -fx-border-radius: 2;
+            .text-field {
+                -fx-text-fill: $gp-dark-gray;
+            }
+        }
+        .text-field {
+            -fx-padding: 0;
+            -fx-background-color: transparent;
+            -fx-border-color: transparent;
+            -fx-text-fill: white;
+        }
     }
     // This is when editing starts. The treetable itself is not :focused anymore because the focus
     // is now in the text field.
     & > .virtual-flow {
         & > .tree-table-row-cell:selected {
             -fx-background: $gp-light-gray;
-            & > .gp-tree-table-cell {
-                &.focused {
-                    -fx-border-color: $gp-orange;
-                    &.validation-error {
-                        -fx-background-color: lighten(red, 30%);
-                        -fx-border-color: red;
-                        -fx-border-width: 2 2 2 2;
-                        -fx-border-radius: 2;
-                    }
-                }
-            }
-        }
-        & > .tree-table-row-cell:selected, .tree-table-row-cell:focused {
-            .gp-tree-table-cell {
-                .text-field {
-                    -fx-padding: 0;
-                    -fx-background-color: $gp-medium-gray;
-                    -fx-border-color: transparent;
-                    -fx-text-fill: white;
-                }
-            }
         }
     }
 //
-//    .tree-table-row-cell {
-//        &:expanded > .tree-disclosure-node {
-//            .arrow {
-//                -fx-rotate: 90;
-//            }
-//        }
-//        & > .tree-disclosure-node {
-//            -fx-padding: 0 0.5em 0.5em 0.5em;
-//            //-fx-background-color: yellow;
-//            -fx-border-width: 0 0 2 0;
-//            -fx-border-color: transparent;
-//            & > .glyph-icon {
-//                -fx-fill: $gp-medium-gray;
-//            }
-//        }
-//    }
+    .tree-table-row-cell {
+        //&:expanded > .tree-disclosure-node {
+        //    .arrow {
+        //        -fx-rotate: 90;
+        //    }
+        //}
+        & > .tree-disclosure-node {
+            -fx-padding: 0 0.5em 0.5em 0.5em;
+            //-fx-background-color: yellow;
+            -fx-border-width: 0 0 2 0;
+            -fx-border-color: transparent;
+            & > .glyph-icon {
+                -fx-fill: $gp-medium-gray;
+            }
+        }
+    }
 }
 
