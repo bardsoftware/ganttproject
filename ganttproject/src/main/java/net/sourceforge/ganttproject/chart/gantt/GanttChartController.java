@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject.chart.gantt;
 
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
-import com.google.common.collect.Lists;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import net.java.balloontip.BalloonTip;
@@ -51,7 +50,6 @@ import net.sourceforge.ganttproject.chart.mouse.ChangeTaskStartInteraction;
 import net.sourceforge.ganttproject.chart.mouse.DrawDependencyInteraction;
 import net.sourceforge.ganttproject.chart.mouse.MoveTaskInteractions;
 import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -237,14 +235,14 @@ public class GanttChartController extends AbstractChartImplementation implements
 
   @Override
   public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
-    final TaskTreeUIFacade taskTree = getUIFacade().getTaskTree();
-    List<Task> visibleTasks = Lists.newArrayList();
-    for (Task t : getTaskManager().getTaskHierarchy().getDeepNestedTasks(getTaskManager().getRootTask())) {
-      if (taskTree.isVisible(t)) {
-        visibleTasks.add(t);
-      }
-    }
-    settings.setVisibleTasks(visibleTasks);
+//    final TaskTreeUIFacade taskTree = getUIFacade().getTaskTree();
+//    List<Task> visibleTasks = Lists.newArrayList();
+//    for (Task t : getTaskManager().getTaskHierarchy().getDeepNestedTasks(getTaskManager().getRootTask())) {
+//      if (taskTree.isVisible(t)) {
+//        visibleTasks.add(t);
+//      }
+//    }
+    settings.setVisibleTasks(myTaskTableConnector.getVisibleTasks());
     super.buildImage(settings, imageVisitor);
   }
 

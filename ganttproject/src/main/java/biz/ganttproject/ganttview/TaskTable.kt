@@ -823,7 +823,7 @@ class DragAndDropSupport {
 
 }
 
-private fun ColumnList.Column.taskDefaultColumn() = TaskDefaultColumn.find(this.id).stub
+private fun ColumnList.Column.taskDefaultColumn() = TaskDefaultColumn.find(this.id)?.stub
 
 private val taskNameConverter = MyStringConverter<Task, Task>(
   toString = { cell, task -> task?.name },
