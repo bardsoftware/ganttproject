@@ -38,6 +38,7 @@ import net.sourceforge.ganttproject.chart.export.ChartDimensions;
 import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
+import net.sourceforge.ganttproject.chart.export.TreeTableApiKt;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ScrollViewInteraction;
 import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
@@ -246,8 +247,12 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
       myChartComponent.getTreeTable().autoFitColumns();
     }
     settings.setLogo(getLogo());
-    ChartImageBuilder builder = new ChartImageBuilder(settings, modelCopy, myChartComponent.getTreeTable());
+    ChartImageBuilder builder = createChartImageBuilder(settings, modelCopy, myChartComponent.getTreeTable());
     builder.buildImage(imageVisitor);
+  }
+
+  protected ChartImageBuilder createChartImageBuilder(GanttExportSettings settings, ChartModelBase modelCopy, GPTreeTableBase treeTable) {
+    return new ChartImageBuilder(settings, modelCopy, TreeTableApiKt.asTreeTableApi(treeTable));
   }
 
   @Override
@@ -277,9 +282,10 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         }
         Graphics2D g = getGraphics(d);
         g.translate(0, d.getLogoHeight());
-        header.print(g);
-
-        g.translate(0, d.getTableHeaderHeight());
+        if (header != null) {
+          header.print(g);
+          g.translate(0, d.getTableHeaderHeight());
+        }
         table.print(g);
       }
 

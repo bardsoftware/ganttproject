@@ -52,6 +52,7 @@ import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.*
+import net.sourceforge.ganttproject.chart.export.TreeTableApi
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
 import net.sourceforge.ganttproject.document.Document
@@ -63,6 +64,7 @@ import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 import net.sourceforge.ganttproject.undo.GPUndoManager
+import java.awt.Component
 import java.math.BigDecimal
 import java.util.*
 import java.util.List.copyOf
@@ -104,6 +106,7 @@ class TaskTable(
     { onColumnsChange() })
   val columnListWidthProperty = SimpleDoubleProperty()
   var requestSwingFocus: () -> Unit = {}
+  lateinit var swingComponent: Component
   val newTaskActor = NewTaskActor().also { it.start() }
 
 
@@ -202,7 +205,15 @@ class TaskTable(
     treeTable.addScrollListener { newValue ->
       taskTableChartConnector.tableScrollOffset.value = newValue
     }
-
+    taskTableChartConnector.exportTreeTableApi = {
+      TreeTableApi(
+        rowHeight = { treeTable.fixedCellSize.toInt() },
+        tableHeaderHeight = { treeTable.headerHeight.intValue() },
+        width = { treeTable.widthProperty().intValue() },
+        tableHeaderComponent = { null },
+        tableComponent = { swingComponent }
+      )
+    }
   }
 
   private fun initProjectEventHandlers() {
@@ -598,7 +609,8 @@ data class TaskTableChartConnector(
   val visibleTasks: ObservableList<Task>,
   val tableScrollOffset: DoubleProperty,
   var isTableScrollable: Boolean,
-  val chartScrollOffset: DoubleProperty
+  val chartScrollOffset: DoubleProperty,
+  var exportTreeTableApi: () -> TreeTableApi? = { null }
 )
 
 data class TaskTableActionConnector(

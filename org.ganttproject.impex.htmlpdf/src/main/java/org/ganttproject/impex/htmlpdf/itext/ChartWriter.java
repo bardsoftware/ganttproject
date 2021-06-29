@@ -106,9 +106,11 @@ class ChartWriter implements ChartImageVisitor {
   public void acceptTable(ChartDimensions d, Component header, Component table) {
     Graphics2D g = getGraphics(d);
     g.translate(0, d.getLogoHeight());
-    header.print(g);
+    if (header != null) {
+      header.print(g);
 
-    g.translate(0, d.getTableHeaderHeight());
+      g.translate(0, d.getTableHeaderHeight());
+    }
     table.print(g);
   }
 

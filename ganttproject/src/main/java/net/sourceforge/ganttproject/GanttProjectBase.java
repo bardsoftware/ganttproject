@@ -18,8 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
-import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.option.BooleanOption;
@@ -37,6 +35,8 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
+import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
+import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.task.TaskActions;
 import com.bardsoftware.eclipsito.update.Updater;
 import com.google.common.base.Suppliers;
@@ -130,7 +130,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
       FXCollections.observableArrayList(),
       new SimpleDoubleProperty(0.0),
       true,
-      new SimpleDoubleProperty(0.0)
+      new SimpleDoubleProperty(0.0),
+      () -> null
   );
   private TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
   final Supplier<TaskTable> myTaskTableSupplier;

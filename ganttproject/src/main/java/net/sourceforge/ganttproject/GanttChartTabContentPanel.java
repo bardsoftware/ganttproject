@@ -126,6 +126,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
       jfxPanel.requestFocus();
       return null;
     });
+    taskTable.setSwingComponent(jfxPanel);
     taskTable.getColumnListWidthProperty().addListener((observable, oldValue, newValue) -> {
       setTableWidth(newValue.doubleValue());
     });

@@ -28,6 +28,7 @@ import net.java.balloontip.styles.ToolTipBalloonStyle;
 import net.sourceforge.ganttproject.AbstractChartImplementation;
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.ChartImplementation;
+import net.sourceforge.ganttproject.GPTreeTableBase;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttTree2;
@@ -39,6 +40,7 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.chart.TaskRendererImpl2;
+import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
@@ -246,6 +248,9 @@ public class GanttChartController extends AbstractChartImplementation implements
     super.buildImage(settings, imageVisitor);
   }
 
+  protected ChartImageBuilder createChartImageBuilder(GanttExportSettings settings, ChartModelBase modelCopy, GPTreeTableBase treeTable) {
+    return new ChartImageBuilder(settings, modelCopy, myTaskTableConnector.getExportTreeTableApi().invoke());
+  }
   void showTooltip(final int x, final int y, final String text) {
     if (myTooltip == null) {
       scheduleTask(() -> {
