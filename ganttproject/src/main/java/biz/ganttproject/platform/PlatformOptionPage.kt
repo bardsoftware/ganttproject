@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.platform
 
+import biz.ganttproject.app.DIALOG_STYLESHEET
 import biz.ganttproject.app.DialogController
 import biz.ganttproject.app.LocalizedString
 import biz.ganttproject.app.createAlertPane
@@ -77,7 +78,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
 
     val group = BorderPane().also {
       it.styleClass.addAll("dlg-information", "dlg", "dialog-pane", "border-etched")
-      it.stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
+      it.stylesheets.addAll("/biz/ganttproject/app/Theme.css", DIALOG_STYLESHEET)
     }
     val dialogBuildApi = DialogControllerImpl(group)
     val updateUi = UpdateDialog(filteredUpdates, filteredUpdates) {

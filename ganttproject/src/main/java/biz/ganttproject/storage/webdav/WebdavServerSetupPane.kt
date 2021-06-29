@@ -33,6 +33,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty
 import org.controlsfx.property.editor.AbstractPropertyEditor
+import org.controlsfx.property.editor.DefaultPropertyEditorFactory
 import org.controlsfx.property.editor.PropertyEditor
 import java.beans.IntrospectionException
 import java.beans.PropertyDescriptor
@@ -80,18 +81,22 @@ class WebdavServerSetupPane(
       styleClass.addAll("property-sheet")
       isModeSwitcherVisible = false
       isSearchBoxVisible = false
+      val defaultFactory = DefaultPropertyEditorFactory()
+      setPropertyEditorFactory { item ->
+        if (item.name == i18n.formatText("password")) {
+          PasswordPropertyEditor(item)
+        } else {
+          defaultFactory.call(item)
+        }
+      }
       items.add(BeanProperty(
           myWebdavServer, WebDavPropertyDescriptor("name", "webdav.serverName")))
       items.add(BeanProperty(
           myWebdavServer, WebDavPropertyDescriptor("rootUrl", "option.webdav.server.url.label")))
       items.add(BeanProperty(
           myWebdavServer, WebDavPropertyDescriptor("username", "option.webdav.server.username.label")))
-      items.add(object : BeanProperty(
-          myWebdavServer, WebDavPropertyDescriptor("password", "option.webdav.server.password.label")) {
-        override fun getPropertyEditorClass(): Optional<Class<out PropertyEditor<*>?>> {
-          return Optional.of(PasswordPropertyEditor::class.java)
-        }
-      })
+      items.add(BeanProperty(
+          myWebdavServer, WebDavPropertyDescriptor("password", "option.webdav.server.password.label")))
       items.add(BeanProperty(
           myWebdavServer, WebDavPropertyDescriptor("savePassword", "option.webdav.server.savePassword.label.trailing")))
 

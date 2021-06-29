@@ -20,8 +20,6 @@ package biz.ganttproject.app
 
 import biz.ganttproject.lib.fx.VBoxBuilder
 import com.sandec.mdfx.MDFXNode
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.animation.FadeTransition
 import javafx.animation.ParallelTransition
 import javafx.animation.Transition
@@ -31,7 +29,6 @@ import javafx.collections.ListChangeListener
 import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
-import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -80,7 +77,7 @@ fun dialogFx(contentBuilder: (DialogController) -> Unit) {
       val dialogBuildApi = DialogControllerFx(it.dialogPane)
       it.dialogPane.apply {
         styleClass.addAll("dlg")
-        stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
+        stylesheets.addAll("/biz/ganttproject/app/Theme.css", DIALOG_STYLESHEET)
 
         contentBuilder(dialogBuildApi)
         val window = scene.window
@@ -140,7 +137,7 @@ class DialogControllerSwing() : DialogController {
   private lateinit var dialogFrame: UIFacade.Dialog
   private val paneBuilder = VBoxBuilder().also {
     it.vbox.styleClass.add("dlg")
-    it.vbox.stylesheets.addAll("/biz/ganttproject/app/Theme.css", "/biz/ganttproject/app/Dialog.css")
+    it.vbox.stylesheets.addAll("/biz/ganttproject/app/Theme.css", DIALOG_STYLESHEET)
   }
 
   private val contentStack = StackPane()

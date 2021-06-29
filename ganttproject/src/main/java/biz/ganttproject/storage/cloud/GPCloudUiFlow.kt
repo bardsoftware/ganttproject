@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.app.DIALOG_STYLESHEET
 import biz.ganttproject.app.DialogController
 import javafx.application.Platform
 import javafx.scene.Node
@@ -184,7 +185,7 @@ fun paneAndImage(centerNode: Node, imagePath: String = "/icons/ganttproject-logo
   return BorderPane().also {
     it.styleClass.addAll("dlg", "signup-pane")
     it.stylesheets.addAll(
-      "/biz/ganttproject/app/Dialog.css",
+      DIALOG_STYLESHEET,
       "/biz/ganttproject/app/Util.css",
       "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
       "/biz/ganttproject/storage/cloud/GPCloudSignupPane.css"

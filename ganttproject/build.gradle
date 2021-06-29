@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.5.0'
+    ext.kotlin_version = '1.5.20'
     repositories {
         mavenCentral()
         maven {
@@ -40,8 +40,8 @@ dependencies {
 
     exportedLibs files("lib/core/eclipsito.jar")
 
-    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.+'
-    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.4.+'
+    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.+'
+    direct 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.5.+'
 
     compile configurations.direct
     compile configurations.providedCompile
@@ -65,6 +65,12 @@ compileKotlin {
 
 compileSass {
     outputDir = project.file("${projectDir}/src/main/resources")
+    doLast {
+        copy {
+            from "${projectDir}/src/main/resources/biz/ganttproject/app/mdfx.css"
+            into "${projectDir}/src/main/resources/com/sandec/mdfx/"
+        }
+    }
 }
 
 processResources.dependsOn('compileSass')

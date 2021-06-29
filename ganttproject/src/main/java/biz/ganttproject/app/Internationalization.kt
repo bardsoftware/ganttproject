@@ -199,9 +199,9 @@ private val LEXICOGRAPHICAL_LOCALE_COMPARATOR: Comparator<Locale> = Comparator {
 fun getAvailableTranslations(): List<Locale> {
   val removeLangOnly = HashSet<Locale>()
   val result = HashSet<Locale>()
-  for (l in Locale.getAvailableLocales()) {
+  Locale.getAvailableLocales().sortedBy { it.toString() }.forEach { l ->
     if (l.language.isEmpty()) {
-      continue
+      return@forEach
     }
     if (getResourceBundle(l, false) != null) {
       if (l.country.isNotEmpty()) {
