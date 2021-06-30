@@ -654,7 +654,8 @@ public abstract class LabeledSkinBase<C extends Labeled> extends SkinBase<C> {
             } else if (contentDisplay == ContentDisplay.RIGHT) {
                 // The graphic is to the right of the text
                 textX = contentX;
-                graphicX = textX + textWidth + gap;
+                //graphicX = textX + textWidth + gap;
+                graphicX = labeled.getWidth() - graphicWidth - Math.max(labeled.paddingProperty().getValue().getRight(), 5.0);
                 graphicY = contentY + ((contentHeight - graphicHeight) / 2.0);
                 textY = contentY + ((contentHeight - textHeight) / 2.0);
             } else if (contentDisplay == ContentDisplay.BOTTOM) {

@@ -19,10 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 import biz.ganttproject.app.MenuBuilder
-//import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
+import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
 import com.sun.javafx.scene.control.behavior.TreeTableViewBehavior
-//import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
-//import biz.ganttproject.lib.fx.treetable.VirtualFlow
+import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
+import biz.ganttproject.lib.fx.treetable.VirtualFlow
 import com.sun.javafx.scene.control.inputmap.InputMap
 import com.sun.javafx.scene.control.inputmap.KeyBinding
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -34,9 +34,9 @@ import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.geometry.Side
 import javafx.scene.control.*
-import javafx.scene.control.skin.TreeTableRowSkin
-import javafx.scene.control.skin.TreeTableViewSkin
-import javafx.scene.control.skin.VirtualFlow
+//import javafx.scene.control.skin.TreeTableRowSkin
+//import javafx.scene.control.skin.TreeTableViewSkin
+//import javafx.scene.control.skin.VirtualFlow
 import javafx.scene.input.KeyCode
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
@@ -133,11 +133,12 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
     skinnable.properties.addListener(MapChangeListener { change ->
       if (change.key == "TableView.contentWidth" && change.wasAdded()) {
         var value = change.valueAdded as Double
-        //println("contentWidth=$value vbar width=${(virtualFlow as MyVirtualFlow).vbarWidth()} #listeners=${contentWidthListener}")
+        println("contentWidth=$value vbar width=${(virtualFlow as MyVirtualFlow).vbarWidth()} #listeners=${contentWidthListener}")
         //println("pseuidoclasses: ${skinnable.pseudoClassStates}")
         //println("insets: ${skinnable.insets} width=${skinnable.width}")
         //skinnable.childrenUnmodifiable.forEach { println("$it width=${(it as Region).width} insets=${it.insets}") }
-        value += (virtualFlow as MyVirtualFlow).vbarWidth()
+        val vbarWidth = (virtualFlow as MyVirtualFlow).vbarWidth()
+        value += vbarWidth
 
         // Sometimes borders or insets add a few pixels to the content width,
         // e.g. it may become 349 when we expect 350. It is difficult to track such
@@ -201,8 +202,7 @@ class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
 
 
 class MyVirtualFlow<T: IndexedCell<*>> : VirtualFlow<T>() {
-  fun vbarWidth() = if (this.width > 0.0) vbar.width else 0.0
-
+  fun vbarWidth() = if (this.width > 0.0 && vbar.isVisible) vbar.width else 0.0
 }
 
 class MyTreeTableRow<T> : TreeTableRow<T>() {

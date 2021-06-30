@@ -22,6 +22,7 @@ package biz.ganttproject.lib.fx
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import javafx.application.Platform
 import javafx.beans.property.ReadOnlyDoubleWrapper
 import javafx.beans.property.ReadOnlyIntegerWrapper
@@ -30,6 +31,7 @@ import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.Node
+import javafx.scene.control.Skin
 import javafx.scene.control.TextField
 import javafx.scene.control.TreeTableCell
 import javafx.scene.control.TreeTableColumn
@@ -61,6 +63,10 @@ class TextCell<S, T>(
   var colorSupplier: (T) -> Color? = { null }
   var graphicSupplier: (T) -> Node? = { null }
   private val textField: TextField = createTextField()
+
+  override fun createDefaultSkin(): Skin<*> {
+    return TreeTableCellSkin<S, T>(this)
+  }
 
   init {
     styleClass.add("gp-tree-table-cell")

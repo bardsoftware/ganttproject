@@ -28,6 +28,7 @@ import biz.ganttproject.core.table.ColumnList.ColumnStub
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.lib.fx.*
+import biz.ganttproject.lib.fx.treetable.TableRowSkinBase
 import biz.ganttproject.task.TaskActions
 import javafx.application.Platform
 import javafx.beans.property.*
@@ -42,6 +43,8 @@ import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
 import javafx.scene.control.cell.CheckBoxTreeTableCell
 import javafx.scene.input.*
+import javafx.scene.layout.HBox
+import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.paint.Color.rgb
 import javafx.scene.shape.Circle
@@ -229,6 +232,7 @@ class TaskTable(
       }
 
       override fun projectCreated() {
+        loadDefaultColumns()
         reload()
       }
     })
@@ -353,7 +357,7 @@ class TaskTable(
         if (taskDefaultColumn == TaskDefaultColumn.NAME) {
           TreeTableColumn<Task, Task>(taskDefaultColumn.getName()).apply {
             setCellValueFactory {
-              ReadOnlyObjectWrapper<Task>(it.value.value)
+              ReadOnlyObjectWrapper(it.value.value)
             }
             cellFactory = ourNameCellFactory
             onEditCommit = EventHandler { event ->
@@ -364,7 +368,7 @@ class TaskTable(
             treeTable.treeColumn = this
           }
         } else {
-          createTextColumn<Task>(taskDefaultColumn.getName(),
+          createTextColumn(taskDefaultColumn.getName(),
             { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
             { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
           )
@@ -462,7 +466,7 @@ class TaskTable(
           { task, value -> taskTableModel.setValue(value, task, customProperty) }
         )
       }
-    }?.also {
+    }.also {
       it.isEditable = true
       it.isVisible = column.isVisible
       it.userData = column
@@ -517,7 +521,10 @@ class TaskTable(
     }
   }
   private fun Task.addChildTreeItem(child: Task, pos: Int = -1): TreeItem<Task> {
-    val parentItem = task2treeItem[this]!!
+    val parentItem = task2treeItem[this] ?: run {
+      println(task2treeItem)
+      throw NullPointerException("NPE! this=$this")
+    }
     val childItem = createTreeItem(child)
     if (pos == -1) {
       parentItem.children.add(childItem)
@@ -643,7 +650,7 @@ class ColumnListImpl(
   private val onColumnChange: () -> Unit = {}
 ) : ColumnList {
 
-  val totalWidth get()  = totalWidthProperty.value
+  val totalWidth: Double get() = totalWidthProperty.value
   val totalWidthProperty = SimpleDoubleProperty()
 
   init {
@@ -839,17 +846,32 @@ private fun ColumnList.Column.taskDefaultColumn() = TaskDefaultColumn.find(this.
 
 private val taskNameConverter = MyStringConverter<Task, Task>(
   toString = { cell, task -> task?.name },
-  fromString = { cell, text -> cell.item.unpluggedClone().also { it.name = text }}
+  fromString = { cell, text ->
+    cell.item?.let {
+      it.unpluggedClone().also { it.name = text }
+    } ?: run {
+      println("no item in this cell! cell=$cell")
+      Thread.dumpStack()
+      null
+    }
+  }
 )
 
 private val dragAndDropSupport = DragAndDropSupport()
-private val ourNameCellFactory = TextCellFactory<Task, Task>(converter = taskNameConverter) { cell ->
+private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->
   dragAndDropSupport.install(cell)
   cell.graphicSupplier = { task: Task ->
     if (TaskDefaultColumn.COLOR.stub.isVisible) {
-      Circle().also {
-        it.fill = rgb(task.color.red, task.color.green, task.color.blue)
-        it.radius = 4.0
+      HBox().also { hbox ->
+        Region().also {
+          hbox.children.add(it)
+          HBox.setHgrow(it, Priority.ALWAYS)
+        }
+        Circle().also {
+          it.fill = rgb(task.color.red, task.color.green, task.color.blue)
+          it.radius = 4.0
+          hbox.children.add(it)
+        }
       }
     } else null
   }
