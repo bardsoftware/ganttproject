@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.task;
 
 import com.google.common.base.Supplier;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
+import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -47,13 +48,19 @@ public class TaskSelectionManager implements TaskSelectionContext {
   private final List<Task> selectedTasks = new ArrayList<Task>();
   private final List<Listener> myListeners = new ArrayList<Listener>();
   private Object myUserInputConsumer;
-  private final Supplier<TaskManager> myTaskManager;
+  private final TaskManager myTaskManager;
 
   /**
    * Creates an instance of TaskSelectionManager
    */
   public TaskSelectionManager(Supplier<TaskManager> taskManager) {
-    myTaskManager = taskManager;
+    myTaskManager = taskManager.get();
+    myTaskManager.addTaskListener(new TaskListenerAdapter() {
+      @Override
+      public void taskModelReset() {
+        clear();
+      }
+    });
   }
 
   public void setUserInputConsumer(Object consumer) {
@@ -90,7 +97,7 @@ public class TaskSelectionManager implements TaskSelectionContext {
   }
 
   private TaskContainmentHierarchyFacade getTaskHierarchy() {
-    return myTaskManager.get().getTaskHierarchy();
+    return myTaskManager.getTaskHierarchy();
   }
 
   public void setSelectedTasks(List<Task> tasks) {

@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -33,11 +32,10 @@ import biz.ganttproject.core.option.FontSpec.Size;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.lib.fx.TreeCollapseView;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction;
@@ -69,7 +67,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.LanguageOption;
 import net.sourceforge.ganttproject.language.ShortDateFormatOption;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -167,11 +164,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myStatusBar.setNotificationManager(notificationManager);
     myFallbackDelegate = fallbackDelegate;
     Job.getJobManager().setProgressProvider(this);
-    myTaskSelectionManager = new TaskSelectionManager(Suppliers.memoize(new Supplier<TaskManager>() {
-      public TaskManager get() {
-        return project.getTaskManager();
-      }
-    }));
+    myTaskSelectionManager = new TaskSelectionManager(() -> project.getTaskManager());
     myNotificationManager = notificationManager;
 
     myLafOption = new LafOption(this);
