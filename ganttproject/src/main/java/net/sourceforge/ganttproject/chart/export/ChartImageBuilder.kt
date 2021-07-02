@@ -50,7 +50,7 @@ class ChartImageBuilder(
     myChartModel.setHeaderHeight(myDimensions.logoHeight + myDimensions.tableHeaderHeight - 1)
     myChartModel.setVisibleTasks(mySettings.visibleTasks)
     visitor.acceptLogo(myDimensions, mySettings.logo)
-    visitor.acceptTable(myDimensions, myTreeTable.tableHeaderComponent(), myTreeTable.tableComponent())
+    visitor.acceptTable(myDimensions, myTreeTable)
     visitor.acceptChart(myDimensions, myChartModel)
   }
 

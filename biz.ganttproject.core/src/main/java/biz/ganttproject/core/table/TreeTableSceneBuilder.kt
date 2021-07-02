@@ -16,16 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package biz.ganttproject.core.chart.scene.gantt
+package biz.ganttproject.core.table
 
-import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.*
-import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.Table.*
+import biz.ganttproject.core.table.TableSceneBuilder.*
+import biz.ganttproject.core.table.TableSceneBuilder.Table.*
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
 
-class TreeTableSceneBuilder(
-  private val input: InputApi
-) {
+class TreeTableSceneBuilder(private val input: InputApi) {
   private val tableSceneConfig = Config(input.rowHeight, input.horizontalOffset, input.textMetrics)
 
   fun build(columns: List<Column>, items: List<Item>, canvas: Canvas = Canvas()): Canvas {
@@ -43,17 +41,17 @@ class TreeTableSceneBuilder(
 
   class Item(
     val values: Map<Column, String>,
-    val subitems: List<Item> = emptyList()
+    val subitems: MutableList<Item> = mutableListOf()
   ) {
     companion object {
       val EMPTY = Item(emptyMap())
     }
   }
 
-  interface InputApi {
-    val textMetrics: TextMetrics
-    val rowHeight: Int
-    val depthIndent: Int
-    val horizontalOffset: Int
-  }
+  data class InputApi(
+    val textMetrics: TextMetrics,
+    val rowHeight: Int,
+    val depthIndent: Int,
+    val horizontalOffset: Int,
+  )
 }

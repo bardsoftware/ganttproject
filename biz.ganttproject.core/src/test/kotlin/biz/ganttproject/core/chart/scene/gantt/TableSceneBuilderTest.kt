@@ -22,8 +22,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 
 import biz.ganttproject.core.chart.canvas.Canvas
-import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.*
-import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.Table.*
+import biz.ganttproject.core.table.TableSceneBuilder
+import biz.ganttproject.core.table.TableSceneBuilder.*
+import biz.ganttproject.core.table.TableSceneBuilder.Table.*
 
 class TableSceneBuilderTest {
   @Test

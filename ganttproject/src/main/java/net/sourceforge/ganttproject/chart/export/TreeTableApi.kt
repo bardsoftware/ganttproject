@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.chart.export
 
 import net.sourceforge.ganttproject.GPTreeTableBase
 import java.awt.Component
+import java.awt.Graphics2D
 
 /**
  * This is an interface of the tree table component for the chart export purposes.
@@ -31,7 +32,8 @@ data class TreeTableApi(
   val tableHeaderHeight: ()->Int,
   val width: ()->Int,
   val tableHeaderComponent: ()-> Component?,
-  val tableComponent: () -> Component
+  val tableComponent: () -> Component?,
+  val tablePainter: ((Graphics2D) -> Unit)? = null
 )
 
 /**

@@ -38,6 +38,7 @@ import net.sourceforge.ganttproject.chart.export.ChartDimensions;
 import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
+import net.sourceforge.ganttproject.chart.export.TreeTableApi;
 import net.sourceforge.ganttproject.chart.export.TreeTableApiKt;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ScrollViewInteraction;
@@ -276,17 +277,23 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
       }
 
       @Override
-      public void acceptTable(ChartDimensions d, Component header, Component table) {
+      public void acceptTable(ChartDimensions d, TreeTableApi treeTable) {
         if (d.getTreeWidth() <= 0) {
           return;
         }
         Graphics2D g = getGraphics(d);
         g.translate(0, d.getLogoHeight());
+        var header = treeTable.getTableHeaderComponent().invoke();
         if (header != null) {
           header.print(g);
           g.translate(0, d.getTableHeaderHeight());
         }
-        table.print(g);
+        var table = treeTable.getTableComponent().invoke();
+        if (table != null) {
+          table.print(g);
+        } else {
+          treeTable.getTablePainter().invoke(g);
+        }
       }
 
       @Override

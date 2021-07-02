@@ -78,9 +78,9 @@ import kotlin.math.floor
  * @author dbarashev@bardsoftware.com
  */
 class TaskTable(
-  private val project: IGanttProject,
+  val project: IGanttProject,
   private val taskManager: TaskManager,
-  private val taskTableChartConnector: TaskTableChartConnector,
+  val taskTableChartConnector: TaskTableChartConnector,
   private val treeCollapseView: TreeCollapseView<Task>,
   private val selectionManager: TaskSelectionManager,
   private val taskActions: TaskActions,
@@ -89,9 +89,9 @@ class TaskTable(
 ) {
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   private val treeModel = taskManager.taskHierarchy
-  private val rootItem = TreeItem(treeModel.rootTask)
-  private val treeTable = GPTreeTableView<Task>(rootItem)
-  private val taskTableModel = TaskTableModel(taskManager, taskManager.customPropertyManager)
+  val rootItem = TreeItem(treeModel.rootTask)
+  val treeTable = GPTreeTableView<Task>(rootItem)
+  val taskTableModel = TaskTableModel(taskManager, taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
 
   val control: Parent get() = treeTable
@@ -214,7 +214,8 @@ class TaskTable(
         tableHeaderHeight = { treeTable.headerHeight.intValue() },
         width = { treeTable.widthProperty().intValue() },
         tableHeaderComponent = { null },
-        tableComponent = { swingComponent }
+        tableComponent = { null },
+        tablePainter = { this.buildImage(it) }
       )
     }
   }
@@ -639,7 +640,7 @@ private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (
 
 }
 
-private fun TreeItem<Task>.depthFirstWalk(visitor: (TreeItem<Task>) -> Boolean) {
+fun TreeItem<Task>.depthFirstWalk(visitor: (TreeItem<Task>) -> Boolean) {
   this.children.forEach { if (visitor(it)) it.depthFirstWalk(visitor) }
 }
 
