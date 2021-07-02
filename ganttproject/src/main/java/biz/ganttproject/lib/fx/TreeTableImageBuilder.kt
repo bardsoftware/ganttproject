@@ -19,12 +19,6 @@ import java.awt.image.BufferedImage
  * @author dbarashev@bardsoftware.com
  */
 fun TaskTable.buildImage(graphics2D: Graphics2D) {
-  graphics2D.setRenderingHint(
-    RenderingHints.KEY_TEXT_ANTIALIASING,
-    RenderingHints.VALUE_TEXT_ANTIALIAS_GASP
-  )
-  graphics2D.color = Color.white
-  graphics2D.fillRect(0, 0, this.treeTable.width.toInt(), this.treeTable.height.toInt())
 
   val taskTable = this
 //  val bufferedImage = taskTable.treeTable.createEmptyBufferedImage()
@@ -59,6 +53,14 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
   )
   val painter = StyledPainterImpl(ChartUIConfiguration( taskTable.project.uiConfiguration))
   painter.setGraphics(graphics2D)
+
+  graphics2D.setRenderingHint(
+    RenderingHints.KEY_TEXT_ANTIALIASING,
+    RenderingHints.VALUE_TEXT_ANTIALIAS_GASP
+  )
+  graphics2D.color = Color.white
+  graphics2D.fillRect(0, 0, this.treeTable.width.toInt(), treeItem2sceneItem.size * sceneBuilderInput.rowHeight)
+
   canvas.paint(painter)
 }
 
