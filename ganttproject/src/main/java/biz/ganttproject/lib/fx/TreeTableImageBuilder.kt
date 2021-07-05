@@ -25,6 +25,7 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
   val textMetrics = TextLengthCalculatorImpl(graphics2D)
   val sceneBuilderInput = TreeTableSceneBuilder.InputApi(
     textMetrics = textMetrics,
+    headerHeight = taskTable.headerHeightProperty.intValue(),
     rowHeight = taskTable.taskTableChartConnector.rowHeight.value,
     depthIndent = 30,
     horizontalOffset = 0
@@ -32,7 +33,13 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
   val treeTableSceneBuilder = TreeTableSceneBuilder(sceneBuilderInput)
 
   val visibleColumns = taskTable.columnList.columns().filter { it.isVisible }
-  val columnMap = visibleColumns.associateWith { TableSceneBuilder.Table.Column(name = it.name, width = it.width) }
+  val columnMap = visibleColumns.associateWith {
+    TableSceneBuilder.Table.Column(
+      name = it.name,
+      width = it.width,
+      isTreeColumn = it.id == TaskDefaultColumn.NAME.stub.id
+    )
+  }
   val treeItem2sceneItem = mutableMapOf<TreeItem<Task>, TreeTableSceneBuilder.Item>()
   val rootSceneItems = mutableListOf<TreeTableSceneBuilder.Item>()
   taskTable.rootItem.depthFirstWalk { item ->

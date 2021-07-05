@@ -24,7 +24,7 @@ import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
 
 class TreeTableSceneBuilder(private val input: InputApi) {
-  private val tableSceneConfig = Config(input.rowHeight, input.horizontalOffset, input.textMetrics)
+  private val tableSceneConfig = Config(input.headerHeight, input.rowHeight, input.horizontalOffset, input.textMetrics)
 
   fun build(columns: List<Column>, items: List<Item>, canvas: Canvas = Canvas()): Canvas {
     val rows = toRow(items)
@@ -50,8 +50,10 @@ class TreeTableSceneBuilder(private val input: InputApi) {
 
   data class InputApi(
     val textMetrics: TextMetrics,
+    val headerHeight: Int,
     val rowHeight: Int,
     val depthIndent: Int,
     val horizontalOffset: Int,
-  )
+  ) {
+  }
 }

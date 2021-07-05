@@ -57,7 +57,7 @@ class TableSceneBuilderTest {
 
   private fun test(rowHeight: Int, horizontalOffset: Int, table: Table, expectedWidth: Int) {
     val canvas = spy(Canvas())
-    val sceneBuilder = TableSceneBuilder(Config(rowHeight, horizontalOffset, TextMetricsStub), table, canvas)
+    val sceneBuilder = TableSceneBuilder(Config(rowHeight, rowHeight, horizontalOffset, TextMetricsStub), table, canvas)
     sceneBuilder.build()
     for (i in 1..table.rows.size) {
       verify(canvas).createRectangle(0, i * rowHeight, expectedWidth, rowHeight)

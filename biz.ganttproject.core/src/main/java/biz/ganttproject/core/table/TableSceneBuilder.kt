@@ -31,9 +31,10 @@ class TableSceneBuilder(
   private val dimensions = calculateDimensions()
 
   fun build(): Canvas {
-    val state = PaintState(config.rowHeight)
+    var state = PaintState(config.headerHeight)
 
     paintHeader(state)
+    state = state.withRowHeight(config.rowHeight)
     table.rows.forEach {
       val rectangle = canvas.createRectangle(
         0, state.y, dimensions.width, config.rowHeight
@@ -86,10 +87,11 @@ class TableSceneBuilder(
   }
 
   private fun paintRow(row: Table.Row, y: Int) {
-    var x = config.horizontalOffset + row.indent
+    var x = config.horizontalOffset
     table.columns.forEach { col ->
       row.values[col]?.also {
-        paintString(it, x, y, colsWidth[col]!!)
+        val indent = if (col.isTreeColumn) row.indent else 0
+        paintString(it, x + indent, y, colsWidth[col]!!)
       }
       x += colsWidth[col]!!
     }
@@ -108,10 +110,15 @@ class TableSceneBuilder(
     text.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
   }
 
-  data class Config(val rowHeight: Int, val horizontalOffset: Int, val textMetrics: TextMetrics)
+  data class Config(
+    val headerHeight: Int,
+    val rowHeight: Int,
+    val horizontalOffset: Int,
+    val textMetrics: TextMetrics
+  )
 
   class Table(val columns: List<Column>, val rows: List<Row>) {
-    class Column(val name: String, val width: Int? = null)
+    class Column(val name: String, val width: Int? = null, val isTreeColumn: Boolean = false)
 
     class Row(val values: Map<Column, String>, val indent: Int)
   }
@@ -128,5 +135,11 @@ class TableSceneBuilder(
       y += rowHeight
       rowNumber++
     }
+
+    fun withRowHeight(rowHeight: Int) =
+      PaintState(rowHeight).also {
+        it.rowNumber = this.rowNumber
+        it.y = this.y
+      }
   }
 }
