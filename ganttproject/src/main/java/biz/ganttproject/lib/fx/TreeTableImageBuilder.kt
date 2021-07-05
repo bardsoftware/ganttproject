@@ -32,7 +32,7 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
   )
   val treeTableSceneBuilder = TreeTableSceneBuilder(sceneBuilderInput)
 
-  val visibleColumns = taskTable.columnList.columns().filter { it.isVisible }
+  val visibleColumns = taskTable.columnList.exportData().filter { it.isVisible }
   val columnMap = visibleColumns.associateWith {
     TableSceneBuilder.Table.Column(
       name = it.name,
