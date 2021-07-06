@@ -212,7 +212,7 @@ class TaskTable(
       TreeTableApi(
         rowHeight = { treeTable.fixedCellSize.toInt() },
         tableHeaderHeight = { treeTable.headerHeight.intValue() },
-        width = { treeTable.widthProperty().intValue() },
+        width = { columnList.totalWidth.toInt() },
         tableHeaderComponent = { null },
         tableComponent = { null },
         tablePainter = { this.buildImage(it) }
@@ -775,7 +775,12 @@ class ColumnListImpl(
   }
 
   private fun updateTotalWidth() {
-    totalWidthProperty.value = columnList.filter { it.isVisible  }.sumOf { it.width }.toDouble()
+    totalWidthProperty.value = columnList.filter { it.isVisible  }.sumOf {
+      when (TaskDefaultColumn.find(it.id)) {
+        TaskDefaultColumn.COLOR -> 0
+        else -> it.width
+      }
+    }.toDouble()
   }
 }
 

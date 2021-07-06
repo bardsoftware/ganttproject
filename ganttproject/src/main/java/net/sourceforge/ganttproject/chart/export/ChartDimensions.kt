@@ -22,7 +22,7 @@ import net.sourceforge.ganttproject.GanttExportSettings
 
 class ChartDimensions internal constructor(settings: GanttExportSettings, treeTable: TreeTableApi) {
   val logoHeight: Int = settings.logo.getHeight(null)
-  private val treeHeight: Int = treeTable.rowHeight() * settings.rowCount
+  val treeHeight: Int = treeTable.rowHeight() * settings.rowCount
   val tableHeaderHeight: Int = treeTable.tableHeaderHeight()
   val treeWidth: Int = treeTable.width()
   var chartWidth = 0

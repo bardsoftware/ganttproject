@@ -20,6 +20,7 @@ package biz.ganttproject.core.table
 
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
+import java.awt.Color
 import java.lang.Integer.max
 
 class TableSceneBuilder(
@@ -31,57 +32,73 @@ class TableSceneBuilder(
   private val dimensions = calculateDimensions()
 
   fun build(): Canvas {
-    var state = PaintState(config.headerHeight)
+    var state = PaintState(config.headerHeight - HEADER_HEIGHT_DECREMENT)
 
     paintHeader(state)
     state = state.withRowHeight(config.rowHeight)
     table.rows.forEach {
-      val rectangle = canvas.createRectangle(
-        0, state.y, dimensions.width, config.rowHeight
-      )
-      if (state.rowNumber % 2 == 1) {
-        rectangle.style = "odd-row"
+      canvas.createLine(0, state.y + config.rowHeight, dimensions.width, state.y + config.rowHeight).apply {
+        foregroundColor = Color.GRAY
       }
-      paintRow(it, rectangle.middleY)
+      paintRow(it, state.y + config.rowHeight/2)
       state.toNextRow()
     }
 
     return canvas
   }
 
-  private fun calculateColsWidth(): Map<Table.Column, Int> {
-    val widths = mutableMapOf<Table.Column, Int>()
+  data class ColumnWidth(val actual: Int, val maxContent: Int) {
+  }
+
+  private fun calculateColsWidth(): Map<Table.Column, ColumnWidth> {
+    val widths = mutableMapOf<Table.Column, ColumnWidth>()
     table.columns.forEach { col ->
-      val isFirst = col == table.columns.first()
-      widths[col] = if (col.width != null) {
-        col.width
-      } else {
+      widths[col] = ColumnWidth(col.width ?: 0, run {
         val colNameWidth = config.textMetrics.getTextLength(col.name)
         val colContentWidth = table.rows.map {
-          val indent = if (isFirst) it.indent else 0
+          val indent = if (col.isTreeColumn) it.indent else 0
           indent + (it.values[col]?.let(config.textMetrics::getTextLength) ?: 0)
         }.maxOrNull() ?: 0
         max(colNameWidth, colContentWidth)
-      }
+      })
     }
     return widths
   }
 
   private fun calculateDimensions(): Dimension {
     val height = config.rowHeight * table.rows.size
-    val width = table.columns.sumBy { colsWidth[it]!! } + 2 * config.horizontalOffset
+    val width = table.columns.sumOf { colsWidth[it]!!.actual } + 2 * config.horizontalOffset
     return Dimension(height, width)
   }
 
   private fun paintHeader(state: PaintState) {
     var x = config.horizontalOffset
     table.columns.forEach {
+      val height = config.headerHeight - HEADER_HEIGHT_DECREMENT
+      val width = colsWidth[it]!!
+
       val rectangle = canvas.createRectangle(
-        x, state.y, colsWidth[it]!!, config.rowHeight
-      )
+        x, state.y, width.actual, height
+      ).apply {
+        style = "timeline.area"
+      }
+      //timeunitHeaderBorder.setForegroundColor(myInputApi.getTimelineBorderColor());
+      canvas.createLine(
+        x, state.y + height, x + width.actual, state.y + height
+      ).apply {
+        style = "timeline.borderBottom"
+      }
+//      canvas.createLine(
+//        x + width, state.y, x + width, state.y + height
+//      ).apply {
+//        style = "timeline.borderBottom"
+//      }
+
       // TODO: add rectangle borders and color?
-      paintString(it.name, x, rectangle.middleY, colsWidth[it]!!)
-      x += colsWidth[it]!!
+      paintString(it.name, x + TEXT_PADDING, rectangle.middleY, width.actual).also {
+        it.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
+      }
+      x += width.actual
     }
     state.toNextRow()
   }
@@ -89,15 +106,28 @@ class TableSceneBuilder(
   private fun paintRow(row: Table.Row, y: Int) {
     var x = config.horizontalOffset
     table.columns.forEach { col ->
+      val width = colsWidth[col]!!
       row.values[col]?.also {
-        val indent = if (col.isTreeColumn) row.indent else 0
-        paintString(it, x + indent, y, colsWidth[col]!!)
+        val indent = TEXT_PADDING + if (col.isTreeColumn) row.indent else 0
+        when (col.alignment) {
+          Canvas.HAlignment.RIGHT -> {
+            paintString(it, x + width.actual - TEXT_PADDING, y, width.actual).also {
+              it.setAlignment(col.alignment, Canvas.VAlignment.CENTER)
+            }
+          }
+          Canvas.HAlignment.LEFT -> {
+            paintString(it, x + indent, y, width.actual).also {
+              it.setAlignment(col.alignment, Canvas.VAlignment.CENTER)
+            }
+          }
+        }
+        //canvas.createLine(x + width, y + config.rowHeight/4, x+width, y + config.rowHeight/2)
       }
-      x += colsWidth[col]!!
+      x += width.actual
     }
   }
 
-  private fun paintString(string: String, x: Int, y: Int, widthLimit: Int) {
+  private fun paintString(string: String, x: Int, y: Int, widthLimit: Int): Canvas.Text {
     var fitString = string
     if (config.textMetrics.getTextLength(fitString) > widthLimit) {
       val letterWidth = config.textMetrics.getTextLength("m")
@@ -106,8 +136,7 @@ class TableSceneBuilder(
       fitString = fitString.substring(0, lettersNumber)
       fitString += dots
     }
-    val text = canvas.createText(x, y, fitString)
-    text.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
+    return canvas.createText(x, y, fitString)
   }
 
   data class Config(
@@ -118,7 +147,10 @@ class TableSceneBuilder(
   )
 
   class Table(val columns: List<Column>, val rows: List<Row>) {
-    class Column(val name: String, val width: Int? = null, val isTreeColumn: Boolean = false)
+    class Column(val name: String,
+                 val width: Int? = null,
+                 val isTreeColumn: Boolean = false,
+                 val alignment: Canvas.HAlignment = Canvas.HAlignment.LEFT)
 
     class Row(val values: Map<Column, String>, val indent: Int)
   }
@@ -143,3 +175,9 @@ class TableSceneBuilder(
       }
   }
 }
+
+// Because of hysterical raisins the height of the timeline area in the chart is 1 pixel less
+// (see TimelineSceneBuilder). This might be due to the legacy technology of painting Swing tree component
+// instead of building our own canvas model. We apply decrement here too.
+private val HEADER_HEIGHT_DECREMENT = 1
+private val TEXT_PADDING = 5
