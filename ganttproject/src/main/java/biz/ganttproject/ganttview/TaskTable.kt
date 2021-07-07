@@ -222,6 +222,9 @@ class TaskTable(
         tablePainter = { this.buildImage(it) }
       )
     }
+    taskTableChartConnector.focus = {
+      treeTable.requestFocus()
+    }
   }
 
   private fun initProjectEventHandlers() {
@@ -626,7 +629,8 @@ data class TaskTableChartConnector(
   val tableScrollOffset: DoubleProperty,
   var isTableScrollable: Boolean,
   val chartScrollOffset: DoubleProperty,
-  var exportTreeTableApi: () -> TreeTableApi? = { null }
+  var exportTreeTableApi: () -> TreeTableApi? = { null },
+  var focus: () -> Unit = {}
 )
 
 data class TaskTableActionConnector(

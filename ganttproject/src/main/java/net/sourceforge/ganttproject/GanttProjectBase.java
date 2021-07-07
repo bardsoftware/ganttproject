@@ -131,6 +131,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
       new SimpleDoubleProperty(0.0),
       true,
       new SimpleDoubleProperty(0.0),
+      () -> null,
       () -> null
   );
   private TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();

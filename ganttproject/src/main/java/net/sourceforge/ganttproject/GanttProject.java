@@ -200,10 +200,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     //myFacadeInvalidator = new FacadeInvalidator(getTree().getModel(), myRowHeightAligners);
     //getProject().addProjectEventListener(myFacadeInvalidator);
-    area = new GanttGraphicArea(this, getTree(), getTaskManager(), getZoomManager(), getUndoManager(),
+    area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
         myTaskTableChartConnector,
         Suppliers.memoize(() -> myTaskTableSupplier.get().getActionConnector()));
-    getTree().init();
+    //getTree().init();
     options.addOptionGroups(getUIFacade().getOptions());
     options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
     options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
@@ -216,9 +216,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     startupLogger.debug("2. loading options");
     initOptions();
 
-    getTree().setGraphicArea(area);
+    //getTree().setGraphicArea(area);
     getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
-    myRowHeightAligners.add(getTree().getRowHeightAligner());
+    //myRowHeightAligners.add(getTree().getRowHeightAligner());
     getUiFacadeImpl().getAppFontOption().addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {

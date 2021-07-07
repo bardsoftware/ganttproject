@@ -455,7 +455,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   }
 
   private Integer myCachedHeaderHeight = 30;
-  int getHeaderHeight(final JComponent tableContainer, final JComponent table) {
+  int getHeaderHeight() {
     return myCachedHeaderHeight;
   }
   public void setTimelineHeight(int height) {

@@ -33,7 +33,6 @@ import net.sourceforge.ganttproject.ChartImplementation;
 import net.sourceforge.ganttproject.GPTreeTableBase;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttGraphicArea;
-import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -81,7 +80,7 @@ public class GanttChartController extends AbstractChartImplementation implements
   private final TaskSelectionManager mySelectionManager;
 
   public GanttChartController(IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel,
-                              ChartComponentBase chartComponent, GanttTree2 tree, ChartViewState chartViewState,
+                              ChartComponentBase chartComponent, ChartViewState chartViewState,
                               TaskTableChartConnector taskTableConnector,
                               Supplier<TaskTableActionConnector> taskTableActionFacade) {
     super(project, uiFacade, chartModel, chartComponent);
