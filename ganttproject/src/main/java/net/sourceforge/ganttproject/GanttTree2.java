@@ -88,7 +88,6 @@ import java.util.logging.Level;
  */
 public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> implements
     /*DragSourceListener, DragGestureListener,*/ TaskTreeUIFacade {
-  private final TaskActions myTaskActions;
   private GanttProjectBase.RowHeightAligner myRowHeightAligner;
   private UIFacade myUIFacade;
 
@@ -129,7 +128,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
     myProject = project;
     myTaskManager = taskManager;
     mySelectionManager = selectionManager;
-    myTaskActions = taskActions;
     myTaskManager.addTaskListener(new TaskListenerAdapter() {
       @Override
       public void taskModelReset() {

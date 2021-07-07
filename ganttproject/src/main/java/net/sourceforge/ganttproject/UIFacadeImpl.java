@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.MenuBuilderSwing;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -39,7 +40,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -302,31 +302,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y) {
     JPopupMenu menu = new JPopupMenu();
-
-    // TODO: refactor code so that submenus could be added in more generic way
-    String assignTo = GanttLanguage.getInstance().getText("assignments");
-    JMenu resourcesMenu = new JMenu(assignTo);
-
-    for (Action action : actions) {
-      if (action == null || action == GPAction.SEPARATOR) {
-        menu.addSeparator();
-      } else if (AssignmentToggleAction.class.equals(action.getClass())){
-        resourcesMenu.add(new JCheckBoxMenuItem(action));
-        continue;
-      } else {
-        Boolean isSelected = (Boolean) action.getValue(Action.SELECTED_KEY);
-        if (isSelected == null) {
-          menu.add(action);
-        } else {
-          menu.add(new JCheckBoxMenuItem(action));
-        }
+    var builder = new MenuBuilderSwing(menu);
+    actions.forEach((action) -> {
+      if (action instanceof GPAction) {
+        builder.items((GPAction) action);
       }
-    }
-
-    if (resourcesMenu.getItemCount() > 0) {
-      menu.add(resourcesMenu);
-    }
-
+    });
     menu.applyComponentOrientation(getLanguage().getComponentOrientation());
     menu.show(invoker, x, y);
   }

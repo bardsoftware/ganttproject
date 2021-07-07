@@ -28,8 +28,7 @@ import javafx.scene.text.Text
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIUtil
 import java.util.*
-import javax.swing.Action
-import javax.swing.SwingUtilities
+import javax.swing.*
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -61,7 +60,7 @@ interface MenuBuilder {
   fun submenu(title: String, code: (MenuBuilder)->Unit)
 }
 
-class MenuBuilderImpl(private val contextMenu: ContextMenu) : MenuBuilder {
+class MenuBuilderFx(private val contextMenu: ContextMenu) : MenuBuilder {
   private val stack = Stack<Function1<MenuItem, Unit>>()
   init {
     stack.push { contextMenu.items.add(it) }
@@ -86,6 +85,80 @@ class MenuBuilderImpl(private val contextMenu: ContextMenu) : MenuBuilder {
   fun build() {}
 }
 
+private data class MenuWrapper(
+  val separator: () -> Unit,
+  val action: (action: GPAction) -> Unit,
+  val item: (item: JMenuItem) -> Unit
+)
+
+private fun JMenu.wrapper(): MenuWrapper = MenuWrapper(
+  separator = { this.addSeparator() },
+  action = { this.add(it) },
+  item = { this.add(it) }
+)
+
+private fun JPopupMenu.wrapper(): MenuWrapper = MenuWrapper(
+  separator = { this.addSeparator() },
+  action = { this.add(it) },
+  item = { this.add(it) }
+)
+
+class MenuBuilderSwing() : MenuBuilder {
+  private val stack = Stack<MenuWrapper>()
+
+  constructor(rootMenu: JPopupMenu) : this() {
+    stack.push(rootMenu.wrapper())
+  }
+  constructor(rootMenu: JMenu) : this() {
+    stack.push(rootMenu.wrapper())
+  }
+
+  private fun add(action: GPAction) {
+    val menu = stack.peek()
+    if (action == GPAction.SEPARATOR) {
+      menu.separator()
+      return
+    }
+    if (true == action.getValue(GPAction.IS_SUBMENU)) {
+      addSubmenu(menu, action.name)
+      return
+    }
+    if (action == GPAction.SUBMENU_END) {
+      stack.pop()
+      return
+    }
+    val isSelected = action.getValue(Action.SELECTED_KEY) as Boolean?
+    if (isSelected == null) {
+      menu.action(action)
+    } else {
+      menu.item(JCheckBoxMenuItem(action))
+    }
+  }
+
+  override fun items(vararg actions: GPAction) {
+    actions.forEach { add(it) }
+  }
+  override fun items(actions: Collection<GPAction>) {
+    actions.forEach { add(it) }
+  }
+  override fun separator() { add(GPAction.SEPARATOR) }
+
+  override fun submenu(title: String, code: (MenuBuilder)->Unit) {
+    val menu = stack.peek()
+    addSubmenu(menu, title)
+    code(this)
+  }
+
+  private fun addSubmenu(menu: MenuWrapper, title: String) {
+    JMenu(title).also {
+      menu.item(it)
+      stack.push(it.wrapper())
+    }
+  }
+
+  fun build() {}
+}
+
 class MenuBuilderAsList : MenuBuilder {
   private val actionList = mutableListOf<GPAction>()
   override fun items(vararg actions: GPAction) {
@@ -103,7 +176,7 @@ class MenuBuilderAsList : MenuBuilder {
   override fun submenu(title: String, code: (MenuBuilder) -> Unit) {
     val submenuBuilder = MenuBuilderAsList()
     code(submenuBuilder)
-    actionList.add(GPAction.SUBMENU_START)
+    actionList.add(GPAction.createVoidAction(title).also { it.putValue(GPAction.IS_SUBMENU, true)})
     actionList.addAll(submenuBuilder.actionList)
     actionList.add(GPAction.SUBMENU_END)
   }
