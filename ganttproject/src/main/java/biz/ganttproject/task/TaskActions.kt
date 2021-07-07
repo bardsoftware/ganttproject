@@ -35,9 +35,6 @@ class TaskActions(private val project: IGanttProject,
   val copyAction get() = viewManager().copyAction
   val cutAction get() = viewManager().cutAction
   val pasteAction get() = viewManager().pasteAction
-  //GPAction newAction = new TaskNewAction(project.getProject(), uiFacade);
-
-  //setArtefactActions(newAction, propertiesAction, deleteAction);
   val linkTasksAction = TaskLinkAction(project.taskManager, selectionManager, uiFacade)
   val unlinkTasksAction = TaskUnlinkAction(project.taskManager, selectionManager, uiFacade)
 

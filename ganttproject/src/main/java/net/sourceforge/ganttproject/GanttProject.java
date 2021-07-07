@@ -149,8 +149,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private final GanttOptions options;
 
-  private TaskContainmentHierarchyFacadeImpl myCachedFacade;
-
   private ArrayList<GanttPreviousState> myPreviousStates = new ArrayList<GanttPreviousState>();
 
   private MouseListener myStopEditingMouseListener = null;
@@ -251,7 +249,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), () -> mySearchUi.requestFocus(), "edit");
     bar.add(myEditMenu);
-    getTree().getTreeTable().setupActionMaps(myEditMenu.getSearchAction());
+    //getTree().getTreeTable().setupActionMaps(myEditMenu.getSearchAction());
     getResourcePanel().getTreeTable().setupActionMaps(myEditMenu.getSearchAction());
 
     ViewMenu viewMenu = new ViewMenu(getProject(), getViewManager(), getUiFacadeImpl().getDpiOption(), getUiFacadeImpl().getChartFontOption(), "view");
@@ -766,13 +764,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     return this.area;
   }
 
-  public GanttTree2 getTree() {
-    if (tree == null) {
-      tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade(), myTaskActions);
-    }
-    return tree;
-  }
-
   public GPAction getCopyAction() {
     return getViewManager().getCopyAction();
   }
@@ -785,7 +776,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     return getViewManager().getPasteAction();
   }
 
-  GPAction getSearchAction() { return myEditMenu.getSearchAction(); }
   @Override
   public ZoomActionSet getZoomActionSet() {
     return myZoomActions;
@@ -1056,7 +1046,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   @Override
   public TaskTreeUIFacade getTaskTree() {
-    return getTree();
+    if (tree == null) {
+      tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade(), myTaskActions);
+    }
+    return tree;
   }
 
   @Override
