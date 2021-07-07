@@ -353,4 +353,6 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
   }
 
   public static GPAction SEPARATOR = createVoidAction("separator");
+  public static GPAction SUBMENU_START = createVoidAction("submenu.start");
+  public static GPAction SUBMENU_END = createVoidAction("submenu.end");
 }

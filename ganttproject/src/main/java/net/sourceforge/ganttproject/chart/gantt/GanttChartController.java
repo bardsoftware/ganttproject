@@ -19,7 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart.gantt;
 
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
+import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
+import com.google.common.base.Supplier;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import net.java.balloontip.BalloonTip;
@@ -80,12 +82,13 @@ public class GanttChartController extends AbstractChartImplementation implements
 
   public GanttChartController(IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel,
                               ChartComponentBase chartComponent, GanttTree2 tree, ChartViewState chartViewState,
-                              TaskTableChartConnector taskTableConnector) {
+                              TaskTableChartConnector taskTableConnector,
+                              Supplier<TaskTableActionConnector> taskTableActionFacade) {
     super(project, uiFacade, chartModel, chartComponent);
     myChartViewState = chartViewState;
     myTaskManager = project.getTaskManager();
     myChartModel = chartModel;
-    myMouseListener = new MouseListenerImpl(this, myChartModel, uiFacade, chartComponent, tree);
+    myMouseListener = new MouseListenerImpl(this, uiFacade, chartComponent, taskTableActionFacade);
     myMouseMotionListener = new MouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);
     mySelectionManager = uiFacade.getTaskSelectionManager();
     mySelection = new GanttChartSelection(myTaskManager, mySelectionManager);

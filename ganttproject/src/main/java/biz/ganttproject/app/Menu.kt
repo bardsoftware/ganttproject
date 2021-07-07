@@ -54,21 +54,28 @@ class MenuBarBuilder {
   }
 }
 
-class MenuBuilder(private val contextMenu: ContextMenu) {
+interface MenuBuilder {
+  fun items(vararg actions: GPAction)
+  fun items(actions: Collection<GPAction>)
+  fun separator()
+  fun submenu(title: String, code: (MenuBuilder)->Unit)
+}
+
+class MenuBuilderImpl(private val contextMenu: ContextMenu) : MenuBuilder {
   private val stack = Stack<Function1<MenuItem, Unit>>()
   init {
     stack.push { contextMenu.items.add(it) }
   }
   private fun add(item: MenuItem) = stack.peek().invoke(item)
 
-  fun items(vararg actions: GPAction) {
+  override fun items(vararg actions: GPAction) {
     actions.forEach { add(it.asMenuItem()) }
   }
-  fun items(actions: Collection<GPAction>) {
+  override fun items(actions: Collection<GPAction>) {
     actions.forEach { add(it.asMenuItem()) }
   }
-  fun separator() { add(SeparatorMenuItem()) }
-  fun submenu(title: String, code: (MenuBuilder)->Unit) {
+  override fun separator() { add(SeparatorMenuItem()) }
+  override fun submenu(title: String, code: (MenuBuilder)->Unit) {
     Menu(title).also { menu ->
       add(menu)
       stack.push { menu.items.add(it) }
@@ -77,6 +84,31 @@ class MenuBuilder(private val contextMenu: ContextMenu) {
     }
   }
   fun build() {}
+}
+
+class MenuBuilderAsList : MenuBuilder {
+  private val actionList = mutableListOf<GPAction>()
+  override fun items(vararg actions: GPAction) {
+    actionList.addAll(actions)
+  }
+
+  override fun items(actions: Collection<GPAction>) {
+    actionList.addAll(actions)
+  }
+
+  override fun separator() {
+    actionList.add(GPAction.SEPARATOR)
+  }
+
+  override fun submenu(title: String, code: (MenuBuilder) -> Unit) {
+    val submenuBuilder = MenuBuilderAsList()
+    code(submenuBuilder)
+    actionList.add(GPAction.SUBMENU_START)
+    actionList.addAll(submenuBuilder.actionList)
+    actionList.add(GPAction.SUBMENU_END)
+  }
+
+  fun actions() = actionList.toList()
 }
 
 fun (GPAction).getGlyphIcon(): Text? =

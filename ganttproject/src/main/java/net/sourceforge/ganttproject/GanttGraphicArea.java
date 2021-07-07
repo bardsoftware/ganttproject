@@ -26,7 +26,9 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionChangeListener;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
@@ -83,6 +85,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
 
   public static final Cursor CHANGE_PROGRESS_CURSOR;
   private final TaskTableChartConnector taskTableChartConnector;
+  private final Supplier<TaskTableActionConnector> taskTableActionFacade;
 
   private GanttChartController myChartComponentImpl;
 
@@ -103,10 +106,12 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   private final ChartOptionGroup myStateDiffOptions;
 
   public GanttGraphicArea(GanttProject app, GanttTree2 ttree, TaskManager taskManager, ZoomManager zoomManager,
-                          GPUndoManager undoManager, TaskTableChartConnector taskTableChartConnector) {
+                          GPUndoManager undoManager, TaskTableChartConnector taskTableChartConnector,
+                          Supplier<TaskTableActionConnector> taskTableActionFacade) {
     super(app.getProject(), app.getUIFacade(), zoomManager);
     this.setBackground(Color.WHITE);
     this.taskTableChartConnector = taskTableChartConnector;
+    this.taskTableActionFacade = taskTableActionFacade;
     myTaskManager = taskManager;
     myUndoManager = undoManager;
 
@@ -316,7 +321,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   GanttChartController getChartImplementation() {
     if (myChartComponentImpl == null) {
       myChartComponentImpl = new GanttChartController(getProject(), getUIFacade(), myChartModel, this, tree,
-          getViewState(), this.taskTableChartConnector);
+          getViewState(), this.taskTableChartConnector, this.taskTableActionFacade);
     }
     return myChartComponentImpl;
   }

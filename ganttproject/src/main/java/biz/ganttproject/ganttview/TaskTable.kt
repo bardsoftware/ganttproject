@@ -55,6 +55,7 @@ import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.*
+import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.export.TreeTableApi
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
@@ -102,7 +103,9 @@ class TaskTable(
       runKeepingExpansion = { task, code -> code(task) },
       scrollTo = {},
       columnList = { columnList },
-      canAddTask = { newTaskActor.canAddTask }
+      canAddTask = { newTaskActor.canAddTask },
+      taskPropertiesAction = { taskActions.propertiesAction },
+      contextMenuActions = this::contextMenuActions
     )
   }
   private val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
@@ -631,7 +634,9 @@ data class TaskTableActionConnector(
   val runKeepingExpansion: ((task: Task, code: (Task)->Void) -> Unit),
   val scrollTo: (task: Task) -> Unit,
   val columnList: () -> ColumnList,
-  val canAddTask: () -> ReadOnlyBooleanProperty
+  val canAddTask: () -> ReadOnlyBooleanProperty,
+  val taskPropertiesAction: () -> GPAction,
+  val contextMenuActions: (MenuBuilder) -> Unit
 )
 
 private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (Task, Task?, Int) -> Boolean) {

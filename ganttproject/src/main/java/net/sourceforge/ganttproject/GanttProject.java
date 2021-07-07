@@ -30,6 +30,7 @@ import biz.ganttproject.storage.cloud.GPCloudOptions;
 import biz.ganttproject.storage.cloud.GPCloudStatusBar;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import javafx.application.Platform;
@@ -199,7 +200,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     //myFacadeInvalidator = new FacadeInvalidator(getTree().getModel(), myRowHeightAligners);
     //getProject().addProjectEventListener(myFacadeInvalidator);
-    area = new GanttGraphicArea(this, getTree(), getTaskManager(), getZoomManager(), getUndoManager(), myTaskTableChartConnector);
+    area = new GanttGraphicArea(this, getTree(), getTaskManager(), getZoomManager(), getUndoManager(),
+        myTaskTableChartConnector,
+        Suppliers.memoize(() -> myTaskTableSupplier.get().getActionConnector()));
     getTree().init();
     options.addOptionGroups(getUIFacade().getOptions());
     options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());

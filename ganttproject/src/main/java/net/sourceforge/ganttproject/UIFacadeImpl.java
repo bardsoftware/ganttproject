@@ -38,6 +38,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -307,7 +308,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     JMenu resourcesMenu = new JMenu(assignTo);
 
     for (Action action : actions) {
-      if (action == null) {
+      if (action == null || action == GPAction.SEPARATOR) {
         menu.addSeparator();
       } else if (AssignmentToggleAction.class.equals(action.getClass())){
         resourcesMenu.add(new JCheckBoxMenuItem(action));

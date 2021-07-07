@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 import biz.ganttproject.app.MenuBuilder
+import biz.ganttproject.app.MenuBuilderImpl
 import biz.ganttproject.ganttview.NewTaskActor
 import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
 import com.sun.javafx.scene.control.behavior.TreeTableViewBehavior
@@ -70,7 +71,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>, autoEditCoordinator: NewTaskActo
     addEventHandler(MouseEvent.MOUSE_CLICKED) { event ->
       if (event.button == MouseButton.SECONDARY) {
         val contextMenu = ContextMenu()
-        contextMenuActions(MenuBuilder(contextMenu))
+        contextMenuActions(MenuBuilderImpl(contextMenu))
         contextMenu.show(this, event.screenX, event.screenY)
       }
     }
@@ -127,7 +128,7 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
     val cornerRegion = this.tableHeaderRow.lookup(".show-hide-columns-button") as Region
     cornerRegion.onMousePressed = EventHandler { me: MouseEvent ->
       control.tableMenu.items.clear()
-      control.tableMenuActions(MenuBuilder(control.tableMenu))
+      control.tableMenuActions(MenuBuilderImpl(control.tableMenu))
       control.tableMenu.show(cornerRegion, Side.BOTTOM, 0.0, 0.0)
       me.consume()
     }

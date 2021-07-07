@@ -18,18 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.gantt;
 
-import java.awt.event.MouseEvent;
-import java.util.List;
-
-import javax.swing.Action;
-
+import biz.ganttproject.app.MenuBuilderAsList;
+import biz.ganttproject.ganttview.TaskTableActionConnector;
 import com.google.common.base.Function;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
-
 import net.sourceforge.ganttproject.ChartComponentBase;
-import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
@@ -41,6 +36,11 @@ import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
 import net.sourceforge.ganttproject.util.MouseUtil;
 
+import javax.swing.*;
+import java.awt.event.MouseEvent;
+import java.util.Arrays;
+import java.util.List;
+
 class MouseListenerImpl extends MouseListenerBase {
   private static final Function<Task, Task> getParentTask = new Function<Task, Task>() {
     @Override
@@ -50,18 +50,18 @@ class MouseListenerImpl extends MouseListenerBase {
   };
   private static final RetainRootsAlgorithm<Task> ourRetainRootsAlgorithm = new RetainRootsAlgorithm<Task>();
 
-  private final GanttTree2 myTree;
   private final GanttChartController myChartImplementation;
   private final UIFacade myUiFacade;
   private final ChartComponentBase myChartComponent;
+  private final Supplier<TaskTableActionConnector> myTaskTableActionFacade;
 
-  public MouseListenerImpl(GanttChartController chartImplementation, ChartModelImpl chartModel, UIFacade uiFacade,
-      ChartComponentBase chartComponent, GanttTree2 tree) {
+  public MouseListenerImpl(GanttChartController chartImplementation, UIFacade uiFacade, ChartComponentBase chartComponent,
+                           Supplier<TaskTableActionConnector> taskTableActionFacade) {
     super(uiFacade, chartComponent, chartImplementation);
     myUiFacade = uiFacade;
-    myTree = tree;
     myChartImplementation = chartImplementation;
     myChartComponent = chartComponent;
+    myTaskTableActionFacade = taskTableActionFacade;
   }
 
   private TaskSelectionManager getTaskSelectionManager() {
@@ -77,28 +77,25 @@ class MouseListenerImpl extends MouseListenerBase {
       }
     }
     if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-      myTree.getPropertiesAction().actionPerformed(null);
+      myTaskTableActionFacade.get().getTaskPropertiesAction().invoke().actionPerformed(null);
     }
   }
 
   @Override
   protected Action[] getPopupMenuActions(MouseEvent e) {
-    Action[] treeActions = myTree.getPopupMenuActions();
-    int sep = 0;
-    if (treeActions.length != 0) {
-      sep = 1;
-    }
+    List<Action> result = Lists.newArrayList();
+    var menuBuilder = new MenuBuilderAsList();
+    myTaskTableActionFacade.get().getContextMenuActions().invoke(menuBuilder);
+    menuBuilder.actions().forEach(gpAction -> result.add(gpAction));
+    result.add(GPAction.SEPARATOR);
 
-    Action[] chartActions = myChartComponent.getPopupMenuActions(e);
-    Action[] result = new Action[treeActions.length + sep + chartActions.length];
-    System.arraycopy(treeActions, 0, result, 0, treeActions.length);
-    System.arraycopy(chartActions, 0, result, treeActions.length + sep, chartActions.length);
-    return result;
+    Arrays.asList(myChartComponent.getPopupMenuActions(e)).forEach(it -> result.add(it));
+    return result.toArray(new Action[result.size()]);
   }
 
   @Override
   public void mousePressed(MouseEvent e) {
-    myTree.stopEditing();
+    myTaskTableActionFacade.get().getCommitEdit().invoke();
     String text = MouseUtil.toString(e);
     super.mousePressed(e);
 
