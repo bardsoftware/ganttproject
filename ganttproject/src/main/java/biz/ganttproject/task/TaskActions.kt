@@ -35,9 +35,15 @@ class TaskActions(private val project: IGanttProject,
   val copyAction get() = viewManager().copyAction
   val cutAction get() = viewManager().cutAction
   val pasteAction get() = viewManager().pasteAction
+  //GPAction newAction = new TaskNewAction(project.getProject(), uiFacade);
+
+  //setArtefactActions(newAction, propertiesAction, deleteAction);
+  val linkTasksAction = TaskLinkAction(project.taskManager, selectionManager, uiFacade)
+  val unlinkTasksAction = TaskUnlinkAction(project.taskManager, selectionManager, uiFacade)
+
   val manageColumnsAction get() = ManageColumnsAction(uiFacade, tableConnector().columnList(), project.taskCustomColumnManager)
 
-  fun all() = listOf(propertiesAction, indentAction, unindentAction, moveDownAction, moveUpAction)
+  fun all() = listOf(propertiesAction, indentAction, unindentAction, moveDownAction, moveUpAction, linkTasksAction, unlinkTasksAction)
   fun assignments(task: Task, hrManager: HumanResourceManager, undoManager: GPUndoManager): List<GPAction> {
     val human2action = hrManager.resources.associateWith {
       AssignmentToggleAction(it, task, undoManager).apply {

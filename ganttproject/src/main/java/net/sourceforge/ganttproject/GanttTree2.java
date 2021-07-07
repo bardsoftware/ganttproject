@@ -102,10 +102,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   private final TaskManager myTaskManager;
   private final TaskSelectionManager mySelectionManager;
 
-  private final GPAction myLinkTasksAction;
-
-  private final GPAction myUnlinkTasksAction;
-
   private boolean isOnTaskSelectionEventProcessing;
 
   private Highlighter myDragHighlighter;
@@ -158,32 +154,6 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
         getTreeTable().updateUI();
       }
     });
-//    mySelectionManager.addSelectionListener(new TaskSelectionManager.Listener() {
-//      @Override
-//      public void userInputConsumerChanged(Object newConsumer) {
-//      }
-//
-//      @Override
-//      public void selectionChanged(List<Task> currentSelection) {
-//        onTaskSelectionChanged(currentSelection);
-//      }
-//    });
-
-    // Create Actions
-    GPAction propertiesAction = new TaskPropertiesAction(project.getProject(), selectionManager, uiFacade);
-    GPAction deleteAction = new TaskDeleteAction(taskManager, selectionManager, uiFacade);
-    //GPAction newAction = new TaskNewAction(project.getProject(), uiFacade);
-
-    //setArtefactActions(newAction, propertiesAction, deleteAction);
-    myLinkTasksAction = new TaskLinkAction(taskManager, selectionManager, uiFacade);
-    myUnlinkTasksAction = new TaskUnlinkAction(taskManager, selectionManager, uiFacade);
-    //myIndentAction = new TaskIndentAction(taskManager, selectionManager, uiFacade, );
-    //myUnindentAction = new TaskUnindentAction(taskManager, selectionManager, uiFacade, this);
-    //myMoveUpAction = new TaskMoveUpAction(taskManager, selectionManager, uiFacade, this);
-    //myMoveDownAction = new TaskMoveDownAction(taskManager, selectionManager, uiFacade, this);
-//    getTreeTable().setupActionMaps(
-//            newAction, myProject.getCutAction(), myProject.getCopyAction(),
-//            myProject.getPasteAction(), propertiesAction);
   }
 
   @Override
@@ -298,49 +268,9 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
 
   public Action[] getPopupMenuActions() {
     List<Action> actions = new ArrayList<Action>();
-    actions.add(getNewAction());
-    if (!getTaskSelectionManager().getSelectedTasks().isEmpty()) {
-      actions.add(getPropertiesAction());
-      actions.add(null);
-      for (AbstractAction a : getTreeActions()) {
-        actions.add(a);
-      }
-      actions.add(null);
-      actions.add(myProject.getCutAction());
-      actions.add(myProject.getCopyAction());
-      actions.add(myProject.getPasteAction());
-      actions.add(getDeleteAction());
-      actions.add(null);
-      actions.add(getTreeTable().getManageColumnsAction());
-      actions.add(null);
-
-      addHumanResourcesSubmenu(actions);
-    }
     return actions.toArray(new Action[0]);
   }
 
-  private void addHumanResourcesSubmenu(List<Action> actions) {
-    // TODO: enable when multiple tasks are selected
-//    if (getTaskSelectionManager().getSelectedTasks().size() == 1) {
-//      Task task = getTaskSelectionManager().getSelectedTasks().get(0);
-//      List<HumanResource> resources = myProject.getHumanResourceManager().getResources();
-//
-//      HashMap<HumanResource, AssignmentToggleAction> human2action = new HashMap<>();
-//
-//      for (HumanResource hr : resources) {
-//        AssignmentToggleAction assignmentAction = new AssignmentToggleAction(hr, task, myUIFacade);
-//        assignmentAction.putValue(Action.SELECTED_KEY, false);
-//        human2action.put(hr, assignmentAction);
-//        actions.add(assignmentAction);
-//      }
-//
-//      ResourceAssignment[] assignments = task.getAssignmentCollection().getAssignments();
-//      for (ResourceAssignment ra : assignments) {
-//        AssignmentToggleAction assignmentAction = human2action.get(ra.getResource());
-//        assignmentAction.putValue(Action.SELECTED_KEY, true);
-//      }
-//    }
-  }
 
   /** Create a popup menu when mouse click */
   private void createPopupMenu(int x, int y) {
@@ -566,21 +496,11 @@ public class GanttTree2 extends TreeTableContainer<Task, GanttTreeTable, GanttTr
   // TaskTreeUIFacade
   @Override
   public AbstractAction[] getTreeActions() {
-    if (myTreeActions == null) {
-      myTreeActions = new AbstractAction[] { myTaskActions.getUnindentAction(), myTaskActions.getIndentAction(),
-          myTaskActions.getMoveUpAction(), myTaskActions.getMoveDownAction(),
-          myLinkTasksAction, myUnlinkTasksAction };
-    }
-    return myTreeActions;
+    return null;
   }
 
   @Override
   public void addToolbarActions(ToolbarBuilder builder) {
-    builder.addButton(myTaskActions.getUnindentAction().asToolbarAction())
-        .addButton(myTaskActions.getIndentAction().asToolbarAction())
-        .addButton(myTaskActions.getMoveUpAction().asToolbarAction())
-        .addButton(myTaskActions.getMoveDownAction().asToolbarAction())
-        .addButton(myLinkTasksAction.asToolbarAction()).addButton(myUnlinkTasksAction.asToolbarAction());
   }
 
   @Override

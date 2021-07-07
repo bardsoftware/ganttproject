@@ -108,8 +108,9 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     builder.addButton(myTaskActions.getUnindentAction().asToolbarAction())
         .addButton(myTaskActions.getIndentAction().asToolbarAction())
         .addButton(myTaskActions.getMoveUpAction().asToolbarAction())
-        .addButton(myTaskActions.getMoveDownAction().asToolbarAction());
-//        .addButton(myLinkTasksAction.asToolbarAction()).addButton(myUnlinkTasksAction.asToolbarAction());
+        .addButton(myTaskActions.getMoveDownAction().asToolbarAction())
+        .addButton(myTaskActions.getLinkTasksAction().asToolbarAction())
+        .addButton(myTaskActions.getUnlinkTasksAction().asToolbarAction());
   }
 
   @Override
