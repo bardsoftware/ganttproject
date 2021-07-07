@@ -276,8 +276,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     startupLogger.debug("4. creating views...");
 
-    myGanttChartTabContent = new GanttChartTabContentPanel(getProject(), getUIFacade(), getTree(), area.getJComponent(),
-        getUIConfiguration(), myTaskTableSupplier);
+    myGanttChartTabContent = new GanttChartTabContentPanel(
+        getProject(), getUIFacade(), area.getJComponent(),
+        getUIConfiguration(), myTaskTableSupplier, myTaskActions);
 
     getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
     getViewManager().toggleVisible(myGanttChartTabContent);
@@ -519,7 +520,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     final ArtefactAction newAction;
     {
-      final GPAction taskNewAction = getTaskTree().getNewAction().asToolbarAction();
+      final GPAction taskNewAction = myTaskActions.getCreateAction().asToolbarAction();
       final GPAction resourceNewAction = getResourceTree().getNewAction().asToolbarAction();
       newAction = new ArtefactNewAction(new ActiveActionProvider() {
         @Override
@@ -545,7 +546,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     final ArtefactAction propertiesAction;
     {
-      final GPAction taskPropertiesAction = getTaskTree().getPropertiesAction().asToolbarAction();
+      final GPAction taskPropertiesAction = myTaskActions.getPropertiesAction().asToolbarAction();
       final GPAction resourcePropertiesAction = getResourceTree().getPropertiesAction().asToolbarAction();
       propertiesAction = new ArtefactPropertiesAction(new ActiveActionProvider() {
         @Override

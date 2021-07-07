@@ -90,7 +90,8 @@ class TaskTable(
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   private val treeModel = taskManager.taskHierarchy
   val rootItem = TreeItem(treeModel.rootTask)
-  val treeTable = GPTreeTableView<Task>(rootItem)
+  val newTaskActor = NewTaskActor<Task>().also { it.start() }
+  val treeTable = GPTreeTableView<Task>(rootItem, newTaskActor)
   val taskTableModel = TaskTableModel(taskManager, taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
 
@@ -100,7 +101,8 @@ class TaskTable(
       commitEdit = {},
       runKeepingExpansion = { task, code -> code(task) },
       scrollTo = {},
-      columnList = { columnList }
+      columnList = { columnList },
+      canAddTask = { newTaskActor.canAddTask }
     )
   }
   private val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
@@ -110,7 +112,6 @@ class TaskTable(
   val columnListWidthProperty = SimpleDoubleProperty()
   var requestSwingFocus: () -> Unit = {}
   lateinit var swingComponent: Component
-  val newTaskActor = NewTaskActor().also { it.start() }
 
 
   init {
@@ -365,6 +366,10 @@ class TaskTable(
               val targetTask: Task = event.rowValue.value
               val copyTask: Task = event.newValue
               taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
+              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
+            }
+            onEditCancel = EventHandler { event ->
+              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
             }
             treeTable.treeColumn = this
           }
@@ -625,7 +630,8 @@ data class TaskTableActionConnector(
   val commitEdit: ()->Unit,
   val runKeepingExpansion: ((task: Task, code: (Task)->Void) -> Unit),
   val scrollTo: (task: Task) -> Unit,
-  val columnList: () -> ColumnList
+  val columnList: () -> ColumnList,
+  val canAddTask: () -> ReadOnlyBooleanProperty
 )
 
 private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (Task, Task?, Int) -> Boolean) {
@@ -857,7 +863,6 @@ private val taskNameConverter = MyStringConverter<Task, Task>(
       it.unpluggedClone().also { it.name = text }
     } ?: run {
       println("no item in this cell! cell=$cell")
-      Thread.dumpStack()
       null
     }
   }

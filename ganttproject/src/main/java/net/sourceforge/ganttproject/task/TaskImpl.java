@@ -162,7 +162,7 @@ public class TaskImpl implements Task {
     this.isUnplugged = isUnplugged;
     myManager = manager;
     // Use a new (unique) ID for the cloned task
-    myID = myManager.getAndIncrementId();
+    myID = copy.myID;
 
     if (!isUnplugged) {
       myTaskHierarchyItem = myManager.getHierarchyManager().createItem(this);

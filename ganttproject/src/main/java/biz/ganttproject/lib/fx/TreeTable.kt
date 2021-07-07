@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 import biz.ganttproject.app.MenuBuilder
+import biz.ganttproject.ganttview.NewTaskActor
 import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
 import com.sun.javafx.scene.control.behavior.TreeTableViewBehavior
 import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
@@ -48,14 +49,14 @@ import org.apache.commons.lang3.reflect.FieldUtils
 /**
  * @author dbarashev@bardsoftware.com
  */
-class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
+class GPTreeTableView<T>(rootItem: TreeItem<T>, autoEditCoordinator: NewTaskActor<T>) : TreeTableView<T>(rootItem) {
   internal val tableMenu = ContextMenu()
   var contextMenuActions: (MenuBuilder) -> Unit = { }
   var tableMenuActions: (MenuBuilder) -> Unit = {}
 
   init {
     rowFactory = Callback { view ->
-      MyTreeTableRow()
+      MyTreeTableRow(autoEditCoordinator)
     }
     columnResizePolicy = CONSTRAINED_RESIZE_POLICY
     stylesheets.add("/biz/ganttproject/lib/fx/TreeTable.css")
@@ -205,7 +206,7 @@ class MyVirtualFlow<T: IndexedCell<*>> : VirtualFlow<T>() {
   fun vbarWidth() = if (this.width > 0.0 && vbar.isVisible) vbar.width else 0.0
 }
 
-class MyTreeTableRow<T> : TreeTableRow<T>() {
+class MyTreeTableRow<T>(private val autoEditCoordinator: NewTaskActor<T>) : TreeTableRow<T>() {
   override fun createDefaultSkin() = TreeTableRowSkin<T>(this)
 
   init {
@@ -220,4 +221,16 @@ class MyTreeTableRow<T> : TreeTableRow<T>() {
       hbox.prefHeightProperty().bind(heightProperty());
     }
   }
+
+//  override fun updateItem(item: T, empty: Boolean) {
+//    val currentItem = getItem()
+//    super.updateItem(item, empty)
+//    if (currentItem == null && item != null) {
+//      //val treeRow = this
+//      //runBlocking { autoEditCoordinator.inboxChannel.send(TreeRowReady(treeRow)) }
+//    }
+//    if (item == null && currentItem != null) {
+//      Exception("replacing $currentItem with null").printStackTrace()
+//    }
+//  }
 }

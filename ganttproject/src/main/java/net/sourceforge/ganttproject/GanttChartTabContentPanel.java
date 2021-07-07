@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.ganttview.TaskTable;
+import biz.ganttproject.task.TaskActions;
 import com.google.common.base.Function;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
@@ -38,22 +39,21 @@ import java.awt.*;
 import java.util.function.Supplier;
 
 class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
-  //private final Container myTaskTree;
   private final JComponent myGanttChart;
-  private final TreeTableContainer myTreeFacade;
   private final UIFacade myWorkbenchFacade;
   private final CalculateCriticalPathAction myCriticalPathAction;
   private final BaselineDialogAction myBaselineAction;
   private final Supplier<TaskTable> myTaskTableSupplier;
+  private final TaskActions myTaskActions;
   private JComponent myComponent;
 
-  GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TreeTableContainer treeFacade,
-                            JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier) {
+  GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
+                            JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
+                            TaskActions taskActions) {
     super(project, workbenchFacade, workbenchFacade.getGanttChart());
+    myTaskActions = taskActions;
     myTaskTableSupplier = taskTableSupplier;
     myWorkbenchFacade = workbenchFacade;
-    myTreeFacade = treeFacade;
-    //myTaskTree = (Container) treeFacade.getTreeComponent();
     myGanttChart = ganttChart;
     // FIXME KeyStrokes of these 2 actions are not working...
     myCriticalPathAction = new CalculateCriticalPathAction(project.getTaskManager(), uiConfiguration, workbenchFacade);
@@ -99,9 +99,17 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
             return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
           }
         });
-    myTreeFacade.addToolbarActions(builder);
+    addToolbarActions(builder);
     final GPToolbar toolbar = builder.build();
     return toolbar.getToolbar();
+  }
+
+  private void addToolbarActions(ToolbarBuilder builder) {
+    builder.addButton(myTaskActions.getUnindentAction().asToolbarAction())
+        .addButton(myTaskActions.getIndentAction().asToolbarAction())
+        .addButton(myTaskActions.getMoveUpAction().asToolbarAction())
+        .addButton(myTaskActions.getMoveDownAction().asToolbarAction());
+//        .addButton(myLinkTasksAction.asToolbarAction()).addButton(myUnlinkTasksAction.asToolbarAction());
   }
 
   @Override
@@ -142,7 +150,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   public void setActive(boolean active) {
     if (active) {
       //myTaskTree.requestFocus();
-      myTreeFacade.getNewAction().updateAction();
+      myTaskActions.getCreateAction().updateAction();
     }
   }
 

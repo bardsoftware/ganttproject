@@ -2,36 +2,40 @@ package biz.ganttproject.ganttview
 
 import biz.ganttproject.ganttview.NewTaskState.*
 import com.google.common.collect.Queues
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.scene.control.TreeItem
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import net.sourceforge.ganttproject.task.Task
 import java.util.concurrent.Executors
 
-sealed class NewTaskMsg
-data class TaskReady(val task: Task) : NewTaskMsg()
-data class TreeItemReady(val treeItem: TreeItem<Task>) : NewTaskMsg()
-class EditingCompleted : NewTaskMsg()
+sealed class NewTaskMsg<T>
+data class TaskReady<T>(val task: T) : NewTaskMsg<T>()
+data class TreeItemReady<T>(val treeItem: TreeItem<T>) : NewTaskMsg<T>()
+//data class TreeRowReady<T>(val treeRow: TreeTableRow<T>) : NewTaskMsg<T>()
+class EditingCompleted<T> : NewTaskMsg<T>()
 
-sealed class NewTaskActorCommand
-class StartEditing(val treeItem: TreeItem<Task>) : NewTaskActorCommand()
-class CommitEditing(val treeItem: TreeItem<Task>) : NewTaskActorCommand()
+sealed class NewTaskActorCommand<T>
+class StartEditing<T>(val treeItem: TreeItem<T>) : NewTaskActorCommand<T>()
+class CommitEditing<T>(val treeItem: TreeItem<T>) : NewTaskActorCommand<T>()
 
 enum class NewTaskState { IDLE, TASK_READY, TREE_ITEM_READY, EDIT_STARTING, EDIT_COMPLETING }
 
-class NewTaskActor() {
-  val inboxChannel = Channel<NewTaskMsg>()
-  val commandChannel = Channel<NewTaskActorCommand>()
+class NewTaskActor<T> {
+  val inboxChannel = Channel<NewTaskMsg<T>>()
+  val commandChannel = Channel<NewTaskActorCommand<T>>()
   var state: NewTaskState = IDLE
   set(value) {
     println("State $field => $value")
     field = value
+    canAddTask.value = value == IDLE
   }
-  var newTask: Task? = null
-  private var newTreeItem: TreeItem<Task>? = null
-  private val inboxQueue = Queues.newConcurrentLinkedQueue<NewTaskMsg>()
+  val canAddTask = SimpleBooleanProperty(true)
+
+  var newTask: T? = null
+  private var newTreeItem: TreeItem<T>? = null
+  private val inboxQueue = Queues.newConcurrentLinkedQueue<NewTaskMsg<T>>()
   fun start() = GlobalScope.launch(Executors.newFixedThreadPool(1).asCoroutineDispatcher()) {
     for (msg in inboxChannel) {
       processMessage(msg)
@@ -45,7 +49,8 @@ class NewTaskActor() {
     } while (true)
   }
 
-  private suspend fun processMessage(msg: NewTaskMsg) {
+  private suspend fun processMessage(msg: NewTaskMsg<T>) {
+    println(msg)
     when (msg) {
       is TaskReady -> {
         when (state) {

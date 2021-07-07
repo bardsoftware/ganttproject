@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 //import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
+import biz.ganttproject.app.getModifiers
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
@@ -35,6 +36,7 @@ import javafx.scene.control.Skin
 import javafx.scene.control.TextField
 import javafx.scene.control.TreeTableCell
 import javafx.scene.control.TreeTableColumn
+import javafx.scene.input.KeyCode
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.BigDecimalStringConverter
@@ -60,7 +62,6 @@ class TextCell<S, T>(
   private val editingCellController: (TextCell<S, T>?) -> Boolean
 ) : TreeTableCell<S, T>() {
   private var savedGraphic: Node? = null
-  var colorSupplier: (T) -> Color? = { null }
   var graphicSupplier: (T) -> Node? = { null }
   private val textField: TextField = createTextField()
 
@@ -172,6 +173,19 @@ class TextCell<S, T>(
         }
         finally {
           event.consume()
+        }
+      }
+      textField.onKeyPressed = EventHandler { event ->
+        if (event.code == KeyCode.INSERT && event.getModifiers() == 0) {
+          try {
+            commitText(textField.text)
+            styleClass.remove("validation-error")
+          } catch (ex: ValidationException) {
+            styleClass.add("validation-error")
+          }
+          finally {
+            event.consume()
+          }
         }
       }
     }

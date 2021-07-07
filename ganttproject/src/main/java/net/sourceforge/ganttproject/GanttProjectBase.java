@@ -123,7 +123,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   final TaskManagerConfigImpl myTaskManagerConfig;
   private final TaskManager myTaskManager;
   private Updater myUpdater;
-  final TaskActions myTaskActions;
+  protected final TaskActions myTaskActions;
 
   TaskTableChartConnector myTaskTableChartConnector = new TaskTableChartConnector(
       new SimpleIntegerProperty(-1),

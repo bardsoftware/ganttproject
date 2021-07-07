@@ -25,7 +25,7 @@ class TaskActions(private val project: IGanttProject,
                   private val selectionManager: TaskSelectionManager,
                   private val viewManager: () -> GPViewManager,
                   private val tableConnector: () -> TaskTableActionConnector) {
-  val createAction = TaskNewAction(project, uiFacade)
+  val createAction = TaskNewAction(project, uiFacade, tableConnector)
   val propertiesAction = TaskPropertiesAction(project, selectionManager, uiFacade)
   val deleteAction = TaskDeleteAction(project.taskManager, selectionManager, uiFacade)
   val indentAction = TaskIndentAction(project.taskManager, selectionManager, uiFacade, tableConnector)
