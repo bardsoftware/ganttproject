@@ -205,10 +205,10 @@ public class ConsoleUIFacade implements UIFacade {
     return myRealFacade.getCurrentTaskView();
   }
 
-  @Override
-  public TaskTreeUIFacade getTaskTree() {
-    return myRealFacade.getTaskTree();
-  }
+//  @Override
+//  public TaskTreeUIFacade getTaskTree() {
+//    return myRealFacade.getTaskTree();
+//  }
 
   @Override
   public TreeCollapseView<Task> getTaskCollapseView() {

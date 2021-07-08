@@ -57,7 +57,6 @@ import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import net.sourceforge.ganttproject.gui.CommandLineProjectOpenStrategy;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -105,10 +104,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private final LoggerApi boundsLogger = GPLogger.create("Window.Bounds");
   private final LoggerApi startupLogger = GPLogger.create("Window.Startup");
-  /**
-   * The JTree part.
-   */
-  private GanttTree2 tree;
 
   /**
    * GanttGraphicArea for the calendar with Gantt
@@ -1044,13 +1039,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     myResourceChartTabContent.setDividerLocation(location);
   }
 
-  @Override
-  public TaskTreeUIFacade getTaskTree() {
-    if (tree == null) {
-      tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade(), myTaskActions);
-    }
-    return tree;
-  }
+//  @Override
+//  public TaskTreeUIFacade getTaskTree() {
+//    if (tree == null) {
+//      tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade(), myTaskActions);
+//    }
+//    return tree;
+//  }
 
   @Override
   public ResourceTreeUIFacade getResourceTree() {

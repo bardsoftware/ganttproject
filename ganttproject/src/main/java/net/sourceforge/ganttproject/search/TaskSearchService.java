@@ -78,7 +78,7 @@ public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySea
 
   @Override
   public void init(IGanttProject project, UIFacade uiFacade) {
-    super.init(project, uiFacade.getTaskTree(), uiFacade);
+    super.init(project, null, uiFacade);
   }
 
   @Override

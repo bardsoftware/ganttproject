@@ -55,7 +55,6 @@ import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
@@ -531,10 +530,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     return myTaskView;
   }
 
-  @Override
-  public TaskTreeUIFacade getTaskTree() {
-    return myFallbackDelegate.getTaskTree();
-  }
+//  @Override
+//  public TaskTreeUIFacade getTaskTree() {
+//    return myFallbackDelegate.getTaskTree();
+//  }
 
   @Override
   public TreeCollapseView<Task> getTaskCollapseView() {

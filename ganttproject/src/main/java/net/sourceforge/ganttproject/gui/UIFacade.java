@@ -146,7 +146,7 @@ public interface UIFacade {
 
   TaskView getCurrentTaskView();
 
-  TaskTreeUIFacade getTaskTree();
+  //TaskTreeUIFacade getTaskTree();
   TreeCollapseView<Task> getTaskCollapseView();
   ColumnList getTaskColumnList();
 
