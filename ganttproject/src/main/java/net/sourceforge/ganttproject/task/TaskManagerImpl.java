@@ -868,6 +868,7 @@ public class TaskManagerImpl implements TaskManager {
         }
       }
     }
+    fireTaskModelReset();
     return original2imported;
   }
 

@@ -64,12 +64,16 @@ public class TaskSelectionManager implements TaskSelectionContext {
   }
 
   public void setUserInputConsumer(Object consumer) {
-    if (consumer != myUserInputConsumer) {
+    var currentConsumer = myUserInputConsumer;
+    myUserInputConsumer = consumer;
+    if (consumer != currentConsumer) {
       fireUserInputConsumerChanged();
     }
-    myUserInputConsumer = consumer;
   }
 
+  public Object getUserInputConsumer() {
+    return myUserInputConsumer;
+  }
   /**
    * Adds <code>task</code> to the selected tasks.
    *

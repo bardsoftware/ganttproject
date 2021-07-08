@@ -446,6 +446,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     return myTaskCollapseView;
   }
 
+  @Override
+  public ColumnList getTaskColumnList() {
+    return myTaskTableSupplier.get().getColumnList();
+  }
 
   @Override
   public void setWorkbenchTitle(String title) {

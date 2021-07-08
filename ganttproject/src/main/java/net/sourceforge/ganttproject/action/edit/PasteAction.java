@@ -28,7 +28,7 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.importer.BufferProject;
-import net.sourceforge.ganttproject.importer.ImporterFromGanttFile;
+import net.sourceforge.ganttproject.importer.BufferProjectImportKt;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -40,6 +40,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
+
+import static net.sourceforge.ganttproject.importer.BufferProjectImportKt.importBufferProject;
 
 //TODO Enable/Disable action depending on clipboard contents
 public class PasteAction extends GPAction {
@@ -106,7 +108,8 @@ public class PasteAction extends GPAction {
 
       HumanResourceMerger.MergeResourcesOption mergeOption = new HumanResourceMerger.MergeResourcesOption();
       mergeOption.setValue(HumanResourceMerger.MergeResourcesOption.NO);
-      ImporterFromGanttFile.importBufferProject(myProject, bufferProject, myUiFacade, mergeOption, null);
+      importBufferProject(myProject, bufferProject, BufferProjectImportKt.asImportBufferProjectApi(myUiFacade),
+          mergeOption, null);
     } catch (Exception e) {
       e.printStackTrace();
     }

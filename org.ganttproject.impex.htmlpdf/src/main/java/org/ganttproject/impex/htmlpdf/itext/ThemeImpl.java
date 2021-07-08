@@ -437,7 +437,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   }
 
   private void writeTasks() throws Exception {
-    ColumnList visibleFields = getUIFacade().getTaskTree().getVisibleFields();
+    ColumnList visibleFields = getUIFacade().getTaskColumnList();
     final ArrayList<Column> orderedColumns = new ArrayList<>();
     final PdfPTable table = createTableHeader(visibleFields, orderedColumns);
 

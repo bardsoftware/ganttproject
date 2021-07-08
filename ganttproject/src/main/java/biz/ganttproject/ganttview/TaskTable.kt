@@ -134,6 +134,7 @@ class TaskTable(
     initProjectEventHandlers()
     initChartConnector()
     initKeyboardEventHandlers()
+    initSelectionListeners()
     treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
     treeTable.selectionModel.selectedItems.addListener(ListChangeListener {
       val selectedItems = copyOf(treeTable.selectionModel.selectedItems)
@@ -303,6 +304,10 @@ class TaskTable(
           taskTableChartConnector.visibleTasks.setAll(getExpandedTasks())
         }
       }
+
+      override fun taskModelReset() {
+        reload()
+      }
     })
   }
 
@@ -321,12 +326,38 @@ class TaskTable(
             }
           }
           is CommitEditing -> {
-            ourNameCellFactory.editingCell?.commitEdit()
-            newTaskActor.inboxChannel.send(EditingCompleted())
+            commitEditing()
           }
         }
       }
     }
+  }
+
+  private suspend fun commitEditing() {
+    ourNameCellFactory.editingCell?.commitEdit()
+    newTaskActor.inboxChannel.send(EditingCompleted())
+  }
+
+  private fun initSelectionListeners() {
+    this.treeTable.focusedProperty().addListener { _, oldValue, newValue ->
+      if (newValue && newValue != oldValue) {
+        this.selectionManager.userInputConsumer = this
+      }
+    }
+
+    this.selectionManager.addSelectionListener(object : TaskSelectionManager.Listener {
+      override fun selectionChanged(currentSelection: List<Task>) {
+        if (this@TaskTable.selectionManager.userInputConsumer != this@TaskTable) {
+          for (task in currentSelection) {
+            task2treeItem[task]?.let { treeTable.selectionModel.select(it) }
+          }
+        }
+      }
+
+      override fun userInputConsumerChanged(newConsumer: Any?) {
+        // TODO: commit editing
+      }
+    })
   }
   private fun findNameColumn() = treeTable.columns.find { (it.userData as ColumnList.Column).id == TaskDefaultColumn.NAME.stub.id }
 

@@ -23,19 +23,12 @@ import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.table.ColumnList;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
-import net.sourceforge.ganttproject.resource.HumanResourceMerger.MergeResourcesOption;
-import net.sourceforge.ganttproject.resource.OverwritingMerger;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import org.osgi.service.prefs.Preferences;
 
@@ -44,7 +37,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import static net.sourceforge.ganttproject.importer.BufferProjectImportKt.importBufferProject;
 
 public class ImporterFromGanttFile extends ImporterBase {
   private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
@@ -112,7 +106,8 @@ public class ImporterFromGanttFile extends ImporterBase {
         algs.getScheduler().setEnabled(true);
       }
 
-      importBufferProject(targetProject, bufferProject, getUiFacade(), myMergeResourcesOption, myImportCalendarOption);
+      importBufferProject(targetProject, bufferProject, BufferProjectImportKt.asImportBufferProjectApi(getUiFacade()),
+          myMergeResourcesOption, myImportCalendarOption);
     } catch (DocumentException e) {
       getUiFacade().showErrorDialog(e);
     } catch (IOException e) {
@@ -224,35 +219,4 @@ public class ImporterFromGanttFile extends ImporterBase {
     return new FileDocument(selectedFile);
   }
 
-  public static Map<Task, Task> importBufferProject(IGanttProject targetProject, BufferProject bufferProject, UIFacade uiFacade, MergeResourcesOption mergeOption, ImportCalendarOption importCalendarOption) {
-    targetProject.getRoleManager().importData(bufferProject.getRoleManager());
-    if (importCalendarOption != null) {
-      targetProject.getActiveCalendar().importCalendar(bufferProject.getActiveCalendar(), importCalendarOption);
-    }
-
-    CustomPropertyManager targetResCustomPropertyMgr = targetProject.getResourceCustomPropertyManager();
-    var that2thisResourceCustomDefs = targetResCustomPropertyMgr.importData(bufferProject.getResourceCustomPropertyManager());
-
-    Map<HumanResource, HumanResource> original2ImportedResource = targetProject.getHumanResourceManager().importData(
-        bufferProject.getHumanResourceManager(), new OverwritingMerger(mergeOption), that2thisResourceCustomDefs);
-
-    Map<Task, Task> result = null;
-    {
-      CustomPropertyManager targetCustomColumnStorage = targetProject.getTaskCustomColumnManager();
-      Map<CustomPropertyDefinition, CustomPropertyDefinition> that2thisCustomDefs = targetCustomColumnStorage.importData(bufferProject.getTaskCustomColumnManager());
-      TaskManagerImpl origTaskManager = (TaskManagerImpl) targetProject.getTaskManager();
-      try {
-        origTaskManager.setEventsEnabled(false);
-        result = origTaskManager.importData(bufferProject.getTaskManager(), that2thisCustomDefs);
-        origTaskManager.importAssignments(bufferProject.getTaskManager(), targetProject.getHumanResourceManager(),
-            result, original2ImportedResource);
-      } finally {
-        origTaskManager.setEventsEnabled(true);
-      }
-    }
-    uiFacade.refresh();
-    uiFacade.getTaskTree().getVisibleFields().importData(bufferProject.getVisibleFields(), true);
-    uiFacade.getResourceTree().getVisibleFields().importData(bufferProject.myResourceVisibleFields, true);
-    return result;
-  }
 }

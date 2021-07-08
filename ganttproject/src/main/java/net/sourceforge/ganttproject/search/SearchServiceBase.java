@@ -18,8 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.search;
 
-import java.util.List;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.TreeUiFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -35,10 +33,10 @@ import net.sourceforge.ganttproject.gui.UIFacade;
  *          target search object type
  */
 abstract class SearchServiceBase<SR extends SearchResult<SO>, SO> implements SearchService<SR, SO> {
-  private final int myViewIndex;
+  protected final int myViewIndex;
   private IGanttProject myProject;
-  private TreeUiFacade<SO> myTreeUiFacade;
-  private UIFacade myUiFacade;
+  protected TreeUiFacade<SO> myTreeUiFacade;
+  protected UIFacade myUiFacade;
 
   protected SearchServiceBase(int viewIndex) {
     myViewIndex = viewIndex;
@@ -58,14 +56,5 @@ abstract class SearchServiceBase<SR extends SearchResult<SO>, SO> implements Sea
     return myProject;
   }
 
-  @Override
-  public void select(List<SR> results) {
-    myTreeUiFacade.clearSelection();
-    for (SearchResult<SO> r : results) {
-      myTreeUiFacade.setSelected(r.getObject(), false);
-      myTreeUiFacade.makeVisible(r.getObject());
-    }
-    myUiFacade.setViewIndex(myViewIndex);
-    myTreeUiFacade.getTreeComponent().requestFocusInWindow();
-  }
+  protected UIFacade getUiFacade() { return myUiFacade; }
 }

@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
+import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
@@ -212,6 +213,11 @@ public class ConsoleUIFacade implements UIFacade {
   @Override
   public TreeCollapseView<Task> getTaskCollapseView() {
     return myRealFacade.getTaskCollapseView();
+  }
+
+  @Override
+  public ColumnList getTaskColumnList() {
+    return myRealFacade.getTaskColumnList();
   }
 
   @Override

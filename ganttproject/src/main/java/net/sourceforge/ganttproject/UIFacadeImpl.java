@@ -33,6 +33,7 @@ import biz.ganttproject.core.option.FontSpec.Size;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
@@ -538,6 +539,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public TreeCollapseView<Task> getTaskCollapseView() {
     return myFallbackDelegate.getTaskCollapseView();
+  }
+
+  @Override
+  public ColumnList getTaskColumnList() {
+    return myFallbackDelegate.getTaskColumnList();
   }
 
   @Override

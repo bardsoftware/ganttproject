@@ -18,11 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.lib.fx.TreeCollapseView;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -147,6 +148,8 @@ public interface UIFacade {
 
   TaskTreeUIFacade getTaskTree();
   TreeCollapseView<Task> getTaskCollapseView();
+  ColumnList getTaskColumnList();
+
 
   ResourceTreeUIFacade getResourceTree();
 
