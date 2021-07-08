@@ -408,7 +408,7 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
     /***************************************************************************
      *                                                                         *
      *                         Stylesheet Handling                             *
-     *                                                                          *
+     *                                                                         *
      **************************************************************************/
 
     private static class StyleableProperties {
