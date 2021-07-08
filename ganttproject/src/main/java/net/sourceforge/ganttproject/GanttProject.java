@@ -170,7 +170,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ToolTipManager.sharedInstance().setDismissDelay(60000);
 
     myCalendar.addListener(() -> GanttProject.this.setModified());
-    Mediator.registerTaskSelectionManager(getTaskSelectionManager());
 
     this.isOnlyViewer = isOnlyViewer;
     if (!isOnlyViewer) {

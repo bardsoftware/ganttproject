@@ -63,7 +63,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>, autoEditCoordinator: NewTaskActo
     stylesheets.add("/biz/ganttproject/lib/fx/TreeTable.css")
     styleClass.add("gp-tree-table-view")
     focusModel.focusedCellProperty().addListener { _, _, newValue ->
-      if (newValue.column == -1) {
+      if (newValue.column == -1 && columns.isNotEmpty()) {
         focusModel.focus(newValue.row, columns[0])
       }
       refresh()
