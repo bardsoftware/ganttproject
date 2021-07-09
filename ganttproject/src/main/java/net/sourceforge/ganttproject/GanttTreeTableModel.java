@@ -83,12 +83,6 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
   };
   static {
     new DefaultBooleanOption("");
-    TaskDefaultColumn.setLocaleApi(new TaskDefaultColumn.LocaleApi() {
-      @Override
-      public String i18n(String key) {
-        return GanttLanguage.getInstance().getText(key);
-      }
-    });
   }
 
   private final CustomPropertyManager myCustomColumnsManager;

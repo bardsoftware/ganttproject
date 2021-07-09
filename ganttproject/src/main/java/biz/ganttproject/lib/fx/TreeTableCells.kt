@@ -32,10 +32,7 @@ import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.Node
-import javafx.scene.control.Skin
-import javafx.scene.control.TextField
-import javafx.scene.control.TreeTableCell
-import javafx.scene.control.TreeTableColumn
+import javafx.scene.control.*
 import javafx.scene.input.KeyCode
 import javafx.util.Callback
 import javafx.util.StringConverter
@@ -66,7 +63,7 @@ class TextCell<S, T>(
   private val textField: TextField = createTextField()
 
   override fun createDefaultSkin(): Skin<*> {
-    return TreeTableCellSkin<S, T>(this)
+    return TreeTableCellSkin(this)
   }
 
   init {
@@ -92,6 +89,8 @@ class TextCell<S, T>(
     text = " "
     savedGraphic = graphic
     graphic = textField
+    contentDisplay = ContentDisplay.GRAPHIC_ONLY
+
 
     // requesting focus so that key input can immediately go into the
     // TextField (see RT-28132)
@@ -156,12 +155,14 @@ class TextCell<S, T>(
     } else {
       text = getItemText()
       graphic = graphicSupplier(this.item)
+      contentDisplay = ContentDisplay.RIGHT
     }
   }
 
   private fun getItemText() = converter.toString(this, this.item)
   private fun createTextField() =
     TextField(getItemText()).also { textField ->
+      //textField.prefWidth = this.width
       // Use onAction here rather than onKeyReleased (with check for Enter),
       // as otherwise we encounter RT-34685
       textField.onAction = EventHandler { event: ActionEvent ->

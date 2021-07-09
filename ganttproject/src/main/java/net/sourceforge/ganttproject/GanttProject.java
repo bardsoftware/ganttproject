@@ -129,11 +129,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    */
   public boolean askForSave = false;
 
-  /**
-   * Is the application only for viewer.
-   */
-  public boolean isOnlyViewer;
-
   private final ResourceActionSet myResourceActions;
 
   private final ZoomActionSet myZoomActions;
@@ -171,12 +166,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     myCalendar.addListener(() -> GanttProject.this.setModified());
 
-    this.isOnlyViewer = isOnlyViewer;
-    if (!isOnlyViewer) {
-      setTitle(language.getText("appliTitle"));
-    } else {
-      setTitle("GanttViewer");
-    }
     setFocusable(true);
     startupLogger.debug("1. loading look'n'feels");
     options = new GanttOptions(getRoleManager(), getDocumentManager(), isOnlyViewer);
@@ -721,9 +710,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   public void setAskForSave(boolean afs) {
-    if (isOnlyViewer) {
-      return;
-    }
     fireProjectModified(afs);
     String title = getTitle();
     askForSave = afs;

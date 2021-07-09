@@ -28,7 +28,6 @@ import biz.ganttproject.core.table.ColumnList.ColumnStub
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.lib.fx.*
-import biz.ganttproject.lib.fx.treetable.TableRowSkinBase
 import biz.ganttproject.task.TaskActions
 import javafx.application.Platform
 import javafx.beans.property.*
@@ -60,6 +59,7 @@ import net.sourceforge.ganttproject.chart.export.TreeTableApi
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
 import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
 import net.sourceforge.ganttproject.task.TaskManager
@@ -118,6 +118,8 @@ class TaskTable(
 
 
   init {
+    TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
+
     columnList.totalWidthProperty.addListener { _, oldValue, newValue ->
       if (oldValue != newValue) {
         // We add vertical scroll bar width to the sum width of all columns, so that the split pane
