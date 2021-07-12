@@ -61,6 +61,7 @@ class TextCell<S, T>(
   private var savedGraphic: Node? = null
   var graphicSupplier: (T) -> Node? = { null }
   private val textField: TextField = createTextField()
+  private val disclosureNode: Node? get() = parent?.lookup(".arrow")
 
   override fun createDefaultSkin(): Skin<*> {
     return TreeTableCellSkin(this)
@@ -75,6 +76,11 @@ class TextCell<S, T>(
       return
     }
     super.startEdit()
+    contentDisplay = ContentDisplay.GRAPHIC_ONLY
+    //treeTableRow.styleClass.add("editing-row")
+    disclosureNode?.let {
+      it.isVisible = false
+    }
 
     if (isEditing && editingCellController(this)) {
       treeTableView.requestFocus()
@@ -89,7 +95,6 @@ class TextCell<S, T>(
     text = " "
     savedGraphic = graphic
     graphic = textField
-    contentDisplay = ContentDisplay.GRAPHIC_ONLY
 
 
     // requesting focus so that key input can immediately go into the
@@ -103,18 +108,29 @@ class TextCell<S, T>(
   override fun cancelEdit() {
     super.cancelEdit()
     styleClass.remove("validation-error")
+    disclosureNode?.let {
+      it.isVisible = true
+    }
     editingCellController(null)
     doCancelEdit()
     treeTableView.requestFocus()
+    treeTableView.refresh()
   }
 
   private fun doCancelEdit() {
     text = getItemText()
     graphic = savedGraphic
     savedGraphic = null
+    disclosureNode?.let {
+      it.isVisible = true
+    }
+    parent?.requestLayout()
   }
 
   override fun commitEdit(newValue: T?) {
+    disclosureNode?.let {
+      it.isVisible = true
+    }
     editingCellController(null)
     super.commitEdit(newValue)
     treeTableView.requestFocus()
@@ -131,7 +147,9 @@ class TextCell<S, T>(
   override fun updateItem(cellValue: T?, empty: Boolean) {
     super.updateItem(cellValue, empty)
     if (treeTableView.focusModel.isFocused(treeTableRow.index, tableColumn)) {
-      styleClass.add("focused")
+      if (styleClass.indexOf("focused") < 0) {
+        styleClass.add("focused")
+      }
     } else {
       styleClass.removeAll("focused")
     }

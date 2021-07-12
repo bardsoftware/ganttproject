@@ -75,6 +75,7 @@
         .virtual-flow {
             & > .tree-table-row-cell:selected, .tree-table-row-cell:focused {
                 & > .tree-table-cell {
+                    -fx-fill: white;
                     -fx-text-fill: white;
                 }
                 & > .tree-disclosure-node > .glyph-icon {
@@ -91,6 +92,8 @@
 
         &.focused {
             -fx-border-color: $gp-orange;
+            -fx-fill: white;
+            -fx-text-fill: white;
         }
         &.validation-error {
             -fx-background-color: lighten(red, 30%);
@@ -117,11 +120,6 @@
     }
 //
     .tree-table-row-cell {
-        //&:expanded > .tree-disclosure-node {
-        //    .arrow {
-        //        -fx-rotate: 90;
-        //    }
-        //}
         & > .tree-disclosure-node {
             -fx-padding: 0 0.5em 0.5em 0.5em;
             //-fx-background-color: yellow;
