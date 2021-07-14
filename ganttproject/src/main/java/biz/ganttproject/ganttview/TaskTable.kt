@@ -35,6 +35,7 @@ import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
+import javafx.geometry.Pos
 import javafx.scene.Parent
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.SelectionMode
@@ -929,6 +930,7 @@ private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) 
     } else null
   }
   cell.contentDisplay = ContentDisplay.RIGHT
+  cell.alignment = Pos.CENTER_LEFT
 }
 
 private val TEXT_FORMAT = DataFormat("text/ganttproject-task-node")
