@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf.fonts;
 
+import biz.ganttproject.app.FontManager;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
@@ -33,8 +34,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,7 +53,6 @@ import java.util.stream.Collectors;
  */
 public class TTFontCache {
   private static final org.slf4j.Logger ourLogger = GPLogger.create("Export.Pdf.Fonts").delegate();
-  private static final String FALLBACK_FONT_PATH = "/fonts/DroidSansFallbackFull.ttc";
   private final Map<String, AwtFontSupplier> myMap_Family_RegularFont = new TreeMap<>();
   private final Map<FontKey, com.itextpdf.text.Font> myFontCache = new HashMap<>();
   private final Map<String, Function<String, BaseFont>> myMap_Family_ItextFont = new HashMap<>();
@@ -63,14 +61,8 @@ public class TTFontCache {
 
   public TTFontCache() {
     try {
-      Path tempFallbackFile = Files.createTempFile("ganttproject_fallback_font", ".ttc");
-      Files.write(tempFallbackFile, getClass().getResource(FALLBACK_FONT_PATH).openStream().readAllBytes());
-      myFallbackFont = createFontSupplier(tempFallbackFile.toFile(), true);
-
-      var fallbackAwtFonts = Font.createFonts(tempFallbackFile.toFile());
-      ourLogger.debug("Registering fallback font {} in AWT", fallbackAwtFonts[0]);
-      GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(fallbackAwtFonts[0]);
-      registerFontFile(tempFallbackFile.toFile());
+      myFallbackFont = createFontSupplier(FontManager.INSTANCE.getFallbackFontFile(), true);
+      registerFontFile(FontManager.INSTANCE.getFallbackFontFile());
     } catch (Exception e) {
       ourLogger.error("Failed to create fallback font", e);
     }
@@ -185,7 +177,6 @@ public class TTFontCache {
       myMap_Family_RegularFont.put(family, awtSupplier);
     }
     awtSupplier.addFile(fontFile);
-
     try {
       var fontSupplier = createFontSupplier(fontFile, BaseFont.EMBEDDED);
       if (fontSupplier != null) {

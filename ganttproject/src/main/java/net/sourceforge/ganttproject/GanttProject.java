@@ -24,6 +24,7 @@ import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.platform.UpdateKt;
 import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
@@ -208,6 +209,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         }
       }
     });
+    TreeTableCellsKt.initFontProperty(getUiFacadeImpl().getAppFontOption());
 
     getZoomManager().addZoomListener(area.getZoomListener());
 

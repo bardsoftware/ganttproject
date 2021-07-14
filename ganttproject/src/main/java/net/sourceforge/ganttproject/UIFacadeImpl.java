@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.FontManager;
 import biz.ganttproject.app.MenuBuilderSwing;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
@@ -124,14 +125,14 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   private final DefaultFontOption myAppFontOption = new DefaultFontOption(
-      "appFontSpec", null, Arrays.asList(getFontFamilies())) {
+      "appFontSpec", null, getFontFamilies()) {
     @Override
     public Map<FontSpec.Size, String> getSizeLabels() {
       return UIFacadeImpl.getSizeLabels();
     }
   };
   private final DefaultFontOption myChartFontOption = new DefaultFontOption(
-      "chartFontSpec", new FontSpec("Dialog", FontSpec.Size.NORMAL), Arrays.asList(getFontFamilies())) {
+      "chartFontSpec", new FontSpec("Dialog", FontSpec.Size.NORMAL), getFontFamilies()) {
     @Override
     public Map<Size, String> getSizeLabels() {
       return UIFacadeImpl.getSizeLabels();
@@ -249,8 +250,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     addOptions(myLogoOptions);
   }
 
-  private String[] getFontFamilies() {
-    return GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+  private List<String> getFontFamilies() {
+    return FontManager.INSTANCE.getFontFamilies();
   }
 
   @Override

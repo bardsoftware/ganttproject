@@ -20,20 +20,20 @@ package biz.ganttproject.lib.fx
 
 //import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import biz.ganttproject.app.getModifiers
+import biz.ganttproject.core.option.FontOption
+import biz.ganttproject.core.option.FontSpec
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import javafx.application.Platform
-import javafx.beans.property.ReadOnlyDoubleWrapper
-import javafx.beans.property.ReadOnlyIntegerWrapper
-import javafx.beans.property.ReadOnlyObjectWrapper
-import javafx.beans.property.ReadOnlyStringWrapper
+import javafx.beans.property.*
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.KeyCode
+import javafx.scene.text.Font
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.BigDecimalStringConverter
@@ -41,7 +41,6 @@ import javafx.util.converter.DefaultStringConverter
 import javafx.util.converter.NumberStringConverter
 import net.sourceforge.ganttproject.gui.UIUtil
 import net.sourceforge.ganttproject.language.GanttLanguage
-import java.awt.Color
 import java.math.BigDecimal
 
 data class MyStringConverter<S, T>(
@@ -54,13 +53,28 @@ fun <S, T> StringConverter<T>.adapt(): MyStringConverter<S, T> =
     fromString = { _, stringValue -> this.fromString(stringValue) }
   )
 
+val applicationFont = SimpleObjectProperty(Font.getDefault())
+fun initFontProperty(appFontOption: FontOption) {
+  appFontOption.addChangeValueListener { event ->
+    event.newValue?.let {
+      if (it is FontSpec) {
+        Font.font(it.family)?.let { font ->
+          applicationFont.set(font)
+        }
+      }
+    }
+  }
+}
+
 class TextCell<S, T>(
   private val converter: MyStringConverter<S, T>,
   private val editingCellController: (TextCell<S, T>?) -> Boolean
 ) : TreeTableCell<S, T>() {
   private var savedGraphic: Node? = null
   var graphicSupplier: (T) -> Node? = { null }
-  private val textField: TextField = createTextField()
+  private val textField: TextField = createTextField().also {
+    it.fontProperty().bind(applicationFont)
+  }
   private val disclosureNode: Node? get() = parent?.lookup(".arrow")
 
   override fun createDefaultSkin(): Skin<*> {
@@ -69,6 +83,7 @@ class TextCell<S, T>(
 
   init {
     styleClass.add("gp-tree-table-cell")
+    fontProperty().bind(applicationFont)
   }
 
   override fun startEdit() {
@@ -274,7 +289,7 @@ fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S,
 fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue: (S, BigDecimal) -> Unit) =
   TreeTableColumn<S, BigDecimal>(name).apply {
     setCellValueFactory {
-      ReadOnlyObjectWrapper<BigDecimal>(getValue(it.value.value) ?: 0.toBigDecimal())
+      ReadOnlyObjectWrapper(getValue(it.value.value) ?: 0.toBigDecimal())
     }
     cellFactory = Callback {
       TextCell<S, BigDecimal>(BigDecimalStringConverter().adapt(), { true }).also {

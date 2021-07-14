@@ -113,6 +113,7 @@ task copyPluginFiles(dependsOn: jar) {
                 include "resources/**.ttf"
                 include "resources/**.properties"
                 include "resources/calendar/**"
+                include "resources/fonts/**"
                 include "resources/icons/**"
                 include "resources/language/**"
                 include "resources/xslfo/**"
