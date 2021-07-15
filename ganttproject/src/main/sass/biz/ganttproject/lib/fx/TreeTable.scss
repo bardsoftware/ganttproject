@@ -2,6 +2,9 @@
 @import "../../app/typography";
 
 .gp-tree-table-view {
+    .column-header {
+        -fx-font-weight: normal;
+    }
     -fx-border-width: 0;
     // Hamburger icon in the header
     .show-hide-column-image {

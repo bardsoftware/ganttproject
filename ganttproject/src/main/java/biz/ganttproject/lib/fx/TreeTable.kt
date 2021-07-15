@@ -18,13 +18,16 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
+//import javafx.scene.control.skin.TreeTableRowSkin
+//import javafx.scene.control.skin.TreeTableViewSkin
+//import javafx.scene.control.skin.VirtualFlow
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.app.MenuBuilderFx
 import biz.ganttproject.ganttview.NewTaskActor
 import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
-import com.sun.javafx.scene.control.behavior.TreeTableViewBehavior
 import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
 import biz.ganttproject.lib.fx.treetable.VirtualFlow
+import com.sun.javafx.scene.control.behavior.TreeTableViewBehavior
 import com.sun.javafx.scene.control.inputmap.InputMap
 import com.sun.javafx.scene.control.inputmap.KeyBinding
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -36,9 +39,6 @@ import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.geometry.Side
 import javafx.scene.control.*
-//import javafx.scene.control.skin.TreeTableRowSkin
-//import javafx.scene.control.skin.TreeTableViewSkin
-//import javafx.scene.control.skin.VirtualFlow
 import javafx.scene.input.KeyCode
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
@@ -125,6 +125,7 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
       val result = (totalCellHeight - virtualFlow.height) * virtualFlow.position
       scrollValue.value = result
     }
+
     val cornerRegion = this.tableHeaderRow.lookup(".show-hide-columns-button") as Region
     cornerRegion.onMousePressed = EventHandler { me: MouseEvent ->
       control.tableMenu.items.clear()
@@ -223,15 +224,4 @@ class MyTreeTableRow<T>(private val autoEditCoordinator: NewTaskActor<T>) : Tree
     }
   }
 
-//  override fun updateItem(item: T, empty: Boolean) {
-//    val currentItem = getItem()
-//    super.updateItem(item, empty)
-//    if (currentItem == null && item != null) {
-//      //val treeRow = this
-//      //runBlocking { autoEditCoordinator.inboxChannel.send(TreeRowReady(treeRow)) }
-//    }
-//    if (item == null && currentItem != null) {
-//      Exception("replacing $currentItem with null").printStackTrace()
-//    }
-//  }
 }
