@@ -20,9 +20,7 @@ package biz.ganttproject.lib.fx
 
 //import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import biz.ganttproject.app.getModifiers
-import biz.ganttproject.core.option.FontOption
-import biz.ganttproject.core.option.FontSpec
-import biz.ganttproject.core.option.ValidationException
+import biz.ganttproject.core.option.*
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
@@ -30,9 +28,15 @@ import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.geometry.Insets
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.KeyCode
+import javafx.scene.layout.Background
+import javafx.scene.layout.BackgroundFill
+import javafx.scene.layout.CornerRadii
+import javafx.scene.paint.Color
+import javafx.scene.paint.Paint
 import javafx.scene.text.Font
 import javafx.util.Callback
 import javafx.util.StringConverter
@@ -42,6 +46,7 @@ import javafx.util.converter.NumberStringConverter
 import net.sourceforge.ganttproject.gui.UIUtil
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.math.BigDecimal
+import javax.swing.UIManager
 
 data class MyStringConverter<S, T>(
   val toString: (cell: TextCell<S, T>, cellValue: T?) -> String?,
@@ -61,6 +66,26 @@ fun initFontProperty(appFontOption: FontOption) {
         Font.font(it.family)?.let { font ->
           applicationFont.set(font)
         }
+      }
+    }
+  }
+}
+val applicationBackground = SimpleObjectProperty<Background>(Background.EMPTY)
+val applicationForeground = SimpleObjectProperty<Paint>(Color.BLACK)
+fun initColorProperties() {
+  UIManager.addPropertyChangeListener { evt ->
+    if ("lookAndFeel" == evt.propertyName && evt.oldValue != evt.newValue) {
+      UIManager.getColor("TableHeader.background")?.let { swingColor ->
+        applicationBackground.value = Background(
+          BackgroundFill(
+            Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0),
+            CornerRadii.EMPTY,
+            Insets.EMPTY
+          )
+        )
+      }
+      UIManager.getColor("TableHeader.foreground")?.let { swingColor ->
+        applicationForeground.value = Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)
       }
     }
   }

@@ -56,16 +56,11 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.paint.Color;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -584,15 +579,9 @@ public class TableColumnHeader extends Region {
             // put together the grid
             updateSortGrid();
         }
-        var swingColor = UIManager.getColor("Panel.background");
-        if (swingColor != null) {
-            setBackground(new Background(new BackgroundFill(
-                Color.color(swingColor.getRed()/255.0, swingColor.getGreen()/255.0, swingColor.getBlue()/255.0),
-                CornerRadii.EMPTY,
-                Insets.EMPTY
-            )));
-        }
+        backgroundProperty().bind(TreeTableCellsKt.getApplicationBackground());
         label.fontProperty().bind(TreeTableCellsKt.getApplicationFont());
+        label.textFillProperty().bind(TreeTableCellsKt.getApplicationForeground());
     }
 
     private void doColumnAutoSize(TableColumnBase<?,?> column, int cellsToMeasure) {

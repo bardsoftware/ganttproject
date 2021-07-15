@@ -210,7 +210,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       }
     });
     TreeTableCellsKt.initFontProperty(getUiFacadeImpl().getAppFontOption());
-
+    TreeTableCellsKt.initColorProperties();
     getZoomManager().addZoomListener(area.getZoomListener());
 
     ScrollingManager scrollingManager = getScrollingManager();
