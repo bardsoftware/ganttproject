@@ -50,6 +50,7 @@ class ChartWriter implements ChartImageVisitor {
   private Graphics2D myGraphics;
   private final String myCharset;
   private final FontSubstitutionModel mySubstitutions;
+  private int myOffsetY;
 
   ChartWriter(TimelineChart chart, PdfWriter writer, Document doc, GanttExportSettings exportSettings,
       TTFontCache fontCache, FontSubstitutionModel substitutionModel, String charset) {
@@ -106,12 +107,13 @@ class ChartWriter implements ChartImageVisitor {
   @Override
   public void acceptTable(ChartDimensions d, TreeTableApi treeTableApi) {
     Graphics2D g = getGraphics(d);
+    myOffsetY = d.getLogoHeight();
     g.translate(0, d.getLogoHeight());
     var header = treeTableApi.getTableHeaderComponent().invoke();
     if (header != null) {
       header.print(g);
-
       g.translate(0, d.getTableHeaderHeight());
+      myOffsetY += d.getTableHeaderHeight();
     }
     var table = treeTableApi.getTableComponent().invoke();
     if (table != null) {
@@ -124,7 +126,7 @@ class ChartWriter implements ChartImageVisitor {
   @Override
   public void acceptChart(ChartDimensions d, ChartModel model) {
     Graphics2D g = getGraphics(d);
-    g.translate(d.getTreeWidth(), -d.getLogoHeight() - d.getTableHeaderHeight());
+    g.translate(d.getTreeWidth(), -myOffsetY);
     g.clip(new java.awt.Rectangle(d.getChartWidth(), d.getChartHeight()));
     model.paint(g);
   }
