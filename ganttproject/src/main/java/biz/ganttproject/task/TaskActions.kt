@@ -1,3 +1,21 @@
+/*
+Copyright 2021 BarD Software s.r.o
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.task
 
 import biz.ganttproject.core.table.ColumnList
@@ -38,7 +56,7 @@ class TaskActions(private val project: IGanttProject,
   val linkTasksAction = TaskLinkAction(project.taskManager, selectionManager, uiFacade)
   val unlinkTasksAction = TaskUnlinkAction(project.taskManager, selectionManager, uiFacade)
 
-  val manageColumnsAction get() = ManageColumnsAction(uiFacade, tableConnector().columnList(), project.taskCustomColumnManager)
+  val manageColumnsAction get() = ManageColumnsAction(uiFacade, tableConnector().columnList, project.taskCustomColumnManager)
 
   fun all() = listOf(propertiesAction, indentAction, unindentAction, moveDownAction, moveUpAction, linkTasksAction, unlinkTasksAction)
   fun assignments(task: Task, hrManager: HumanResourceManager, undoManager: GPUndoManager): List<GPAction> {
@@ -57,12 +75,12 @@ class TaskActions(private val project: IGanttProject,
 
 class ManageColumnsAction(
   private val uiFacade: UIFacade,
-  private val columnList: ColumnList,
+  private val columnList: () -> ColumnList,
   private val customPropertyManager: CustomPropertyManager) : GPAction("columns.manage.label") {
 
   override fun actionPerformed(e: ActionEvent?) {
     val dialog = ShowHideColumnsDialog(
-      uiFacade, columnList, customPropertyManager
+      uiFacade, columnList(), customPropertyManager
     )
     dialog.show()
   }
