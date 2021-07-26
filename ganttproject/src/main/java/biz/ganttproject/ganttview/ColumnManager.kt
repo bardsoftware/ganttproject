@@ -21,11 +21,14 @@ package biz.ganttproject.ganttview
 import biz.ganttproject.app.LocalizedString
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
+import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
@@ -39,9 +42,12 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.StackPane
 import javafx.util.Callback
+import net.sourceforge.ganttproject.CustomPropertyClass
+import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.CustomPropertyManager
 import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty
+import org.controlsfx.property.BeanPropertyUtils
 import java.beans.PropertyDescriptor
 
 /**
@@ -59,10 +65,7 @@ class ColumnManager(private val currentTableColumns: ColumnList, private val cus
   private val listView: ListView<ColumnItem> = ListView()
   private val propertySheet: PropertySheet
   private val propertySheetAction: Button
-  private val propertyDescriptors = listOf(
-    PropertyDescriptor("title", CustomPropertyEditable::class.java)
-  )
-  private val customPropertyEditable = CustomPropertyEditable()
+  private val customPropertyEditor = CustomPropertyEditor()
   internal val content: Node
   private val mergedColumns: MutableList<ColumnList.Column> = currentTableColumns.exportData()
   init {
@@ -76,9 +79,9 @@ class ColumnManager(private val currentTableColumns: ColumnList, private val cus
     }
     listView.items = listItems
     listView.cellFactory = Callback { CellImpl() }
-    propertySheet = PropertySheet(FXCollections.observableArrayList(
-      propertyDescriptors.map { BeanProperty(customPropertyEditable, it) }.toList()
-    )).also {
+    propertySheet = PropertySheet(
+      FXCollections.observableArrayList(customPropertyEditor.props)
+    ).also {
       it.isModeSwitcherVisible = false
       it.isSearchBoxVisible = false
     }
@@ -94,17 +97,69 @@ class ColumnManager(private val currentTableColumns: ColumnList, private val cus
     }
 
     listView.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+      customPropertyEditor.title.value = newValue.column.name
       if (newValue.isCustom) {
+        customPropertyEditor.type.value = customColumnsManager.getCustomPropertyDefinition(newValue.column.id)?.getPropertyType()
         propertySheet.isDisable = false
       } else {
-        propertySheet.isDisable = true
+        customPropertyEditor.type.value = TaskDefaultColumn.find(newValue.column.id)?.getPropertyType()
+        //propertySheet.isDisable = true
       }
     }
 
   }
 }
 
-internal data class CustomPropertyEditable(var title: String = "")
+internal enum class PropertyType(private val displayName: String) {
+  STRING("Text"), INTEGER("Integer value"), DATE("Date"), DECIMAL("Numeric/decimal"), COLOR("Color"), BOOLEAN("True or false");
+
+  override fun toString() = this.displayName
+}
+
+internal fun CustomPropertyDefinition.getPropertyType(): PropertyType = when (this.propertyClass) {
+  CustomPropertyClass.TEXT -> PropertyType.STRING
+  CustomPropertyClass.DATE -> PropertyType.DATE
+  CustomPropertyClass.INTEGER -> PropertyType.INTEGER
+  CustomPropertyClass.DOUBLE -> PropertyType.DECIMAL
+  CustomPropertyClass.BOOLEAN -> PropertyType.BOOLEAN
+}
+
+internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {
+  TaskDefaultColumn.ID, TaskDefaultColumn.DURATION, TaskDefaultColumn.COMPLETION -> PropertyType.INTEGER
+  TaskDefaultColumn.BEGIN_DATE, TaskDefaultColumn.END_DATE -> PropertyType.DATE
+  TaskDefaultColumn.COST -> PropertyType.DECIMAL
+  TaskDefaultColumn.COLOR -> PropertyType.COLOR
+  else -> PropertyType.STRING
+}
+
+internal class CustomPropertyEditData() {
+  private val _title = SimpleStringProperty("")
+  var title: String
+    get() = _title.value
+    set(value) { _title.value = value }
+  fun titleProperty() = _title
+
+  private val _type = SimpleObjectProperty(PropertyType.STRING)
+  var type: PropertyType
+    get() = _type.value
+    set(value) { _type.value = value }
+  fun typeProperty() = _type
+
+  private val _defaultValue = SimpleStringProperty("")
+  var defaultValue: String
+    get() = _defaultValue.value
+    set(value) { _defaultValue.value = value }
+  fun defaultValueProperty() = _defaultValue
+}
+
+internal class CustomPropertyEditor {
+  val value = CustomPropertyEditData()
+  val title = BeanProperty(value, PropertyDescriptor("title", CustomPropertyEditData::class.java))
+  val type = BeanProperty(value, PropertyDescriptor("type", CustomPropertyEditData::class.java))
+  val defaultValue = BeanProperty(value, PropertyDescriptor("defaultValue", CustomPropertyEditData::class.java))
+  val props = listOf(title, type, defaultValue)
+}
+
 internal data class ColumnItem(val column: ColumnList.Column, var isVisible: Boolean, val isCustom: Boolean)
 
 private class CellImpl : ListCell<ColumnItem>() {
@@ -112,7 +167,6 @@ private class CellImpl : ListCell<ColumnItem>() {
   private val iconHidden = MaterialIconView(MaterialIcon.VISIBILITY_OFF)
   private val iconPane = StackPane().also {
     it.onMouseClicked = EventHandler { evt ->
-      println("icon clicked!!! item=$item")
       item.isVisible = !item.isVisible
       updateItem(item, false)
     }
