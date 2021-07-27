@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
+import biz.ganttproject.customproperty.PropertyTypeEncoder;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.core.time.GanttCalendar;
 import com.google.common.base.Charsets;
@@ -205,7 +206,7 @@ class TaskSaver extends SaverBase {
   }
 
   private static String encodeFieldType(Class<?> fieldType) {
-    return CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(fieldType);
+    return PropertyTypeEncoder.INSTANCE.encodeFieldType(fieldType);
   }
 
 }

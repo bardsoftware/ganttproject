@@ -18,23 +18,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import biz.ganttproject.core.time.GanttCalendar;
-
+import biz.ganttproject.customproperty.PropertyTypeEncoder;
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyHolder;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 /**
  * Keeps a map of custom property ID to value.
- * 
+ *
  * @author bbaranne Mar 2, 2005 -- initial code
  * @auuthor dbarashev (Dmitry Barashev) -- complete rewrite
  */
@@ -111,7 +111,7 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
 
   @Override
   public CustomProperty addCustomProperty(CustomPropertyDefinition definition, String valueAsString) {
-    CustomPropertyDefinition defStub = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(
+    CustomPropertyDefinition defStub = PropertyTypeEncoder.INSTANCE.decodeTypeAndDefaultValue(
         definition.getTypeAsString(), valueAsString);
     try {
       setValue(definition, defStub.getDefaultValue());

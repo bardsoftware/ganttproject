@@ -18,18 +18,20 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import biz.ganttproject.customproperty.PropertyTypeEncoder;
+import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * This class has to be used to add or remove new custom columns. It will
  * perform the changes to the linked treetable.
- * 
+ *
  * @author bbaranne (Benoit Baranne) Mar 4, 2005
  */
 public class CustomColumnsManager implements CustomPropertyManager {
@@ -57,7 +59,7 @@ public class CustomColumnsManager implements CustomPropertyManager {
   @Override
   public CustomPropertyDefinition createDefinition(String id, String typeAsString, String name,
       String defaultValueAsString) {
-    CustomPropertyDefinition stub = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(typeAsString,
+    CustomPropertyDefinition stub = PropertyTypeEncoder.INSTANCE.decodeTypeAndDefaultValue(typeAsString,
         defaultValueAsString);
     CustomColumn result = new CustomColumn(this, name, stub.getPropertyClass(), stub.getDefaultValue());
     result.setId(id);
@@ -68,6 +70,15 @@ public class CustomColumnsManager implements CustomPropertyManager {
   @Override
   public CustomPropertyDefinition createDefinition(String typeAsString, String colName, String defValue) {
     return createDefinition(myStorage.createId(), typeAsString, colName, defValue);
+  }
+
+  @Override
+  public CustomPropertyDefinition createDefinition(CustomPropertyClass propertyClass, String colName, String defValue) {
+    var stub = PropertyTypeEncoder.INSTANCE.create(propertyClass, defValue);
+    CustomColumn result = new CustomColumn(this, colName, stub.getPropertyClass(), stub.getDefaultValue());
+    result.setId(myStorage.createId());
+    addNewCustomColumn(result);
+    return result;
   }
 
   @Override
