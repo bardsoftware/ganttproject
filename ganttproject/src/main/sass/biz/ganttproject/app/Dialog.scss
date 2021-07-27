@@ -30,31 +30,66 @@ $gp-dark-gray: #424242;
     -fx-font-weight: bold;
     -fx-padding: 0.75ex 2em;
     -fx-cursor: hand;
-}
-.btn-attention.secondary {
-    -fx-background-color: transparent;
-    -fx-border-color: $gp-orange;
+
+    &.secondary {
+        -fx-background-color: transparent;
+        -fx-border-color: $gp-orange;
+
+        &:hover, &:focused {
+            -fx-background-color: derive($gp-orange, 10%);
+        }
+    }
+    &:hover, &:focused {
+        -fx-effect: dropshadow(gaussian, $gp-light-gray, 4, 0, 0, 4);
+        -fx-background-color: derive($gp-orange, 10%);
+        -fx-text-fill: derive($gp-dark-gray, -10%);
+    }
+
+    &:disabled {
+        -fx-opacity: 0.5;
+        -fx-cursor: default;
+    }
+
+    &:pressed {
+        -fx-effect: none;
+        -fx-background-color: derive($gp-orange, 10%);
+        -fx-text-fill: derive($gp-dark-gray, -10%);
+    }
 }
 
-.btn-attention:hover {
-    -fx-effect: dropshadow(gaussian, $gp-light-gray, 4, 0, 0, 4);
-    -fx-background-color: derive($gp-orange, 10%);
-    -fx-text-fill: derive($gp-dark-gray, -10%);
-}
+.btn-regular {
+    -fx-background-color: $gp-light-gray;
+    -fx-border-color: transparent;
+    -fx-border-radius: 0;
+    -fx-text-fill: $gp-dark-gray;
+    /*    -fx-font-size: 110%;*/
+    -fx-padding: 0.75ex 2em;
+    -fx-cursor: hand;
 
-.btn-attention.secondary:hover {
-    -fx-background-color: derive($gp-orange, 10%);
-}
+    &.secondary {
+        -fx-background-color: transparent;
+        -fx-border-color: $gp-medium-gray;
 
-.btn-attention:disabled {
-    -fx-opacity: 0.5;
-    -fx-cursor: default;
-}
+        &:hover, &:focused {
+            -fx-background-color: derive($gp-light-gray, 10%);
+        }
+    }
+    &:hover, &:focused {
+        -fx-effect: dropshadow(gaussian, $gp-light-gray, 4, 0, 0, 4);
+        -fx-background-color: derive($gp-light-gray, 10%);
+        -fx-text-fill: derive($gp-dark-gray, -10%);
+    }
 
-.btn-attention:pressed {
-    -fx-effect: none;
-    -fx-background-color: derive($gp-orange, 10%);
-    -fx-text-fill: derive($gp-dark-gray, -10%);
+    &:disabled {
+        -fx-opacity: 0.5;
+        -fx-cursor: default;
+    }
+
+    &:pressed {
+        -fx-effect: none;
+        -fx-background-color: derive($gp-medium-gray, 10%);
+        -fx-text-fill: derive($gp-dark-gray, -10%);
+    }
 }
 
 .border-etched {

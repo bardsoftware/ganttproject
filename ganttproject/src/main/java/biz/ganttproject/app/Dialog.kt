@@ -144,24 +144,24 @@ class DialogControllerSwing() : DialogController {
   private lateinit var content: Node
   private var buttonBar: ButtonBar = ButtonBar().also { it.styleClass.add("button-pane") }
   private var buttonBarDisabled = false
-  private val buttons = FXCollections.observableArrayList<ButtonType>().also {
-    it.addListener(ListChangeListener { c ->
-      while (c.next()) {
-        if (c.wasRemoved()) {
-          c.removed.forEach { buttonType -> buttonNodes.remove(buttonType) }
-        }
-        if (c.wasAdded()) {
-          c.addedSubList.forEach { buttonType ->
-            buttonNodes.getOrPut(buttonType) {
-              createButton(buttonType)
-            }
-          }
-        }
-      }
-    })
-  }
+//  private val buttons = FXCollections.observableArrayList<ButtonType>().also {
+//    it.addListener(ListChangeListener { c ->
+//      while (c.next()) {
+//        if (c.wasRemoved()) {
+//          c.removed.forEach { buttonType -> buttonNodes.remove(buttonType) }
+//        }
+//        if (c.wasAdded()) {
+//          c.addedSubList.forEach { buttonType ->
+//            buttonNodes.getOrPut(buttonType) {
+//              createButton(buttonType)
+//            }
+//          }
+//        }
+//      }
+//    })
+//  }
 
-  private val buttonNodes = WeakHashMap<ButtonType, Button>()
+//  private val buttonNodes = WeakHashMap<ButtonType, Button>()
 
   private var header: Node? = null
   private var isBuilt = false
@@ -175,10 +175,7 @@ class DialogControllerSwing() : DialogController {
       this.paneBuilder.add(this.contentStack, alignment = null, growth = Priority.ALWAYS)
     }
     if (!this.buttonBarDisabled) {
-      this.buttonBar.let {
-        updateButtons(it)
-        this.paneBuilder.add(it)
-      }
+      this.paneBuilder.add(this.buttonBar)
     }
     val defaultButton = this.buttonBar.buttons?.firstOrNull {
       if (it is Button) it.isDefaultButton else false
@@ -211,13 +208,17 @@ class DialogControllerSwing() : DialogController {
   }
 
   override fun setupButton(type: ButtonType, code: (Button) -> Unit) {
-    buttons.add(type)
-    this.buttonNodes[type]?.let {
+//    buttons.add(type)
+//    this.buttonNodes[type]?.let {
+//      code(it)
+//    }
+    createButton(buttonType = type).also {
       code(it)
+      buttonBar.buttons.add(it)
     }
-    if (isBuilt) {
-      updateButtons(buttonBar)
-    }
+//    if (isBuilt) {
+//      updateButtons(buttonBar)
+//    }
   }
 
   override fun toggleProgress(shown: Boolean): () -> Unit {
@@ -280,31 +281,31 @@ class DialogControllerSwing() : DialogController {
   }
 
   override fun removeButtonBar() {
-    this.buttons.clear()
-    this.buttonNodes.clear()
+//    this.buttons.clear()
+//    this.buttonNodes.clear()
     this.buttonBarDisabled = true
     //this.buttonBar = null
   }
 
-  private fun updateButtons(buttonBar: ButtonBar) {
-    buttonBar.buttons.clear()
-    // show details button if expandable content is present
-    var hasDefault = false
-    for (cmd in buttons) {
-      val button = buttonNodes.computeIfAbsent(cmd, ::createButton)
-      // keep only first default button
-      val buttonType = cmd.buttonData
-      button.isDefaultButton = !hasDefault && buttonType != null && buttonType.isDefaultButton
-      button.isCancelButton = buttonType != null && buttonType.isCancelButton
-      hasDefault = hasDefault || buttonType != null && buttonType.isDefaultButton
-      buttonBar.buttons.add(button)
-
-      button.addEventHandler(ActionEvent.ACTION) { ae: ActionEvent ->
-        if (ae.isConsumed) return@addEventHandler
-        hide()
-      }
-    }
-  }
+//  private fun updateButtons(buttonBar: ButtonBar) {
+//    buttonBar.buttons.clear()
+//    // show details button if expandable content is present
+//    var hasDefault = false
+//    for (cmd in buttons) {
+//      val button = buttonNodes.computeIfAbsent(cmd, ::createButton)
+//      // keep only first default button
+//      val buttonType = cmd.buttonData
+//      button.isDefaultButton = !hasDefault && buttonType != null && buttonType.isDefaultButton
+//      button.isCancelButton = buttonType != null && buttonType.isCancelButton
+//      hasDefault = hasDefault || buttonType != null && buttonType.isDefaultButton
+//      buttonBar.buttons.add(button)
+//
+//      button.addEventHandler(ActionEvent.ACTION) { ae: ActionEvent ->
+//        if (ae.isConsumed) return@addEventHandler
+//        hide()
+//      }
+//    }
+//  }
 
   private fun createButton(buttonType: ButtonType): Button {
     val button = Button(buttonType.text)
