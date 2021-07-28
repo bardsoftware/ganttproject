@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.gui;
 import biz.ganttproject.core.chart.render.ShapeConstants;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DateValidators;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
@@ -30,7 +31,6 @@ import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIUtil.DateValidator;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.SpringUtilities;
 import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
@@ -455,7 +455,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     priorityComboBox.setSelectedIndex(originalPriority.ordinal());
 
     myTaskScheduleDates.setUnpluggedClone(myUnpluggedClone);
-    DateValidator validator = UIUtil.DateValidator.Default.aroundProjectStart(myProject.getTaskManager().getProjectStart());
+    var validator = DateValidators.INSTANCE.aroundProjectStart(myProject.getTaskManager().getProjectStart());
     ActionListener listener = new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {

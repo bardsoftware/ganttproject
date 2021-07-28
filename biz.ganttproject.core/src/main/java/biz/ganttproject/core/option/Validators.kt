@@ -18,6 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.option
 
+import com.google.common.base.Strings
+import com.google.common.base.Supplier
+import org.apache.commons.math3.util.Pair
+import java.text.DateFormat
+import java.text.ParseException
+import java.util.*
+
 interface ValueValidator<T> {
   @Throws(ValidationException::class)
   fun parse(text: String): T
@@ -41,4 +48,54 @@ val doubleValidator: ValueValidator<Double> = object : ValueValidator<Double> {
   } catch (ex: NumberFormatException) {
     throw ValidationException(ex)
   }
+}
+
+fun createStringDateValidator(dv: DateValidatorType? = null, formats: Supplier<List<DateFormat>>) : ValueValidator<Date> =
+  object : ValueValidator<Date> {
+    override fun parse(text: String): Date = try {
+      if (Strings.isNullOrEmpty(text)) {
+        throw ValidationException()
+      }
+      var parsed: Date? = null
+      for (df in formats.get()) {
+        parsed = try { df.parse(text) } catch (ex: ParseException) { null }
+        if (parsed != null) {
+          break;
+        }
+      }
+      if (parsed == null) {
+        throw ValidationException("Can't parse value=" + text + "as date")
+      }
+      dv?.let {
+        val validationResult = it(parsed)
+        if (!validationResult.first) {
+          throw ValidationException(validationResult.second)
+        }
+      }
+      parsed
+    } catch (ex: Exception) {
+      throw ValidationException(ex)
+    }
+  }
+
+
+typealias DateValidatorType = (Date) -> Pair<Boolean, String?>
+
+object DateValidators {
+  fun aroundProjectStart(projectStart: Date): DateValidatorType {
+    return dateInRange(projectStart, 1000)
+  }
+
+  fun dateInRange(center: Date, yearDiff: Int): DateValidatorType = { value: Date ->
+    val diff = Math.abs(value.year - center.year)
+    if (diff > yearDiff) {
+      Pair.create(false, String.format(
+          "Date %s is far away (%d years) from expected date %s. Any mistake?", value, diff, center
+        )
+      )
+    } else {
+      Pair.create<Boolean?, String?>(java.lang.Boolean.TRUE, null)
+    }
+  }
+
 }

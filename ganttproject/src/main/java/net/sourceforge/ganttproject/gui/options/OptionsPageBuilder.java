@@ -22,6 +22,7 @@ import biz.ganttproject.core.option.MoneyOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.option.ValidatorsKt;
+import biz.ganttproject.core.option.ValueValidator;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
@@ -706,9 +707,6 @@ public class OptionsPageBuilder {
     });
 
     return result;
-  }
-
-  public interface ValueValidator<T> extends biz.ganttproject.core.option.ValueValidator<T> {
   }
 
   /**

@@ -264,7 +264,7 @@ fun <S> createTextColumn(name: String, getValue: (S) -> String?, setValue: (S, S
   }
 
 class GanttCalendarStringConverter : StringConverter<GanttCalendar>() {
-  private val validator = UIUtil.createStringDateValidator(null) {
+  private val validator = createStringDateValidator(null) {
     listOf(GanttLanguage.getInstance().shortDateFormat)
   }
   override fun toString(value: GanttCalendar?) = value?.toString() ?: ""

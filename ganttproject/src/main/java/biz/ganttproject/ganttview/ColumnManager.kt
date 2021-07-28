@@ -39,13 +39,16 @@ import javafx.scene.control.ButtonBar
 import javafx.scene.control.ButtonType
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
+import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.StackPane
+import javafx.scene.paint.Color
 import javafx.util.Callback
 import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.CustomPropertyManager
+import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty
 import org.controlsfx.property.editor.PropertyEditor
@@ -93,6 +96,7 @@ class ColumnManager(
     listView.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
       customPropertyEditor.selectedItem = newValue
     }
+    listView.selectionModel.select(0)
 
   }
 
@@ -166,6 +170,9 @@ internal fun PropertyType.getCustomPropertyClass(): CustomPropertyClass = when (
 internal fun PropertyType.createValidator(): ValueValidator<*> = when (this) {
   PropertyType.INTEGER -> integerValidator
   PropertyType.DECIMAL -> doubleValidator
+  PropertyType.DATE -> createStringDateValidator {
+    listOf(GanttLanguage.getInstance().shortDateFormat, GanttLanguage.getInstance().mediumDateFormat)
+  }
   else -> voidValidator
 }
 internal fun CustomPropertyDefinition.fromColumnItem(item: ColumnAsListItem) {
@@ -234,10 +241,12 @@ internal class CustomPropertyEditor(
             editableValue.type.createValidator().parse(editableValue.defaultValue)
           }
           editor.editor.styleClass.remove("validation-error")
+          editor.editor.effect = null
           selectedItem?.defaultValue = editableValue.defaultValue
         } catch (ex: ValidationException) {
           if (!editor.editor.styleClass.contains("validation-error")) {
             editor.editor.styleClass.add("validation-error")
+            editor.editor.effect = InnerShadow(10.0, Color.RED)
           }
         }
       }
