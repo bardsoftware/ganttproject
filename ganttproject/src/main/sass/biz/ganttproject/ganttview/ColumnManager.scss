@@ -1,6 +1,7 @@
 @import "../app/dialogs";
 @import "../app/theme";
 @import "../app/typography";
+@import "../app/validation";
 
 .dlg-column-manager {
   -fx-min-height: 400;
@@ -39,6 +40,11 @@
           -fx-fill: $gp-dark-gray;
           -fx-text-fill: $gp-dark-gray;
         }
+      }
+    }
+    .property-sheet {
+      .validation-error {
+        @include validation-error();
       }
     }
     //.column-item-cell {

@@ -22,9 +22,12 @@ import biz.ganttproject.app.LocalizedString
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.core.model.task.TaskDefaultColumn
+import biz.ganttproject.core.option.ValidationException
+import biz.ganttproject.core.option.ValueValidator
+import biz.ganttproject.core.option.integerValidator
+import biz.ganttproject.core.option.voidValidator
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.beans.property.SimpleBooleanProperty
@@ -48,12 +51,15 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.CustomPropertyManager
 import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty
+import org.controlsfx.property.editor.PropertyEditor
 import java.beans.PropertyDescriptor
 
 /**
  * @author dbarashev@bardsoftware.com
  */
-class ColumnManager(private val currentTableColumns: ColumnList, private val customColumnsManager: CustomPropertyManager) {
+class ColumnManager(
+  private val currentTableColumns: ColumnList,
+  private val customColumnsManager: CustomPropertyManager) {
 
   internal val btnAddController = BtnController(onAction = this::onAddColumn)
   internal val btnDeleteController = BtnController(onAction = this::onDeleteColumn)
@@ -61,7 +67,8 @@ class ColumnManager(private val currentTableColumns: ColumnList, private val cus
   private val listItems = FXCollections.observableArrayList<ColumnAsListItem>()
   private val listView: ListView<ColumnAsListItem> = ListView()
   private val propertySheet: PropertySheet = PropertySheet()
-  private val customPropertyEditor = CustomPropertyEditor(customColumnsManager, propertySheet, btnDeleteController, listItems)
+  private val customPropertyEditor = CustomPropertyEditor(
+    customColumnsManager, propertySheet, btnDeleteController, listItems)
   internal val content: Node
   private val mergedColumns: MutableList<ColumnList.Column> = mutableListOf()
   init {
@@ -87,7 +94,7 @@ class ColumnManager(private val currentTableColumns: ColumnList, private val cus
     }
 
     listView.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-      customPropertyEditor.item = newValue
+      customPropertyEditor.selectedItem = newValue
     }
 
   }
@@ -158,6 +165,10 @@ internal fun PropertyType.getCustomPropertyClass(): CustomPropertyClass = when (
   else -> CustomPropertyClass.TEXT
 }
 
+internal fun PropertyType.createValidator(): ValueValidator<*> = when (this) {
+  PropertyType.INTEGER -> integerValidator
+  else -> voidValidator
+}
 internal fun CustomPropertyDefinition.fromColumnItem(item: ColumnAsListItem) {
   this.name = item.title
   if (item.defaultValue.trim().isNotBlank()) {
@@ -181,17 +192,17 @@ internal class CustomPropertyEditor(
   private val listItems: ObservableList<ColumnAsListItem>
 ) {
   var isPropertyChangeIgnored = false
-  var item: ColumnAsListItem? = null
-  set(newValue) {
+  var selectedItem: ColumnAsListItem? = null
+  set(selectedItem) {
     isPropertyChangeIgnored = true
-    field = newValue
-    if (newValue != null) {
-      value.title = newValue.title
-      value.type = newValue.type
-      if (newValue.isCustom) {
+    field = selectedItem
+    if (selectedItem != null) {
+      editableValue.title = selectedItem.title
+      editableValue.type = selectedItem.type
+      if (selectedItem.isCustom) {
         propertySheet.isDisable = false
         btnDeleteController.isDisabled.value = false
-        value.defaultValue = newValue.defaultValue
+        editableValue.defaultValue = selectedItem.defaultValue
       } else {
         btnDeleteController.isDisabled.value = true
         //propertySheet.isDisable = true
@@ -199,20 +210,39 @@ internal class CustomPropertyEditor(
     }
     isPropertyChangeIgnored = false
   }
-  val value = ColumnAsListItem(column = null, isVisible = true, isCustom = true, customColumnsManager = customColumnsManager)
-  val title = BeanProperty(value, PropertyDescriptor("title", ColumnAsListItem::class.java))
-  val type = BeanProperty(value, PropertyDescriptor("type", ColumnAsListItem::class.java))
-  val defaultValue = BeanProperty(value, PropertyDescriptor("defaultValue", ColumnAsListItem::class.java))
+  private val editableValue = ColumnAsListItem(column = null, isVisible = true, isCustom = true, customColumnsManager = customColumnsManager)
+  private val title = BeanProperty(editableValue, PropertyDescriptor("title", ColumnAsListItem::class.java))
+  private val type = BeanProperty(editableValue, PropertyDescriptor("type", ColumnAsListItem::class.java))
+  private val defaultValue = BeanProperty(editableValue, PropertyDescriptor("defaultValue", ColumnAsListItem::class.java))
   val props = listOf(title, type, defaultValue)
+  val editors = mutableMapOf<String, PropertyEditor<*>>()
+
   init {
+    val defaultEditor = propertySheet.propertyEditorFactory
+    propertySheet.propertyEditorFactory = Callback { item ->
+      defaultEditor.call(item).also { propertyEditor -> editors[item.name] = propertyEditor }
+    }
     props.forEach { it.observableValue.get().addListener { _, _, _ -> onPropertyChange() } }
+
   }
   private fun onPropertyChange() {
     if (!isPropertyChangeIgnored) {
-      item?.title = value.title
-      item?.type = value.type
-      item?.defaultValue = value.defaultValue
-      listItems.set(listItems.indexOf(item), item)
+      selectedItem?.title = editableValue.title
+      selectedItem?.type = editableValue.type
+      editors["defaultValue"]?.let { editor ->
+        try {
+          if (editableValue.defaultValue.isNotBlank()) {
+            editableValue.type.createValidator().parse(editableValue.defaultValue)
+          }
+          editor.editor.styleClass.remove("validation-error")
+          selectedItem?.defaultValue = editableValue.defaultValue
+        } catch (ex: ValidationException) {
+          if (!editor.editor.styleClass.contains("validation-error")) {
+            editor.editor.styleClass.add("validation-error")
+          }
+        }
+      }
+      listItems.set(listItems.indexOf(selectedItem), selectedItem)
     }
   }
 }

@@ -1,5 +1,6 @@
 @import "../../app/theme";
 @import "../../app/typography";
+@import "../../app/validation";
 
 .gp-tree-table-view {
     .column-header {
@@ -99,13 +100,7 @@
             -fx-text-fill: white;
         }
         &.validation-error {
-            -fx-background-color: lighten(red, 30%);
-            -fx-border-color: red;
-            -fx-border-width: 2 2 2 2;
-            -fx-border-radius: 2;
-            .text-field {
-                -fx-text-fill: $gp-dark-gray;
-            }
+            @include validation-error();
         }
         .text-field {
             -fx-padding: 0;

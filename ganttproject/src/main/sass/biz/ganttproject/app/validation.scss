@@ -1,0 +1,11 @@
+@import "theme";
+
+@mixin validation-error() {
+  -fx-background-color: lighten(red, 30%);
+  -fx-border-color: red;
+  -fx-border-width: 2 2 2 2;
+  -fx-border-radius: 2;
+  .text-field {
+    -fx-text-fill: $gp-dark-gray;
+  }
+}
