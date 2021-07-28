@@ -272,12 +272,7 @@ public class OptionsPageBuilder {
     } else if (option instanceof IntegerOption) {
       result = createValidatingComponent((IntegerOption) option, (ValueValidator<Integer>)ValidatorsKt.getIntegerValidator());
     } else if (option instanceof DoubleOption) {
-      result = createValidatingComponent((DoubleOption) option, new ValueValidator<Double>() {
-        @Override
-        public Double parse(String text) {
-          return Double.valueOf(text);
-        }
-      });
+      result = createValidatingComponent((DoubleOption) option, (ValueValidator<Double>)ValidatorsKt.getDoubleValidator());
     } else if (option instanceof MoneyOption) {
       result = createValidatingComponent((MoneyOption) option, new ValueValidator<BigDecimal>() {
         private NumberFormat myFormat;

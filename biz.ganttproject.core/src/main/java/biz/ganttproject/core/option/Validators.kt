@@ -34,3 +34,11 @@ val integerValidator: ValueValidator<Int> = object : ValueValidator<Int> {
     throw ValidationException(ex)
   }
 }
+
+val doubleValidator: ValueValidator<Double> = object : ValueValidator<Double> {
+  override fun parse(text: String): Double = try {
+    text.toDouble()
+  } catch (ex: NumberFormatException) {
+    throw ValidationException(ex)
+  }
+}

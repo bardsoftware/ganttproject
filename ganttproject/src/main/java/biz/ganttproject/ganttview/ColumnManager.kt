@@ -22,10 +22,7 @@ import biz.ganttproject.app.LocalizedString
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.core.model.task.TaskDefaultColumn
-import biz.ganttproject.core.option.ValidationException
-import biz.ganttproject.core.option.ValueValidator
-import biz.ganttproject.core.option.integerValidator
-import biz.ganttproject.core.option.voidValidator
+import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.lib.fx.VBoxBuilder
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
@@ -109,6 +106,7 @@ class ColumnManager(
     listItems.add(item)
     listView.scrollTo(item)
     listView.selectionModel.select(item)
+    customPropertyEditor.focus()
   }
   private fun onDeleteColumn() {
     listItems.removeAll(listView.selectionModel.selectedItems)
@@ -167,6 +165,7 @@ internal fun PropertyType.getCustomPropertyClass(): CustomPropertyClass = when (
 
 internal fun PropertyType.createValidator(): ValueValidator<*> = when (this) {
   PropertyType.INTEGER -> integerValidator
+  PropertyType.DECIMAL -> doubleValidator
   else -> voidValidator
 }
 internal fun CustomPropertyDefinition.fromColumnItem(item: ColumnAsListItem) {
@@ -244,6 +243,10 @@ internal class CustomPropertyEditor(
       }
       listItems.set(listItems.indexOf(selectedItem), selectedItem)
     }
+  }
+
+  fun focus() {
+    editors["title"]?.editor?.requestFocus()
   }
 }
 
