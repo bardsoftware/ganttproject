@@ -70,19 +70,14 @@ fun initFontProperty(appFontOption: FontOption) {
     }
   }
 }
-val applicationBackground = SimpleObjectProperty<Background>(Background.EMPTY)
+val applicationBackground = SimpleObjectProperty(Color.BLACK)
 val applicationForeground = SimpleObjectProperty<Paint>(Color.BLACK)
 fun initColorProperties() {
   UIManager.addPropertyChangeListener { evt ->
     if ("lookAndFeel" == evt.propertyName && evt.oldValue != evt.newValue) {
       UIManager.getColor("TableHeader.background")?.let { swingColor ->
-        applicationBackground.value = Background(
-          BackgroundFill(
-            Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0),
-            CornerRadii.EMPTY,
-            Insets.EMPTY
-          )
-        )
+        val fxColor = Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)
+        applicationBackground.value = fxColor
       }
       UIManager.getColor("TableHeader.foreground")?.let { swingColor ->
         applicationForeground.value = Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)

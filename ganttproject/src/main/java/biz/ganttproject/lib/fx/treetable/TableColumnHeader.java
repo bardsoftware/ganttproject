@@ -32,6 +32,7 @@ import com.sun.javafx.scene.control.TableColumnBaseHelper;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.WritableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -56,10 +57,14 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -579,11 +584,40 @@ public class TableColumnHeader extends Region {
             // put together the grid
             updateSortGrid();
         }
-        backgroundProperty().bind(TreeTableCellsKt.getApplicationBackground());
+        var backgroundProperty = new SimpleObjectProperty<>(
+            buildBackground(TreeTableCellsKt.getApplicationBackground().getValue()));
+        TreeTableCellsKt.getApplicationBackground().addListener((observable, oldValue, newValue) -> {
+            backgroundProperty.setValue(buildBackground(newValue));
+        });
+        backgroundProperty().bind(backgroundProperty);
         label.fontProperty().bind(TreeTableCellsKt.getApplicationFont());
         label.textFillProperty().bind(TreeTableCellsKt.getApplicationForeground());
     }
 
+    private Background buildBackground(Color applicationColor) {
+        var borderColor = (applicationColor.getBrightness() > 0.5)
+            ? applicationColor.darker().darker() : applicationColor.brighter().brighter();
+        var borderInsets = isLastVisibleColumn
+            ? new Insets(5.0, 0.0, 5.0, 0.0)
+            : new Insets(5.0, 1.0, 5.0, 0.0);
+        return new Background(
+            new BackgroundFill(
+                applicationColor,
+                CornerRadii.EMPTY,
+                Insets.EMPTY
+            ),
+            new BackgroundFill(
+                borderColor,
+                CornerRadii.EMPTY,
+                new Insets(5.0, 0.0, 5.0, 0.0)
+            ),
+            new BackgroundFill(
+                applicationColor,
+                CornerRadii.EMPTY,
+                borderInsets
+            )
+        );
+    }
     private void doColumnAutoSize(TableColumnBase<?,?> column, int cellsToMeasure) {
         double prefWidth = column.getPrefWidth();
 

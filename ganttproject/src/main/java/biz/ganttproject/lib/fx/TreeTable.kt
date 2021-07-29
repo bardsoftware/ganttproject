@@ -75,6 +75,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>, autoEditCoordinator: NewTaskActo
         contextMenu.show(this, event.screenX, event.screenY)
       }
     }
+    columnResizePolicy = MyColumnResizePolicy()
   }
   override fun createDefaultSkin(): Skin<*> {
     return GPTreeTableViewSkin(this).also {
@@ -133,25 +134,6 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
       control.tableMenu.show(cornerRegion, Side.BOTTOM, 0.0, 0.0)
       me.consume()
     }
-    skinnable.properties.addListener(MapChangeListener { change ->
-      if (change.key == "TableView.contentWidth" && change.wasAdded()) {
-        var value = change.valueAdded as Double
-        println("contentWidth=$value vbar width=${(virtualFlow as MyVirtualFlow).vbarWidth()} #listeners=${contentWidthListener}")
-        //println("pseuidoclasses: ${skinnable.pseudoClassStates}")
-        //println("insets: ${skinnable.insets} width=${skinnable.width}")
-        //skinnable.childrenUnmodifiable.forEach { println("$it width=${(it as Region).width} insets=${it.insets}") }
-        val vbarWidth = (virtualFlow as MyVirtualFlow).vbarWidth()
-        value += vbarWidth
-
-        // Sometimes borders or insets add a few pixels to the content width,
-        // e.g. it may become 349 when we expect 350. It is difficult to track such
-        // errors, so we just do a sort of "approximate match" here.
-        for (key in value.toInt()-5 .. value.toInt()+5) {
-          contentWidthListener.remove(key.toDouble())?.invoke()
-
-        }
-      }
-    })
     val behavior = FieldUtils.readField(this, "behavior", true) as TreeTableViewBehavior<T>
     behavior.inputMap.removeKey {
       (it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)
@@ -223,5 +205,19 @@ class MyTreeTableRow<T>(private val autoEditCoordinator: NewTaskActor<T>) : Tree
       hbox.prefHeightProperty().bind(heightProperty());
     }
   }
+}
 
+class MyColumnResizePolicy<S> : Callback<TreeTableView.ResizeFeatures<S>, Boolean> {
+  override fun call(param: TreeTableView.ResizeFeatures<S>): Boolean {
+    param.column?.let { thisCol ->
+      val visibleColumns = param.table.columns.filter { it.isVisible }
+      val idxThis = visibleColumns.indexOfFirst { it == thisCol }
+      if (idxThis < visibleColumns.size - 1) {
+        val nextCol = visibleColumns[idxThis + 1]
+        thisCol.prefWidth += param.delta
+        nextCol.prefWidth -= param.delta
+      }
+    }
+    return true
+  }
 }

@@ -373,22 +373,7 @@ class TaskTable(
           else -> createDefaultColumn(column, taskDefaultColumn)
         }
       }.toList()
-    //println(columnList.exportData())
-    //println(treeTable.columns)
-    println("Expecting content width=${floor(columnList.totalWidth.toDouble())}")
-    (treeTable.skin as GPTreeTableViewSkin<*>).onContentWidthChange(floor(columnList.totalWidth.toDouble())) {
-      println("received!")
-        tableColumns.forEach {
-          it.minWidth = 0.0
-          treeTable.minWidth = 0.0
-          (treeTable.lookup(".virtual-flow") as Region).minWidth = 0.0
-        }
-    }
-    //treeTable.minWidth = columnList.totalWidth.toDouble()
-    //treeTable.prefWidth = columnList.totalWidth.toDouble()
     (treeTable.lookup(".virtual-flow") as Region).minWidth = columnList.totalWidth.toDouble()
-    //(treeTable.lookup(".placeholder") as Region).minWidth = columnList.totalWidth.toDouble()
-    //(treeTable.lookup(".column-header-background") as Region).minWidth = columnList.totalWidth.toDouble()
 
     treeTable.columns.setAll(tableColumns)
   }
@@ -469,7 +454,6 @@ class TaskTable(
       // the columns become non-resizeable. We clear the min width when we receive table's contentWidth property
       // change.
       it.prefWidth = column.width.toDouble()
-      it.minWidth = column.width.toDouble()
     }
 
   private fun createCustomColumn(column: ColumnList.Column): TreeTableColumn<Task, *>? {
