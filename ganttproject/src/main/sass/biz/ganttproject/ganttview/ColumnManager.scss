@@ -42,28 +42,22 @@
         }
       }
     }
-    .property-sheet {
-      .validation-error {
-        @include validation-error();
+    .property-sheet-box {
+      -fx-background-color: whitesmoke;
+      HBox {
+        .property-sheet {
+          .validation-error {
+            @include validation-error();
+          }
+        }
+      }
+      @include validation-pane();
+      .hint-validation-pane {
+        -fx-border-insets: 3 20 3 20;
+        -fx-background-insets: 3 20 3 20;
       }
     }
-    //.column-item-cell {
-    //  -fx-padding: 3 5;
-    //  .labels {
-    //    -fx-padding: 0 0 0 5;
-    //    .name {
-    //      -fx-font-size: 110%;
-    //      -fx-text-fill: $gp-dark-gray;
-    //    }
-    //
-    //    .email {
-    //      @include text-secondary();
-    //    }
-    //  }
-    //  &:selected, &:focused {
-    //
-    //  }
-    //}
+
   }
   .button-pane {
     @include dialog-button-pane();

@@ -25,6 +25,8 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.lib.fx.vbox
+import biz.ganttproject.printTree
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.beans.property.SimpleBooleanProperty
@@ -35,10 +37,7 @@ import javafx.collections.ObservableList
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Node
-import javafx.scene.control.ButtonBar
-import javafx.scene.control.ButtonType
-import javafx.scene.control.ListCell
-import javafx.scene.control.ListView
+import javafx.scene.control.*
 import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -49,6 +48,7 @@ import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.CustomPropertyManager
 import net.sourceforge.ganttproject.language.GanttLanguage
+import org.controlsfx.control.NotificationPane
 import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty
 import org.controlsfx.property.editor.PropertyEditor
@@ -66,9 +66,32 @@ class ColumnManager(
 
   private val listItems = FXCollections.observableArrayList<ColumnAsListItem>()
   private val listView: ListView<ColumnAsListItem> = ListView()
-  private val propertySheet: PropertySheet = PropertySheet()
+  private val propertySheet: PropertySheet = PropertySheet().also {
+    it.styleClass.add("custom-column-props")
+  }
+  private val errorLabel = Label().also {
+    it.styleClass.addAll("hint", "hint-validation")
+  }
+  private val errorPane = HBox().also {
+    it.styleClass.addAll("hint-validation-pane", "noerror")
+    it.children.add(errorLabel)
+  }
   private val customPropertyEditor = CustomPropertyEditor(
-    customColumnsManager, propertySheet, btnDeleteController, listItems)
+    customColumnsManager, propertySheet, btnDeleteController, listItems,
+    errorUi = {
+      println(errorLabel.styleClass)
+      if (it == null) {
+        errorPane.isVisible = false
+        if (!errorPane.styleClass.contains("noerror")) {
+          errorPane.styleClass.add("noerror")
+        }
+      }
+      else {
+        errorLabel.text = it
+        errorPane.isVisible = true
+        errorPane.styleClass.remove("noerror")
+      }
+    })
   internal val content: Node
   private val mergedColumns: MutableList<ColumnList.Column> = mutableListOf()
   init {
@@ -86,12 +109,17 @@ class ColumnManager(
     propertySheet.items.setAll(FXCollections.observableArrayList(customPropertyEditor.props))
     propertySheet.isModeSwitcherVisible = false
     propertySheet.isSearchBoxVisible = false
-
+    val propertySheetBox = vbox {
+      addClasses("property-sheet-box")
+      add(propertySheet, Pos.CENTER, Priority.ALWAYS)
+      add(errorPane)
+    }
     content = HBox().also {
       it.styleClass.add("content-pane")
-      it.children.addAll(listView, propertySheet)
-      HBox.setHgrow(propertySheet, Priority.ALWAYS)
+      it.children.addAll(listView, propertySheetBox)
+      HBox.setHgrow(propertySheetBox, Priority.ALWAYS)
     }
+    content.printTree()
 
     listView.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
       customPropertyEditor.selectedItem = newValue
@@ -195,11 +223,13 @@ internal class CustomPropertyEditor(
   private val customColumnsManager: CustomPropertyManager,
   private val propertySheet: PropertySheet,
   private val btnDeleteController: BtnController,
-  private val listItems: ObservableList<ColumnAsListItem>
+  private val listItems: ObservableList<ColumnAsListItem>,
+  private val errorUi: (String?) -> Unit
 ) {
   var isPropertyChangeIgnored = false
   var selectedItem: ColumnAsListItem? = null
   set(selectedItem) {
+    println("children=${propertySheet.childrenUnmodifiable}")
     isPropertyChangeIgnored = true
     field = selectedItem
     if (selectedItem != null) {
@@ -240,14 +270,17 @@ internal class CustomPropertyEditor(
           if (editableValue.defaultValue.isNotBlank()) {
             editableValue.type.createValidator().parse(editableValue.defaultValue)
           }
+
           editor.editor.styleClass.remove("validation-error")
           editor.editor.effect = null
+          errorUi(null)
           selectedItem?.defaultValue = editableValue.defaultValue
         } catch (ex: ValidationException) {
           if (!editor.editor.styleClass.contains("validation-error")) {
             editor.editor.styleClass.add("validation-error")
             editor.editor.effect = InnerShadow(10.0, Color.RED)
           }
+          errorUi(ex.message ?: "")
         }
       }
       listItems.set(listItems.indexOf(selectedItem), selectedItem)
