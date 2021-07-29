@@ -229,7 +229,6 @@ internal class CustomPropertyEditor(
   var isPropertyChangeIgnored = false
   var selectedItem: ColumnAsListItem? = null
   set(selectedItem) {
-    println("children=${propertySheet.childrenUnmodifiable}")
     isPropertyChangeIgnored = true
     field = selectedItem
     if (selectedItem != null) {

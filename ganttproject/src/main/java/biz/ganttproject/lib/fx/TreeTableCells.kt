@@ -31,6 +31,7 @@ import javafx.event.EventHandler
 import javafx.geometry.Insets
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.effect.InnerShadow
 import javafx.scene.input.KeyCode
 import javafx.scene.layout.Background
 import javafx.scene.layout.BackgroundFill
@@ -43,7 +44,6 @@ import javafx.util.StringConverter
 import javafx.util.converter.BigDecimalStringConverter
 import javafx.util.converter.DefaultStringConverter
 import javafx.util.converter.NumberStringConverter
-import net.sourceforge.ganttproject.gui.UIUtil
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.math.BigDecimal
 import javax.swing.UIManager
@@ -227,8 +227,10 @@ class TextCell<S, T>(
         try {
           commitText(textField.text)
           styleClass.remove("validation-error")
+          effect = null
         } catch (ex: ValidationException) {
           styleClass.add("validation-error")
+          effect = InnerShadow(10.0, Color.RED)
         }
         finally {
           event.consume()
