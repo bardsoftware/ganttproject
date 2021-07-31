@@ -89,11 +89,13 @@
             }
         }
     }
-
     .gp-tree-table-cell {
         -fx-border-width: 0 0 2 0;
         -fx-border-color: transparent;
 
+        .badge {
+            -fx-padding: 0 3 0 0;
+        }
         &.focused {
             -fx-border-color: $gp-orange;
             -fx-fill: white;

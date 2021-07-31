@@ -32,16 +32,7 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
         res = t.priority
       }
       TaskDefaultColumn.INFO -> {
-        // TODO(dbarashev): implement alerts some other way
-        if (t.completionPercentage < 100) {
-          val c = GanttCalendar.getInstance();
-          if (t.start.before(c)) {
-            res = ALERT_TASK_INPROGRESS;
-          }
-          if (t.getEnd().before(GanttCalendar.getInstance())) {
-            res = ALERT_TASK_OUTDATED;
-          }
-        }
+        res = t.getProgressStatus()
       }
       TaskDefaultColumn.NAME -> res = t.name
       TaskDefaultColumn.BEGIN_DATE -> res = t.start
@@ -176,9 +167,19 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
 
 }
 
+fun Task.getProgressStatus(): Task.ProgressStatus =
+  if (completionPercentage < 100) {
+    val c = GanttCalendar.getInstance()
+    if (end.before(c)) {
+      Task.ProgressStatus.DEADLINE_MISS
+    } else {
+      if (start.before(c)) {
+        Task.ProgressStatus.INPROGRESS
+      } else null
+    }
+  } else { null } ?: Task.ProgressStatus.NOT_YET
+
 private val STANDARD_COLUMN_COUNT = TaskDefaultColumn.values().size
-private val ALERT_TASK_INPROGRESS: ImageIcon = ImageIcon(TaskTableModel::class.java.getResource("/icons/alert1_16.gif"))
-private val ALERT_TASK_OUTDATED: ImageIcon = ImageIcon(TaskTableModel::class.java.getResource("/icons/alert2_16.gif"))
 
 val NOT_SUPERTASK: Predicate<Task> = Predicate<Task> { task ->
   task?.isSupertask?.not() ?: false

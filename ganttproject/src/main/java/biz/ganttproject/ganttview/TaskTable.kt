@@ -46,9 +46,7 @@ import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
 import javafx.scene.control.cell.CheckBoxTreeTableCell
 import javafx.scene.input.*
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
+import javafx.scene.layout.*
 import javafx.scene.paint.Color.rgb
 import javafx.scene.shape.Circle
 import javafx.util.Callback
@@ -918,16 +916,31 @@ private val dragAndDropSupport = DragAndDropSupport()
 private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->
   dragAndDropSupport.install(cell)
   cell.graphicSupplier = { task: Task ->
-    if (TaskDefaultColumn.COLOR.stub.isVisible) {
+
+    if (TaskDefaultColumn.COLOR.stub.isVisible || TaskDefaultColumn.INFO.stub.isVisible) {
       HBox().also { hbox ->
+        hbox.alignment = Pos.CENTER
         Region().also {
           hbox.children.add(it)
           HBox.setHgrow(it, Priority.ALWAYS)
         }
-        Circle().also {
-          it.fill = rgb(task.color.red, task.color.green, task.color.blue)
-          it.radius = 4.0
-          hbox.children.add(it)
+        if (TaskDefaultColumn.INFO.stub.isVisible) {
+          task.getProgressStatus().getIcon()?.let {
+            StackPane(it).also {
+              it.styleClass.add("badge")
+              hbox.children.add(it)
+            }
+
+          }
+        }
+        if (TaskDefaultColumn.COLOR.stub.isVisible) {
+          StackPane(Circle().also {
+            it.fill = rgb(task.color.red, task.color.green, task.color.blue)
+            it.radius = 4.0
+          }).also {
+            it.styleClass.add("badge")
+            hbox.children.add(it)
+          }
         }
       }
     } else null
@@ -935,4 +948,12 @@ private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) 
   cell.contentDisplay = ContentDisplay.RIGHT
   cell.alignment = Pos.CENTER_LEFT
 }
+
+private fun Task.ProgressStatus.getIcon() : GlyphIcon<*>? =
+  when (this) {
+    Task.ProgressStatus.NOT_YET -> null
+    Task.ProgressStatus.INPROGRESS -> FontAwesomeIconView(FontAwesomeIcon.HOURGLASS_HALF)
+    Task.ProgressStatus.DEADLINE_MISS -> FontAwesomeIconView(FontAwesomeIcon.HOURGLASS_END)
+  }
+
 private val TEXT_FORMAT = DataFormat("text/ganttproject-task-node")
