@@ -19,6 +19,7 @@ import java.math.BigDecimal
 import java.text.MessageFormat
 import java.util.*
 import javax.swing.ImageIcon
+import kotlin.reflect.KClass
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -29,6 +30,18 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
     when (defaultColumn) {
       TaskDefaultColumn.PRIORITY -> {
         res = ImageIcon(javaClass.getResource(t.priority.iconPath))
+      }
+      TaskDefaultColumn.INFO -> {
+        // TODO(dbarashev): implement alerts some other way
+        if (t.completionPercentage < 100) {
+          val c = GanttCalendar.getInstance();
+          if (t.start.before(c)) {
+            res = ALERT_TASK_INPROGRESS;
+          }
+          if (t.getEnd().before(GanttCalendar.getInstance())) {
+            res = ALERT_TASK_OUTDATED;
+          }
+        }
       }
       TaskDefaultColumn.NAME -> res = t.name
       TaskDefaultColumn.BEGIN_DATE -> res = t.start
@@ -164,6 +177,8 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
 }
 
 private val STANDARD_COLUMN_COUNT = TaskDefaultColumn.values().size
+private val ALERT_TASK_INPROGRESS: ImageIcon = ImageIcon(TaskTableModel::class.java.getResource("/icons/alert1_16.gif"))
+private val ALERT_TASK_OUTDATED: ImageIcon = ImageIcon(TaskTableModel::class.java.getResource("/icons/alert2_16.gif"))
 
 val NOT_SUPERTASK: Predicate<Task> = Predicate<Task> { task ->
   task?.isSupertask?.not() ?: false
@@ -172,3 +187,5 @@ val NOT_SUPERTASK: Predicate<Task> = Predicate<Task> { task ->
 val NOT_MILESTONE: Predicate<Task> = Predicate<Task> { task ->
   task?.isMilestone?.not() ?: false
 }
+
+//fun getEnumValues(enumClass: KClass<out Enum<*>>): Array<out Enum<*>> = enumClass.java.enumConstants

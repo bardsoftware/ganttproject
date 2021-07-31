@@ -52,7 +52,7 @@ object PropertyTypeEncoder {
   }
 
   fun decodeTypeAndDefaultValue(
-    typeAsString: String, valueAsString: String?
+    typeAsString: String?, valueAsString: String?
   ): CustomPropertyDefinition {
     return when (typeAsString) {
       "text" -> create(CustomPropertyClass.TEXT, valueAsString)

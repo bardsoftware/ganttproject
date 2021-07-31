@@ -44,10 +44,19 @@
     }
     .property-sheet-box {
       -fx-background-color: whitesmoke;
+      .title {
+        -fx-padding: 10 10 10 10;
+        -fx-font-size: 110%;
+      }
       HBox {
         .property-sheet {
           .validation-error {
             @include validation-error();
+          }
+          &:disabled {
+            * {
+              -fx-opacity: 0.9;
+            }
           }
         }
       }

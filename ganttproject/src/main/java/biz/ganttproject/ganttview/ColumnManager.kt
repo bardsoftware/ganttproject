@@ -48,7 +48,6 @@ import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.CustomPropertyManager
 import net.sourceforge.ganttproject.language.GanttLanguage
-import org.controlsfx.control.NotificationPane
 import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty
 import org.controlsfx.property.editor.PropertyEditor
@@ -66,9 +65,6 @@ class ColumnManager(
 
   private val listItems = FXCollections.observableArrayList<ColumnAsListItem>()
   private val listView: ListView<ColumnAsListItem> = ListView()
-  private val propertySheet: PropertySheet = PropertySheet().also {
-    it.styleClass.add("custom-column-props")
-  }
   private val errorLabel = Label().also {
     it.styleClass.addAll("hint", "hint-validation")
   }
@@ -77,7 +73,7 @@ class ColumnManager(
     it.children.add(errorLabel)
   }
   private val customPropertyEditor = CustomPropertyEditor(
-    customColumnsManager, propertySheet, btnDeleteController, listItems,
+    customColumnsManager, btnDeleteController, listItems,
     errorUi = {
       println(errorLabel.styleClass)
       if (it == null) {
@@ -106,12 +102,15 @@ class ColumnManager(
     }
     listView.items = listItems
     listView.cellFactory = Callback { CellImpl() }
-    propertySheet.items.setAll(FXCollections.observableArrayList(customPropertyEditor.props))
-    propertySheet.isModeSwitcherVisible = false
-    propertySheet.isSearchBoxVisible = false
+    customPropertyEditor.propertySheet.apply {
+      items.setAll(FXCollections.observableArrayList(customPropertyEditor.props))
+      isModeSwitcherVisible = false
+      isSearchBoxVisible = false
+    }
     val propertySheetBox = vbox {
       addClasses("property-sheet-box")
-      add(propertySheet, Pos.CENTER, Priority.ALWAYS)
+      add(customPropertyEditor.propertySheetLabel, Pos.CENTER_LEFT, Priority.NEVER)
+      add(customPropertyEditor.propertySheet, Pos.CENTER, Priority.ALWAYS)
       add(errorPane)
     }
     content = HBox().also {
@@ -119,7 +118,6 @@ class ColumnManager(
       it.children.addAll(listView, propertySheetBox)
       HBox.setHgrow(propertySheetBox, Priority.ALWAYS)
     }
-    content.printTree()
 
     listView.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
       customPropertyEditor.selectedItem = newValue
@@ -220,12 +218,17 @@ internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {
 }
 
 internal class CustomPropertyEditor(
-  private val customColumnsManager: CustomPropertyManager,
-  private val propertySheet: PropertySheet,
+  customColumnsManager: CustomPropertyManager,
   private val btnDeleteController: BtnController,
   private val listItems: ObservableList<ColumnAsListItem>,
   private val errorUi: (String?) -> Unit
 ) {
+  internal val propertySheet: PropertySheet = PropertySheet().also {
+    it.styleClass.add("custom-column-props")
+  }
+  internal val propertySheetLabel = Label().also {
+    it.styleClass.add("title")
+  }
   var isPropertyChangeIgnored = false
   var selectedItem: ColumnAsListItem? = null
   set(selectedItem) {
@@ -235,12 +238,14 @@ internal class CustomPropertyEditor(
       editableValue.title = selectedItem.title
       editableValue.type = selectedItem.type
       if (selectedItem.isCustom) {
+        propertySheetLabel.text = i18n.formatText("propertyPane.title.custom")
         propertySheet.isDisable = false
         btnDeleteController.isDisabled.value = false
         editableValue.defaultValue = selectedItem.defaultValue
       } else {
         btnDeleteController.isDisabled.value = true
-        //propertySheet.isDisable = true
+        propertySheetLabel.text = i18n.formatText("propertyPane.title.builtin")
+        propertySheet.isDisable = true
       }
     }
     isPropertyChangeIgnored = false
@@ -377,7 +382,7 @@ fun show(columnList: ColumnList, customColumnsManager: CustomPropertyManager) {
     dlg.addStyleSheet("/biz/ganttproject/ganttview/ColumnManager.css")
     dlg.setHeader(
       VBoxBuilder("header").apply {
-        addTitle(LocalizedString("taskTable.columnManager.title", RootLocalizer)).also { hbox ->
+        addTitle(i18n.create("title")).also { hbox ->
           hbox.alignment = Pos.CENTER_LEFT
           hbox.isFillHeight = true
         }
@@ -394,7 +399,7 @@ fun show(columnList: ColumnList, customColumnsManager: CustomPropertyManager) {
       }
     }
     dlg.setupButton(ButtonType.CANCEL) { btn ->
-      btn.text = "Add"
+      btn.text = RootLocalizer.formatText("add")
       ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP)
       btn.disableProperty().bind(columnManager.btnAddController.isDisabled)
       btn.setOnAction {
@@ -404,7 +409,7 @@ fun show(columnList: ColumnList, customColumnsManager: CustomPropertyManager) {
       btn.styleClass.addAll("btn-attention", "secondary")
     }
     dlg.setupButton(ButtonType.CANCEL) { btn ->
-      btn.text = "Delete"
+      btn.text = RootLocalizer.formatText("delete")
       ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP_2)
       btn.disableProperty().bind(columnManager.btnDeleteController.isDisabled)
       btn.setOnAction {
@@ -415,3 +420,5 @@ fun show(columnList: ColumnList, customColumnsManager: CustomPropertyManager) {
     }
   }
 }
+
+private val i18n = RootLocalizer.createWithRootKey("taskTable.columnManager")
