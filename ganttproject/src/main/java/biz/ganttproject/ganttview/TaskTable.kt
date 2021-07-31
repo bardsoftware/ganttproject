@@ -29,6 +29,9 @@ import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
+import de.jensd.fx.glyphs.GlyphIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.collections.FXCollections
@@ -435,6 +438,14 @@ class TaskTable(
           { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
         )
       }
+      taskDefaultColumn == TaskDefaultColumn.PRIORITY -> {
+        createIconColumn(
+          taskDefaultColumn.getName(),
+          { taskTableModel.getValueAt(it, taskDefaultColumn) as Task.Priority},
+          { priority: Task.Priority -> priority.getIcon() },
+          RootLocalizer.createWithRootKey("priority")
+        )
+      }
       else -> TreeTableColumn<Task, String>(taskDefaultColumn.getName()).apply {
         setCellValueFactory {
           ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn).toString())
@@ -455,6 +466,14 @@ class TaskTable(
       // change.
       it.prefWidth = column.width.toDouble()
     }
+
+  private fun Task.Priority.getIcon(): GlyphIcon<*>? = when (this) {
+    Task.Priority.HIGHEST -> FontAwesomeIconView(FontAwesomeIcon.ANGLE_DOUBLE_UP)
+    Task.Priority.HIGH -> FontAwesomeIconView(FontAwesomeIcon.ANGLE_UP)
+    Task.Priority.NORMAL -> null
+    Task.Priority.LOW -> FontAwesomeIconView(FontAwesomeIcon.ANGLE_DOWN)
+    Task.Priority.LOWEST -> FontAwesomeIconView(FontAwesomeIcon.ANGLE_DOUBLE_DOWN)
+  }
 
   private fun createCustomColumn(column: ColumnList.Column): TreeTableColumn<Task, *>? {
     val customProperty = taskManager.customPropertyManager.getCustomPropertyDefinition(column.id) ?: return null
@@ -916,5 +935,4 @@ private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) 
   cell.contentDisplay = ContentDisplay.RIGHT
   cell.alignment = Pos.CENTER_LEFT
 }
-
 private val TEXT_FORMAT = DataFormat("text/ganttproject-task-node")

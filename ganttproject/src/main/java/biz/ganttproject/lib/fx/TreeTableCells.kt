@@ -19,23 +19,25 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 //import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
+import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.getModifiers
-import biz.ganttproject.core.option.*
+import biz.ganttproject.core.option.FontOption
+import biz.ganttproject.core.option.FontSpec
+import biz.ganttproject.core.option.ValidationException
+import biz.ganttproject.core.option.createStringDateValidator
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
+import de.jensd.fx.glyphs.GlyphIcon
 import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
-import javafx.geometry.Insets
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.effect.InnerShadow
 import javafx.scene.input.KeyCode
-import javafx.scene.layout.Background
-import javafx.scene.layout.BackgroundFill
-import javafx.scene.layout.CornerRadii
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.scene.text.Font
@@ -321,6 +323,25 @@ fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toDouble().toBigDecimal()) }
   }
 
+fun <S, T> createIconColumn(name: String, getValue: (S) ->T?, iconFactory: (T) -> GlyphIcon<*>?, i18n: Localizer) =
+  TreeTableColumn<S, T>(name).apply {
+    setCellValueFactory {
+      ReadOnlyObjectWrapper(getValue(it.value.value))
+    }
+    cellFactory = Callback {
+      val cell = TextCell<S, T>(MyStringConverter(
+        toString = { _, value -> i18n.formatText(value?.toString()?.lowercase() ?: "") },
+        fromString = { _, _ -> null}
+      ), {true})
+      cell.graphicSupplier = {
+        iconFactory(it)
+      }
+      cell.contentDisplay = ContentDisplay.LEFT
+      cell.alignment = Pos.CENTER_LEFT
+
+      cell
+    }
+  }
 
 class TextCellFactory<S, T>(
   private val converter: MyStringConverter<S, T>,

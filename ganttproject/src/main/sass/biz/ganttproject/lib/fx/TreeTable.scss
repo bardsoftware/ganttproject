@@ -78,11 +78,11 @@
         -fx-padding: 0;
         .virtual-flow {
             & > .tree-table-row-cell:selected, .tree-table-row-cell:focused {
-                & > .tree-table-cell {
+                & .tree-table-cell {
                     -fx-fill: white;
                     -fx-text-fill: white;
                 }
-                & > .tree-disclosure-node > .glyph-icon {
+                & .glyph-icon {
                     -fx-fill: white;
                 }
                 -fx-background-color: $gp-medium-gray;

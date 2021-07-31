@@ -29,7 +29,7 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
     var res: Any? = null
     when (defaultColumn) {
       TaskDefaultColumn.PRIORITY -> {
-        res = ImageIcon(javaClass.getResource(t.priority.iconPath))
+        res = t.priority
       }
       TaskDefaultColumn.INFO -> {
         // TODO(dbarashev): implement alerts some other way
