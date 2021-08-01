@@ -34,7 +34,6 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
-import javafx.collections.MapChangeListener
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.geometry.Side
@@ -54,12 +53,11 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>, autoEditCoordinator: NewTaskActo
   internal val tableMenu = ContextMenu()
   var contextMenuActions: (MenuBuilder) -> Unit = { }
   var tableMenuActions: (MenuBuilder) -> Unit = {}
-
+  val resizePolicy = MyColumnResizePolicy<Any>(this, widthProperty())
   init {
     rowFactory = Callback { view ->
       MyTreeTableRow(autoEditCoordinator)
     }
-    columnResizePolicy = CONSTRAINED_RESIZE_POLICY
     stylesheets.add("/biz/ganttproject/lib/fx/TreeTable.css")
     styleClass.add("gp-tree-table-view")
     focusModel.focusedCellProperty().addListener { _, _, newValue ->
@@ -75,7 +73,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>, autoEditCoordinator: NewTaskActo
         contextMenu.show(this, event.screenX, event.screenY)
       }
     }
-    columnResizePolicy = MyColumnResizePolicy()
+    columnResizePolicy = resizePolicy
   }
   override fun createDefaultSkin(): Skin<*> {
     return GPTreeTableViewSkin(this).also {
@@ -207,7 +205,11 @@ class MyTreeTableRow<T>(private val autoEditCoordinator: NewTaskActor<T>) : Tree
   }
 }
 
-class MyColumnResizePolicy<S> : Callback<TreeTableView.ResizeFeatures<S>, Boolean> {
+class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth: ReadOnlyDoubleProperty)
+  : Callback<TreeTableView.ResizeFeatures<S>, Boolean> {
+  init {
+    tableWidth.addListener { _, oldValue, newValue -> resizeTable(oldValue.toDouble(), newValue.toDouble())}
+  }
   override fun call(param: TreeTableView.ResizeFeatures<S>): Boolean {
     param.column?.let { thisCol ->
       val visibleColumns = param.table.columns.filter { it.isVisible }
@@ -219,5 +221,18 @@ class MyColumnResizePolicy<S> : Callback<TreeTableView.ResizeFeatures<S>, Boolea
       }
     }
     return true
+  }
+
+  fun resizeTable(oldValue: Double, newValue: Double) {
+    val visibleColumns = table.columns.filter { it.isVisible }
+    if (visibleColumns.isEmpty()) {
+      return
+    }
+    val delta = newValue - oldValue
+    val deltaPerColumn = delta / visibleColumns.size
+    visibleColumns.forEach { it.prefWidth += deltaPerColumn }
+    val newTotalWidth = visibleColumns.map { it.prefWidth }.sum()
+    val remainder = newValue - newTotalWidth
+    visibleColumns.last().prefWidth += remainder
   }
 }
