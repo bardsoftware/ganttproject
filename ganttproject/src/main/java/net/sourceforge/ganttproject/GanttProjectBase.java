@@ -214,7 +214,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     });
     myTaskTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(
         () -> new TaskTable(getProject(), getTaskManager(),
-            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions, getUndoManager(), myObservableDocument)
+            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions, getUndoManager())
     ));
     myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
       @Override

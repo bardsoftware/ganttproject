@@ -104,6 +104,11 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>, autoEditCoordinator: NewTaskActo
   }
 
   fun vbarWidth(): Double = skin?.let { (it as GPTreeTableViewSkin<T>).vbarWidth() } ?: 0.0
+  fun setColumns(tableColumns: List<TreeTableColumn<T, out Any>>) {
+    val totalPrefWidth = tableColumns.filter { it.isVisible }.map { it.prefWidth }.sum()
+    prefWidth = totalPrefWidth
+    columns.setAll(tableColumns)
+  }
 }
 
 class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>(control) {
@@ -112,10 +117,11 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   val headerHeight: ReadOnlyDoubleProperty
   get() = tableHeaderRow.heightProperty()
   val fullHeaderHeight: Double get() = headerHeight.value + tableHeaderRow.boundsInParent.minX
-  private val contentWidthListener = mutableMapOf<Double, ()->Unit>()
-  private val contentWidth: Double get() = skinnable.properties["TableView.contentWidth"]?.toString()?.toDoubleOrNull() ?: 0.0
 
   init {
+    control.prefWidthProperty().addListener { _, _, newValue ->
+      this.virtualFlow.prefWidth = newValue.toDouble()
+    }
     this.virtualFlow.positionProperty().addListener { _, _, _ ->
       var totalCellHeight = 0.0
       for (idx in 0 until virtualFlow.cellCount) {
@@ -150,14 +156,6 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   }
   override fun createVirtualFlow(): VirtualFlow<TreeTableRow<T>> {
     return MyVirtualFlow();
-  }
-
-  fun onContentWidthChange(expected: Double, code: () -> Unit) {
-    if (contentWidth == expected) {
-      code()
-    } else {
-      contentWidthListener[expected] = code
-    }
   }
 
   fun scrollBy(value: Double) {
@@ -228,11 +226,20 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
     if (visibleColumns.isEmpty()) {
       return
     }
-    val delta = newValue - oldValue
-    val deltaPerColumn = delta / visibleColumns.size
-    visibleColumns.forEach { it.prefWidth += deltaPerColumn }
-    val newTotalWidth = visibleColumns.map { it.prefWidth }.sum()
-    val remainder = newValue - newTotalWidth
-    visibleColumns.last().prefWidth += remainder
+    val totalWidth = visibleColumns.map { it.width }.sum()
+    var delta = newValue - totalWidth
+    if (delta > 0) {
+      visibleColumns.last().prefWidth += delta
+    } else {
+      delta = -delta
+      for (col in visibleColumns.reversed()) {
+        val decrement = kotlin.math.min(col.width - 30, delta)
+        col.prefWidth -=  decrement
+        delta -= decrement
+        if (delta <= 0) {
+          break
+        }
+      }
+    }
   }
 }

@@ -74,7 +74,6 @@ import java.awt.Component
 import java.math.BigDecimal
 import java.util.*
 import java.util.List.copyOf
-import kotlin.math.floor
 
 
 /**
@@ -87,8 +86,7 @@ class TaskTable(
   private val treeCollapseView: TreeCollapseView<Task>,
   private val selectionManager: TaskSelectionManager,
   private val taskActions: TaskActions,
-  private val undoManager: GPUndoManager,
-  private val observableDocument: ReadOnlyObjectProperty<Document>
+  private val undoManager: GPUndoManager
 ) {
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   private val treeModel = taskManager.taskHierarchy
@@ -113,7 +111,19 @@ class TaskTable(
   private val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
   val columnList: ColumnListImpl = ColumnListImpl(columns, taskManager.customPropertyManager,
     { treeTable.columns },
-    { onColumnsChange() })
+    { onColumnsChange() },
+    BuiltinColumns(
+      isZeroWidth = {
+        when (TaskDefaultColumn.find(it)) {
+          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO -> true
+          else -> false
+        }
+      },
+      allColumns = {
+        ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs()).copyOf()
+      }
+    )
+  )
   val columnListWidthProperty = SimpleDoubleProperty()
   var requestSwingFocus: () -> Unit = {}
   lateinit var swingComponent: Component
@@ -295,14 +305,14 @@ class TaskTable(
 
       override fun taskRemoved(e: TaskHierarchyEvent) {
         keepSelection {
-          task2treeItem[e.oldContainer]?.let {
-            it.depthFirstWalk { treeItem ->
-              task2treeItem.remove(treeItem.value)
+          task2treeItem[e.oldContainer]?.let { treeItem ->
+            treeItem.depthFirstWalk { child ->
+              task2treeItem.remove(child.value)
               true
             }
-            val idx = it.children.indexOfFirst { it.value == e.task }
+            val idx = treeItem.children.indexOfFirst { it.value == e.task }
             if (idx >= 0) {
-              it.children.removeAt(idx)
+              treeItem.children.removeAt(idx)
             }
           }
           taskTableChartConnector.visibleTasks.setAll(getExpandedTasks())
@@ -372,11 +382,12 @@ class TaskTable(
           TaskDefaultColumn.COLOR -> null
           null -> createCustomColumn(column)
           else -> createDefaultColumn(column, taskDefaultColumn)
+        }?.also {
+          it.prefWidth = column.width.toDouble()
         }
       }.toList()
-    (treeTable.lookup(".virtual-flow") as Region).minWidth = columnList.totalWidth.toDouble()
-
-    treeTable.columns.setAll(tableColumns)
+    //(treeTable.lookup(".virtual-flow") as Region).minWidth = columnList.totalWidth.toDouble()
+    treeTable.setColumns(tableColumns)
   }
 
   private fun createDefaultColumn(column: ColumnList.Column, taskDefaultColumn: TaskDefaultColumn) =
@@ -394,7 +405,7 @@ class TaskTable(
               taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
               runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
             }
-            onEditCancel = EventHandler { event ->
+            onEditCancel = EventHandler {
               runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
             }
             treeTable.treeColumn = this
@@ -484,8 +495,8 @@ class TaskTable(
       }
       CustomPropertyClass.BOOLEAN -> {
         TreeTableColumn<Task, Boolean>(customProperty.name).apply {
-          setCellValueFactory {
-            val task = it.value.value
+          setCellValueFactory { features ->
+            val task = features.value.value
             SimpleBooleanProperty((taskTableModel.getValue(task, customProperty) ?: false) as Boolean).also {
               it.addListener { _, _, newValue ->
                 taskTableModel.setValue(newValue, task, customProperty)
@@ -694,153 +705,6 @@ fun TreeItem<Task>.depthFirstWalk(visitor: (TreeItem<Task>) -> Boolean) {
   this.children.forEach { if (visitor(it)) it.depthFirstWalk(visitor) }
 }
 
-class ColumnListImpl(
-  private val columnList: MutableList<ColumnList.Column>,
-  private val customPropertyManager: CustomPropertyManager,
-  private val tableColumns: () -> List<TreeTableColumn<*,*>>,
-  private val onColumnChange: () -> Unit = {}
-) : ColumnList {
-
-  val totalWidth: Double get() = totalWidthProperty.value
-  val totalWidthProperty = SimpleDoubleProperty()
-
-  init {
-    updateTotalWidth()
-  }
-  override fun getSize(): Int = columnList.size
-
-  override fun getField(index: Int): ColumnList.Column = columnList[index]
-
-  override fun clear() = synchronized(columnList) {
-    columnList.clear()
-    updateTotalWidth()
-  }
-
-  override fun add(id: String, order: Int, width: Int) {
-    synchronized(columnList) {
-      (this.columnList.firstOrNull { it.id == id } ?: run {
-        customPropertyManager.getCustomPropertyDefinition(id)?.let { def ->
-          ColumnStub(id, def.name, true,
-            if (order == -1) tableColumns().count { it.isVisible } else order,
-            if (width == -1) 75 else width
-          )
-        }
-      })?.let {
-        this.columnList.add(it)
-      }
-      updateTotalWidth()
-    }
-  }
-
-  override fun importData(source: ColumnList, keepVisibleColumns: Boolean) {
-    val remainVisible = if (keepVisibleColumns) {
-      tableColumns().filter { it.isVisible }.map { it.userData as ColumnList.Column }
-    } else emptyList()
-
-    var importedList = source.copyOf()
-    remainVisible.forEach { old -> importedList.firstOrNull { new -> new.id == old.id }?.isVisible = true }
-    if (importedList.firstOrNull { it.isVisible } == null) {
-      importedList = ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs()).copyOf()
-    }
-    importedList = importedList.sortedWith { left, right ->
-      // test1 places visible columns before invisible
-      val test1 = (if (left.isVisible) -1 else 0) + if (right.isVisible) 1 else 0
-      when {
-        test1 != 0 -> test1
-        // Invisible columns are compared by name (why?)
-        !left.isVisible && !right.isVisible && left.name != null && right.name != null -> {
-          left.name.compareTo(right.name)
-        }
-        // If both columns are visible and their order value happens to be the same (may happen when importing
-        // one project into another) then we compare ids (what we do if they are equal too?)
-        left.order == right.order -> left.id.compareTo(right.id)
-        // Otherwise we use order value
-        else -> left.order - right.order
-      }
-    }
-
-    // Here we merge the imported list with the currently available one.
-    // We maintain the invariant: the list prefix [0, idxImported) is the same in the imported list and
-    // in the result list.
-    synchronized(columnList) {
-      val currentList = columnList.map { it as ColumnList.Column }.toMutableList()
-      importedList.forEachIndexed { idxImported, column ->
-        val idxCurrent = currentList.indexOfFirst { it.id == column.id }
-        if (idxCurrent >= 0) {
-          if (idxCurrent != idxImported) {
-            // Because of the invariant, it can only be greater. We will remove all
-            // the columns between the imported and existing. This may be an excessive measure
-            // because the removed columns may be found later in the imported list, but that's ok.
-            assert(idxCurrent > idxImported) {
-              "Unexpected column indices: imported=$idxImported current=$idxCurrent for column=$column"
-            }
-            currentList.subList(idxImported, idxCurrent).clear()
-          }
-          if (currentList[idxImported] != column) {
-            currentList[idxImported] = ColumnStub(column).also {
-              it.setOnChange {
-                updateTotalWidth()
-                onColumnChange()
-              }
-            }
-          }
-        } else {
-          currentList.add(idxImported, ColumnStub(column).also {
-            it.setOnChange {
-              updateTotalWidth()
-              onColumnChange()
-            }
-          })
-        }
-        assert(currentList.subList(0, idxImported) == importedList.subList(0, idxImported))
-      }
-      // Finally clear the remaining tail.
-      if (currentList.size > importedList.size) {
-        currentList.subList(importedList.size, currentList.size).clear()
-      }
-      columnList.clear()
-      columnList.addAll(currentList)
-      updateTotalWidth()
-    }
-  }
-
-  override fun exportData(): List<ColumnList.Column> {
-    synchronized(columnList) {
-      tableColumns().forEachIndexed { index, column ->
-        (column.userData as ColumnList.Column).let { userData ->
-          columnList.firstOrNull { it.id == userData.id }?.let {
-            it.order = index
-            it.width = column.width.toInt()
-          }
-        }
-      }
-      return copyOf()
-    }
-  }
-
-  fun columns(): List<ColumnList.Column> {
-    synchronized(columnList) {
-      return copyOf()
-    }
-  }
-
-  private fun updateTotalWidth() {
-    totalWidthProperty.value = columnList.filter { it.isVisible  }.sumOf {
-      when (TaskDefaultColumn.find(it.id)) {
-        TaskDefaultColumn.COLOR -> 0
-        else -> it.width
-      }
-    }.toDouble()
-  }
-}
-
-fun ColumnList.copyOf(): List<ColumnList.Column> {
-  val copy = mutableListOf<ColumnStub>()
-  for (i in 0 until this.size) {
-    copy.add(ColumnStub(this.getField(i)))
-  }
-  return copy
-}
 
 class DragAndDropSupport {
   private lateinit var clipboardContent: ClipboardContents
@@ -856,7 +720,7 @@ class DragAndDropSupport {
     cell.setOnDragExited {
     }
   }
-  fun dragDetected(cell: TextCell<Task, Task>) {
+  private fun dragDetected(cell: TextCell<Task, Task>) {
     val task = cell.treeTableRow.treeItem.value
     clipboardContent = ClipboardContents(task.manager).also {
       it.addTasks(listOf(task))
@@ -870,7 +734,7 @@ class DragAndDropSupport {
     cell.setOnDragExited { db.clear() }
   }
 
-  fun dragOver(event: DragEvent, cell: TextCell<Task, Task>) {
+  private fun dragOver(event: DragEvent, cell: TextCell<Task, Task>) {
     if (!event.dragboard.hasContent(TEXT_FORMAT)) return
     val thisItem = cell.treeTableRow.treeItem
 
@@ -890,7 +754,7 @@ class DragAndDropSupport {
   private fun clearDropLocation() {
   }
 
-  fun drop(cell: TextCell<Task, Task>) {
+  private fun drop(cell: TextCell<Task, Task>) {
     val dropTarget = cell.treeTableRow.treeItem.value
     clipboardContent.cut()
     clipboardProcessor.pasteAsChild(dropTarget, clipboardContent)
@@ -901,10 +765,10 @@ class DragAndDropSupport {
 private fun ColumnList.Column.taskDefaultColumn() = TaskDefaultColumn.find(this.id)?.stub
 
 private val taskNameConverter = MyStringConverter<Task, Task>(
-  toString = { cell, task -> task?.name },
+  toString = { _, task -> task?.name },
   fromString = { cell, text ->
-    cell.item?.let {
-      it.unpluggedClone().also { it.name = text }
+    cell.item?.let { task ->
+      task.unpluggedClone().also { it.name = text }
     } ?: run {
       println("no item in this cell! cell=$cell")
       null
@@ -925,8 +789,8 @@ private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) 
           HBox.setHgrow(it, Priority.ALWAYS)
         }
         if (TaskDefaultColumn.INFO.stub.isVisible) {
-          task.getProgressStatus().getIcon()?.let {
-            StackPane(it).also {
+          task.getProgressStatus().getIcon()?.let { icon ->
+            StackPane(icon).also {
               it.styleClass.add("badge")
               hbox.children.add(it)
             }
