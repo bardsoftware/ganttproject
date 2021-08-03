@@ -49,14 +49,14 @@ import org.apache.commons.lang3.reflect.FieldUtils
 /**
  * @author dbarashev@bardsoftware.com
  */
-class GPTreeTableView<T>(rootItem: TreeItem<T>, autoEditCoordinator: NewTaskActor<T>) : TreeTableView<T>(rootItem) {
+class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   internal val tableMenu = ContextMenu()
   var contextMenuActions: (MenuBuilder) -> Unit = { }
   var tableMenuActions: (MenuBuilder) -> Unit = {}
-  val resizePolicy = MyColumnResizePolicy<Any>(this, widthProperty())
+  private val resizePolicy = MyColumnResizePolicy<Any>(this, widthProperty())
   init {
-    rowFactory = Callback { view ->
-      MyTreeTableRow(autoEditCoordinator)
+    rowFactory = Callback {
+      MyTreeTableRow()
     }
     stylesheets.add("/biz/ganttproject/lib/fx/TreeTable.css")
     styleClass.add("gp-tree-table-view")
@@ -105,7 +105,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>, autoEditCoordinator: NewTaskActo
 
   fun vbarWidth(): Double = skin?.let { (it as GPTreeTableViewSkin<T>).vbarWidth() } ?: 0.0
   fun setColumns(tableColumns: List<TreeTableColumn<T, out Any>>) {
-    val totalPrefWidth = tableColumns.filter { it.isVisible }.map { it.prefWidth }.sum()
+    val totalPrefWidth = tableColumns.filter { it.isVisible }.sumOf { it.prefWidth }
     prefWidth = totalPrefWidth
     columns.setAll(tableColumns)
   }
@@ -149,13 +149,13 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   }
 
   private fun (InputMap<*>).removeKey(predicate: (KeyBinding) -> Boolean) {
-    this.mappings.filter {
-      it.mappingKey.let { it is KeyBinding && predicate(it) }
+    this.mappings.filter { mapping ->
+      mapping.mappingKey.let { it is KeyBinding && predicate(it) }
     }.forEach { it.isDisabled = true }
     this.childInputMaps.forEach { it.removeKey(predicate) }
   }
   override fun createVirtualFlow(): VirtualFlow<TreeTableRow<T>> {
-    return MyVirtualFlow();
+    return MyVirtualFlow()
   }
 
   fun scrollBy(value: Double) {
@@ -186,8 +186,8 @@ class MyVirtualFlow<T: IndexedCell<*>> : VirtualFlow<T>() {
   fun vbarWidth() = if (this.width > 0.0 && vbar.isVisible) vbar.width else 0.0
 }
 
-class MyTreeTableRow<T>(private val autoEditCoordinator: NewTaskActor<T>) : TreeTableRow<T>() {
-  override fun createDefaultSkin() = TreeTableRowSkin<T>(this)
+class MyTreeTableRow<T> : TreeTableRow<T>() {
+  override fun createDefaultSkin() = TreeTableRowSkin(this)
 
   init {
     disclosureNode = HBox().also { hbox ->
@@ -198,7 +198,7 @@ class MyTreeTableRow<T>(private val autoEditCoordinator: NewTaskActor<T>) : Tree
         it.styleClass.add("arrow")
         hbox.children.add(it)
       }
-      hbox.prefHeightProperty().bind(heightProperty());
+      hbox.prefHeightProperty().bind(heightProperty())
     }
   }
 }
@@ -206,7 +206,7 @@ class MyTreeTableRow<T>(private val autoEditCoordinator: NewTaskActor<T>) : Tree
 class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth: ReadOnlyDoubleProperty)
   : Callback<TreeTableView.ResizeFeatures<S>, Boolean> {
   init {
-    tableWidth.addListener { _, oldValue, newValue -> resizeTable(oldValue.toDouble(), newValue.toDouble())}
+    tableWidth.addListener { _, _, newValue -> resizeTable(newValue.toDouble())}
   }
   override fun call(param: TreeTableView.ResizeFeatures<S>): Boolean {
     param.column?.let { thisCol ->
@@ -221,12 +221,12 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
     return true
   }
 
-  fun resizeTable(oldValue: Double, newValue: Double) {
+  private fun resizeTable(newValue: Double) {
     val visibleColumns = table.columns.filter { it.isVisible }
     if (visibleColumns.isEmpty()) {
       return
     }
-    val totalWidth = visibleColumns.map { it.width }.sum()
+    val totalWidth = visibleColumns.sumOf { it.width }
     var delta = newValue - totalWidth
     if (delta > 0) {
       visibleColumns.last().prefWidth += delta

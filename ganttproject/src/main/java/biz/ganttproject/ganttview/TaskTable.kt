@@ -92,7 +92,7 @@ class TaskTable(
   private val treeModel = taskManager.taskHierarchy
   val rootItem = TreeItem(treeModel.rootTask)
   val newTaskActor = NewTaskActor<Task>().also { it.start() }
-  val treeTable = GPTreeTableView<Task>(rootItem, newTaskActor)
+  val treeTable = GPTreeTableView<Task>(rootItem)
   val taskTableModel = TaskTableModel(taskManager, taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
 
@@ -464,15 +464,6 @@ class TaskTable(
       it.isEditable = taskDefaultColumn.isEditable(null)
       it.isVisible = column.isVisible
       it.userData = column
-      // There are a few issues with the TreeTableView:
-      // - if the sum total width of all columns exceed the table content width, the constrained
-      // resize policy makes width of all columns the same
-      // - the table and its contents resize only to the specified width, but it happens after resizing the
-      // columns. In the result we get a table with equal to the total column width, but the columns become
-      // equal-width.
-      // The solution is to set the min width of the columns. It shall be cleared afterwards, otherwise
-      // the columns become non-resizeable. We clear the min width when we receive table's contentWidth property
-      // change.
       it.prefWidth = column.width.toDouble()
     }
 
