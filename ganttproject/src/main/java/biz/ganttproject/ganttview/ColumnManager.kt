@@ -169,7 +169,7 @@ internal data class BtnController(
   val onAction: () -> Unit
 )
 internal enum class PropertyType(private val displayName: String) {
-  STRING("Text"), INTEGER("Integer value"), DATE("Date"), DECIMAL("Numeric/decimal"), COLOR("Color"), BOOLEAN("True or false");
+  STRING("Text"), INTEGER("Integer value"), DATE("Date"), DECIMAL("Numeric/decimal"), BOOLEAN("True or false");
 
   override fun toString() = this.displayName
 }
@@ -211,7 +211,6 @@ internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {
   TaskDefaultColumn.ID, TaskDefaultColumn.DURATION, TaskDefaultColumn.COMPLETION -> PropertyType.INTEGER
   TaskDefaultColumn.BEGIN_DATE, TaskDefaultColumn.END_DATE -> PropertyType.DATE
   TaskDefaultColumn.COST -> PropertyType.DECIMAL
-  TaskDefaultColumn.COLOR -> PropertyType.COLOR
   else -> PropertyType.STRING
 }
 
