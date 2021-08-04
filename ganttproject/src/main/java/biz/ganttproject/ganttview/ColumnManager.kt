@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.ganttview
 
-import biz.ganttproject.app.LocalizedString
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.core.model.task.TaskDefaultColumn
@@ -26,7 +25,6 @@ import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
-import biz.ganttproject.printTree
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.beans.property.SimpleBooleanProperty
@@ -238,22 +236,34 @@ internal class CustomPropertyEditor(
       editableValue.title = selectedItem.title
       editableValue.type = selectedItem.type
       if (selectedItem.isCustom) {
-        propertySheetLabel.text = i18n.formatText("propertyPane.title.custom")
+        propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.custom")
         propertySheet.isDisable = false
         btnDeleteController.isDisabled.value = false
         editableValue.defaultValue = selectedItem.defaultValue
       } else {
         btnDeleteController.isDisabled.value = true
-        propertySheetLabel.text = i18n.formatText("propertyPane.title.builtin")
+        propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.builtin")
         propertySheet.isDisable = true
       }
     }
     isPropertyChangeIgnored = false
   }
   private val editableValue = ColumnAsListItem(column = null, isVisible = true, isCustom = true, customColumnsManager = customColumnsManager)
-  private val title = BeanProperty(editableValue, PropertyDescriptor("title", ColumnAsListItem::class.java))
-  private val type = BeanProperty(editableValue, PropertyDescriptor("type", ColumnAsListItem::class.java))
-  private val defaultValue = BeanProperty(editableValue, PropertyDescriptor("defaultValue", ColumnAsListItem::class.java))
+  private val title = BeanProperty(editableValue,
+    PropertyDescriptor("title", ColumnAsListItem::class.java).also {
+      it.displayName = RootLocalizer.formatText("option.customPropertyDialog.name.label")
+    }
+  )
+  private val type = BeanProperty(editableValue,
+    PropertyDescriptor("type", ColumnAsListItem::class.java).also {
+      it.displayName = RootLocalizer.formatText("option.taskProperties.customColumn.type.label")
+    }
+  )
+  private val defaultValue = BeanProperty(editableValue,
+    PropertyDescriptor("defaultValue", ColumnAsListItem::class.java).also {
+      it.displayName = RootLocalizer.formatText("option.customPropertyDialog.defaultValue.label")
+    }
+  )
   val props = listOf(title, type, defaultValue)
   val editors = mutableMapOf<String, PropertyEditor<*>>()
 
@@ -382,7 +392,7 @@ fun show(columnList: ColumnList, customColumnsManager: CustomPropertyManager) {
     dlg.addStyleSheet("/biz/ganttproject/ganttview/ColumnManager.css")
     dlg.setHeader(
       VBoxBuilder("header").apply {
-        addTitle(i18n.create("title")).also { hbox ->
+        addTitle(ourLocalizer.create("title")).also { hbox ->
           hbox.alignment = Pos.CENTER_LEFT
           hbox.isFillHeight = true
         }
@@ -421,4 +431,4 @@ fun show(columnList: ColumnList, customColumnsManager: CustomPropertyManager) {
   }
 }
 
-private val i18n = RootLocalizer.createWithRootKey("taskTable.columnManager")
+private val ourLocalizer = RootLocalizer.createWithRootKey("taskTable.columnManager")
