@@ -106,7 +106,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   fun vbarWidth(): Double = skin?.let { (it as GPTreeTableViewSkin<T>).vbarWidth() } ?: 0.0
   fun setColumns(tableColumns: List<TreeTableColumn<T, out Any>>) {
     val totalPrefWidth = tableColumns.filter { it.isVisible }.sumOf { it.prefWidth }
-    prefWidth = totalPrefWidth
+    prefWidth = totalPrefWidth + vbarWidth()
     columns.setAll(tableColumns)
   }
 }
@@ -119,9 +119,6 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   val fullHeaderHeight: Double get() = headerHeight.value + tableHeaderRow.boundsInParent.minX
 
   init {
-    control.prefWidthProperty().addListener { _, _, newValue ->
-      this.virtualFlow.prefWidth = newValue.toDouble()
-    }
     this.virtualFlow.positionProperty().addListener { _, _, _ ->
       var totalCellHeight = 0.0
       for (idx in 0 until virtualFlow.cellCount) {
@@ -227,7 +224,7 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
       return
     }
     val totalWidth = visibleColumns.sumOf { it.width }
-    var delta = newValue - totalWidth
+    var delta = newValue - totalWidth - table.vbarWidth()
     if (delta > 0) {
       visibleColumns.last().prefWidth += delta
     } else {
