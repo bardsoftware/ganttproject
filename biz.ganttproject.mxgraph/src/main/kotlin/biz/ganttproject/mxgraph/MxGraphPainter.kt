@@ -35,18 +35,17 @@ import java.util.*
  * This code mostly prepares styles for painting and delegates the real work with
  * mxGraph to MxPainterImpl.
  */
-class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
-  private val mxPainter = MxPainterImpl()
+class MxGraphPainter(private val driver: Driver = MxPainterImpl(), uiConfig: ChartUIConfiguration) : Painter {
   val chartProperties = Properties().also {
     PropertiesUtil.loadProperties(it, "/resources/chart.properties")
   }
-  private val containerRectanglePainter = SummaryTaskPainter(mxPainter, chartProperties)
-  private val resourceLoadPainter = ResourceLoadPainter(mxPainter, uiConfig)
-  private val dayoffPainter = DayoffPainter(mxPainter, uiConfig)
-  private val textPainter = MxTextPainter(mxPainter, chartProperties) { Fonts.DEFAULT_CHART_FONT }
+  private val containerRectanglePainter = SummaryTaskPainter(driver, chartProperties)
+  private val resourceLoadPainter = ResourceLoadPainter(driver, uiConfig)
+  private val dayoffPainter = DayoffPainter(driver, uiConfig)
+  private val textPainter = MxTextPainter(driver, chartProperties) { Fonts.DEFAULT_CHART_FONT }
   private val styleToPainter = mapOf(
-      "task.progress" to ColouredRectanglePainter(mxPainter, Color.BLACK),
-      "task.progress.end" to ColouredRectanglePainter(mxPainter, Color.BLACK),
+      "task.progress" to ColouredRectanglePainter(driver, Color.BLACK),
+      "task.progress.end" to ColouredRectanglePainter(driver, Color.BLACK),
       "task.supertask" to containerRectanglePainter,
       "load.normal" to resourceLoadPainter,
       "load.normal.first" to resourceLoadPainter,
@@ -66,19 +65,19 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
   override fun prePaint() {}
 
   fun paint(paintFunction: () -> Unit) {
-    mxPainter.clear()
-    mxPainter.beginUpdate()
+    driver.clear()
+    driver.beginUpdate()
     try {
       paintFunction.invoke()
     } catch (exception: Exception) {
       throw exception
     } finally {
-      mxPainter.endUpdate()
+      driver.endUpdate()
     }
   }
 
   fun getGraphXml(): String {
-    return mxPainter.toXml()
+    return driver.toXml()
   }
 
   override fun paint(rectangle: Rectangle) {
@@ -94,7 +93,7 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
         mxConstants.STYLE_STROKECOLOR to (chartStyle.hexStrokeColor(rectangle) ?: mxConstants.NONE),
         mxConstants.STYLE_OPACITY to (rectangle.opacity ?: 1f) * 100
     )
-    mxPainter.paintRectangle(rectangle.leftX, rectangle.topY, rectangle.width, rectangle.height, mxStyle, rectangle.attributes)
+    driver.paintRectangle(rectangle.leftX, rectangle.topY, rectangle.width, rectangle.height, mxStyle, rectangle.attributes)
   }
 
   override fun paint(line: Line) {
@@ -107,7 +106,7 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
         mxConstants.STYLE_OPACITY to (line.opacity ?: 1f) * 100,
         mxConstants.STYLE_DASHED to if (stroke?.dashArray != null) 1 else 0
     )
-    mxPainter.paintLine(line.startX, line.startY, line.finishX, line.finishY, style, line.attributes)
+    driver.paintLine(line.startX, line.startY, line.finishX, line.finishY, style, line.attributes)
   }
 
   override fun paint(text: Text) = textPainter.paint(text)
@@ -121,7 +120,7 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
         mxConstants.STYLE_STROKECOLOR to chartStyle.hexBordersColor(rhombus),
         mxConstants.STYLE_OPACITY to (rhombus.opacity ?: 1f) * 100
     )
-    mxPainter.paintRhombus(rhombus.leftX, rhombus.topY, rhombus.width, rhombus.height, style, rhombus.attributes)
+    driver.paintRhombus(rhombus.leftX, rhombus.topY, rhombus.width, rhombus.height, style, rhombus.attributes)
   }
 
   internal interface RectanglePainter {

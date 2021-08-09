@@ -24,8 +24,8 @@ import net.sourceforge.ganttproject.chart.ChartUIConfiguration
 import java.awt.Color
 
 internal class DayoffPainter(
-    private val mxPainterImpl: MxPainterImpl,
-    private val uiConfig: ChartUIConfiguration
+  private val driver: Driver,
+  private val uiConfig: ChartUIConfiguration
 ) : MxGraphPainter.RectanglePainter {
 
   override fun paint(rectangle: Canvas.Rectangle) {
@@ -36,7 +36,7 @@ internal class DayoffPainter(
         mxConstants.STYLE_STROKECOLOR to Color.BLACK.toHexString(),
         mxConstants.STYLE_OPACITY to 40
     )
-    mxPainterImpl.paintRectangle(
+    driver.paintRectangle(
         rectangle.leftX, rectangle.topY + margin, rectangle.width, rectangle.height - 2 * margin,
         mxStyle, rectangle.attributes
     )

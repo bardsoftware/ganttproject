@@ -29,9 +29,9 @@ import java.awt.Font
 import java.util.*
 
 internal class MxTextPainter(
-    private val mxPainterImpl: MxPainterImpl,
-    private val properties: Properties,
-    baseFont: () -> Font
+  private val driver: Driver,
+  private val properties: Properties,
+  baseFont: () -> Font
 ) : AbstractTextPainter(properties, baseFont) {
 
   override fun paint(text: Text) {
@@ -54,7 +54,7 @@ internal class MxTextPainter(
         mxConstants.STYLE_SPACING_RIGHT to chartStyle.padding.right
     )
     text.attributes["text"] = label.text
-    mxPainterImpl.paintText(x, y, text.attributes, styles + style)
+    driver.paintText(x, y, text.attributes, styles + style)
   }
 
   override fun getFontStyles(font: Font, color: Color) = mapOf(

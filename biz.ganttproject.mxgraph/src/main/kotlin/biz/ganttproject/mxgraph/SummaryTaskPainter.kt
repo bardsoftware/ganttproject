@@ -24,8 +24,8 @@ import com.mxgraph.util.mxConstants
 import java.util.*
 
 internal class SummaryTaskPainter(
-    private val mxPainterImpl: MxPainterImpl,
-    private val props: Properties
+  private val driver: Driver,
+  private val props: Properties
 ) : MxGraphPainter.RectanglePainter {
 
   override fun paint(rectangle: Canvas.Rectangle) {
@@ -36,7 +36,7 @@ internal class SummaryTaskPainter(
     )
 
     with(style.padding) {
-      mxPainterImpl.paintRectangle(
+      driver.paintRectangle(
         rectangle.leftX + left, rectangle.topY + top,
         rectangle.width - (left + right), rectangle.height - (top + bottom),
         mxStyle, rectangle.attributes
@@ -44,13 +44,13 @@ internal class SummaryTaskPainter(
 
       val notchWidth = rectangle.height - (top + bottom)
       if (rectangle.hasStyle("task.summary.open")) {
-        mxPainterImpl.paintRectangle(
+        driver.paintRectangle(
           rectangle.leftX, rectangle.topY, notchWidth, rectangle.height,
           mxStyle, emptyMap()
         )
       }
       if (rectangle.hasStyle("task.summary.close")) {
-        mxPainterImpl.paintRectangle(
+        driver.paintRectangle(
           rectangle.rightX - notchWidth, rectangle.topY, notchWidth, rectangle.height,
           mxStyle, emptyMap()
         )

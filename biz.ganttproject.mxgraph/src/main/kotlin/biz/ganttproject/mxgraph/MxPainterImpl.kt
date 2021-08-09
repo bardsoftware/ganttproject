@@ -31,16 +31,16 @@ import org.w3c.dom.Element
 /**
  * This is low-level mxGraph interaction code which actually calls mxGraph API
  */
-internal class MxPainterImpl {
+internal class MxPainterImpl : Driver {
   private val graph = mxGraph()
   private val parent = graph.defaultParent
   private val codec = mxCodec()
 
-  fun toXml(): String {
+  override fun toXml(): String {
     return mxXmlUtils.getXml(codec.encode(graph.model))
   }
 
-  fun paintRectangle(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
+  override fun paintRectangle(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
     val shapeStyle = mapOf(
         mxConstants.STYLE_SHAPE to mxConstants.SHAPE_RECTANGLE,
         mxConstants.STYLE_PERIMETER to mxPerimeter.RectanglePerimeter
@@ -53,7 +53,7 @@ internal class MxPainterImpl {
     )
   }
 
-  fun paintLine(startX: Int, startY: Int, finishX: Int, finishY: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
+  override fun paintLine(startX: Int, startY: Int, finishX: Int, finishY: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
     val edge = graph.createEdge(parent, null, attributes.toUserObject(), null, null, style.toStyleString()) as mxCell
     edge.geometry = mxGeometry()
     edge.geometry.sourcePoint = mxPoint(startX.toDouble(), startY.toDouble())
@@ -61,7 +61,7 @@ internal class MxPainterImpl {
     graph.addEdge(edge, null, null, null, null)
   }
 
-  fun paintText(leftX: Int, bottomY: Int, attributes: Map<String, String>, style: Map<String, Any?>) {
+  override fun paintText(leftX: Int, bottomY: Int, attributes: Map<String, String>, style: Map<String, Any?>) {
     val textStyle = mapOf(
         mxConstants.STYLE_SPACING to 0,
         mxConstants.STYLE_FILLCOLOR to mxConstants.NONE,
@@ -76,28 +76,28 @@ internal class MxPainterImpl {
     )
   }
 
-  fun paintRhombus(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
-    val shapeStyle = mapOf(
-        mxConstants.STYLE_SHAPE to mxConstants.SHAPE_RHOMBUS,
-        mxConstants.STYLE_PERIMETER to mxPerimeter.RhombusPerimeter
-    )
-    graph.insertVertex(
-        parent, null, attributes.toUserObject(),
-        leftX.toDouble(), topY.toDouble(),
-        width.toDouble(), height.toDouble(),
-        (style + shapeStyle).toStyleString()
-    )
-  }
-
-  fun clear() {
+  override fun clear() {
     graph.removeCells(graph.getChildCells(graph.defaultParent))
   }
 
-  fun beginUpdate() {
+  override fun paintRhombus(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
+    val shapeStyle = mapOf(
+      mxConstants.STYLE_SHAPE to mxConstants.SHAPE_RHOMBUS,
+      mxConstants.STYLE_PERIMETER to mxPerimeter.RhombusPerimeter
+    )
+    graph.insertVertex(
+      parent, null, attributes.toUserObject(),
+      leftX.toDouble(), topY.toDouble(),
+      width.toDouble(), height.toDouble(),
+      (style + shapeStyle).toStyleString()
+    )
+  }
+
+  override fun beginUpdate() {
     graph.model.beginUpdate()
   }
 
-  fun endUpdate() {
+  override fun endUpdate() {
     graph.model.endUpdate()
   }
 

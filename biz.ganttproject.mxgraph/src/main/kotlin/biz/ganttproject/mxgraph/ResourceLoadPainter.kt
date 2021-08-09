@@ -24,8 +24,8 @@ import net.sourceforge.ganttproject.chart.ChartUIConfiguration
 import java.awt.Color
 
 internal class ResourceLoadPainter(
-    private val mxPainterImpl: MxPainterImpl,
-    private val uiConfig: ChartUIConfiguration
+  private val driver: Driver,
+  private val uiConfig: ChartUIConfiguration
 ) : MxGraphPainter.RectanglePainter {
 
   override fun paint(rectangle: Canvas.Rectangle) {
@@ -34,7 +34,7 @@ internal class ResourceLoadPainter(
       rectangle.style.indexOf("underload") > 0 -> uiConfig.resourceUnderLoadColor
       else -> uiConfig.resourceNormalLoadColor
     }.toHexString()
-    mxPainterImpl.paintRectangle(
+    driver.paintRectangle(
         rectangle.leftX, rectangle.topY + uiConfig.margin,
         rectangle.width, rectangle.height - 2 * uiConfig.margin,
         mapOf(mxConstants.STYLE_FILLCOLOR to color), rectangle.attributes
@@ -45,26 +45,26 @@ internal class ResourceLoadPainter(
         mxConstants.STYLE_STROKECOLOR to Color.BLACK.toHexString()
     )
     if (rectangle.style.indexOf(".first") > 0) {
-      mxPainterImpl.paintLine(
+      driver.paintLine(
           rectangle.leftX, rectangle.topY + uiConfig.margin,
           rectangle.leftX, rectangle.bottomY - uiConfig.margin,
           mxLineStyle, rectangle.attributes
       )
     }
     if (rectangle.style.indexOf(".last") > 0) {
-      mxPainterImpl.paintLine(
+      driver.paintLine(
           rectangle.rightX, rectangle.topY + uiConfig.margin,
           rectangle.rightX, rectangle.bottomY - uiConfig.margin,
           mxLineStyle, rectangle.attributes
       )
     }
 
-    mxPainterImpl.paintLine(
+    driver.paintLine(
         rectangle.leftX, rectangle.topY + uiConfig.margin,
         rectangle.rightX, rectangle.topY + uiConfig.margin,
         mxLineStyle, rectangle.attributes
     )
-    mxPainterImpl.paintLine(
+    driver.paintLine(
         rectangle.leftX, rectangle.bottomY - uiConfig.margin,
         rectangle.rightX, rectangle.bottomY - uiConfig.margin,
         mxLineStyle, rectangle.attributes

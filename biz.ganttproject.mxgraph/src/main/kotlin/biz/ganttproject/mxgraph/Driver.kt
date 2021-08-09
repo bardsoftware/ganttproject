@@ -1,5 +1,5 @@
 /*
-Copyright 2021 Dmitry Kazakov, BarD Software s.r.o
+Copyright 2021 Dmitry Barashev, BarD Software s.r.o
 
 This file is part of GanttProject, an open-source project management tool.
 
@@ -18,19 +18,20 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.mxgraph
 
-import biz.ganttproject.core.chart.canvas.Canvas
-import com.mxgraph.util.mxConstants
-import java.awt.Color
+interface Driver {
+  fun paintRectangle(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>,
+                     attributes: Map<String, String>)
 
-internal class ColouredRectanglePainter(
-  private val driver: Driver,
-  private val color: Color
-) : MxGraphPainter.RectanglePainter  {
-  override fun paint(rectangle: Canvas.Rectangle) {
-    driver.paintRectangle(
-      rectangle.leftX, rectangle.topY,
-      rectangle.width, rectangle.height,
-      mapOf(mxConstants.STYLE_FILLCOLOR to color), rectangle.attributes
-    )
-  }
+  fun paintLine(startX: Int, startY: Int, finishX: Int, finishY: Int, style: Map<String, Any?>,
+                attributes: Map<String, String>)
+
+  fun paintText(leftX: Int, bottomY: Int, attributes: Map<String, String>, style: Map<String, Any?>)
+
+  fun paintRhombus(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>,
+                   attributes: Map<String, String>)
+
+  fun clear()
+  fun beginUpdate()
+  fun endUpdate()
+  fun toXml(): String
 }

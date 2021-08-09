@@ -60,7 +60,7 @@ open class GanttProjectImpl : IGanttProject {
   private val myListeners: MutableList<ProjectEventListener> = ArrayList()
   private val myUIConfiguration: UIConfiguration
   private val myTaskCustomColumnManager: CustomColumnsManager
-  private val myBaselines: List<GanttPreviousState> = ArrayList()
+  private val myBaselines = mutableListOf<GanttPreviousState>()
   private val myCalendar = WeekendCalendarImpl()
   override fun getProjectName(): String {
     return myProjectName!!
@@ -230,7 +230,7 @@ open class GanttProjectImpl : IGanttProject {
     return myTaskCustomColumnManager
   }
 
-  override fun getBaselines(): List<GanttPreviousState> {
+  override fun getBaselines(): MutableList<GanttPreviousState> {
     return myBaselines
   }
 
