@@ -18,17 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart.gantt;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.AbstractChartImplementation.ChartSelectionImpl;
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GPTransferable;
-import net.sourceforge.ganttproject.GanttTreeTable;
-import net.sourceforge.ganttproject.GanttTreeTableModel;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.TreeTableContainer;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
@@ -36,9 +30,10 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static biz.ganttproject.task.TreeAlgorithmsKt.retainRoots;
 
 /**
  * Implementation of ChartSelection on Gantt chart.
@@ -46,37 +41,20 @@ import java.util.List;
  * @author dbarashev (Dmitry Barashev)
  */
 public class GanttChartSelection extends ChartSelectionImpl implements ClipboardOwner {
-  private static final Function<DefaultMutableTreeTableNode, DefaultMutableTreeTableNode> getParentNode = new Function<DefaultMutableTreeTableNode, DefaultMutableTreeTableNode>() {
-    @Override
-    public DefaultMutableTreeTableNode apply(DefaultMutableTreeTableNode node) {
-      return (DefaultMutableTreeTableNode) node.getParent();
-    }
-  };
-
 
   private final RetainRootsAlgorithm<DefaultMutableTreeTableNode> myRetainRootsAlgorithm = new RetainRootsAlgorithm<DefaultMutableTreeTableNode>();
-  private final TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> myTree;
   private final TaskManager myTaskManager;
-  private final IGanttProject myProject;
+  private final TaskSelectionManager mySelectionManager;
 
   private ClipboardContents myClipboardContents;
 
-
-  private Function<? super DefaultMutableTreeTableNode, ? extends Task> getTaskFromNode = new Function<DefaultMutableTreeTableNode, Task>() {
-    @Override
-    public Task apply(DefaultMutableTreeTableNode node) {
-      return (Task) node.getUserObject();
-    }
-  };
-
-  GanttChartSelection(IGanttProject project, TreeTableContainer<Task, GanttTreeTable, GanttTreeTableModel> treeView, TaskManager taskManager) {
-    myTree = treeView;
+  GanttChartSelection(TaskManager taskManager, TaskSelectionManager selectionManager) {
     myTaskManager = taskManager;
-    myProject = project;
+    mySelectionManager = selectionManager;
   }
   @Override
   public boolean isEmpty() {
-    return myTree.getSelectedNodes().length == 0;
+    return mySelectionManager.getSelectedTasks().isEmpty();
   }
 
   @Override
@@ -101,13 +79,9 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
   }
 
   public ClipboardContents buildClipboardContents() {
-    DefaultMutableTreeTableNode[] selectedNodes = myTree.getSelectedNodes();
-    GPLogger.getLogger("Clipboard").fine(String.format("Selected nodes: %s", Arrays.asList(selectedNodes)));
-    List<DefaultMutableTreeTableNode> selectedRoots = Lists.newArrayList();
-    myRetainRootsAlgorithm.run(selectedNodes, getParentNode, selectedRoots);
-    GPLogger.getLogger("Clipboard").fine(String.format("Roots: %s", selectedRoots));
+    List<Task> selectedRoots = retainRoots(mySelectionManager.getSelectedTasks());
     ClipboardContents result = new ClipboardContents(myTaskManager);
-    result.addTasks(Lists.transform(selectedRoots, getTaskFromNode));
+    result.addTasks(selectedRoots);
     return result;
   }
 

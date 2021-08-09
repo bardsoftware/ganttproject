@@ -58,7 +58,6 @@ import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
 import net.sourceforge.ganttproject.task.Task.Priority;
@@ -132,10 +131,6 @@ class ProjectFileImporter {
     void addHoliday(Date date, Optional<String> title);
 
     void addYearlyHoliday(Date date, Optional<String> title);
-  }
-
-  ProjectFileImporter(IGanttProject nativeProject, TaskTreeUIFacade taskTreeUIFacade, File foreignProjectFile) {
-    this(nativeProject, taskTreeUIFacade.getVisibleFields(), foreignProjectFile);
   }
 
   public ProjectFileImporter(IGanttProject nativeProject, ColumnList taskFields, File foreignProjectFile) {

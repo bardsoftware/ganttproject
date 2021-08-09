@@ -24,6 +24,7 @@ import com.google.common.base.Predicate;
 
 import javax.swing.*;
 import java.awt.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
@@ -39,15 +40,15 @@ public enum TaskDefaultColumn {
   PRIORITY(new ColumnList.ColumnStub("tpd1", null, false, -1, 50), Icon.class, "tableColPriority"),
   INFO(new ColumnList.ColumnStub("tpd2", null, false, -1, -1), Icon.class, "tableColInfo", Functions.NOT_EDITABLE),
   NAME(new ColumnList.ColumnStub("tpd3", null, true, 0, 200), String.class, "tableColName"),
-  BEGIN_DATE(new ColumnList.ColumnStub("tpd4", null, true, 1, 75), GregorianCalendar.class, "tableColBegDate"),
-  END_DATE(new ColumnList.ColumnStub("tpd5", null, true, 2, 75), GregorianCalendar.class, "tableColEndDate", null),
+  BEGIN_DATE(new ColumnList.ColumnStub("tpd4", null, true, 1, 75), GregorianCalendar.class, "tableColBegDate", Functions.ALWAYS_EDITABLE),
+  END_DATE(new ColumnList.ColumnStub("tpd5", null, true, 2, 75), GregorianCalendar.class, "tableColEndDate", Functions.ALWAYS_EDITABLE),
   DURATION(new ColumnList.ColumnStub("tpd6", null, false, -1, 50), Integer.class, "tableColDuration", null),
   COMPLETION(new ColumnList.ColumnStub("tpd7", null, false, -1, 50), Integer.class, "tableColCompletion"),
   COORDINATOR(new ColumnList.ColumnStub("tpd8", null, false, -1, 200), String.class, "tableColCoordinator", Functions.NOT_EDITABLE),
   PREDECESSORS(new ColumnList.ColumnStub("tpd9", null, false, -1, 200), String.class, "tableColPredecessors"),
   ID(new ColumnList.ColumnStub("tpd10", null, false, -1, 20), Integer.class, "tableColID", Functions.NOT_EDITABLE),
   OUTLINE_NUMBER(new ColumnList.ColumnStub("tpd11", null, false, 4, 20), String.class, "tableColOutline", Functions.NOT_EDITABLE),
-  COST(new ColumnList.ColumnStub("tpd12", null, false, -1, 20), Double.class, "tableColCost"),
+  COST(new ColumnList.ColumnStub("tpd12", null, false, -1, 20), BigDecimal.class, "tableColCost"),
   RESOURCES(new ColumnList.ColumnStub("tpd13", null, false, -1, 20), String.class, "resources", Functions.NOT_EDITABLE),
   COLOR(new ColumnList.ColumnStub("tpd14", null, false, -1, 20), Color.class, "option.taskDefaultColor.label");
 
@@ -92,7 +93,9 @@ public enum TaskDefaultColumn {
   public static List<Column> getColumnStubs() {
     List<Column> result = new ArrayList<Column>();
     for (TaskDefaultColumn dc : values()) {
-      result.add(dc.myDelegate);
+      result.add(new ColumnList.ColumnStub(
+          dc.myDelegate.getID(), dc.getName(),
+          dc.myDelegate.isVisible(), dc.myDelegate.getOrder(), dc.myDelegate.getWidth()));
     }
     return result;
   }
@@ -115,7 +118,7 @@ public enum TaskDefaultColumn {
   }
 
   public <T> boolean isEditable(T task) {
-    return ((Predicate<T>)myIsEditablePredicate).apply(task);
+    return myIsEditablePredicate == null ? true : ((Predicate<T>)myIsEditablePredicate).apply(task);
   }
 
   public String getNameKey() {

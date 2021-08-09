@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
+import biz.ganttproject.customproperty.PropertyTypeEncoder;
+import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.core.time.GanttCalendar;
 import com.google.common.base.Charsets;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
@@ -42,6 +44,12 @@ import java.util.GregorianCalendar;
 import java.util.Map;
 
 class TaskSaver extends SaverBase {
+  private final TreeCollapseView<Task> taskCollapseView;
+
+  public TaskSaver(TreeCollapseView<Task> taskCollapseView) {
+    this.taskCollapseView = taskCollapseView;
+  }
+
   void save(IGanttProject project, TransformerHandler handler) throws SAXException, IOException {
     AttributesImpl attrs = new AttributesImpl();
     if (project.getTaskManager().isZeroMilestones() != null) {
@@ -92,7 +100,7 @@ class TaskSaver extends SaverBase {
     if (sWebLink != null && !sWebLink.equals("") && !sWebLink.equals("http://")) {
       addAttribute("webLink", URLEncoder.encode(sWebLink, Charsets.UTF_8.name()), attrs);
     }
-    addAttribute("expand", String.valueOf(task.getExpand()), attrs);
+    addAttribute("expand", String.valueOf(taskCollapseView.isExpanded(task)), attrs);
 
     if (!(task.getCost().isCalculated() && task.getCost().getManualValue().equals(BigDecimal.ZERO))) {
       addAttribute("cost-manual-value", task.getCost().getManualValue().toPlainString(), attrs);
@@ -198,7 +206,7 @@ class TaskSaver extends SaverBase {
   }
 
   private static String encodeFieldType(Class<?> fieldType) {
-    return CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(fieldType);
+    return PropertyTypeEncoder.INSTANCE.encodeFieldType(fieldType);
   }
 
 }

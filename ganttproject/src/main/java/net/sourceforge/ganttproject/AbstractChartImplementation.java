@@ -38,6 +38,8 @@ import net.sourceforge.ganttproject.chart.export.ChartDimensions;
 import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
+import net.sourceforge.ganttproject.chart.export.TreeTableApi;
+import net.sourceforge.ganttproject.chart.export.TreeTableApiKt;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ScrollViewInteraction;
 import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
@@ -246,8 +248,12 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
       myChartComponent.getTreeTable().autoFitColumns();
     }
     settings.setLogo(getLogo());
-    ChartImageBuilder builder = new ChartImageBuilder(settings, modelCopy, myChartComponent.getTreeTable());
+    ChartImageBuilder builder = createChartImageBuilder(settings, modelCopy, myChartComponent.getTreeTable());
     builder.buildImage(imageVisitor);
+  }
+
+  protected ChartImageBuilder createChartImageBuilder(GanttExportSettings settings, ChartModelBase modelCopy, GPTreeTableBase treeTable) {
+    return new ChartImageBuilder(settings, modelCopy, TreeTableApiKt.asTreeTableApi(treeTable));
   }
 
   @Override
@@ -267,26 +273,36 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
         g.clearRect(0, 0, d.getTreeWidth(), d.getLogoHeight());
         // Hack: by adding 35, the left part of the logo becomes visible,
         // otherwise it gets chopped off
-        g.drawImage(logo, 35, 0, null);
+        g.drawImage(logo, 0, 0, null);
       }
 
       @Override
-      public void acceptTable(ChartDimensions d, Component header, Component table) {
+      public void acceptTable(ChartDimensions d, TreeTableApi treeTable) {
         if (d.getTreeWidth() <= 0) {
           return;
         }
         Graphics2D g = getGraphics(d);
-        g.translate(0, d.getLogoHeight());
-        header.print(g);
+        g.setBackground(Color.WHITE);
+        g.clearRect(0, d.getLogoHeight(), d.getTreeWidth(), d.getChartHeight() - d.getLogoHeight());
 
-        g.translate(0, d.getTableHeaderHeight());
-        table.print(g);
+        g.translate(0, d.getLogoHeight());
+        var header = treeTable.getTableHeaderComponent().invoke();
+        if (header != null) {
+          header.print(g);
+          g.translate(0, d.getTableHeaderHeight());
+        }
+        var table = treeTable.getTableComponent().invoke();
+        if (table != null) {
+          table.print(g);
+        } else {
+          treeTable.getTablePainter().invoke(g);
+        }
       }
 
       @Override
       public void acceptChart(ChartDimensions d, ChartModel model) {
         if (myTreeImage == null) {
-          myTreeImage = new BufferedImage(1, d.getChartHeight() + d.getLogoHeight(), BufferedImage.TYPE_INT_RGB);
+          myTreeImage = new BufferedImage(1, d.getChartHeight(), BufferedImage.TYPE_INT_RGB);
         }
         myRenderedImage = new RenderedChartImage(model, myTreeImage, d.getChartWidth(), d.getChartHeight()
             + d.getLogoHeight(), d.getLogoHeight());
@@ -294,7 +310,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
 
       private Graphics2D getGraphics(ChartDimensions d) {
         if (myGraphics == null) {
-          myTreeImage = new BufferedImage(d.getTreeWidth(), d.getChartHeight() + d.getLogoHeight(),
+          myTreeImage = new BufferedImage(d.getTreeWidth(), d.getChartHeight(),
               BufferedImage.TYPE_INT_RGB);
           myGraphics = myTreeImage.createGraphics();
         }
@@ -439,7 +455,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   }
 
   private Integer myCachedHeaderHeight = 30;
-  int getHeaderHeight(final JComponent tableContainer, final JComponent table) {
+  int getHeaderHeight() {
     return myCachedHeaderHeight;
   }
   public void setTimelineHeight(int height) {

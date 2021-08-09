@@ -18,16 +18,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
+import com.google.common.base.Supplier;
+import net.sourceforge.ganttproject.gui.TaskSelectionContext;
+import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
+
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-
-import com.google.common.base.Supplier;
-
-import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 
 /**
  * This class manages the selected tasks.
@@ -47,22 +48,32 @@ public class TaskSelectionManager implements TaskSelectionContext {
   private final List<Task> selectedTasks = new ArrayList<Task>();
   private final List<Listener> myListeners = new ArrayList<Listener>();
   private Object myUserInputConsumer;
-  private final Supplier<TaskManager> myTaskManager;
+  private final TaskManager myTaskManager;
 
   /**
    * Creates an instance of TaskSelectionManager
    */
   public TaskSelectionManager(Supplier<TaskManager> taskManager) {
-    myTaskManager = taskManager;
+    myTaskManager = taskManager.get();
+    myTaskManager.addTaskListener(new TaskListenerAdapter() {
+      @Override
+      public void taskModelReset() {
+        clear();
+      }
+    });
   }
 
   public void setUserInputConsumer(Object consumer) {
-    if (consumer != myUserInputConsumer) {
+    var currentConsumer = myUserInputConsumer;
+    myUserInputConsumer = consumer;
+    if (consumer != currentConsumer) {
       fireUserInputConsumerChanged();
     }
-    myUserInputConsumer = consumer;
   }
 
+  public Object getUserInputConsumer() {
+    return myUserInputConsumer;
+  }
   /**
    * Adds <code>task</code> to the selected tasks.
    *
@@ -90,7 +101,7 @@ public class TaskSelectionManager implements TaskSelectionContext {
   }
 
   private TaskContainmentHierarchyFacade getTaskHierarchy() {
-    return myTaskManager.get().getTaskHierarchy();
+    return myTaskManager.getTaskHierarchy();
   }
 
   public void setSelectedTasks(List<Task> tasks) {
@@ -104,10 +115,14 @@ public class TaskSelectionManager implements TaskSelectionContext {
         return getTaskHierarchy().compareDocumentOrder(o1, o2);
       }
     });
-    clear();
-    for (Task t : tasks) {
-      addTask(t);
-    }
+    SwingUtilities.invokeLater(() -> {
+      clear();
+      for (Task t : tasks) {
+        if (!t.isDeleted()) {
+          addTask(t);
+        }
+      }
+    });
   }
   /**
    * @param task

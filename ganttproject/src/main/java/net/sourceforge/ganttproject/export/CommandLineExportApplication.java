@@ -24,7 +24,6 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.PluginPreferencesImpl;
 import net.sourceforge.ganttproject.plugins.PluginManager;
-import net.sourceforge.ganttproject.task.Task;
 import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.service.prefs.Preferences;
 import org.w3c.util.DateParser;
@@ -105,11 +104,12 @@ public class CommandLineExportApplication {
     }
 
     project.openStartupDocument(mainArgs.file.get(0));
-    if (myArgs.expandTasks) {
-      for (Task t : project.getTaskManager().getTasks()) {
-        project.getUIFacade().getTaskTree().setExpanded(t, true);
-      }
-    }
+    // TODO: bring back task expanding
+//    if (myArgs.expandTasks) {
+//      for (Task t : project.getTaskManager().getTasks()) {
+//        project.getUIFacade().getTaskTree().setExpanded(t, true);
+//      }
+//    }
 
     Job.getJobManager().setProgressProvider(null);
     File outputFile = myArgs.outputFile == null ? FileChooserPage.proposeOutputFile(project, exporter)

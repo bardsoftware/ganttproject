@@ -33,6 +33,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -69,7 +70,16 @@ public class ClipboardTaskProcessor {
   }
 
   public List<Task> pasteAsChild(Task selectedTask, ClipboardContents clipboardContents) {
-    return pasteAsChild(selectedTask, null, clipboardContents);
+    if (clipboardContents.isCut()) {
+      List<Task> result = new ArrayList<>();
+      for (Task task : clipboardContents.getTasks()) {
+        myTaskManager.getTaskHierarchy().move(task, selectedTask, result.size());
+        result.add(task);
+      }
+      return result;
+    } else {
+      return pasteAsChild(selectedTask, null, clipboardContents);
+    }
   }
 
   private List<Task> pasteAsChild(Task pasteRoot, Task anchor, ClipboardContents clipboardContents) {

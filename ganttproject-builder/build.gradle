@@ -164,7 +164,7 @@ task runApp(type: JavaExec, dependsOn: distBin) {
     classpath = (fileTree(dir: 'dist-bin', includes: ['eclipsito.jar']) + files('dist-bin'))
     main = 'com.bardsoftware.eclipsito.Launch'
     args '--verbosity', '4', '--app', 'net.sourceforge.ganttproject.GanttProject', '--version-dirs', "plugins"
-    jvmArgs '-ea'
+    jvmArgs '-ea', '--add-opens', 'javafx.controls/javafx.scene.control.skin=ALL-UNNAMED', '--add-exports',  'javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED', '--add-exports', 'javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED'
 }
 task debugApp(type: JavaExec, dependsOn: distBin) {
     workingDir = 'dist-bin'

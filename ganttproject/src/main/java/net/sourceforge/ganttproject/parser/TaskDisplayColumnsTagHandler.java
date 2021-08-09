@@ -18,12 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.parser;
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
 import org.xml.sax.Attributes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author bbaranne
@@ -61,6 +63,9 @@ public class TaskDisplayColumnsTagHandler extends AbstractTagHandler {
 
   private void loadTaskDisplay(Attributes atts) {
     String id = atts.getValue(myIDPropertyName);
+    var defaultColumn = TaskDefaultColumn.find(id);
+    String name = defaultColumn == null ? id : defaultColumn.getName();
+
     String orderStr = atts.getValue(myOrderPropertyName);
     if (orderStr == null) {
       orderStr = String.valueOf(myBuffer.size());
@@ -72,7 +77,7 @@ public class TaskDisplayColumnsTagHandler extends AbstractTagHandler {
     if (atts.getValue(myVisiblePropertyName) != null) {
       visible = Boolean.parseBoolean(atts.getValue(myVisiblePropertyName));
     }
-    myBuffer.add(new ColumnList.ColumnStub(id, id, visible, order, width));
+    myBuffer.add(new ColumnList.ColumnStub(id, name, visible, order, width));
   }
 
   public static TaskDisplayColumnsTagHandler createPilsenHandler() {
@@ -95,13 +100,17 @@ public class TaskDisplayColumnsTagHandler extends AbstractTagHandler {
       @Override
       public void parsingFinished() {
         List<Column> buffer = pilsenHandler.myBuffer.isEmpty() ? legacyHandler.myBuffer : pilsenHandler.myBuffer;
+        var defaultColumns = TaskDefaultColumn.getColumnStubs().stream()
+            .filter(column -> buffer.stream().filter(c -> c.getID().equals(column.getID())).count() == 0)
+            .collect(Collectors.toList());
+        buffer.addAll(defaultColumns);
         visibleFields.importData(ColumnList.Immutable.fromList(buffer), false);
       }
 
     };
   }
 
-  public static ParsingListener createTaskDisplayColumnsWrapper(final ColumnList visibleFields, final TaskDisplayColumnsTagHandler displayColumnsTagHandler) {
+  public static ParsingListener createResourceDisplayColumnsWrapper(final ColumnList visibleFields, final TaskDisplayColumnsTagHandler displayColumnsTagHandler) {
     return new ParsingListener() {
       @Override
       public void parsingStarted() {

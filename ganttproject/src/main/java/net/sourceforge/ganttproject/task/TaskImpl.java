@@ -112,7 +112,7 @@ public class TaskImpl implements Task {
 
   private boolean myEventsEnabled;
 
-  private final TaskHierarchyItem myTaskHierarchyItem;
+  final TaskHierarchyItem myTaskHierarchyItem;
 
   private ShapePaint myShape;
 
@@ -139,6 +139,7 @@ public class TaskImpl implements Task {
   private static final GPCalendarCalc RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
 
   private static final TimeDuration EMPTY_DURATION = new TimeDurationImpl(GPTimeUnitStack.DAY, 0);
+  private boolean isDeleted;
 
   protected TaskImpl(TaskManagerImpl taskManager, int taskID) {
     myManager = taskManager;
@@ -161,7 +162,7 @@ public class TaskImpl implements Task {
     this.isUnplugged = isUnplugged;
     myManager = manager;
     // Use a new (unique) ID for the cloned task
-    myID = myManager.getAndIncrementId();
+    myID = copy.myID;
 
     if (!isUnplugged) {
       myTaskHierarchyItem = myManager.getHierarchyManager().createItem(this);
@@ -485,7 +486,7 @@ public class TaskImpl implements Task {
   @Override
   public Task getSupertask() {
     TaskHierarchyItem container = myTaskHierarchyItem.getContainerItem();
-    return container.getTask();
+    return container == null ? null : container.getTask();
   }
 
   @Override
@@ -513,9 +514,13 @@ public class TaskImpl implements Task {
   }
 
   @Override
+  public boolean isDeleted() { return this.isDeleted; }
+  @Override
   public void delete() {
+    isDeleted = true;
     getDependencies().clear();
     getAssignmentCollection().clear();
+    myTaskHierarchyItem.delete();
   }
 
   @Override
@@ -991,7 +996,8 @@ public class TaskImpl implements Task {
 
   @Override
   public boolean isSupertask() {
-    return myManager.getTaskHierarchy().hasNestedTasks(this);
+    //return myManager.getTaskHierarchy().hasNestedTasks(this);
+    return myTaskHierarchyItem.hasNested();
   }
 
   @Override

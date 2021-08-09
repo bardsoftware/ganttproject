@@ -18,8 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
-import com.google.common.base.Predicate;
-import net.sourceforge.ganttproject.GanttTree2;
+import biz.ganttproject.ganttview.TaskTableActionConnector;
+import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.task.Task;
@@ -36,9 +36,12 @@ import java.util.List;
  */
 public class TaskMoveUpAction extends TaskActionBase {
 
+  private final Function0<TaskTableActionConnector> myTableConnector;
+
   public TaskMoveUpAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
-      GanttTree2 tree) {
-    super("task.move.up", taskManager, selectionManager, uiFacade, tree);
+                          Function0<TaskTableActionConnector> tableConnector) {
+    super("task.move.up", taskManager, selectionManager, uiFacade);
+    myTableConnector = tableConnector;
   }
 
   @Override
@@ -63,28 +66,21 @@ public class TaskMoveUpAction extends TaskActionBase {
 
   @Override
   protected void run(List<Task> selection) throws Exception {
-    getTree().commitIfEditing();
+    myTableConnector.invoke().getCommitEdit().invoke();
     final TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
     for (Task task : selection) {
       final Task parent = taskHierarchy.getContainer(task);
       final int index = taskHierarchy.getTaskIndex(task) - 1;
-      getTreeFacade().applyPreservingExpansionState(task, new Predicate<Task>() {
-        public boolean apply(Task t) {
-          taskHierarchy.move(t, parent, index);
-          return true;
-        }
+      myTableConnector.invoke().getRunKeepingExpansion().invoke(task, t -> {
+        taskHierarchy.move(t, parent, index);
+        return null;
       });
     }
-    getTreeFacade().makeVisible(selection.get(0));
-    //getTree().getTreeTable().sccenterViewOnSelectedCell();
-    //forwardScheduling();
-    // TODO Ideally this should get done by the move method as it modifies the
-    // document
-    getUIFacade().getGanttChart().getProject().setModified();
+    myTableConnector.invoke().getScrollTo().invoke(selection.get(0));
   }
 
   public TaskMoveUpAction asToolbarAction() {
-    final TaskMoveUpAction result = new TaskMoveUpAction(getTaskManager(), getSelectionManager(), getUIFacade(), getTree());
+    final TaskMoveUpAction result = new TaskMoveUpAction(getTaskManager(), getSelectionManager(), getUIFacade(), myTableConnector);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
     this.addPropertyChangeListener(new PropertyChangeListener() {
       @Override

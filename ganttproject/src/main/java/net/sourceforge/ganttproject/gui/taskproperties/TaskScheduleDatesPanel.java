@@ -20,26 +20,24 @@ package net.sourceforge.ganttproject.gui.taskproperties;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.ChangeValueEvent;
-import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.DateValidators;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import com.google.common.collect.ImmutableList;
+import kotlin.jvm.functions.Function1;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.UIUtil.DateValidator;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.util.collect.Pair;
+import org.apache.commons.math3.util.Pair;
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXHyperlink;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.Calendar;
@@ -78,28 +76,18 @@ public class TaskScheduleDatesPanel {
   public void setUnpluggedClone(Task unpluggedClone) {
     myUnpluggedClone = unpluggedClone;
     isMilestone = unpluggedClone.isMilestone();
-    DateValidator validator = new UIUtil.DateValidator() {
-      @Override
-      public Pair<Boolean, String> apply(Date value) {
-        return DateValidator.Default.aroundProjectStart(myUnpluggedClone.getManager().getProjectStart()).apply(value);
-      }
-    };
-    UIUtil.setupDatePicker(myStartDatePicker, myUnpluggedClone.getStart().getTime(), validator, new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        Date date = ((JXDatePicker) e.getSource()).getDate();
-        if (date != null) {
-          setStart(CalendarFactory.createGanttCalendar(date), true);
-        }
+    Function1<Date, Pair<Boolean, String>> validator = (Date date) -> DateValidators.INSTANCE.aroundProjectStart(
+        myUnpluggedClone.getManager().getProjectStart()).invoke(date);
+    UIUtil.setupDatePicker(myStartDatePicker, myUnpluggedClone.getStart().getTime(), validator, e -> {
+      Date date = ((JXDatePicker) e.getSource()).getDate();
+      if (date != null) {
+        setStart(CalendarFactory.createGanttCalendar(date), true);
       }
     });
-    UIUtil.setupDatePicker(myEndDatePicker, myUnpluggedClone.getEnd().getTime(), validator, new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        GanttCalendar c = CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate());
-        c.add(Calendar.DATE, 1);
-        setEnd(c, true);
-      }
+    UIUtil.setupDatePicker(myEndDatePicker, myUnpluggedClone.getEnd().getTime(), validator, e -> {
+      GanttCalendar c = CalendarFactory.createGanttCalendar(((JXDatePicker) e.getSource()).getDate());
+      c.add(Calendar.DATE, 1);
+      setEnd(c, true);
     });
     setStart(myUnpluggedClone.getStart(), false);
     setEnd(myUnpluggedClone.getEnd(), false);
@@ -110,14 +98,11 @@ public class TaskScheduleDatesPanel {
       final JComponent controlledComponent, final GPAction lockAction) {
     final JPanel labelPanel = new JPanel(new BorderLayout());
     JLabel result = new JLabel(title);
-    isLocked.addChangeValueListener(new ChangeValueListener() {
-      @Override
-      public void changeValue(ChangeValueEvent event) {
-        UIUtil.setEnabledTree(labelPanel, !isLocked.getValue());
-        UIUtil.setEnabledTree(controlledComponent, !isLocked.getValue());
-        lockAction.setEnabled(!isLocked.getValue());
-        lockAction.putValue(Action.SELECTED_KEY, isLocked.getValue());
-      }
+    isLocked.addChangeValueListener(event -> {
+      UIUtil.setEnabledTree(labelPanel, !isLocked.getValue());
+      UIUtil.setEnabledTree(controlledComponent, !isLocked.getValue());
+      lockAction.setEnabled(!isLocked.getValue());
+      lockAction.putValue(Action.SELECTED_KEY, isLocked.getValue());
     });
     labelPanel.add(result, BorderLayout.WEST);
     UIUtil.setEnabledTree(labelPanel, !isLocked.getValue());
@@ -181,7 +166,7 @@ public class TaskScheduleDatesPanel {
     myLockHyperlink = new JXHyperlink(new GPAction("option.taskProperties.main.scheduling.manual.label") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        showPopup(ImmutableList.<Action>of(startDateLockAction, endDateLockAction, durationLockAction), box, myLockHyperlink);
+        showPopup(ImmutableList.of(startDateLockAction, endDateLockAction, durationLockAction), box, myLockHyperlink);
       }
     });
     box.add(myLockHyperlink);

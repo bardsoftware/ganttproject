@@ -48,6 +48,10 @@ import java.util.Map;
  * @author bard
  */
 public interface TaskManager {
+  enum EventSource {
+    UNDEFINED,
+    USER
+  }
   abstract class TaskBuilder {
     String myName;
     Integer myId;
@@ -65,6 +69,7 @@ public interface TaskManager {
     Priority myPriority;
     Task myPrototype;
     BigDecimal myCost;
+    EventSource mySource = EventSource.UNDEFINED;
 
     public TaskBuilder withColor(Color color) {
       myColor = color;
@@ -145,6 +150,10 @@ public interface TaskManager {
       return this;
     }
 
+    public TaskBuilder withSource(EventSource source) {
+      mySource = source;
+      return this;
+    }
     public abstract Task build();
   }
 

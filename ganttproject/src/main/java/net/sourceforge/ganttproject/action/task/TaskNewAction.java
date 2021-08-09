@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
+import biz.ganttproject.ganttview.TaskTableActionConnector;
+import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -31,26 +33,36 @@ import java.util.List;
 public class TaskNewAction extends GPAction {
   private final IGanttProject myProject;
   private final UIFacade myUiFacade;
+  private final Function0<TaskTableActionConnector> taskTableActionConnector;
 
 
-  public TaskNewAction(IGanttProject project, UIFacade uiFacade) {
-    this(project, uiFacade, IconSize.MENU);
+  public TaskNewAction(IGanttProject project, UIFacade uiFacade, Function0<TaskTableActionConnector> taskTableActionConnector) {
+    this(project, uiFacade, taskTableActionConnector, IconSize.MENU);
   }
 
-  private TaskNewAction(IGanttProject project, UIFacade uiFacade, IconSize size) {
+  private TaskNewAction(IGanttProject project, UIFacade uiFacade, Function0<TaskTableActionConnector> taskTableActionConnector, IconSize size) {
     super("task.new", size.asString());
     myProject = project;
     myUiFacade = uiFacade;
+    this.taskTableActionConnector = taskTableActionConnector;
   }
 
   @Override
   public GPAction withIcon(IconSize size) {
-    return new TaskNewAction(myProject, myUiFacade, size);
+    return new TaskNewAction(myProject, myUiFacade, taskTableActionConnector, size);
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return taskTableActionConnector.invoke().getCanAddTask().invoke().get();
   }
 
   @Override
   public void actionPerformed(ActionEvent e) {
     if (calledFromAppleScreenMenu(e)) {
+      return;
+    }
+    if (taskTableActionConnector.invoke().getCanAddTask().invoke().get() == false) {
       return;
     }
     myUiFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
@@ -62,9 +74,12 @@ public class TaskNewAction extends GPAction {
         }
 
         Task selectedTask = selection.isEmpty() ? null : selection.get(0);
-        Task newTask = getTaskManager().newTaskBuilder()
-            .withPrevSibling(selectedTask).withStartDate(getUIFacade().getGanttChart().getStartDate()).build();
-        myUiFacade.getTaskTree().startDefaultEditing(newTask);
+        getTaskManager().newTaskBuilder()
+            .withPrevSibling(selectedTask)
+            .withStartDate(getUIFacade().getGanttChart().getStartDate())
+            .withSource(TaskManager.EventSource.USER)
+            .build();
+        //myUiFacade.getTaskTree().startDefaultEditing(newTask);
       }
     });
   }
@@ -84,7 +99,7 @@ public class TaskNewAction extends GPAction {
 
   @Override
   public TaskNewAction asToolbarAction() {
-    TaskNewAction result = new TaskNewAction(myProject, myUiFacade);
+    TaskNewAction result = new TaskNewAction(myProject, myUiFacade, taskTableActionConnector);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
     return result;
   }

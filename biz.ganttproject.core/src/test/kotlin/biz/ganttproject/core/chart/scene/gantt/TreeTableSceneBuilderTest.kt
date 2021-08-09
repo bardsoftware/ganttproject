@@ -20,8 +20,9 @@ package biz.ganttproject.core.chart.scene.gantt
 
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
-import biz.ganttproject.core.chart.scene.gantt.TreeTableSceneBuilder.*
-import biz.ganttproject.core.chart.scene.gantt.TableSceneBuilder.Table.*
+import biz.ganttproject.core.table.TreeTableSceneBuilder.*
+import biz.ganttproject.core.table.TableSceneBuilder.Table.*
+import biz.ganttproject.core.table.TreeTableSceneBuilder
 
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*

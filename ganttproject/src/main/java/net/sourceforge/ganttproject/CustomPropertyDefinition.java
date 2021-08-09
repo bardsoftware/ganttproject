@@ -39,7 +39,6 @@ public interface CustomPropertyDefinition {
 
   Object getDefaultValue();
 
-  @Nonnull
   String getName();
 
   void setName(String name);

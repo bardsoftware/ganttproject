@@ -55,7 +55,7 @@ internal abstract class ChartTabContentPanel(
   private val myUiFacade: UIFacade
   private var myImageHeight = 0
   private var myImagePanel: GanttImagePanel? = null
-  private var myHeaderHeight: Supplier<Int>? = null
+  protected var myHeaderHeight: () -> Int = { 0 }
 
   private val toolbar by lazy {
     FXToolbarBuilder().run {
@@ -184,14 +184,20 @@ internal abstract class ChartTabContentPanel(
     return myUiFacade
   }
 
-  private fun updateTimelineHeight() {
+  protected fun updateTimelineHeight() {
     //val timelineHeight = toolbar.component.height /* + myImageHeight*/
-    val timelineHeight = myHeaderHeight!!.get() + myImageHeight
-    myChart.setTimelineHeight(timelineHeight)
+    SwingUtilities.invokeLater {
+      val timelineHeight = myHeaderHeight() + myImageHeight
+      myChart.setTimelineHeight(timelineHeight)
+      myChart.reset();
+    }
   }
 
+  protected fun setTableWidth(width: Double) {
+    mySplitPane?.dividerLocation = width.toInt() + 1
+  }
   fun addTableResizeListeners(tableContainer: Component, table: Component) {
-    myHeaderHeight = Supplier {
+    myHeaderHeight = {
       if (table.isShowing && tableContainer.isShowing) {
         val tableLocation = table.locationOnScreen
         val containerLocation = tableContainer.locationOnScreen

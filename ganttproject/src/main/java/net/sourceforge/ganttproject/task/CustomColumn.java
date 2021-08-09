@@ -18,12 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task;
 
+import biz.ganttproject.customproperty.PropertyTypeEncoder;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 
 import javax.annotation.Nonnull;
@@ -68,7 +68,7 @@ public class CustomColumn implements CustomPropertyDefinition {
 
   @Override
   public void setDefaultValueAsString(String value) {
-    CustomPropertyDefinition stub = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(
+    CustomPropertyDefinition stub = PropertyTypeEncoder.INSTANCE.decodeTypeAndDefaultValue(
         getTypeAsString(), value);
     defaultValue = stub.getDefaultValue();
   }
@@ -120,7 +120,7 @@ public class CustomColumn implements CustomPropertyDefinition {
 
   @Override
   public String getTypeAsString() {
-    return CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(getType());
+    return PropertyTypeEncoder.INSTANCE.encodeFieldType(getType());
   }
 
   @Override

@@ -3,10 +3,10 @@ package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.customproperty.PropertyTypeEncoder;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -46,11 +46,11 @@ public class GPCsvExportTest extends TaskTestCase {
     RoleManager roleManager = new RoleManagerImpl();
     CSVOptions csvOptions = enableOnly("id");
     CustomPropertyDefinition prop1 = hrManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop1", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "prop1", null);
     CustomPropertyDefinition prop2 = hrManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop2", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "prop2", null);
     CustomPropertyDefinition prop3 = hrManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop3", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "prop3", null);
     hrManager.create("HR1", 1);
     hrManager.create("HR2", 2);
     hrManager.create("HR3", 3);
@@ -79,11 +79,11 @@ public class GPCsvExportTest extends TaskTestCase {
     CSVOptions csvOptions = enableOnly(TaskDefaultColumn.ID.getStub().getID());
 
     CustomPropertyDefinition prop1 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop1", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "prop1", null);
     CustomPropertyDefinition prop2 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop2", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "prop2", null);
     CustomPropertyDefinition prop3 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "prop3", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "prop3", null);
     Task task1 = createTask();
     Task task2 = createTask();
     Task task3 = createTask();

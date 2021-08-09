@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.FontManager;
+import biz.ganttproject.app.MenuBuilderSwing;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -32,14 +34,14 @@ import biz.ganttproject.core.option.FontSpec.Size;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.lib.fx.TreeCollapseView;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -54,7 +56,6 @@ import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
@@ -67,7 +68,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.LanguageOption;
 import net.sourceforge.ganttproject.language.ShortDateFormatOption;
-import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -124,14 +125,14 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   private final DefaultFontOption myAppFontOption = new DefaultFontOption(
-      "appFontSpec", null, Arrays.asList(getFontFamilies())) {
+      "appFontSpec", null, getFontFamilies()) {
     @Override
     public Map<FontSpec.Size, String> getSizeLabels() {
       return UIFacadeImpl.getSizeLabels();
     }
   };
   private final DefaultFontOption myChartFontOption = new DefaultFontOption(
-      "chartFontSpec", new FontSpec("Dialog", FontSpec.Size.NORMAL), Arrays.asList(getFontFamilies())) {
+      "chartFontSpec", new FontSpec("Dialog", FontSpec.Size.NORMAL), getFontFamilies()) {
     @Override
     public Map<Size, String> getSizeLabels() {
       return UIFacadeImpl.getSizeLabels();
@@ -165,11 +166,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myStatusBar.setNotificationManager(notificationManager);
     myFallbackDelegate = fallbackDelegate;
     Job.getJobManager().setProgressProvider(this);
-    myTaskSelectionManager = new TaskSelectionManager(Suppliers.memoize(new Supplier<TaskManager>() {
-      public TaskManager get() {
-        return project.getTaskManager();
-      }
-    }));
+    myTaskSelectionManager = new TaskSelectionManager(() -> project.getTaskManager());
     myNotificationManager = notificationManager;
 
     myLafOption = new LafOption(this);
@@ -253,8 +250,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     addOptions(myLogoOptions);
   }
 
-  private String[] getFontFamilies() {
-    return GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+  private List<String> getFontFamilies() {
+    return FontManager.INSTANCE.getFontFamilies();
   }
 
   @Override
@@ -306,31 +303,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y) {
     JPopupMenu menu = new JPopupMenu();
-
-    // TODO: refactor code so that submenus could be added in more generic way
-    String assignTo = GanttLanguage.getInstance().getText("assignments");
-    JMenu resourcesMenu = new JMenu(assignTo);
-
-    for (Action action : actions) {
-      if (action == null) {
-        menu.addSeparator();
-      } else if (AssignmentToggleAction.class.equals(action.getClass())){
-        resourcesMenu.add(new JCheckBoxMenuItem(action));
-        continue;
-      } else {
-        Boolean isSelected = (Boolean) action.getValue(Action.SELECTED_KEY);
-        if (isSelected == null) {
-          menu.add(action);
-        } else {
-          menu.add(new JCheckBoxMenuItem(action));
-        }
+    var builder = new MenuBuilderSwing(menu);
+    actions.forEach((action) -> {
+      if (action instanceof GPAction) {
+        builder.items((GPAction) action);
       }
-    }
-
-    if (resourcesMenu.getItemCount() > 0) {
-      menu.add(resourcesMenu);
-    }
-
+    });
     menu.applyComponentOrientation(getLanguage().getComponentOrientation());
     menu.show(invoker, x, y);
   }
@@ -553,9 +531,19 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     return myTaskView;
   }
 
+//  @Override
+//  public TaskTreeUIFacade getTaskTree() {
+//    return myFallbackDelegate.getTaskTree();
+//  }
+
   @Override
-  public TaskTreeUIFacade getTaskTree() {
-    return myFallbackDelegate.getTaskTree();
+  public TreeCollapseView<Task> getTaskCollapseView() {
+    return myFallbackDelegate.getTaskCollapseView();
+  }
+
+  @Override
+  public ColumnList getTaskColumnList() {
+    return myFallbackDelegate.getTaskColumnList();
   }
 
   @Override

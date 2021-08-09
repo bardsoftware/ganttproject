@@ -24,6 +24,8 @@ import biz.ganttproject.core.calendar.CalendarEvent.Type;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.option.ValidationException;
+import biz.ganttproject.core.option.ValidatorsKt;
+import biz.ganttproject.core.option.ValueValidator;
 import biz.ganttproject.core.time.CalendarFactory;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -38,7 +40,6 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.UIUtil.GPDateCellEditor;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.ValueValidator;
 import net.sourceforge.ganttproject.gui.taskproperties.CommonPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
@@ -177,7 +178,7 @@ public class CalendarEditorPanel {
   private static Pair<JLabel, ? extends TableCellEditor> createDateValidatorComponents(final String hint, DateFormat... dateFormats) {
     Supplier<List<DateFormat>> formatSupplier = Suppliers.<List<DateFormat>>ofInstance(Lists.newArrayList(dateFormats));
     final JLabel hintLabel = new JLabel(" "); // non-empty label to occupy some vertical space
-    final ValueValidator<Date> realValidator = UIUtil.createStringDateValidator(null, formatSupplier);
+    final ValueValidator<Date> realValidator = ValidatorsKt.createStringDateValidator(null, formatSupplier);
     ValueValidator<Date> decorator = new ValueValidator<Date>() {
       @Override
       public Date parse(String text) throws ValidationException {

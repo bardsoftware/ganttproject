@@ -18,27 +18,22 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
-import de.jensd.fx.glyphs.GlyphIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.event.EventHandler
-import javafx.event.EventType
-import javafx.scene.control.Menu
-import javafx.scene.control.MenuBar
-import javafx.scene.control.MenuItem
-import javafx.scene.control.SeparatorMenuItem
-import javafx.scene.input.KeyCombination
+import javafx.scene.control.*
 import javafx.scene.text.Text
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIUtil
-import javax.swing.SwingUtilities
+import java.util.*
+import javax.swing.*
 
 /**
  * @author dbarashev@bardsoftware.com
  */
-class MenuBuilder {
+class MenuBarBuilder {
   val menuBar = MenuBar()
 
   fun addMenu(title: String, actions: List<GPAction?>) {
@@ -47,16 +42,7 @@ class MenuBuilder {
 
       actions.forEach {
         val menuItem = it?.let {action ->
-          MenuItem(action.name).apply {
-            onAction = EventHandler {
-              SwingUtilities.invokeLater {
-                action.actionPerformed(null)
-              }
-            }
-            action.getGlyphIcon()?.let {icon ->
-              graphic = icon
-            }
-          }
+          action.asMenuItem()
         } ?: SeparatorMenuItem()
         menu.items.add(menuItem)
       }
@@ -65,6 +51,137 @@ class MenuBuilder {
   fun build(): MenuBar {
     return menuBar
   }
+}
+
+interface MenuBuilder {
+  fun items(vararg actions: GPAction)
+  fun items(actions: Collection<GPAction>)
+  fun separator()
+  fun submenu(title: String, code: (MenuBuilder)->Unit)
+}
+
+class MenuBuilderFx(private val contextMenu: ContextMenu) : MenuBuilder {
+  private val stack = Stack<Function1<MenuItem, Unit>>()
+  init {
+    stack.push { contextMenu.items.add(it) }
+  }
+  private fun add(item: MenuItem) = stack.peek().invoke(item)
+
+  override fun items(vararg actions: GPAction) {
+    actions.forEach { add(it.asMenuItem()) }
+  }
+  override fun items(actions: Collection<GPAction>) {
+    actions.forEach { add(it.asMenuItem()) }
+  }
+  override fun separator() { add(SeparatorMenuItem()) }
+  override fun submenu(title: String, code: (MenuBuilder)->Unit) {
+    Menu(title).also { menu ->
+      add(menu)
+      stack.push { menu.items.add(it) }
+      code(this)
+      stack.pop()
+    }
+  }
+  fun build() {}
+}
+
+private data class MenuWrapper(
+  val separator: () -> Unit,
+  val action: (action: GPAction) -> Unit,
+  val item: (item: JMenuItem) -> Unit
+)
+
+private fun JMenu.wrapper(): MenuWrapper = MenuWrapper(
+  separator = { this.addSeparator() },
+  action = { this.add(it) },
+  item = { this.add(it) }
+)
+
+private fun JPopupMenu.wrapper(): MenuWrapper = MenuWrapper(
+  separator = { this.addSeparator() },
+  action = { this.add(it) },
+  item = { this.add(it) }
+)
+
+class MenuBuilderSwing() : MenuBuilder {
+  private val stack = Stack<MenuWrapper>()
+
+  constructor(rootMenu: JPopupMenu) : this() {
+    stack.push(rootMenu.wrapper())
+  }
+  constructor(rootMenu: JMenu) : this() {
+    stack.push(rootMenu.wrapper())
+  }
+
+  private fun add(action: GPAction) {
+    val menu = stack.peek()
+    if (action == GPAction.SEPARATOR) {
+      menu.separator()
+      return
+    }
+    if (true == action.getValue(GPAction.IS_SUBMENU)) {
+      addSubmenu(menu, action.name)
+      return
+    }
+    if (action == GPAction.SUBMENU_END) {
+      stack.pop()
+      return
+    }
+    val isSelected = action.getValue(Action.SELECTED_KEY) as Boolean?
+    if (isSelected == null) {
+      menu.action(action)
+    } else {
+      menu.item(JCheckBoxMenuItem(action))
+    }
+  }
+
+  override fun items(vararg actions: GPAction) {
+    actions.forEach { add(it) }
+  }
+  override fun items(actions: Collection<GPAction>) {
+    actions.forEach { add(it) }
+  }
+  override fun separator() { add(GPAction.SEPARATOR) }
+
+  override fun submenu(title: String, code: (MenuBuilder)->Unit) {
+    val menu = stack.peek()
+    addSubmenu(menu, title)
+    code(this)
+  }
+
+  private fun addSubmenu(menu: MenuWrapper, title: String) {
+    JMenu(title).also {
+      menu.item(it)
+      stack.push(it.wrapper())
+    }
+  }
+
+  fun build() {}
+}
+
+class MenuBuilderAsList : MenuBuilder {
+  private val actionList = mutableListOf<GPAction>()
+  override fun items(vararg actions: GPAction) {
+    actionList.addAll(actions)
+  }
+
+  override fun items(actions: Collection<GPAction>) {
+    actionList.addAll(actions)
+  }
+
+  override fun separator() {
+    actionList.add(GPAction.SEPARATOR)
+  }
+
+  override fun submenu(title: String, code: (MenuBuilder) -> Unit) {
+    val submenuBuilder = MenuBuilderAsList()
+    code(submenuBuilder)
+    actionList.add(GPAction.createVoidAction(title).also { it.putValue(GPAction.IS_SUBMENU, true)})
+    actionList.addAll(submenuBuilder.actionList)
+    actionList.add(GPAction.SUBMENU_END)
+  }
+
+  fun actions() = actionList.toList()
 }
 
 fun (GPAction).getGlyphIcon(): Text? =
@@ -82,3 +199,31 @@ fun (GPAction).getGlyphIcon(): Text? =
       }
     }
 
+fun GPAction.asMenuItem(): MenuItem =
+  if (this == GPAction.SEPARATOR) {
+    SeparatorMenuItem()
+  } else {
+    val menuItem = getValue(Action.SELECTED_KEY)?.let { selected ->
+      CheckMenuItem(name).also {
+        it.isSelected = selected as Boolean
+        it.onAction = EventHandler { _ ->
+          putValue(Action.SELECTED_KEY, it.isSelected)
+          SwingUtilities.invokeLater {
+            actionPerformed(null)
+          }
+        }
+      }
+    } ?: MenuItem(name).also {
+      it.onAction = EventHandler {
+        SwingUtilities.invokeLater {
+          actionPerformed(null)
+        }
+      }
+      getGlyphIcon()?.let { icon ->
+        it.graphic = icon
+      }
+    }
+    menuItem.also {
+      it.isDisable = !isEnabled
+    }
+  }

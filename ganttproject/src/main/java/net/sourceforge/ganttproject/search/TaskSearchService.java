@@ -18,14 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.search;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.sourceforge.ganttproject.CustomProperty;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /** Search service for tasks */
 public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySearchResult, Task> {
@@ -77,7 +78,14 @@ public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySea
 
   @Override
   public void init(IGanttProject project, UIFacade uiFacade) {
-    super.init(project, uiFacade.getTaskTree(), uiFacade);
+    super.init(project, null, uiFacade);
   }
 
+  @Override
+  public void select(List<MySearchResult> list) {
+    var taskSelectionManager = getUiFacade().getTaskSelectionManager();
+    taskSelectionManager.setUserInputConsumer(this);
+    taskSelectionManager.setSelectedTasks(
+        list.stream().map(searchResult -> searchResult.getObject()).collect(Collectors.toList()));
+  }
 }

@@ -18,13 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.search;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Search service for resources */
 public class ResourceSearchService extends SearchServiceBase<ResourceSearchService.MySearchResult, HumanResource> {
@@ -54,4 +54,15 @@ public class ResourceSearchService extends SearchServiceBase<ResourceSearchServi
   public void init(IGanttProject project, UIFacade uiFacade) {
     super.init(project, uiFacade.getResourceTree(), uiFacade);
   }
+
+  public void select(List<ResourceSearchService.MySearchResult> results) {
+    myTreeUiFacade.clearSelection();
+    for (SearchResult<HumanResource> r : results) {
+      myTreeUiFacade.setSelected(r.getObject(), false);
+      myTreeUiFacade.makeVisible(r.getObject());
+    }
+    myUiFacade.setViewIndex(myViewIndex);
+    myTreeUiFacade.getTreeComponent().requestFocusInWindow();
+  }
+
 }

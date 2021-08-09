@@ -18,13 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import net.sourceforge.ganttproject.CompletionPromise
 import net.sourceforge.ganttproject.IGanttProject
-import net.sourceforge.ganttproject.gui.ProjectUIFacade
-import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.ProjectEventListener
+import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.gui.ProjectUIFacade
 import net.sourceforge.ganttproject.gui.UIUtil
 import java.awt.event.ActionEvent
 
@@ -73,6 +72,8 @@ class SaveProjectAction private constructor(
   override fun projectOpened() {
     isEnabled = false
   }
+
+  override fun projectRestoring(completion: CompletionPromise<Document>) {}
 
   override fun asToolbarAction(): SaveProjectAction {
     val result = SaveProjectAction(myProject, myProjectUiFacade)

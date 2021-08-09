@@ -1,0 +1,74 @@
+@import "../app/dialogs";
+@import "../app/theme";
+@import "../app/typography";
+@import "../app/validation";
+
+.dlg-column-manager {
+  -fx-min-height: 400;
+  .header {
+    @include dialog-header($gp-orange);
+  }
+  .content-pane {
+    .list-view {
+      -fx-border-width: 0 1 0 0;
+      -fx-border-color: $gp-light-gray;
+    }
+    .column-item-cell {
+      -fx-fill: $gp-dark-gray;
+      -fx-text-fill: $gp-dark-gray;
+      -fx-font-size: 100%;
+      -fx-padding: 5 10 5 15;
+      -fx-strikethrough: false;
+
+      .glyph-icon {
+        -glyph-size: 18;
+        -fx-alignment: center;
+
+        &:hover {
+          -fx-cursor: hand;
+          -fx-fill: darken($gp-dark-gray, 10%);
+          -glyph-size: 18;
+        }
+      }
+      &.is-hidden > * {
+        -fx-strikethrough: true;
+      }
+
+      &:selected {
+        -fx-background-color: $gp-light-gray;
+        & > * {
+          -fx-fill: $gp-dark-gray;
+          -fx-text-fill: $gp-dark-gray;
+        }
+      }
+    }
+    .property-sheet-box {
+      -fx-background-color: whitesmoke;
+      .title {
+        -fx-padding: 10 10 10 10;
+        -fx-font-size: 110%;
+      }
+      HBox {
+        .property-sheet {
+          .validation-error {
+            @include validation-error();
+          }
+          &:disabled {
+            * {
+              -fx-opacity: 0.9;
+            }
+          }
+        }
+      }
+      @include validation-pane();
+      .hint-validation-pane {
+        -fx-border-insets: 3 20 3 20;
+        -fx-background-insets: 3 20 3 20;
+      }
+    }
+
+  }
+  .button-pane {
+    @include dialog-button-pane();
+  }
+}

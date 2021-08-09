@@ -169,8 +169,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
         // LaboPM
         // ResourceLoadGraphicArea.super.paintComponent(g);
         if (isShowing()) {
-          myChartModel.setHeaderHeight(getImplementation().getHeaderHeight(appli.getResourcePanel(),
-              appli.getResourcePanel().getTreeTable().getScrollPane().getViewport()));
+          myChartModel.setHeaderHeight(getImplementation().getHeaderHeight());
         }
         myChartModel.setBottomUnitWidth(getViewState().getBottomUnitWidth());
         myChartModel.setRowHeight(getRowHeight());// myChartModel.setRowHeight(tree.getJTree().getRowHeight());

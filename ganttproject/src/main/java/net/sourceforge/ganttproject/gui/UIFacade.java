@@ -22,12 +22,15 @@ import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.lib.fx.TreeCollapseView;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -43,7 +46,7 @@ import java.util.Locale;
 public interface UIFacade {
   ImageIcon DEFAULT_LOGO = new ImageIcon(UIFacade.class.getResource("/icons/big.png"));
 
-   interface Dialog {
+  interface Dialog {
     void show();
 
     void hide();
@@ -143,7 +146,10 @@ public interface UIFacade {
 
   TaskView getCurrentTaskView();
 
-  TaskTreeUIFacade getTaskTree();
+  //TaskTreeUIFacade getTaskTree();
+  TreeCollapseView<Task> getTaskCollapseView();
+  ColumnList getTaskColumnList();
+
 
   ResourceTreeUIFacade getResourceTree();
 

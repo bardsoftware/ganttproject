@@ -23,6 +23,8 @@ import javafx.animation.ScaleTransition
 import javafx.animation.Timeline
 import javafx.application.Platform
 import javafx.event.EventHandler
+import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.Dialog
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
@@ -243,3 +245,15 @@ object FXUtil {
 
   }
 }
+
+fun Node.printCss() {
+  println("class=${styleClass} pseudoclass=${pseudoClassStates}")
+  parent?.printCss()
+}
+
+fun Parent.printTree() {
+  println("this=$this class=${styleClass} pseudoclass=${pseudoClassStates}")
+  childrenUnmodifiable.forEach { if (it is Parent) it.printTree() else it.printCss() }
+}
+
+

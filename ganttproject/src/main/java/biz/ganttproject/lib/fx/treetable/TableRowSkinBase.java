@@ -387,7 +387,7 @@ public abstract class TableRowSkinBase<T,
                 // What I would rather do is only change the alignment if the
                 // alignment has not been manually changed, but for now this will
                 // do.
-                final boolean centreContent = h <= 24.0;
+                final boolean centreContent = h <= 146.0;
 
                 // if the style origin is null then the property has not been
                 // set (or it has been reset to its default), which means that

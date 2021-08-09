@@ -18,8 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
-import com.google.common.base.Predicate;
-import net.sourceforge.ganttproject.GanttTree2;
+import biz.ganttproject.ganttview.TaskTableActionConnector;
+import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.task.Task;
@@ -35,9 +35,12 @@ import java.util.List;
  * Move selected tasks down
  */
 public class TaskMoveDownAction extends TaskActionBase {
+  private final Function0<TaskTableActionConnector> myTableConnector;
+
   public TaskMoveDownAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade,
-      GanttTree2 tree) {
-    super("task.move.down", taskManager, selectionManager, uiFacade, tree);
+                            Function0<TaskTableActionConnector> tableConnector) {
+    super("task.move.down", taskManager, selectionManager, uiFacade);
+    myTableConnector = tableConnector;
   }
 
   @Override
@@ -62,27 +65,22 @@ public class TaskMoveDownAction extends TaskActionBase {
 
   @Override
   protected void run(List<Task> selection) throws Exception {
-    getTree().commitIfEditing();
+    myTableConnector.invoke().getCommitEdit().invoke();
     final TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
     for (int i = selection.size() - 1; i >= 0; i--) {
       Task task = selection.get(i);
       final Task parent = taskHierarchy.getContainer(task);
       final int index = taskHierarchy.getTaskIndex(task) + 1;
-      getTreeFacade().applyPreservingExpansionState(task, new Predicate<Task>() {
-        public boolean apply(Task t) {
-          taskHierarchy.move(t, parent, index);
-          return true;
-        }
+      myTableConnector.invoke().getRunKeepingExpansion().invoke(task, t -> {
+        taskHierarchy.move(t, parent, index);
+        return null;
       });
     }
-    getTreeFacade().makeVisible(selection.get(selection.size() - 1));
-    // TODO Ideally this should get done by the move method as it modifies the
-    // document
-    getUIFacade().getGanttChart().getProject().setModified();
+    myTableConnector.invoke().getScrollTo().invoke(selection.get(selection.size() - 1));
   }
 
   public TaskMoveDownAction asToolbarAction() {
-    final TaskMoveDownAction result = new TaskMoveDownAction(getTaskManager(), getSelectionManager(), getUIFacade(), getTree());
+    final TaskMoveDownAction result = new TaskMoveDownAction(getTaskManager(), getSelectionManager(), getUIFacade(), myTableConnector);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
     this.addPropertyChangeListener(new PropertyChangeListener() {
       @Override

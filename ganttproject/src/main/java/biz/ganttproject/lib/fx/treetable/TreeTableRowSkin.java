@@ -49,6 +49,7 @@ import javafx.scene.control.TreeTablePosition;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.skin.CellSkinBase;
+import javafx.scene.layout.Region;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -388,6 +389,10 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
             // RT-28668: Ensemble tree arrow disappears
             if (disclosureNode.getScene() != null) {
                 disclosureNode.applyCss();
+            }
+            if (disclosureNode instanceof Region) {
+                Region disclosureRegion = (Region) disclosureNode;
+                disclosureRegion.prefHeightProperty().bind(getSkinnable().heightProperty());
             }
         }
     }

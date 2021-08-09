@@ -18,31 +18,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.impex.msproject2;
 
-import java.io.File;
-import java.text.MessageFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-
-import com.google.common.collect.Lists;
-
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.option.GPOption;
+import com.google.common.collect.Lists;
 import net.sf.mpxj.MPXJException;
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTask;
-import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.importer.BufferProject;
+import net.sourceforge.ganttproject.importer.BufferProjectImportKt;
 import net.sourceforge.ganttproject.importer.Importer;
 import net.sourceforge.ganttproject.importer.ImporterBase;
-import net.sourceforge.ganttproject.importer.ImporterFromGanttFile;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.util.collect.Pair;
+
+import java.io.File;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+
+import static net.sourceforge.ganttproject.importer.BufferProjectImportKt.importBufferProject;
 
 public class ImporterFromMsProjectFile extends ImporterBase implements Importer {
   private final HumanResourceMerger.MergeResourcesOption myMergeResourcesOption = new HumanResourceMerger.MergeResourcesOption();
@@ -70,7 +68,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
     try {
       File selectedFile = getFile();
       BufferProject bufferProject = new BufferProject(getProject(), getUiFacade());
-      ProjectFileImporter importer = new ProjectFileImporter(bufferProject, getUiFacade().getTaskTree(), selectedFile);
+      ProjectFileImporter importer = new ProjectFileImporter(bufferProject, getUiFacade().getTaskColumnList(), selectedFile);
       importer.run();
 
       List<Pair<Level, String>> errors = importer.getErrors();
@@ -78,7 +76,8 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
       getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(false);
       getTaskManager().getAlgorithmCollection().getScheduler().setEnabled(false);
 
-      Map<Task, Task> buffer2realTask = ImporterFromGanttFile.importBufferProject(getProject(), bufferProject, getUiFacade(), myMergeResourcesOption, myImportCalendarOption);
+      Map<Task, Task> buffer2realTask = importBufferProject(getProject(), bufferProject,
+          BufferProjectImportKt.asImportBufferProjectApi(getUiFacade()), myMergeResourcesOption, myImportCalendarOption);
       Map<GanttTask, Date> originalDates = importer.getOriginalStartDates();
 
       findChangedDates(originalDates, buffer2realTask, errors);

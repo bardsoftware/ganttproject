@@ -33,7 +33,7 @@ import java.util.List;
 
 public class TaskLinkAction extends TaskActionBase {
   public TaskLinkAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
-    super("task.link", taskManager, selectionManager, uiFacade, null);
+    super("task.link", taskManager, selectionManager, uiFacade);
   }
 
   @Override

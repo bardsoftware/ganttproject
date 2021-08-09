@@ -10,6 +10,7 @@ import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
+import biz.ganttproject.core.model.task.ConstraintType;
 import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultStringOption;
@@ -22,13 +23,10 @@ import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyListener;
 import net.sourceforge.ganttproject.CustomPropertyManager;
@@ -53,7 +51,6 @@ import net.sourceforge.ganttproject.task.algorithm.FindPossibleDependeesAlgorith
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
 import net.sourceforge.ganttproject.task.algorithm.SchedulerImpl;
-import biz.ganttproject.core.model.task.ConstraintType;
 import net.sourceforge.ganttproject.task.algorithm.SchedulerOptional;
 import net.sourceforge.ganttproject.task.dependency.EventDispatcher;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
@@ -73,21 +70,19 @@ import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
-import net.sourceforge.ganttproject.util.collect.Pair;
 
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author bard
@@ -105,7 +100,7 @@ public class TaskManagerImpl implements TaskManager {
 
   private AtomicInteger myMaxID = new AtomicInteger(0);
 
-  private final Task myRoot;
+  private final TaskImpl myRoot;
 
   private final TaskManagerConfig myConfig;
 
@@ -147,6 +142,7 @@ public class TaskManagerImpl implements TaskManager {
     private final Map<Integer, Task> myId2task = new HashMap<Integer, Task>();
     private TaskDocumentOrderComparator myComparator;
     private boolean isModified = true;
+    private List<Task> myList;
     private Task[] myArray;
     private final TaskManagerImpl myManager;
 
@@ -166,8 +162,9 @@ public class TaskManagerImpl implements TaskManager {
 
     public Task[] getTasks() {
       if (isModified) {
-        myArray = myId2task.values().toArray(new Task[myId2task.size()]);
-        Arrays.sort(myArray, myComparator);
+        myList = myId2task.values().stream().filter(t -> !t.isDeleted()).collect(Collectors.toList());
+        myList.sort(myComparator);
+        myArray = myList.toArray(new Task[myList.size()]);
         isModified = false;
       }
       return myArray;
@@ -175,15 +172,6 @@ public class TaskManagerImpl implements TaskManager {
 
     public void clear() {
       myId2task.clear();
-      isModified = true;
-    }
-
-    public void removeTask(Task task) {
-      myId2task.remove(new Integer(task.getTaskID()));
-      Task[] nestedTasks = myManager.getTaskHierarchy().getNestedTasks(task);
-      for (int i = 0; i < nestedTasks.length; i++) {
-        removeTask(nestedTasks[i]);
-      }
       isModified = true;
     }
 
@@ -198,6 +186,11 @@ public class TaskManagerImpl implements TaskManager {
     void setDirty() {
       isModified = true;
     }
+
+    public void removeAllTasks(Iterable<Task> tasks) {
+      tasks.forEach(t -> myId2task.remove(t.getTaskID()));
+      isModified = true;
+    }
   }
 
   private final TaskMap myTaskMap = new TaskMap(this);
@@ -209,6 +202,7 @@ public class TaskManagerImpl implements TaskManager {
   private Boolean isZeroMilestones = true;
 
   TaskManagerImpl(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory, TaskManagerConfig config) {
+    myFacadeFactory = containmentFacadeFactory == null ? new FacadeFactoryImpl() : containmentFacadeFactory;
     myCustomPropertyListener = new CustomPropertyListenerImpl(this);
     myCustomColumnsManager = new CustomColumnsManager();
     myCustomColumnsManager.addListener(getCustomPropertyListener());
@@ -234,7 +228,7 @@ public class TaskManagerImpl implements TaskManager {
         TaskManagerImpl.this.fireDependencyChanged(dep);
       }
     };
-    myDependencyCollection = new TaskDependencyCollectionImpl(containmentFacadeFactory, dispatcher) {
+    myDependencyCollection = new TaskDependencyCollectionImpl(myFacadeFactory, dispatcher) {
       @Override
       protected TaskContainmentHierarchyFacade getTaskHierarchy() {
         return TaskManagerImpl.this.getTaskHierarchy();
@@ -247,7 +241,6 @@ public class TaskManagerImpl implements TaskManager {
       }
 
     };
-    myFacadeFactory = containmentFacadeFactory == null ? new FacadeFactoryImpl() : containmentFacadeFactory;
     // clear();
     myRoot = createRootTask();
 
@@ -306,10 +299,10 @@ public class TaskManagerImpl implements TaskManager {
     return myTaskMap.getTasks();
   }
 
-  private Task createRootTask() {
+  private TaskImpl createRootTask() {
     Calendar c = CalendarFactory.newCalendar();
     Date today = c.getTime();
-    Task root = new GanttTask(null, CalendarFactory.createGanttCalendar(today), 1, this, -1);
+    TaskImpl root = new GanttTask(null, CalendarFactory.createGanttCalendar(today), 1, this, -1);
     root.setStart(CalendarFactory.createGanttCalendar(today));
     root.setDuration(createLength(getConfig().getTimeUnitStack().getDefaultTimeUnit(), 1));
     root.setExpand(true);
@@ -322,6 +315,7 @@ public class TaskManagerImpl implements TaskManager {
     myTaskMap.clear();
     myMaxID.set(0);
     myDependencyCollection.clear();
+    myRoot.myTaskHierarchyItem.clearChildren();
     // createRootTask();
     fireTaskModelReset();
   }
@@ -337,8 +331,9 @@ public class TaskManagerImpl implements TaskManager {
     for (Task t : nestedTasks) {
       t.delete();
     }
+    myTaskMap.removeAllTasks(Arrays.asList(nestedTasks));
     Task container = getTaskHierarchy().getContainer(tasktoRemove);
-    myTaskMap.removeTask(tasktoRemove);
+    myTaskMap.removeAllTasks(Collections.singleton(tasktoRemove));
     tasktoRemove.delete();
     fireTaskRemoved(container, tasktoRemove);
   }
@@ -427,7 +422,7 @@ public class TaskManagerImpl implements TaskManager {
         if (isLegacyMilestone) {
           task.setMilestone(isLegacyMilestone);
         }
-        fireTaskAdded(task);
+        fireTaskAdded(task, this.mySource);
         return task;
       }
     };
@@ -768,9 +763,10 @@ public class TaskManagerImpl implements TaskManager {
     }
   }
 
-  private void fireTaskAdded(Task task) {
+  private void fireTaskAdded(Task task, EventSource source) {
     if (areEventsEnabled) {
-      TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, null, getTaskHierarchy().getContainer(task));
+      var newContainer = getTaskHierarchy().getContainer(task);
+      TaskHierarchyEvent e = new TaskHierarchyEvent(source, task, null, newContainer, getTaskHierarchy().getTaskIndex(task));
       for (int i = 0; i < myListeners.size(); i++) {
         TaskListener next = myListeners.get(i);
         next.taskAdded(e);
@@ -781,9 +777,18 @@ public class TaskManagerImpl implements TaskManager {
   private void fireTaskRemoved(Task container, Task task) {
     myDependencyGraph.removeTask(task);
     if (areEventsEnabled) {
-      TaskHierarchyEvent e = new TaskHierarchyEvent(this, task, container, null);
+      TaskHierarchyEvent e = new TaskHierarchyEvent(EventSource.UNDEFINED, task, container, null, -1);
       for (TaskListener l : myListeners) {
         l.taskRemoved(e);
+      }
+    }
+  }
+
+  void fireTaskMoved(Task task, Task movedFrom, Task movedTo) {
+    if (areEventsEnabled) {
+      TaskHierarchyEvent e = new TaskHierarchyEvent(EventSource.UNDEFINED, task, movedFrom, movedTo, getTaskHierarchy().getTaskIndex(task));
+      for (TaskListener l : myListeners) {
+        l.taskMoved(e);
       }
     }
   }
@@ -810,224 +815,6 @@ public class TaskManagerImpl implements TaskManager {
     return myConfig;
   }
 
-  private final class FacadeImpl implements TaskContainmentHierarchyFacade {
-    // private final Task myRoot;
-
-    private List<Task> myPathBuffer = new ArrayList<Task>();
-
-    // public FacadeImpl(Task root) {
-    // myRoot = root;
-    // }
-
-    @Override
-    public Task[] getNestedTasks(Task container) {
-      return container.getNestedTasks();
-    }
-
-    @Override
-    public Task[] getDeepNestedTasks(Task container) {
-      ArrayList<Task> result = new ArrayList<Task>();
-      addDeepNestedTasks(container, result);
-      return result.toArray(new Task[result.size()]);
-    }
-
-    private void addDeepNestedTasks(Task container, ArrayList<Task> result) {
-      Task[] nested = container.getNestedTasks();
-      result.addAll(Arrays.asList(nested));
-      for (int i = 0; i < nested.length; i++) {
-        addDeepNestedTasks(nested[i], result);
-      }
-    }
-
-    @Override
-    public boolean hasNestedTasks(Task container) {
-      return container.getNestedTasks().length > 0;
-    }
-
-    @Override
-    public Task getRootTask() {
-      return TaskManagerImpl.this.getRootTask();
-    }
-
-    @Override
-    public Task getContainer(Task nestedTask) {
-      return nestedTask.getSupertask();
-    }
-
-    @Override
-    public void sort(Comparator<Task> comparator) {
-      throw new UnsupportedOperationException("Sort is not available int this implementation. It is stateless!");
-    }
-
-    @Override
-    public Task getPreviousSibling(Task nestedTask) {
-      int pos = getTaskIndex(nestedTask);
-      return pos == 0 ? null : nestedTask.getSupertask().getNestedTasks()[pos - 1];
-    }
-
-    @Override
-    public Task getNextSibling(Task nestedTask) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int getTaskIndex(Task nestedTask) {
-      Task container = nestedTask.getSupertask();
-      if (container == null) {
-        return 0;
-      }
-      return Arrays.asList(container.getNestedTasks()).indexOf(nestedTask);
-    }
-
-    @Override
-    public boolean areUnrelated(Task first, Task second) {
-      if (first.equals(second)) {
-        return false;
-      }
-      myPathBuffer.clear();
-      for (Task container = getContainer(first); container != null; container = getContainer(container)) {
-        myPathBuffer.add(container);
-      }
-      if (myPathBuffer.contains(second)) {
-        return false;
-      }
-      myPathBuffer.clear();
-      for (Task container = getContainer(second); container != null; container = getContainer(container)) {
-        myPathBuffer.add(container);
-      }
-      if (myPathBuffer.contains(first)) {
-        return false;
-      }
-      return true;
-    }
-
-    @Override
-    public void move(Task whatMove, Task whereMove) {
-      whatMove.move(whereMove);
-    }
-
-    @Override
-    public void move(Task whatMove, Task whereMove, int index) {
-      whatMove.move(whereMove);
-    }
-
-    @Override
-    public int getDepth(Task task) {
-      int depth = 0;
-      while (task != myRoot) {
-        task = task.getSupertask();
-        depth++;
-      }
-      return depth;
-    }
-
-    @Override
-    public int compareDocumentOrder(Task task1, Task task2) {
-      if (task1 == task2) {
-        return 0;
-      }
-      List<Task> buffer1 = new ArrayList<Task>();
-      for (Task container = task1; container != null; container = getContainer(container)) {
-        buffer1.add(0, container);
-      }
-      List<Task> buffer2 = new ArrayList<Task>();
-      for (Task container = task2; container != null; container = getContainer(container)) {
-        buffer2.add(0, container);
-      }
-      if (buffer1.get(0) != getRootTask() && buffer2.get(0) == getRootTask()) {
-        return -1;
-      }
-      if (buffer1.get(0) == getRootTask() && buffer2.get(0) != getRootTask()) {
-        return 1;
-      }
-
-      int i = 0;
-      Task commonRoot = null;
-      while (true) {
-        if (i == buffer1.size()) {
-          return -1;
-        }
-        if (i == buffer2.size()) {
-          return 1;
-        }
-        Task root1 = buffer1.get(i);
-        Task root2 = buffer2.get(i);
-        if (root1 != root2) {
-          assert commonRoot != null : "Failure comparing task=" + task1 + " and task=" + task2 + "\n. Path1=" + buffer1
-              + "\nPath2=" + buffer2;
-          Task[] nestedTasks = commonRoot.getNestedTasks();
-          for (int j = 0; j < nestedTasks.length; j++) {
-            if (nestedTasks[j] == root1) {
-              return -1;
-            }
-            if (nestedTasks[j] == root2) {
-              return 1;
-            }
-          }
-          throw new IllegalStateException("We should not be here");
-        }
-        i++;
-        commonRoot = root1;
-      }
-    }
-
-    @Override
-    public boolean contains(Task task) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<Task> getTasksInDocumentOrder() {
-      List<Task> result = Lists.newArrayList();
-      LinkedList<Task> deque = new LinkedList<>();
-      deque.addFirst(getRootTask());
-      while (!deque.isEmpty()) {
-        Task head = deque.poll();
-        result.add(head);
-        deque.addAll(0, Arrays.asList(head.getNestedTasks()));
-      }
-      result.remove(0);
-      return result;
-    }
-
-
-    @Override
-    public void breadthFirstSearch(Task root, Predicate<Pair<Task, Task>> predicate) {
-      Preconditions.checkNotNull(root);
-      Queue<Task> queue = Queues.newArrayDeque();
-      if (predicate.apply(Pair.create((Task) null, root))) {
-        queue.add(root);
-      }
-      while (!queue.isEmpty()) {
-        Task head = queue.poll();
-        for (Task child : head.getNestedTasks()) {
-          if (predicate.apply(Pair.create(head, child))) {
-            queue.add(child);
-          }
-        }
-      }
-    }
-
-    @Override
-    public List<Task> breadthFirstSearch(Task root, final boolean includeRoot) {
-      final Task _root = (root == null) ? getRootTask() : root;
-      final List<Task> result = Lists.newArrayList();
-      breadthFirstSearch(_root, new Predicate<Pair<Task,Task>>() {
-        public boolean apply(Pair<Task, Task> parent_child) {
-          if (includeRoot || parent_child.first() != null) {
-            result.add(parent_child.second());
-          }
-          return true;
-        }
-      });
-      return result;
-    }
-
-    @Override
-    public List<Integer> getOutlinePath(Task task) {
-      throw new UnsupportedOperationException();
-    }
-  }
 
   private class FacadeFactoryImpl implements TaskContainmentHierarchyFacade.Factory {
     // private final Task myRoot;
@@ -1038,7 +825,7 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public TaskContainmentHierarchyFacade createFacade() {
-      return new FacadeImpl();
+      return new FacadeImpl(TaskManagerImpl.this, myRoot);
     }
   }
 
@@ -1081,6 +868,7 @@ public class TaskManagerImpl implements TaskManager {
         }
       }
     }
+    fireTaskModelReset();
     return original2imported;
   }
 

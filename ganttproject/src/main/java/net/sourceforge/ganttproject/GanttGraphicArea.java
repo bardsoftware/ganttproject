@@ -26,6 +26,9 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionChangeListener;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.ganttview.TaskTableActionConnector;
+import biz.ganttproject.ganttview.TaskTableChartConnector;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
@@ -37,6 +40,7 @@ import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.gantt.GanttChartController;
 import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
+import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -80,10 +84,12 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   public static final Cursor E_RESIZE_CURSOR = new Cursor(Cursor.E_RESIZE_CURSOR);
 
   public static final Cursor CHANGE_PROGRESS_CURSOR;
+  private final TaskTableChartConnector taskTableChartConnector;
+  private final Supplier<TaskTableActionConnector> taskTableActionFacade;
 
   private GanttChartController myChartComponentImpl;
 
-  private final GanttTree2 tree;
+  //private final GanttTree2 tree;
 
   private final ChartModelImpl myChartModel;
 
@@ -99,10 +105,13 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
 
   private final ChartOptionGroup myStateDiffOptions;
 
-  public GanttGraphicArea(GanttProject app, GanttTree2 ttree, TaskManager taskManager, ZoomManager zoomManager,
-      GPUndoManager undoManager) {
+  public GanttGraphicArea(GanttProject app, TaskManager taskManager, ZoomManager zoomManager,
+                          GPUndoManager undoManager, TaskTableChartConnector taskTableChartConnector,
+                          Supplier<TaskTableActionConnector> taskTableActionFacade) {
     super(app.getProject(), app.getUIFacade(), zoomManager);
     this.setBackground(Color.WHITE);
+    this.taskTableChartConnector = taskTableChartConnector;
+    this.taskTableActionFacade = taskTableActionFacade;
     myTaskManager = taskManager;
     myUndoManager = undoManager;
 
@@ -114,7 +123,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
       }
     });
     myStateDiffOptions = createBaselineColorOptions(myChartModel, app.getUIConfiguration());
-    this.tree = ttree;
+    //this.tree = ttree;
     myViewState = new ChartViewState(this, app.getUIFacade());
     app.getUIFacade().getZoomManager().addZoomListener(myViewState);
 
@@ -184,11 +193,11 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
 
   @Override
   public void focus() {
-    tree.getTreeTable().requestFocus();
+    taskTableChartConnector.getFocus().invoke();
   }
 
   private int getHeaderHeight() {
-    return getImplementation().getHeaderHeight(tree, tree.getTreeTable().getScrollPane().getViewport());
+    return getImplementation().getHeaderHeight();
   }
 
   /** @return an image with the gantt chart */
@@ -204,7 +213,8 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
 
   @Override
   protected GPTreeTableBase getTreeTable() {
-    return tree.getTreeTable();
+    //return tree.getTreeTable();
+    return null;
   }
 
   GPUndoManager getUndoManager() {
@@ -311,15 +321,15 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
 
   GanttChartController getChartImplementation() {
     if (myChartComponentImpl == null) {
-      myChartComponentImpl = new GanttChartController(getProject(), getUIFacade(), myChartModel, this, tree,
-          getViewState());
+      myChartComponentImpl = new GanttChartController(getProject(), getUIFacade(), myChartModel, this,
+          getViewState(), this.taskTableChartConnector, this.taskTableActionFacade);
     }
     return myChartComponentImpl;
   }
 
   public void setPreviousStateTasks(List<GanttPreviousStateTask> tasks) {
     int rowHeight = myChartModel.setBaseline(tasks);
-    tree.getTable().setRowHeight(rowHeight);
+    taskTableChartConnector.getRowHeight().setValue(rowHeight);
   }
 
 
@@ -352,6 +362,10 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   public void projectCreated() {
     // TODO Auto-generated method stub
 
+  }
+
+  @Override
+  public void projectRestoring(CompletionPromise<Document> completion) {
   }
 
   @Override

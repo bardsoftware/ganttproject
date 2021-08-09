@@ -19,11 +19,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.msproject2;
 
 import biz.ganttproject.core.time.GanttCalendar;
+import biz.ganttproject.customproperty.PropertyTypeEncoder;
 import net.sf.mpxj.FieldType;
 import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.TaskField;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 
@@ -42,15 +42,15 @@ public class CustomPropertyMappingTest extends TaskTestCase {
   public void testSimpleTypeMapping() throws MPXJException {
     TaskManager taskManager = getTaskManager();
     CustomPropertyDefinition col1 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "col1", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "col1", null);
     CustomPropertyDefinition col2 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(Boolean.class), "col2", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(Boolean.class), "col2", null);
     CustomPropertyDefinition col3 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(Integer.class), "col3", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(Integer.class), "col3", null);
     CustomPropertyDefinition col4 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(Double.class), "col4", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(Double.class), "col4", null);
     CustomPropertyDefinition col5 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(GanttCalendar.class), "col5", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(GanttCalendar.class), "col5", null);
 
     Map<CustomPropertyDefinition, FieldType> mapping = CustomPropertyMapping.buildMapping(taskManager);
     assertEquals(TaskField.TEXT1, mapping.get(col1));
@@ -67,15 +67,15 @@ public class CustomPropertyMappingTest extends TaskTestCase {
   public void testSequentialNumbers() throws MPXJException {
     TaskManager taskManager = getTaskManager();
     CustomPropertyDefinition col5 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "col5", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "col5", null);
     CustomPropertyDefinition col4 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "col4", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "col4", null);
     CustomPropertyDefinition col3 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "col3", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "col3", null);
     CustomPropertyDefinition col2 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "col2", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "col2", null);
     CustomPropertyDefinition col1 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "col1", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "col1", null);
 
     Map<CustomPropertyDefinition, FieldType> mapping = CustomPropertyMapping.buildMapping(taskManager);
     assertEquals(TaskField.TEXT1, mapping.get(col5));
@@ -92,17 +92,17 @@ public class CustomPropertyMappingTest extends TaskTestCase {
   public void testSpecialNames() throws MPXJException {
     TaskManager taskManager = getTaskManager();
     CustomPropertyDefinition col1 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(String.class), "Text1", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(String.class), "Text1", null);
     CustomPropertyDefinition col2 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(Boolean.class), "Flag2", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(Boolean.class), "Flag2", null);
     CustomPropertyDefinition col3 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(Integer.class), "Number3", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(Integer.class), "Number3", null);
     CustomPropertyDefinition col4 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(Double.class), "Number4", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(Double.class), "Number4", null);
     CustomPropertyDefinition col5 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(GanttCalendar.class), "Date5", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(GanttCalendar.class), "Date5", null);
     CustomPropertyDefinition col6 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(Integer.class), "Cost6", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(Integer.class), "Cost6", null);
 
     Map<CustomPropertyDefinition, FieldType> mapping = CustomPropertyMapping.buildMapping(taskManager);
     assertEquals(TaskField.TEXT1, mapping.get(col1));
@@ -120,20 +120,20 @@ public class CustomPropertyMappingTest extends TaskTestCase {
   public void testMsProjectType() throws MPXJException {
     TaskManager taskManager = getTaskManager();
     CustomPropertyDefinition col5 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(Integer.class), "col5", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(Integer.class), "col5", null);
     col5.getAttributes().put(CustomPropertyMapping.MSPROJECT_TYPE, "NUMBER1");
 
     CustomPropertyDefinition col4 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(Integer.class), "col4", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(Integer.class), "col4", null);
 
     CustomPropertyDefinition col3 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(Integer.class), "col3", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(Integer.class), "col3", null);
     col3.getAttributes().put(CustomPropertyMapping.MSPROJECT_TYPE, "COST10");
 
     CustomPropertyDefinition col2 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(Integer.class), "col2", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(Integer.class), "col2", null);
     CustomPropertyDefinition col1 = taskManager.getCustomPropertyManager().createDefinition(
-        CustomPropertyManager.PropertyTypeEncoder.encodeFieldType(Integer.class), "col1", null);
+        PropertyTypeEncoder.INSTANCE.encodeFieldType(Integer.class), "col1", null);
     col1.getAttributes().put(CustomPropertyMapping.MSPROJECT_TYPE, "NUMBER3");
 
     Map<CustomPropertyDefinition, FieldType> mapping = CustomPropertyMapping.buildMapping(taskManager);

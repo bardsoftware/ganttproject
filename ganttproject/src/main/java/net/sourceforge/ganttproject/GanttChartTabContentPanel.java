@@ -18,7 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.ganttview.TaskTable;
+import biz.ganttproject.task.TaskActions;
 import com.google.common.base.Function;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
 import net.sourceforge.ganttproject.action.BaselineDialogAction;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -31,28 +36,30 @@ import net.sourceforge.ganttproject.gui.view.GPView;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Supplier;
 
 class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
-  private final Container myTaskTree;
   private final JComponent myGanttChart;
-  private final TreeTableContainer myTreeFacade;
   private final UIFacade myWorkbenchFacade;
   private final CalculateCriticalPathAction myCriticalPathAction;
   private final BaselineDialogAction myBaselineAction;
+  private final Supplier<TaskTable> myTaskTableSupplier;
+  private final TaskActions myTaskActions;
   private JComponent myComponent;
 
-  GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade, TreeTableContainer treeFacade,
-      JComponent ganttChart, UIConfiguration uiConfiguration) {
+  GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
+                            JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
+                            TaskActions taskActions) {
     super(project, workbenchFacade, workbenchFacade.getGanttChart());
+    myTaskActions = taskActions;
+    myTaskTableSupplier = taskTableSupplier;
     myWorkbenchFacade = workbenchFacade;
-    myTreeFacade = treeFacade;
-    myTaskTree = (Container) treeFacade.getTreeComponent();
     myGanttChart = ganttChart;
     // FIXME KeyStrokes of these 2 actions are not working...
     myCriticalPathAction = new CalculateCriticalPathAction(project.getTaskManager(), uiConfiguration, workbenchFacade);
     myBaselineAction = new BaselineDialogAction(project, workbenchFacade);
     addChartPanel(createSchedulePanel());
-    addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());
+    //addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());
   }
 
   private Component createSchedulePanel() {
@@ -92,9 +99,18 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
             return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
           }
         });
-    myTreeFacade.addToolbarActions(builder);
+    addToolbarActions(builder);
     final GPToolbar toolbar = builder.build();
     return toolbar.getToolbar();
+  }
+
+  private void addToolbarActions(ToolbarBuilder builder) {
+    builder.addButton(myTaskActions.getUnindentAction().asToolbarAction())
+        .addButton(myTaskActions.getIndentAction().asToolbarAction())
+        .addButton(myTaskActions.getMoveUpAction().asToolbarAction())
+        .addButton(myTaskActions.getMoveDownAction().asToolbarAction())
+        .addButton(myTaskActions.getLinkTasksAction().asToolbarAction())
+        .addButton(myTaskActions.getUnlinkTasksAction().asToolbarAction());
   }
 
   @Override
@@ -104,7 +120,29 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
 
   @Override
   protected Component getTreeComponent() {
-    return myTaskTree;
+    var jfxPanel = new JFXPanel();
+    Platform.runLater(() -> {
+      jfxPanel.setScene(new Scene(myTaskTableSupplier.get().getControl()));
+      setMyHeaderHeight(() -> {
+        return myTaskTableSupplier.get().getHeaderHeightProperty().intValue();
+      });
+    });
+    var taskTable = myTaskTableSupplier.get();
+    taskTable.getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> {
+      updateTimelineHeight();
+    });
+    taskTable.setRequestSwingFocus(() -> {
+      jfxPanel.requestFocus();
+      return null;
+    });
+    taskTable.setSwingComponent(jfxPanel);
+    taskTable.getColumnListWidthProperty().addListener((observable, oldValue, newValue) -> {
+      setTableWidth(newValue.doubleValue());
+    });
+    taskTable.loadDefaultColumns();
+    return jfxPanel;
+    //return myTaskTree;
+
   }
 
   // //////////////////////////////////////////////
@@ -112,8 +150,8 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   @Override
   public void setActive(boolean active) {
     if (active) {
-      myTaskTree.requestFocus();
-      myTreeFacade.getNewAction().updateAction();
+      //myTaskTree.requestFocus();
+      myTaskActions.getCreateAction().updateAction();
     }
   }
 

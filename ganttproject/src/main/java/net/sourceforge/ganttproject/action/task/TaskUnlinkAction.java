@@ -32,7 +32,7 @@ import java.util.List;
 public class TaskUnlinkAction extends TaskActionBase {
 
   public TaskUnlinkAction(TaskManager taskManager, TaskSelectionManager selectionManager, UIFacade uiFacade) {
-    super("task.unlink", taskManager, selectionManager, uiFacade, null);
+    super("task.unlink", taskManager, selectionManager, uiFacade);
   }
 
   @Override

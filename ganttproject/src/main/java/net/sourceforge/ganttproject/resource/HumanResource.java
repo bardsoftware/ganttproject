@@ -19,11 +19,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.resource;
 
 import biz.ganttproject.core.calendar.GanttDaysOff;
+import biz.ganttproject.customproperty.PropertyTypeEncoder;
 import com.google.common.base.Strings;
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyHolder;
-import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.CustomColumnsException;
@@ -245,7 +245,7 @@ public class HumanResource implements CustomPropertyHolder {
 
   @Override
   public CustomProperty addCustomProperty(CustomPropertyDefinition definition, String valueAsString) {
-    final CustomPropertyDefinition stubDefinition = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(
+    final CustomPropertyDefinition stubDefinition = PropertyTypeEncoder.INSTANCE.decodeTypeAndDefaultValue(
         definition.getTypeAsString(), valueAsString);
     setCustomField(definition, stubDefinition.getDefaultValue());
     return new CustomPropertyImpl(definition, stubDefinition.getDefaultValue());

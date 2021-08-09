@@ -403,6 +403,11 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       }
     }
 
+    @Override
+    public List<Column> exportData() {
+      return List.copyOf(myColumns);
+    }
+
     private int getModelIndex(Column c) {
       for (int i = 0; i < myDefaultColumnStubs.size(); i++) {
         if (c.getID().equals(myDefaultColumnStubs.get(i).getID())) {
@@ -419,8 +424,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     private ColumnStub createStub(ColumnList.Column stub) {
-      return new ColumnList.ColumnStub(stub.getID(), stub.getName(), stub.isVisible(),
-          stub.getOrder(), stub.getWidth());
+      return new ColumnList.ColumnStub(stub);
     }
 
     void createDefaultColumns(List<ColumnList.Column> stubs) {

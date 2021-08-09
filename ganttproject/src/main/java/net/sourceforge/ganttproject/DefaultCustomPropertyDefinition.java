@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.customproperty.PropertyTypeEncoder;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
@@ -64,7 +65,7 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
 
   @Override
   public void setDefaultValueAsString(String value) {
-    CustomPropertyDefinition stub = CustomPropertyManager.PropertyTypeEncoder.decodeTypeAndDefaultValue(
+    CustomPropertyDefinition stub = PropertyTypeEncoder.INSTANCE.decodeTypeAndDefaultValue(
         getTypeAsString(), value);
     myDefaultValue = stub.getDefaultValue();
     myDefaultValueAsString = stub.getDefaultValueAsString();

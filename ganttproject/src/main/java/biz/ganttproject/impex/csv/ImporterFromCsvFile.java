@@ -22,8 +22,8 @@ import biz.ganttproject.core.option.GPOption;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.importer.BufferProject;
+import net.sourceforge.ganttproject.importer.BufferProjectImportKt;
 import net.sourceforge.ganttproject.importer.ImporterBase;
-import net.sourceforge.ganttproject.importer.ImporterFromGanttFile;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
@@ -31,6 +31,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
+
+import static net.sourceforge.ganttproject.importer.BufferProjectImportKt.importBufferProject;
 
 /**
  * Controls the process of importing CSV file.
@@ -71,7 +73,8 @@ public class ImporterFromCsvFile extends ImporterBase {
     opener.setOptions(((GanttProject)getProject()).getGanttOptions().getCSVOptions());
     try {
       List<Pair<Level, String>> errors = opener.load();
-      ImporterFromGanttFile.importBufferProject(getProject(), bufferProject, getUiFacade(), myMergeResourcesOption, null);
+      importBufferProject(getProject(), bufferProject, BufferProjectImportKt.asImportBufferProjectApi(getUiFacade()),
+          myMergeResourcesOption, null);
       reportErrors(errors, "CSV");
     } catch (IOException e) {
       GPLogger.log(e);

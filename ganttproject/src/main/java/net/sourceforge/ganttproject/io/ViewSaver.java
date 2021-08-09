@@ -41,12 +41,12 @@ import java.util.Set;
  * @author dbarashev (Dmitry Barashev)
  */
 class ViewSaver extends SaverBase {
-  public void save(UIFacade facade, TransformerHandler handler) throws SAXException {
+  public void save(UIFacade facade, ColumnList taskColumnList, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
     addAttribute("zooming-state", facade.getZoomManager().getZoomState().getPersistentName(), attrs);
     addAttribute("id", "gantt-chart", attrs);
     startElement("view", attrs, handler);
-    writeColumns(facade.getTaskTree().getVisibleFields(), handler);
+    writeColumns(taskColumnList, handler);
     new OptionSaver().saveOptionList(handler, facade.getGanttChart().getTaskLabelOptions().getOptions());
     writeTimelineTasks(facade, handler);
     writeRecentColors(handler);
@@ -85,8 +85,7 @@ class ViewSaver extends SaverBase {
 
   protected void writeColumns(ColumnList visibleFields, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
-    for (int i = 0; i < visibleFields.getSize(); i++) {
-      ColumnList.Column field = visibleFields.getField(i);
+    for (ColumnList.Column field : visibleFields.exportData()) {
       if (field.isVisible()) {
         addAttribute("id", field.getID(), attrs);
         addAttribute("name", field.getName(), attrs);

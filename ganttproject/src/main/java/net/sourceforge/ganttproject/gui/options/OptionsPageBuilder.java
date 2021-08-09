@@ -21,6 +21,8 @@ import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.option.MoneyOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.option.ValidationException;
+import biz.ganttproject.core.option.ValidatorsKt;
+import biz.ganttproject.core.option.ValueValidator;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
@@ -269,19 +271,9 @@ public class OptionsPageBuilder {
     } else if (option instanceof StringOption) {
       result = createStringComponent((StringOption) option);
     } else if (option instanceof IntegerOption) {
-      result = createValidatingComponent((IntegerOption) option, new ValueValidator<Integer>() {
-        @Override
-        public Integer parse(String text) {
-          return Integer.valueOf(text);
-        }
-      });
+      result = createValidatingComponent((IntegerOption) option, (ValueValidator<Integer>)ValidatorsKt.getIntegerValidator());
     } else if (option instanceof DoubleOption) {
-      result = createValidatingComponent((DoubleOption) option, new ValueValidator<Double>() {
-        @Override
-        public Double parse(String text) {
-          return Double.valueOf(text);
-        }
-      });
+      result = createValidatingComponent((DoubleOption) option, (ValueValidator<Double>)ValidatorsKt.getDoubleValidator());
     } else if (option instanceof MoneyOption) {
       result = createValidatingComponent((MoneyOption) option, new ValueValidator<BigDecimal>() {
         private NumberFormat myFormat;
@@ -715,10 +707,6 @@ public class OptionsPageBuilder {
     });
 
     return result;
-  }
-
-  public interface ValueValidator<T> {
-    T parse(String text) throws ValidationException;
   }
 
   /**

@@ -3,7 +3,7 @@ Copyright 2003-2012 Dmitry Barashev, GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -16,16 +16,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.chart.export;
+package net.sourceforge.ganttproject.chart.export
 
-import java.awt.Component;
-import java.awt.Image;
-import net.sourceforge.ganttproject.chart.ChartModel;
+import net.sourceforge.ganttproject.chart.ChartModel
+import java.awt.Image
 
-public interface ChartImageVisitor {
-  void acceptLogo(ChartDimensions d, Image logo);
-
-  void acceptTable(ChartDimensions d, Component header, Component table);
-
-  void acceptChart(ChartDimensions d, ChartModel model);
+interface ChartImageVisitor {
+  fun acceptLogo(d: ChartDimensions, logo: Image?)
+  fun acceptTable(d: ChartDimensions, treeTableApi: TreeTableApi)
+  fun acceptChart(d: ChartDimensions, model: ChartModel)
 }

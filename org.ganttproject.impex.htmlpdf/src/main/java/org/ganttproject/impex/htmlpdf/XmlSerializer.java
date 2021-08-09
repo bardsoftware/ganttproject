@@ -119,7 +119,7 @@ public class XmlSerializer extends SaverBase {
     AttributesImpl attrs = new AttributesImpl();
     addAttribute("id", "task-table", attrs);
     startElement("view", attrs, handler);
-    writeColumns(facade.getTaskTree().getVisibleFields(), handler);
+    writeColumns(facade.getTaskColumnList(), handler);
     endElement("view", handler);
 
     addAttribute("id", "resource-table", attrs);

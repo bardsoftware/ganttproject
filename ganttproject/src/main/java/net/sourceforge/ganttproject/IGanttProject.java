@@ -18,19 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.io.IOException;
-import java.util.List;
-
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.time.TimeUnitStack;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
+import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * This interface represents a project as a logical business entity, without any
@@ -64,8 +63,6 @@ public interface IGanttProject {
 
   TaskManager getTaskManager();
 
-  TaskContainmentHierarchyFacade getTaskContainment();
-
   GPCalendarCalc getActiveCalendar();
 
   TimeUnitStack getTimeUnitStack();
@@ -94,7 +91,7 @@ public interface IGanttProject {
 
   CustomPropertyManager getTaskCustomColumnManager();
 
-  // CustomColumnsStorage getCustomColumnsStorage();
-
   List<GanttPreviousState> getBaselines();
+
+  void restore(Document fromDocument) throws DocumentException, IOException;
 }

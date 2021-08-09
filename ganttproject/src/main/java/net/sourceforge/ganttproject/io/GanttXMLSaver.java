@@ -18,14 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.io;
 
+import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.CalendarFactory;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttPreviousState;
-import net.sourceforge.ganttproject.GanttResourcePanel;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.roles.Role;
@@ -40,6 +39,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class GanttXMLSaver extends SaverBase implements GPSaver {
 
@@ -48,18 +48,19 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
   private final IGanttProject myProject;
 
   private final UIFacade myUIFacade;
+  private final Supplier<ColumnList> myTaskColumnList;
 
   private GanttGraphicArea area;
 
   public GanttXMLSaver(IGanttProject project) {
-    this(project, null, null, null, null);
+    this(project, null, null, () -> null);
   }
 
-  public GanttXMLSaver(IGanttProject project, TaskTreeUIFacade taskTree, GanttResourcePanel peop, GanttGraphicArea area,
-                       UIFacade uiFacade) {
+  public GanttXMLSaver(IGanttProject project, GanttGraphicArea area, UIFacade uiFacade, Supplier<ColumnList> taskColumnList) {
     this.area = area;
     myProject = project;
     myUIFacade = uiFacade;
+    myTaskColumnList = taskColumnList;
   }
 
   @Override
@@ -130,7 +131,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
 
   private void saveViews(TransformerHandler handler) throws SAXException {
     if (getUIFacade() != null) {
-      new ViewSaver().save(getUIFacade(), handler);
+      new ViewSaver().save(getUIFacade(), myTaskColumnList.get(), handler);
     }
   }
 
@@ -139,7 +140,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
   }
 
   private void saveTasks(TransformerHandler handler) throws SAXException, IOException {
-    new TaskSaver().save(getProject(), handler);
+    new TaskSaver(getUIFacade().getTaskCollapseView()).save(getProject(), handler);
   }
 
   private void saveAssignments(TransformerHandler handler) throws SAXException {

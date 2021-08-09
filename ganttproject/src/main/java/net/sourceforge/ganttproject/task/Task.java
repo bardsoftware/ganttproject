@@ -35,6 +35,9 @@ import java.util.List;
  * @author bard
  */
 public interface Task extends MutableTask, IdentifiableRow {
+  enum ProgressStatus {
+    NOT_YET, INPROGRESS, DEADLINE_MISS
+  }
   /** Available task priorities */
   public enum Priority {
     LOWEST("3"), LOW("0"), NORMAL("1"), HIGH("2"), HIGHEST("4");
@@ -162,6 +165,7 @@ public interface Task extends MutableTask, IdentifiableRow {
 
   void move(Task targetSupertask, int position);
 
+  boolean isDeleted();
   void delete();
 
   TaskManager getManager();

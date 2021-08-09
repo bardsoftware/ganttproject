@@ -1,0 +1,44 @@
+@import "theme";
+
+@mixin validation-error() {
+  -fx-background-color:
+          red,
+          -fx-control-inner-background,
+          transparent,
+          linear-gradient(from 0px 0px to 0px 5px, derive(-fx-control-inner-background, -9%), -fx-control-inner-background);
+  .text-field {
+    -fx-text-fill: $gp-dark-gray;
+  }
+}
+
+@mixin validation-pane() {
+  .hint-validation {
+    -fx-padding: 3 2 3 0;
+    -fx-text-fill: $gp-dark-gray;
+  }
+
+  .hint-validation-pane {
+    -fx-border-insets: 3 0 3 0;
+    -fx-background-color: $gp-orange;
+    -fx-background-radius: 3;
+    -fx-background-insets: 3 0 3 0;
+    /*-fx-border-color: -gp-orange;*/
+    -fx-border-radius: 3;
+    -fx-border-width: 5;
+    -fx-pref-width: 100%;
+    -fx-min-width: 400;
+    -fx-border-color: $gp-orange;
+    visibility: visible;
+
+    &.noerror {
+     -fx-background-color: whitesmoke;
+     -fx-border-color: transparent;
+    }
+  }
+
+  .hint .glyph-icon {
+    -fx-fill: $gp-dark-gray;
+    -fx-padding: 3 3 3 3;
+  }
+}
+

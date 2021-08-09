@@ -1,0 +1,134 @@
+@import "../../app/theme";
+@import "../../app/typography";
+@import "../../app/validation";
+
+.gp-tree-table-view {
+    .column-header {
+        -fx-font-weight: normal;
+    }
+    -fx-border-width: 0;
+    // Hamburger icon in the header
+    .show-hide-column-image {
+        -fx-scale-x: 1.3;
+        -fx-scale-y: 1.3;
+        -fx-shape: "M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"
+    }
+    & > .column-header-background {
+        & > .show-hide-columns-button {
+            -fx-cursor: hand;
+        }
+    }
+
+    // Vertical scroll bar visually appears on hover
+    &:hover > .virtual-flow > .scroll-bar:vertical {
+        -fx-opacity: 1;
+        -fx-max-width: 15;
+        -fx-pref-width: 15;
+    }
+    & > .virtual-flow {
+        & > .scroll-bar:vertical {
+            -fx-background-color: transparent;
+            -fx-opacity: 0.2;
+            -fx-max-width: 15;
+            -fx-pref-width: 15;
+
+            & > .track {
+                -fx-background-color: transparent;
+                -fx-background-insets: 0;
+                -fx-background-radius: 0.5em;
+            }
+
+            & > .track-background {
+                -fx-background-color: transparent;
+                -fx-background-insets: 0, 1;
+            }
+
+            & > .thumb {
+                -fx-background-color: $gp-light-gray;
+            }
+
+            & > .increment-button, .decrement-button {
+                -fx-background-color: transparent;
+                -fx-background-radius: 0em;
+                -fx-padding: 0 10 0 0;
+
+                & > .increment-arrow, .decrement-arrow {
+                    -fx-shape: " ";
+                    -fx-padding: 0;
+                }
+            }
+        }
+    }
+    & > .scroll-bar {
+        & > .increment-arrow,.decrement-arrow {
+            -fx-shape: " ";
+            -fx-padding:0;
+        }
+    }
+
+    &:focused {
+        -fx-border-width: 0;
+    }
+    // This is a normal operational mode: the treetable is :focused,
+    // rows automatically become :selected or :focused as user changes the selection,
+    // a cell becomes .focused as row focus position changes (".focused" class is controlled by our TextCell)
+    &:row-selection, &:focused:row-selection {
+        -fx-border-insets: 0;
+        -fx-border-width: 0;
+        -fx-padding: 0;
+        .virtual-flow {
+            & > .tree-table-row-cell:selected, .tree-table-row-cell:focused {
+                & .tree-table-cell {
+                    -fx-fill: white;
+                    -fx-text-fill: white;
+                }
+                & .glyph-icon {
+                    -fx-fill: white;
+                }
+                -fx-background-color: $gp-medium-gray;
+            }
+        }
+    }
+    .gp-tree-table-cell {
+        -fx-border-width: 0 0 2 0;
+        -fx-border-color: transparent;
+
+        .badge {
+            -fx-padding: 0 3 0 0;
+        }
+        &.focused {
+            -fx-border-color: $gp-orange;
+            -fx-fill: white;
+            -fx-text-fill: white;
+        }
+        &.validation-error {
+            @include validation-error();
+        }
+        .text-field {
+            -fx-padding: 0;
+            -fx-background-color: transparent;
+            -fx-border-color: transparent;
+            -fx-text-fill: white;
+        }
+    }
+    // This is when editing starts. The treetable itself is not :focused anymore because the focus
+    // is now in the text field.
+    & > .virtual-flow {
+        & > .tree-table-row-cell:selected {
+            -fx-background: $gp-light-gray;
+        }
+    }
+//
+    .tree-table-row-cell {
+        & > .tree-disclosure-node {
+            -fx-padding: 0 0.5em 0 0.5em;
+            //-fx-background-color: yellow;
+            -fx-border-width: 0 0 2 0;
+            -fx-border-color: transparent;
+            & > .glyph-icon {
+                -fx-fill: $gp-medium-gray;
+            }
+        }
+    }
+}
+
