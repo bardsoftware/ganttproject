@@ -80,6 +80,13 @@ data class BrowserPaneElements<T: FolderItem>(
     }
   }
 
+  val filenameWithExtension: String get() =
+    if (filenameInput.text.lowercase().endsWith(".gan")) {
+      filenameInput.text
+    } else {
+      "${filenameInput.text}.gan"
+    }
+
   fun setValidationResult(validationResult: ValidationResult) {
     if (validationResult.errors.size + validationResult.warnings.size > 0) {
       errorLabel.text = formatError(validationResult)
