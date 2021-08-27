@@ -267,6 +267,12 @@ fun getDefaultLocalFolder(): File {
 }
 
 fun getUserDir() = File(System.getProperty("user.dir"))
+fun String.withGanExtension() =
+  if (this.lowercase().endsWith(".gan")) {
+    this
+  } else {
+    "$this.gan"
+  }
 
 private val domParser = DocumentBuilderFactory.newInstance().also {
   it.isValidating = false
