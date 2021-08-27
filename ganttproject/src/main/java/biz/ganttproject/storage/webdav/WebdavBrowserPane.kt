@@ -61,6 +61,12 @@ class WebdavBrowserPane(private val myServer: WebDavServerDescriptor,
     isLockingSupported.addListener { _, _, newValue ->
       System.err.println("is locking supported=" + newValue!!)
     }
+    fun onAction() {
+      if (myMode == StorageDialogBuilder.Mode.SAVE) {
+        myState.filename = myState.filename!!.withGanExtension()
+      }
+      myOpenDocument(createDocument(myState.server, createResource(myState)))
+    }
     builder.apply {
       withI18N(RootLocalizer.createWithRootKey("storageService.webdav", BROWSE_PANE_LOCALIZER))
       withBreadcrumbs(DocumentUri(listOf(), true, myServer.name))
@@ -80,7 +86,7 @@ class WebdavBrowserPane(private val myServer: WebDavServerDescriptor,
           onNameTyped = { filename, _, withEnter, withControl ->
             myState.filename = filename
             if (withEnter && withControl) {
-              myOpenDocument(createDocument(myState.server, createResource(myState)))
+              onAction()
             }
           },
           onDelete = { item ->
@@ -96,7 +102,7 @@ class WebdavBrowserPane(private val myServer: WebDavServerDescriptor,
 
       withActionButton { btn ->
         btn.addEventHandler(ActionEvent.ACTION) {
-          myOpenDocument(createDocument(myState.server, createResource(myState)))
+          onAction()
         }
       }
     }
