@@ -195,7 +195,13 @@ class GPCloudBrowserPane(
 
       fun onAction() {
         selectedProject?.let { this@GPCloudBrowserPane.openDocument(it, selectedTeam) }
-            ?: this@GPCloudBrowserPane.createDocument(selectedTeam, paneElements.filenameInput.text)
+            ?: run {
+              if (this@GPCloudBrowserPane.mode == StorageDialogBuilder.Mode.SAVE) {
+                this@GPCloudBrowserPane.createDocument(selectedTeam, paneElements.filenameWithExtension)
+              } else {
+                this@GPCloudBrowserPane.createDocument(selectedTeam, paneElements.filenameInput.text)
+              }
+            }
 
       }
 

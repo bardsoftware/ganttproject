@@ -80,6 +80,8 @@ data class BrowserPaneElements<T: FolderItem>(
     }
   }
 
+  val filenameWithExtension: String get() = filenameInput.text.withGanExtension()
+
   fun setValidationResult(validationResult: ValidationResult) {
     if (validationResult.errors.size + validationResult.warnings.size > 0) {
       errorLabel.text = formatError(validationResult)

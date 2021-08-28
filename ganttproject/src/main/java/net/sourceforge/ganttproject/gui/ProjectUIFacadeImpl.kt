@@ -34,12 +34,9 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.geometry.Pos
 import javafx.scene.layout.BorderPane
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
@@ -54,6 +51,7 @@ import net.sourceforge.ganttproject.undo.GPUndoManager
 import org.eclipse.core.runtime.IStatus
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.Executors
 import java.util.logging.Level
 import javax.swing.JFileChooser
 import javax.swing.SwingUtilities
@@ -74,16 +72,21 @@ class ProjectUIFacadeImpl(
     }
     isSaving = true
     try {
+      val broadcastWaitScope = CoroutineScope(Executors.newFixedThreadPool(2).asCoroutineDispatcher())
       val broadcastChannel = BroadcastChannel<Boolean>(1)
       broadcastChannel.openSubscription().let { channel ->
-        GlobalScope.launch {
+        broadcastWaitScope.launch {
           if (channel.receive()) {
             afterSaveProject(project)
+            channel.cancel()
           }
         }
       }
       onFinish?.let {
-        broadcastChannel.openSubscription().let { channel -> GlobalScope.launch { it.send(channel.receive()) }}
+        broadcastChannel.openSubscription().let { channel -> broadcastWaitScope.launch {
+          it.send(channel.receive())
+          channel.cancel()
+        }}
       }
       ProjectSaveFlow(project = project, onFinish = broadcastChannel,
         signin = this::signin,
@@ -301,8 +304,12 @@ class ProjectSaveFlow(
     private val error: (Exception) -> Unit,
     private val saveAs: () -> Unit) {
 
+  private val doneScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
   private fun done(success: Boolean) {
-    GlobalScope.launch { onFinish.send(success) }
+    doneScope.launch {
+      onFinish.send(success)
+      onFinish.close()
+    }
   }
 
   fun run() {
