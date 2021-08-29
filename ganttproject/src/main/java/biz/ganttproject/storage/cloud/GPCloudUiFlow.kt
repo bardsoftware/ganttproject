@@ -55,7 +55,7 @@ class GPCloudUiFlow(
   private val offlineAlertPage: FlowPage,
   private val mainPane: FlowPage,
   private val wrapperPane: BorderPane,
-  private val dialog: DialogController,
+  private val dialogResizer: () -> Unit,
   private val offlineMainPage: FlowPage
 ) {
   internal val httpd: HttpServerImpl by lazy {
@@ -141,7 +141,7 @@ class GPCloudUiFlow(
         }
       }
       FXUtil.transitionCenterPane(wrapperPane, newPage.ui) {
-        dialog.resize()
+        dialogResizer()
         newPage.active = true
         currentPage = newPage
       }
@@ -162,7 +162,7 @@ class GPCloudUiFlow(
 
 class GPCloudUiFlowBuilder {
   lateinit var wrapperPane: BorderPane
-  lateinit var dialog: DialogController
+  lateinit var dialogResizer: ()->Unit
   lateinit var mainPage: FlowPage
   var offlineAlertPage: FlowPage = EmptyFlowPage()
   var offlineMainPage: FlowPage = EmptyFlowPage()
@@ -177,7 +177,7 @@ class GPCloudUiFlowBuilder {
     offlineMainPage = offlineMainPage,
     mainPane = mainPage,
     wrapperPane = wrapperPane,
-    dialog = dialog
+    dialogResizer = dialogResizer
   )
 }
 

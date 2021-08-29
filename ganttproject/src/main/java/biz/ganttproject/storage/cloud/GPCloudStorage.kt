@@ -20,7 +20,6 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.Spinner
 import biz.ganttproject.storage.BROWSE_PANE_LOCALIZER
 import biz.ganttproject.storage.StorageDialogBuilder
 import biz.ganttproject.storage.StorageUi
@@ -28,10 +27,7 @@ import javafx.application.Platform
 import javafx.scene.Node
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
@@ -87,7 +83,7 @@ class GPCloudStorage(
     val offlineBrowser = GPCloudOfflineBrowser(this.mode, this.dialogUi, documentConsumer)
     GPCloudUiFlowBuilder().apply {
       wrapperPane = myPane
-      dialog = dialogUi.dialogController
+      dialogResizer = dialogUi.dialogController::resize
       mainPage = browserPane
       offlineAlertPage = offlinePane
       offlineMainPage = offlineBrowser
