@@ -34,6 +34,7 @@ import javafx.geometry.Pos
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import kotlinx.coroutines.Dispatchers
@@ -416,13 +417,31 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
     }
   }
   private fun buildNotOnlineDocumentScene(): Scene {
-    // TODO: this probably needs to be fixed?
-    val signinPane = SigninPane()
-    val signupPane = GPCloudSignupPane()
-    return Scene(signupPane.createPane())
+    val wrapperPane = BorderPane()
+    GPCloudUiFlowBuilder().apply {
+      this.wrapperPane = wrapperPane
+      dialogResizer = {}
+      mainPage = NotOnlineDocumentMainPage()
+      build().start()
+    }
+    return Scene(wrapperPane)
   }
 }
 
+class NotOnlineDocumentMainPage: FlowPage() {
+
+  override fun createUi(): Pane = BorderPane().also {
+    it.center = Label(RootLocalizer.formatText("cloud.notYetCloudDocumentPane.text")).also {
+      it.isWrapText = true
+    }
+  }
+
+  override fun resetUi() {
+  }
+
+  override fun setController(controller: GPCloudUiFlow) {
+  }
+}
 private val OFFLINE_MIRROR_LOCALIZER = RootLocalizer.createWithRootKey(
         "cloud.offlineMirrorOptionPane", BROWSE_PANE_LOCALIZER)
 private val LOCK_LOCALIZER = RootLocalizer.createWithRootKey("cloud.lockOptionPane")

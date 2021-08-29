@@ -176,7 +176,7 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
       dlg.setContent(wrapper)
       val cloudUiFlow = GPCloudUiFlowBuilder().run {
         wrapperPane = wrapper
-        dialog = dlg
+        dialogResizer = dlg::resize
         mainPage = ResourceListPage(listView, dlg, resource2selected, resourceManager)
         build()
       }

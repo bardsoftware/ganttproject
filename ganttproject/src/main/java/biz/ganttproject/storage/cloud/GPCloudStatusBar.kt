@@ -160,7 +160,7 @@ class GPCloudStatusBar(
       controller.setContent(wrapper)
       GPCloudUiFlowBuilder().apply {
         wrapperPane = wrapper
-        dialog = controller
+        dialogResizer = controller::resize
         mainPage = object : EmptyFlowPage() {
           override var active: Boolean
             get() = super.active
