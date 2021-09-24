@@ -107,6 +107,9 @@ public class ITextEngine extends AbstractEngine {
       Preferences node = getPreferences().node("/configuration/org.ganttproject.impex.htmlpdf/font-substitution");
       mySubstitutionModel = new FontSubstitutionModel(myFontCache, myStylesheet, node);
       myStylesheet.setFontSubstitutionModel(mySubstitutionModel);
+
+      Preferences htmlPdfPrefs = getPreferences().node("/configuration/org.ganttproject.impex.htmlpdf");
+      myStylesheet.setPrefs(htmlPdfPrefs);
     }
   }
 
