@@ -54,6 +54,7 @@ import net.sourceforge.ganttproject.task.Task;
 import org.ganttproject.impex.htmlpdf.PropertyFetcher;
 import org.ganttproject.impex.htmlpdf.StylesheetImpl;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
+import org.osgi.service.prefs.Preferences;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -115,6 +116,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   private FontSubstitutionModel mySubstitutionModel;
   private final ExporterBase myExporter;
   private final TTFontCache myFontCache;
+  private Preferences myPrefs;
 
   ThemeImpl(URL url, String localizedName, ExporterBase exporter, TTFontCache fontCache) {
     super(url, localizedName + " (iText)");
@@ -145,7 +147,22 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     myPageOptions.lock();
     myDataOptions.lock();
     myPageSizeOption.setValue("A4");
+    myPageSizeOption.addChangeValueListener(event -> {
+      if (myPrefs != null) {
+        myPrefs.put("page-size", myPageSizeOption.getValue());
+      }
+    });
     myShowNotesOption.loadPersistentValue("true");
+    myShowNotesOption.addChangeValueListener(event -> {
+      if (myPrefs != null) {
+        myPrefs.putBoolean("export-notes", myShowNotesOption.isChecked());
+      }
+    });
+    myLandscapeOption.addChangeValueListener(event -> {
+      if (myPrefs != null) {
+        myPrefs.put("page-orientation", myLandscapeOption.isChecked() ? "landscape" : "portrait");
+      }
+    });
     myLandscapeOption.loadPersistentValue("true");
     myPageOptions.commit();
     myDataOptions.commit();
@@ -173,6 +190,14 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   @Override
   public void setFontSubstitutionModel(FontSubstitutionModel model) {
     mySubstitutionModel = model;
+  }
+
+  @Override
+  public void setPrefs(Preferences prefs) {
+    myPrefs = prefs;
+    myPageSizeOption.setValue(prefs.get("page-size", "A4"));
+    myLandscapeOption.setValue("landscape".equals(prefs.get("page-orientation", "portrait")));
+    myShowNotesOption.setValue(prefs.getBoolean("export-notes", false));
   }
 
   private String getOriginalFontName() {
