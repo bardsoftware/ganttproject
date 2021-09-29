@@ -18,11 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import biz.ganttproject.core.option.DefaultDateOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttExportSettings;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -32,17 +37,10 @@ import org.osgi.service.prefs.Preferences;
 import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
 
-import biz.ganttproject.core.option.DefaultDateOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttExportSettings;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
-import net.sourceforge.ganttproject.language.GanttLanguage;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public abstract class ExporterBase implements Exporter {
   private IGanttProject myProject;
@@ -64,8 +62,19 @@ public abstract class ExporterBase implements Exporter {
     myProject = project;
     myUIFacade = uiFacade;
     myRootPreferences = prefs;
+    Preferences prefNode = prefs.node("/instance/net.sourceforge.ganttproject/export");
     myExportRangeStart = new DefaultDateOption("export.range.start", myGanttChart.getStartDate());
+    myExportRangeStart.loadPersistentValue(prefNode.get(
+        "export-range-start", DateParser.getIsoDate(myGanttChart.getStartDate())));
+    myExportRangeStart.addChangeValueListener(event -> {
+      prefNode.put("export-range-start", myExportRangeStart.getPersistentValue());
+    });
     myExportRangeEnd = new DefaultDateOption("export.range.end", myGanttChart.getEndDate());
+    myExportRangeEnd.loadPersistentValue(prefNode.get(
+        "export-range-end", DateParser.getIsoDate(myGanttChart.getEndDate())));
+    myExportRangeEnd.addChangeValueListener(event -> {
+      prefNode.put("export-range-end", myExportRangeEnd.getPersistentValue());
+    });
   }
 
   protected DefaultDateOption getExportRangeStartOption() {
