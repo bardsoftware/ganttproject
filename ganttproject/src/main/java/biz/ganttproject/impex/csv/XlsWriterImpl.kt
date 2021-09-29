@@ -41,6 +41,7 @@ class XlsWriterImpl(private val myStream: OutputStream) : SpreadsheetWriter {
   private val myWorkbook: Workbook = HSSFWorkbook()
   private val mySheet: Sheet = myWorkbook.createSheet()
   private val dateFormat = myWorkbook.creationHelper.createDataFormat().getFormat("m/d/yy")
+  private val dateCellStyle = myWorkbook.createCellStyle().also { it.dataFormat = dateFormat }
   private var myCurrentRow: Row
   private var myNextRowInd = 0
   private var myNextCellInd = 0
@@ -86,7 +87,7 @@ class XlsWriterImpl(private val myStream: OutputStream) : SpreadsheetWriter {
     createCell().let {
       if (value != null) {
         it.setCellValue(value.time)
-        it.cellStyle = myWorkbook.createCellStyle().also { it.dataFormat = dateFormat }
+        it.cellStyle = this.dateCellStyle
       }
     }
   }
