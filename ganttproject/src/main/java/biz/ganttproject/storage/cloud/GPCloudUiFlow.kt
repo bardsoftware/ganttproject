@@ -181,7 +181,7 @@ class GPCloudUiFlowBuilder {
   )
 }
 
-fun paneAndImage(centerNode: Node, imagePath: String = "/icons/ganttproject-logo-512.png"): Pane {
+fun paneAndImage1(centerNode: Node, imagePath: String = "/icons/ganttproject-logo-512.png"): Pane {
   return BorderPane().also {
     it.styleClass.addAll("dlg", "signup-pane")
     it.stylesheets.addAll(

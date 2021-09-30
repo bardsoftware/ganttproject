@@ -99,20 +99,6 @@ interface SpreadsheetWriter : AutoCloseable {
   fun println()
 }
 
-internal fun parseDateOrError(strDate: String?, addError: (Level, String) -> Any): Date? {
-  val result = GanttCSVOpen.language.parseDate(strDate)
-  if (result == null) {
-    addError(
-      Level.WARNING, GanttLanguage.getInstance().formatText(
-        "impex.csv.error.parse_date",
-        strDate,
-        GanttLanguage.getInstance().shortDateFormat.toPattern(),
-        GanttLanguage.getInstance().shortDateFormat.format(Date())
-      )
-    )
-  }
-  return result
-}
 
 enum class SpreadsheetFormat(val extension: String) {
   CSV("csv"), XLS("xls");

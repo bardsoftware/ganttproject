@@ -96,7 +96,7 @@ class GPCloudSignupPane() : FlowPage() {
     }
 
 
-    return paneAndImage(vboxBuilder.vbox)
+    return paneAndImage1(vboxBuilder.vbox)
   }
 }
 

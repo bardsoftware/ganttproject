@@ -158,11 +158,11 @@ public class TaskImpl implements Task {
     customValues = new CustomColumnsValues(myManager.getCustomPropertyManager());
   }
 
-  protected TaskImpl(TaskManagerImpl manager, TaskImpl copy, boolean isUnplugged) {
+  protected TaskImpl(TaskManagerImpl manager, TaskImpl copy, boolean isUnplugged, int taskId) {
     this.isUnplugged = isUnplugged;
     myManager = manager;
     // Use a new (unique) ID for the cloned task
-    myID = copy.myID;
+    myID = taskId;
 
     if (!isUnplugged) {
       myTaskHierarchyItem = myManager.getHierarchyManager().createItem(this);
@@ -199,7 +199,7 @@ public class TaskImpl implements Task {
 
   @Override
   public Task unpluggedClone() {
-    TaskImpl result = new TaskImpl(myManager, this, true) {
+    TaskImpl result = new TaskImpl(myManager, this, true, this.myID) {
       @Override
       public boolean isSupertask() {
         return false;

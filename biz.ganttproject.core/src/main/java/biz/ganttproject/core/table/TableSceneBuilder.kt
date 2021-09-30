@@ -179,5 +179,5 @@ class TableSceneBuilder(
 // Because of hysterical raisins the height of the timeline area in the chart is 1 pixel less
 // (see TimelineSceneBuilder). This might be due to the legacy technology of painting Swing tree component
 // instead of building our own canvas model. We apply decrement here too.
-private val HEADER_HEIGHT_DECREMENT = 1
-private val TEXT_PADDING = 5
+val HEADER_HEIGHT_DECREMENT = 1
+val TEXT_PADDING = 5

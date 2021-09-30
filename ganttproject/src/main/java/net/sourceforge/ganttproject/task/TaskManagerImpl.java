@@ -354,13 +354,16 @@ public class TaskManagerImpl implements TaskManager {
       @Override
       public Task build() {
 
+        if (myPrototype != null) {
+          myId = myPrototype.getTaskID();
+        }
         if (myId == null || myTaskMap.getTask(myId) != null) {
           myId = getAndIncrementId();
         }
 
         TaskImpl task = myPrototype == null
             ? new GanttTask("", CalendarFactory.createGanttCalendar(), 1, TaskManagerImpl.this, myId)
-            : new GanttTask(TaskManagerImpl.this, (TaskImpl)myPrototype);
+            : new GanttTask(TaskManagerImpl.this, (TaskImpl)myPrototype, myId);
 
         if (myPrototype == null) {
           String name = myName == null

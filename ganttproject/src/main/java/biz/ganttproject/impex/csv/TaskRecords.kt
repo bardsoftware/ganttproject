@@ -351,5 +351,21 @@ val OUTLINE_NUMBER_COMPARATOR: Comparator<String> = Comparator { s1, s2 ->
 }
 
 fun SpreadsheetRecord.digDate(column: String, addError: (Level, String) -> Unit): Date? =
-  this.getDate(column) ?: parseDateOrError(this[column], addError)
+  this.getDate(column) ?: parseDateOrError1(this[column], addError)
+
+private fun parseDateOrError1(strDate: String?, addError: (Level, String) -> Any): Date? {
+  val result = GanttCSVOpen.language.parseDate(strDate)
+  if (result == null) {
+    addError(
+      Level.WARNING, GanttLanguage.getInstance().formatText(
+      "impex.csv.error.parse_date",
+      strDate,
+      GanttLanguage.getInstance().shortDateFormat.toPattern(),
+      GanttLanguage.getInstance().shortDateFormat.format(Date())
+    )
+    )
+  }
+  return result
+}
+
 

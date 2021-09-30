@@ -48,6 +48,12 @@ dependencies {
     )
 }
 
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+
 test {
     useJUnitPlatform()
 }

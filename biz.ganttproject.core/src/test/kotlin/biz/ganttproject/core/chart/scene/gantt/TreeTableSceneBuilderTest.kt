@@ -20,6 +20,9 @@ package biz.ganttproject.core.chart.scene.gantt
 
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
+import biz.ganttproject.core.table.HEADER_HEIGHT_DECREMENT
+import biz.ganttproject.core.table.TEXT_PADDING
+import biz.ganttproject.core.table.TableSceneBuilder
 import biz.ganttproject.core.table.TreeTableSceneBuilder.*
 import biz.ganttproject.core.table.TableSceneBuilder.Table.*
 import biz.ganttproject.core.table.TreeTableSceneBuilder
@@ -31,30 +34,33 @@ import java.awt.Font
 class TreeTableSceneBuilderTest {
   @Test
   fun `test indents`() {
-    val input = object : InputApi {
-      override val textMetrics = TextMetricsStub
-      override val rowHeight = 10
-      override val depthIndent = 15
-      override val horizontalOffset = 2
-    }
+    val input = InputApi(
+      textMetrics = TextMetricsStub,
+      rowHeight = 10,
+      depthIndent = 15,
+      horizontalOffset = 2,
+      headerHeight = 10
+    )
     val sceneBuilder = TreeTableSceneBuilder(input)
-    val column = Column("")
+    val column = Column("name", width = 50, isTreeColumn = true)
     val tasks = listOf(
       Item(mapOf(column to "1")),
-      Item(mapOf(column to "2"), listOf(
+      Item(mapOf(column to "2"), mutableListOf(
         Item(mapOf(column to "3")),
-        Item(mapOf(column to "4"), listOf(Item(mapOf(column to "5"))))
+        Item(mapOf(column to "4"), mutableListOf(Item(mapOf(column to "5"))))
       ))
     )
     val canvas = spy(Canvas())
     sceneBuilder.build(listOf(column), tasks, canvas)
 
-    val halfRowHeight = input.rowHeight / 2
-    verify(canvas).createText(input.horizontalOffset, input.rowHeight + halfRowHeight, "1")
-    verify(canvas).createText(input.horizontalOffset, 2 * input.rowHeight + halfRowHeight, "2")
-    verify(canvas).createText(input.horizontalOffset + input.depthIndent, 3 * input.rowHeight + halfRowHeight, "3")
-    verify(canvas).createText(input.horizontalOffset + input.depthIndent, 4 * input.rowHeight + halfRowHeight, "4")
-    verify(canvas).createText(input.horizontalOffset + input.depthIndent * 2, 5 * input.rowHeight + halfRowHeight, "5")
+    val halfRowHeight = input.rowHeight / 2 - HEADER_HEIGHT_DECREMENT
+    val expectedTextLeft = input.horizontalOffset + TEXT_PADDING
+    verify(canvas).createText(expectedTextLeft, input.headerHeight - input.headerHeight/2 - HEADER_HEIGHT_DECREMENT, "name")
+    verify(canvas).createText(expectedTextLeft, input.rowHeight + halfRowHeight, "1")
+    verify(canvas).createText(expectedTextLeft, 2 * input.rowHeight + halfRowHeight, "2")
+    verify(canvas).createText(expectedTextLeft + input.depthIndent, 3 * input.rowHeight + halfRowHeight, "3")
+    verify(canvas).createText(expectedTextLeft + input.depthIndent, 4 * input.rowHeight + halfRowHeight, "4")
+    verify(canvas).createText(expectedTextLeft + input.depthIndent * 2, 5 * input.rowHeight + halfRowHeight, "5")
   }
 }
 

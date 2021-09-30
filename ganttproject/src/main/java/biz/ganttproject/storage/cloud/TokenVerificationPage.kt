@@ -48,7 +48,7 @@ class TokenVerificationPage : FlowPage() {
         }
       } else ""
 
-    return paneAndImage(vbox {
+    return paneAndImage1(vbox {
       vbox.styleClass.add("fill-parent")
       addTitle(i18nSignin.formatText("title"))
       add(Label(i18nSignin.formatText("expirationMsg", expirationValue)).apply {
