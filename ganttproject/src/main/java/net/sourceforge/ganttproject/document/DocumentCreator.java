@@ -63,7 +63,7 @@ public class DocumentCreator implements DocumentManager {
   private final GPOptionGroup myWebDavOptionGroup;
   private final Logger myLogger = GPLogger.getLogger(DocumentManager.class);
   /** List containing the Most Recent Used documents */
-  private final DocumentsMRU myMRU = new DocumentsMRU(5);
+  private final DocumentsMRU myMRU = new DocumentsMRU(50);
   private final File myDocumentsFolder;
   private final File myUserDir;
 
