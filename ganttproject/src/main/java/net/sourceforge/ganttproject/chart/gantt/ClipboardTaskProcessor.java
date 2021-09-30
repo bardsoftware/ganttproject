@@ -64,9 +64,19 @@ public class ClipboardTaskProcessor {
     Task pasteRoot = myTaskManager.getTaskHierarchy().getContainer(selectedTask);
     if (pasteRoot == null) {
       pasteRoot = myTaskManager.getRootTask();
-      selectedTask = null;
+      //selectedTask = null;
     }
-    return pasteAsChild(pasteRoot, selectedTask, clipboardContents);
+    if (clipboardContents.isCut()) {
+      var anchorIdx = myTaskManager.getTaskHierarchy().getTaskIndex(selectedTask) + 1;
+      List<Task> result = new ArrayList<>();
+      for (Task task : clipboardContents.getTasks()) {
+        myTaskManager.getTaskHierarchy().move(task, pasteRoot, anchorIdx++);
+        result.add(task);
+      }
+      return result;
+    } else {
+      return pasteAsChild(pasteRoot, selectedTask, clipboardContents);
+    }
   }
 
   public List<Task> pasteAsChild(Task selectedTask, ClipboardContents clipboardContents) {

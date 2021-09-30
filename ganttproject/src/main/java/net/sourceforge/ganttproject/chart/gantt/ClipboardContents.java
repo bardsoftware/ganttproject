@@ -32,6 +32,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -82,15 +83,12 @@ public class ClipboardContents {
   private void build() {
     TaskContainmentHierarchyFacade taskHierarchy = myTaskManager.getTaskHierarchy();
     final Set<Task> subtree = Sets.newHashSet();
-    Predicate<Pair<Task, Task>> predicate = new Predicate<Pair<Task,Task>>() {
-      @Override
-      public boolean apply(Pair<Task, Task> parent_child) {
-        subtree.add(parent_child.second());
-        if (parent_child.first() != null) {
-          myNestedTasks.put(parent_child.first(), parent_child.second());
-        }
-        return true;
+    Predicate<Pair<Task, Task>> predicate = parent_child -> {
+      subtree.add(parent_child.second());
+      if (parent_child.first() != null) {
+        myNestedTasks.put(parent_child.first(), parent_child.second());
       }
+      return true;
     };
     Collections.sort(myTasks, IN_DOCUMENT_ORDER);
     for (Task t : myTasks) {
@@ -120,6 +118,14 @@ public class ClipboardContents {
       }
     }
     myIntraDeps.addAll(intraDeps);
+
+    for (Task t : getTasks()) {
+      myAssignments.addAll(Arrays.asList(t.getAssignments()));
+    }
+    for (ResourceAssignment ra : myAssignments) {
+      myResources.add(ra.getResource());
+    }
+
     GPLogger.getLogger("Clipboard").fine(String.format(
         "Clipboard task (only roots): %s\ninternal-dependencies: %s\nincoming dependencies:%s\noutgoing dependencies:%s",
         myTasks, myIntraDeps, myIncomingDeps, myOutgoingDeps));
@@ -163,14 +169,6 @@ public class ClipboardContents {
   public void cut() {
     isCut = true;
     build();
-//    for (Task t : getTasks()) {
-//      myAssignments.addAll(Arrays.asList(t.getAssignments()));
-//      myTaskManager.deleteTask(t);
-//      t.delete();
-//    }
-//    for (ResourceAssignment ra : myAssignments) {
-//      myResources.add(ra.getResource());
-//    }
   }
 
   /**
