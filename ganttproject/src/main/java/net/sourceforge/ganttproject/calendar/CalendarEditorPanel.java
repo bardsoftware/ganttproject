@@ -25,11 +25,7 @@ import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.time.CalendarFactory;
-import com.google.common.base.Function;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
+import com.google.common.base.*;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GPLogger;
@@ -44,11 +40,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -346,8 +338,13 @@ public class CalendarEditorPanel {
 
       @Override
       protected void onDeleteEvent() {
-        if (table.getSelectedRow() < tableModel.getRowCount() - 1) {
-          tableModel.delete(table.getSelectedRow());
+        var selected = table.getSelectedRows();
+        Arrays.sort(selected);
+        for (int i = selected.length - 1; i >=0; i--) {
+          var selectedRow = selected[i];
+          if (selectedRow < tableModel.getRowCount() - 1) {
+            tableModel.delete(selectedRow);
+          }
         }
       }
 
