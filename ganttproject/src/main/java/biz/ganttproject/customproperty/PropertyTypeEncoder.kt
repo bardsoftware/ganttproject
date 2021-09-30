@@ -37,13 +37,13 @@ import java.util.*
 object PropertyTypeEncoder {
   fun encodeFieldType(fieldType: Class<*>): String? {
     var result: String? = null
-    if (fieldType == String::class.java) {
+    if (fieldType == java.lang.String::class.java) {
       result = "text"
-    } else if (fieldType == Boolean::class.java) {
+    } else if (fieldType == java.lang.Boolean::class.java) {
       result = "boolean"
-    } else if (fieldType == Int::class.java) {
+    } else if (fieldType == java.lang.Integer::class.java) {
       result = "int"
-    } else if (fieldType == Double::class.java) {
+    } else if (fieldType == java.lang.Double::class.java) {
       result = "double"
     } else if (GregorianCalendar::class.java.isAssignableFrom(fieldType)) {
       result = "date"
