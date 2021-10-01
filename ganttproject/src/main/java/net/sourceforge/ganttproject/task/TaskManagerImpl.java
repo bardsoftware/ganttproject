@@ -361,55 +361,8 @@ public class TaskManagerImpl implements TaskManager {
           myId = getAndIncrementId();
         }
 
-        TaskImpl task = myPrototype == null
-            ? new GanttTask("", CalendarFactory.createGanttCalendar(), 1, TaskManagerImpl.this, myId)
-            : new GanttTask(TaskManagerImpl.this, (TaskImpl)myPrototype, myId);
-
-        if (myPrototype == null) {
-          String name = myName == null
-              ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
-          task.setName(name);
-        } else if (myName != null) {
-          task.setName(myName);
-        }
-        if (myStartDate != null) {
-          GanttCalendar cal = CalendarFactory.createGanttCalendar(myStartDate);
-          task.setStart(cal);
-        }
-        TimeDuration duration;
-        if (myDuration != null) {
-          duration = myDuration;
-        } else if (myPrototype != null) {
-          duration = myPrototype.getDuration();
-        } else {
-          duration = (myEndDate == null)
-              ? createLength(getTimeUnitStack().getDefaultTimeUnit(), 1.0f)
-                  : createLength(getTimeUnitStack().getDefaultTimeUnit(), myStartDate, myEndDate);
-        }
-        task.setDuration(duration);
-
-        if (myColor != null) {
-          task.setColor(myColor);
-        }
-        if (myPriority != null) {
-          task.setPriority(myPriority);
-        }
-        if (isExpanded != null) {
-          task.setExpand(isExpanded);
-        }
-        if (myNotes != null) {
-          task.setNotes(myNotes);
-        }
-        if (myWebLink != null) {
-          task.setWebLink(myWebLink);
-        }
-        if (myCompletion != null) {
-          task.setCompletionPercentage(myCompletion);
-        }
-        if (myCost != null) {
-          task.getCost().setCalculated(false);
-          task.getCost().setValue(myCost);
-        }
+        TaskImpl task = new GanttTask("", CalendarFactory.createGanttCalendar(), 1, TaskManagerImpl.this, myId);
+        TaskManagerImplKt.setupNewTask(this, task, TaskManagerImpl.this);
         registerTask(task);
 
 
