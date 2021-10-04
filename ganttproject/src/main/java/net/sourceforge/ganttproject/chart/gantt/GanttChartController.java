@@ -182,8 +182,11 @@ public class GanttChartController extends AbstractChartImplementation implements
       // GanttGraphicArea.super.paintComponent(g);
       ChartModel model = myChartModel;
       model.setBottomUnitWidth(getViewState().getBottomUnitWidth());
-      myTaskTableConnector.getRowHeight().setValue(model.calculateRowHeight());
-      model.setRowHeight(myTaskTableConnector.getRowHeight().getValue().intValue());
+      var rowHeight = Math.max(
+          model.calculateRowHeight(), myTaskTableConnector.getMinRowHeight().getValue()
+      );
+      myTaskTableConnector.getRowHeight().setValue(rowHeight);
+      model.setRowHeight((int)rowHeight);
       model.setTopTimeUnit(getViewState().getTopTimeUnit());
       model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
       List<Task> visibleTasks = myTaskTableConnector.getVisibleTasks();

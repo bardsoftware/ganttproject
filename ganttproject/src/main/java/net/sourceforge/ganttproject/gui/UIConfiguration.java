@@ -23,11 +23,11 @@ import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.FontOption;
 import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 
-import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -85,8 +85,9 @@ public class UIConfiguration {
     myAppFontSize = new Supplier<Integer>() {
       @Override
       public Integer get() {
-        Font tableFont = (Font) UIManager.get("Table.font");
-        return tableFont.getSize() + 8;
+        //Font tableFont = (Font) UIManager.get("Table.font");
+        //return tableFont.getSize() + 8;
+        return (int)TreeTableCellsKt.getMinCellHeight().get();
       }
     };
   }

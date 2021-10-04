@@ -211,14 +211,16 @@ class TaskTable(
   }
 
   private fun initChartConnector() {
-    if (taskTableChartConnector.rowHeight.get() == -1) {
-      taskTableChartConnector.rowHeight.value = treeTable.fixedCellSize.toInt()
-    }
     taskTableChartConnector.rowHeight.addListener { _, _, newValue ->
-      if (newValue != treeTable.fixedCellSize && newValue.toInt() > 0) {
+      if (newValue != treeTable.fixedCellSize && newValue.toInt() > 0 && newValue.toDouble() >= minCellHeight.value) {
         treeTable.fixedCellSize = newValue.toDouble()
+      } else {
+        treeTable.fixedCellSize = minCellHeight.value
       }
     }
+//    if (taskTableChartConnector.rowHeight.get() == -1) {
+//      taskTableChartConnector.rowHeight.value = maxOf(applicationFont.get().size.toInt() + 20, treeTable.fixedCellSize.toInt())
+//    }
     taskTableChartConnector.chartScrollOffset.addListener { _, _, newValue ->
       Platform.runLater {
         treeTable.scrollBy(newValue.toDouble())
@@ -334,7 +336,9 @@ class TaskTable(
           is StartEditing -> {
             requestSwingFocus()
             if (treeTable.editingCell == null) {
-              treeTable.edit(treeTable.getRow(cmd.treeItem), findNameColumn())
+              val idx = treeTable.getRow(cmd.treeItem)
+              treeTable.scrollTo(cmd.treeItem)
+              treeTable.edit(idx, findNameColumn())
             } else {
               //println("editing cell is ${treeTable.editingCell}")
             }
@@ -667,7 +671,8 @@ data class TaskTableChartConnector(
   var isTableScrollable: Boolean,
   val chartScrollOffset: DoubleProperty,
   var exportTreeTableApi: () -> TreeTableApi? = { null },
-  var focus: () -> Unit = {}
+  var focus: () -> Unit = {},
+  val minRowHeight: DoubleProperty
 )
 
 data class TaskTableActionConnector(

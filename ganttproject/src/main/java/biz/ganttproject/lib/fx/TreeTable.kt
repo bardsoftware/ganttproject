@@ -95,6 +95,10 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     skin?.let { (it as GPTreeTableViewSkin<T>).scrollBy(value) }
   }
 
+  fun scrollTo(item: TreeItem<T>) {
+    skin?.let { (it as GPTreeTableViewSkin<T>).scrollTo(getRow(item)) }
+  }
+
   override fun requestFocus() {
     super.requestFocus()
     val focusedCell = this.focusModel.focusedCell
@@ -118,14 +122,18 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   get() = tableHeaderRow.heightProperty()
   val fullHeaderHeight: Double get() = headerHeight.value + tableHeaderRow.boundsInParent.minX
 
+  fun updateScrollValue() {
+    var totalCellHeight = 0.0
+    for (idx in 0 until virtualFlow.cellCount) {
+      totalCellHeight += virtualFlow.getCell(idx).height
+    }
+    val result = (totalCellHeight - virtualFlow.height) * virtualFlow.position
+    scrollValue.value = result
+  }
+
   init {
     this.virtualFlow.positionProperty().addListener { _, _, _ ->
-      var totalCellHeight = 0.0
-      for (idx in 0 until virtualFlow.cellCount) {
-        totalCellHeight += virtualFlow.getCell(idx).height
-      }
-      val result = (totalCellHeight - virtualFlow.height) * virtualFlow.position
-      scrollValue.value = result
+      updateScrollValue()
     }
 
     val cornerRegion = this.tableHeaderRow.lookup(".show-hide-columns-button") as Region
@@ -160,6 +168,10 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   }
 
   fun vbarWidth() = (this.virtualFlow as MyVirtualFlow).vbarWidth()
+  fun scrollTo(row: Int) {
+    this.virtualFlow.scrollTo(row)
+    updateScrollValue()
+  }
 }
 
 interface TreeCollapseView<T> {

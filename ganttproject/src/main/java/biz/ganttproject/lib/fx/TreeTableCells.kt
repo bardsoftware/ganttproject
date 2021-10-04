@@ -49,6 +49,7 @@ import javafx.util.converter.NumberStringConverter
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.math.BigDecimal
 import javax.swing.UIManager
+import kotlin.math.max
 
 data class MyStringConverter<S, T>(
   val toString: (cell: TextCell<S, T>, cellValue: T?) -> String?,
@@ -61,13 +62,19 @@ fun <S, T> StringConverter<T>.adapt(): MyStringConverter<S, T> =
   )
 
 val applicationFont = SimpleObjectProperty(Font.getDefault())
+val minCellHeight = SimpleDoubleProperty(Font.getDefault().size)
+fun calculateMinCellHeight(fontSpec: FontSpec) {
+  Font.font(fontSpec.family, fontSpec.size.factor * Font.getDefault().size)?.let { font ->
+    applicationFont.set(font)
+    minCellHeight.value = font.size + max(15.0, font.size * 1.2)
+  }
+}
 fun initFontProperty(appFontOption: FontOption) {
+  calculateMinCellHeight(appFontOption.value)
   appFontOption.addChangeValueListener { event ->
     event.newValue?.let {
       if (it is FontSpec) {
-        Font.font(it.family)?.let { font ->
-          applicationFont.set(font)
-        }
+        calculateMinCellHeight(it)
       }
     }
   }
@@ -119,7 +126,7 @@ class TextCell<S, T>(
       it.isVisible = false
     }
 
-    if (isEditing && editingCellController(this)) {
+    if (isEditing) {
       treeTableView.requestFocus()
       doStartEdit()
     } else {
@@ -369,6 +376,6 @@ class TextCellFactory<S, T>(
     }
   }
   override fun call(param: TreeTableColumn<S, T>?) =
-    TextCell(converter, this::setEditingCell).also(cellSetup)
+    TextCell(converter, { true }).also(cellSetup)
 }
 

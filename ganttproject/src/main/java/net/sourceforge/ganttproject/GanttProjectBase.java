@@ -37,6 +37,7 @@ import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
 import biz.ganttproject.lib.fx.TreeCollapseView;
+import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.task.TaskActions;
 import com.bardsoftware.eclipsito.update.Updater;
 import com.google.common.base.Suppliers;
@@ -132,7 +133,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
       true,
       new SimpleDoubleProperty(0.0),
       () -> null,
-      () -> null
+      () -> null,
+      TreeTableCellsKt.getMinCellHeight()
   );
   private TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
   protected final Supplier<TaskTable> myTaskTableSupplier;

@@ -123,12 +123,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
       return new TaskActivitySceneChartApi(myModel) {
         @Override
         public int getRowHeight() {
-          int rowHeight = labelsRenderer.calculateRowHeight();
-          if (myModel.getBaseline() != null) {
-            rowHeight = rowHeight + 8;
-          }
-          int appFontSize = myModel.getProjectConfig().getAppFontSize().get();
-          return Math.max(appFontSize, rowHeight);
+          return  myModel.getChartUIConfiguration().getRowHeight();
         }
         @Override
         public int getBarHeight() {
@@ -186,7 +181,12 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   public int calculateRowHeight() {
-    return chartRenderer.getRowHeight();
+    int rowHeight = chartRenderer.myLabelsRenderer.calculateRowHeight();
+    if (myModel.getBaseline() != null) {
+      rowHeight = rowHeight + 8;
+    }
+    int appFontSize = myModel.getProjectConfig().getAppFontSize().get();
+    return Math.max(appFontSize, rowHeight);
   }
 
   Canvas getLabelLayer() {
