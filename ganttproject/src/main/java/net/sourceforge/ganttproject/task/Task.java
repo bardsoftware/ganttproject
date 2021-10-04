@@ -193,4 +193,5 @@ public interface Task extends MutableTask, IdentifiableRow {
   boolean isSupertask();
 
   List<Document> getAttachments();
+  String getWebLink();
 }

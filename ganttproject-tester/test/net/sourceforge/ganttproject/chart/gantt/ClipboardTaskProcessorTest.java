@@ -155,7 +155,7 @@ public class ClipboardTaskProcessorTest extends TestCase {
     contents.addTasks(ImmutableList.of(task1));
     contents.cut();
 
-    assertEquals(0, res1.getAssignments().length);
+    assertEquals(1, res1.getAssignments().length);
 
     ClipboardTaskProcessor clipboardProcessor = new ClipboardTaskProcessor(taskManager);
     List<Task> pasted = clipboardProcessor.pasteAsSibling(taskManager.getRootTask(), contents);

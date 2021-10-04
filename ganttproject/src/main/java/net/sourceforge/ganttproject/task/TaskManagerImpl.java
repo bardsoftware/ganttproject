@@ -11,28 +11,13 @@ import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm;
 import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
 import biz.ganttproject.core.model.task.ConstraintType;
-import biz.ganttproject.core.option.ColorOption;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.DefaultStringOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.StringOption;
-import biz.ganttproject.core.time.CalendarFactory;
-import biz.ganttproject.core.time.GanttCalendar;
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.TimeDurationImpl;
-import biz.ganttproject.core.time.TimeUnit;
-import biz.ganttproject.core.time.TimeUnitStack;
-import com.google.common.base.Function;
+import biz.ganttproject.core.option.*;
+import biz.ganttproject.core.time.*;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyListener;
-import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttTask;
-import net.sourceforge.ganttproject.ProjectEventListener;
+import net.sourceforge.ganttproject.*;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
@@ -40,47 +25,18 @@ import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.task.algorithm.AdjustTaskBoundsAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.AlgorithmBase;
-import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
-import net.sourceforge.ganttproject.task.algorithm.CriticalPathAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.CriticalPathAlgorithmImpl;
-import net.sourceforge.ganttproject.task.algorithm.DependencyGraph;
-import net.sourceforge.ganttproject.task.algorithm.FindPossibleDependeesAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.FindPossibleDependeesAlgorithmImpl;
-import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
-import net.sourceforge.ganttproject.task.algorithm.SchedulerImpl;
-import net.sourceforge.ganttproject.task.algorithm.SchedulerOptional;
-import net.sourceforge.ganttproject.task.dependency.EventDispatcher;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
+import net.sourceforge.ganttproject.task.algorithm.*;
+import net.sourceforge.ganttproject.task.dependency.*;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollection;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyCollectionImpl;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
-import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
-import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
-import net.sourceforge.ganttproject.task.event.TaskListener;
-import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
-import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
-import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
+import net.sourceforge.ganttproject.task.event.*;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -96,9 +52,9 @@ public class TaskManagerImpl implements TaskManager {
 
   private final AlgorithmCollection myAlgorithmCollection;
 
-  private final List<TaskListener> myListeners = new ArrayList<TaskListener>();
+  private final List<TaskListener> myListeners = new ArrayList<>();
 
-  private AtomicInteger myMaxID = new AtomicInteger(0);
+  private final AtomicInteger myMaxID = new AtomicInteger(0);
 
   private final TaskImpl myRoot;
 
@@ -117,12 +73,7 @@ public class TaskManagerImpl implements TaskManager {
 
   private final TaskContainmentHierarchyFacade.Factory myFacadeFactory;
 
-  private final Supplier<TaskContainmentHierarchyFacade> myHierarchySupplier = new Supplier<TaskContainmentHierarchyFacade>() {
-    @Override
-    public TaskContainmentHierarchyFacade get() {
-      return getTaskHierarchy();
-    }
-  };
+  private final Supplier<TaskContainmentHierarchyFacade> myHierarchySupplier = this::getTaskHierarchy;
   private final DependencyGraph myDependencyGraph = new DependencyGraph(myHierarchySupplier, new DependencyGraph.Logger() {
     @Override
     public void logDependencyLoop(String title, String message) {
@@ -139,32 +90,29 @@ public class TaskManagerImpl implements TaskManager {
   private boolean areEventsEnabled = true;
 
   private static class TaskMap {
-    private final Map<Integer, Task> myId2task = new HashMap<Integer, Task>();
-    private TaskDocumentOrderComparator myComparator;
+    private final Map<Integer, Task> myId2task = new HashMap<>();
+    private final TaskDocumentOrderComparator myComparator;
     private boolean isModified = true;
-    private List<Task> myList;
     private Task[] myArray;
-    private final TaskManagerImpl myManager;
 
     TaskMap(TaskManagerImpl taskManager) {
       myComparator = new TaskDocumentOrderComparator(taskManager);
-      myManager = taskManager;
     }
 
     void addTask(Task task) {
-      myId2task.put(new Integer(task.getTaskID()), task);
+      myId2task.put(task.getTaskID(), task);
       isModified = true;
     }
 
     Task getTask(int id) {
-      return myId2task.get(new Integer(id));
+      return myId2task.get(id);
     }
 
     public Task[] getTasks() {
       if (isModified) {
-        myList = myId2task.values().stream().filter(t -> !t.isDeleted()).collect(Collectors.toList());
+        List<Task> myList = myId2task.values().stream().filter(t -> !t.isDeleted()).collect(Collectors.toList());
         myList.sort(myComparator);
-        myArray = myList.toArray(new Task[myList.size()]);
+        myArray = myList.toArray(new Task[0]);
         isModified = false;
       }
       return myArray;
@@ -212,7 +160,7 @@ public class TaskManagerImpl implements TaskManager {
         config.getSchedulerDisabledOption(),
         new SchedulerImpl(myDependencyGraph, myHierarchySupplier)
     );
-    myDependencyGraph.addListener(() -> myScheduler.run());
+    myDependencyGraph.addListener(myScheduler::run);
     myHierarchyManager = new TaskHierarchyManagerImpl();
     EventDispatcher dispatcher = new EventDispatcher() {
       @Override
@@ -361,55 +309,8 @@ public class TaskManagerImpl implements TaskManager {
           myId = getAndIncrementId();
         }
 
-        TaskImpl task = myPrototype == null
-            ? new GanttTask("", CalendarFactory.createGanttCalendar(), 1, TaskManagerImpl.this, myId)
-            : new GanttTask(TaskManagerImpl.this, (TaskImpl)myPrototype, myId);
-
-        if (myPrototype == null) {
-          String name = myName == null
-              ? getTaskNamePrefixOption().getValue() + "_" + task.getTaskID() : myName;
-          task.setName(name);
-        } else if (myName != null) {
-          task.setName(myName);
-        }
-        if (myStartDate != null) {
-          GanttCalendar cal = CalendarFactory.createGanttCalendar(myStartDate);
-          task.setStart(cal);
-        }
-        TimeDuration duration;
-        if (myDuration != null) {
-          duration = myDuration;
-        } else if (myPrototype != null) {
-          duration = myPrototype.getDuration();
-        } else {
-          duration = (myEndDate == null)
-              ? createLength(getTimeUnitStack().getDefaultTimeUnit(), 1.0f)
-                  : createLength(getTimeUnitStack().getDefaultTimeUnit(), myStartDate, myEndDate);
-        }
-        task.setDuration(duration);
-
-        if (myColor != null) {
-          task.setColor(myColor);
-        }
-        if (myPriority != null) {
-          task.setPriority(myPriority);
-        }
-        if (isExpanded != null) {
-          task.setExpand(isExpanded);
-        }
-        if (myNotes != null) {
-          task.setNotes(myNotes);
-        }
-        if (myWebLink != null) {
-          task.setWebLink(myWebLink);
-        }
-        if (myCompletion != null) {
-          task.setCompletionPercentage(myCompletion);
-        }
-        if (myCost != null) {
-          task.getCost().setCalculated(false);
-          task.getCost().setValue(myCost);
-        }
+        TaskImpl task = new GanttTask("", CalendarFactory.createGanttCalendar(), 1, TaskManagerImpl.this, myId);
+        TaskManagerImplKt.setupNewTask(this, task, TaskManagerImpl.this);
         registerTask(task);
 
 
@@ -458,27 +359,22 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   private static Iterable<BarChartActivity<?>> tasksToActivities(Task[] tasks) {
-    return Iterables.transform(Arrays.asList(tasks), new Function<Task, BarChartActivity<?>>() {
+    return Iterables.transform(Arrays.asList(tasks), task -> new BarChartActivity<Task>() {
       @Override
-      public BarChartActivity<?> apply(final Task task) {
-        return new BarChartActivity<Task>() {
-          @Override
-          public Date getStart() {
-            return task.getStart().getTime();
-          }
-          @Override
-          public Date getEnd() {
-            return task.getEnd().getTime();
-          }
-          @Override
-          public TimeDuration getDuration() {
-            return task.getDuration();
-          }
-          @Override
-          public Task getOwner() {
-            return task;
-          }
-        };
+      public Date getStart() {
+        return task.getStart().getTime();
+      }
+      @Override
+      public Date getEnd() {
+        return task.getEnd().getTime();
+      }
+      @Override
+      public TimeDuration getDuration() {
+        return task.getDuration();
+      }
+      @Override
+      public Task getOwner() {
+        return task;
       }
     });
   }
@@ -517,7 +413,7 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public String encode(TimeDuration taskLength) {
-    StringBuffer result = new StringBuffer(String.valueOf(taskLength.getLength()));
+    StringBuilder result = new StringBuilder(String.valueOf(taskLength.getLength()));
     result.append(myConfig.getTimeUnitStack().encode(taskLength.getTimeUnit()));
     return result.toString();
   }
@@ -525,7 +421,7 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public TimeDuration createLength(String lengthAsString) throws DurationParsingException {
     int state = 0;
-    StringBuffer valueBuffer = new StringBuffer();
+    StringBuilder valueBuffer = new StringBuilder();
     Integer currentValue = null;
     TimeDuration currentLength = null;
     lengthAsString += " ";
@@ -639,8 +535,7 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public Date shift(Date original, TimeDuration duration) {
-    GPCalendarCalc calendar = RESTLESS_CALENDAR;
-    return calendar.shiftDate(original, duration);
+    return RESTLESS_CALENDAR.shiftDate(original, duration);
   }
 
   @Override
@@ -704,21 +599,17 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   public GPCalendarListener getCalendarListener() {
-    return new GPCalendarListener() {
-      @Override
-      public void onCalendarChange() {
-        for (Task t : getTasks()) {
-          t.setEnd(null);
-        }
-        myScheduler.run();
+    return () -> {
+      for (Task t : getTasks()) {
+        t.setEnd(null);
       }
+      myScheduler.run();
     };
   }
   public void fireTaskProgressChanged(Task changedTask) {
     if (areEventsEnabled) {
       TaskPropertyEvent e = new TaskPropertyEvent(changedTask);
-      for (int i = 0; i < myListeners.size(); i++) {
-        TaskListener next = myListeners.get(i);
+      for (TaskListener next : myListeners) {
         next.taskProgressChanged(e);
       }
     }
@@ -731,8 +622,7 @@ public class TaskManagerImpl implements TaskManager {
           changedTask.getEnd());
       // List copy = new ArrayList(myListeners);
       // myListeners.clear();
-      for (int i = 0; i < myListeners.size(); i++) {
-        TaskListener next = myListeners.get(i);
+      for (TaskListener next : myListeners) {
         next.taskScheduleChanged(e);
       }
     }
@@ -742,8 +632,7 @@ public class TaskManagerImpl implements TaskManager {
     myDependencyGraph.addDependency(newDependency);
     if (areEventsEnabled) {
       TaskDependencyEvent e = new TaskDependencyEvent(getDependencyCollection(), newDependency);
-      for (int i = 0; i < myListeners.size(); i++) {
-        TaskListener next = myListeners.get(i);
+      for (TaskListener next : myListeners) {
         next.dependencyAdded(e);
       }
     }
@@ -752,16 +641,14 @@ public class TaskManagerImpl implements TaskManager {
   private void fireDependencyRemoved(TaskDependency dep) {
     myDependencyGraph.removeDependency(dep);
     TaskDependencyEvent e = new TaskDependencyEvent(getDependencyCollection(), dep);
-    for (int i = 0; i < myListeners.size(); i++) {
-      TaskListener next = myListeners.get(i);
+    for (TaskListener next : myListeners) {
       next.dependencyRemoved(e);
     }
   }
 
   private void fireDependencyChanged(TaskDependency dep) {
     TaskDependencyEvent e = new TaskDependencyEvent(getDependencyCollection(), dep);
-    for (int i = 0; i < myListeners.size(); i++) {
-      TaskListener next = myListeners.get(i);
+    for (TaskListener next : myListeners) {
       next.dependencyChanged(e);
     }
   }
@@ -770,8 +657,7 @@ public class TaskManagerImpl implements TaskManager {
     if (areEventsEnabled) {
       var newContainer = getTaskHierarchy().getContainer(task);
       TaskHierarchyEvent e = new TaskHierarchyEvent(source, task, null, newContainer, getTaskHierarchy().getTaskIndex(task));
-      for (int i = 0; i < myListeners.size(); i++) {
-        TaskListener next = myListeners.get(i);
+      for (TaskListener next : myListeners) {
         next.taskAdded(e);
       }
     }
@@ -798,8 +684,7 @@ public class TaskManagerImpl implements TaskManager {
   void fireTaskPropertiesChanged(Task task) {
     if (areEventsEnabled) {
       TaskPropertyEvent e = new TaskPropertyEvent(task);
-      for (int i = 0; i < myListeners.size(); i++) {
-        TaskListener next = myListeners.get(i);
+      for (TaskListener next : myListeners) {
         next.taskPropertiesChanged(e);
       }
     }
@@ -807,8 +692,7 @@ public class TaskManagerImpl implements TaskManager {
 
   private void fireTaskModelReset() {
     if (areEventsEnabled) {
-      for (int i = 0; i < myListeners.size(); i++) {
-        TaskListener next = myListeners.get(i);
+      for (TaskListener next : myListeners) {
         next.taskModelReset();
       }
     }
@@ -851,20 +735,20 @@ public class TaskManagerImpl implements TaskManager {
   public Map<Task, Task> importData(TaskManager taskManager,
       Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping) {
     Task importRoot = taskManager.getRootTask();
-    Map<Task, Task> original2imported = new LinkedHashMap<Task, Task>();
+    Map<Task, Task> original2imported = new LinkedHashMap<>();
     importData(importRoot, getRootTask(), customPropertyMapping, original2imported);
     TaskDependency[] deps = taskManager.getDependencyCollection().getDependencies();
-    for (int i = 0; i < deps.length; i++) {
-      Task nextDependant = deps[i].getDependant();
-      Task nextDependee = deps[i].getDependee();
+    for (TaskDependency dep : deps) {
+      Task nextDependant = dep.getDependant();
+      Task nextDependee = dep.getDependee();
       Task importedDependant = original2imported.get(nextDependant);
       Task importedDependee = original2imported.get(nextDependee);
       try {
         TaskDependency dependency = getDependencyCollection().createDependency(importedDependant, importedDependee,
-            new FinishStartConstraintImpl());
-        dependency.setConstraint(deps[i].getConstraint());
-        dependency.setDifference(deps[i].getDifference());
-        dependency.setHardness(deps[i].getHardness());
+          new FinishStartConstraintImpl());
+        dependency.setConstraint(dep.getConstraint());
+        dependency.setDifference(dep.getDifference());
+        dependency.setHardness(dep.getHardness());
       } catch (TaskDependencyException e) {
         if (!GPLogger.log(e)) {
           e.printStackTrace(System.err);
@@ -878,34 +762,34 @@ public class TaskManagerImpl implements TaskManager {
   private void importData(Task importRoot, Task root,
       Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping, Map<Task, Task> original2imported) {
     Task[] nested = importRoot.getManager().getTaskHierarchy().getNestedTasks(importRoot);
-    for (int i = 0; i < nested.length; i++) {
-      TaskManager.TaskBuilder builder = newTaskBuilder();
-      GanttTask that = (GanttTask) nested[i];
+    for (Task task : nested) {
+      TaskBuilder builder = newTaskBuilder();
+      GanttTask that = (GanttTask) task;
       if (getTask(that.getTaskID()) == null) {
         builder = builder.withId(that.getTaskID());
       }
       Task nextImported = builder
-          .withName(that.getName())
-          .withStartDate(that.getStart().getTime())
-          .withDuration(that.getDuration())
-          .withColor(that.getColor())
-          .withNotes(that.getNotes())
-          .withWebLink(that.getWebLink())
-          .withPriority(that.getPriority())
-          .withParent(root).build();
+        .withName(that.getName())
+        .withStartDate(that.getStart().getTime())
+        .withDuration(that.getDuration())
+        .withColor(that.getColor())
+        .withNotes(that.getNotes())
+        .withWebLink(that.getWebLink())
+        .withPriority(that.getPriority())
+        .withParent(root).build();
 
-      nextImported.setShape(nested[i].getShape());
-      nextImported.setCompletionPercentage(nested[i].getCompletionPercentage());
-      nextImported.setTaskInfo(nested[i].getTaskInfo());
-      nextImported.setExpand(nested[i].getExpand());
-      nextImported.setMilestone(nested[i].isMilestone());
+      nextImported.setShape(task.getShape());
+      nextImported.setCompletionPercentage(task.getCompletionPercentage());
+      nextImported.setTaskInfo(task.getTaskInfo());
+      nextImported.setExpand(task.getExpand());
+      nextImported.setMilestone(task.isMilestone());
       nextImported.getCost().setValue(that.getCost());
-      if (nested[i].getThird() != null) {
-        nextImported.setThirdDate(nested[i].getThird().clone());
-        nextImported.setThirdDateConstraint(nested[i].getThirdDateConstraint());
+      if (task.getThird() != null) {
+        nextImported.setThirdDate(task.getThird().clone());
+        nextImported.setThirdDateConstraint(task.getThirdDateConstraint());
       }
 
-      CustomColumnsValues customValues = nested[i].getCustomValues();
+      CustomColumnsValues customValues = task.getCustomValues();
       for (CustomPropertyDefinition thatDef : importRoot.getManager().getCustomPropertyManager().getDefinitions()) {
         CustomPropertyDefinition thisDef = customPropertyMapping.get(thatDef);
         Object value = customValues.getValue(thatDef);
@@ -919,8 +803,8 @@ public class TaskManagerImpl implements TaskManager {
           }
         }
       }
-      original2imported.put(nested[i], nextImported);
-      importData(nested[i], nextImported, customPropertyMapping, original2imported);
+      original2imported.put(task, nextImported);
+      importData(task, nextImported, customPropertyMapping, original2imported);
     }
   }
 
@@ -939,15 +823,15 @@ public class TaskManagerImpl implements TaskManager {
     }
     Task[] tasks = myAlgorithmCollection.getCriticalPathAlgorithm().getCriticalTasks();
     resetCriticalPath();
-    for (int i = 0; i < tasks.length; i++) {
-      tasks[i].setCritical(true);
+    for (Task task : tasks) {
+      task.setCritical(true);
     }
   }
 
   private void resetCriticalPath() {
     Task[] allTasks = getTasks();
-    for (int i = 0; i < allTasks.length; i++) {
-      allTasks[i].setCritical(false);
+    for (Task allTask : allTasks) {
+      allTask.setCritical(false);
     }
   }
 
@@ -955,14 +839,14 @@ public class TaskManagerImpl implements TaskManager {
   public void importAssignments(TaskManager importedTaskManager, HumanResourceManager hrManager,
       Map<Task, Task> original2importedTask, Map<HumanResource, HumanResource> original2importedResource) {
     Task[] tasks = importedTaskManager.getTasks();
-    for (int i = 0; i < tasks.length; i++) {
-      ResourceAssignment[] assignments = tasks[i].getAssignments();
-      for (int j = 0; j < assignments.length; j++) {
-        Task task = getTask(original2importedTask.get(tasks[i]).getTaskID());
+    for (Task value : tasks) {
+      ResourceAssignment[] assignments = value.getAssignments();
+      for (ResourceAssignment resourceAssignment : assignments) {
+        Task task = getTask(original2importedTask.get(value).getTaskID());
         ResourceAssignment assignment = task.getAssignmentCollection().addAssignment(
-            original2importedResource.get(assignments[j].getResource()));
-        assignment.setLoad(assignments[j].getLoad());
-        assignment.setCoordinator(assignments[j].isCoordinator());
+          original2importedResource.get(resourceAssignment.getResource()));
+        assignment.setLoad(resourceAssignment.getLoad());
+        assignment.setCoordinator(resourceAssignment.isCoordinator());
       }
     }
   }
