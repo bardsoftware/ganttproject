@@ -70,7 +70,7 @@ public class GanttChartSceneBuilder {
   private final InputApi input;
   private final TaskLabelSceneBuilder.InputApi taskLabelSceneApi;
 
-  private final TaskLabelSceneBuilder<ITaskSceneTask> myLabelsRenderer;
+  public final TaskLabelSceneBuilder<ITaskSceneTask> myLabelsRenderer;
 
   private final TaskActivitySceneBuilder.TaskApi<ITaskSceneTask, ITaskActivity<ITaskSceneTask>> myTaskApi = new TaskActivitySceneTaskApi();
 

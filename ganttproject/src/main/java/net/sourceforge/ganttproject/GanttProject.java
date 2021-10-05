@@ -204,9 +204,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getUiFacadeImpl().getAppFontOption().addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        for (RowHeightAligner aligner : myRowHeightAligners) {
-          aligner.optionsChanged();
-        }
+        getGanttChart().reset();
+//        for (RowHeightAligner aligner : myRowHeightAligners) {
+//          aligner.optionsChanged();
+//        }
       }
     });
     TreeTableCellsKt.initFontProperty(getUiFacadeImpl().getAppFontOption());
