@@ -186,7 +186,7 @@ public class GanttChartController extends AbstractChartImplementation implements
           model.calculateRowHeight(), myTaskTableConnector.getMinRowHeight().getValue()
       );
       myTaskTableConnector.getRowHeight().setValue(rowHeight);
-      model.setRowHeight((int)rowHeight);
+      model.setRowHeight((int)Math.ceil(rowHeight));
       model.setTopTimeUnit(getViewState().getTopTimeUnit());
       model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
       List<Task> visibleTasks = myTaskTableConnector.getVisibleTasks();

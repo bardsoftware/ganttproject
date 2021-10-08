@@ -74,6 +74,7 @@ import java.awt.Component
 import java.math.BigDecimal
 import java.util.*
 import java.util.List.copyOf
+import kotlin.math.ceil
 
 
 /**
@@ -212,11 +213,7 @@ class TaskTable(
 
   private fun initChartConnector() {
     taskTableChartConnector.rowHeight.addListener { _, _, newValue ->
-      if (newValue != treeTable.fixedCellSize && newValue.toInt() > 0 && newValue.toDouble() >= minCellHeight.value) {
-        treeTable.fixedCellSize = newValue.toDouble()
-      } else {
-        treeTable.fixedCellSize = minCellHeight.value
-      }
+      treeTable.fixedCellSize = ceil(maxOf(newValue.toDouble(), minCellHeight.value))
     }
 //    if (taskTableChartConnector.rowHeight.get() == -1) {
 //      taskTableChartConnector.rowHeight.value = maxOf(applicationFont.get().size.toInt() + 20, treeTable.fixedCellSize.toInt())
