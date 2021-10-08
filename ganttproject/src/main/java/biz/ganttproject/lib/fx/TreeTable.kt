@@ -168,6 +168,7 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   }
 
   fun vbarWidth() = (this.virtualFlow as MyVirtualFlow).vbarWidth()
+
   fun scrollTo(row: Int) {
     this.virtualFlow.scrollTo(row)
     updateScrollValue()
@@ -193,6 +194,9 @@ class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
 
 class MyVirtualFlow<T: IndexedCell<*>> : VirtualFlow<T>() {
   fun vbarWidth() = if (this.width > 0.0 && vbar.isVisible) vbar.width else 0.0
+  init {
+    children.remove(hbar)
+  }
 }
 
 class MyTreeTableRow<T> : TreeTableRow<T>() {
