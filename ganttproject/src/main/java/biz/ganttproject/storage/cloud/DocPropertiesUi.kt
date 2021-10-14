@@ -419,8 +419,7 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   private fun buildNotOnlineDocumentScene(): Scene {
     val wrapperPane = BorderPane()
     GPCloudUiFlowBuilder().apply {
-      this.wrapperPane = wrapperPane
-      dialogResizer = {}
+      flowPageChanger = createFlowPageChanger(wrapperPane)
       mainPage = NotOnlineDocumentMainPage()
       build().start()
     }

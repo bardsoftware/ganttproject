@@ -20,10 +20,7 @@ package biz.ganttproject.resource
 
 import biz.ganttproject.app.*
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.storage.cloud.FlowPage
-import biz.ganttproject.storage.cloud.GPCloudUiFlow
-import biz.ganttproject.storage.cloud.GPCloudUiFlowBuilder
-import biz.ganttproject.storage.cloud.HttpMethod
+import biz.ganttproject.storage.cloud.*
 import biz.ganttproject.storage.cloud.http.JsonHttpException
 import biz.ganttproject.storage.cloud.http.JsonTask
 import biz.ganttproject.storage.cloud.http.ResourceDto
@@ -175,8 +172,7 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
 
       dlg.setContent(wrapper)
       val cloudUiFlow = GPCloudUiFlowBuilder().run {
-        wrapperPane = wrapper
-        dialogResizer = dlg::resize
+        flowPageChanger = createFlowPageChanger(wrapper, dlg)
         mainPage = ResourceListPage(listView, dlg, resource2selected, resourceManager)
         build()
       }

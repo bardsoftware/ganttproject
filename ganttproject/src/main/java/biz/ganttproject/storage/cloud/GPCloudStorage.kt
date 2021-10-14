@@ -82,8 +82,7 @@ class GPCloudStorage(
     val offlinePane = GPCloudOfflinePane(this.mode)
     val offlineBrowser = GPCloudOfflineBrowser(this.mode, this.dialogUi, documentConsumer)
     GPCloudUiFlowBuilder().apply {
-      wrapperPane = myPane
-      dialogResizer = dialogUi.dialogController::resize
+      flowPageChanger = createFlowPageChanger(myPane, dialogUi.dialogController)
       mainPage = browserPane
       offlineAlertPage = offlinePane
       offlineMainPage = offlineBrowser
