@@ -74,6 +74,7 @@ import java.awt.Component
 import java.math.BigDecimal
 import java.util.*
 import java.util.List.copyOf
+import kotlin.math.ceil
 
 
 /**
@@ -212,11 +213,7 @@ class TaskTable(
 
   private fun initChartConnector() {
     taskTableChartConnector.rowHeight.addListener { _, _, newValue ->
-      if (newValue != treeTable.fixedCellSize && newValue.toInt() > 0 && newValue.toDouble() >= minCellHeight.value) {
-        treeTable.fixedCellSize = newValue.toDouble()
-      } else {
-        treeTable.fixedCellSize = minCellHeight.value
-      }
+      treeTable.fixedCellSize = ceil(maxOf(newValue.toDouble(), minCellHeight.value))
     }
 //    if (taskTableChartConnector.rowHeight.get() == -1) {
 //      taskTableChartConnector.rowHeight.value = maxOf(applicationFont.get().size.toInt() + 20, treeTable.fixedCellSize.toInt())
@@ -322,7 +319,9 @@ class TaskTable(
       }
 
       override fun taskModelReset() {
-        reload()
+        keepSelection {
+          reload()
+        }
       }
     })
   }
@@ -614,12 +613,18 @@ class TaskTable(
   private fun keepSelection(code: ()->Unit) {
     Platform.runLater {
       val selectedTasks =
-        treeTable.selectionModel.selectedItems.associate { it.value to (it.previousSibling() ?: it.parent) }
+        treeTable.selectionModel.selectedItems.associate {
+          it.value to (it.previousSibling()
+            ?: it.parent?.let { parent -> if (parent == treeTable.root) null else parent }
+            ?: it.nextSibling())
+        }
+      println("selected tasks=$selectedTasks")
       code()
       treeTable.selectionModel.clearSelection()
       for ((task, parentTreeItem) in selectedTasks) {
         val liveTask = taskManager.getTask(task.taskID)
         val whatSelect = task2treeItem[liveTask] ?: parentTreeItem
+        println("liveTask=$liveTask id=${task.taskID} whatSelect=$whatSelect")
         treeTable.selectionModel.select(whatSelect)
       }
       treeTable.requestFocus()
