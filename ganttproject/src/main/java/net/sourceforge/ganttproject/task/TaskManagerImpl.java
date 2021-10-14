@@ -265,12 +265,12 @@ public class TaskManagerImpl implements TaskManager {
     myDependencyCollection.clear();
     myRoot.myTaskHierarchyItem.clearChildren();
     // createRootTask();
-    fireTaskModelReset();
   }
 
   private void projectOpened() {
     processCriticalPath(getRootTask());
     myAlgorithmCollection.getRecalculateTaskCompletionPercentageAlgorithm().run();
+    fireTaskModelReset();
   }
 
   @Override
