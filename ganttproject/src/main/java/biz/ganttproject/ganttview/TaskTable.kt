@@ -319,7 +319,9 @@ class TaskTable(
       }
 
       override fun taskModelReset() {
-        reload()
+        keepSelection {
+          reload()
+        }
       }
     })
   }
@@ -611,12 +613,18 @@ class TaskTable(
   private fun keepSelection(code: ()->Unit) {
     Platform.runLater {
       val selectedTasks =
-        treeTable.selectionModel.selectedItems.associate { it.value to (it.previousSibling() ?: it.parent) }
+        treeTable.selectionModel.selectedItems.associate {
+          it.value to (it.previousSibling()
+            ?: it.parent?.let { parent -> if (parent == treeTable.root) null else parent }
+            ?: it.nextSibling())
+        }
+      println("selected tasks=$selectedTasks")
       code()
       treeTable.selectionModel.clearSelection()
       for ((task, parentTreeItem) in selectedTasks) {
         val liveTask = taskManager.getTask(task.taskID)
         val whatSelect = task2treeItem[liveTask] ?: parentTreeItem
+        println("liveTask=$liveTask id=${task.taskID} whatSelect=$whatSelect")
         treeTable.selectionModel.select(whatSelect)
       }
       treeTable.requestFocus()
