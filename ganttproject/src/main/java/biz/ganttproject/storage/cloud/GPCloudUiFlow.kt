@@ -49,13 +49,20 @@ open class EmptyFlowPage : FlowPage() {
   override fun setController(controller: GPCloudUiFlow) {}
 }
 
+typealias FlowPageChanger = (FlowPage, ()->Unit) -> Unit
+fun createFlowPageChanger(wrapperPane: BorderPane, controller: DialogController): FlowPageChanger = createFlowPageChanger(wrapperPane, controller::resize)
+fun createFlowPageChanger(wrapperPane: BorderPane, resizer: ()->Unit = {}): FlowPageChanger = { page, onFinish ->
+  FXUtil.transitionCenterPane(wrapperPane, page.ui) {
+    resizer()
+    onFinish()
+  }
+}
 class GPCloudUiFlow(
   private val signupPane: FlowPage,
   private val signinPane: FlowPage,
   private val offlineAlertPage: FlowPage,
   private val mainPane: FlowPage,
-  private val wrapperPane: BorderPane,
-  private val dialogResizer: () -> Unit,
+  private val flowPageChanger: FlowPageChanger,
   private val offlineMainPage: FlowPage
 ) {
   internal val httpd: HttpServerImpl by lazy {
@@ -140,8 +147,7 @@ class GPCloudUiFlow(
           transition(SceneId.BROWSER)
         }
       }
-      FXUtil.transitionCenterPane(wrapperPane, newPage.ui) {
-        dialogResizer()
+      flowPageChanger(newPage) {
         newPage.active = true
         currentPage = newPage
       }
@@ -161,8 +167,7 @@ class GPCloudUiFlow(
 }
 
 class GPCloudUiFlowBuilder {
-  lateinit var wrapperPane: BorderPane
-  lateinit var dialogResizer: ()->Unit
+  lateinit var flowPageChanger: FlowPageChanger
   lateinit var mainPage: FlowPage
   var offlineAlertPage: FlowPage = EmptyFlowPage()
   var offlineMainPage: FlowPage = EmptyFlowPage()
@@ -176,8 +181,7 @@ class GPCloudUiFlowBuilder {
     offlineAlertPage = offlineAlertPage,
     offlineMainPage = offlineMainPage,
     mainPane = mainPage,
-    wrapperPane = wrapperPane,
-    dialogResizer = dialogResizer
+    flowPageChanger = flowPageChanger
   )
 }
 

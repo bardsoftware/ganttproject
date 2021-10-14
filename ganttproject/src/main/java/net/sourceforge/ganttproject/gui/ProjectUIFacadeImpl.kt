@@ -28,6 +28,7 @@ import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.*
 import biz.ganttproject.storage.cloud.EmptyFlowPage
 import biz.ganttproject.storage.cloud.GPCloudUiFlowBuilder
+import biz.ganttproject.storage.cloud.createFlowPageChanger
 import com.google.common.collect.Lists
 import com.sandec.mdfx.MDFXNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -132,8 +133,7 @@ class ProjectUIFacadeImpl(
       controller.addStyleSheet("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
       controller.setContent(wrapper)
       GPCloudUiFlowBuilder().apply {
-        wrapperPane = wrapper
-        dialogResizer = controller::resize
+        flowPageChanger = createFlowPageChanger(wrapper, controller)
         mainPage = object : EmptyFlowPage() {
           override var active: Boolean
             get() = super.active
