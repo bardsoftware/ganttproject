@@ -32,6 +32,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
@@ -53,6 +54,7 @@ import java.awt.BorderLayout
 import java.awt.event.ActionEvent
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.Executors
 import java.util.regex.Pattern
 import javax.swing.*
 
@@ -65,10 +67,11 @@ import javax.swing.*
  *
  * @author bard
  */
-internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) : AutoCloseable {
-
-  private val myUiFacade: UIFacade = Preconditions.checkNotNull(uiFacade)
-  private val myProject: IGanttProject = Preconditions.checkNotNull(project)
+internal class ProjectOpenStrategy(
+  private val project: IGanttProject,
+  private val uiFacade: UIFacade,
+  private val signin: AuthenticationFlow,
+  ) : AutoCloseable {
   private val myDiagnostics: ProjectOpenDiagnosticImpl
   private val myCloseables = Lists.newArrayList<AutoCloseable>()
   private val myEnableAlgorithmsCmd: AutoCloseable
@@ -77,14 +80,13 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
   private var myOldDuration: TimeDuration? = null
   private val i18n = GanttLanguage.getInstance()
   private var myResetModifiedState = true
-
   enum class ConvertMilestones {
     UNKNOWN, TRUE, FALSE
   }
 
   init {
-    myDiagnostics = ProjectOpenDiagnosticImpl(myUiFacade)
-    myAlgs = myProject.taskManager.algorithmCollection
+    myDiagnostics = ProjectOpenDiagnosticImpl(this.uiFacade)
+    myAlgs = this.project.taskManager.algorithmCollection
     myEnableAlgorithmsCmd = AutoCloseable {
       myAlgs.scheduler.setEnabled(true)
       myAlgs.recalculateTaskScheduleAlgorithm.setEnabled(true)
@@ -103,10 +105,10 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
     }
   }
 
-  fun open(document: Document): Deferred<Document> {
-    val docChannel = Channel<Document>()
+  private val openScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 
-    GlobalScope.launch(Dispatchers.IO) {
+  fun open(document: Document, docChannel: Channel<Document> = Channel()): Deferred<Document> {
+    openScope.launch {
       val online = document.asOnlineDocument()
       if (online == null) {
         docChannel.send(document)
@@ -115,7 +117,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
           val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
           processFetchResult(currentFetch, document, docChannel)
         } catch (ex: ForbiddenException) {
-          docChannel.close(ex)
+          signin { open(document, docChannel) }
         } catch (ex: PaymentRequiredException) {
           docChannel.close(ex)
         }
@@ -252,15 +254,15 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
     myAlgs.adjustTaskBoundsAlgorithm.setEnabled(false)
     myAlgs.scheduler.setDiagnostic(myDiagnostics)
     try {
-      myProject.open(document)
+      project.open(document)
     } finally {
       myAlgs.scheduler.setDiagnostic(null)
     }
     if (document.portfolio != null) {
       val defaultDocument = document.portfolio.defaultDocument
-      myProject.open(defaultDocument)
+      project.open(defaultDocument)
     }
-    myOldDuration = myProject.taskManager.projectLength
+    myOldDuration = project.taskManager.projectLength
     return Step1()
   }
 
@@ -270,7 +272,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
   // milestones.
   internal inner class Step1 {
     fun checkLegacyMilestones(): Step2 {
-      val taskManager = myProject.taskManager
+      val taskManager = project.taskManager
       var hasLegacyMilestones = false
       for (t in taskManager.tasks) {
         if ((t as TaskImpl).isLegacyMilestone) {
@@ -287,10 +289,10 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
         when (option) {
           ProjectOpenStrategy.ConvertMilestones.UNKNOWN -> myTasks.add(Runnable {
             try {
-              myProject.taskManager.algorithmCollection.scheduler.setDiagnostic(myDiagnostics)
-              tryPatchMilestones(myProject, taskManager)
+              project.taskManager.algorithmCollection.scheduler.setDiagnostic(myDiagnostics)
+              tryPatchMilestones(project, taskManager)
             } finally {
-              myProject.taskManager.algorithmCollection.scheduler.setDiagnostic(null)
+              project.taskManager.algorithmCollection.scheduler.setDiagnostic(null)
             }
           })
           ProjectOpenStrategy.ConvertMilestones.TRUE -> {
@@ -332,7 +334,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
       result.add(content, BorderLayout.CENTER)
       result.add(icon, BorderLayout.WEST)
       result.border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
-      myUiFacade.createDialog(result, arrayOf<Action>(object : OkAction() {
+      uiFacade.createDialog(result, arrayOf<Action>(object : OkAction() {
         override fun actionPerformed(e: ActionEvent) {
           taskManager.isZeroMilestones = buttonConvert.isSelected
           if (remember.isSelected) {
@@ -373,13 +375,13 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
         myAlgs.scheduler.setDiagnostic(null)
       }
       // Analyze earliest start dates
-      for (t in myProject.taskManager.tasks) {
+      for (t in project.taskManager.tasks) {
         if (t.third != null && myDiagnostics.myModifiedTasks.containsKey(t)) {
           myDiagnostics.addReason(t, "scheduler.warning.table.reason.earliestStart")
         }
       }
 
-      val newDuration = myProject.taskManager.projectLength
+      val newDuration = project.taskManager.projectLength
       if (!myDiagnostics.myModifiedTasks.isEmpty()) {
         // Some tasks have been modified, so let's add introduction text to the dialog
         myDiagnostics.info(i18n.getText("scheduler.warning.summary.item0"))
@@ -401,7 +403,7 @@ internal class ProjectOpenStrategy(project: IGanttProject, uiFacade: UIFacade) :
         }
       })
       if (myDiagnostics.myMessages.isEmpty() && myResetModifiedState) {
-        myTasks.add(Runnable { myProject.isModified = false })
+        myTasks.add(Runnable { project.isModified = false })
       }
       myTasks.add(Runnable {
         try {

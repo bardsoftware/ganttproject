@@ -24,16 +24,15 @@ import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
 import java.io.IOException
 
+typealias AuthenticationFlow = (()->Unit)->Unit
+
 interface ProjectUIFacade {
   fun saveProject(project: IGanttProject, onFinish: Channel<Boolean>?)
   fun saveProjectAs(project: IGanttProject)
   fun ensureProjectSaved(project: IGanttProject): Boolean
 
   @Throws(IOException::class, Document.DocumentException::class)
-  fun openProject(project: IGanttProject)
-
-  @Throws(IOException::class, Document.DocumentException::class)
-  fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?)
+  fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?, authenticationFlow: AuthenticationFlow? = null)
   fun createProject(project: IGanttProject)
   fun getOptionGroups(): Array<GPOptionGroup>
 }

@@ -128,11 +128,18 @@ interface DialogController {
   fun resize()
   var beforeShow: () -> Unit
   var onShown: () -> Unit
+  var onClosed: () -> Unit
 }
 
-class DialogControllerSwing() : DialogController {
+class DialogControllerSwing : DialogController {
   override var beforeShow: () -> Unit = {}
   override var onShown: () -> Unit = {}
+  override var onClosed: () -> Unit = {}
+  set(value) {
+    if (this::dialogFrame.isInitialized) {
+      this.dialogFrame.onClosed(value)
+    }
+  }
 
   private lateinit var dialogFrame: UIFacade.Dialog
   private val paneBuilder = VBoxBuilder().also {
@@ -199,6 +206,7 @@ class DialogControllerSwing() : DialogController {
   internal fun setDialogFrame(dlgFrame: UIFacade.Dialog) {
     this.dialogFrame = dlgFrame
     dlgFrame.onShown(this.onShown)
+    dlgFrame.onClosed(this.onClosed)
     this.beforeShow()
     this.dialogFrame.show()
   }
@@ -321,6 +329,7 @@ class DialogControllerSwing() : DialogController {
 class DialogControllerFx(private val dialogPane: DialogPane) : DialogController {
   override var beforeShow: () -> Unit = {}
   override var onShown: () -> Unit = {}
+  override var onClosed: () -> Unit = {}
   private val stackPane = StackPane().also { it.styleClass.add("layers") }
   private var content: Node = Region()
 

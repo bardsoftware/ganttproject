@@ -57,6 +57,7 @@ import java.util.logging.Level
 import javax.swing.JFileChooser
 import javax.swing.SwingUtilities
 
+
 @ExperimentalCoroutinesApi
 class ProjectUIFacadeImpl(
     private val myWorkbenchFacade: UIFacade,
@@ -127,24 +128,43 @@ class ProjectUIFacadeImpl(
   enum class CantWriteChoice {MAKE_COPY, CANCEL, RETRY}
 
   private fun signin(onAuth: ()->Unit) {
-    dialog { controller ->
-      val wrapper = BorderPane()
-      controller.addStyleClass("dlg-lock", "dlg-cloud-file-options")
-      controller.addStyleSheet("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
-      controller.setContent(wrapper)
+    storagePageChanger?.let {
       GPCloudUiFlowBuilder().apply {
-        flowPageChanger = createFlowPageChanger(wrapper, controller)
+        this.flowPageChanger = it
         mainPage = object : EmptyFlowPage() {
           override var active: Boolean
             get() = super.active
             set(value) {
               if (value) {
-                controller.hide()
                 onAuth()
               }
             }
         }
         build().start()
+      }
+    } ?: run {
+      dialog { controller ->
+        val wrapper = BorderPane()
+        controller.addStyleClass("dlg-lock", "dlg-cloud-file-options")
+        controller.addStyleSheet(
+          "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
+          "/biz/ganttproject/storage/StorageDialog.css"
+        )
+        controller.setContent(wrapper)
+        GPCloudUiFlowBuilder().apply {
+          flowPageChanger = createFlowPageChanger(wrapper, controller)
+          mainPage = object : EmptyFlowPage() {
+            override var active: Boolean
+              get() = super.active
+              set(value) {
+                if (value) {
+                  controller.hide()
+                  onAuth()
+                }
+              }
+          }
+          build().start()
+        }
       }
     }
   }
@@ -202,31 +222,14 @@ class ProjectUIFacadeImpl(
   }
 
   @Throws(IOException::class, DocumentException::class)
-  override fun openProject(project: IGanttProject) {
-    if (!ensureProjectSaved(project)) {
-      return
-    }
-    val fc = JFileChooser(documentManager.workingDirectory)
-    val ganttFilter = GanttXMLFileFilter()
-
-    // Remove the possibility to use a file filter for all files
-    val filefilters = fc.choosableFileFilters
-    for (i in filefilters.indices) {
-      fc.removeChoosableFileFilter(filefilters[i])
-    }
-    fc.addChoosableFileFilter(ganttFilter)
-
-    val returnVal = fc.showOpenDialog(myWorkbenchFacade.mainFrame)
-    if (returnVal == JFileChooser.APPROVE_OPTION) {
-      val document = documentManager.getDocument(fc.selectedFile.absolutePath)
-      openProject(document, project, null)
-    }
-  }
-
-  @Throws(IOException::class, DocumentException::class)
-  override fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?) {
+  override fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?,
+                           authenticationFlow: AuthenticationFlow?) {
     try {
-      ProjectOpenStrategy(project, myWorkbenchFacade).use { strategy ->
+      ProjectOpenStrategy(
+        project = project,
+        uiFacade = myWorkbenchFacade,
+        signin = authenticationFlow ?: this::signin,
+      ).use { strategy ->
         // Run coroutine which fetches document and wait until it sends the result to the channel.
         val docFuture = strategy.open(document)
         runBlocking {
@@ -235,14 +238,6 @@ class ProjectUIFacadeImpl(
           } catch (ex: Exception) {
             when (ex) {
               // If channel was closed with a cause and it was because of HTTP 403, we show UI for sign-in
-              is ForbiddenException -> {
-                signin {
-                  openProject(document, project, onFinish)
-                }
-              }
-              is PaymentRequiredException -> {
-                onFinish?.close(ex)
-              }
               is DocumentException -> {
                 onFinish?.close(ex) ?: GPLogger.log(ex)
               }

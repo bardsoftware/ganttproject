@@ -22,8 +22,10 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.ListItemBuilder
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
+import biz.ganttproject.storage.cloud.FlowPageChanger
 import biz.ganttproject.storage.cloud.GPCloudStorage
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
+import biz.ganttproject.storage.cloud.createFlowPageChanger
 import biz.ganttproject.storage.local.LocalStorage
 import biz.ganttproject.storage.webdav.WebdavServerSetupPane
 import biz.ganttproject.storage.webdav.WebdavStorage
@@ -116,6 +118,8 @@ sealed class StorageMode(val name: String) {
 
 }
 
+var storagePageChanger: FlowPageChanger? = null
+
 /**
  * This is the main entrance point. This class create a UI consisting of a storage list in the left pane
  * and storage UI in the right pane. Storage UI changes along with the selection in the storage list.
@@ -136,6 +140,12 @@ class StoragePane internal constructor(
 
   private var activeStorageLabel: Node? = null
 
+  init {
+    dialogUi.dialogController.onClosed = {
+      storagePageChanger = null
+    }
+    storagePageChanger = createFlowPageChanger(storageUiPane, dialogUi.dialogController)
+  }
   /**
    * Builds a pane with the whole storage dialog UI: lit on the left and
    */
@@ -153,7 +163,6 @@ class StoragePane internal constructor(
         addEventHandler(ActionEvent.ACTION) { onNewWebdavServer(storageUiPane) }
       })
     }
-
 
     storageUiPane.setPrefSize(400.0, 400.0)
 

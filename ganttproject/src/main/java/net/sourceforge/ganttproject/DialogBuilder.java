@@ -88,6 +88,17 @@ public class DialogBuilder {
     }
 
     @Override
+    public void onClosed(Runnable onClosed) {
+      myDlg.addWindowListener(new WindowAdapter() {
+
+        @Override
+        public void windowClosed(WindowEvent e) {
+          onClosed.run();
+        }
+      });
+    }
+
+    @Override
     public void layout() {
       myDlg.validate();
     }
