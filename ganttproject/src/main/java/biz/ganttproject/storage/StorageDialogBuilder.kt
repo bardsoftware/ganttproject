@@ -42,6 +42,7 @@ import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument
+import net.sourceforge.ganttproject.gui.AuthenticationFlow
 import net.sourceforge.ganttproject.gui.ProjectUIFacade
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.NotificationPane
@@ -78,6 +79,9 @@ class StorageDialogBuilder(
 
       GlobalScope.launch(Dispatchers.IO) {
         try {
+//          val authenticationFlow: AuthenticationFlow = { onAuth ->
+//            onAuth()
+//          }
           projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish)
           if (onFinish.receive()) {
             document.asOnlineDocument()?.let {
