@@ -22,10 +22,7 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.app.DialogController
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.createAlertBody
-import biz.ganttproject.storage.cloud.GPCloudDocument
-import biz.ganttproject.storage.cloud.GPCloudStorageOptions
-import biz.ganttproject.storage.cloud.onboard
-import biz.ganttproject.storage.cloud.webSocket
+import biz.ganttproject.storage.cloud.*
 import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.control.Button
@@ -79,10 +76,23 @@ class StorageDialogBuilder(
 
       GlobalScope.launch(Dispatchers.IO) {
         try {
-//          val authenticationFlow: AuthenticationFlow = { onAuth ->
-//            onAuth()
-//          }
-          projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish)
+          val authenticationFlow: AuthenticationFlow = { onAuth ->
+            killProgress()
+            GPCloudUiFlowBuilder().apply {
+              flowPageChanger = storagePageChanger!!
+              mainPage = object : EmptyFlowPage() {
+                override var active: Boolean
+                  get() = super.active
+                  set(value) {
+                    if (value) {
+                      onAuth()
+                    }
+                  }
+              }
+              build().start()
+            }
+          }
+          projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish, authenticationFlow)
           if (onFinish.receive()) {
             document.asOnlineDocument()?.let {
               if (it is GPCloudDocument) {
