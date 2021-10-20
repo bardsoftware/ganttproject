@@ -128,43 +128,27 @@ class ProjectUIFacadeImpl(
   enum class CantWriteChoice {MAKE_COPY, CANCEL, RETRY}
 
   private fun signin(onAuth: ()->Unit) {
-    storagePageChanger?.let {
+    dialog { controller ->
+      val wrapper = BorderPane()
+      controller.addStyleClass("dlg-lock", "dlg-cloud-file-options")
+      controller.addStyleSheet(
+        "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
+        "/biz/ganttproject/storage/StorageDialog.css"
+      )
+      controller.setContent(wrapper)
       GPCloudUiFlowBuilder().apply {
-        this.flowPageChanger = it
+        flowPageChanger = createFlowPageChanger(wrapper, controller)
         mainPage = object : EmptyFlowPage() {
           override var active: Boolean
             get() = super.active
             set(value) {
               if (value) {
+                controller.hide()
                 onAuth()
               }
             }
         }
         build().start()
-      }
-    } ?: run {
-      dialog { controller ->
-        val wrapper = BorderPane()
-        controller.addStyleClass("dlg-lock", "dlg-cloud-file-options")
-        controller.addStyleSheet(
-          "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
-          "/biz/ganttproject/storage/StorageDialog.css"
-        )
-        controller.setContent(wrapper)
-        GPCloudUiFlowBuilder().apply {
-          flowPageChanger = createFlowPageChanger(wrapper, controller)
-          mainPage = object : EmptyFlowPage() {
-            override var active: Boolean
-              get() = super.active
-              set(value) {
-                if (value) {
-                  controller.hide()
-                  onAuth()
-                }
-              }
-          }
-          build().start()
-        }
       }
     }
   }
