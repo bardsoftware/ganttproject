@@ -48,6 +48,12 @@ import java.util.*
 import java.util.function.Consumer
 import kotlin.math.max
 
+fun interface OpenDocumentReceiver {
+  /**
+   * Tries to open a document and calls authenticationFlow if authentication is required.
+   */
+  fun call(doc: Document, authenticationFlow: AuthenticationFlow)
+}
 /**
  * This class builds the storage dialog. Storage dialog shows a list of available storages
  * allows for switching between them and connects storage user interfaces with functions to open or save documents.
@@ -60,7 +66,7 @@ class StorageDialogBuilder(
     documentManager: DocumentManager,
     private val cloudStorageOptions: GPCloudStorageOptions,
     private val dialogBuildApi: DialogController) {
-  private val myDocumentReceiver: Consumer<Document>
+  private val myDocumentReceiver: OpenDocumentReceiver
   private val myDocumentUpdater: Consumer<Document>
   private var myNotificationPane: NotificationPane? = null
   private var myOpenStorage: Node? = null
@@ -70,29 +76,16 @@ class StorageDialogBuilder(
 
   init {
     // This will be called when user opens a project.
-    myDocumentReceiver = Consumer { document: Document ->
-      val killProgress = myDialogUi.toggleProgress(true)
+    myDocumentReceiver = OpenDocumentReceiver { document: Document, authFlow: AuthenticationFlow ->
       val onFinish = Channel<Boolean>()
-
+      val killProgress = myDialogUi.toggleProgress(true)
       GlobalScope.launch(Dispatchers.IO) {
         try {
-          val authenticationFlow: AuthenticationFlow = { onAuth ->
+          val proxyAuthFlow: AuthenticationFlow = { onAuth ->
             killProgress()
-            GPCloudUiFlowBuilder().apply {
-              flowPageChanger = storagePageChanger!!
-              mainPage = object : EmptyFlowPage() {
-                override var active: Boolean
-                  get() = super.active
-                  set(value) {
-                    if (value) {
-                      onAuth()
-                    }
-                  }
-              }
-              build().start()
-            }
+            authFlow(onAuth)
           }
-          projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish, authenticationFlow)
+          projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish, proxyAuthFlow)
           if (onFinish.receive()) {
             document.asOnlineDocument()?.let {
               if (it is GPCloudDocument) {

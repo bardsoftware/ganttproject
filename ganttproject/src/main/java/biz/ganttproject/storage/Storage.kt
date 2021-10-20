@@ -22,10 +22,7 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.ListItemBuilder
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
-import biz.ganttproject.storage.cloud.FlowPageChanger
-import biz.ganttproject.storage.cloud.GPCloudStorage
-import biz.ganttproject.storage.cloud.GPCloudStorageOptions
-import biz.ganttproject.storage.cloud.createFlowPageChanger
+import biz.ganttproject.storage.cloud.*
 import biz.ganttproject.storage.local.LocalStorage
 import biz.ganttproject.storage.webdav.WebdavServerSetupPane
 import biz.ganttproject.storage.webdav.WebdavStorage
@@ -49,6 +46,7 @@ import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor
+import net.sourceforge.ganttproject.gui.AuthenticationFlow
 import java.io.File
 import java.util.*
 import java.util.function.Consumer
@@ -118,7 +116,7 @@ sealed class StorageMode(val name: String) {
 
 }
 
-var storagePageChanger: FlowPageChanger? = null
+//var storagePageChanger: FlowPageChanger? = null
 
 /**
  * This is the main entrance point. This class create a UI consisting of a storage list in the left pane
@@ -130,7 +128,7 @@ class StoragePane internal constructor(
     private val cloudStorageOptions: GPCloudStorageOptions,
     private val documentManager: DocumentManager,
     private val currentDocument: ReadOnlyProxyDocument,
-    private val documentReceiver: Consumer<Document>,
+    private val documentReceiver: OpenDocumentReceiver,
     private val documentUpdater: Consumer<Document>,
     private val dialogUi: StorageDialogBuilder.DialogUi) {
 
@@ -139,12 +137,26 @@ class StoragePane internal constructor(
   private val storageUiPane = BorderPane()
 
   private var activeStorageLabel: Node? = null
+  private val authenticationFlow: AuthenticationFlow = { onAuth ->
+    GPCloudUiFlowBuilder().apply {
+      flowPageChanger = createFlowPageChanger(storageUiPane, dialogUi.dialogController)
+      mainPage = object : EmptyFlowPage() {
+        override var active: Boolean
+          get() = super.active
+          set(value) {
+            if (value) {
+              onAuth()
+            }
+          }
+      }
+      build().start()
+    }
+  }
 
   init {
     dialogUi.dialogController.onClosed = {
-      storagePageChanger = null
+      //storagePageChanger = null
     }
-    storagePageChanger = createFlowPageChanger(storageUiPane, dialogUi.dialogController)
   }
   /**
    * Builds a pane with the whole storage dialog UI: lit on the left and
@@ -187,7 +199,11 @@ class StoragePane internal constructor(
 
     val openDocument = { document: Document ->
       try {
-        (if (mode == StorageDialogBuilder.Mode.OPEN) documentReceiver else documentUpdater).accept(document)
+        if (mode == StorageDialogBuilder.Mode.OPEN) {
+          documentReceiver.call(document, authenticationFlow)
+        } else {
+          documentUpdater.accept(document)
+        }
       } catch (e: Exception) {
         dialogUi.error(e)
       }
