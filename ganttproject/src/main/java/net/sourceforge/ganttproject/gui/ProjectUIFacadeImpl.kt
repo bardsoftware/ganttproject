@@ -35,6 +35,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.geometry.Pos
 import javafx.scene.layout.BorderPane
+import javafx.scene.layout.Pane
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -135,6 +136,10 @@ class ProjectUIFacadeImpl(
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
         "/biz/ganttproject/storage/StorageDialog.css"
       )
+      wrapper.center = Pane().also {
+        it.prefHeight = 400.0
+        it.prefWidth = 400.0
+      }
       controller.setContent(wrapper)
       GPCloudUiFlowBuilder().apply {
         flowPageChanger = createFlowPageChanger(wrapper, controller)
