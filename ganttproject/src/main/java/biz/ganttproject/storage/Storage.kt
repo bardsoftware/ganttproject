@@ -77,7 +77,7 @@ sealed class StorageMode(val name: String) {
         if (initialDirectory != null) {
           it.initialDirectory = initialDirectory
         }
-        it.title = fileChooserLocalizer.formatText("${this.name.toLowerCase()}.fileChooser.title")
+        it.title = fileChooserLocalizer.formatText("${this.name.lowercase()}.fileChooser.title")
         it.extensionFilters.addAll(FileChooser.ExtensionFilter(
           fileChooserLocalizer.formatText("ganttprojectFiles"),
           "*.gan"
@@ -108,7 +108,7 @@ sealed class StorageMode(val name: String) {
         if (initialDirectory != null) {
           it.initialDirectory = initialDirectory
         }
-        it.title = fileChooserLocalizer.formatText("${this.name.toLowerCase()}.fileChooser.title")
+        it.title = fileChooserLocalizer.formatText("${this.name.lowercase()}.fileChooser.title")
         return it.showDialog(null)
       }
     }
@@ -153,11 +153,6 @@ class StoragePane internal constructor(
     }
   }
 
-  init {
-    dialogUi.dialogController.onClosed = {
-      //storagePageChanger = null
-    }
-  }
   /**
    * Builds a pane with the whole storage dialog UI: lit on the left and
    */
@@ -242,7 +237,6 @@ class StoragePane internal constructor(
           builder.hoverNode = buildFontAwesomeButton(FontAwesomeIcon.COG.name, null,
               {
                 FXUtil.transitionCenterPane(storageUiPane, settingsPane) { dialogUi.resize() }
-                Unit
               },
               "settings"
           )
@@ -279,7 +273,7 @@ class StoragePane internal constructor(
 
   private fun onNewWebdavServer(borderPane: BorderPane) {
     val newServer = WebDavServerDescriptor()
-    val setupPane = WebdavServerSetupPane(newServer, Consumer<WebDavServerDescriptor?> {
+    val setupPane = WebdavServerSetupPane(newServer, {
       if (it != null) {
         cloudStorageOptions.addValue(it)
       }
