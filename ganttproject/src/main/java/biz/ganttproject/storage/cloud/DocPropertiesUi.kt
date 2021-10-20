@@ -396,7 +396,7 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
 
   private fun onOnlineDocFetch(fetchResult: FetchResult) {
     val document = this.project.document
-    ProjectOpenStrategy(project, uiFacade).use { strategy ->
+    ProjectOpenStrategy(project, uiFacade, { onAuth -> onAuth() }).use { strategy ->
       val docFuture = strategy.open(document)
       runBlocking {
         try {
@@ -419,8 +419,7 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   private fun buildNotOnlineDocumentScene(): Scene {
     val wrapperPane = BorderPane()
     GPCloudUiFlowBuilder().apply {
-      this.wrapperPane = wrapperPane
-      dialogResizer = {}
+      flowPageChanger = createFlowPageChanger(wrapperPane)
       mainPage = NotOnlineDocumentMainPage()
       build().start()
     }

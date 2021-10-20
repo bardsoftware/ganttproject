@@ -22,8 +22,7 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.ListItemBuilder
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
-import biz.ganttproject.storage.cloud.GPCloudStorage
-import biz.ganttproject.storage.cloud.GPCloudStorageOptions
+import biz.ganttproject.storage.cloud.*
 import biz.ganttproject.storage.local.LocalStorage
 import biz.ganttproject.storage.webdav.WebdavServerSetupPane
 import biz.ganttproject.storage.webdav.WebdavStorage
@@ -47,6 +46,7 @@ import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor
+import net.sourceforge.ganttproject.gui.AuthenticationFlow
 import java.io.File
 import java.util.*
 import java.util.function.Consumer
@@ -77,7 +77,7 @@ sealed class StorageMode(val name: String) {
         if (initialDirectory != null) {
           it.initialDirectory = initialDirectory
         }
-        it.title = fileChooserLocalizer.formatText("${this.name.toLowerCase()}.fileChooser.title")
+        it.title = fileChooserLocalizer.formatText("${this.name.lowercase()}.fileChooser.title")
         it.extensionFilters.addAll(FileChooser.ExtensionFilter(
           fileChooserLocalizer.formatText("ganttprojectFiles"),
           "*.gan"
@@ -108,13 +108,15 @@ sealed class StorageMode(val name: String) {
         if (initialDirectory != null) {
           it.initialDirectory = initialDirectory
         }
-        it.title = fileChooserLocalizer.formatText("${this.name.toLowerCase()}.fileChooser.title")
+        it.title = fileChooserLocalizer.formatText("${this.name.lowercase()}.fileChooser.title")
         return it.showDialog(null)
       }
     }
   }
 
 }
+
+//var storagePageChanger: FlowPageChanger? = null
 
 /**
  * This is the main entrance point. This class create a UI consisting of a storage list in the left pane
@@ -126,7 +128,7 @@ class StoragePane internal constructor(
     private val cloudStorageOptions: GPCloudStorageOptions,
     private val documentManager: DocumentManager,
     private val currentDocument: ReadOnlyProxyDocument,
-    private val documentReceiver: Consumer<Document>,
+    private val documentReceiver: OpenDocumentReceiver,
     private val documentUpdater: Consumer<Document>,
     private val dialogUi: StorageDialogBuilder.DialogUi) {
 
@@ -135,6 +137,21 @@ class StoragePane internal constructor(
   private val storageUiPane = BorderPane()
 
   private var activeStorageLabel: Node? = null
+  private val authenticationFlow: AuthenticationFlow = { onAuth ->
+    GPCloudUiFlowBuilder().apply {
+      flowPageChanger = createFlowPageChanger(storageUiPane, dialogUi.dialogController)
+      mainPage = object : EmptyFlowPage() {
+        override var active: Boolean
+          get() = super.active
+          set(value) {
+            if (value) {
+              onAuth()
+            }
+          }
+      }
+      build().start()
+    }
+  }
 
   /**
    * Builds a pane with the whole storage dialog UI: lit on the left and
@@ -153,7 +170,6 @@ class StoragePane internal constructor(
         addEventHandler(ActionEvent.ACTION) { onNewWebdavServer(storageUiPane) }
       })
     }
-
 
     storageUiPane.setPrefSize(400.0, 400.0)
 
@@ -178,7 +194,11 @@ class StoragePane internal constructor(
 
     val openDocument = { document: Document ->
       try {
-        (if (mode == StorageDialogBuilder.Mode.OPEN) documentReceiver else documentUpdater).accept(document)
+        if (mode == StorageDialogBuilder.Mode.OPEN) {
+          documentReceiver.call(document, authenticationFlow)
+        } else {
+          documentUpdater.accept(document)
+        }
       } catch (e: Exception) {
         dialogUi.error(e)
       }
@@ -217,7 +237,6 @@ class StoragePane internal constructor(
           builder.hoverNode = buildFontAwesomeButton(FontAwesomeIcon.COG.name, null,
               {
                 FXUtil.transitionCenterPane(storageUiPane, settingsPane) { dialogUi.resize() }
-                Unit
               },
               "settings"
           )
@@ -254,7 +273,7 @@ class StoragePane internal constructor(
 
   private fun onNewWebdavServer(borderPane: BorderPane) {
     val newServer = WebDavServerDescriptor()
-    val setupPane = WebdavServerSetupPane(newServer, Consumer<WebDavServerDescriptor?> {
+    val setupPane = WebdavServerSetupPane(newServer, {
       if (it != null) {
         cloudStorageOptions.addValue(it)
       }

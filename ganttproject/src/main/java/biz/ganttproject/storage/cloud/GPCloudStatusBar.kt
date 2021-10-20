@@ -159,8 +159,7 @@ class GPCloudStatusBar(
       val wrapper = BorderPane()
       controller.setContent(wrapper)
       GPCloudUiFlowBuilder().apply {
-        wrapperPane = wrapper
-        dialogResizer = controller::resize
+        flowPageChanger = createFlowPageChanger(wrapper, controller)
         mainPage = object : EmptyFlowPage() {
           override var active: Boolean
             get() = super.active

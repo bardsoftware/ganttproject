@@ -22,10 +22,7 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.app.DialogController
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.createAlertBody
-import biz.ganttproject.storage.cloud.GPCloudDocument
-import biz.ganttproject.storage.cloud.GPCloudStorageOptions
-import biz.ganttproject.storage.cloud.onboard
-import biz.ganttproject.storage.cloud.webSocket
+import biz.ganttproject.storage.cloud.*
 import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.control.Button
@@ -42,6 +39,7 @@ import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument
+import net.sourceforge.ganttproject.gui.AuthenticationFlow
 import net.sourceforge.ganttproject.gui.ProjectUIFacade
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.NotificationPane
@@ -50,6 +48,12 @@ import java.util.*
 import java.util.function.Consumer
 import kotlin.math.max
 
+fun interface OpenDocumentReceiver {
+  /**
+   * Tries to open a document and calls authenticationFlow if authentication is required.
+   */
+  fun call(doc: Document, authenticationFlow: AuthenticationFlow)
+}
 /**
  * This class builds the storage dialog. Storage dialog shows a list of available storages
  * allows for switching between them and connects storage user interfaces with functions to open or save documents.
@@ -62,7 +66,7 @@ class StorageDialogBuilder(
     documentManager: DocumentManager,
     private val cloudStorageOptions: GPCloudStorageOptions,
     private val dialogBuildApi: DialogController) {
-  private val myDocumentReceiver: Consumer<Document>
+  private val myDocumentReceiver: OpenDocumentReceiver
   private val myDocumentUpdater: Consumer<Document>
   private var myNotificationPane: NotificationPane? = null
   private var myOpenStorage: Node? = null
@@ -72,13 +76,16 @@ class StorageDialogBuilder(
 
   init {
     // This will be called when user opens a project.
-    myDocumentReceiver = Consumer { document: Document ->
-      val killProgress = myDialogUi.toggleProgress(true)
+    myDocumentReceiver = OpenDocumentReceiver { document: Document, authFlow: AuthenticationFlow ->
       val onFinish = Channel<Boolean>()
-
+      val killProgress = myDialogUi.toggleProgress(true)
       GlobalScope.launch(Dispatchers.IO) {
         try {
-          projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish)
+          val proxyAuthFlow: AuthenticationFlow = { onAuth ->
+            killProgress()
+            authFlow(onAuth)
+          }
+          projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish, proxyAuthFlow)
           if (onFinish.receive()) {
             document.asOnlineDocument()?.let {
               if (it is GPCloudDocument) {
