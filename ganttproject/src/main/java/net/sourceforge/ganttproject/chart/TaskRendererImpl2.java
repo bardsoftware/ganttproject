@@ -185,22 +185,17 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     if (myModel.getBaseline() != null) {
       rowHeight = rowHeight + 8;
     }
-    int appFontSize = myModel.getProjectConfig().getAppFontSize().get();
-    return Math.max(appFontSize, rowHeight);
-  }
-
-  Canvas getLabelLayer() {
-    return chartRenderer.getLabelLayer();
+    return rowHeight;
   }
 
   public static List<Rectangle> getTaskRectangles(Task t, ChartModelImpl chartModel) {
-    List<Rectangle> result = new ArrayList<Rectangle>();
+    List<Rectangle> result = new ArrayList<>();
     ITaskSceneTask task = new ITaskSceneTaskImpl(t, chartModel);
     List<ITaskActivity<ITaskSceneTask>> originalActivities = task.getActivities();
-    TaskActivitySplitter<ITaskSceneTask> splitter = new TaskActivitySplitter<ITaskSceneTask>(
-      chartModel::getStartDate,
-      chartModel::getEndDate,
-      (u, s, e) -> chartModel.getTaskManager().createLength(u, s, e)
+    TaskActivitySplitter<ITaskSceneTask> splitter = new TaskActivitySplitter<>(
+        chartModel::getStartDate,
+        chartModel::getEndDate,
+        (u, s, e) -> chartModel.getTaskManager().createLength(u, s, e)
     );
     List<ITaskActivity<ITaskSceneTask>> splitOnBounds = splitter.split(originalActivities);
     for (ITaskActivity<ITaskSceneTask> activity : splitOnBounds) {

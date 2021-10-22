@@ -125,6 +125,11 @@ public class GanttChartSceneBuilder {
       public int getFontSize() {
         return input.getLabelsFontSize();
       }
+
+      @Override
+      public boolean hasBaseline() {
+        return input.getBaseline() != null;
+      }
     };
 
     myLabelsRenderer = new TaskLabelSceneBuilder<>(new TaskLabelSceneTaskApi(), taskLabelSceneApi, myLabelsLayer);

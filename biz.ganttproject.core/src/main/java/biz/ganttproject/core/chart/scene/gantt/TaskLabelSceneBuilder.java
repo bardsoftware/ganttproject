@@ -81,6 +81,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
     EnumerationOption getRightLabelOption();
 
     int getFontSize();
+    boolean hasBaseline();
   }
 
   static {
@@ -200,21 +201,13 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
     return myLabelOptions[DOWN].getValue() != null && myLabelOptions[DOWN].getValue().length() != 0;
   }
 
-  boolean isOnlyUp() {
-    return isTextUp() && !isTextDown();
-  }
-
-  boolean isOnlyDown() {
-    return isTextDown() && !isTextUp();
-  }
-
   static final int TINY_SPACE = 2;
   static final int MEDIUM_SPACE = 3;
   static final int LARGE_SPACE = 4;
 
   public int calculateRowHeight() {
     boolean textUP = isTextUp();
-    boolean textDOWN = isTextDown();
+    boolean textDOWN = isTextDown() || myInputApi.hasBaseline();
 
     int result;
     if (textUP && textDOWN) {
@@ -227,22 +220,25 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
     return result;
   }
 
-  public void stripVerticalLabelSpace(java.awt.Rectangle nextBounds) {
-    if (isTextUp()) {
-      nextBounds.y += getFontHeight();
-    }
-
-    int space;
-    if (isTextUp() && isTextDown()) {
-      space = TINY_SPACE * 2;
-    } else if (!isTextUp() && !isTextDown()) {
-      space = LARGE_SPACE;
-    } else if (isTextUp()) {
-      space = MEDIUM_SPACE * 2;
+  /**
+   * Calculates the offset of the task bar  middle-y point relative to the
+   * whole row middle-y. The task bar may be shifted upwards or downwards if we have a
+   * single label down or up to the bar.
+   */
+  public int getRectMidOffset() {
+    boolean textUP = isTextUp();
+    boolean textDOWN = isTextDown() || myInputApi.hasBaseline();
+    if (textUP ^ textDOWN) {
+      // if we have text only from one side, the rect middle is different from the whole middle
+      if (textUP) {
+        return (getFontHeight() + MEDIUM_SPACE)/2;
+      } else {
+        return -(getFontHeight() + MEDIUM_SPACE)/2;
+      }
     } else {
-      space = MEDIUM_SPACE;
+      // if we have no labels or labels from both sides, the rect middle is the same as the whole middle
+      return 0;
     }
-    nextBounds.y += space;
   }
 
   public int getFontHeight() {

@@ -174,20 +174,20 @@ public class TaskActivitySceneBuilder<T extends IdentifiableRow, A extends BarCh
       return;
     }
     java.awt.Rectangle nextBounds = getBoundingRectangle(rowNum, activity, offsets);
-    myLabelsRenderer.stripVerticalLabelSpace(nextBounds);
     final int nextLength = nextBounds.width;
-    final int topy = nextBounds.y + myStyle.marginTop;
+    final int topy = nextBounds.y;
 
     boolean nextHasNested = myTaskApi.hasNestedTasks(nextTask);
     Canvas container = myCanvas;
 
     Canvas.Polygon resultShape;
 
+    final int rectTopY = topy + nextBounds.height/2 - getRectangleHeight()/2 + myLabelsRenderer.getRectMidOffset() + myStyle.marginTop;
     if (myTaskApi.isMilestone(nextTask)) {
       //nextRectangle.setVisible(false);
       //System.err.println("milestone rect=" + nextRectangle);
       //container.bind(nextRectangle, activity);
-      Canvas.Rectangle rect = container.createDetachedRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
+      Canvas.Rectangle rect = container.createDetachedRectangle(nextBounds.x, rectTopY, nextLength, getRectangleHeight());
       int rectHeight = rect.getHeight();
       int rectHalf = rectHeight / 2;
       int middleX = rect.getLeftX() + 3; // This is important to draw dependencies to/from milestones properly
@@ -199,7 +199,7 @@ public class TaskActivitySceneBuilder<T extends IdentifiableRow, A extends BarCh
       //container.bind(p, activity);
       resultShape = r;
     } else {
-      Canvas.Rectangle nextRectangle = container.createRectangle(nextBounds.x, topy, nextLength, getRectangleHeight());
+      Canvas.Rectangle nextRectangle = container.createRectangle(nextBounds.x, rectTopY, nextLength, getRectangleHeight());
       resultShape = nextRectangle;
       if (nextHasNested || myTaskApi.isProjectTask(nextTask)) {
         String style = myTaskApi.isProjectTask(nextTask) ? "task.projectTask" : "task.supertask";
