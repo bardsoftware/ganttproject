@@ -25,7 +25,7 @@ enum class NewTaskState { IDLE, TASK_READY, TREE_ITEM_READY, EDIT_STARTING, EDIT
 class NewTaskActor<T> {
   val inboxChannel = Channel<NewTaskMsg<T>>()
   val commandChannel = Channel<NewTaskActorCommand<T>>()
-  var state: NewTaskState = IDLE
+  private var state: NewTaskState = IDLE
   set(value) {
     println("State $field => $value")
     field = value

@@ -65,22 +65,18 @@ public class TaskNewAction extends GPAction {
     if (taskTableActionConnector.invoke().getCanAddTask().invoke().get() == false) {
       return;
     }
-    myUiFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
-      @Override
-      public void run() {
-        List<Task> selection = getUIFacade().getTaskSelectionManager().getSelectedTasks();
-        if (selection.size() > 1) {
-          return;
-        }
-
-        Task selectedTask = selection.isEmpty() ? null : selection.get(0);
-        getTaskManager().newTaskBuilder()
-            .withPrevSibling(selectedTask)
-            .withStartDate(getUIFacade().getGanttChart().getStartDate())
-            .withSource(TaskManager.EventSource.USER)
-            .build();
-        //myUiFacade.getTaskTree().startDefaultEditing(newTask);
+    myUiFacade.getUndoManager().undoableEdit(getLocalizedDescription(), () -> {
+      List<Task> selection = getUIFacade().getTaskSelectionManager().getSelectedTasks();
+      if (selection.size() > 1) {
+        return;
       }
+
+      Task selectedTask = selection.isEmpty() ? null : selection.get(0);
+      getTaskManager().newTaskBuilder()
+          .withPrevSibling(selectedTask)
+          .withStartDate(getUIFacade().getGanttChart().getStartDate())
+          .withSource(TaskManager.EventSource.USER)
+          .build();
     });
   }
 

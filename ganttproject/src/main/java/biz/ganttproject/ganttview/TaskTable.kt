@@ -92,7 +92,6 @@ class TaskTable(
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   private val treeModel = taskManager.taskHierarchy
   val rootItem = TreeItem(treeModel.rootTask)
-  val newTaskActor = NewTaskActor<Task>().also { it.start() }
   val treeTable = GPTreeTableView<Task>(rootItem)
   val taskTableModel = TaskTableModel(taskManager, taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
@@ -404,11 +403,12 @@ class TaskTable(
             cellFactory = ourNameCellFactory
             onEditCommit = EventHandler { event ->
               val targetTask: Task = event.rowValue.value
-              val copyTask: Task = event.newValue
-              taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
+              event.newValue?.let { copyTask ->
+                taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
+              }
               runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
             }
-            onEditCancel = EventHandler {
+            onEditCancel = EventHandler { event ->
               runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
             }
             treeTable.treeColumn = this
@@ -775,38 +775,46 @@ private val taskNameConverter = MyStringConverter<Task, Task>(
   }
 )
 
+private val newTaskActor = NewTaskActor<Task>().also { it.start() }
 private val dragAndDropSupport = DragAndDropSupport()
 private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->
   dragAndDropSupport.install(cell)
-  cell.graphicSupplier = { task: Task ->
+  cell.onEditingCompleted = {
+    runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
+  }
 
-    if (TaskDefaultColumn.COLOR.stub.isVisible || TaskDefaultColumn.INFO.stub.isVisible) {
-      HBox().also { hbox ->
-        hbox.alignment = Pos.CENTER
-        Region().also {
-          hbox.children.add(it)
-          HBox.setHgrow(it, Priority.ALWAYS)
-        }
-        if (TaskDefaultColumn.INFO.stub.isVisible) {
-          task.getProgressStatus().getIcon()?.let { icon ->
-            StackPane(icon).also {
+  cell.graphicSupplier = { task: Task? ->
+    if (task == null) {
+      null
+    } else {
+      if (TaskDefaultColumn.COLOR.stub.isVisible || TaskDefaultColumn.INFO.stub.isVisible) {
+        HBox().also { hbox ->
+          hbox.alignment = Pos.CENTER
+          Region().also {
+            hbox.children.add(it)
+            HBox.setHgrow(it, Priority.ALWAYS)
+          }
+          if (TaskDefaultColumn.INFO.stub.isVisible) {
+            task.getProgressStatus().getIcon()?.let { icon ->
+              StackPane(icon).also {
+                it.styleClass.add("badge")
+                hbox.children.add(it)
+              }
+
+            }
+          }
+          if (TaskDefaultColumn.COLOR.stub.isVisible) {
+            StackPane(Circle().also {
+              it.fill = rgb(task.color.red, task.color.green, task.color.blue)
+              it.radius = 4.0
+            }).also {
               it.styleClass.add("badge")
               hbox.children.add(it)
             }
-
           }
         }
-        if (TaskDefaultColumn.COLOR.stub.isVisible) {
-          StackPane(Circle().also {
-            it.fill = rgb(task.color.red, task.color.green, task.color.blue)
-            it.radius = 4.0
-          }).also {
-            it.styleClass.add("badge")
-            hbox.children.add(it)
-          }
-        }
-      }
-    } else null
+      } else null
+    }
   }
   cell.contentDisplay = ContentDisplay.RIGHT
   cell.alignment = Pos.CENTER_LEFT

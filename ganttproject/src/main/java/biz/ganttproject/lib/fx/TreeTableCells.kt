@@ -96,15 +96,22 @@ fun initColorProperties() {
 }
 
 class TextCell<S, T>(
-  private val converter: MyStringConverter<S, T>,
-  private val editingCellController: (TextCell<S, T>?) -> Boolean
+  private val converter: MyStringConverter<S, T>
 ) : TreeTableCell<S, T>() {
+
   private var savedGraphic: Node? = null
   var graphicSupplier: (T) -> Node? = { null }
   private val textField: TextField = createTextField().also {
     it.fontProperty().bind(applicationFont)
+    it.focusedProperty().addListener { _, oldValue, newValue ->
+      if (oldValue && !newValue && !isCancellingOrCommitting) {
+        commitEdit()
+      }
+    }
   }
   private val disclosureNode: Node? get() = parent?.lookup(".arrow")
+  private var isCancellingOrCommitting = false
+  internal var onEditingCompleted: ()->Unit = {}
 
   override fun createDefaultSkin(): Skin<*> {
     return TreeTableCellSkin(this)
@@ -117,6 +124,7 @@ class TextCell<S, T>(
 
   override fun startEdit() {
     if (!isEditable) {
+      onEditingCompleted()
       return
     }
     super.startEdit()
@@ -130,7 +138,7 @@ class TextCell<S, T>(
       treeTableView.requestFocus()
       doStartEdit()
     } else {
-      println("NOPE!")
+      onEditingCompleted()
     }
   }
 
@@ -150,13 +158,20 @@ class TextCell<S, T>(
   }
 
   override fun cancelEdit() {
-    super.cancelEdit()
-    styleClass.remove("validation-error")
-    disclosureNode?.let {
-      it.isVisible = true
+    this.isCancellingOrCommitting = true
+    try {
+      if (treeTableView.editingCell != null) {
+        super.cancelEdit()
+      }
+      styleClass.remove("validation-error")
+      disclosureNode?.let {
+        it.isVisible = true
+      }
+      doCancelEdit()
+    } finally {
+      this.isCancellingOrCommitting = false
+      onEditingCompleted()
     }
-    editingCellController(null)
-    doCancelEdit()
     treeTableView.requestFocus()
     treeTableView.refresh()
   }
@@ -172,11 +187,18 @@ class TextCell<S, T>(
   }
 
   override fun commitEdit(newValue: T?) {
-    disclosureNode?.let {
-      it.isVisible = true
+    this.isCancellingOrCommitting = true
+    try {
+      disclosureNode?.let {
+        it.isVisible = true
+      }
+      if (treeTableView.editingCell != null) {
+        super.commitEdit(newValue)
+      }
+    } finally {
+      this.isCancellingOrCommitting = false
+      onEditingCompleted()
     }
-    editingCellController(null)
-    super.commitEdit(newValue)
     treeTableView.requestFocus()
     graphic = savedGraphic
     savedGraphic = null
@@ -285,7 +307,7 @@ fun <S> createDateColumn(name: String, getValue: (S) -> GanttCalendar?, setValue
       ReadOnlyObjectWrapper(getValue(it.value.value))
     }
     val converter = GanttCalendarStringConverter()
-    cellFactory = Callback { TextCell<S, GanttCalendar>(converter.adapt(), { true }).also {
+    cellFactory = Callback { TextCell<S, GanttCalendar>(converter.adapt()).also {
       it.styleClass.add("text-left")
     } }
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue) }
@@ -297,7 +319,7 @@ fun <S> createIntegerColumn(name: String, getValue: (S) -> Int?, setValue: (S, I
       ReadOnlyIntegerWrapper(getValue(it.value.value) ?: 0)
     }
     cellFactory = Callback {
-      TextCell<S, Number>(NumberStringConverter().adapt(), { true }).also {
+      TextCell<S, Number>(NumberStringConverter().adapt()).also {
         it.styleClass.add("text-right")
       }
     }
@@ -310,7 +332,7 @@ fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S,
       ReadOnlyDoubleWrapper(getValue(it.value.value) ?: 0.0)
     }
     cellFactory = Callback {
-      TextCell<S, Number>(NumberStringConverter().adapt(), { true }).also {
+      TextCell<S, Number>(NumberStringConverter().adapt()).also {
         it.styleClass.add("text-right")
       }
     }
@@ -323,7 +345,7 @@ fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue
       ReadOnlyObjectWrapper(getValue(it.value.value) ?: 0.toBigDecimal())
     }
     cellFactory = Callback {
-      TextCell<S, BigDecimal>(BigDecimalStringConverter().adapt(), { true }).also {
+      TextCell<S, BigDecimal>(BigDecimalStringConverter().adapt()).also {
         it.styleClass.add("text-right")
       }
     }
@@ -339,7 +361,7 @@ fun <S, T> createIconColumn(name: String, getValue: (S) ->T?, iconFactory: (T) -
       val cell = TextCell<S, T>(MyStringConverter(
         toString = { _, value -> i18n.formatText(value?.toString()?.lowercase() ?: "") },
         fromString = { _, _ -> null}
-      ), {true})
+      ))
       cell.graphicSupplier = {
         iconFactory(it)
       }
@@ -376,6 +398,6 @@ class TextCellFactory<S, T>(
     }
   }
   override fun call(param: TreeTableColumn<S, T>?) =
-    TextCell(converter, { true }).also(cellSetup)
+    TextCell(converter).also(cellSetup)
 }
 
