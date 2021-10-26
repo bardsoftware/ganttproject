@@ -125,7 +125,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   private final DefaultFontOption myAppFontOption = new DefaultFontOption(
-      "appFontSpec", null, getFontFamilies()) {
+      "appFontSpec", new FontSpec("Dialog", FontSpec.Size.NORMAL), getFontFamilies()) {
     @Override
     public Map<FontSpec.Size, String> getSizeLabels() {
       return UIFacadeImpl.getSizeLabels();
