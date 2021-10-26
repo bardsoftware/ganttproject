@@ -101,16 +101,25 @@ class TextCell<S, T>(
 
   private var savedGraphic: Node? = null
   var graphicSupplier: (T) -> Node? = { null }
+  private val disclosureNode: Node? get() = parent?.lookup(".arrow")
+
   private val textField: TextField = createTextField().also {
     it.fontProperty().bind(applicationFont)
     it.focusedProperty().addListener { _, oldValue, newValue ->
+      // The tree may miss the fact that editing was completed, in particular it happens when user clicks "new task"
+      // button while this text field is in the "editing" state. This makes the text field losing the focus, however,
+      // we do not receive cancelEdit/commitEdit calls. That's why we have to initiate commitEdit ourselves.
+      // However, in other cases this listener is called when we process commitEdit/cancelEdit calls and the
+      // flag isCancellingOrCommitting prevents us from re-entering.
       if (oldValue && !newValue && !isCancellingOrCommitting) {
         commitEdit()
       }
     }
   }
-  private val disclosureNode: Node? get() = parent?.lookup(".arrow")
   private var isCancellingOrCommitting = false
+  // This hook will transition the newTaskActor from EDITING_STARTED to IDLE state, thus enabling creation of the new
+  // tasks. This should always be called from commitEdit/cancelEdit methods and should be called from those branches
+  // of startEdit() where we break the execution.
   internal var onEditingCompleted: ()->Unit = {}
 
   override fun createDefaultSkin(): Skin<*> {
@@ -129,7 +138,6 @@ class TextCell<S, T>(
     }
     super.startEdit()
     contentDisplay = ContentDisplay.GRAPHIC_ONLY
-    //treeTableRow.styleClass.add("editing-row")
     disclosureNode?.let {
       it.isVisible = false
     }
