@@ -362,10 +362,7 @@ class TaskTable(
     }
 
     this.selectionManager.addSelectionListener(object : TaskSelectionManager.Listener {
-      override fun selectionChanged(
-        currentSelection: List<Task>,
-        source: Any
-      ) {
+      override fun selectionChanged(currentSelection: List<Task>, source: Any) {
         if (source != this@TaskTable) {
           Platform.runLater {
             treeTable.selectionModel.clearSelection()
@@ -674,7 +671,7 @@ class TaskTable(
     }
   }
 
-  fun requestFocus() {
+  fun initUserKeyboardInput() {
     treeTable.requestFocus()
     this.requestSwingFocus()
   }

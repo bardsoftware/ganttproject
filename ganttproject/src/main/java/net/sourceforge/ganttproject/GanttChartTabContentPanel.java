@@ -153,7 +153,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   public void setActive(boolean active) {
     if (active) {
       //myTaskTree.requestFocus();
-      this.taskTable.requestFocus();
+      this.taskTable.initUserKeyboardInput();
       myTaskActions.getCreateAction().updateAction();
     }
   }

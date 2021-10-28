@@ -23,7 +23,6 @@ package biz.ganttproject.lib.fx
 //import javafx.scene.control.skin.VirtualFlow
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.app.MenuBuilderFx
-import biz.ganttproject.ganttview.NewTaskActor
 import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
 import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
 import biz.ganttproject.lib.fx.treetable.VirtualFlow
@@ -115,7 +114,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   }
 }
 
-class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>(control) {
+class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableViewSkin<T>(table) {
 
   val scrollValue = SimpleDoubleProperty()
   val headerHeight: ReadOnlyDoubleProperty
@@ -138,9 +137,9 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
 
     val cornerRegion = this.tableHeaderRow.lookup(".show-hide-columns-button") as Region
     cornerRegion.onMousePressed = EventHandler { me: MouseEvent ->
-      control.tableMenu.items.clear()
-      control.tableMenuActions(MenuBuilderFx(control.tableMenu))
-      control.tableMenu.show(cornerRegion, Side.BOTTOM, 0.0, 0.0)
+      table.tableMenu.items.clear()
+      table.tableMenuActions(MenuBuilderFx(table.tableMenu))
+      table.tableMenu.show(cornerRegion, Side.BOTTOM, 0.0, 0.0)
       me.consume()
     }
     val behavior = FieldUtils.readField(this, "behavior", true) as TreeTableViewBehavior<T>
@@ -151,6 +150,15 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
         && it.meta != KeyBinding.OptionalBoolean.TRUE
         && it.ctrl != KeyBinding.OptionalBoolean.TRUE
     }
+    behavior.inputMap.removeKey {
+      it.code == KeyCode.PAGE_DOWN || it.code == KeyCode.PAGE_UP
+    }
+    behavior.inputMap.mappings.add(InputMap.KeyMapping(KeyCode.PAGE_DOWN) {
+      pageDown()
+    })
+    behavior.inputMap.mappings.add(InputMap.KeyMapping(KeyCode.PAGE_UP) {
+      pageUp()
+    })
   }
 
   private fun (InputMap<*>).removeKey(predicate: (KeyBinding) -> Boolean) {
@@ -172,6 +180,20 @@ class GPTreeTableViewSkin<T>(control: GPTreeTableView<T>) : TreeTableViewSkin<T>
   fun scrollTo(row: Int) {
     this.virtualFlow.scrollTo(row)
     updateScrollValue()
+  }
+
+  private fun pageDown() {
+    val lastCell = this.virtualFlow.lastVisibleCell
+    this.virtualFlow.scrollToTop(lastCell)
+    this.table.selectionModel.clearSelection()
+    this.table.selectionModel.select(lastCell.treeItem)
+  }
+
+  private fun pageUp() {
+    val firstCell = this.virtualFlow.firstVisibleCell
+    this.virtualFlow.scrollToBottom(firstCell)
+    this.table.selectionModel.clearSelection()
+    this.table.selectionModel.select(firstCell.treeItem)
   }
 }
 
