@@ -86,6 +86,6 @@ public class TaskSearchService extends SearchServiceBase<TaskSearchService.MySea
     var taskSelectionManager = getUiFacade().getTaskSelectionManager();
     taskSelectionManager.setUserInputConsumer(this);
     taskSelectionManager.setSelectedTasks(
-        list.stream().map(searchResult -> searchResult.getObject()).collect(Collectors.toList()));
+        list.stream().map(searchResult -> searchResult.getObject()).collect(Collectors.toList()), this);
   }
 }

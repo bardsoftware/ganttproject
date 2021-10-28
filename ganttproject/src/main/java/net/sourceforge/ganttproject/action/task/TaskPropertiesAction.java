@@ -27,7 +27,6 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
-import javax.swing.*;
 import java.util.List;
 
 public class TaskPropertiesAction extends TaskActionBase {
@@ -62,15 +61,14 @@ public class TaskPropertiesAction extends TaskActionBase {
     // TODO Allow to edit multiple tasks (instead of [0])
     final GanttTask[] tasks = new GanttTask[] { (GanttTask) selection.get(0) };
     GanttDialogProperties pd = new GanttDialogProperties(tasks);
-    getSelectionManager().setUserInputConsumer(pd);
     pd.show(myProject, getUIFacade());
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        getSelectionManager().clear();
-        getSelectionManager().addTask(tasks[0]);
-      }
-    });
+//    SwingUtilities.invokeLater(new Runnable() {
+//      @Override
+//      public void run() {
+//        getSelectionManager().clear();
+//        getSelectionManager().addTask(tasks[0]);
+//      }
+//    });
   }
 
   @Override

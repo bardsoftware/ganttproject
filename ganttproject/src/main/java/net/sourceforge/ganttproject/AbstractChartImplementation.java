@@ -137,7 +137,7 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
       }
 
       @Override
-      public void selectionChanged(List<Task> currentSelection) {
+      public void selectionChanged(List<Task> currentSelection, Object source) {
         fireSelectionChanged();
       }
     });

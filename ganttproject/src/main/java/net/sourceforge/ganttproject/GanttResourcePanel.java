@@ -47,6 +47,7 @@ import javax.swing.event.ChangeEvent;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class GanttResourcePanel extends TreeTableContainer<HumanResource, ResourceTreeTable, ResourceTreeTableModel>
@@ -153,7 +154,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     if (selectedTasks.isEmpty()) {
       myUIFacade.getTaskSelectionManager().clear();
     } else {
-      myUIFacade.getTaskSelectionManager().setSelectedTasks(selectedTasks);
+      myUIFacade.getTaskSelectionManager().setSelectedTasks(selectedTasks, this);
     }
   }
 
@@ -174,7 +175,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         // Clicked on an assignment node (ie a task assigned to a resource)
         AssignmentNode assignmentNode = (AssignmentNode) selectedNodes[0];
         getTaskSelectionManager().clear();
-        getTaskSelectionManager().addTask(assignmentNode.getTask());
+        getTaskSelectionManager().setSelectedTasks(Collections.singletonList(assignmentNode.getTask()), this);
         Point popupPoint = getPopupMenuPoint(e);
         getUIFacade().showPopupMenu(this,
             new Action[]{myTaskPropertiesAction, myResourceActionSet.getAssignmentDelete()}, popupPoint.x,

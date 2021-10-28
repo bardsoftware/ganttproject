@@ -39,6 +39,7 @@ import net.sourceforge.ganttproject.util.MouseUtil;
 import javax.swing.*;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 class MouseListenerImpl extends MouseListenerBase {
@@ -115,7 +116,7 @@ class MouseListenerImpl extends MouseListenerBase {
     }
     if (text.equals(GPAction.getKeyStrokeText("mouse.select.single"))
         || text.equals(GPAction.getKeyStrokeText("mouse.select.multiple"))) {
-      getTaskSelectionManager().addTask(taskUnderPointer);
+      getTaskSelectionManager().setSelectedTasks(Collections.singletonList(taskUnderPointer), myChartImplementation);
     }
 
     // Now examine what exactly is under the pointer
@@ -145,7 +146,7 @@ class MouseListenerImpl extends MouseListenerBase {
   private void startDragTasks(MouseEvent e, Task taskUnderPointer) {
     if (!getTaskSelectionManager().isTaskSelected(taskUnderPointer)) {
       getTaskSelectionManager().clear();
-      getTaskSelectionManager().addTask(taskUnderPointer);
+      getTaskSelectionManager().setSelectedTasks(Collections.singletonList(taskUnderPointer), myChartImplementation);
     }
     List<Task> roots = Lists.newArrayList();
     ourRetainRootsAlgorithm.run(getTaskSelectionManager().getSelectedTasks().toArray(new Task[0]), getParentTask, roots);

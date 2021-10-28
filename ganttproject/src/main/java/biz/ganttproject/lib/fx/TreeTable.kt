@@ -102,7 +102,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   override fun requestFocus() {
     super.requestFocus()
     val focusedCell = this.focusModel.focusedCell
-    if (focusedCell.tableColumn == null) {
+    if (focusedCell.tableColumn == null && columns.size > 0) {
       this.focusModel.focus(focusedCell.row, columns[0])
     }
   }

@@ -18,17 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
-import com.google.common.base.Supplier;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * This class manages the selected tasks.
@@ -37,7 +33,7 @@ import java.util.List;
  */
 public class TaskSelectionManager implements TaskSelectionContext {
   public interface Listener {
-    void selectionChanged(List<Task> currentSelection);
+    void selectionChanged(List<Task> currentSelection, Object source);
 
     void userInputConsumerChanged(Object newConsumer);
   }
@@ -45,8 +41,8 @@ public class TaskSelectionManager implements TaskSelectionContext {
   /**
    * List of the selected tasks.
    */
-  private final List<Task> selectedTasks = new ArrayList<Task>();
-  private final List<Listener> myListeners = new ArrayList<Listener>();
+  private final List<Task> selectedTasks = new ArrayList<>();
+  private final List<Listener> myListeners = new ArrayList<>();
   private Object myUserInputConsumer;
   private final TaskManager myTaskManager;
 
@@ -71,58 +67,25 @@ public class TaskSelectionManager implements TaskSelectionContext {
     }
   }
 
-  public Object getUserInputConsumer() {
-    return myUserInputConsumer;
-  }
-  /**
-   * Adds <code>task</code> to the selected tasks.
-   *
-   * @param task
-   *          A task to add to the selected tasks.
-   */
-  public void addTask(Task task) {
-    if (!selectedTasks.contains(task)) {
-      selectedTasks.add(task);
-      fireSelectionChanged();
-    }
-  }
-
-  /**
-   * Removes <code>task</code> from the selected tasks;
-   *
-   * @param task
-   *          A task to remove from the selected tasks.
-   */
-  public void removeTask(Task task) {
-    if (selectedTasks.contains(task)) {
-      selectedTasks.remove(task);
-      fireSelectionChanged();
-    }
-  }
 
   private TaskContainmentHierarchyFacade getTaskHierarchy() {
     return myTaskManager.getTaskHierarchy();
   }
 
-  public void setSelectedTasks(List<Task> tasks) {
+  public void setSelectedTasks(List<Task> tasks, Object source) {
     // selection paths in Swing are stored in a hashtable
     // and thus come to selection listeners in pretty random order.
     // For correct indent/outdent operations with need
     // to order them the way they are ordered in the tree.
-    Collections.sort(tasks, new Comparator<Task>() {
-      @Override
-      public int compare(Task o1, Task o2) {
-        return getTaskHierarchy().compareDocumentOrder(o1, o2);
+    var copy = new ArrayList<>(tasks);
+    copy.sort((o1, o2) -> getTaskHierarchy().compareDocumentOrder(o1, o2));
+    selectedTasks.clear();
+    for (Task t : copy) {
+      if (!t.isDeleted()) {
+        selectedTasks.add(t);
       }
-    });
-    SwingUtilities.invokeLater(() -> {
-      clear();
-      for (Task t : tasks) {
-        if (!t.isDeleted()) {
-          addTask(t);
-        }
-      }
-    });
+    }
+    doFireSelectionChanged(new ArrayList<>(selectedTasks), source);
   }
   /**
    * @param task
@@ -140,41 +103,6 @@ public class TaskSelectionManager implements TaskSelectionContext {
     return Collections.unmodifiableList(selectedTasks);
   }
 
-  /** @return The earliest start date. */
-  public Date getEarliestStart() {
-    Date res = null;
-    Iterator<Task> it = selectedTasks.iterator();
-    while (it.hasNext()) {
-
-      Task task = it.next();
-      Date d = task.getStart().getTime();
-      if (res == null) {
-        res = d;
-        continue;
-      }
-      if (d.before(res))
-        res = d;
-    }
-    return res;
-  }
-
-  /** @return The latest end date. */
-  public Date getLatestEnd() {
-    Date res = null;
-    Iterator<Task> it = selectedTasks.iterator();
-    while (it.hasNext()) {
-      Task task = it.next();
-      Date d = task.getEnd().getTime();
-      if (res == null) {
-        res = d;
-        continue;
-      }
-      if (d.after(res))
-        res = d;
-    }
-    return res;
-  }
-
   /** Clears the selected tasks list. */
   public void clear() {
     selectedTasks.clear();
@@ -185,21 +113,15 @@ public class TaskSelectionManager implements TaskSelectionContext {
     myListeners.add(listener);
   }
 
-  public void removeSelectionListener(Listener listener) {
-    myListeners.remove(listener);
+  private void doFireSelectionChanged(List<Task> selection, Object source) {
+    myListeners.forEach(l -> l.selectionChanged(selection, source));
   }
 
   public void fireSelectionChanged() {
-    for (int i = 0; i < myListeners.size(); i++) {
-      Listener next = myListeners.get(i);
-      next.selectionChanged(Collections.unmodifiableList(selectedTasks));
-    }
+    doFireSelectionChanged(new ArrayList<>(selectedTasks), myUserInputConsumer);
   }
 
   private void fireUserInputConsumerChanged() {
-    for (int i = 0; i < myListeners.size(); i++) {
-      Listener next = myListeners.get(i);
-      next.userInputConsumerChanged(myUserInputConsumer);
-    }
+    myListeners.forEach(next -> next.userInputConsumerChanged(myUserInputConsumer));
   }
 }

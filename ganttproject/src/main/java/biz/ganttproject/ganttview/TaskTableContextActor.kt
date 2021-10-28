@@ -95,7 +95,7 @@ class NewTaskActor<T> {
             state = IDLE
             processQueue()
           }
-          IDLE -> {}
+          IDLE, TASK_READY-> {}
           else -> TODO("this must be error: editing completed when state is $state")
         }
       }

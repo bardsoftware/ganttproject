@@ -46,6 +46,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final Supplier<TaskTable> myTaskTableSupplier;
   private final TaskActions myTaskActions;
   private JComponent myComponent;
+  private TaskTable taskTable;
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
                             JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
@@ -140,6 +141,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
       setTableWidth(newValue.doubleValue());
     });
     taskTable.loadDefaultColumns();
+    this.taskTable = taskTable;
     return jfxPanel;
     //return myTaskTree;
 
@@ -151,6 +153,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   public void setActive(boolean active) {
     if (active) {
       //myTaskTree.requestFocus();
+      this.taskTable.requestFocus();
       myTaskActions.getCreateAction().updateAction();
     }
   }

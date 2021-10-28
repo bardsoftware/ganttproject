@@ -151,10 +151,10 @@ class TaskTable(
     initSelectionListeners()
     treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
     treeTable.selectionModel.selectedItems.addListener(ListChangeListener {
-      val selectedItems = copyOf(treeTable.selectionModel.selectedItems)
-      selectionManager.selectedTasks = selectedItems
-        .map { it.value }
-        .filter { it.manager.taskHierarchy.contains(it) }
+      copyOf(treeTable.selectionModel.selectedItems).map { it.value }
+        .filter { it.manager.taskHierarchy.contains(it) }.also {
+          selectionManager.setSelectedTasks(it, this@TaskTable)
+        }
     })
     treeTable.onSort = EventHandler {
       if (treeTable.sortOrder.isEmpty()) {
@@ -357,15 +357,23 @@ class TaskTable(
   private fun initSelectionListeners() {
     this.treeTable.focusedProperty().addListener { _, oldValue, newValue ->
       if (newValue && newValue != oldValue) {
-        this.selectionManager.userInputConsumer = this
+        this.selectionManager.setUserInputConsumer(this@TaskTable)
       }
     }
 
     this.selectionManager.addSelectionListener(object : TaskSelectionManager.Listener {
-      override fun selectionChanged(currentSelection: List<Task>) {
-        if (this@TaskTable.selectionManager.userInputConsumer != this@TaskTable) {
-          for (task in currentSelection) {
-            task2treeItem[task]?.let { treeTable.selectionModel.select(it) }
+      override fun selectionChanged(
+        currentSelection: List<Task>,
+        source: Any
+      ) {
+        if (source != this@TaskTable) {
+          Platform.runLater {
+            treeTable.selectionModel.clearSelection()
+            for (task in currentSelection) {
+              task2treeItem[task]?.let {
+                treeTable.selectionModel.select(it)
+              }
+            }
           }
         }
       }
@@ -664,6 +672,11 @@ class TaskTable(
     builder.apply {
       items(taskActions.manageColumnsAction)
     }
+  }
+
+  fun requestFocus() {
+    treeTable.requestFocus()
+    this.requestSwingFocus()
   }
 }
 

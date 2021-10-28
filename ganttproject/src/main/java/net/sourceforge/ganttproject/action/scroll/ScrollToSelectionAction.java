@@ -18,16 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.scroll;
 
-import java.awt.event.ActionEvent;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
+
+import java.awt.event.ActionEvent;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 public class ScrollToSelectionAction extends GPAction implements TaskSelectionManager.Listener {
   private final TimelineChart myChart;
@@ -55,7 +55,7 @@ public class ScrollToSelectionAction extends GPAction implements TaskSelectionMa
   }
 
   @Override
-  public void selectionChanged(List<Task> currentSelection) {
+  public void selectionChanged(List<Task> currentSelection, Object source) {
     mySelectedTasks = currentSelection;
     setEnabled(!currentSelection.isEmpty());
   }

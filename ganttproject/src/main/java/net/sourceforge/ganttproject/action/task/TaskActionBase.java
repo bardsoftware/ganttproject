@@ -52,7 +52,7 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
     mySelectionManager = selectionManager;
     myUIFacade = uiFacade;
     selectionManager.addSelectionListener(this);
-    selectionChanged(selectionManager.getSelectedTasks());
+    selectionChanged(selectionManager.getSelectedTasks(), null);
   }
 
   @Override
@@ -98,7 +98,7 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
   }
 
   @Override
-  public void selectionChanged(List<Task> currentSelection) {
+  public void selectionChanged(List<Task> currentSelection, Object source) {
     setEnabled(isEnabled(currentSelection));
     mySelection = currentSelection;
   }
