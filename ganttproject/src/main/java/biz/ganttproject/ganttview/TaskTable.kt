@@ -127,8 +127,12 @@ class TaskTable(
   val columnListWidthProperty = SimpleDoubleProperty()
   var requestSwingFocus: () -> Unit = {}
   lateinit var swingComponent: Component
-
-
+  private val filterCompletedTasksAction = FilterCompletedTasks(this@TaskTable, taskManager)
+  var activeFilter: (parent: Task, child: Task?) -> Boolean = { _, _ -> true }
+  set(value) {
+    field = value
+    sync()
+  }
   init {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
 
@@ -212,7 +216,9 @@ class TaskTable(
 
   private fun initChartConnector() {
     taskTableChartConnector.rowHeight.addListener { _, _, newValue ->
-      treeTable.fixedCellSize = ceil(maxOf(newValue.toDouble(), minCellHeight.value))
+      Platform.runLater {
+        treeTable.fixedCellSize = ceil(maxOf(newValue.toDouble(), minCellHeight.value))
+      }
     }
 //    if (taskTableChartConnector.rowHeight.get() == -1) {
 //      taskTableChartConnector.rowHeight.value = maxOf(applicationFont.get().size.toInt() + 20, treeTable.fixedCellSize.toInt())
@@ -540,8 +546,12 @@ class TaskTable(
       task2treeItem[treeModel.rootTask] = rootItem
 
       treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, _ ->
-        if (child != null) parent.addChildTreeItem(child)
-        true
+        if (!activeFilter(parent, child)) {
+          false
+        } else {
+          if (child != null) parent.addChildTreeItem(child)
+          true
+        }
       }
       taskTableChartConnector.visibleTasks.clear()
       taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
@@ -554,25 +564,31 @@ class TaskTable(
       task2treeItem.clear()
       task2treeItem[treeModel.rootTask] = rootItem
       treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx ->
-        if (child == null) {
+        if (!activeFilter(parent, child)) {
           val parentItem = task2treeItem[parent]!!
           parentItem.children.remove(idx, parentItem.children.size)
+          false
         } else {
-          val parentItem = task2treeItem[parent]!!
-          if (parentItem.children.size > idx) {
-            val childItem = parentItem.children[idx]
-            if (childItem.value.taskID == child.taskID) {
-              childItem.value = child
-              task2treeItem[child] = childItem
-            } else {
-              parentItem.children.removeAt(idx)
-              parent.addChildTreeItem(child, idx)
-            }
+          if (child == null) {
+            val parentItem = task2treeItem[parent]!!
+            parentItem.children.remove(idx, parentItem.children.size)
           } else {
-            parent.addChildTreeItem(child)
+            val parentItem = task2treeItem[parent]!!
+            if (parentItem.children.size > idx) {
+              val childItem = parentItem.children[idx]
+              if (childItem.value.taskID == child.taskID) {
+                childItem.value = child
+                task2treeItem[child] = childItem
+              } else {
+                parentItem.children.removeAt(idx)
+                parent.addChildTreeItem(child, idx)
+              }
+            } else {
+              parent.addChildTreeItem(child)
+            }
           }
+          true
         }
-        true
       }
       taskTableChartConnector.visibleTasks.setAll(getExpandedTasks())
     }
@@ -667,7 +683,7 @@ class TaskTable(
 
   private fun tableMenuActions(builder: MenuBuilder) {
     builder.apply {
-      items(taskActions.manageColumnsAction)
+      items(taskActions.manageColumnsAction, this@TaskTable.filterCompletedTasksAction)
     }
   }
 

@@ -65,6 +65,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author bard
@@ -555,6 +556,7 @@ public class TaskImpl implements Task {
     @Override
     public void fireEvent() {
       if (myEnabled) {
+        myEnabled = false;
         myManager.fireTaskProgressChanged(TaskImpl.this);
       }
       myEnabled = false;
@@ -591,11 +593,17 @@ public class TaskImpl implements Task {
 
     void setValue(Object newValue) {
       myFieldValue = newValue;
-      myEventSender.enable();
+      if (hasChange()) {
+        myEventSender.enable();
+      }
     }
 
     public void setOldValue(Object oldValue) {
       myOldValue = oldValue;
+    }
+
+    public boolean hasChange() {
+      return !Objects.equals(myOldValue, myFieldValue);
     }
   }
 
@@ -635,7 +643,7 @@ public class TaskImpl implements Task {
           TaskImpl.this.setDuration(duration);
           myEndChange = null;
         }
-        if (myCompletionPercentageChange != null) {
+        if (myCompletionPercentageChange != null && myCompletionPercentageChange.hasChange()) {
           int newValue = getCompletionPercentage();
           TaskImpl.this.setCompletionPercentage(newValue);
         }
@@ -815,11 +823,14 @@ public class TaskImpl implements Task {
 
     @Override
     public void setCompletionPercentage(final int percentage) {
-      if (myCompletionPercentageChange == null) {
-        myCompletionPercentageChange = new FieldChange();
-        myCompletionPercentageChange.myEventSender = myProgressEventSender;
+      if (percentage != getCompletionPercentage()) {
+        if (myCompletionPercentageChange == null) {
+          myCompletionPercentageChange = new FieldChange();
+          myCompletionPercentageChange.myEventSender = myProgressEventSender;
+        }
+        myCompletionPercentageChange.setOldValue(TaskImpl.this.myCompletionPercentage);
+        myCompletionPercentageChange.setValue(percentage);
       }
-      myCompletionPercentageChange.setValue(new Integer(percentage));
     }
 
     @Override
@@ -1128,9 +1139,6 @@ public class TaskImpl implements Task {
   public void setCompletionPercentage(int percentage) {
     if (percentage != myCompletionPercentage) {
       myCompletionPercentage = percentage;
-      EventSender progressEventSender = new ProgressEventSender();
-      progressEventSender.enable();
-      progressEventSender.fireEvent();
     }
   }
 

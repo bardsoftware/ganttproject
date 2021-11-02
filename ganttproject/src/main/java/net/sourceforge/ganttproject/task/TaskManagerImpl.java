@@ -608,6 +608,7 @@ public class TaskManagerImpl implements TaskManager {
   }
   public void fireTaskProgressChanged(Task changedTask) {
     if (areEventsEnabled) {
+      getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();
       TaskPropertyEvent e = new TaskPropertyEvent(changedTask);
       for (TaskListener next : myListeners) {
         next.taskProgressChanged(e);
@@ -618,6 +619,7 @@ public class TaskManagerImpl implements TaskManager {
   void fireTaskScheduleChanged(Task changedTask, GanttCalendar oldStartDate, GanttCalendar oldFinishDate) {
     myScheduler.run();
     if (areEventsEnabled) {
+      getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();
       TaskScheduleEvent e = new TaskScheduleEvent(changedTask, oldStartDate, oldFinishDate, changedTask.getStart(),
           changedTask.getEnd());
       // List copy = new ArrayList(myListeners);
@@ -655,6 +657,7 @@ public class TaskManagerImpl implements TaskManager {
 
   private void fireTaskAdded(Task task, EventSource source) {
     if (areEventsEnabled) {
+      getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();
       var newContainer = getTaskHierarchy().getContainer(task);
       TaskHierarchyEvent e = new TaskHierarchyEvent(source, task, null, newContainer, getTaskHierarchy().getTaskIndex(task));
       for (TaskListener next : myListeners) {
@@ -666,6 +669,7 @@ public class TaskManagerImpl implements TaskManager {
   private void fireTaskRemoved(Task container, Task task) {
     myDependencyGraph.removeTask(task);
     if (areEventsEnabled) {
+      getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();
       TaskHierarchyEvent e = new TaskHierarchyEvent(EventSource.UNDEFINED, task, container, null, -1);
       for (TaskListener l : myListeners) {
         l.taskRemoved(e);

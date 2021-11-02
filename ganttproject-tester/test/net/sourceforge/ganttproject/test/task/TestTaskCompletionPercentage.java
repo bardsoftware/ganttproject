@@ -16,6 +16,10 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskCompletionPercentageAlgorithm;
+import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
+import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by IntelliJ IDEA. User: bard
@@ -173,5 +177,36 @@ public class TestTaskCompletionPercentage extends TaskTestCase {
     // 1.5 days of 4 = 3/8 = 37%
     assertEquals("Unexpected completion percentage of supertask=" + supertask, 37, supertask.getCompletionPercentage());
     assertEquals("Unexpected completion percentage of project=" + project, 37, project.getCompletionPercentage());
+  }
+
+  public void testSetCompletionWithMutator() {
+    TaskManager taskManager = getTaskManager();
+
+    Task task = taskManager.createTask();
+    var listenerCalled = new AtomicBoolean();
+    taskManager.addTaskListener(new TaskListenerAdapter() {
+      @Override
+      public void taskProgressChanged(TaskPropertyEvent e) {
+        if (e.getTask() == task) {
+          listenerCalled.set(true);
+        }
+      }
+    });
+    {
+      var mutator = task.createMutator();
+      mutator.setCompletionPercentage(30);
+      mutator.commit();
+    }
+    assertEquals(30, task.getCompletionPercentage());
+    assertEquals(true, listenerCalled.get());
+
+    listenerCalled.set(false);
+    {
+      var mutator = task.createMutator();
+      mutator.setCompletionPercentage(30);
+      mutator.commit();
+    }
+    assertEquals(30, task.getCompletionPercentage());
+    assertEquals(false, listenerCalled.get());
   }
 }

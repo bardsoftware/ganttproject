@@ -105,7 +105,10 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
           it.commit()
         }
       }
-      TaskDefaultColumn.COMPLETION -> task.completionPercentage = (value as Number).toInt()
+      TaskDefaultColumn.COMPLETION -> task.createMutator().let {
+        it.completionPercentage = (value as Number).toInt()
+        it.commit()
+      }
       TaskDefaultColumn.PREDECESSORS -> {
         //List<Integer> newIds = Lists.newArrayList();
         val specs: MutableList<String> = Lists.newArrayList()
@@ -132,14 +135,14 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
           throw ValidationException(e)
         }
       }
-      TaskDefaultColumn.COST -> try {
+        TaskDefaultColumn.COST -> try {
         val cost = BigDecimal(value.toString())
         task.cost.isCalculated = false
         task.cost.value = cost
       } catch (e: NumberFormatException) {
         throw ValidationException(MessageFormat.format("Can't parse {0} as number", value))
       }
-      else -> {
+        else -> {
       }
     }
   }

@@ -61,7 +61,9 @@ public abstract class RecalculateTaskCompletionPercentageAlgorithm extends Algor
     }
 
     int completionPercentage = (plannedDays == 0) ? 0 : (int) (completedDays / plannedDays);
-    task.setCompletionPercentage(completionPercentage);
+    var mutator = task.createMutator();
+    mutator.setCompletionPercentage(completionPercentage);
+    mutator.commit();
 
     return new SubtreeCompletion(completedDays, plannedDays);
 
