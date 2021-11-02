@@ -146,7 +146,7 @@ class TaskTable(
     Platform.runLater {
       treeTable.isShowRoot = false
       treeTable.isEditable = true
-      treeTable.isTableMenuButtonVisible = true
+      treeTable.isTableMenuButtonVisible = false
     }
     initTaskEventHandlers()
     initProjectEventHandlers()
@@ -155,7 +155,7 @@ class TaskTable(
     initSelectionListeners()
     treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
     treeTable.selectionModel.selectedItems.addListener(ListChangeListener {
-      copyOf(treeTable.selectionModel.selectedItems).map { it.value }
+      copyOf(treeTable.selectionModel.selectedItems.filterNotNull()).map { it.value }
         .filter { it.manager.taskHierarchy.contains(it) }.also {
           selectionManager.setSelectedTasks(it, this@TaskTable)
         }
@@ -681,7 +681,7 @@ class TaskTable(
     }
   }
 
-  private fun tableMenuActions(builder: MenuBuilder) {
+  fun tableMenuActions(builder: MenuBuilder) {
     builder.apply {
       items(taskActions.manageColumnsAction, this@TaskTable.filterCompletedTasksAction)
     }

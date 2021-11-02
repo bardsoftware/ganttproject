@@ -18,24 +18,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.FXToolbarBuilder;
+import biz.ganttproject.app.MenuBuilderFx;
+import biz.ganttproject.app.ToolbarKt;
 import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.task.TaskActions;
-import com.google.common.base.Function;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
+import javafx.geometry.Side;
 import javafx.scene.Scene;
+import javafx.scene.control.ContextMenu;
 import net.sourceforge.ganttproject.action.BaselineDialogAction;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.overview.GPToolbar;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.view.GPView;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
@@ -66,12 +73,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private Component createSchedulePanel() {
     return new ToolbarBuilder()
         .withDpiOption(myWorkbenchFacade.getDpiOption())
-        .withLafOption(getUiFacade().getLafOption(), new Function<String, Float>() {
-          @Override
-          public Float apply(@Nullable String s) {
-            return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
-          }
-        })
+        .withLafOption(getUiFacade().getLafOption(), s -> (s.contains("nimbus")) ? 2f : 1f)
         .withGapFactory(ToolbarBuilder.Gaps.VDASH)
         .withBackground(myWorkbenchFacade.getGanttChart().getStyle().getSpanningHeaderBackgroundColor())
         .withHeight(24)
@@ -88,30 +90,50 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     return myComponent;
   }
 
+  private final ContextMenu tableMenu = new ContextMenu();
   @Override
   protected Component createButtonPanel() {
-    ToolbarBuilder builder = new ToolbarBuilder()
-        .withHeight(24)
-        .withSquareButtons()
-        .withDpiOption(myWorkbenchFacade.getDpiOption())
-        .withLafOption(myWorkbenchFacade.getLafOption(), new Function<String, Float>() {
-          @Override
-          public Float apply(@Nullable String s) {
-            return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
-          }
-        });
-    addToolbarActions(builder);
-    final GPToolbar toolbar = builder.build();
-    return toolbar.getToolbar();
-  }
-
-  private void addToolbarActions(ToolbarBuilder builder) {
-    builder.addButton(myTaskActions.getUnindentAction().asToolbarAction())
+    var tableMenuButton = ToolbarKt.createButton(new TableMenuAction());
+    Objects.requireNonNull(tableMenuButton).setOnAction(event -> {
+      tableMenu.getItems().clear();
+      myTaskTableSupplier.get().tableMenuActions(new MenuBuilderFx(tableMenu));
+      tableMenu.show(tableMenuButton, Side.BOTTOM, 0.0, 0.0);
+      event.consume();
+    });
+    return new FXToolbarBuilder()
+        .addButton(myTaskActions.getUnindentAction().asToolbarAction())
         .addButton(myTaskActions.getIndentAction().asToolbarAction())
         .addButton(myTaskActions.getMoveUpAction().asToolbarAction())
         .addButton(myTaskActions.getMoveDownAction().asToolbarAction())
         .addButton(myTaskActions.getLinkTasksAction().asToolbarAction())
-        .addButton(myTaskActions.getUnlinkTasksAction().asToolbarAction());
+        .addButton(myTaskActions.getUnlinkTasksAction().asToolbarAction())
+        .addTail(tableMenuButton)
+        .withClasses("toolbar-common", "toolbar-small")
+        .build()
+        .getComponent();
+//    ToolbarBuilder builder = new ToolbarBuilder()
+//        .withHeight(24)
+//        .withSquareButtons()
+//        .withDpiOption(myWorkbenchFacade.getDpiOption())
+//        .withLafOption(myWorkbenchFacade.getLafOption(), new Function<String, Float>() {
+//          @Override
+//          public Float apply(@Nullable String s) {
+//            return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
+//          }
+//        });
+//    addToolbarActions(builder);
+//    final GPToolbar toolbar = builder.build();
+//    return toolbar.getToolbar();
+  }
+
+  static class TableMenuAction extends GPAction {
+    TableMenuAction() {
+      super("taskTable.tableMenuToggle");
+      setFontAwesomeLabel(UIUtil.getFontawesomeLabel(this));
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+    }
   }
 
   @Override
@@ -120,26 +142,20 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   }
 
   @Override
-  protected Component getTreeComponent() {
+  protected @NotNull Component getTreeComponent() {
     var jfxPanel = new JFXPanel();
     Platform.runLater(() -> {
       jfxPanel.setScene(new Scene(myTaskTableSupplier.get().getControl()));
-      setMyHeaderHeight(() -> {
-        return myTaskTableSupplier.get().getHeaderHeightProperty().intValue();
-      });
+      setMyHeaderHeight(() -> myTaskTableSupplier.get().getHeaderHeightProperty().intValue());
     });
     var taskTable = myTaskTableSupplier.get();
-    taskTable.getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> {
-      updateTimelineHeight();
-    });
+    taskTable.getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> updateTimelineHeight());
     taskTable.setRequestSwingFocus(() -> {
       jfxPanel.requestFocus();
       return null;
     });
     taskTable.setSwingComponent(jfxPanel);
-    taskTable.getColumnListWidthProperty().addListener((observable, oldValue, newValue) -> {
-      setTableWidth(newValue.doubleValue());
-    });
+    taskTable.getColumnListWidthProperty().addListener((observable, oldValue, newValue) -> setTableWidth(newValue.doubleValue()));
     taskTable.loadDefaultColumns();
     this.taskTable = taskTable;
     return jfxPanel;

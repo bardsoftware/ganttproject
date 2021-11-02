@@ -28,6 +28,7 @@ import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.action.GPAction
 import java.awt.event.KeyAdapter
@@ -50,10 +51,7 @@ class FXToolbar {
   }
 
   internal val toolbar: ToolBar by lazy {
-    ToolBar().also {
-      it.styleClass.addAll("toolbar-main")
-      it.styleClass.addAll("toolbar-big")
-    }
+    ToolBar()
   }
 
   internal val progressBar:ProgressBar by lazy {
@@ -79,23 +77,27 @@ class FXToolbar {
 
 private typealias ToolbarVisitor = (toolbar: FXToolbar) -> Unit
 
-private class ButtonVisitor(val action: GPAction) {
-  fun visit(toolbar: FXToolbar) {
-    val icon = action.getGlyphIcon() ?: return
-    val btn = Button("", icon).apply {
-      this.contentDisplay = ContentDisplay.GRAPHIC_ONLY
-      this.addEventHandler(ActionEvent.ACTION) {
-        SwingUtilities.invokeLater {
-          action.actionPerformed(null)
-        }
-      }
-      this.isDisable = !action.isEnabled
-      action.addPropertyChangeListener {
-        this.isDisable = !action.isEnabled
+fun createButton(action: GPAction): Button? {
+  val icon = action.getGlyphIcon() ?: return null
+  return Button("", icon).apply {
+    this.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+    this.addEventHandler(ActionEvent.ACTION) {
+      SwingUtilities.invokeLater {
+        action.actionPerformed(null)
       }
     }
+    this.isDisable = !action.isEnabled
+    action.addPropertyChangeListener {
+      this.isDisable = !action.isEnabled
+    }
+  }
+}
 
-    toolbar.toolbar.items.add(btn)
+private class ButtonVisitor(val action: GPAction) {
+  fun visit(toolbar: FXToolbar) {
+    createButton(action)?.let {
+      toolbar.toolbar.items.add(it)
+    }
   }
 }
 
@@ -108,10 +110,15 @@ fun addSeparator(toolbar: FXToolbar) {
  */
 class FXToolbarBuilder {
 
+  private var classes: Array<out String> = arrayOf()
   private var deleteAction: GPAction? = null
   private var insertAction: GPAction? = null
   private val visitors = mutableListOf<ToolbarVisitor>()
 
+  fun withClasses(vararg classes: String): FXToolbarBuilder {
+    this.classes = classes
+    return this
+  }
   fun addNode(node: Node): FXToolbarBuilder {
     visitors.add {
       it.toolbar.items.add(node)
@@ -128,20 +135,29 @@ class FXToolbarBuilder {
     return this
   }
 
-  fun addTail(tail: Node) {
+  fun addTail(action: GPAction): FXToolbarBuilder {
+    createButton(action)?.let {
+      addTail(it)
+    }
+    return this
+  }
+
+  fun addTail(tail: Node): FXToolbarBuilder {
     visitors.add(fun(toolbar: FXToolbar) {
       val spring = Region()
       HBox.setHgrow(spring, Priority.ALWAYS)
       toolbar.toolbar.items.addAll(spring, tail)
     })
+    return this
   }
 
   fun build(): FXToolbar {
     val toolbar = FXToolbar()
-    GlobalScope.launch(Dispatchers.Main) {
+    GlobalScope.launch(Dispatchers.JavaFx) {
       toolbar.init { toolbar ->
         visitors.forEach { it(toolbar) }
         toolbar.toolbar.let {
+          it.styleClass.addAll(this@FXToolbarBuilder.classes)
           it.addEventHandler(javafx.scene.input.KeyEvent.KEY_PRESSED) {evt ->
             if (!evt.isConsumed) {
               when (evt.code.code) {

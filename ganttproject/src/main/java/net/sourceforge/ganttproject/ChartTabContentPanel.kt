@@ -82,7 +82,7 @@ internal abstract class ChartTabContentPanel(
     // /*
     val buttonPanel = createButtonPanel() as JComponent
     val buttonWrapper = JPanel(BorderLayout())
-    buttonWrapper.add(buttonPanel, BorderLayout.WEST)
+    buttonWrapper.add(buttonPanel, BorderLayout.CENTER)
     //button.setAlignmentX(Component.LEFT_ALIGNMENT);
     treeHeader.add(buttonWrapper)
     val defaultScaledHeight =

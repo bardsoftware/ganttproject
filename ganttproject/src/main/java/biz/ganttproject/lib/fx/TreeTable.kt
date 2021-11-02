@@ -33,15 +33,12 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
-import javafx.event.EventHandler
 import javafx.geometry.Pos
-import javafx.geometry.Side
 import javafx.scene.control.*
 import javafx.scene.input.KeyCode
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
-import javafx.scene.layout.Region
 import javafx.util.Callback
 import org.apache.commons.lang3.reflect.FieldUtils
 
@@ -135,13 +132,13 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
       updateScrollValue()
     }
 
-    val cornerRegion = this.tableHeaderRow.lookup(".show-hide-columns-button") as Region
-    cornerRegion.onMousePressed = EventHandler { me: MouseEvent ->
-      table.tableMenu.items.clear()
-      table.tableMenuActions(MenuBuilderFx(table.tableMenu))
-      table.tableMenu.show(cornerRegion, Side.BOTTOM, 0.0, 0.0)
-      me.consume()
-    }
+//    val cornerRegion = this.tableHeaderRow.lookup(".show-hide-columns-button") as Region
+//    cornerRegion.onMousePressed = EventHandler { me: MouseEvent ->
+//      table.tableMenu.items.clear()
+//      table.tableMenuActions(MenuBuilderFx(table.tableMenu))
+//      table.tableMenu.show(cornerRegion, Side.BOTTOM, 0.0, 0.0)
+//      me.consume()
+//    }
     val behavior = FieldUtils.readField(this, "behavior", true) as TreeTableViewBehavior<T>
     behavior.inputMap.removeKey {
       (it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)

@@ -24,16 +24,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -gp-dark-gray: #424242;
 }
 
-.toolbar-main {
+.toolbar-common {
     -fx-background-color: transparent;
-    -fx-padding: 1ex 2em 2ex 2em;
 }
-
-.toolbar-big Button {
-    -fx-min-width: 40px;
-    -fx-min-height: 40px;
-}
-.toolbar-main Button {
+.toolbar-common Button {
     -fx-alignment: center;
     -fx-background-color: transparent;
     -fx-border-style: solid;
@@ -41,35 +35,73 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-border-width: 0;
     -fx-border-insets: 0;
 }
-
-.toolbar-main Button .glyph-icon {
+.toolbar-common Button .glyph-icon {
     -fx-alignment: center;
     -fx-fill: -gp-medium-gray;
 }
-
-.toolbar-big Button .glyph-icon {
-    -glyph-size: 32px;
-}
-
-.toolbar-main Button:hover {
+.toolbar-common Button:hover {
     -fx-background-color: derive(-gp-light-gray, -10%);
     -fx-background-radius: 3px;
 }
 
-.toolbar-main Button:hover .glyph-icon {
+.toolbar-common Button:hover .glyph-icon {
     -fx-fill: derive(-gp-medium-gray, -10%);
+}
+.toolbar-common Button:pressed, .toolbar-common Button:hover:pressed {
+    -fx-background-color: derive(-gp-light-gray, -15%);
+}
+
+.toolbar-common Button:pressed .glyph-icon, .toolbar-common Button:hover:pressed .glyph-icon {
+    -fx-fill: derive(-gp-medium-gray, -15%);
+}
+.toolbar-common Separator {
+    -fx-min-width: 2em;
+    -fx-border-style: none;
+}
+
+.toolbar-common Separator > .line {
+    -fx-border-style: none;
+    -fx-border-width: 0;
+}
+.toolbar-small {
+    -fx-padding: 0;
+    -fx-border-color: red;
+    -fx-border-width: 0;
+    -fx-border-insets: 0;
+    -fx-spacing: 0;
+}
+.toolbar-small Button {
+    -fx-min-width: 24px;
+    -fx-min-height: 18px;
+    -fx-max-height: 24px;
+    -fx-pref-height: 24px;
+    -fx-pref-width: 24px;
+
+}
+.toolbar-small Button .glyph-icon {
+    -glyph-size: 18px;
+    -fx-padding: 0;
+}
+
+.toolbar-small Button:hover .glyph-icon {
+    -glyph-size: 18px;
+}
+
+
+.toolbar-main {
+    -fx-padding: 1ex 2em 2ex 2em;
+}
+
+.toolbar-big Button {
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+}
+.toolbar-big Button .glyph-icon {
+    -glyph-size: 32px;
 }
 
 .toolbar-big Button:hover .glyph-icon {
     -glyph-size: 32px;
-}
-
-.toolbar-main Button:pressed, .toolbar-main Button:hover:pressed {
-    -fx-background-color: derive(-gp-light-gray, -15%);
-}
-
-.toolbar-main Button:pressed .glyph-icon, .toolbar-main Button:hover:pressed .glyph-icon {
-    -fx-fill: derive(-gp-medium-gray, -15%);
 }
 
 .toolbar-main GridPane {
@@ -85,15 +117,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-cursor: hand;
 }
 
-.toolbar-main Separator {
-    -fx-min-width: 2em;
-    -fx-border-style: none;
-}
-
-.toolbar-main Separator > .line {
-    -fx-border-style: none;
-    -fx-border-width: 0;
-}
 
 .progress-bar {
     /*-fx-background-color:*/

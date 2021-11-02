@@ -568,6 +568,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         .addButton(myEditMenu.getRedoAction().asToolbarAction());
     mySearchUi = new FXSearchUi(getProject(), getUIFacade(), myEditMenu.getSearchAction());
     builder.addSearchBox(mySearchUi);
+    builder.withClasses("toolbar-common", "toolbar-main", "toolbar-big");
 
     //return result;
     return builder.build();
