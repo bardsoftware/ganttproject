@@ -123,7 +123,11 @@ class TextCell<S, T>(
   internal var onEditingCompleted: ()->Unit = {}
 
   override fun createDefaultSkin(): Skin<*> {
-    return TreeTableCellSkin(this)
+    return (treeTableView as? GPTreeTableView<S>)?.let {
+      TreeTableCellSkin(this) {
+        it.onProperties()
+      }
+    } ?: TreeTableCellSkin(this) {}
   }
 
   init {

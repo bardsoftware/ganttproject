@@ -49,6 +49,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   internal val tableMenu = ContextMenu()
   var contextMenuActions: (MenuBuilder) -> Unit = { }
   var tableMenuActions: (MenuBuilder) -> Unit = {}
+  var onProperties: () -> Unit = {}
   private val resizePolicy = MyColumnResizePolicy<Any>(this, widthProperty())
   init {
     rowFactory = Callback {

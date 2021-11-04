@@ -25,8 +25,10 @@
 
 package biz.ganttproject.lib.fx.treetable;
 
+import com.google.common.base.MoreObjects;
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.behavior.TreeTableCellBehavior;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.Node;
 import javafx.scene.control.TableColumnBase;
@@ -35,8 +37,14 @@ import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.input.MouseButton;
 
+import java.awt.*;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Default skin implementation for the {@link TreeTableCell} control.
@@ -71,11 +79,38 @@ public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, Tr
    *
    * @param control The control that this skin should be installed onto.
    */
-  public TreeTableCellSkin(TreeTableCell<S,T> control) {
+  public TreeTableCellSkin(TreeTableCell<S,T> control, Runnable onProperties) {
     super(control);
 
     // install default input map for the TreeTableCell control
-    behavior = new TreeTableCellBehavior<>(control);
+    behavior = new TreeTableCellBehavior<>(control) {
+      private final AtomicBoolean isEditingStartExpected = new AtomicBoolean(false);
+      private final ScheduledExecutorService myEditCellExecutor = Executors.newSingleThreadScheduledExecutor();
+      private final Integer myDoubleClickInterval = (Integer) MoreObjects.firstNonNull(
+          Toolkit.getDefaultToolkit().getDesktopProperty("awt.multiClickInterval"), 500
+      );
+
+      protected void handleClicks(MouseButton button, int clickCount, boolean isAlreadySelected) {
+        if (button == MouseButton.PRIMARY) {
+          if (clickCount == 1) {
+            if (isAlreadySelected) {
+              isEditingStartExpected.set(true);
+              myEditCellExecutor.schedule(() -> {
+                if (isEditingStartExpected.get()) {
+                  Platform.runLater(() -> edit(getNode()));
+                }
+              }, myDoubleClickInterval, TimeUnit.MILLISECONDS);
+              return;
+            }
+          } else if (clickCount == 2) {
+            isEditingStartExpected.set(false);
+            onProperties.run();
+            return;
+          }
+        }
+        super.handleClicks(button, clickCount, isAlreadySelected);
+      }
+    };
 //        control.setInputMap(behavior.getInputMap());
   }
 

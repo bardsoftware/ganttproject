@@ -40,10 +40,7 @@ import javafx.collections.ObservableList
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Parent
-import javafx.scene.control.ContentDisplay
-import javafx.scene.control.SelectionMode
-import javafx.scene.control.TreeItem
-import javafx.scene.control.TreeTableColumn
+import javafx.scene.control.*
 import javafx.scene.control.cell.CheckBoxTreeTableCell
 import javafx.scene.input.*
 import javafx.scene.layout.*
@@ -74,6 +71,7 @@ import java.awt.Component
 import java.math.BigDecimal
 import java.util.*
 import java.util.List.copyOf
+import javax.swing.SwingUtilities
 import kotlin.math.ceil
 
 
@@ -174,6 +172,7 @@ class TaskTable(
       onColumnsChange()
     })
     initNewTaskActor()
+    treeTable.onProperties = this::onProperties
     treeTable.contextMenuActions = this::contextMenuActions
     treeTable.tableMenuActions = this::tableMenuActions
   }
@@ -650,6 +649,11 @@ class TaskTable(
     }
   }
 
+  private fun onProperties() {
+    SwingUtilities.invokeLater {
+      taskActions.propertiesAction.actionPerformed(null)
+    }
+  }
   private fun contextMenuActions(builder: MenuBuilder) {
     builder.apply {
       items(taskActions.createAction)
