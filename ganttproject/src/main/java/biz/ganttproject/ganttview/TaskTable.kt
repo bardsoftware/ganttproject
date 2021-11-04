@@ -122,6 +122,7 @@ class TaskTable(
       }
     )
   )
+
   val columnListWidthProperty = SimpleDoubleProperty()
   var requestSwingFocus: () -> Unit = {}
   lateinit var swingComponent: Component
@@ -141,6 +142,7 @@ class TaskTable(
         columnListWidthProperty.value = newValue.toDouble() + treeTable.vbarWidth()
       }
     }
+    treeTable.onColumnResize = columnList.onColumnResize
     Platform.runLater {
       treeTable.isShowRoot = false
       treeTable.isEditable = true
@@ -233,8 +235,8 @@ class TaskTable(
     taskTableChartConnector.exportTreeTableApi = {
       TreeTableApi(
         rowHeight = { treeTable.fixedCellSize.toInt() },
-        tableHeaderHeight = { treeTable.headerHeight.intValue() },
-        width = { columnList.totalWidth.toInt() },
+        tableHeaderHeight = { treeTable.headerHeight.intValue()  },
+        width = { treeTable.width.toInt() - treeTable.vbarWidth().toInt() },
         tableHeaderComponent = { null },
         tableComponent = { null },
         tablePainter = { this.buildImage(it) }
@@ -367,7 +369,7 @@ class TaskTable(
     }
 
     this.selectionManager.addSelectionListener(object : TaskSelectionManager.Listener {
-      override fun selectionChanged(currentSelection: List<Task>, source: Any) {
+      override fun selectionChanged(currentSelection: List<Task>, source: Any?) {
         if (source != this@TaskTable) {
           Platform.runLater {
             treeTable.selectionModel.clearSelection()

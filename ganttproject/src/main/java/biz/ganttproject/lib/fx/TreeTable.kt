@@ -50,6 +50,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   var contextMenuActions: (MenuBuilder) -> Unit = { }
   var tableMenuActions: (MenuBuilder) -> Unit = {}
   var onProperties: () -> Unit = {}
+  var onColumnResize: () -> Unit = {}
   private val resizePolicy = MyColumnResizePolicy<Any>(this, widthProperty())
   init {
     rowFactory = Callback {
@@ -103,6 +104,11 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
       this.focusModel.focus(focusedCell.row, columns[0])
     }
   }
+
+  override fun resizeColumn(column: TreeTableColumn<T, *>?, delta: Double) =
+    super.resizeColumn(column, delta).also {
+      onColumnResize()
+    }
 
   fun vbarWidth(): Double = skin?.let { (it as GPTreeTableViewSkin<T>).vbarWidth() } ?: 0.0
   fun setColumns(tableColumns: List<TreeTableColumn<T, out Any>>) {

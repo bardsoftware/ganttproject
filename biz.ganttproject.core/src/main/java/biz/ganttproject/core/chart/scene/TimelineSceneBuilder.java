@@ -106,8 +106,8 @@ public class TimelineSceneBuilder extends AbstractSceneBuilder {
         sizex - 1, spanningHeaderHeight);
     timeunitHeaderBorder.setStyle("timeline.lineSplitter");
     //timeunitHeaderBorder.setForegroundColor(myInputApi.getTimelineBorderColor());
-    Canvas.Line bottomBorder = getTimelineContainer().createLine(0, headerHeight - 1, sizex - 2,
-        headerHeight - 1);
+    Canvas.Line bottomBorder = getTimelineContainer().createLine(0, headerHeight, sizex - 2,
+        headerHeight);
     bottomBorder.setStyle("timeline.borderBottom");
   }
 

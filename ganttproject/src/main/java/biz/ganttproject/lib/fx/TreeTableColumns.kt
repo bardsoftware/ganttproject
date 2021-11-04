@@ -41,6 +41,7 @@ class ColumnListImpl(
 
   val totalWidth: Double get() = totalWidthProperty.value
   val totalWidthProperty = SimpleDoubleProperty()
+  val onColumnResize = this::updateTotalWidth
 
   init {
     updateTotalWidth()
