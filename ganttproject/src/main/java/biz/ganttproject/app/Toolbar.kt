@@ -77,10 +77,15 @@ class FXToolbar {
 
 private typealias ToolbarVisitor = (toolbar: FXToolbar) -> Unit
 
-fun createButton(action: GPAction): Button? {
+fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
   val icon = action.getGlyphIcon() ?: return null
   return Button("", icon).apply {
-    this.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+    if (onlyIcon) {
+      this.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+    } else {
+      this.contentDisplay = ContentDisplay.LEFT
+      this.text = action.name
+    }
     this.addEventHandler(ActionEvent.ACTION) {
       SwingUtilities.invokeLater {
         action.actionPerformed(null)

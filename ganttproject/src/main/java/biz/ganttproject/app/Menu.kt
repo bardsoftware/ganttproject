@@ -204,13 +204,16 @@ fun GPAction.asMenuItem(): MenuItem =
     SeparatorMenuItem()
   } else {
     val menuItem = getValue(Action.SELECTED_KEY)?.let { selected ->
-      CheckMenuItem(name).also {
-        it.isSelected = selected as Boolean
-        it.onAction = EventHandler { _ ->
-          putValue(Action.SELECTED_KEY, it.isSelected)
+      CheckMenuItem(name).also { fxMenuItem ->
+        fxMenuItem.isSelected = selected as Boolean
+        fxMenuItem.onAction = EventHandler { _ ->
+          putValue(Action.SELECTED_KEY, fxMenuItem.isSelected)
           SwingUtilities.invokeLater {
             actionPerformed(null)
           }
+        }
+        this.addPropertyChangeListener {
+          fxMenuItem.isSelected = (getValue(Action.SELECTED_KEY) as? Boolean) ?: false
         }
       }
     } ?: MenuItem(name).also {

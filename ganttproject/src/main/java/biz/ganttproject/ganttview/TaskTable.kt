@@ -18,10 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.ganttview
 
-import biz.ganttproject.app.MenuBuilder
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.getModifiers
-import biz.ganttproject.app.triggeredBy
+import biz.ganttproject.app.*
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.table.ColumnList.ColumnStub
@@ -127,11 +124,23 @@ class TaskTable(
   var requestSwingFocus: () -> Unit = {}
   lateinit var swingComponent: Component
   private val filterCompletedTasksAction = FilterCompletedTasks(this@TaskTable, taskManager)
-  var activeFilter: (parent: Task, child: Task?) -> Boolean = { _, _ -> true }
+  var activeFilter: TaskFilter = VOID_FILTER
   set(value) {
     field = value
     sync()
   }
+
+  private val showHiddenButton by lazy {
+    Button(RootLocalizer.formatText("taskTable.placeholder.showHiddenTasks")).also {
+      it.onAction = EventHandler {
+        activeFilter = VOID_FILTER
+        filterCompletedTasksAction.setChecked(false)
+      }
+    }
+  }
+
+  private val createNewTaskButton by lazy { createButton(taskActions.createAction, onlyIcon = false) }
+
   init {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
 
@@ -543,19 +552,20 @@ class TaskTable(
     Platform.runLater {
       val treeModel = taskManager.taskHierarchy
       treeTable.root.children.clear()
-      task2treeItem.clear()
-      task2treeItem[treeModel.rootTask] = rootItem
-
-      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, _ ->
-        if (!activeFilter(parent, child)) {
-          false
-        } else {
-          if (child != null) parent.addChildTreeItem(child)
-          true
-        }
-      }
-      taskTableChartConnector.visibleTasks.clear()
-      taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
+      sync()
+//      task2treeItem.clear()
+//      task2treeItem[treeModel.rootTask] = rootItem
+//
+//      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, _ ->
+//        if (!activeFilter(parent, child)) {
+//          false
+//        } else {
+//          if (child != null) parent.addChildTreeItem(child)
+//          true
+//        }
+//      }
+//      taskTableChartConnector.visibleTasks.clear()
+//      taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
     }
   }
 
@@ -564,10 +574,13 @@ class TaskTable(
       val treeModel = taskManager.taskHierarchy
       task2treeItem.clear()
       task2treeItem[treeModel.rootTask] = rootItem
+
+      var filteredCount = 0
       treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx ->
         if (!activeFilter(parent, child)) {
           val parentItem = task2treeItem[parent]!!
           parentItem.children.remove(idx, parentItem.children.size)
+          filteredCount++
           false
         } else {
           if (child == null) {
@@ -591,9 +604,18 @@ class TaskTable(
           true
         }
       }
-      taskTableChartConnector.visibleTasks.setAll(getExpandedTasks())
+      val visibleTasks = getExpandedTasks()
+      taskTableChartConnector.visibleTasks.setAll(visibleTasks)
+      if (visibleTasks.isEmpty()) {
+        treeTable.placeholder = if (filteredCount > 0) {
+          showHiddenButton
+        } else {
+          createNewTaskButton
+        }
+      }
     }
   }
+
   private fun Task.addChildTreeItem(child: Task, pos: Int = -1): TreeItem<Task> {
     val parentItem = task2treeItem[this] ?: run {
       println(task2treeItem)

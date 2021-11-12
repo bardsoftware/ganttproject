@@ -93,7 +93,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final ContextMenu tableMenu = new ContextMenu();
   @Override
   protected Component createButtonPanel() {
-    var tableMenuButton = ToolbarKt.createButton(new TableMenuAction());
+    var tableMenuButton = ToolbarKt.createButton(new TableMenuAction(), true);
     Objects.requireNonNull(tableMenuButton).setOnAction(event -> {
       tableMenu.getItems().clear();
       myTaskTableSupplier.get().tableMenuActions(new MenuBuilderFx(tableMenu));

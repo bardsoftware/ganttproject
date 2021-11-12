@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.ganttview
 
 import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
@@ -40,10 +41,12 @@ class FilterCompletedTasks(
       }
     }
   }
+
   init {
     putValue(Action.SELECTED_KEY, java.lang.Boolean.FALSE)
     taskManager.addTaskListener(this.taskListener)
   }
+
   override fun actionPerformed(e: ActionEvent?) {
     val isChecked = getValue(Action.SELECTED_KEY)
     if (isChecked is java.lang.Boolean) {
@@ -56,4 +59,11 @@ class FilterCompletedTasks(
       }
     }
   }
+
+  fun setChecked(value: Boolean) {
+    putValue(Action.SELECTED_KEY, value)
+  }
 }
+
+typealias TaskFilter = (parent: Task, child: Task?) -> Boolean
+val VOID_FILTER: TaskFilter = { _, _ -> true }
