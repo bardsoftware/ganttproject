@@ -132,6 +132,7 @@ class TaskTable(
 
   private val showHiddenButton by lazy {
     Button(RootLocalizer.formatText("taskTable.placeholder.showHiddenTasks")).also {
+      it.styleClass.add("btn-attention")
       it.onAction = EventHandler {
         activeFilter = VOID_FILTER
         filterCompletedTasksAction.setChecked(false)
@@ -139,7 +140,9 @@ class TaskTable(
     }
   }
 
-  private val createNewTaskButton by lazy { createButton(taskActions.createAction, onlyIcon = false) }
+  private val createNewTaskButton by lazy { createButton(taskActions.createAction, onlyIcon = false)?.also {
+    it.styleClass.add("btn-attention")
+  }}
 
   init {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
@@ -156,6 +159,7 @@ class TaskTable(
       treeTable.isShowRoot = false
       treeTable.isEditable = true
       treeTable.isTableMenuButtonVisible = false
+      treeTable.stylesheets.add("/biz/ganttproject/app/Dialog.css")
     }
     initTaskEventHandlers()
     initProjectEventHandlers()
