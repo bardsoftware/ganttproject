@@ -130,7 +130,7 @@ class TaskTable(
     sync()
   }
 
-  private val showHiddenButton by lazy {
+  private val placeholderShowHidden by lazy {
     Button(RootLocalizer.formatText("taskTable.placeholder.showHiddenTasks")).also {
       it.styleClass.add("btn-attention")
       it.onAction = EventHandler {
@@ -139,10 +139,7 @@ class TaskTable(
       }
     }
   }
-
-  private val createNewTaskButton by lazy { createButton(taskActions.createAction, onlyIcon = false)?.also {
-    it.styleClass.add("btn-attention")
-  }}
+  private val placeholderEmpty by lazy { Pane() }
 
   init {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
@@ -159,8 +156,8 @@ class TaskTable(
       treeTable.isShowRoot = false
       treeTable.isEditable = true
       treeTable.isTableMenuButtonVisible = false
-      treeTable.stylesheets.add("/biz/ganttproject/app/Dialog.css")
     }
+    treeTable.stylesheets.add("/biz/ganttproject/app/Dialog.css")
     initTaskEventHandlers()
     initProjectEventHandlers()
     initChartConnector()
@@ -433,7 +430,7 @@ class TaskTable(
               }
               runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
             }
-            onEditCancel = EventHandler { event ->
+            onEditCancel = EventHandler {
               runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
             }
             treeTable.treeColumn = this
@@ -554,22 +551,8 @@ class TaskTable(
 
   fun reload() {
     Platform.runLater {
-      val treeModel = taskManager.taskHierarchy
       treeTable.root.children.clear()
       sync()
-//      task2treeItem.clear()
-//      task2treeItem[treeModel.rootTask] = rootItem
-//
-//      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, _ ->
-//        if (!activeFilter(parent, child)) {
-//          false
-//        } else {
-//          if (child != null) parent.addChildTreeItem(child)
-//          true
-//        }
-//      }
-//      taskTableChartConnector.visibleTasks.clear()
-//      taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
     }
   }
 
@@ -612,9 +595,9 @@ class TaskTable(
       taskTableChartConnector.visibleTasks.setAll(visibleTasks)
       if (visibleTasks.isEmpty()) {
         treeTable.placeholder = if (filteredCount > 0) {
-          showHiddenButton
+          placeholderShowHidden
         } else {
-          createNewTaskButton
+          placeholderEmpty
         }
       }
     }
