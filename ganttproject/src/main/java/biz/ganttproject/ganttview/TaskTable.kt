@@ -549,6 +549,7 @@ class TaskTable(
   fun reload() {
     Platform.runLater {
       treeTable.root.children.clear()
+      treeTable.selectionModel.clearSelection()
       sync()
     }
   }
