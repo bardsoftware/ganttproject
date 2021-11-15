@@ -20,6 +20,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.io;
 
 import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.ganttview.TaskFilterManager;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
@@ -41,13 +42,14 @@ import java.util.Set;
  * @author dbarashev (Dmitry Barashev)
  */
 class ViewSaver extends SaverBase {
-  public void save(UIFacade facade, ColumnList taskColumnList, TransformerHandler handler) throws SAXException {
+  public void save(UIFacade facade, ColumnList taskColumnList, TaskFilterManager taskFilterManager, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
     addAttribute("zooming-state", facade.getZoomManager().getZoomState().getPersistentName(), attrs);
     addAttribute("id", "gantt-chart", attrs);
     startElement("view", attrs, handler);
     writeColumns(taskColumnList, handler);
     new OptionSaver().saveOptionList(handler, facade.getGanttChart().getTaskLabelOptions().getOptions());
+    new OptionSaver().saveOptionList(handler, taskFilterManager.getOptions());
     writeTimelineTasks(facade, handler);
     writeRecentColors(handler);
     endElement("view", handler);

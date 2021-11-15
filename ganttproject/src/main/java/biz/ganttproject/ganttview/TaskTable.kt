@@ -82,7 +82,8 @@ class TaskTable(
   private val treeCollapseView: TreeCollapseView<Task>,
   private val selectionManager: TaskSelectionManager,
   private val taskActions: TaskActions,
-  private val undoManager: GPUndoManager
+  private val undoManager: GPUndoManager,
+  private val filters: TaskFilterManager
 ) {
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   private val treeModel = taskManager.taskHierarchy
@@ -123,18 +124,13 @@ class TaskTable(
   val columnListWidthProperty = SimpleDoubleProperty()
   var requestSwingFocus: () -> Unit = {}
   lateinit var swingComponent: Component
-  private val filterCompletedTasksAction = FilterCompletedTasks(this@TaskTable, taskManager)
-  var activeFilter: TaskFilter = VOID_FILTER
-  set(value) {
-    field = value
-    sync()
-  }
+  private val filterCompletedTasksAction = filters.filterCompletedTasksAction
 
   private val placeholderShowHidden by lazy {
     Button(RootLocalizer.formatText("taskTable.placeholder.showHiddenTasks")).also {
       it.styleClass.add("btn-attention")
       it.onAction = EventHandler {
-        activeFilter = VOID_FILTER
+        this.filters.activeFilter = VOID_FILTER
         filterCompletedTasksAction.setChecked(false)
       }
     }
@@ -187,6 +183,8 @@ class TaskTable(
     treeTable.onProperties = this::onProperties
     treeTable.contextMenuActions = this::contextMenuActions
     treeTable.tableMenuActions = this::tableMenuActions
+
+    filters.sync = this::sync
   }
 
   fun loadDefaultColumns() = Platform.runLater {
@@ -564,7 +562,7 @@ class TaskTable(
 
       var filteredCount = 0
       treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx ->
-        if (!activeFilter(parent, child)) {
+        if (!this.filters.activeFilter(parent, child)) {
           val parentItem = task2treeItem[parent]!!
           parentItem.children.remove(idx, parentItem.children.size)
           filteredCount++

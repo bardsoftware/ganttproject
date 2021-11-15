@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.io;
 
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.ganttview.TaskFilterManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.GanttGraphicArea;
@@ -49,18 +50,20 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
 
   private final UIFacade myUIFacade;
   private final Supplier<ColumnList> myTaskColumnList;
+  private final Supplier<TaskFilterManager> myTaskFilters;
 
   private GanttGraphicArea area;
 
   public GanttXMLSaver(IGanttProject project) {
-    this(project, null, null, () -> null);
+    this(project, null, null, () -> null, () -> null);
   }
 
-  public GanttXMLSaver(IGanttProject project, GanttGraphicArea area, UIFacade uiFacade, Supplier<ColumnList> taskColumnList) {
+  public GanttXMLSaver(IGanttProject project, GanttGraphicArea area, UIFacade uiFacade, Supplier<ColumnList> taskColumnList, Supplier<TaskFilterManager> taskFilters) {
     this.area = area;
     myProject = project;
     myUIFacade = uiFacade;
     myTaskColumnList = taskColumnList;
+    myTaskFilters = taskFilters;
   }
 
   @Override
@@ -131,7 +134,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
 
   private void saveViews(TransformerHandler handler) throws SAXException {
     if (getUIFacade() != null) {
-      new ViewSaver().save(getUIFacade(), myTaskColumnList.get(), handler);
+      new ViewSaver().save(getUIFacade(), myTaskColumnList.get(), myTaskFilters.get(), handler);
     }
   }
 

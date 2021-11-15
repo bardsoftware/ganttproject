@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.ganttview
 
+import biz.ganttproject.core.option.DefaultBooleanOption
+import biz.ganttproject.core.option.GPOption
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
@@ -26,18 +28,33 @@ import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 import java.awt.event.ActionEvent
 import javax.swing.Action
 
+typealias TaskFilter = (parent: Task, child: Task?) -> Boolean
+
+class TaskFilterManager(taskManager: TaskManager) {
+  val options: List<GPOption<*>> get() = listOf(filterCompletedTasksOption)
+
+  private val filterCompletedTasksOption = DefaultBooleanOption("filter.completedTasks", false)
+  val filterCompletedTasksAction = FilterCompletedTasks(this, taskManager)
+  var activeFilter: TaskFilter = VOID_FILTER
+    set(value) {
+      field = value
+      sync()
+    }
+
+  internal var sync: ()->Unit = {}
+}
 /**
  * @author dbarashev@bardsoftware.com
  */
 class FilterCompletedTasks(
-  private val taskTable: TaskTable,
-  private val taskManager: TaskManager) : GPAction("taskTable.filter.completedTasks") {
+  private val filterManager: TaskFilterManager,
+  taskManager: TaskManager) : GPAction("taskTable.filter.completedTasks") {
 
   private val taskListener = object : TaskListenerAdapter() {
     override fun taskProgressChanged(e: TaskPropertyEvent?) {
       val isChecked = getValue(Action.SELECTED_KEY)
       if (isChecked is java.lang.Boolean && isChecked.booleanValue()) {
-        taskTable.sync()
+        filterManager.sync()
       }
     }
   }
@@ -51,11 +68,11 @@ class FilterCompletedTasks(
     val isChecked = getValue(Action.SELECTED_KEY)
     if (isChecked is java.lang.Boolean) {
       if (isChecked.booleanValue()) {
-        taskTable.activeFilter = { _, child ->
+        filterManager.activeFilter = { _, child ->
           child?.completionPercentage?.let { it < 100 } ?: true
         }
       } else {
-        taskTable.activeFilter = { _, _ -> true }
+        filterManager.activeFilter = VOID_FILTER
       }
     }
   }
@@ -65,5 +82,4 @@ class FilterCompletedTasks(
   }
 }
 
-typealias TaskFilter = (parent: Task, child: Task?) -> Boolean
 val VOID_FILTER: TaskFilter = { _, _ -> true }

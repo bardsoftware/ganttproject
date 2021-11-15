@@ -32,6 +32,7 @@ import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import biz.ganttproject.ganttview.TaskFilterManager;
 import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
@@ -138,6 +139,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   );
   private TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
   protected final Supplier<TaskTable> myTaskTableSupplier;
+  protected final TaskFilterManager myTaskFilterManager;
 
 
   class TaskManagerConfigImpl implements TaskManagerConfig {
@@ -214,9 +216,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return myTaskTableSupplier.get().getActionConnector();
       }
     });
+    myTaskFilterManager = new TaskFilterManager(getTaskManager());
     myTaskTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(
         () -> new TaskTable(getProject(), getTaskManager(),
-            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions, getUndoManager())
+            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions, getUndoManager(), myTaskFilterManager)
     ));
     myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
       @Override
