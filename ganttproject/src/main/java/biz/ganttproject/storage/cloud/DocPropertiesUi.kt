@@ -356,7 +356,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
 
   private var paneElements: DocPropertiesUi.LockOfflinePaneElements? = null
-
+  private var onActive: ()->Unit = {}
   override fun getOptionGroups() = emptyArray<GPOptionGroup>()
   override fun hasCustomComponent() = true
 
@@ -416,12 +416,22 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
       }
     }
   }
+
+  override fun setActive(isActive: Boolean) {
+    if (isActive) {
+      onActive()
+      onActive = {}
+    }
+  }
+
   private fun buildNotOnlineDocumentScene(): Scene {
     val wrapperPane = BorderPane()
-    GPCloudUiFlowBuilder().apply {
-      flowPageChanger = createFlowPageChanger(wrapperPane)
-      mainPage = NotOnlineDocumentMainPage()
-      build().start()
+    this.onActive = {
+      GPCloudUiFlowBuilder().apply {
+        flowPageChanger = createFlowPageChanger(wrapperPane)
+        mainPage = NotOnlineDocumentMainPage()
+        build().start()
+      }
     }
     return Scene(wrapperPane)
   }
