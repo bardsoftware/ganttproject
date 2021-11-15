@@ -18,17 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
-import java.awt.Component;
-
-import javax.swing.JComponent;
-
 import biz.ganttproject.core.option.GPOptionGroup;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+
+import javax.swing.*;
+import java.awt.*;
 
 public abstract class OptionPageProviderBase implements OptionPageProvider {
   private String myPageID;
@@ -65,6 +63,10 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
     for (GPOptionGroup optionGroup : getOptionGroups()) {
       optionGroup.commit();
     }
+  }
+
+  @Override
+  public void setActive(boolean isActive) {
   }
 
   @Override

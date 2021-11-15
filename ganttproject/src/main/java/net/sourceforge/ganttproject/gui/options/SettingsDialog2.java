@@ -18,18 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
-import java.awt.Container;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.AbstractPagesDialog;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.plugins.PluginManager;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SettingsDialog2 extends AbstractPagesDialog {
   private static List<OptionPageProvider> ourProviders;
@@ -73,12 +73,12 @@ public class SettingsDialog2 extends AbstractPagesDialog {
       ListItem li;
       if (pageName.startsWith("pageGroup.")) {
         li = new ListItem(true, pageName, GanttLanguage.getInstance().correctLabel(
-            GanttLanguage.getInstance().getText(pageName)), null);
+            GanttLanguage.getInstance().getText(pageName)), null, null);
       } else {
         OptionPageProvider p = pageId_provider.get(pageName);
         assert p != null : "OptionPageProvider with pageID=" + pageName + " not found";
         li = new ListItem(false, p.getPageID(), p.toString(), (Container) new OptionPageProviderPanel(p, project,
-            uiFacade).getComponent());
+            uiFacade).getComponent(), p);
       }
       items.add(li);
     }
