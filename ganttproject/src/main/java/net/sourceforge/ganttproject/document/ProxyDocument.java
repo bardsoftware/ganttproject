@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.document;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ListOption;
 import biz.ganttproject.core.table.ColumnList;
 import com.google.common.base.Preconditions;
@@ -318,7 +319,7 @@ public class ProxyDocument implements Document {
       opener.addTagHandler(legacyTaskDisplayHandler);
       opener.addParsingListener(TaskDisplayColumnsTagHandler.createTaskDisplayColumnsWrapper(myTaskVisibleFields, pilsenTaskDisplayHandler, legacyTaskDisplayHandler));
       opener.addTagHandler(new ViewTagHandler("gantt-chart", getUIFacade(), pilsenTaskDisplayHandler));
-
+      opener.addTagHandler(new OptionTagHandler<BooleanOption>(myProject.getTaskFilterManager().getFilterCompletedTasksOption()));
 
       TaskDisplayColumnsTagHandler resourceFieldsHandler = new TaskDisplayColumnsTagHandler(
           "field", "id", "order", "width", "visible");

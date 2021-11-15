@@ -33,7 +33,7 @@ typealias TaskFilter = (parent: Task, child: Task?) -> Boolean
 class TaskFilterManager(taskManager: TaskManager) {
   val options: List<GPOption<*>> get() = listOf(filterCompletedTasksOption)
 
-  private val filterCompletedTasksOption = DefaultBooleanOption("filter.completedTasks", false)
+  val filterCompletedTasksOption = DefaultBooleanOption("filter.completedTasks", false)
   val filterCompletedTasksAction = FilterCompletedTasks(this, taskManager)
   var activeFilter: TaskFilter = VOID_FILTER
     set(value) {
@@ -62,23 +62,38 @@ class FilterCompletedTasks(
   init {
     putValue(Action.SELECTED_KEY, java.lang.Boolean.FALSE)
     taskManager.addTaskListener(this.taskListener)
+    filterManager.filterCompletedTasksOption.addChangeValueListener { evt ->
+      (evt.newValue as? Boolean)?.let {
+        if (evt.newValue != evt.oldValue) {
+          setChecked(it)
+        }
+      }
+    }
   }
 
   override fun actionPerformed(e: ActionEvent?) {
     val isChecked = getValue(Action.SELECTED_KEY)
     if (isChecked is java.lang.Boolean) {
-      if (isChecked.booleanValue()) {
-        filterManager.activeFilter = { _, child ->
-          child?.completionPercentage?.let { it < 100 } ?: true
-        }
-      } else {
-        filterManager.activeFilter = VOID_FILTER
-      }
+      setChecked(isChecked.booleanValue())
+    }
+  }
+
+  override fun putValue(key: String?, newValue: Any?) {
+    super.putValue(key, newValue)
+    if (Action.SELECTED_KEY == key && newValue is Boolean) {
+      filterManager.filterCompletedTasksOption.value = newValue
     }
   }
 
   fun setChecked(value: Boolean) {
     putValue(Action.SELECTED_KEY, value)
+    if (value) {
+      filterManager.activeFilter = { _, child ->
+        child?.completionPercentage?.let { it < 100 } ?: true
+      }
+    } else {
+      filterManager.activeFilter = VOID_FILTER
+    }
   }
 }
 

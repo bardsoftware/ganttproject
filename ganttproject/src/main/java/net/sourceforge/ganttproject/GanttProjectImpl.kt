@@ -26,6 +26,7 @@ import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.DefaultColorOption
 import biz.ganttproject.core.time.TimeUnitStack
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
+import biz.ganttproject.ganttview.TaskFilterManager
 import com.google.common.base.Strings
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BroadcastChannel
@@ -62,6 +63,8 @@ open class GanttProjectImpl : IGanttProject {
   private val myTaskCustomColumnManager: CustomColumnsManager
   private val myBaselines: List<GanttPreviousState> = ArrayList()
   private val myCalendar = WeekendCalendarImpl()
+  private val taskFilterManager: TaskFilterManager
+
   override fun getProjectName(): String {
     return myProjectName!!
   }
@@ -234,6 +237,8 @@ open class GanttProjectImpl : IGanttProject {
     return myBaselines
   }
 
+  override fun getTaskFilterManager() = taskFilterManager
+
   fun repaintResourcePanel() {
     // TODO Auto-generated method stub
   }
@@ -271,6 +276,7 @@ open class GanttProjectImpl : IGanttProject {
     myUIConfiguration = UIConfiguration(Color.BLUE, true)
     myTaskCustomColumnManager = CustomColumnsManager()
     myCalendar.addListener { setModified() }
+    taskFilterManager = TaskFilterManager(myTaskManager)
   }
 }
 

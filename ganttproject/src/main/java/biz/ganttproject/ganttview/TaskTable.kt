@@ -130,7 +130,6 @@ class TaskTable(
     Button(RootLocalizer.formatText("taskTable.placeholder.showHiddenTasks")).also {
       it.styleClass.add("btn-attention")
       it.onAction = EventHandler {
-        this.filters.activeFilter = VOID_FILTER
         filterCompletedTasksAction.setChecked(false)
       }
     }

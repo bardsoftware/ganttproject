@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.time.TimeUnitStack;
+import biz.ganttproject.ganttview.TaskFilterManager;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.DocumentManager;
@@ -94,4 +95,6 @@ public interface IGanttProject {
   List<GanttPreviousState> getBaselines();
 
   void restore(Document fromDocument) throws DocumentException, IOException;
+
+  TaskFilterManager getTaskFilterManager();
 }

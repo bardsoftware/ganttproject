@@ -15,19 +15,8 @@ apply plugin: 'maven-publish'
 
 configurations {
     direct
-    cloud {
-        attributes {
-            attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.LIBRARY))
-            attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
-            attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling, Bundling.EXTERNAL))
-            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, JavaVersion.current().majorVersion.toInteger())
-        }
-    }
 }
 
-artifacts {
-    cloud jar
-}
 dependencies {
     providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
     direct fileTree(dir: project.ext.libDir, include: ['*.jar'])
@@ -36,8 +25,6 @@ dependencies {
 
     compile configurations.direct
     compile configurations.providedCompile
-
-    cloud configurations.direct
 
     testImplementation(
         'org.junit.jupiter:junit-jupiter-api:5.+',

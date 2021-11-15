@@ -139,6 +139,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   );
   private TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
   protected final Supplier<TaskTable> myTaskTableSupplier;
+
   protected final TaskFilterManager myTaskFilterManager;
 
 
@@ -602,5 +603,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   protected abstract ParserFactory getParserFactory();
-
+  public TaskFilterManager getTaskFilterManager() {
+    return myTaskFilterManager;
+  }
 }
