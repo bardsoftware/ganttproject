@@ -16,6 +16,8 @@ apply plugin: 'kotlin'
 dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation fileTree(dir: project.ext.libDir, include: ['*.jar'])
+    testImplementation project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
+    testImplementation project(':biz.ganttproject.core')
     testImplementation project(':ganttproject')
     testImplementation project(':biz.ganttproject.impex.msproject2')
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.+'

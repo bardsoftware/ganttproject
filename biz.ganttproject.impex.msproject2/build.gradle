@@ -1,12 +1,27 @@
+buildscript {
+    ext.kotlin_version = '1.6.0'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 apply plugin: 'java'
-apply plugin: 'idea'
+apply plugin: 'kotlin'
+
+configurations {
+    api
+}
 
 dependencies {
     providedCompile project(path: ':ganttproject', configuration: 'exported')
-    implementation('net.sf.mpxj:mpxj:9.+') {
+    api('net.sf.mpxj:mpxj:9.+') {
         exclude group: 'org.xerial', module: 'sqlite-jdbc'
         exclude group: 'com.jgoodies'
     }
+    implementation configurations.api
     implementation 'javax.xml.bind:jaxb-api:2.3.+'
     implementation 'javax.xml:jaxb-impl:2.1'
 
