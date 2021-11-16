@@ -19,10 +19,10 @@ configurations {
 
 dependencies {
     exported 'org.slf4j:slf4j-api:1.7.32'
-    compile 'org.slf4j:slf4j-jdk14:1.7.32'
-    compile "com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:0.62.+"
-    compile "com.vladsch.flexmark:flexmark-ext-tables:0.62.+"
-    compile "com.vladsch.flexmark:flexmark-ext-attributes:0.62.+"
+    implementation 'org.slf4j:slf4j-jdk14:1.7.32'
+    implementation "com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:0.62.+"
+    implementation "com.vladsch.flexmark:flexmark-ext-tables:0.62.+"
+    implementation "com.vladsch.flexmark:flexmark-ext-attributes:0.62.+"
 
     exported 'commons-codec:commons-codec:1.+'
     exported 'commons-io:commons-io:2.+'

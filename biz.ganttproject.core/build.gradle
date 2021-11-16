@@ -20,11 +20,12 @@ configurations {
 dependencies {
     providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
     direct fileTree(dir: project.ext.libDir, include: ['*.jar'])
-    direct "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    direct "com.google.guava:guava:25.+"
+    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    api "com.google.guava:guava:31.+"
 
-    compile configurations.direct
-    compile configurations.providedCompile
+    direct configurations.api
+    implementation configurations.direct
+    implementation configurations.providedCompile
 
     testImplementation(
         'org.junit.jupiter:junit-jupiter-api:5.+',

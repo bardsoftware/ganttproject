@@ -3,15 +3,15 @@ apply plugin: 'idea'
 
 dependencies {
     providedCompile project(path: ':ganttproject', configuration: 'exported')
-    compile('net.sf.mpxj:mpxj:9.+') {
+    implementation('net.sf.mpxj:mpxj:9.+') {
         exclude group: 'org.xerial', module: 'sqlite-jdbc'
         exclude group: 'com.jgoodies'
     }
-    compile 'javax.xml.bind:jaxb-api:2.3.+'
-    compile 'javax.xml:jaxb-impl:2.1'
+    implementation 'javax.xml.bind:jaxb-api:2.3.+'
+    implementation 'javax.xml:jaxb-impl:2.1'
 
-    compile configurations.providedCompile
-    compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
+    implementation configurations.providedCompile
+    implementation fileTree(dir: project.ext.libDir, include: ['*.jar'])
 }
 
 task copyPlugin(dependsOn: assemble) {

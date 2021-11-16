@@ -3,9 +3,9 @@ apply plugin: 'idea'
 
 dependencies {
     providedCompile project(path: ':ganttproject', configuration: 'exported')
-    compile group: 'com.itextpdf', name: 'itextpdf', version: '5.+'
+    implementation group: 'com.itextpdf', name: 'itextpdf', version: '5.+'
 
-    compile configurations.providedCompile
+    implementation configurations.providedCompile
 }
 
 task copyPlugin(dependsOn: assemble) {

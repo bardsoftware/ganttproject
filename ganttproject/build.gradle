@@ -36,25 +36,25 @@ configurations {
 dependencies {
     providedCompile project(':biz.ganttproject.core')
     providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
-    providedCompile project(path: ':biz.ganttproject.app.localization', configuration: 'exported')
+    providedCompile project(path: ':biz.ganttproject.app.localization')
 
     exportedLibs files("lib/core/eclipsito.jar")
 
     direct 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.+'
     direct 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.5.+'
 
-    compile configurations.direct
-    compile configurations.providedCompile
-    compile configurations.exportedLibs
-    compile fileTree(dir: project.ext.libDir, include: ['*.jar'])
-    compile files('src/main/resources/resources')
+    implementation configurations.direct
+    implementation configurations.providedCompile
+    implementation configurations.exportedLibs
+    implementation fileTree(dir: project.ext.libDir, include: ['*.jar'])
+    implementation files('src/main/resources/resources')
 
     testImplementation group: 'org.easymock', name: 'easymock', version: '4.+'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.+'
 
-    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.+'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.+'
 
-//    compile "de.jensd:fontawesomefx-materialicons:2.2.+"
+//    implementation "de.jensd:fontawesomefx-materialicons:2.2.+"
 }
 
 compileKotlin {

@@ -3,8 +3,8 @@ apply plugin: 'idea'
 
 dependencies {
     providedCompile project(path: ':ganttproject', configuration: 'exported')
-    compile 'org.mnode.ical4j:ical4j:1.+'
-    compile configurations.providedCompile
+    implementation 'org.mnode.ical4j:ical4j:1.+'
+    implementation configurations.providedCompile
 }
 
 task copyPlugin(dependsOn: assemble) {

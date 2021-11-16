@@ -14,14 +14,14 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.13.2'
-    testCompile fileTree(dir: project.ext.libDir, include: ['*.jar'])
-    testCompile project(':ganttproject')
-    testCompile project(':biz.ganttproject.impex.msproject2')
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.8.+'
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+    testImplementation fileTree(dir: project.ext.libDir, include: ['*.jar'])
+    testImplementation project(':ganttproject')
+    testImplementation project(':biz.ganttproject.impex.msproject2')
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.+'
 
-    testCompile fileTree(dir: project.projectDir.absolutePath + "/resources")
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    testImplementation fileTree(dir: project.projectDir.absolutePath + "/resources")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 sourceSets {

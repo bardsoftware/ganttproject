@@ -4,7 +4,7 @@ apply plugin: 'idea'
 dependencies {
     providedCompile project(path: ':ganttproject', configuration: 'exported')
 
-    compile configurations.providedCompile
+    implementation configurations.providedCompile
 }
 
 task copyPlugin(dependsOn: assemble) {
