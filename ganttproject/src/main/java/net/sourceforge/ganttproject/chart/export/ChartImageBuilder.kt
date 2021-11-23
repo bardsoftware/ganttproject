@@ -48,6 +48,8 @@ class ChartImageBuilder(
     myChartModel.startDate = mySettings.startDate
     myChartModel.bounds = Dimension(myDimensions.chartWidth, myDimensions.chartHeight)
     myChartModel.setHeaderHeight(myDimensions.logoHeight + myDimensions.tableHeaderHeight - 1)
+    myChartModel.setRowHeight(myTreeTable.rowHeight())
+    myChartModel.verticalOffset = myTreeTable.verticalOffset()
     myChartModel.setVisibleTasks(mySettings.visibleTasks)
     visitor.acceptLogo(myDimensions, mySettings.logo)
     visitor.acceptTable(myDimensions, myTreeTable)

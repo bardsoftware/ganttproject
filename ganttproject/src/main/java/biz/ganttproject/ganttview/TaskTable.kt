@@ -241,7 +241,7 @@ class TaskTable(
     }
     taskTableChartConnector.exportTreeTableApi = {
       TreeTableApi(
-        rowHeight = { treeTable.fixedCellSize.toInt() },
+        rowHeight = { taskTableChartConnector.rowHeight.value },
         tableHeaderHeight = { treeTable.headerHeight.intValue()  },
         width = { treeTable.width.toInt() - treeTable.vbarWidth().toInt() },
         tableHeaderComponent = { null },

@@ -33,7 +33,8 @@ data class TreeTableApi(
   val width: ()->Int,
   val tableHeaderComponent: ()-> Component?,
   val tableComponent: () -> Component?,
-  val tablePainter: ((Graphics2D) -> Unit)? = null
+  val tablePainter: ((Graphics2D) -> Unit)? = null,
+  val verticalOffset: ()->Int = { 0 }
 )
 
 /**
@@ -44,5 +45,6 @@ fun GPTreeTableBase.asTreeTableApi(): TreeTableApi = TreeTableApi(
   tableHeaderHeight = { this.tableHeader.height },
   width = { this.width },
   tableHeaderComponent = { this.tableHeader },
-  tableComponent = { this.table }
+  tableComponent = { this.table },
+  verticalOffset = { -1 }
 )
