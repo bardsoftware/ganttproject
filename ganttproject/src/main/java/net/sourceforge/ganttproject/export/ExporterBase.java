@@ -53,7 +53,7 @@ public abstract class ExporterBase implements Exporter {
 
   protected static final GanttLanguage language = GanttLanguage.getInstance();
 
-  static protected Object EXPORT_JOB_FAMILY = new String("Export job family");
+  static protected Object EXPORT_JOB_FAMILY = "Export job family";
 
   @Override
   public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {

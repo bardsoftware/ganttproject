@@ -20,6 +20,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.action.project
 
+import biz.ganttproject.print.createPrintAction
 import biz.ganttproject.storage.StorageDialogAction
 import biz.ganttproject.storage.StorageDialogBuilder
 import net.sourceforge.ganttproject.GanttProject
@@ -53,8 +54,9 @@ class ProjectMenu(project: GanttProject, key: String) : JMenu(GPAction.createVoi
   private val importAction = ProjectImportAction(project.uiFacade, project)
   private val exportAction = ProjectExportAction(
       project.uiFacade, project, project.ganttOptions.pluginPreferences)
-  private val printAction = PrintAction(project)
-  private val printPreviewAction = ProjectPreviewAction(project)
+  //private val printAction = PrintAction(project)
+  //private val printPreviewAction = ProjectPreviewAction(project)
+  private val printAction = createPrintAction(project.uiFacade)
   private val exitAction = ExitAction(project)
 
   override fun add(a: Action): JMenuItem {
@@ -66,7 +68,7 @@ class ProjectMenu(project: GanttProject, key: String) : JMenu(GPAction.createVoi
     listOf(
         newProjectAction, openProjectAction, saveProjectAction, saveAsProjectAction, projectSettingsAction,
         null,
-        importAction, exportAction, printAction, printPreviewAction,
+        importAction, exportAction, printAction,//, printPreviewAction,
         null,
         exitAction
     ).forEach { if (it == null) addSeparator() else add(it) }
