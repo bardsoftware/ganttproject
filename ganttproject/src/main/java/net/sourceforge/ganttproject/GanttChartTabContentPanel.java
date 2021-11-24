@@ -109,6 +109,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
         .addButton(myTaskActions.getUnlinkTasksAction().asToolbarAction())
         .addTail(tableMenuButton)
         .withClasses("toolbar-common", "toolbar-small")
+        .withScene()
         .build()
         .getComponent();
 //    ToolbarBuilder builder = new ToolbarBuilder()

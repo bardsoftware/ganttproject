@@ -22,7 +22,6 @@ import biz.ganttproject.app.FXToolbarBuilder
 import biz.ganttproject.app.getGlyphIcon
 import biz.ganttproject.core.option.ChangeValueListener
 import com.google.common.base.Preconditions
-import com.google.common.base.Supplier
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.scene.control.MenuItem
@@ -63,6 +62,7 @@ internal abstract class ChartTabContentPanel(
       addNode(buildDropdown(dropdownActions.firstOrNull(), dropdownActions))
       addTail(Pane())
       buildToolbarActions().forEach { addButton(it) }
+      withScene()
       build()
     }.also {
       it.toolbar.stylesheets.add("/net/sourceforge/ganttproject/ChartTabContentPanel.css")

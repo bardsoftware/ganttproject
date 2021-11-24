@@ -569,7 +569,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     mySearchUi = new FXSearchUi(getProject(), getUIFacade(), myEditMenu.getSearchAction());
     builder.addSearchBox(mySearchUi);
     builder.withClasses("toolbar-common", "toolbar-main", "toolbar-big");
-
+    builder.withScene();
     //return result;
     return builder.build();
   }

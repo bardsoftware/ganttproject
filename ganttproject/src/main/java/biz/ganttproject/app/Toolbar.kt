@@ -67,11 +67,7 @@ class FXToolbar {
 
 
   internal fun init(initializer: (FXToolbar) -> Unit) {
-    val scene = Scene(toolbar, Color.TRANSPARENT)
-    scene.stylesheets.add("biz/ganttproject/app/Toolbar.css")
     initializer(this)
-
-    component.scene = scene
   }
 }
 
@@ -119,9 +115,15 @@ class FXToolbarBuilder {
   private var deleteAction: GPAction? = null
   private var insertAction: GPAction? = null
   private val visitors = mutableListOf<ToolbarVisitor>()
+  private var withScene = false
 
   fun withClasses(vararg classes: String): FXToolbarBuilder {
     this.classes = classes
+    return this
+  }
+
+  fun withScene(): FXToolbarBuilder {
+    this.withScene = true
     return this
   }
   fun addNode(node: Node): FXToolbarBuilder {
@@ -159,6 +161,11 @@ class FXToolbarBuilder {
   fun build(): FXToolbar {
     val toolbar = FXToolbar()
     GlobalScope.launch(Dispatchers.JavaFx) {
+      val scene = if (withScene) {
+        Scene(toolbar.toolbar, Color.TRANSPARENT).also {
+          it.stylesheets.add("biz/ganttproject/app/Toolbar.css")
+        }
+      } else null
       toolbar.init { toolbar ->
         visitors.forEach { it(toolbar) }
         toolbar.toolbar.let {
@@ -173,6 +180,10 @@ class FXToolbarBuilder {
           }
         }
       }
+      scene?.let {
+        toolbar.component.scene = it
+      }
+
     }
     return toolbar
   }
