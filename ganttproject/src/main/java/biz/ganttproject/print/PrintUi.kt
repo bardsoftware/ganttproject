@@ -1,7 +1,28 @@
+/*
+ * Copyright (c) 2021 Dmitry Barashev, BarD Software s.r.o.
+ *
+ * This file is part of GanttProject, an open-source project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package biz.ganttproject.print
 
 import biz.ganttproject.app.FXToolbarBuilder
 import biz.ganttproject.app.dialog
+import biz.ganttproject.lib.DateRangePicker
+import biz.ganttproject.lib.fx.MultiDatePicker
 import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
@@ -21,6 +42,7 @@ import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.gui.UIFacade
+import java.util.*
 import java.util.concurrent.Executors
 import javax.print.attribute.standard.MediaSize
 import javax.print.attribute.standard.MediaSizeName
@@ -43,7 +65,7 @@ fun showPrintDialog(activeChart: Chart) {
         FXToolbarBuilder().withClasses("header")
           .addNode(
             Slider(0.0, 10.0, 0.0).also { slider ->
-              slider.isShowTickMarks = true
+              //slider.isShowTickMarks = true
               slider.majorTickUnit = 1.0
               slider.blockIncrement = 1.0
               slider.isSnapToTicks = true
@@ -51,7 +73,9 @@ fun showPrintDialog(activeChart: Chart) {
                 Previews.zooming = newValue.toInt()
               }
             }
-          ).addWhitespace().addNode(
+          )
+          .addWhitespace()
+          .addNode(
             ComboBox(FXCollections.observableList(
               //Previews.papers.keys.toList()
               Previews.mediaSizes.keys.toList()
@@ -59,16 +83,24 @@ fun showPrintDialog(activeChart: Chart) {
               comboBox.setOnAction {
                 Previews.setMediaSize(comboBox.selectionModel.selectedItem)
               }
+              comboBox.selectionModel.select("A4")
             }
 
-          ).build().toolbar
+          )
+          .addWhitespace()
+          .addNode(
+            DateRangePicker(activeChart).let {
+              it.onRangeChange = Previews::onDateRangeChange
+              it.component
+            }
+          )
+          .build().toolbar
     )
 
     val contentPane = BorderPane().also {
       it.center = ScrollPane(Previews.gridPane)
       it.prefWidth = 500.0
       it.prefHeight = 500.0
-      //it.background = Background(BackgroundFill(Color.BLACK, null, null))
     }
     dlg.setContent(contentPane)
     dlg.setupButton(ButtonType.APPLY) {
@@ -82,7 +114,6 @@ fun showPrintDialog(activeChart: Chart) {
   }
 }
 
-//private data class PageFormat(val width: Double, val height: Double)
 private object Previews {
   lateinit var chart: Chart
   private val zoomFactors = listOf(1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0)
@@ -90,6 +121,8 @@ private object Previews {
 
   val mediaSizes: Map<String, MediaSize> = mutableMapOf<String, MediaSize>().let {
     it.putAll(mediaSizes(MediaSize.ISO::class))
+    it.putAll(mediaSizes(MediaSize.JIS::class))
+    it.putAll(mediaSizes(MediaSize.NA::class))
     it.toMap()
   }
 
@@ -106,9 +139,7 @@ private object Previews {
   var mediaSize: MediaSize = MediaSize.ISO.A4
   set(value) {
     field = value
-    val channel = Channel<PrintPage>()
-    readImages(channel)
-    createImages(chart, field, 144, Orientation.LANDSCAPE, channel)
+    updateTiles()
   }
 
   var paper: FxPaper = FxPaper.A4
@@ -137,6 +168,17 @@ private object Previews {
   set(value) {
     field = value
     zoomFactor = zoomFactors[value]
+  }
+
+  fun onDateRangeChange(start: Date, end: Date) {
+    chart.startDate = start
+    updateTiles()
+  }
+
+  private fun updateTiles() {
+    val channel = Channel<PrintPage>()
+    readImages(channel)
+    createImages(chart, mediaSize, 144, Orientation.LANDSCAPE, channel)
   }
 
   private fun updatePreviews() {
