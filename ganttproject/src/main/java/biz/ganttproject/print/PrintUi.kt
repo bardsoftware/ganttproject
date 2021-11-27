@@ -22,7 +22,6 @@ package biz.ganttproject.print
 import biz.ganttproject.app.FXToolbarBuilder
 import biz.ganttproject.app.dialog
 import biz.ganttproject.lib.DateRangePicker
-import biz.ganttproject.lib.fx.MultiDatePicker
 import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
@@ -45,7 +44,6 @@ import net.sourceforge.ganttproject.gui.UIFacade
 import java.util.*
 import java.util.concurrent.Executors
 import javax.print.attribute.standard.MediaSize
-import javax.print.attribute.standard.MediaSizeName
 import kotlin.reflect.KClass
 import kotlin.reflect.full.staticProperties
 import javafx.print.Paper as FxPaper
@@ -90,7 +88,9 @@ fun showPrintDialog(activeChart: Chart) {
           .addWhitespace()
           .addNode(
             DateRangePicker(activeChart).let {
-              it.onRangeChange = Previews::onDateRangeChange
+              it.selectedRange.addListener { _, _, newValue ->
+                Previews.onDateRangeChange(newValue.startDate, newValue.endDate)
+              }
               it.component
             }
           )
@@ -99,7 +99,7 @@ fun showPrintDialog(activeChart: Chart) {
 
     val contentPane = BorderPane().also {
       it.center = ScrollPane(Previews.gridPane)
-      it.prefWidth = 500.0
+      it.prefWidth = 800.0
       it.prefHeight = 500.0
     }
     dlg.setContent(contentPane)

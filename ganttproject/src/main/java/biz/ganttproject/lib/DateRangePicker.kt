@@ -20,14 +20,13 @@
 package biz.ganttproject.lib
 
 import biz.ganttproject.lib.fx.VBoxBuilder
-import javafx.event.ActionEvent
+import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
-import javafx.scene.control.skin.ComboBoxListViewSkin
 import javafx.scene.layout.GridPane
-import javafx.scene.layout.HBox
-import javafx.util.Callback
+import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.PopOver
@@ -35,109 +34,107 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.util.*
 
-data class DateRange(val startDate: Date, val endDate: Date, val title: String, val isEditable: Boolean)
+data class DateRange(val startDate: Date, val endDate: Date, val title: String, val isEditable: Boolean) {
+  val rangeLabel: String = GanttLanguage.getInstance().let { "${it.formatShortDate(this.startDate)}..${it.formatShortDate(this.endDate)}" }
 
-class DateRangePicker(private val chart: Chart) {
-  var onRangeChange: (Date, Date) -> Unit = {_, _ ->}
-  private val button = Button("").also { btn ->
+  fun withStartDate(newStartDate: Date) = DateRange(newStartDate, endDate, title, isEditable)
+  fun withEndDate(newEndDate: Date) = DateRange(startDate, newEndDate, title, isEditable)
+}
+
+class DateRangePicker(chart: Chart) {
+  private val rangeCurrentView = DateRange(chart.startDate, chart.endDate, "Current view", false)
+  private val rangeWholeProject = DateRange(chart.project.taskManager.projectStart, chart.project.taskManager.projectEnd, "The whole project", false)
+  private val rangeCustom = DateRange(chart.startDate, chart.endDate, "Custom", true)
+  val selectedRange = SimpleObjectProperty(rangeCurrentView)
+  private val selectedRangeText: String get() = selectedRange.get().let { "${it.title}: ${it.rangeLabel}" }
+  private val button = Button(selectedRangeText).also { btn ->
     btn.onAction = EventHandler {
-      PopOver(buildPopoverContent()).also {
+      PopOver(popoverContent).also {
         it.arrowLocation = PopOver.ArrowLocation.TOP_CENTER
         it.show(btn)
       }
     }
-  }
-  /*
-  private val dropdown = ComboBox<DateRange>().also {
-    it.skin = object : ComboBoxListViewSkin<DateRange>(it) {
-      init {
-        isHideOnClick = false
-      }
+    selectedRange.addListener { _, _, _ ->
+      btn.text = selectedRangeText
+      btn.parent.requestLayout()
     }
-    it.buttonCell = ButtonListCell()
-    it.cellFactory = Callback { listView -> DropdownListCell(listView) }
-    it.items.addAll(
-      DateRange(chart.startDate, chart.endDate, "Current view", false),
-      DateRange(chart.project.taskManager.projectStart, chart.project.taskManager.projectEnd, "The whole project", false),
-      DateRange(chart.startDate, chart.endDate, "Custom", true)
-    )
-    it.onAction = EventHandler { _ ->
-      it.selectionModel.selectedItem?.let { selected ->
-        onRangeChange(selected.startDate, selected.endDate)
-      }
-    }
-    it.selectionModel.select(it.items[0])
   }
-
-   */
-
   val component: Control get() = button
 
-  private fun buildPopoverContent(): Node {
-    val toggleGroup = ToggleGroup()
-    val radioCurrentView = RadioButton("Current View").also {
-      it.toggleGroup = toggleGroup
+  private fun createRadioButton(toggleGroup: ToggleGroup, dateRange: DateRange) =
+    RadioButton().also { radio ->
+      radio.toggleGroup = toggleGroup
+      radio.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+      radio.graphic = VBoxBuilder("section").let {
+        it.addTitle(dateRange.title)
+        it.add(Label(dateRange.rangeLabel).also { label ->
+          label.styleClass.add("helpline")
+        })
+        it.vbox
+      }
+      radio.userData = dateRange
     }
-    val radioWholeProject = RadioButton("Whole Project").also {
-      it.toggleGroup = toggleGroup
+
+  private val popoverContent: Node by lazy {
+    val toggleGroup = ToggleGroup().also {
+      it.selectedToggleProperty().addListener { _, _, _ ->
+        it.toggles.forEach { toggle ->
+          (toggle as RadioButton).graphic.styleClass.remove("selected")
+          toggle.graphic.isDisable = true
+        }
+        it.selectedToggle.let { toggle ->
+          (toggle as RadioButton).graphic.styleClass.add("selected")
+          toggle.graphic.isDisable = false
+        }
+      }
     }
-    val radioCustom = RadioButton().also {
-      it.graphic = DatePicker()
-      it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
-      it.toggleGroup = toggleGroup
+    val radioCurrentView = createRadioButton(toggleGroup, rangeCurrentView)
+    val radioWholeProject = createRadioButton(toggleGroup, rangeWholeProject)
+    val radioCustom = RadioButton().also { radio ->
+      radio.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+      radio.toggleGroup = toggleGroup
+      radio.userData = rangeCustom
+      radio.graphic = VBoxBuilder("section").let {
+        it.addTitle("Custom")
+        it.add(GridPane().also { grid ->
+          grid.vgap = 5.0
+          grid.add(Label("Start date"), 0, 0)
+          val startDatePicker = DatePicker(
+            LocalDate.ofInstant(rangeCustom.startDate.toInstant(), ZoneId.systemDefault())
+          ).also { dp ->
+            dp.onAction = EventHandler {
+              radio.userData = (radio.userData as DateRange).withStartDate(dp.value.asDate())
+            }
+          }
+          grid.add(startDatePicker, 1, 0)
+
+          val endDatePicker = DatePicker(
+            LocalDate.ofInstant(rangeCustom.endDate.toInstant(), ZoneId.systemDefault())
+          ).also { dp ->
+            dp.onAction = EventHandler {
+              radio.userData = (radio.userData as DateRange).withEndDate(dp.value.asDate())
+            }
+          }
+          grid.add(Label("End date"), 0, 1)
+          grid.add(endDatePicker, 1, 1)
+        })
+        it.vbox
+      }
     }
-    return VBoxBuilder().let {
+    toggleGroup.selectToggle(radioCurrentView)
+    VBoxBuilder("popover-content").let {
+      it.addStylesheets("/biz/ganttproject/lib/DateRangePicker.css")
       it.add(radioCurrentView)
       it.add(radioWholeProject)
       it.add(radioCustom)
+      it.add(Button("Apply").also { btn ->
+        btn.onAction = EventHandler {
+          selectedRange.set(toggleGroup.selectedToggle.userData as DateRange)
+        }
+      }, Pos.BASELINE_RIGHT, Priority.NEVER)
       it.vbox
     }
-
-  }
-
-}
-
-private class ButtonListCell : ListCell<DateRange>() {
-  override fun updateItem(item: DateRange?, empty: Boolean) {
-    super.updateItem(item, empty);
-
-    graphic = if (item == null || empty) {
-      null;
-    } else {
-      Label(item.title)
-    }
   }
 }
-/*
-private class DropdownListCell(private val listView: ListView<DateRange>) : ListCell<DateRange>() {
-  override fun updateItem(item: DateRange?, empty: Boolean) {
-    super.updateItem(item, empty);
 
-    if (item == null || empty) {
-      graphic = null;
-    } else {
-      graphic = VBoxBuilder().let { builder ->
-        if (item.isEditable) {
-          builder.add(TitledPane().also { titledPane ->
-            titledPane.text = "Custom: ${GanttLanguage.getInstance().formatShortDate(item.startDate)}..${GanttLanguage.getInstance().formatShortDate(item.endDate)}"
-            titledPane.content = GridPane().also { grid ->
-              grid.add(Label("Start date"), 0, 0)
-              grid.add(DatePicker(LocalDate.ofInstant(item.startDate.toInstant(), ZoneId.systemDefault())), 1, 0)
-              grid.add(Label("End date"), 0, 1)
-              grid.add(DatePicker(LocalDate.ofInstant(item.endDate.toInstant(), ZoneId.systemDefault())), 1, 1)
-            }
-            titledPane.isExpanded = false
-            titledPane.expandedProperty().addListener { observable, oldValue, newValue ->
-              listView.requestLayout()
-            }
-          })
-        } else {
-          builder.addTitle(item.title)
-          builder.add(Label("${GanttLanguage.getInstance().formatShortDate(item.startDate)}..${GanttLanguage.getInstance().formatShortDate(item.endDate)}"))
-        }
-        builder.vbox
-      }
-    }
-  }
-}
-*/
+private fun LocalDate.asDate(): Date = Date.from(this.atStartOfDay(ZoneId.systemDefault()).toInstant())
