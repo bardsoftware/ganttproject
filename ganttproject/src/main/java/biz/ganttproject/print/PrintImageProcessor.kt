@@ -62,7 +62,14 @@ class PrintImageProcessor(
     println("media width pt=${media.getX(Size2DSyntax.INCH)*72}, height pt=${media.getY(Size2DSyntax.INCH)*72}")
     println("media width px=${media.pageWidthPx(dpi)} height px=${media.pageHeightPx(dpi)}")
     imageScope.launch {
-      val wholeImage = (chart.getRenderedImage(GanttExportSettings()) as RenderedChartImage).wholeImage
+
+      val wholeImage = chart.getRenderedImage(GanttExportSettings()).let {
+        when (it) {
+          is RenderedChartImage -> it.wholeImage
+          is BufferedImage -> it
+          else -> null
+        }
+      }
       if (wholeImage is BufferedImage) {
         val pageWidth = if (orientation == Orientation.PORTRAIT) media.pageWidthPx(dpi) else media.pageHeightPx(dpi)
         val pageHeight = if (orientation == Orientation.PORTRAIT) media.pageHeightPx(dpi) else media.pageWidthPx(dpi)

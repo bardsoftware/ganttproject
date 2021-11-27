@@ -32,6 +32,7 @@ import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.task.TaskManager;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,12 +47,14 @@ public abstract class PertChart extends JPanel implements Chart {
   private FontOption myChartFontOption;
   private Font myBaseFont;
   private Font myBoldFont;
+  private IGanttProject myProject;
 
   PertChart() {
   }
 
   @Override
-  public void init(IGanttProject project, IntegerOption dpiOption, FontOption chartFontOption) {
+  public void init(@NotNull IGanttProject project, @NotNull IntegerOption dpiOption, @NotNull FontOption chartFontOption) {
+    myProject = Preconditions.checkNotNull(project);
     myTaskManager = project.getTaskManager();
     myDpi = Preconditions.checkNotNull(dpiOption);
     myChartFontOption = chartFontOption;
@@ -77,16 +80,21 @@ public abstract class PertChart extends JPanel implements Chart {
   /** Builds PERT chart. */
   protected abstract void buildPertChart();
 
+  @Override
+  public IGanttProject getProject() {
+    return myProject;
+  }
+
   /** This method in not supported by this Chart. */
   @Override
   public Date getStartDate() {
-    throw new UnsupportedOperationException();
+    return myTaskManager.getProjectStart();
   }
 
   /** This method in not supported by this Chart. */
   @Override
   public Date getEndDate() {
-    throw new UnsupportedOperationException();
+    return myTaskManager.getProjectEnd();
   }
 
   @Override

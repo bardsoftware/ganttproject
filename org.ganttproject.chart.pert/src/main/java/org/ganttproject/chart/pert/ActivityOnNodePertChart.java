@@ -19,7 +19,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package org.ganttproject.chart.pert;
 
 import net.sourceforge.ganttproject.GanttExportSettings;
-import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -917,11 +916,6 @@ public class ActivityOnNodePertChart extends PertChart {
     }
   }
 
-  @Override
-  public IGanttProject getProject() {
-    // TODO Auto-generated method stub
-    return null;
-  }
 
   @Override
   public void setDimensions(int height, int width) {
