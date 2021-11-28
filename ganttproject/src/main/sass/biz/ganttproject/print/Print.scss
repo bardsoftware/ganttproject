@@ -14,10 +14,10 @@
     }
     -fx-padding: 5;
     .page {
-      -fx-background-color: white;
+      -fx-padding: 1;
+      -fx-background-color: $gp-control-background;
       -fx-border-color: $gp-dark-gray;
       -fx-effect: dropshadow(gaussian, #ccc, 2, 0, 2, 2);
-      -fx-padding: 10;
     }
   }
 

@@ -124,8 +124,6 @@ fun showPrintDialog(activeChart: Chart) {
     val contentPane = BorderPane().also {
       it.styleClass.add("content-pane")
       it.center = ScrollPane(Previews.gridPane)
-      it.prefWidth = 800.0
-      it.prefHeight = 500.0
     }
     dlg.setContent(contentPane)
     dlg.setupButton(ButtonType.APPLY) {
@@ -221,16 +219,16 @@ private object Previews {
         Pane(ImageView(
           Image(
             page.imageFile.inputStream(),
-            previewWidth-2, previewHeight-2,
+            previewWidth, previewHeight,
             true,
             true
           )
         )).also {
-          it.prefWidth =  zoomFactor * (if (orientation == Orientation.LANDSCAPE) mediaSize.previewWidth() else mediaSize.previewHeight())
+          it.prefWidth = zoomFactor * (if (orientation == Orientation.LANDSCAPE) mediaSize.previewWidth() else mediaSize.previewHeight())
           it.prefHeight = zoomFactor * (if (orientation == Orientation.LANDSCAPE) mediaSize.previewHeight() else mediaSize.previewWidth())
-          it.styleClass.addAll("page")
-          it.padding = Insets(2.0, 2.0, 2.0, 2.0)
-          gridPane.add(it, page.column, page.row)
+          gridPane.add(StackPane(it).also {
+              border -> border.styleClass.add("page")
+          }, page.column, page.row)
         }
       }
     }
