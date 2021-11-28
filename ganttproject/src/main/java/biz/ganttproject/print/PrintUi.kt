@@ -19,8 +19,9 @@
 
 package biz.ganttproject.print
 
-import biz.ganttproject.app.FXToolbarBuilder
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
+import biz.ganttproject.app.removeMnemonicsPlaceholder
 import biz.ganttproject.lib.DateRangePicker
 import javafx.application.Platform
 import javafx.collections.FXCollections
@@ -46,14 +47,16 @@ import javax.print.attribute.standard.MediaSize
 import kotlin.reflect.KClass
 import kotlin.reflect.full.staticProperties
 import javafx.print.Paper as FxPaper
+
 /**
  * @author dbarashev@bardsoftware.com
  */
 fun showPrintDialog(activeChart: Chart) {
+  val i18n = RootLocalizer
   Previews.chart = activeChart
   Previews.setMediaSize("A4")
   dialog { dlg ->
-    dlg.addStyleClass("dlg")
+    dlg.addStyleClass("dlg", "dlg-print-preview")
     dlg.addStyleSheet(
       "/biz/ganttproject/app/Dialog.css",
       "/biz/ganttproject/print/Print.css"
@@ -63,7 +66,8 @@ fun showPrintDialog(activeChart: Chart) {
         hbox.alignment = Pos.CENTER_LEFT
         hbox.styleClass.add("header")
         hbox.children.addAll(
-          Label("Zoom").also {
+          // -- Preview zoom
+          Label(i18n.formatText("zoom")).also {
             HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
           },
           Slider(0.0, 10.0, 0.0).also { slider ->
@@ -75,7 +79,9 @@ fun showPrintDialog(activeChart: Chart) {
               Previews.zooming = newValue.toInt()
             }
           },
-          Label("Paper").also {
+
+          // -- Page format
+          Label(i18n.formatText("choosePaperFormat")).also {
             HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
           },
           ComboBox(FXCollections.observableList(
@@ -87,17 +93,21 @@ fun showPrintDialog(activeChart: Chart) {
             }
             comboBox.selectionModel.select("A4")
           },
-          Label("Orientation").also {
+
+          // -- Page orientation
+          Label(i18n.formatText("option.export.itext.landscape.label")).also {
             HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
           },
           ComboBox(FXCollections.observableList(
-            Orientation.values().map { it.name }.toList()
+            Orientation.values().map { i18n.formatText(it.name.lowercase()) }.toList()
           )).also { comboBox ->
             comboBox.setOnAction {
               Previews.orientation = Orientation.values()[comboBox.selectionModel.selectedIndex]
             }
-            comboBox.selectionModel.select(Previews.orientation.name.uppercase())
+            comboBox.selectionModel.select(i18n.formatText(Previews.orientation.name.lowercase()))
           },
+
+          // -- Date range
           Label("Date range").also {
             HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
           },
@@ -112,13 +122,14 @@ fun showPrintDialog(activeChart: Chart) {
     )
 
     val contentPane = BorderPane().also {
+      it.styleClass.add("content-pane")
       it.center = ScrollPane(Previews.gridPane)
       it.prefWidth = 800.0
       it.prefHeight = 500.0
     }
     dlg.setContent(contentPane)
     dlg.setupButton(ButtonType.APPLY) {
-      it.text = "Print"
+      it.text = i18n.formatText("project.print").removeMnemonicsPlaceholder()
       it.styleClass.addAll("btn-attention")
       it.onAction = EventHandler {
         //printPages(Previews.pages, Previews.paper)
@@ -210,7 +221,7 @@ private object Previews {
         Pane(ImageView(
           Image(
             page.imageFile.inputStream(),
-            previewWidth, previewHeight,
+            previewWidth-2, previewHeight-2,
             true,
             true
           )
@@ -218,6 +229,7 @@ private object Previews {
           it.prefWidth =  zoomFactor * (if (orientation == Orientation.LANDSCAPE) mediaSize.previewWidth() else mediaSize.previewHeight())
           it.prefHeight = zoomFactor * (if (orientation == Orientation.LANDSCAPE) mediaSize.previewHeight() else mediaSize.previewWidth())
           it.styleClass.addAll("page")
+          it.padding = Insets(2.0, 2.0, 2.0, 2.0)
           gridPane.add(it, page.column, page.row)
         }
       }
@@ -235,7 +247,7 @@ private object Previews {
 }
 
 fun createPrintAction(uiFacade: UIFacade): GPAction {
-  return GPAction.create("print") {
+  return GPAction.create("project.print") {
     showPrintDialog(uiFacade.activeChart)
   }
 }

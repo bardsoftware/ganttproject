@@ -19,6 +19,8 @@
 
 package biz.ganttproject.lib
 
+import biz.ganttproject.app.Localizer
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.VBoxBuilder
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
@@ -41,10 +43,14 @@ data class DateRange(val startDate: Date, val endDate: Date, val title: String, 
   fun withEndDate(newEndDate: Date) = DateRange(startDate, newEndDate, title, isEditable)
 }
 
-class DateRangePicker(chart: Chart) {
-  private val rangeCurrentView = DateRange(chart.startDate, chart.endDate, "Current view", false)
-  private val rangeWholeProject = DateRange(chart.project.taskManager.projectStart, chart.project.taskManager.projectEnd, "The whole project", false)
-  private val rangeCustom = DateRange(chart.startDate, chart.endDate, "Custom", true)
+class DateRangePicker(chart: Chart, private val i18n: Localizer = RootLocalizer) {
+  private val rangeCurrentView = DateRange(
+    chart.startDate, chart.endDate, "Current view", false)
+  private val rangeWholeProject = DateRange(
+    chart.project.taskManager.projectStart, chart.project.taskManager.projectEnd, i18n.formatText("wholeProject"), false)
+  private val rangeCustom = DateRange(
+    chart.startDate, chart.endDate, "Custom", true)
+
   val selectedRange = SimpleObjectProperty(rangeCurrentView)
   private val selectedRangeText: String get() = selectedRange.get().let { "${it.title}: ${it.rangeLabel}" }
   private val button = Button(selectedRangeText).also { btn ->
@@ -98,7 +104,7 @@ class DateRangePicker(chart: Chart) {
         it.addTitle("Custom")
         it.add(GridPane().also { grid ->
           grid.vgap = 5.0
-          grid.add(Label("Start date"), 0, 0)
+          grid.add(Label(i18n.formatText("option.export.range.start.label")), 0, 0)
           val startDatePicker = DatePicker(
             LocalDate.ofInstant(rangeCustom.startDate.toInstant(), ZoneId.systemDefault())
           ).also { dp ->
@@ -115,7 +121,7 @@ class DateRangePicker(chart: Chart) {
               radio.userData = (radio.userData as DateRange).withEndDate(dp.value.asDate())
             }
           }
-          grid.add(Label("End date"), 0, 1)
+          grid.add(Label(i18n.formatText("option.export.range.end.label")), 0, 1)
           grid.add(endDatePicker, 1, 1)
         })
         it.vbox
@@ -127,7 +133,8 @@ class DateRangePicker(chart: Chart) {
       it.add(radioCurrentView)
       it.add(radioWholeProject)
       it.add(radioCustom)
-      it.add(Button("Apply").also { btn ->
+      it.add(Button(i18n.formatText("apply")).also { btn ->
+        btn.styleClass.add("btn-small-attention")
         btn.onAction = EventHandler {
           selectedRange.set(toggleGroup.selectedToggle.userData as DateRange)
         }

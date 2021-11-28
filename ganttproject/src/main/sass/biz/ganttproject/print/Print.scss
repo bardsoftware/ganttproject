@@ -1,6 +1,34 @@
+@import "../app/dialogs";
 @import "../app/theme";
 
-.page {
-  -fx-background-color: white;
-  -fx-border-color: $gp-light-gray;
+.dlg-print-preview {
+  -fx-min-height: 400;
+  .header {
+    @include dialog-header($gp-light-gray);
+    -fx-font-weight: normal;
+  }
+
+  .content-pane {
+    & * {
+      -fx-background-color: $gp-control-background;
+    }
+    -fx-padding: 5;
+    .page {
+      -fx-background-color: white;
+      -fx-border-color: $gp-dark-gray;
+      -fx-effect: dropshadow(gaussian, #ccc, 2, 0, 2, 2);
+      -fx-padding: 10;
+    }
+  }
+
+
+  .btn-small-attention {
+    -fx-background-color: $gp-orange;
+    -fx-text-fill: $gp-dark-gray;
+    -fx-padding: 0.5ex 1em 0.5ex 1em;
+    -fx-cursor: hand;
+  }
+  .button-pane {
+    @include dialog-button-pane();
+  }
 }
