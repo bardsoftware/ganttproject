@@ -25,10 +25,9 @@ import biz.ganttproject.lib.DateRangePicker
 import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
-import javafx.scene.control.ButtonType
-import javafx.scene.control.ComboBox
-import javafx.scene.control.ScrollPane
-import javafx.scene.control.Slider
+import javafx.geometry.Insets
+import javafx.geometry.Pos
+import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
@@ -60,41 +59,56 @@ fun showPrintDialog(activeChart: Chart) {
       "/biz/ganttproject/print/Print.css"
     )
     dlg.setHeader(
-        FXToolbarBuilder().withClasses("header")
-          .addNode(
-            Slider(0.0, 10.0, 0.0).also { slider ->
-              //slider.isShowTickMarks = true
-              slider.majorTickUnit = 1.0
-              slider.blockIncrement = 1.0
-              slider.isSnapToTicks = true
-              slider.valueProperty().addListener { _, _, newValue ->
-                Previews.zooming = newValue.toInt()
-              }
+      HBox().also { hbox ->
+        hbox.alignment = Pos.CENTER_LEFT
+        hbox.styleClass.add("header")
+        hbox.children.addAll(
+          Label("Zoom").also {
+            HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
+          },
+          Slider(0.0, 10.0, 0.0).also { slider ->
+            //slider.isShowTickMarks = true
+            slider.majorTickUnit = 1.0
+            slider.blockIncrement = 1.0
+            slider.isSnapToTicks = true
+            slider.valueProperty().addListener { _, _, newValue ->
+              Previews.zooming = newValue.toInt()
             }
-          )
-          .addWhitespace()
-          .addNode(
-            ComboBox(FXCollections.observableList(
-              //Previews.papers.keys.toList()
-              Previews.mediaSizes.keys.toList()
-            )).also { comboBox ->
-              comboBox.setOnAction {
-                Previews.setMediaSize(comboBox.selectionModel.selectedItem)
-              }
-              comboBox.selectionModel.select("A4")
+          },
+          Label("Paper").also {
+            HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
+          },
+          ComboBox(FXCollections.observableList(
+            //Previews.papers.keys.toList()
+            Previews.mediaSizes.keys.toList()
+          )).also { comboBox ->
+            comboBox.setOnAction {
+              Previews.setMediaSize(comboBox.selectionModel.selectedItem)
             }
-
-          )
-          .addWhitespace()
-          .addNode(
-            DateRangePicker(activeChart).let {
-              it.selectedRange.addListener { _, _, newValue ->
-                Previews.onDateRangeChange(newValue.startDate, newValue.endDate)
-              }
-              it.component
+            comboBox.selectionModel.select("A4")
+          },
+          Label("Orientation").also {
+            HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
+          },
+          ComboBox(FXCollections.observableList(
+            Orientation.values().map { it.name }.toList()
+          )).also { comboBox ->
+            comboBox.setOnAction {
+              Previews.orientation = Orientation.values()[comboBox.selectionModel.selectedIndex]
             }
-          )
-          .build().toolbar
+            comboBox.selectionModel.select(Previews.orientation.name.uppercase())
+          },
+          Label("Date range").also {
+            HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
+          },
+          DateRangePicker(activeChart).let {
+            it.selectedRange.addListener { _, _, newValue ->
+              Previews.onDateRangeChange(newValue.startDate, newValue.endDate)
+            }
+            it.component
+          }
+        )
+      }
     )
 
     val contentPane = BorderPane().also {
@@ -108,7 +122,7 @@ fun showPrintDialog(activeChart: Chart) {
       it.styleClass.addAll("btn-attention")
       it.onAction = EventHandler {
         //printPages(Previews.pages, Previews.paper)
-        printPages(Previews.pages, Previews.mediaSize)
+        printPages(Previews.pages, Previews.mediaSize, Previews.orientation)
       }
     }
   }
@@ -158,6 +172,12 @@ private object Previews {
     updatePreviews()
   }
 
+  var orientation: Orientation = Orientation.LANDSCAPE
+  set(value) {
+    field = value
+    updateTiles()
+  }
+
   var pages: List<PrintPage> = listOf()
   set(value) {
     field = value
@@ -178,24 +198,25 @@ private object Previews {
   private fun updateTiles() {
     val channel = Channel<PrintPage>()
     readImages(channel)
-    createImages(chart, mediaSize, 144, Orientation.LANDSCAPE, channel)
+    createImages(chart, mediaSize, 144, orientation, channel)
   }
 
   private fun updatePreviews() {
     Platform.runLater {
       gridPane.children.clear()
       pages.forEach { page ->
+        val previewWidth = mediaSize.previewWidth() * zoomFactor * page.widthFraction
+        val previewHeight = mediaSize.previewHeight() * zoomFactor * page.heightFraction
         Pane(ImageView(
           Image(
             page.imageFile.inputStream(),
-            mediaSize.previewWidth() * zoomFactor * page.widthFraction,
-            mediaSize.previewHeight() * zoomFactor * page.heightFraction,
+            previewWidth, previewHeight,
             true,
             true
           )
         )).also {
-          it.prefWidth = mediaSize.previewWidth() * zoomFactor
-          it.prefHeight = mediaSize.previewHeight() * zoomFactor
+          it.prefWidth =  zoomFactor * (if (orientation == Orientation.LANDSCAPE) mediaSize.previewWidth() else mediaSize.previewHeight())
+          it.prefHeight = zoomFactor * (if (orientation == Orientation.LANDSCAPE) mediaSize.previewHeight() else mediaSize.previewWidth())
           it.styleClass.addAll("page")
           gridPane.add(it, page.column, page.row)
         }

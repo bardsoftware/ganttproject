@@ -36,13 +36,13 @@ import java.awt.print.*
 import javax.print.attribute.HashPrintRequestAttributeSet
 import javafx.print.Paper as FxPaper
 
-fun printPages(images: List<PrintPage>, mediaSize: MediaSize) {
+fun printPages(images: List<PrintPage>, mediaSize: MediaSize, orientation: Orientation) {
   val printJob = PrinterJob.getPrinterJob()
   printJob.setPageable(PageableImpl(images, mediaSize))
   val attr = HashPrintRequestAttributeSet().also {
     it.add(DialogTypeSelection.NATIVE)
     it.add(mediaSize.mediaSizeName)
-    it.add(OrientationRequested.LANDSCAPE)
+    it.add(if (orientation == Orientation.LANDSCAPE) OrientationRequested.LANDSCAPE else OrientationRequested.PORTRAIT)
   }
   if (printJob.printDialog(attr)) {
     try {
@@ -116,7 +116,7 @@ fun createPageFormat(mediaSize: MediaSize): PageFormat {
       //paper.setSize( mediaSize.getX(MediaSize.INCH) * 72.0, mediaSize.getY(MediaSize.INCH) * 72.0)
       //paper.setImageableArea(0.0, 0.0, paper.width, paper.height)
     //}
-    format.orientation = PageFormat.LANDSCAPE
+    //format.orientation = PageFormat.LANDSCAPE
   }
 }
 
