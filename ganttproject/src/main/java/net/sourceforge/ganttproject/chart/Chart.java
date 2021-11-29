@@ -21,23 +21,17 @@ package net.sourceforge.ganttproject.chart;
 import biz.ganttproject.core.option.FontOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
-import net.sourceforge.ganttproject.GanttExportSettings;
+import biz.ganttproject.print.PrintChartApi;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 
-import java.awt.image.RenderedImage;
 import java.util.Date;
 
 public interface Chart extends IAdaptable {
   IGanttProject getProject();
 
   void init(IGanttProject project, IntegerOption dpiOption, FontOption chartFontOption);
-
-  public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor);
-
-  public RenderedImage getRenderedImage(GanttExportSettings settings);
 
   public Date getStartDate();
 
@@ -54,8 +48,6 @@ public interface Chart extends IAdaptable {
 
   public GPOptionGroup[] getOptionGroups();
 
-  public Chart createCopy();
-
   public ChartSelection getSelection();
 
   public IStatus canPaste(ChartSelection selection);
@@ -67,4 +59,6 @@ public interface Chart extends IAdaptable {
   public void removeSelectionListener(ChartSelectionListener listener);
 
   void focus();
+
+  PrintChartApi asPrintChartApi();
 }

@@ -26,7 +26,6 @@ import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -118,11 +117,6 @@ public abstract class ExporterBase implements Exporter {
   public GanttExportSettings createExportSettings() {
     GanttExportSettings result = new GanttExportSettings();
     if (myRootPreferences != null) {
-      int zoomLevel = myRootPreferences.getInt("zoom", -1);
-      ZoomState zoomState = zoomLevel < 0 ? myUIFacade.getZoomManager().getZoomState()
-          : myUIFacade.getZoomManager().getZoomState(zoomLevel);
-      result.setZoomLevel(zoomState);
-
       String exportRange = myRootPreferences.get("exportRange", null);
       if (exportRange == null) {
         result.setStartDate(myExportRangeStart.getValue());
@@ -136,7 +130,6 @@ public abstract class ExporterBase implements Exporter {
         } catch (InvalidDateException e) {
           GPLogger.log(e);
         }
-        result.setWidth(-1);
       }
       result.setCommandLineMode(myRootPreferences.getBoolean("commandLine", false));
       if (myRootPreferences.getBoolean("expandResources", false)) {

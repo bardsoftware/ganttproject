@@ -28,7 +28,7 @@ import java.awt.geom.AffineTransform
 import javax.imageio.ImageIO
 import javax.print.attribute.standard.*
 import kotlin.math.max
-import javafx.print.PrinterJob as FxPrinterJob;
+import javafx.print.PrinterJob as FxPrinterJob
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import net.sourceforge.ganttproject.GPLogger
@@ -36,9 +36,9 @@ import java.awt.print.*
 import javax.print.attribute.HashPrintRequestAttributeSet
 import javafx.print.Paper as FxPaper
 
-fun printPages(images: List<PrintPage>, mediaSize: MediaSize, orientation: Orientation) {
+internal fun printPages(images: List<PrintPage>, mediaSize: MediaSize, orientation: Orientation) {
   val printJob = PrinterJob.getPrinterJob()
-  printJob.setPageable(PageableImpl(images, mediaSize))
+  printJob.setPageable(PageableImpl(images, mediaSize, orientation))
   val attr = HashPrintRequestAttributeSet().also {
     it.add(DialogTypeSelection.NATIVE)
     it.add(mediaSize.mediaSizeName)
@@ -54,7 +54,7 @@ fun printPages(images: List<PrintPage>, mediaSize: MediaSize, orientation: Orien
     }
   }
 }
-fun printPages(images: List<PrintPage>, paper: FxPaper) {
+internal fun printPages(images: List<PrintPage>, paper: FxPaper) {
   val printJob = FxPrinterJob.createPrinterJob()
   printJob.jobSettings.pageLayout = printJob.printer.createPageLayout(
     paper, PageOrientation.LANDSCAPE, Printer.MarginType.HARDWARE_MINIMUM
@@ -67,15 +67,17 @@ fun printPages(images: List<PrintPage>, paper: FxPaper) {
   }
 }
 
-class PageableImpl(private val pages: List<PrintPage>, mediaSize: MediaSize) : Pageable {
+internal class PageableImpl(private val pages: List<PrintPage>, mediaSize: MediaSize, orientation: Orientation) : Pageable {
   private val commonScale = AtomicDouble(0.0)
-  private val pageFormat = createPageFormat(mediaSize)
+  private val pageFormat = PageFormat().also {
+    it.orientation = if (orientation == Orientation.LANDSCAPE) PageFormat.LANDSCAPE else PageFormat.PORTRAIT
+  }
   override fun getNumberOfPages() = pages.size
   override fun getPageFormat(pageIndex: Int) = pageFormat
   override fun getPrintable(pageIndex: Int) = PrintableImpl(pages[pageIndex], commonScale)
 }
 
-class PrintableImpl(private val page: PrintPage, private val commonScale: AtomicDouble) : Printable {
+internal class PrintableImpl(private val page: PrintPage, private val commonScale: AtomicDouble) : Printable {
   override fun print(graphics: Graphics, pageFormat: PageFormat, pageIndex: Int): Int {
     val image = ImageIO.read(page.imageFile)
     val g2d = graphics as? Graphics2D
@@ -109,15 +111,6 @@ class PrintableImpl(private val page: PrintPage, private val commonScale: Atomic
     return Printable.PAGE_EXISTS
   }
 
-}
-fun createPageFormat(mediaSize: MediaSize): PageFormat {
-  return PageFormat().also { format ->
-    //format.paper = Paper().also { paper ->
-      //paper.setSize( mediaSize.getX(MediaSize.INCH) * 72.0, mediaSize.getY(MediaSize.INCH) * 72.0)
-      //paper.setImageableArea(0.0, 0.0, paper.width, paper.height)
-    //}
-    //format.orientation = PageFormat.LANDSCAPE
-  }
 }
 
 

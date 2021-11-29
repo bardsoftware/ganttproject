@@ -25,8 +25,8 @@ import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
+import biz.ganttproject.print.PrintChartApi;
 import net.sourceforge.ganttproject.action.view.ViewChartOptionsDialogAction;
-import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartRendererBase;
@@ -35,7 +35,6 @@ import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.MouseWheelListenerBase;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -52,7 +51,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
-import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.Date;
 
@@ -152,11 +150,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
   @Override
   public GPOptionGroup[] getOptionGroups() {
     return getChartModel().getChartOptionGroups();
-  }
-
-  @Override
-  public Chart createCopy() {
-    return new AbstractChartImplementation(myProject, getUIFacade(), getChartModel().createCopy(), this);
   }
 
   @Override
@@ -310,16 +303,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
   }
 
   @Override
-  public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
-    getImplementation().buildImage(settings, imageVisitor);
-  }
-
-  @Override
-  public RenderedImage getRenderedImage(GanttExportSettings settings) {
-    return getImplementation().getRenderedImage(settings);
-  }
-
-  @Override
   public void reset() {
     repaint();
   }
@@ -335,5 +318,10 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
   @Override
   public void setTimelineHeight(int height) {
     getImplementation().setTimelineHeight(height);
+  }
+
+  @Override
+  public PrintChartApi asPrintChartApi() {
+    return getImplementation().asPrintChartApi();
   }
 }

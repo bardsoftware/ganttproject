@@ -21,16 +21,18 @@ package net.sourceforge.ganttproject.chart.gantt;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
+import biz.ganttproject.print.PrintChartApi;
 import com.google.common.base.Supplier;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.CustomBalloonTip;
 import net.java.balloontip.styles.ToolTipBalloonStyle;
 import net.sourceforge.ganttproject.AbstractChartImplementation;
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.ChartImplementation;
-import net.sourceforge.ganttproject.GPTreeTableBase;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -39,10 +41,9 @@ import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelImpl;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
+import net.sourceforge.ganttproject.chart.PrintChartApiImpl;
 import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
 import net.sourceforge.ganttproject.chart.TaskRendererImpl2;
-import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
-import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
@@ -241,21 +242,20 @@ public class GanttChartController extends AbstractChartImplementation implements
   }
 
   @Override
-  public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
-//    final TaskTreeUIFacade taskTree = getUIFacade().getTaskTree();
-//    List<Task> visibleTasks = Lists.newArrayList();
-//    for (Task t : getTaskManager().getTaskHierarchy().getDeepNestedTasks(getTaskManager().getRootTask())) {
-//      if (taskTree.isVisible(t)) {
-//        visibleTasks.add(t);
-//      }
-//    }
-    settings.setVisibleTasks(myTaskTableConnector.getVisibleTasks());
-    super.buildImage(settings, imageVisitor);
+  public PrintChartApi asPrintChartApi() {
+    ChartModelBase modelCopy = getChartModel().createCopy();
+    modelCopy.setBounds(getChartComponent().getSize());
+    var settingsSetup = new Function1<GanttExportSettings, Unit>() {
+      @Override
+      public Unit invoke(GanttExportSettings settings) {
+        setupExportSettings(settings, modelCopy);
+        settings.setVisibleTasks(myTaskTableConnector.getVisibleTasks());
+        return Unit.INSTANCE;
+      }
+    };
+    return new PrintChartApiImpl(modelCopy, settingsSetup, myTaskTableConnector.getExportTreeTableApi(), getUIFacade().getZoomManager());
   }
 
-  protected ChartImageBuilder createChartImageBuilder(GanttExportSettings settings, ChartModelBase modelCopy, GPTreeTableBase treeTable) {
-    return new ChartImageBuilder(settings, modelCopy, myTaskTableConnector.getExportTreeTableApi().invoke());
-  }
   void showTooltip(final int x, final int y, final String text) {
     if (myTooltip == null) {
       scheduleTask(() -> {

@@ -21,22 +21,17 @@ package net.sourceforge.ganttproject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelResource;
-import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.ResourceChart;
-import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents;
 import net.sourceforge.ganttproject.chart.mouse.MouseListenerBase;
 import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.util.MouseUtil;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 
 import javax.swing.*;
 import java.awt.*;
@@ -52,13 +47,13 @@ import java.awt.event.MouseMotionListener;
  */
 public class ResourceLoadGraphicArea extends ChartComponentBase implements ResourceChart {
   /** The main application */
-  private final GanttProject appli;
+  final GanttProject appli;
 
-  private final ChartModelResource myChartModel;
+  final ChartModelResource myChartModel;
 
   private final ChartViewState myViewState;
 
-  private final ResourceTreeUIFacade myTreeUi;
+  final ResourceTreeUIFacade myTreeUi;
 
   public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager, ResourceTreeUIFacade treeUi) {
     super(app.getProject(), app.getUIFacade(), zoomManager);
@@ -67,7 +62,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     this.setBackground(Color.WHITE);
     myChartModel = new ChartModelResource(getTaskManager(), app.getHumanResourceManager(), getTimeUnitStack(),
         getUIConfiguration(), this);
-    myChartImplementation = new ResourcechartImplementation(app.getProject(), getUIFacade(), myChartModel, this);
+    myChartImplementation = new ResourceChartImplementation(this, app.getProject(), getUIFacade(), myChartModel, this);
     myViewState = new ChartViewState(this, app.getUIFacade());
     app.getUIFacade().getZoomManager().addZoomListener(myViewState);
     initMouseListeners();
@@ -138,7 +133,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
   @Override
   protected AbstractChartImplementation getImplementation() {
     if (myChartImplementation == null) {
-      myChartImplementation = new ResourcechartImplementation(getProject(), getUIFacade(), myChartModel, this);
+      myChartImplementation = new ResourceChartImplementation(this, getProject(), getUIFacade(), myChartModel, this);
     }
     return myChartImplementation;
   }
@@ -154,88 +149,19 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
   private AbstractChartImplementation myChartImplementation;
 
-  private class ResourcechartImplementation extends AbstractChartImplementation {
-
-    private ResourceChartSelection mySelection;
-
-    public ResourcechartImplementation(IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel,
-        ChartComponentBase chartComponent) {
-      super(project, uiFacade, chartModel, chartComponent);
-    }
-
-    @Override
-    public void paintChart(Graphics g) {
-      synchronized (ChartModelBase.STATIC_MUTEX) {
-        // LaboPM
-        // ResourceLoadGraphicArea.super.paintComponent(g);
-        if (isShowing()) {
-          myChartModel.setHeaderHeight(getImplementation().getHeaderHeight());
-        }
-        myChartModel.setBottomUnitWidth(getViewState().getBottomUnitWidth());
-        myChartModel.setRowHeight(getRowHeight());// myChartModel.setRowHeight(tree.getJTree().getRowHeight());
-        myChartModel.setTopTimeUnit(getViewState().getTopTimeUnit());
-        myChartModel.setBottomTimeUnit(getViewState().getBottomTimeUnit());
-        // myChartModel.paint(g);
-        super.paintChart(g);
-      }
-    }
-
-    @Override
-    public ChartSelection getSelection() {
-      if (mySelection == null) {
-        mySelection = new ResourceChartSelection(getProject(), appli.getResourcePanel());
-      }
-      return mySelection;
-    }
-
-    @Override
-    public IStatus canPaste(ChartSelection selection) {
-      return Status.OK_STATUS;
-    }
-
-    @Override
-    public void paste(ChartSelection selection) {
-      if (selection instanceof ResourceChartSelection) {
-        ResourceChartSelection resourceChartSelection = (ResourceChartSelection) selection;
-        for (HumanResource res : resourceChartSelection.myClipboardContents.getResources()) {
-          if (resourceChartSelection.myClipboardContents.isCut()) {
-            getResourceManager().add(res);
-          } else {
-            getResourceManager().add(res.unpluggedClone());
-          }
-        }
-      }
-    }
-
-    @Override
-    public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
-      int rowCount = getResourceManager().getResources().size();
-      for (HumanResource hr : getResourceManager().getResources()) {
-        if (settings.isExpanded(hr)) {
-          myTreeUi.setExpanded(hr, true);
-        }
-        if (myTreeUi.isExpanded(hr)) {
-          rowCount += hr.getAssignments().length;
-        }
-      }
-      settings.setRowCount(rowCount);
-      super.buildImage(settings, imageVisitor);
-    }
-  }
-
   @Override
   public ChartViewState getViewState() {
     return myViewState;
   }
 
-  private HumanResourceManager getResourceManager() {
+  HumanResourceManager getResourceManager() {
     return appli.getHumanResourceManager();
   }
 
   static class ResourceChartSelection extends AbstractChartImplementation.ChartSelectionImpl implements ClipboardOwner {
     private final GanttResourcePanel myResourcePanel;
     private final IGanttProject myProject;
-    private ClipboardContents myClipboardContents;
+    ClipboardContents myClipboardContents;
 
     ResourceChartSelection(IGanttProject project, GanttResourcePanel resourcePanel) {
       myProject = project;

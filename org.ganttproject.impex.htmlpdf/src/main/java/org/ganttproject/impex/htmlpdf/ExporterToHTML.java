@@ -18,6 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf;
 
+import biz.ganttproject.core.option.GPOptionGroup;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.export.ExportException;
+import net.sourceforge.ganttproject.util.FileUtil;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.xml.sax.SAXException;
+
+import javax.imageio.ImageIO;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,22 +38,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-
-import javax.imageio.ImageIO;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
-
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttExportSettings;
-import net.sourceforge.ganttproject.export.ExportException;
-import net.sourceforge.ganttproject.util.FileUtil;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.xml.sax.SAXException;
-
-import biz.ganttproject.core.option.GPOptionGroup;
 
 public class ExporterToHTML extends StylesheetExporterBase {
   static final String GANTT_CHART_FILE_EXTENSION = "png";
@@ -86,8 +82,10 @@ public class ExporterToHTML extends StylesheetExporterBase {
       @Override
       protected IStatus run() {
         try {
-          RenderedImage ganttChartImage = getGanttChart().getRenderedImage(
-              createExportSettings());
+          int zoomLevel = getPreferences().getInt("zoom", -1);
+          var exportSettings = createExportSettings();
+          RenderedImage ganttChartImage = getGanttChart().asPrintChartApi().exportChart(
+              exportSettings.getStartDate(), exportSettings.getEndDate(), zoomLevel, exportSettings.isCommandLineMode());
           File ganttChartImageFile;
           ganttChartImageFile = replaceExtension(outputFile, GANTT_CHART_FILE_EXTENSION);
           ImageIO.write(ganttChartImage, PNG_FORMAT_NAME, ganttChartImageFile);
@@ -110,8 +108,10 @@ public class ExporterToHTML extends StylesheetExporterBase {
       @Override
       protected IStatus run() {
         try {
-          RenderedImage resourceChartImage = getResourceChart().getRenderedImage(
-              createExportSettings());
+          int zoomLevel = getPreferences().getInt("zoom", -1);
+          var exportSettings = createExportSettings();
+          RenderedImage resourceChartImage = getResourceChart().asPrintChartApi().exportChart(
+              exportSettings.getStartDate(), exportSettings.getEndDate(), zoomLevel, exportSettings.isCommandLineMode());
           File resourceChartImageFile = replaceExtension(outputFile, RESOURCE_CHART_FILE_EXTENSION);
           ImageIO.write(resourceChartImage, PNG_FORMAT_NAME, resourceChartImageFile);
           resultFiles.add(resourceChartImageFile);

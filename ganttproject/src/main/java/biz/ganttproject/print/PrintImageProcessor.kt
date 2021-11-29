@@ -23,23 +23,30 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import net.sourceforge.ganttproject.GanttExportSettings
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage
 import org.imgscalr.Scalr
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.IOException
+import java.util.*
 import javax.imageio.ImageIO
 import javax.print.attribute.Size2DSyntax
 import javax.print.attribute.standard.MediaSize
 import kotlin.math.min
 
-enum class Orientation {
+/**
+ * Minimal interface which is required from the chart to be printable.
+ */
+interface PrintChartApi {
+  fun exportChart(startDate: Date, endDate: Date, zoomLevel: Int = -1, isHeadless: Boolean = false): BufferedImage
+}
+
+internal enum class Orientation {
   PORTRAIT, LANDSCAPE
 }
 
-data class PrintPage(
+internal data class PrintPage(
   val row: Int,
   val column: Int,
   val imageFile: File,
@@ -47,15 +54,16 @@ data class PrintPage(
   val heightFraction: Double
 )
 
-fun createImages(chart: Chart, media: MediaSize, dpi: Int, orientation: Orientation, channel: Channel<PrintPage>) {
-  PrintImageProcessor(chart, media, dpi, orientation, channel).run()
+internal fun createImages(chart: Chart, media: MediaSize, dpi: Int, orientation: Orientation, dateRange: ClosedRange<Date>, channel: Channel<PrintPage>) {
+  PrintImageProcessor(chart, media, dpi, orientation, dateRange, channel).run()
 }
 
-class PrintImageProcessor(
+internal class PrintImageProcessor(
   private val chart: Chart,
   private val media: MediaSize,
   private val dpi: Int,
   private val orientation: Orientation,
+  private val dateRange: ClosedRange<Date>,
   private val channel: Channel<PrintPage>) {
 
   fun run() {
@@ -63,7 +71,8 @@ class PrintImageProcessor(
     println("media width px=${media.pageWidthPx(dpi)} height px=${media.pageHeightPx(dpi)}")
     imageScope.launch {
 
-      val wholeImage = chart.getRenderedImage(GanttExportSettings()).let {
+      val wholeImage = chart.asPrintChartApi()
+        .exportChart(startDate = dateRange.start, endDate = dateRange.endInclusive).let {
         when (it) {
           is RenderedChartImage -> it.wholeImage
           is BufferedImage -> it
@@ -117,7 +126,7 @@ class PrintImageProcessor(
   }
 }
 
-fun MediaSize.pageWidthPx(dpi: Int) = (this.getX(Size2DSyntax.INCH) * dpi).toInt()
-fun MediaSize.pageHeightPx(dpi: Int) = (this.getY(Size2DSyntax.INCH) * dpi).toInt()
+private fun MediaSize.pageWidthPx(dpi: Int) = (this.getX(Size2DSyntax.INCH) * dpi).toInt()
+private fun MediaSize.pageHeightPx(dpi: Int) = (this.getY(Size2DSyntax.INCH) * dpi).toInt()
 
 private val imageScope = CoroutineScope(Dispatchers.IO)

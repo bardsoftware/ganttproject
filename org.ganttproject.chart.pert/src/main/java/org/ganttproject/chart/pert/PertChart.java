@@ -103,11 +103,6 @@ public abstract class PertChart extends JPanel implements Chart {
   }
 
   @Override
-  public Chart createCopy() {
-    return null;
-  }
-
-  @Override
   public ChartSelection getSelection() {
     return ChartSelection.EMPTY;
   }

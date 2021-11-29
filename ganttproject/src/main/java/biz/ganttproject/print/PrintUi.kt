@@ -53,7 +53,7 @@ import javafx.print.Paper as FxPaper
  */
 fun showPrintDialog(activeChart: Chart) {
   val i18n = RootLocalizer
-  Previews.chart = activeChart
+  Previews.initChart(activeChart)
   Previews.setMediaSize("A4")
   dialog { dlg ->
     dlg.addStyleClass("dlg", "dlg-print-preview")
@@ -138,9 +138,16 @@ fun showPrintDialog(activeChart: Chart) {
 }
 
 private object Previews {
-  lateinit var chart: Chart
   private val zoomFactors = listOf(1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0)
   private val readImageScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+
+  lateinit var chart: Chart
+  lateinit var dateRange: ClosedRange<Date>
+
+  fun initChart(chart: Chart) {
+    this.chart = chart
+    this.dateRange = chart.startDate.rangeTo(chart.endDate)
+  }
 
   val mediaSizes: Map<String, MediaSize> = mutableMapOf<String, MediaSize>().let {
     it.putAll(mediaSizes(MediaSize.ISO::class))
@@ -200,14 +207,14 @@ private object Previews {
   }
 
   fun onDateRangeChange(start: Date, end: Date) {
-    chart.startDate = start
+    dateRange = start.rangeTo(end)
     updateTiles()
   }
 
   private fun updateTiles() {
     val channel = Channel<PrintPage>()
     readImages(channel)
-    createImages(chart, mediaSize, 144, orientation, channel)
+    createImages(chart, mediaSize, 144, orientation, dateRange, channel)
   }
 
   private fun updatePreviews() {

@@ -18,7 +18,17 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.export;
 
-import java.awt.Component;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.option.GPAbstractOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
+import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
@@ -26,19 +36,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import javax.imageio.ImageIO;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPAbstractOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-
-import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 
 /**
  * @author bard
@@ -152,7 +149,10 @@ public class ExporterToImage extends ExporterBase {
           // Default is to print Gantt chart
           chart = "resource".equals(chartToExport) ? getResourceChart() : getGanttChart();
         }
-        RenderedImage renderedImage = chart.getRenderedImage(createExportSettings());
+        var exportSettings = createExportSettings();
+        int zoomLevel = getPreferences().getInt("zoom", -1);
+        RenderedImage renderedImage = chart.asPrintChartApi().exportChart(
+            exportSettings.getStartDate(), exportSettings.getEndDate(), zoomLevel, exportSettings.isCommandLineMode());
         try {
           ImageIO.write(renderedImage, myFileTypeOption.proposeFileExtension(), outputFile);
         } catch (IOException e) {

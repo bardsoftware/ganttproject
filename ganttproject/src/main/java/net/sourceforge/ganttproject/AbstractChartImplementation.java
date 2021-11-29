@@ -26,7 +26,6 @@ import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModel;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartRendererBase;
@@ -34,12 +33,6 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.chart.export.ChartDimensions;
-import net.sourceforge.ganttproject.chart.export.ChartImageBuilder;
-import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
-import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
-import net.sourceforge.ganttproject.chart.export.TreeTableApi;
-import net.sourceforge.ganttproject.chart.export.TreeTableApiKt;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.ScrollViewInteraction;
 import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
@@ -56,8 +49,6 @@ import javax.swing.*;
 import javax.swing.plaf.LayerUI;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -65,7 +56,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class AbstractChartImplementation implements TimelineChart, ZoomListener {
+public abstract class AbstractChartImplementation implements TimelineChart, ZoomListener {
   private final ChartModelBase myChartModel;
   private final IGanttProject myProject;
   private Set<ChartSelectionListener> mySelectionListeners = new LinkedHashSet<>();
@@ -229,12 +220,8 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   private Image getLogo() {
     return myUiFacade.getLogo();
   }
-  // ///////////////////////////////////////////////////////////
-  // interface Chart
-  @Override
-  public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
-    ChartModelBase modelCopy = getChartModel().createCopy();
-    modelCopy.setBounds(myChartComponent.getSize());
+
+  protected final void setupExportSettings(GanttExportSettings settings, ChartModelBase modelCopy) {
     if (settings.getStartDate() == null) {
       settings.setStartDate(modelCopy.getStartDate());
     }
@@ -248,79 +235,10 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
       myChartComponent.getTreeTable().autoFitColumns();
     }
     settings.setLogo(getLogo());
-    ChartImageBuilder builder = createChartImageBuilder(settings, modelCopy, myChartComponent.getTreeTable());
-    builder.buildImage(imageVisitor);
   }
 
-  protected ChartImageBuilder createChartImageBuilder(GanttExportSettings settings, ChartModelBase modelCopy, GPTreeTableBase treeTable) {
-    return new ChartImageBuilder(settings, modelCopy, TreeTableApiKt.asTreeTableApi(treeTable));
-  }
-
-  @Override
-  public RenderedImage getRenderedImage(GanttExportSettings settings) {
-    class ChartImageVisitorImpl implements ChartImageVisitor {
-      private RenderedChartImage myRenderedImage;
-      private Graphics2D myGraphics;
-      private BufferedImage myTreeImage;
-
-      @Override
-      public void acceptLogo(ChartDimensions d, Image logo) {
-        if (d.getTreeWidth() <= 0) {
-          return;
-        }
-        Graphics2D g = getGraphics(d);
-        g.setBackground(Color.WHITE);
-        g.clearRect(0, 0, d.getTreeWidth(), d.getLogoHeight());
-        // Hack: by adding 35, the left part of the logo becomes visible,
-        // otherwise it gets chopped off
-        g.drawImage(logo, 0, 0, null);
-      }
-
-      @Override
-      public void acceptTable(ChartDimensions d, TreeTableApi treeTable) {
-        if (d.getTreeWidth() <= 0) {
-          return;
-        }
-        Graphics2D g = getGraphics(d);
-        g.setBackground(Color.WHITE);
-        g.clearRect(0, d.getLogoHeight(), d.getTreeWidth(), d.getChartHeight() - d.getLogoHeight());
-
-        g.translate(0, d.getLogoHeight());
-        var header = treeTable.getTableHeaderComponent().invoke();
-        if (header != null) {
-          header.print(g);
-          g.translate(0, d.getTableHeaderHeight());
-        }
-        var table = treeTable.getTableComponent().invoke();
-        if (table != null) {
-          table.print(g);
-        } else {
-          treeTable.getTablePainter().invoke(g);
-        }
-      }
-
-      @Override
-      public void acceptChart(ChartDimensions d, ChartModel model) {
-        if (myTreeImage == null) {
-          myTreeImage = new BufferedImage(1, d.getChartHeight(), BufferedImage.TYPE_INT_RGB);
-        }
-        myRenderedImage = new RenderedChartImage(model, myTreeImage, d.getChartWidth(), d.getChartHeight()
-            + d.getLogoHeight(), d.getLogoHeight());
-      }
-
-      private Graphics2D getGraphics(ChartDimensions d) {
-        if (myGraphics == null) {
-          myTreeImage = new BufferedImage(d.getTreeWidth(), d.getChartHeight(),
-              BufferedImage.TYPE_INT_RGB);
-          myGraphics = myTreeImage.createGraphics();
-        }
-        return myGraphics;
-      }
-    }
-    ChartImageVisitorImpl visitor = new ChartImageVisitorImpl();
-    buildImage(settings, visitor);
-    return visitor.myRenderedImage;
-  }
+  // ///////////////////////////////////////////////////////////
+  // interface Chart
 
   @Override
   public Date getStartDate() {
@@ -386,11 +304,6 @@ public class AbstractChartImplementation implements TimelineChart, ZoomListener 
   @Override
   public GPOptionGroup[] getOptionGroups() {
     return getChartModel().getChartOptionGroups();
-  }
-
-  @Override
-  public Chart createCopy() {
-    return new AbstractChartImplementation(myProject, myUiFacade, getChartModel().createCopy(), myChartComponent);
   }
 
   @Override

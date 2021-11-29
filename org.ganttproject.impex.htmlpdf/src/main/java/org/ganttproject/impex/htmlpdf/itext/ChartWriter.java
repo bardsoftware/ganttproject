@@ -24,6 +24,7 @@ import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.chart.ChartModel;
+import net.sourceforge.ganttproject.chart.PrintChartApiImpl;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.export.ChartDimensions;
 import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
@@ -69,7 +70,8 @@ class ChartWriter implements ChartImageVisitor {
 
   void write() {
     setupChart(myExportSettings);
-    myChart.buildImage(myExportSettings, this);
+    var printChartApi = (PrintChartApiImpl)myChart.asPrintChartApi();
+    printChartApi.buildImage(myExportSettings, this);
     myGraphics.dispose();
     myWriter.getDirectContent().addTemplate(myTemplate, myScale, 0, 0, myScale, myDoc.leftMargin(), myYShift);
   }
