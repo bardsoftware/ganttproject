@@ -22,7 +22,9 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.FileConverter;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.PluginPreferencesImpl;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.service.prefs.Preferences;
@@ -30,7 +32,6 @@ import org.w3c.util.DateParser;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,8 +64,6 @@ public class CommandLineExportApplication {
 
   private final Map<String, Exporter> myFlag2exporter = new HashMap<String, Exporter>();
 
-  private final Args myArgs = new Args();
-
   public CommandLineExportApplication() {
     for (Exporter exporter : PluginManager.getExporters()) {
       List<String> keys = Arrays.asList(exporter.getCommandLineKeys());
@@ -74,36 +73,16 @@ public class CommandLineExportApplication {
     }
   }
 
-  public Collection<String> getCommandLineFlags() {
-    return myFlag2exporter.keySet();
-  }
-
-  public Args getArguments() {
-    return myArgs;
-  }
-
-  public boolean export(GanttProject.Args mainArgs) {
-    if (myArgs.exporter == null || mainArgs.file == null || mainArgs.file.isEmpty()) {
+  public boolean export(Args args, IGanttProject project, UIFacade uiFacade) {
+    if (args.exporter == null) {
       return false;
     }
-    Exporter exporter = myFlag2exporter.get(myArgs.exporter);
+    Exporter exporter = myFlag2exporter.get(args.exporter);
     GPLogger.log("Using exporter=" + exporter);
     if (exporter == null) {
       return false;
     }
-    GanttProject project = new GanttProject(false);
-    ConsoleUIFacade consoleUI = new ConsoleUIFacade(project.getUIFacade());
-    File inputFile = new File(mainArgs.file.get(0));
-    if (false == inputFile.exists()) {
-      consoleUI.showErrorDialog("File " + mainArgs.file + " does not exist.");
-      return true;
-    }
-    if (false == inputFile.canRead()) {
-      consoleUI.showErrorDialog("File " + mainArgs.file + " is not readable.");
-      return true;
-    }
-
-    project.openStartupDocument(mainArgs.file.get(0));
+    ConsoleUIFacade consoleUI = new ConsoleUIFacade(uiFacade);
     // TODO: bring back task expanding
 //    if (myArgs.expandTasks) {
 //      for (Task t : project.getTaskManager().getTasks()) {
@@ -112,11 +91,11 @@ public class CommandLineExportApplication {
 //    }
 
     Job.getJobManager().setProgressProvider(null);
-    File outputFile = myArgs.outputFile == null ? FileChooserPage.proposeOutputFile(project, exporter)
-        : myArgs.outputFile;
+    File outputFile = args.outputFile == null ? FileChooserPage.proposeOutputFile(project, exporter)
+        : args.outputFile;
 
     Preferences prefs = new PluginPreferencesImpl(null, "");
-    prefs.putInt("zoom", myArgs.zooming);
+    prefs.putInt("zoom", args.zooming);
     prefs.put(
         "exportRange",
         DateParser.getIsoDate(project.getTaskManager().getProjectStart()) + " "
@@ -124,31 +103,27 @@ public class CommandLineExportApplication {
     prefs.putBoolean("commandLine", true);
 
     // If chart to export is defined, then add a string to prefs
-    if (myArgs.chart != null) {
-      prefs.put("chart", myArgs.chart);
+    if (args.chart != null) {
+      prefs.put("chart", args.chart);
     }
 
     // If stylesheet is defined, then add a string to prefs
-    if (myArgs.stylesheet != null) {
-      prefs.put("stylesheet", myArgs.stylesheet);
+    if (args.stylesheet != null) {
+      prefs.put("stylesheet", args.stylesheet);
     }
 
-    prefs.putBoolean("expandResources", myArgs.expandResources);
+    prefs.putBoolean("expandResources", args.expandResources);
 
     exporter.setContext(project, consoleUI, prefs);
     final CountDownLatch latch = new CountDownLatch(1);
     try {
-      ExportFinalizationJob finalizationJob = new ExportFinalizationJob() {
-        @Override
-        public void run(File[] exportedFiles) {
-          latch.countDown();
-        }
-      };
+      ExportFinalizationJob finalizationJob = exportedFiles -> latch.countDown();
       exporter.run(outputFile, finalizationJob);
       latch.await();
     } catch (Exception e) {
       consoleUI.showErrorDialog(e);
     }
+    GanttProject.doQuitApplication(true);
     return true;
   }
 }

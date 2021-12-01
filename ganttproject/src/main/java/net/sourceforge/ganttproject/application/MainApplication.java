@@ -4,14 +4,17 @@
 package net.sourceforge.ganttproject.application;
 
 import biz.ganttproject.LoggerApi;
+import biz.ganttproject.app.InternationalizationKt;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.AppBuilder;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.document.DocumentCreator;
+import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import org.eclipse.core.runtime.IPlatformRunnable;
 
+import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -50,8 +53,31 @@ public class MainApplication implements IPlatformRunnable {
         DocumentCreator.createAutosaveCleanup().run();
         return Unit.INSTANCE;
       });
+      if (appBuilder.getMainArgs().fixMenuBarTitle) {
+        appBuilder.whenWindowOpened(frame -> {
+          try {
+            var toolkit = Toolkit.getDefaultToolkit();
+            var awtAppClassNameField = toolkit.getClass().getDeclaredField("awtAppClassName");
+            awtAppClassNameField.setAccessible(true);
+            awtAppClassNameField.set(toolkit, InternationalizationKt.getRootLocalizer().formatText("appliTitle"));
+          } catch (NoSuchFieldException ex) {
+            System.err.println("Can't set awtAppClassName (needed on Linux to show app name in the top panel)");
+          } catch (IllegalAccessException ex) {
+            System.err.println("Can't set awtAppClassName (needed on Linux to show app name in the top panel)");
+          }
+          return Unit.INSTANCE;
+        });
+      }
     } else {
-
+      appBuilder.whenDocumentReady(project -> {
+        var cliApp = new CommandLineExportApplication();
+        cliApp.export(appBuilder.getCliArgs(), project, ((GanttProject)project).getUIFacade());
+        return Unit.INSTANCE;
+      });
+    }
+    var files = appBuilder.getMainArgs().file;
+    if (files != null && !files.isEmpty()) {
+      appBuilder.withDocument(files.get(0));
     }
 
 

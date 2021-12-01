@@ -467,13 +467,14 @@ internal class CommandLineProjectOpenStrategy(
   private val projectUiFacade: ProjectUIFacade,
   private val preferences: Preferences
 ) {
-  fun openStartupDocument(path: String, hackFireProjectCreated: ()->Unit) {
+  fun openStartupDocument(path: String, hackFireProjectCreated: ()->Unit, onCompletion: (Document) -> Unit) {
     val document: Document = documentManager.getDocument(path)
     val finishChannel = Channel<Boolean>()
     GlobalScope.launch { projectUiFacade.openProject(document, project, finishChannel) }
     GlobalScope.launch {
       try {
         finishChannel.receive()
+        onCompletion(document)
       } catch (e: Document.DocumentException) {
         hackFireProjectCreated() // this will create columns in the tables, which are removed by previous call to openProject()
         if (!tryImportDocument(document)) {

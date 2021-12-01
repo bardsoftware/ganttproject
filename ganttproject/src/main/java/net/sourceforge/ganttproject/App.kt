@@ -27,21 +27,18 @@ import com.bardsoftware.eclipsito.update.UpdateProgressMonitor
 import com.bardsoftware.eclipsito.update.Updater
 import com.beust.jcommander.JCommander
 import javafx.application.Platform
-import net.sourceforge.ganttproject.document.DocumentCreator
 import net.sourceforge.ganttproject.export.CommandLineExportApplication
+import net.sourceforge.ganttproject.gui.CommandLineProjectOpenStrategy
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.plugins.PluginManager
-import java.awt.Toolkit
+import net.sourceforge.ganttproject.task.TaskManagerImpl
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.File
 import java.io.PrintStream
 import java.lang.Thread.UncaughtExceptionHandler
-import java.lang.reflect.Field
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
@@ -74,16 +71,6 @@ val mainWindow = AtomicReference<GanttProject?>(null)
 @JvmOverloads
 fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) {
 
-  try {
-    val toolkit: Toolkit = Toolkit.getDefaultToolkit()
-    val awtAppClassNameField: Field = toolkit.javaClass.getDeclaredField("awtAppClassName")
-    awtAppClassNameField.isAccessible = true
-    awtAppClassNameField.set(toolkit, RootLocalizer.formatText("appliTitle"))
-  } catch (e: NoSuchFieldException) {
-    APP_LOGGER.error("Can't set awtAppClassName (needed on Linux to show app name in the top panel)")
-  } catch (e: IllegalAccessException) {
-    APP_LOGGER.error("Can't set awtAppClassName (needed on Linux to show app name in the top panel)")
-  }
   Platform.setImplicitExit(false)
   SwingUtilities.invokeLater {
     try {
@@ -103,6 +90,8 @@ val APP_LOGGER = GPLogger.create("App")
 typealias RunBeforeUi = ()->Unit
 typealias RunAfterWindowOpened = (JFrame) -> Unit
 typealias RunAfterAppInitialized = (GanttProject) -> Unit
+typealias RunWhenDocumentReady = (IGanttProject) -> Unit
+
 class AppBuilder(private val args: Array<String>) {
   val mainArgs = GanttProject.Args()
   val cliArgs = CommandLineExportApplication.Args()
@@ -112,6 +101,8 @@ class AppBuilder(private val args: Array<String>) {
   private val runBeforeUiCommands = mutableListOf<RunBeforeUi>()
   private val runAfterWindowOpenedCommands = mutableListOf<RunAfterWindowOpened>()
   private val runAfterAppInitializedCommands = mutableListOf<RunAfterAppInitialized>()
+  private val runWhenDocumentReady = mutableListOf<RunWhenDocumentReady>()
+
   fun runBeforeUi(cmd: RunBeforeUi): AppBuilder {
     runBeforeUiCommands.add(cmd)
     return this
@@ -171,8 +162,18 @@ class AppBuilder(private val args: Array<String>) {
     return this
   }
   fun withDocument(path: String): AppBuilder {
+    whenAppInitialized { ganttProject ->
+      val strategy = CommandLineProjectOpenStrategy(ganttProject.project, ganttProject.documentManager,
+        ganttProject.taskManager as TaskManagerImpl, ganttProject.uiFacade, ganttProject.projectUIFacade,
+        ganttProject.ganttOptions.pluginPreferences)
+      strategy.openStartupDocument(path, { ganttProject.fireProjectCreated() }) { doc ->
+        runWhenDocumentReady.forEach { cmd -> cmd(ganttProject.project) }
+      }
+
+    }
     return this
   }
+
   fun whenAppInitialized(code: RunAfterAppInitialized): AppBuilder {
     runAfterAppInitializedCommands.add(code)
     return this
@@ -181,7 +182,8 @@ class AppBuilder(private val args: Array<String>) {
     runAfterWindowOpenedCommands.add(code)
     return this
   }
-  fun whenDocumentReady(code: ()->Unit): AppBuilder {
+  fun whenDocumentReady(code: RunWhenDocumentReady): AppBuilder {
+    runWhenDocumentReady.add(code)
     return this
   }
 
