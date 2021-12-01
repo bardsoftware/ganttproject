@@ -18,10 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.chart.pert;
 
-import net.sourceforge.ganttproject.GanttExportSettings;
-import net.sourceforge.ganttproject.IGanttProject;
+import biz.ganttproject.print.PrintChartApi;
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.export.ChartImageVisitor;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.StringUtils;
 import org.ganttproject.chart.pert.PertChartAbstraction.TaskGraphNode;
@@ -32,7 +30,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -642,18 +639,14 @@ public class ActivityOnNodePertChart extends PertChart {
   }
 
   @Override
-  public void buildImage(GanttExportSettings settings, ChartImageVisitor imageVisitor) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public RenderedImage getRenderedImage(GanttExportSettings settings) {
-    BufferedImage image = new BufferedImage(getMaxX(), getMaxY(), BufferedImage.TYPE_INT_RGB);
-    Graphics g = image.getGraphics();
-    g.fillRect(0, 0, getMaxX(), getMaxY());
-    paint(g);
-    return image;
+  public PrintChartApi asPrintChartApi() {
+    return (startDate, endDate, zoomLevel, isHeadless) -> {
+      BufferedImage image = new BufferedImage(getMaxX(), getMaxY(), BufferedImage.TYPE_INT_RGB);
+      Graphics g = image.getGraphics();
+      g.fillRect(0, 0, getMaxX(), getMaxY());
+      paint(g);
+      return image;
+    };
   }
 
   @Override
@@ -917,11 +910,6 @@ public class ActivityOnNodePertChart extends PertChart {
     }
   }
 
-  @Override
-  public IGanttProject getProject() {
-    // TODO Auto-generated method stub
-    return null;
-  }
 
   @Override
   public void setDimensions(int height, int width) {

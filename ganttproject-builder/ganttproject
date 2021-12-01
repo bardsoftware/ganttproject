@@ -191,7 +191,7 @@ export CLASSPATH
 ECLIPSITO_ARGS="--verbosity 1 --version-dirs $GP_HOME/plugins:~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject"
 BOOT_CLASS=com.bardsoftware.eclipsito.Launch
 
-JAVA_ARGS="-Xmx1024m -Duser.dir=$(pwd) $DEBUG_ARGS $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
+JAVA_ARGS="-Xmx1024m --add-exports javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED -Duser.dir=$(pwd) $DEBUG_ARGS $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
 if [ -n "$(echo \"$*\" | sed -n '/\(^\|\s\)-/{p;}')" ]; then
   "$JAVA_COMMAND" $JAVA_ARGS "$@"
 else

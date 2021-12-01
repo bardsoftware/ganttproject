@@ -36,7 +36,6 @@ import net.sourceforge.ganttproject.chart.ChartOptionGroup;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.ProjectCalendarDialogAction;
-import net.sourceforge.ganttproject.chart.export.RenderedChartImage;
 import net.sourceforge.ganttproject.chart.gantt.GanttChartController;
 import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
@@ -59,7 +58,6 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -198,17 +196,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
 
   private int getHeaderHeight() {
     return getImplementation().getHeaderHeight();
-  }
-
-  /** @return an image with the gantt chart */
-  // TODO: 1.11 take into account flags "render this and don't render that"
-  public BufferedImage getChart(GanttExportSettings settings) {
-    RenderedChartImage renderedImage = (RenderedChartImage) getRenderedImage(settings);
-    int width = renderedImage.getWidth();
-    int height = renderedImage.getHeight();
-    BufferedImage result = renderedImage.getWholeImage();
-    repaint();
-    return result;
   }
 
   @Override

@@ -236,3 +236,4 @@ fun getAvailableTranslations(): List<Locale> {
   return result1
 }
 
+fun String.removeMnemonicsPlaceholder(): String = this.replace("$", "")

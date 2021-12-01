@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 /**
  * @author bard
@@ -349,6 +350,15 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
       @Override
       public void actionPerformed(ActionEvent e) {
         // No action
+      }
+    };
+  }
+
+  public static GPAction create(String key, Consumer<ActionEvent> onAction) {
+    return new GPAction(key) {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        onAction.accept(e);
       }
     };
   }

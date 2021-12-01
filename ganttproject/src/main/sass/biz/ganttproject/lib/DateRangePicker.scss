@@ -1,0 +1,24 @@
+@import "../app/theme";
+@import "../app/typography";
+
+.popover-content {
+  -fx-padding: 2ex 2em;
+
+  .section {
+    -fx-opacity: 0.8;
+    -fx-padding: 0 0 1.5ex 0.75em;
+    .title {
+      -fx-font-size: 110%;
+      -fx-font-weight: bold;
+    }
+    .helpline {
+      -fx-fill: $gp-medium-gray;
+      -fx-font-size: 80%;
+      -fx-font-weight: normal;
+      //@include text-secondary();
+    }
+    &.selected {
+      -fx-opacity: 1.0;
+    }
+  }
+}

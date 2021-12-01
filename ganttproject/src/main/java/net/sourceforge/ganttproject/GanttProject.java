@@ -70,7 +70,6 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.plugins.PluginManager;
-import net.sourceforge.ganttproject.print.PrintManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
@@ -569,7 +568,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     mySearchUi = new FXSearchUi(getProject(), getUIFacade(), myEditMenu.getSearchAction());
     builder.addSearchBox(mySearchUi);
     builder.withClasses("toolbar-common", "toolbar-main", "toolbar-big");
-
+    builder.withScene();
     //return result;
     return builder.build();
   }
@@ -601,23 +600,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       getStatusBar().setSecondText(
           language.getCorrectedLabel("task") + " : " + getTaskManager().getTaskCount() + "  "
               + language.getCorrectedLabel("resources") + " : " + resp.nbPeople());
-    }
-  }
-
-  /**
-   * Print the project
-   */
-  public void printProject() {
-    Chart chart = getUIFacade().getActiveChart();
-    if (chart == null) {
-      getUIFacade().showErrorDialog(
-          "Failed to find active chart.\nPlease report this problem to GanttProject development team");
-      return;
-    }
-    try {
-      PrintManager.printChart(chart, options.getExportSettings());
-    } catch (OutOfMemoryError e) {
-      getUIFacade().showErrorDialog(GanttLanguage.getInstance().getText("printing.out_of_memory"));
     }
   }
 

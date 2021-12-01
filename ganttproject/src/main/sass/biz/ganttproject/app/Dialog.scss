@@ -16,10 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-$gp-orange: #ffca28;
-$gp-light-gray: #e0e0e0;
-$gp-medium-gray: #616161;
-$gp-dark-gray: #424242;
+
+@import "theme";
+@import "dialogs";
 
 .btn-attention {
     -fx-background-color: $gp-orange;
@@ -109,6 +108,10 @@ $gp-dark-gray: #424242;
 
 .dlg {
     -fx-background-color: transparent;
+
+    .button-pane {
+      @include dialog-button-pane();
+    }
 }
 
 .dlg .content-pane > * {
