@@ -115,6 +115,7 @@ fun showPrintDialog(activeChart: Chart) {
             it.selectedRange.addListener { _, _, newValue ->
               Previews.onDateRangeChange(newValue.startDate, newValue.endDate)
             }
+            it.button.styleClass.addAll("btn-regular")
             it.component
           }
         )
@@ -134,6 +135,15 @@ fun showPrintDialog(activeChart: Chart) {
         printPages(Previews.pages, Previews.mediaSize, Previews.orientation)
       }
     }
+    dlg.setupButton(ButtonType.NEXT) {
+      it.text = i18n.formatText("Export tiles...").removeMnemonicsPlaceholder()
+      it.styleClass.addAll("btn-attention", "secondary")
+      it.onAction = EventHandler {
+        //printPages(Previews.pages, Previews.paper)
+        println("EXPORTING TILS!!!")
+      }
+    }
+
   }
 }
 
