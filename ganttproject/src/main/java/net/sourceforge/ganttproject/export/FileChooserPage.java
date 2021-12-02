@@ -155,7 +155,7 @@ class FileChooserPage extends FileChooserPageBase {
       if (localDocument != null) {
         File localFile = localDocument.getFile();
         if (localFile.exists()) {
-          result = FileUtil.replaceExtension(localFile, proposedExtension);
+          result = FileUtil.INSTANCE.replaceExtension(localFile, proposedExtension);
         } else {
           File directory = localFile.getParentFile();
           if (directory.exists()) {

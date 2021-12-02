@@ -117,12 +117,13 @@ fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -
 
 interface DialogController {
   fun setContent(content: Node)
-  fun setupButton(type: ButtonType, code: (Button) -> Unit = {})
+  fun setupButton(type: ButtonType, code: (Button) -> Unit = {}): Button?
   fun showAlert(title: LocalizedString, content: Node)
   fun addStyleClass(vararg styleClass: String)
   fun addStyleSheet(vararg stylesheets: String)
   fun setHeader(header: Node)
   fun hide()
+  fun setButtonPaneNode(content: Node)
   fun removeButtonBar()
   fun toggleProgress(shown: Boolean): () -> Unit
   fun resize()
@@ -132,6 +133,7 @@ interface DialogController {
 }
 
 class DialogControllerSwing : DialogController {
+  private var buttonPaneNode: Node? = null
   override var beforeShow: () -> Unit = {}
   override var onShown: () -> Unit = {}
   override var onClosed: () -> Unit = {}
@@ -182,7 +184,15 @@ class DialogControllerSwing : DialogController {
       this.paneBuilder.add(this.contentStack, alignment = null, growth = Priority.ALWAYS)
     }
     if (!this.buttonBarDisabled) {
-      this.paneBuilder.add(this.buttonBar)
+      this.paneBuilder.add(
+        this.buttonPaneNode?.let { buttonPaneNode ->
+          HBox().also {
+            it.styleClass.add("button-pane")
+            HBox.setHgrow(this.buttonBar, Priority.ALWAYS)
+            it.children.addAll(buttonPaneNode, this.buttonBar)
+          }
+        } ?: this.buttonBar
+      )
     }
     val defaultButton = this.buttonBar.buttons?.firstOrNull {
       if (it is Button) it.isDefaultButton else false
@@ -215,12 +225,12 @@ class DialogControllerSwing : DialogController {
     this.content = content
   }
 
-  override fun setupButton(type: ButtonType, code: (Button) -> Unit) {
+  override fun setupButton(type: ButtonType, code: (Button) -> Unit): Button? {
 //    buttons.add(type)
 //    this.buttonNodes[type]?.let {
 //      code(it)
 //    }
-    createButton(buttonType = type).also {
+    return createButton(buttonType = type).also {
       code(it)
       buttonBar.buttons.add(it)
     }
@@ -288,6 +298,10 @@ class DialogControllerSwing : DialogController {
     }
   }
 
+  override fun setButtonPaneNode(content: Node) {
+    this.buttonPaneNode = content
+  }
+
   override fun removeButtonBar() {
 //    this.buttons.clear()
 //    this.buttonNodes.clear()
@@ -340,12 +354,14 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
     this.dialogPane.content = this.stackPane
   }
 
-  override fun setupButton(type: ButtonType, code: (Button) -> Unit) {
+  override fun setupButton(type: ButtonType, code: (Button) -> Unit): Button? {
     this.dialogPane.buttonTypes.add(type)
     val btn = this.dialogPane.lookupButton(type)
     if (btn is Button) {
       code(btn)
+      return btn
     }
+    return null
   }
 
   override fun toggleProgress(shown: Boolean): () -> Unit {
@@ -388,6 +404,9 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
 
   override fun hide() {
     this.dialogPane.scene.window.hide()
+  }
+
+  override fun setButtonPaneNode(content: Node) {
   }
 }
 

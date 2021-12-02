@@ -16,70 +16,92 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.util;
+package net.sourceforge.ganttproject.util
 
-import java.io.File;
-import java.io.IOException;
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
+import java.io.InputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
-public abstract class FileUtil {
-  private static final char FILE_EXTENSION_SEPARATOR = '.';
+object FileUtil {
+  private const val FILE_EXTENSION_SEPARATOR = '.'
 
   /**
    * @return the extension of file, or an empty String if no extension is
-   *         present
+   * present
    */
-  public static String getExtension(File file) {
-    int lastDot = file.getName().lastIndexOf(FILE_EXTENSION_SEPARATOR);
-    return lastDot >= 0 ? file.getName().substring(lastDot + 1) : "";
+  @JvmStatic
+  fun getExtension(file: File): String {
+    val lastDot = file.name.lastIndexOf(FILE_EXTENSION_SEPARATOR)
+    return if (lastDot >= 0) file.name.substring(lastDot + 1) else ""
   }
 
-  /** @return f with the new extension */
-  public static File replaceExtension(File f, String newExtension) {
-    String filenameWithouExtension = getFilenameWithoutExtension(f);
-    File containingFolder = f.getParentFile();
-    return new File(containingFolder, filenameWithouExtension + FILE_EXTENSION_SEPARATOR + newExtension);
+  /** @return f with the new extension
+   */
+  fun replaceExtension(f: File, newExtension: String): File {
+    val filenameWithouExtension = getFilenameWithoutExtension(f)
+    val containingFolder = f.parentFile
+    return File(containingFolder, filenameWithouExtension + FILE_EXTENSION_SEPARATOR + newExtension)
   }
 
-  public static File appendExtension(File f, String extension) {
-    File containingFolder = f.getParentFile();
-    return new File(containingFolder, f.getName() + FILE_EXTENSION_SEPARATOR + extension);
+  fun appendExtension(f: File, extension: String): File {
+    val containingFolder = f.parentFile
+    return File(containingFolder, f.name + FILE_EXTENSION_SEPARATOR + extension)
   }
-
 
   /**
    * @return f with the suffix added before the extension (or at the end of the
-   *         name if no extension is present)
+   * name if no extension is present)
    */
-  public static File appendSuffixBeforeExtension(File f, String suffix) throws IOException {
-    String filename = f.getName();
-    int i = filename.lastIndexOf(FILE_EXTENSION_SEPARATOR);
-
-    File containingFolder = f.getParentFile();
-    File result;
-    if (i > 0 && i < filename.length() - 1) {
-      String withoutExtension = filename.substring(0, i);
-      String extension = filename.substring(i);
-      result = new File(containingFolder, withoutExtension + suffix + extension);
+  @JvmStatic
+  @Throws(IOException::class)
+  fun appendSuffixBeforeExtension(f: File, suffix: String): File {
+    val filename = f.name
+    val i = filename.lastIndexOf(FILE_EXTENSION_SEPARATOR)
+    val containingFolder = f.parentFile
+    val result: File
+    result = if (i > 0 && i < filename.length - 1) {
+      val withoutExtension = filename.substring(0, i)
+      val extension = filename.substring(i)
+      File(containingFolder, withoutExtension + suffix + extension)
     } else {
-      result = new File(containingFolder, filename + suffix);
+      File(containingFolder, filename + suffix)
     }
     if (!result.exists()) {
-      result.createNewFile();
+      result.createNewFile()
     }
-    return result;
+    return result
   }
 
-  /** @return the filename of f without extension */
-  public static String getFilenameWithoutExtension(File f) {
-    return getFilenameWithoutExtension(f.getName());
+  /** @return the filename of f without extension
+   */
+  fun getFilenameWithoutExtension(f: File): String {
+    return getFilenameWithoutExtension(f.name)
   }
 
-  public static String replaceExtension(String filename, String newExtension) {
-    return getFilenameWithoutExtension(filename) + FILE_EXTENSION_SEPARATOR + newExtension;
+  @JvmStatic
+  fun replaceExtension(filename: String, newExtension: String): String {
+    return getFilenameWithoutExtension(filename) + FILE_EXTENSION_SEPARATOR + newExtension
   }
 
-  private static String getFilenameWithoutExtension(String filename) {
-    int i = filename.lastIndexOf(FILE_EXTENSION_SEPARATOR);
-    return i >= 0 ? filename.substring(0, i) : filename;
+  private fun getFilenameWithoutExtension(filename: String): String {
+    val i = filename.lastIndexOf(FILE_EXTENSION_SEPARATOR)
+    return if (i >= 0) filename.substring(0, i) else filename
+  }
+
+  fun zip(entries: List<ZipInput>): ByteArray {
+    val outputStream = ByteArrayOutputStream()
+    val zipOut = ZipOutputStream(outputStream)
+    entries.forEach {
+      zipOut.putNextEntry(ZipEntry(it.first))
+      it.second().use { inputStream -> inputStream.copyTo(zipOut) }
+      zipOut.closeEntry()
+    }
+    zipOut.close()
+    return outputStream.toByteArray()
   }
 }
+
+typealias ZipInput = Pair<String, ()-> InputStream>

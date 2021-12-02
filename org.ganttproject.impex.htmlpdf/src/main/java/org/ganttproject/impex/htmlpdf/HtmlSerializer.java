@@ -126,6 +126,6 @@ public class HtmlSerializer extends XmlSerializer {
   }
 
   private static String getFilenameWithoutExtension(File f) {
-    return FileUtil.getFilenameWithoutExtension(f);
+    return FileUtil.INSTANCE.getFilenameWithoutExtension(f);
   }
 }
