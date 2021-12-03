@@ -136,7 +136,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private RoleManager myRoleManager;
 
-  private static Consumer<Boolean> ourQuitCallback;
+  private static Consumer<Boolean> ourQuitCallback = withSystemExit -> {
+    if (withSystemExit) {
+      System.exit(0);
+    } else {
+      System.err.println("Quit application was called without System.exit() request");
+    }
+  };
 
   private FXSearchUi mySearchUi;
 
@@ -244,7 +250,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     myGanttChartTabContent = new GanttChartTabContentPanel(
         getProject(), getUIFacade(), area.getJComponent(),
-        getUIConfiguration(), myTaskTableSupplier, myTaskActions);
+        getUIConfiguration(), myTaskTableSupplier, myTaskActions, myUiInitializationPromise);
 
     getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
     getViewManager().toggleVisible(myGanttChartTabContent);

@@ -124,6 +124,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   protected final ContentPaneBuilder myContentPaneBuilder;
   final TaskManagerConfigImpl myTaskManagerConfig;
   private final TaskManager myTaskManager;
+  protected final CountDownCompletionPromise<UIFacade> myUiInitializationPromise;
   private Updater myUpdater;
   protected final TaskActions myTaskActions;
 
@@ -208,6 +209,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
     myUIFacade = new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
+    myUiInitializationPromise = new CountDownCompletionPromise<UIFacade>(2, myUIFacade);
+
     GPLogger.setUIFacade(myUIFacade);
     myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
         () -> getViewManager(),
@@ -220,7 +223,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myTaskFilterManager = new TaskFilterManager(getTaskManager());
     myTaskTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(
         () -> new TaskTable(getProject(), getTaskManager(),
-            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions, getUndoManager(), myTaskFilterManager)
+            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions, getUndoManager(),
+          myTaskFilterManager, myUiInitializationPromise)
     ));
     myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
       @Override
@@ -302,6 +306,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
       modifiedStateChangeListener.projectOpened();
     }
+  }
+
+  public CompletionPromise<UIFacade> getUiInitializationPromise() {
+    return myUiInitializationPromise;
   }
 
   // ////////////////////////////////////////////////////////////////
@@ -575,9 +583,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   public TaskManager getTaskManager() {
     return myTaskManager;
   }
-
-//  @Override
-//  public abstract TaskContainmentHierarchyFacade getTaskContainment();
 
   @Override
   public GPCalendarCalc getActiveCalendar() {

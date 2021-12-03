@@ -52,13 +52,15 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final BaselineDialogAction myBaselineAction;
   private final Supplier<TaskTable> myTaskTableSupplier;
   private final TaskActions myTaskActions;
+  private final CountDownCompletionPromise<UIFacade> myInitializationPromise;
   private JComponent myComponent;
   private TaskTable taskTable;
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
                             JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
-                            TaskActions taskActions) {
+                            TaskActions taskActions, CountDownCompletionPromise<UIFacade> initializationPromise) {
     super(project, workbenchFacade, workbenchFacade.getGanttChart());
+    myInitializationPromise = initializationPromise;
     myTaskActions = taskActions;
     myTaskTableSupplier = taskTableSupplier;
     myWorkbenchFacade = workbenchFacade;
@@ -148,6 +150,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     Platform.runLater(() -> {
       jfxPanel.setScene(new Scene(myTaskTableSupplier.get().getControl()));
       setMyHeaderHeight(() -> myTaskTableSupplier.get().getHeaderHeightProperty().intValue());
+      myInitializationPromise.tick();
     });
     var taskTable = myTaskTableSupplier.get();
     taskTable.getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> updateTimelineHeight());

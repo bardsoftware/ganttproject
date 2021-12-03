@@ -45,22 +45,26 @@ import javax.swing.SwingUtilities
 
 
 fun main(args: Array<String>) {
-  val mainArgs = GanttProject.Args()
-  JCommander(arrayOf<Any>(mainArgs), *args)
-  GPLogger.init(mainArgs.logbackConfig)
-  RootLocalizer = SingleTranslationLocalizer(ResourceBundle.getBundle("i18n"))
-  PluginManager.setCharts(listOf())
-  GanttLanguage.getInstance()
-  // This is a dummy updater just to make gradle run working
-  val updater = object : Updater {
-    override fun getUpdateMetadata(p0: String?) = CompletableFuture.completedFuture(listOf<UpdateMetadata>())
-    override fun installUpdate(p0: UpdateMetadata?, p1: UpdateProgressMonitor?, p2: UpdateIntegrityChecker?): CompletableFuture<File> {
-      TODO("Not yet implemented")
+  AppBuilder(args).withLogging().withWindowVisible().runBeforeUi {
+    RootLocalizer = SingleTranslationLocalizer(ResourceBundle.getBundle("i18n"))
+    PluginManager.setCharts(listOf())
+    GanttLanguage.getInstance()
+  }.whenAppInitialized {
+    // This is a dummy updater just to make gradle run working
+    val updater = object : Updater {
+      override fun getUpdateMetadata(p0: String?) = CompletableFuture.completedFuture(listOf<UpdateMetadata>())
+      override fun installUpdate(p0: UpdateMetadata?, p1: UpdateProgressMonitor?, p2: UpdateIntegrityChecker?): CompletableFuture<File> {
+        TODO("Not yet implemented")
+      }
     }
-  }
-  startUiApp(mainArgs) {
     it.updater = updater
-  }
+  }.launch()
+
+//  val mainArgs = GanttProject.Args()
+//  JCommander(arrayOf<Any>(mainArgs), *args)
+//  startUiApp(mainArgs) {
+//    it.updater = updater
+//  }
 }
 
 val mainWindow = AtomicReference<GanttProject?>(null)
@@ -196,7 +200,9 @@ class AppBuilder(private val args: Array<String>) {
           runAfterWindowOpenedCommands.forEach { cmd -> cmd(ganttProject) }
         }
       })
-      runAfterAppInitializedCommands.forEach { cmd -> cmd(ganttProject) }
+      ganttProject.uiInitializationPromise.await {
+        runAfterAppInitializedCommands.forEach { cmd -> cmd(ganttProject) }
+      }
     }
   }
 

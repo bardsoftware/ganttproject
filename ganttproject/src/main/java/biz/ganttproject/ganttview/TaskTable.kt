@@ -83,7 +83,8 @@ class TaskTable(
   private val selectionManager: TaskSelectionManager,
   private val taskActions: TaskActions,
   private val undoManager: GPUndoManager,
-  private val filters: TaskFilterManager
+  private val filters: TaskFilterManager,
+  private val initializationPromise: CountDownCompletionPromise<*>
 ) {
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   private val treeModel = taskManager.taskHierarchy
@@ -597,6 +598,9 @@ class TaskTable(
         } else {
           placeholderEmpty
         }
+      }
+      if (!initializationPromise.isResolved()) {
+        initializationPromise.tick()
       }
     }
   }

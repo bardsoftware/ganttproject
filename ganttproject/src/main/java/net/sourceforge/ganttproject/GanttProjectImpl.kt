@@ -47,6 +47,7 @@ import net.sourceforge.ganttproject.task.TaskManagerConfig
 import java.awt.Color
 import java.io.IOException
 import java.net.URL
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 
 open class GanttProjectImpl : IGanttProject {
@@ -281,7 +282,7 @@ open class GanttProjectImpl : IGanttProject {
 }
 
 internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: List<ProjectEventListener>) {
-  val completionPromise = CompletionPromise<Document>()
+  val completionPromise = CompletionPromiseImpl<Document>()
   listeners.forEach { it.projectRestoring(completionPromise) }
   val projectDocument = document
   close()
@@ -301,9 +302,32 @@ internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: L
 }
 
 typealias Subscriber<T> = (T)->Unit
-class CompletionPromise<T> {
-  private val subscribers = mutableListOf<Subscriber<T>>()
-  fun await(code: Subscriber<T>) = subscribers.add(code)
-  internal fun resolve(value: T) = subscribers.forEach { it(value) }
+fun interface CompletionPromise<T> {
+  fun await(code: Subscriber<T>)
+}
 
+class CompletionPromiseImpl<T> : CompletionPromise<T> {
+  private val subscribers = mutableListOf<Subscriber<T>>()
+  override fun await(code: Subscriber<T>) { subscribers.add(code) }
+  internal fun resolve(value: T) = subscribers.forEach { it(value) }
+}
+
+class CountDownCompletionPromise<T>(initialTicks: Integer, private val value: T) : CompletionPromise<T> {
+  private val ticks = AtomicInteger(initialTicks.toInt())
+  private val subscribers = mutableListOf<Subscriber<T>>()
+  override fun await(code: Subscriber<T>) {
+    if (ticks.get() == 0) {
+      code(value)
+    } else {
+      subscribers.add(code)
+    }
+  }
+
+  fun tick() {
+    if (ticks.decrementAndGet() == 0) {
+      subscribers.forEach { it(value) }
+    }
+  }
+
+  fun isResolved() = this.ticks.get() == 0
 }
