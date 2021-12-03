@@ -19,9 +19,7 @@
 
 package biz.ganttproject.print
 
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.dialog
-import biz.ganttproject.app.removeMnemonicsPlaceholder
+import biz.ganttproject.app.*
 import biz.ganttproject.lib.DateRangePicker
 import javafx.application.Platform
 import javafx.collections.FXCollections
@@ -32,21 +30,27 @@ import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
+import javafx.stage.FileChooser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.util.FileUtil
+import java.io.IOException
 import java.util.*
 import java.util.concurrent.Executors
 import javax.print.attribute.standard.MediaSize
 import kotlin.reflect.KClass
 import kotlin.reflect.full.staticProperties
 import javafx.print.Paper as FxPaper
+
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -66,20 +70,6 @@ fun showPrintDialog(activeChart: Chart) {
         hbox.alignment = Pos.CENTER_LEFT
         hbox.styleClass.add("header")
         hbox.children.addAll(
-          // -- Preview zoom
-          Label(i18n.formatText("zoom")).also {
-            HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
-          },
-          Slider(0.0, 10.0, 0.0).also { slider ->
-            //slider.isShowTickMarks = true
-            slider.majorTickUnit = 1.0
-            slider.blockIncrement = 1.0
-            slider.isSnapToTicks = true
-            slider.valueProperty().addListener { _, _, newValue ->
-              Previews.zooming = newValue.toInt()
-            }
-          },
-
           // -- Page format
           Label(i18n.formatText("choosePaperFormat")).also {
             HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
@@ -108,13 +98,14 @@ fun showPrintDialog(activeChart: Chart) {
           },
 
           // -- Date range
-          Label("Date range").also {
+          Label("print.preview.dateRange").also {
             HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
           },
           DateRangePicker(activeChart).let {
             it.selectedRange.addListener { _, _, newValue ->
               Previews.onDateRangeChange(newValue.startDate, newValue.endDate)
             }
+            it.button.styleClass.addAll("btn-regular")
             it.component
           }
         )
@@ -123,10 +114,38 @@ fun showPrintDialog(activeChart: Chart) {
 
     val contentPane = BorderPane().also {
       it.styleClass.add("content-pane")
-      it.center = ScrollPane(Previews.gridPane)
+      it.center = ScrollPane(Pane(Previews.gridPane).also {it.styleClass.add("all-pages")})
     }
     dlg.setContent(contentPane)
-    dlg.setupButton(ButtonType.APPLY) {
+    dlg.setButtonPaneNode(
+      HBox().also { hbox ->
+        hbox.alignment = Pos.CENTER_LEFT
+        hbox.children.addAll(
+          // -- Preview zoom
+          Label(i18n.formatText("print.preview.scale")).also {
+            HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
+          },
+          Slider(0.0, 10.0, 0.0).also { slider ->
+            //slider.isShowTickMarks = true
+            slider.majorTickUnit = 1.0
+            slider.blockIncrement = 1.0
+            slider.isSnapToTicks = true
+            slider.valueProperty().addListener { _, _, newValue ->
+              Previews.zooming = newValue.toInt()
+            }
+            slider.value = 4.0
+          },
+        )
+      }
+    )
+    dlg.setupButton(ButtonType.YES) {
+      it.text = i18n.formatText("print.export.button.exportAsZip").removeMnemonicsPlaceholder()
+      it.styleClass.addAll("btn-attention", "secondary")
+      it.onAction = EventHandler {
+        exportPages(Previews.pages, activeChart.project, dlg)
+      }
+    }
+    val btnApply = dlg.setupButton(ButtonType.APPLY) {
       it.text = i18n.formatText("project.print").removeMnemonicsPlaceholder()
       it.styleClass.addAll("btn-attention")
       it.onAction = EventHandler {
@@ -134,11 +153,14 @@ fun showPrintDialog(activeChart: Chart) {
         printPages(Previews.pages, Previews.mediaSize, Previews.orientation)
       }
     }
+    dlg.onShown = {
+      btnApply?.requestFocus()
+    }
   }
 }
 
 private object Previews {
-  private val zoomFactors = listOf(1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0)
+  private val zoomFactors = listOf(1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0)
   private val readImageScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 
   lateinit var chart: Chart
@@ -164,6 +186,7 @@ private object Previews {
   val gridPane = GridPane().also {
     it.vgap = 10.0
     it.hgap = 10.0
+    it.padding = Insets(10.0, 10.0, 10.0, 10.0)
   }
 
   var mediaSize: MediaSize = MediaSize.ISO.A4
@@ -200,7 +223,7 @@ private object Previews {
     updatePreviews()
   }
 
-  var zooming: Int = 0
+  var zooming: Int = 4
   set(value) {
     field = value
     zoomFactor = zoomFactors[value]
@@ -251,6 +274,27 @@ private object Previews {
   private fun MediaSize.previewHeight() = BASE_PREVIEW_HEIGHT * this.getY(MediaSize.MM) / MediaSize.ISO.A4.getY(MediaSize.MM)
 }
 
+private fun exportPages(pages: List<PrintPage>, project: IGanttProject, dlg: DialogController) {
+  val fileChooser = FileChooser()
+  fileChooser.title = RootLocalizer.formatText("storageService.local.save.fileChooser.title")
+  fileChooser.extensionFilters.add(
+    FileChooser.ExtensionFilter(RootLocalizer.formatText("filterzip"), "zip")
+  )
+  fileChooser.initialFileName = "${FileUtil.replaceExtension(project.document.fileName, "zip")}"
+  val file = fileChooser.showSaveDialog(null)
+  if (file != null) {
+    try {
+      val zipBytes = FileUtil.zip(pages.mapIndexed { index, page ->
+        "${project.document.fileName}_page$index.png" to { page.imageFile.inputStream() }
+      }.toList())
+      file.writeBytes(zipBytes)
+    } catch (ex: IOException) {
+      ourLogger.error("Failed to write an archive with the exported pages to {}", file.absolutePath, ex)
+      dlg.showAlert(RootLocalizer.create("print.export.alert.title"), createAlertBody(ex.message ?: ""))
+    }
+  }
+}
+
 fun createPrintAction(uiFacade: UIFacade): GPAction {
   return GPAction.create("project.print") {
     showPrintDialog(uiFacade.activeChart)
@@ -271,3 +315,4 @@ private fun papers(): Map<String, FxPaper> =
 
 private const val BASE_PREVIEW_WIDTH = 270.0
 private const val BASE_PREVIEW_HEIGHT = 210.0
+private val ourLogger = GPLogger.create("Print")

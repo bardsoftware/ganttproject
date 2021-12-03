@@ -326,7 +326,7 @@ public class ExporterToHTML extends StylesheetExporterBase {
   }
 
   static File replaceExtension(File f, String newExtension) throws IOException {
-    File result = FileUtil.replaceExtension(f, newExtension);
+    File result = FileUtil.INSTANCE.replaceExtension(f, newExtension);
     if (!result.exists()) {
       result.createNewFile();
     }

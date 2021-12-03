@@ -53,7 +53,7 @@ class DateRangePicker(chart: Chart, private val i18n: Localizer = RootLocalizer)
 
   val selectedRange = SimpleObjectProperty(rangeCurrentView)
   private val selectedRangeText: String get() = selectedRange.get().let { "${it.title}: ${it.rangeLabel}" }
-  private val button = Button(selectedRangeText).also { btn ->
+  val button = Button(selectedRangeText).also { btn ->
     btn.onAction = EventHandler {
       PopOver(popoverContent).also {
         it.arrowLocation = PopOver.ArrowLocation.TOP_CENTER

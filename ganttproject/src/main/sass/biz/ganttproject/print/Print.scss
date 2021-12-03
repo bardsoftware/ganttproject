@@ -9,10 +9,14 @@
   }
 
   .content-pane {
-    & * {
+    -fx-background-color: $gp-control-background;
+    .scroll-pane {
       -fx-background-color: $gp-control-background;
+      & > .viewport {
+        -fx-background-color: transparent;
+        -fx-border-insets: 5 5 5 5;
+      }
     }
-    -fx-padding: 5;
     .page {
       -fx-padding: 1;
       -fx-background-color: $gp-control-background;

@@ -114,11 +114,14 @@ class DialogControllerImpl(private val root: BorderPane) : DialogController {
     this.stackPane.children.add(content)
   }
 
-  override fun setupButton(type: ButtonType, code: (Button) -> Unit) {
+  override fun setupButton(type: ButtonType, code: (Button) -> Unit): Button? {
     if (type == ButtonType.APPLY) {
       val btn = createButton(type)
       code(btn)
       this.buttonBar.buttons.add(btn)
+      return btn
+    } else {
+      return null
     }
   }
 
@@ -141,6 +144,10 @@ class DialogControllerImpl(private val root: BorderPane) : DialogController {
   }
 
   override fun hide() {
+  }
+
+  override fun setButtonPaneNode(content: Node) {
+    TODO("Not yet implemented")
   }
 
   override fun removeButtonBar() {
