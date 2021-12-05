@@ -30,7 +30,7 @@ import java.awt.Graphics2D
 data class TreeTableApi(
   val rowHeight: ()->Int,
   val tableHeaderHeight: ()->Int,
-  val width: ()->Int,
+  val width: (fullWidthNotViewport: Boolean)->Int,
   val tableHeaderComponent: ()-> Component?,
   val tableComponent: () -> Component?,
   val tablePainter: ((Graphics2D) -> Unit)? = null,

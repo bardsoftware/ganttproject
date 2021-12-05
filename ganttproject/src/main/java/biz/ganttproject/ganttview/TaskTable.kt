@@ -244,7 +244,13 @@ class TaskTable(
       TreeTableApi(
         rowHeight = { taskTableChartConnector.rowHeight.value },
         tableHeaderHeight = { treeTable.headerHeight.intValue()  },
-        width = { treeTable.width.toInt() - treeTable.vbarWidth().toInt() },
+        width = { fullWidthNotViewport ->
+          if (fullWidthNotViewport) {
+            columnList.totalWidth.toInt()
+          } else {
+            treeTable.width.toInt() - treeTable.vbarWidth().toInt()
+          }
+        },
         tableHeaderComponent = { null },
         tableComponent = { null },
         tablePainter = { this.buildImage(it) }

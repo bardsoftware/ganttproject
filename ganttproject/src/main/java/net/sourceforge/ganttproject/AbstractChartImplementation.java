@@ -229,10 +229,13 @@ public abstract class AbstractChartImplementation implements TimelineChart, Zoom
       settings.setEndDate(modelCopy.getEndDate());
     }
     if (settings.isCommandLineMode()) {
-      myChartComponent.getTreeTable().getTable().getTableHeader().setVisible(true);
-      myChartComponent.getTreeTable().doLayout();
-      myChartComponent.getTreeTable().getTable().setRowHeight(modelCopy.calculateRowHeight());
-      myChartComponent.getTreeTable().autoFitColumns();
+      var treeTable = myChartComponent.getTreeTable();
+      if (treeTable != null) {
+        treeTable.getTable().getTableHeader().setVisible(true);
+        treeTable.doLayout();
+        treeTable.getTable().setRowHeight(modelCopy.calculateRowHeight());
+        treeTable.autoFitColumns();
+      }
     }
     settings.setLogo(getLogo());
   }

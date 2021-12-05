@@ -245,6 +245,11 @@ public class GanttChartController extends AbstractChartImplementation implements
   public PrintChartApi asPrintChartApi() {
     ChartModelBase modelCopy = getChartModel().createCopy();
     modelCopy.setBounds(getChartComponent().getSize());
+    var rowHeight = Math.max(
+        modelCopy.calculateRowHeight(), myTaskTableConnector.getMinRowHeight().getValue()
+    );
+    myTaskTableConnector.getRowHeight().setValue(rowHeight);
+    modelCopy.setRowHeight((int)Math.ceil(rowHeight));
     var settingsSetup = new Function1<GanttExportSettings, Unit>() {
       @Override
       public Unit invoke(GanttExportSettings settings) {

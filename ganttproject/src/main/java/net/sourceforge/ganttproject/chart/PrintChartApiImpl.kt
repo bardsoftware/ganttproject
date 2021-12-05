@@ -43,6 +43,7 @@ class PrintChartApiImpl(
       it.endDate = endDate
       it.zoomLevel =
         if (zoomLevel < 0) zoomManager.zoomState else zoomManager.getZoomState(zoomLevel)
+      it.isCommandLineMode = isHeadless
     }
     val visitor = ChartRasterImageBuilder()
     buildImage(exportSettings, visitor)
