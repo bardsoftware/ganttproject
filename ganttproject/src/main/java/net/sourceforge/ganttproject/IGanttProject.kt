@@ -16,21 +16,18 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject;
+package net.sourceforge.ganttproject
 
-import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.time.TimeUnitStack;
-import biz.ganttproject.ganttview.TaskFilterManager;
-import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
-import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.TaskManager;
-
-import java.io.IOException;
-import java.util.List;
+import biz.ganttproject.core.calendar.GPCalendarCalc
+import biz.ganttproject.core.time.TimeUnitStack
+import biz.ganttproject.ganttview.TaskFilterManager
+import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.DocumentManager
+import net.sourceforge.ganttproject.gui.UIConfiguration
+import net.sourceforge.ganttproject.resource.HumanResourceManager
+import net.sourceforge.ganttproject.roles.RoleManager
+import net.sourceforge.ganttproject.task.TaskManager
+import java.io.IOException
 
 /**
  * This interface represents a project as a logical business entity, without any
@@ -38,63 +35,32 @@ import java.util.List;
  *
  * @author bard
  */
-public interface IGanttProject {
+interface IGanttProject {
+  var projectName: String
+  var description: String
+  var organization: String
+  var webLink: String
+  val uIConfiguration: UIConfiguration
+  val humanResourceManager: HumanResourceManager
+  val roleManager: RoleManager
+  val taskManager: TaskManager
+  val activeCalendar: GPCalendarCalc
+  val timeUnitStack: TimeUnitStack
+  fun setModified()
+  fun close()
+  var document: Document
+  val documentManager: DocumentManager
+  fun addProjectEventListener(listener: ProjectEventListener)
+  fun removeProjectEventListener(listener: ProjectEventListener)
+  var isModified: Boolean
 
-  String getProjectName();
+  @Throws(IOException::class, Document.DocumentException::class)
+  fun open(document: Document)
+  val resourceCustomPropertyManager: CustomPropertyManager
+  val taskCustomColumnManager: CustomPropertyManager
+  val baselines: List<GanttPreviousState>
 
-  void setProjectName(String projectName);
-
-  String getDescription();
-
-  void setDescription(String description);
-
-  String getOrganization();
-
-  void setOrganization(String organization);
-
-  String getWebLink();
-
-  void setWebLink(String webLink);
-
-  UIConfiguration getUIConfiguration();
-
-  HumanResourceManager getHumanResourceManager();
-
-  RoleManager getRoleManager();
-
-  TaskManager getTaskManager();
-
-  GPCalendarCalc getActiveCalendar();
-
-  TimeUnitStack getTimeUnitStack();
-
-  void setModified();
-
-  void setModified(boolean modified);
-
-  void close();
-
-  Document getDocument();
-
-  void setDocument(Document document);
-
-  DocumentManager getDocumentManager();
-
-  void addProjectEventListener(ProjectEventListener listener);
-
-  void removeProjectEventListener(ProjectEventListener listener);
-
-  boolean isModified();
-
-  void open(Document document) throws IOException, DocumentException;
-
-  CustomPropertyManager getResourceCustomPropertyManager();
-
-  CustomPropertyManager getTaskCustomColumnManager();
-
-  List<GanttPreviousState> getBaselines();
-
-  void restore(Document fromDocument) throws DocumentException, IOException;
-
-  TaskFilterManager getTaskFilterManager();
+  @Throws(Document.DocumentException::class, IOException::class)
+  fun restore(fromDocument: Document)
+  val taskFilterManager: TaskFilterManager
 }

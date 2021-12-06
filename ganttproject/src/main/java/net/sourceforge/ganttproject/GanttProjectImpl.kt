@@ -27,7 +27,6 @@ import biz.ganttproject.core.option.DefaultColorOption
 import biz.ganttproject.core.time.TimeUnitStack
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.ganttview.TaskFilterManager
-import com.google.common.base.Strings
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.gui.NotificationManager
@@ -50,52 +49,40 @@ fun interface ErrorUi {
   fun show(ex: Exception)
 }
 
-open class GanttProjectImpl() : IGanttProject {
-  private var myProjectName: String? = null
-  private var myDescription: String? = null
-  private var myOrganization: String? = null
-  private var myWebLink: String? = null
-  private val myTaskManager: TaskManager
-  private val myResourceManager: HumanResourceManager
-  private val myTaskManagerConfig: TaskManagerConfigImpl
-  private var myDocument: Document? = null
+open class GanttProjectImpl : IGanttProject {
   val listeners: MutableList<ProjectEventListener> = mutableListOf()
-  private val myUIConfiguration: UIConfiguration
-  private val myTaskCustomColumnManager: CustomColumnsManager
-  private val myBaselines: List<GanttPreviousState> = ArrayList()
+  override val baselines: List<GanttPreviousState> = ArrayList()
+
+  override var projectName: String = ""
+  override var description: String = ""
+  override var organization: String = ""
+  override var webLink: String = ""
+
+  val language: GanttLanguage get() = GanttLanguage.getInstance()
   private val myCalendar = WeekendCalendarImpl()
-  private val taskFilterManager: TaskFilterManager
-
-  override fun getProjectName(): String {
-    return myProjectName!!
+  override val humanResourceManager = HumanResourceManager(
+    RoleManager.Access.getInstance().defaultRole,
+    CustomColumnsManager()
+  )
+  override val resourceCustomPropertyManager: CustomPropertyManager get() = humanResourceManager.customPropertyManager
+  private val myTaskManagerConfig = TaskManagerConfigImpl(humanResourceManager, myCalendar)
+  override val taskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig)
+  override val uIConfiguration = UIConfiguration(Color.BLUE, true)
+  override val taskCustomColumnManager = CustomColumnsManager()
+  override val taskFilterManager = TaskFilterManager(taskManager)
+  override val roleManager: RoleManager
+    get() = RoleManager.Access.getInstance()
+  override var isModified: Boolean = false
+  override val activeCalendar: GPCalendarCalc get() = myTaskManagerConfig.calendar
+  override val timeUnitStack: TimeUnitStack get() = myTaskManagerConfig.timeUnitStack
+  override var document: Document get() { TODO() } set(value) {
+    TODO()
   }
+  override val documentManager: DocumentManager
+    get() = TODO("Not yet implemented")
 
-  override fun setProjectName(projectName: String) {
-    myProjectName = projectName
-  }
-
-  override fun getDescription(): String {
-    return Strings.nullToEmpty(myDescription)
-  }
-
-  override fun setDescription(description: String) {
-    myDescription = description
-  }
-
-  override fun getOrganization(): String {
-    return myOrganization!!
-  }
-
-  override fun setOrganization(organization: String) {
-    myOrganization = organization
-  }
-
-  override fun getWebLink(): String {
-    return myWebLink!!
-  }
-
-  override fun setWebLink(webLink: String) {
-    myWebLink = webLink
+  init {
+    myCalendar.addListener { setModified() }
   }
 
   fun newTask(): Task {
@@ -104,51 +91,12 @@ open class GanttProjectImpl() : IGanttProject {
     return result
   }
 
-  val language: GanttLanguage
-    get() = Companion.language
-
-  override fun getUIConfiguration(): UIConfiguration {
-    return myUIConfiguration
-  }
-
-  override fun getHumanResourceManager(): HumanResourceManager {
-    return myResourceManager
-  }
-
-  override fun getRoleManager(): RoleManager {
-    return RoleManager.Access.getInstance()
-  }
-
-  override fun getTaskManager(): TaskManager {
-    return myTaskManager
-  }
-
-  override fun getActiveCalendar(): GPCalendarCalc {
-    return myTaskManagerConfig.calendar
-  }
-
-  override fun getTimeUnitStack(): TimeUnitStack {
-    return myTaskManagerConfig.timeUnitStack
-  }
-
   override fun setModified() {
-    // TODO Auto-generated method stub
-  }
-
-  override fun setModified(modified: Boolean) {
-    // TODO Auto-generated method stub
+    isModified = true
   }
 
   override fun close() {
     // TODO Auto-generated method stub
-  }
-
-  override fun getDocument(): Document {
-    return myDocument!!
-  }
-
-  override fun setDocument(document: Document) {
-    myDocument = document
   }
 
   override fun addProjectEventListener(listener: ProjectEventListener) {
@@ -194,11 +142,6 @@ open class GanttProjectImpl() : IGanttProject {
     }
   }
 
-  override fun isModified(): Boolean {
-    // TODO Auto-generated method stub
-    return false
-  }
-
   @Throws(Document.DocumentException::class, IOException::class)
   override fun restore(fromDocument: Document) {
   }
@@ -207,114 +150,75 @@ open class GanttProjectImpl() : IGanttProject {
   override fun open(document: Document) {
     // TODO Auto-generated method stub
   }
+}
 
-  override fun getDocumentManager(): DocumentManager {
-    // TODO Auto-generated method stub
+private val DEFAULT_TASK_COLOR = Color(140, 182, 206)
+
+private class TaskManagerConfigImpl(
+  private val myResourceManager: HumanResourceManager,
+  calendar: GPCalendarCalc
+) : TaskManagerConfig {
+  private val myTimeUnitStack: GPTimeUnitStack
+  private val myCalendar: GPCalendarCalc
+  private val myDefaultTaskColorOption: ColorOption
+  private val mySchedulerDisabledOption: BooleanOption
+  override fun getDefaultColor(): Color {
+    return myDefaultTaskColorOption.value!!
+  }
+
+  override fun getDefaultColorOption(): ColorOption {
+    return myDefaultTaskColorOption
+  }
+
+  override fun getSchedulerDisabledOption(): BooleanOption {
+    return mySchedulerDisabledOption
+  }
+
+  override fun getCalendar(): GPCalendarCalc {
+    return myCalendar
+  }
+
+  override fun getTimeUnitStack(): TimeUnitStack {
+    return myTimeUnitStack
+  }
+
+  override fun getResourceManager(): HumanResourceManager {
+    return myResourceManager
+  }
+
+  override fun getProjectDocumentURL(): URL {
     TODO()
   }
 
-  override fun getResourceCustomPropertyManager(): CustomPropertyManager {
-    return myResourceManager.customPropertyManager
-  }
-
-  private class TaskManagerConfigImpl internal constructor(
-    private val myResourceManager: HumanResourceManager,
-    calendar: GPCalendarCalc
-  ) : TaskManagerConfig {
-    private val myTimeUnitStack: GPTimeUnitStack
-    private val myCalendar: GPCalendarCalc
-    private val myDefaultTaskColorOption: ColorOption
-    private val mySchedulerDisabledOption: BooleanOption
-    override fun getDefaultColor(): Color {
-      return myDefaultTaskColorOption.value!!
-    }
-
-    override fun getDefaultColorOption(): ColorOption {
-      return myDefaultTaskColorOption
-    }
-
-    override fun getSchedulerDisabledOption(): BooleanOption {
-      return mySchedulerDisabledOption
-    }
-
-    override fun getCalendar(): GPCalendarCalc {
-      return myCalendar
-    }
-
-    override fun getTimeUnitStack(): TimeUnitStack {
-      return myTimeUnitStack
-    }
-
-    override fun getResourceManager(): HumanResourceManager {
-      return myResourceManager
-    }
-
-    override fun getProjectDocumentURL(): URL {
-      TODO()
-    }
-
-    override fun getNotificationManager(): NotificationManager {
-      TODO()
-    }
-
-    init {
-      myTimeUnitStack = GPTimeUnitStack()
-      myCalendar = calendar
-      myDefaultTaskColorOption = DefaultTaskColorOption(DEFAULT_TASK_COLOR)
-      mySchedulerDisabledOption = DefaultBooleanOption("scheduler.disabled", false)
-    }
-  }
-
-  override fun getTaskCustomColumnManager(): CustomPropertyManager {
-    return myTaskCustomColumnManager
-  }
-
-  override fun getBaselines(): List<GanttPreviousState> {
-    return myBaselines
-  }
-
-  override fun getTaskFilterManager() = taskFilterManager
-
-  fun repaintResourcePanel() {
-    // TODO Auto-generated method stub
-  }
-
-  internal class DefaultTaskColorOption internal constructor(defaultColor: Color) :
-    DefaultColorOption("taskDefaultColor", defaultColor), GP1XOptionConverter {
-    constructor() : this(DEFAULT_TASK_COLOR) {}
-
-    override fun getTagName(): String {
-      return "colors"
-    }
-
-    override fun getAttributeName(): String {
-      return "tasks"
-    }
-
-    override fun loadValue(legacyValue: String) {
-      loadPersistentValue(legacyValue)
-      commit()
-    }
-  }
-
-  companion object {
-    private val language = GanttLanguage.getInstance()
-    val DEFAULT_TASK_COLOR = Color(140, 182, 206)
+  override fun getNotificationManager(): NotificationManager {
+    TODO()
   }
 
   init {
-    myResourceManager = HumanResourceManager(
-      RoleManager.Access.getInstance().defaultRole,
-      CustomColumnsManager()
-    )
-    myTaskManagerConfig = TaskManagerConfigImpl(myResourceManager, myCalendar)
-    myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig)
-    myUIConfiguration = UIConfiguration(Color.BLUE, true)
-    myTaskCustomColumnManager = CustomColumnsManager()
-    myCalendar.addListener { setModified() }
-    taskFilterManager = TaskFilterManager(myTaskManager)
+    myTimeUnitStack = GPTimeUnitStack()
+    myCalendar = calendar
+    myDefaultTaskColorOption = DefaultTaskColorOption(DEFAULT_TASK_COLOR)
+    mySchedulerDisabledOption = DefaultBooleanOption("scheduler.disabled", false)
   }
 }
+
+internal class DefaultTaskColorOption internal constructor(defaultColor: Color) :
+  DefaultColorOption("taskDefaultColor", defaultColor), GP1XOptionConverter {
+
+  override fun getTagName(): String {
+    return "colors"
+  }
+
+  override fun getAttributeName(): String {
+    return "tasks"
+  }
+
+  override fun loadValue(legacyValue: String) {
+    loadPersistentValue(legacyValue)
+    commit()
+  }
+}
+
 
 internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: List<ProjectEventListener>) {
   val completionPromise = CompletionPromiseImpl<Document>()
@@ -382,8 +286,6 @@ class CountDownCompletionPromise<T>(private val value: T) : CompletionPromise<T>
       subscribers.forEach { it(value) }
     }
   }
-
-  fun isResolved() = this.counter.get() == 0
 }
 
 private val BARRIER_LOGGER = GPLogger.create("App.Barrier")
