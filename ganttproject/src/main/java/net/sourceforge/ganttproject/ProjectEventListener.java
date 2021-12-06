@@ -27,7 +27,7 @@ public interface ProjectEventListener {
 
   void projectClosed();
 
-  void projectOpened();
+  void projectOpened(CompletionActivityRegistry barrierRegistry, CompletionPromise<IGanttProject> barrier);
 
   void projectCreated();
 
@@ -47,7 +47,7 @@ public interface ProjectEventListener {
     }
 
     @Override
-    public void projectOpened() {
+    public void projectOpened(CompletionActivityRegistry barrierRegistry, CompletionPromise<IGanttProject> barrier) {
     }
 
     @Override

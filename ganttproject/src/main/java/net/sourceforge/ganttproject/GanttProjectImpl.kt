@@ -28,10 +28,6 @@ import biz.ganttproject.core.time.TimeUnitStack
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.ganttview.TaskFilterManager
 import com.google.common.base.Strings
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.gui.NotificationManager
@@ -48,9 +44,13 @@ import java.awt.Color
 import java.io.IOException
 import java.net.URL
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.function.Consumer
+import javax.swing.SwingUtilities
 
-open class GanttProjectImpl : IGanttProject {
+fun interface ErrorUi {
+  fun show(ex: Exception)
+}
+
+open class GanttProjectImpl() : IGanttProject {
   private var myProjectName: String? = null
   private var myDescription: String? = null
   private var myOrganization: String? = null
@@ -59,7 +59,7 @@ open class GanttProjectImpl : IGanttProject {
   private val myResourceManager: HumanResourceManager
   private val myTaskManagerConfig: TaskManagerConfigImpl
   private var myDocument: Document? = null
-  private val myListeners: MutableList<ProjectEventListener> = ArrayList()
+  val listeners: MutableList<ProjectEventListener> = mutableListOf()
   private val myUIConfiguration: UIConfiguration
   private val myTaskCustomColumnManager: CustomColumnsManager
   private val myBaselines: List<GanttPreviousState> = ArrayList()
@@ -152,11 +152,46 @@ open class GanttProjectImpl : IGanttProject {
   }
 
   override fun addProjectEventListener(listener: ProjectEventListener) {
-    myListeners.add(listener)
+    listeners.add(listener)
   }
 
   override fun removeProjectEventListener(listener: ProjectEventListener) {
-    myListeners.remove(listener)
+    listeners.remove(listener)
+  }
+
+  fun fireProjectModified(isModified: Boolean, errorUi: ErrorUi) {
+    for (modifiedStateChangeListener in listeners) {
+      try {
+        if (isModified) {
+          modifiedStateChangeListener.projectModified()
+        } else {
+          modifiedStateChangeListener.projectSaved()
+        }
+      } catch (e: Exception) {
+        errorUi.show(e)
+      }
+    }
+  }
+
+  protected open fun fireProjectCreated() {
+    for (modifiedStateChangeListener in listeners) {
+      modifiedStateChangeListener.projectCreated()
+    }
+    // A new project just got created, so it is not yet modified
+    SwingUtilities.invokeLater { isModified = false }
+  }
+
+  protected open fun fireProjectClosed() {
+    for (modifiedStateChangeListener in listeners) {
+      modifiedStateChangeListener.projectClosed()
+    }
+  }
+
+  protected open fun fireProjectOpened() {
+    val barrier = CountDownCompletionPromise<IGanttProject>(this)
+    for (l in listeners) {
+      l.projectOpened(barrier, barrier)
+    }
   }
 
   override fun isModified(): Boolean {
@@ -288,20 +323,25 @@ internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: L
   close()
   val algs = taskManager.algorithmCollection
   try {
-    algs.scheduler.setEnabled(false)
+    algs.scheduler.isEnabled = false
     algs.recalculateTaskScheduleAlgorithm.setEnabled(false)
     algs.adjustTaskBoundsAlgorithm.setEnabled(false)
     fromDocument.read()
   } finally {
     algs.recalculateTaskScheduleAlgorithm.setEnabled(true)
     algs.adjustTaskBoundsAlgorithm.setEnabled(true)
-    algs.scheduler.setEnabled(true)
+    algs.scheduler.isEnabled = true
   }
   completionPromise.resolve(projectDocument)
   document = projectDocument
 }
 
 typealias Subscriber<T> = (T)->Unit
+typealias ActivityTermination = ()->Unit
+
+interface CompletionActivityRegistry {
+  fun add(activity: String): ActivityTermination
+}
 fun interface CompletionPromise<T> {
   fun await(code: Subscriber<T>)
 }
@@ -312,22 +352,38 @@ class CompletionPromiseImpl<T> : CompletionPromise<T> {
   internal fun resolve(value: T) = subscribers.forEach { it(value) }
 }
 
-class CountDownCompletionPromise<T>(initialTicks: Integer, private val value: T) : CompletionPromise<T> {
-  private val ticks = AtomicInteger(initialTicks.toInt())
+class CountDownCompletionPromise<T>(private val value: T) : CompletionPromise<T>, CompletionActivityRegistry {
+  private val counter = AtomicInteger(0)
   private val subscribers = mutableListOf<Subscriber<T>>()
+  private val activities = mutableMapOf<String, ActivityTermination>()
   override fun await(code: Subscriber<T>) {
-    if (ticks.get() == 0) {
+    if (counter.get() == 0) {
       code(value)
     } else {
       subscribers.add(code)
     }
   }
 
-  fun tick() {
-    if (ticks.decrementAndGet() == 0) {
+  override fun add(activity: String): ActivityTermination {
+    return {
+      if (counter.get() > 0) {
+        BARRIER_LOGGER.debug("Barrier reached: $activity")
+        activities.remove(activity)
+        tick()
+      }
+    }.also {
+      BARRIER_LOGGER.debug("Barrier waiting: $activity")
+      activities[activity] = it
+      counter.incrementAndGet()
+    }
+  }
+  private fun tick() {
+    if (counter.decrementAndGet() == 0) {
       subscribers.forEach { it(value) }
     }
   }
 
-  fun isResolved() = this.ticks.get() == 0
+  fun isResolved() = this.counter.get() == 0
 }
+
+private val BARRIER_LOGGER = GPLogger.create("App.Barrier")

@@ -599,7 +599,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       Document newDocument = getDocumentManager().newUntitledDocument();
       getProject().setDocument(newDocument);
       myObservableDocument.set(newDocument);
-      fireProjectCreated();
+      getProjectImpl().fireProjectCreated();
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -619,7 +619,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // myDelayManager.fireDelayObservation(); // it is done in repaint2
     addMouseListenerToAllContainer(this.getComponents());
 
-    fireProjectOpened();
+    getProjectImpl().fireProjectOpened();
   }
 
   /**
@@ -670,7 +670,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   public void setAskForSave(boolean afs) {
-    fireProjectModified(afs);
+    getProjectImpl().fireProjectModified(afs, (ex) -> getUIFacade().showErrorDialog(ex) );
     String title = getTitle();
     askForSave = afs;
     try {
@@ -841,7 +841,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   @Override
   public void close() {
-    fireProjectClosed();
+    getProjectImpl().fireProjectClosed();
     prjInfos = new PrjInfos();
     RoleManager.Access.getInstance().clear();
     myObservableDocument.set(null);
@@ -979,7 +979,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
   @Override
   public void refresh() {
-    getTaskManager().processCriticalPath(getTaskManager().getRootTask());
     getResourcePanel().getResourceTreeTableModel().updateResources();
     getResourcePanel().getResourceTreeTable().setRowHeight(getResourceChart().getModel().calculateRowHeight());
     for (Chart chart : PluginManager.getCharts()) {
@@ -987,4 +986,5 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
     super.repaint();
   }
+
 }

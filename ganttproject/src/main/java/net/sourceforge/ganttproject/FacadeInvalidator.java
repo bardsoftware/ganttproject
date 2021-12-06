@@ -69,7 +69,7 @@ class FacadeInvalidator extends ProjectEventListener.Stub implements TreeModelLi
   }
 
   @Override
-  public void projectOpened() {
+  public void projectOpened(CompletionActivityRegistry barrierRegistry, CompletionPromise<IGanttProject> barrier) {
     for (GanttProjectBase.RowHeightAligner aligner : myRowAligners) {
       aligner.optionsChanged();
     }

@@ -344,7 +344,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   }
 
   @Override
-  public void projectOpened() {
+  public void projectOpened(CompletionActivityRegistry barrierRegistry, CompletionPromise<IGanttProject> barrier) {
   }
 
   @Override

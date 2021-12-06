@@ -677,7 +677,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       }
 
       @Override
-      public void projectOpened() {
+      public void projectOpened(CompletionActivityRegistry barrierRegistry, CompletionPromise<IGanttProject> barrier) {
         onProjectOpened();
       }
 

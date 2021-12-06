@@ -28,6 +28,8 @@ import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.action.BaselineDialogAction;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -52,7 +54,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final BaselineDialogAction myBaselineAction;
   private final Supplier<TaskTable> myTaskTableSupplier;
   private final TaskActions myTaskActions;
-  private final CountDownCompletionPromise<UIFacade> myInitializationPromise;
+  private final Function0<Unit> myInitializationCompleted;
   private JComponent myComponent;
   private TaskTable taskTable;
 
@@ -60,7 +62,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
                             JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
                             TaskActions taskActions, CountDownCompletionPromise<UIFacade> initializationPromise) {
     super(project, workbenchFacade, workbenchFacade.getGanttChart());
-    myInitializationPromise = initializationPromise;
+    myInitializationCompleted = initializationPromise.add("Task table inserted into the component tree");
     myTaskActions = taskActions;
     myTaskTableSupplier = taskTableSupplier;
     myWorkbenchFacade = workbenchFacade;
@@ -150,7 +152,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     Platform.runLater(() -> {
       jfxPanel.setScene(new Scene(myTaskTableSupplier.get().getControl()));
       setMyHeaderHeight(() -> myTaskTableSupplier.get().getHeaderHeightProperty().intValue());
-      myInitializationPromise.tick();
+      myInitializationCompleted.invoke();
     });
     var taskTable = myTaskTableSupplier.get();
     taskTable.getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> updateTimelineHeight());

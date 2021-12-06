@@ -84,7 +84,7 @@ class TaskTable(
   private val taskActions: TaskActions,
   private val undoManager: GPUndoManager,
   private val filters: TaskFilterManager,
-  private val initializationPromise: CountDownCompletionPromise<*>
+  initializationPromise: CountDownCompletionPromise<*>
 ) {
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   private val treeModel = taskManager.taskHierarchy
@@ -137,6 +137,7 @@ class TaskTable(
   }
   private val placeholderEmpty by lazy { Pane() }
 
+  private val initializationCompleted = initializationPromise.add("Task table initialization")
   init {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
 
@@ -269,8 +270,11 @@ class TaskTable(
         }
       }
 
-      override fun projectOpened() {
-        reload()
+      override fun projectOpened(
+        barrierRegistry: CompletionActivityRegistry,
+        barrier: CompletionPromise<IGanttProject>
+      ) {
+        reload(barrierRegistry.add("Reload Task Table"))
       }
 
       override fun projectCreated() {
@@ -553,11 +557,12 @@ class TaskTable(
     }
   }
 
-  fun reload() {
+  fun reload(termination: ActivityTermination? = null) {
     Platform.runLater {
       treeTable.root.children.clear()
       treeTable.selectionModel.clearSelection()
       sync()
+      termination?.invoke()
     }
   }
 
@@ -605,9 +610,7 @@ class TaskTable(
           placeholderEmpty
         }
       }
-      if (!initializationPromise.isResolved()) {
-        initializationPromise.tick()
-      }
+      initializationCompleted()
     }
   }
 

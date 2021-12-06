@@ -81,7 +81,7 @@ internal class ChartRasterImageBuilder : ChartImageVisitor {
     }
     val g = getGraphics(d)
     g!!.background = Color.WHITE
-    g.clearRect(0, d.logoHeight, d.treeWidth, d.chartHeight - d.logoHeight)
+    g.clearRect(0, d.logoHeight, d.treeWidth, d.chartHeight + d.logoHeight)
     g.translate(0, d.logoHeight)
     val header = treeTable.tableHeaderComponent.invoke()
     if (header != null) {
@@ -101,8 +101,7 @@ internal class ChartRasterImageBuilder : ChartImageVisitor {
       myTreeImage = BufferedImage(1, d.chartHeight, BufferedImage.TYPE_INT_RGB)
     }
     myRenderedImage = RenderedChartImage(
-      model, myTreeImage, d.chartWidth, d.chartHeight
-          + d.logoHeight, d.logoHeight
+      model, myTreeImage, d.chartWidth, d.chartHeight, d.logoHeight
     )
   }
 

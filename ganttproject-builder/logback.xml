@@ -13,6 +13,7 @@
         <appender-ref ref="STDOUT" />
     </root>
 
+    <logger name="App.Barrier" level="DEBUG"/>
     <logger name="Export.Pdf.Fonts" level="DEBUG"/>
 
 </configuration>

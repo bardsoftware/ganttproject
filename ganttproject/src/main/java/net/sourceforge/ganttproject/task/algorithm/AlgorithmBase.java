@@ -18,9 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task.algorithm;
 
-import java.util.Date;
-
 import net.sourceforge.ganttproject.task.Task;
+
+import java.util.Date;
 
 public class AlgorithmBase {
 
@@ -36,7 +36,7 @@ public class AlgorithmBase {
     isEnabled = enabled;
   }
 
-  protected boolean isEnabled() {
+  public boolean isEnabled() {
     return isEnabled;
   }
 

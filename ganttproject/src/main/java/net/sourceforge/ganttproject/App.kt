@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject
 
+import biz.ganttproject.LoggerApi
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.SingleTranslationLocalizer
 import biz.ganttproject.app.showAsync
@@ -32,6 +33,7 @@ import net.sourceforge.ganttproject.gui.CommandLineProjectOpenStrategy
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.plugins.PluginManager
 import net.sourceforge.ganttproject.task.TaskManagerImpl
+import org.slf4j.Logger
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.File
@@ -59,12 +61,6 @@ fun main(args: Array<String>) {
     }
     it.updater = updater
   }.launch()
-
-//  val mainArgs = GanttProject.Args()
-//  JCommander(arrayOf<Any>(mainArgs), *args)
-//  startUiApp(mainArgs) {
-//    it.updater = updater
-//  }
 }
 
 val mainWindow = AtomicReference<GanttProject?>(null)
@@ -73,7 +69,7 @@ val mainWindow = AtomicReference<GanttProject?>(null)
  * @author dbarashev@bardsoftware.com
  */
 @JvmOverloads
-fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) {
+fun startUiApp(configure: (GanttProject) -> Unit = {}) {
 
   Platform.setImplicitExit(false)
   SwingUtilities.invokeLater {
@@ -89,14 +85,14 @@ fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) 
   }
 }
 
-val APP_LOGGER = GPLogger.create("App")
+val APP_LOGGER: LoggerApi<Logger> = GPLogger.create("App")
 
 typealias RunBeforeUi = ()->Unit
 typealias RunAfterWindowOpened = (JFrame) -> Unit
 typealias RunAfterAppInitialized = (GanttProject) -> Unit
 typealias RunWhenDocumentReady = (IGanttProject) -> Unit
 
-class AppBuilder(private val args: Array<String>) {
+class AppBuilder(args: Array<String>) {
   val mainArgs = GanttProject.Args()
   val cliArgs = CommandLineExportApplication.Args()
   val cliParser = JCommander(arrayOf(mainArgs, cliArgs), *args)
@@ -113,22 +109,22 @@ class AppBuilder(private val args: Array<String>) {
   }
   fun withLogging(): AppBuilder {
     runBeforeUi {
-      if (mainArgs.log && "auto".equals(mainArgs.logFile)) {
-        mainArgs.logFile = System.getProperty("user.home") + File.separator + "ganttproject.log";
+      if (mainArgs.log && "auto" == mainArgs.logFile) {
+        mainArgs.logFile = System.getProperty("user.home") + File.separator + "ganttproject.log"
       }
-      if (mainArgs.log && !mainArgs.logFile.trim().isEmpty()) {
+      if (mainArgs.log && mainArgs.logFile.trim().isNotEmpty()) {
         try {
-          GPLogger.setLogFile(mainArgs.logFile);
+          GPLogger.setLogFile(mainArgs.logFile)
           File(mainArgs.logFile).also {
             System.setErr(PrintStream(it.outputStream()))
           }
         } catch (ex: Exception) {
-          println("Failed to write log to file: " + ex.message);
-          ex.printStackTrace();
+          println("Failed to write log to file: " + ex.message)
+          ex.printStackTrace()
         }
       }
 
-      GPLogger.logSystemInformation();
+      GPLogger.logSystemInformation()
 
     }
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
@@ -167,13 +163,21 @@ class AppBuilder(private val args: Array<String>) {
   }
   fun withDocument(path: String): AppBuilder {
     whenAppInitialized { ganttProject ->
-      val strategy = CommandLineProjectOpenStrategy(ganttProject.project, ganttProject.documentManager,
-        ganttProject.taskManager as TaskManagerImpl, ganttProject.uiFacade, ganttProject.projectUIFacade,
-        ganttProject.ganttOptions.pluginPreferences)
-      strategy.openStartupDocument(path, { ganttProject.fireProjectCreated() }) { doc ->
-        runWhenDocumentReady.forEach { cmd -> cmd(ganttProject.project) }
-      }
-
+      val strategy = CommandLineProjectOpenStrategy(
+        ganttProject.project, ganttProject.documentManager,
+        ganttProject.taskManager as TaskManagerImpl,
+        ganttProject.uiFacade, ganttProject.projectUIFacade,
+        ganttProject.ganttOptions.pluginPreferences
+      )
+      ganttProject.addProjectEventListener(object : ProjectEventListener.Stub() {
+        override fun projectOpened(
+          barrierRegistry: CompletionActivityRegistry,
+          barrier: CompletionPromise<IGanttProject>
+        ) {
+          barrier.await { runWhenDocumentReady.forEach { cmd -> cmd(ganttProject.project) } }
+        }
+      })
+      strategy.openStartupDocument(path)
     }
     return this
   }
@@ -193,7 +197,7 @@ class AppBuilder(private val args: Array<String>) {
 
   fun launch() {
     runBeforeUiCommands.forEach { cmd -> cmd() }
-    startUiApp(mainArgs) { ganttProject: GanttProject ->
+    startUiApp { ganttProject: GanttProject ->
       ganttProject.updater = org.eclipse.core.runtime.Platform.getUpdater()
       ganttProject.addWindowListener(object : WindowAdapter() {
         override fun windowOpened(e: WindowEvent?) {
@@ -205,6 +209,4 @@ class AppBuilder(private val args: Array<String>) {
       }
     }
   }
-
-
 }

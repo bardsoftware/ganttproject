@@ -88,9 +88,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 
@@ -107,10 +105,9 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   protected final static GanttLanguage language = GanttLanguage.getInstance();
   protected final WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
   private final ViewManagerImpl myViewManager;
-  private final List<ProjectEventListener> myModifiedStateChangeListeners = new ArrayList<ProjectEventListener>();
   private final UIFacadeImpl myUIFacade;
   private final GanttStatusBar statusBar;
-  private final TimeUnitStack myTimeUnitStack = new GPTimeUnitStack();;
+  private final TimeUnitStack myTimeUnitStack = new GPTimeUnitStack();
   private final ProjectUIFacadeImpl myProjectUIFacade;
   private final DocumentManager myDocumentManager;
   protected final SimpleObjectProperty<Document> myObservableDocument = new SimpleObjectProperty<>();
@@ -127,6 +124,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   protected final CountDownCompletionPromise<UIFacade> myUiInitializationPromise;
   private Updater myUpdater;
   protected final TaskActions myTaskActions;
+  private final GanttProjectImpl myProjectImpl = new GanttProjectImpl();
 
   TaskTableChartConnector myTaskTableChartConnector = new TaskTableChartConnector(
       new SimpleIntegerProperty(-1),
@@ -209,7 +207,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
     myUIFacade = new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
-    myUiInitializationPromise = new CountDownCompletionPromise<UIFacade>(2, myUIFacade);
+    myUiInitializationPromise = new CountDownCompletionPromise<>(myUIFacade);
 
     GPLogger.setUIFacade(myUIFacade);
     myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
@@ -254,59 +252,24 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myUIFacade.addOptions(myRssChecker.getUiOptions());
   }
 
+  protected GanttProjectImpl getProjectImpl() {
+    return myProjectImpl;
+  }
   @Override
   public void restore(Document fromDocument) throws Document.DocumentException, IOException {
-    GanttProjectImplKt.restoreProject(this, fromDocument, myModifiedStateChangeListeners);
+    GanttProjectImplKt.restoreProject(this, fromDocument, myProjectImpl.getListeners());
   }
 
   @Override
   public void addProjectEventListener(ProjectEventListener listener) {
-    myModifiedStateChangeListeners.add(listener);
+    myProjectImpl.addProjectEventListener(listener);
   }
 
   @Override
   public void removeProjectEventListener(ProjectEventListener listener) {
-    myModifiedStateChangeListeners.remove(listener);
+    myProjectImpl.removeProjectEventListener(listener);
   }
 
-  protected void fireProjectModified(boolean isModified) {
-    for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
-      try {
-        if (isModified) {
-          modifiedStateChangeListener.projectModified();
-        } else {
-          modifiedStateChangeListener.projectSaved();
-        }
-      } catch (Exception e) {
-        showErrorDialog(e);
-      }
-    }
-  }
-
-  protected void fireProjectCreated() {
-    for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
-      modifiedStateChangeListener.projectCreated();
-    }
-    // A new project just got created, so it is not yet modified
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        setModified(false);
-      }
-    });
-  }
-
-  protected void fireProjectClosed() {
-    for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
-      modifiedStateChangeListener.projectClosed();
-    }
-  }
-
-  protected void fireProjectOpened() {
-    for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
-      modifiedStateChangeListener.projectOpened();
-    }
-  }
 
   public CompletionPromise<UIFacade> getUiInitializationPromise() {
     return myUiInitializationPromise;

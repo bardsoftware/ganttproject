@@ -218,13 +218,52 @@ public class TaskManagerImpl implements TaskManager {
       }
     };
     ChartBoundsAlgorithm alg5 = new ChartBoundsAlgorithm();
-    CriticalPathAlgorithm alg6 = new CriticalPathAlgorithmImpl(this, getCalendar());
-    myAlgorithmCollection = new AlgorithmCollection(this, alg1, alg2, alg3, alg4, alg5, alg6, myScheduler);
+    var algCriticalPath = new CriticalPathAlgorithmImpl(this, getCalendar());
+    myAlgorithmCollection = new AlgorithmCollection(this, alg1, alg2, alg3, alg4, alg5, algCriticalPath, myScheduler);
     addTaskListener(new TaskListenerAdapter() {
       @Override
       public void dependencyChanged(TaskDependencyEvent e) {
         myScheduler.run();
       }
+
+      @Override
+      public void taskScheduleChanged(TaskScheduleEvent e) {
+        processCriticalPath(getRootTask());
+      }
+
+      @Override
+      public void dependencyAdded(TaskDependencyEvent e) {
+        processCriticalPath(getRootTask());
+      }
+
+      @Override
+      public void dependencyRemoved(TaskDependencyEvent e) {
+        processCriticalPath(getRootTask());
+      }
+
+      @Override
+      public void taskAdded(TaskHierarchyEvent e) {
+        processCriticalPath(getRootTask());
+      }
+
+      @Override
+      public void taskRemoved(TaskHierarchyEvent e) {
+        processCriticalPath(getRootTask());
+      }
+
+      @Override
+      public void taskMoved(TaskHierarchyEvent e) {
+        processCriticalPath(getRootTask());
+      }
+
+      @Override
+      public void taskPropertiesChanged(TaskPropertyEvent e) {}
+
+      @Override
+      public void taskProgressChanged(TaskPropertyEvent e) {}
+
+      @Override
+      public void taskModelReset() {}
     });
   }
 
@@ -592,7 +631,7 @@ public class TaskManagerImpl implements TaskManager {
       }
 
       @Override
-      public void projectOpened() {
+      public void projectOpened(CompletionActivityRegistry barrierRegistry, CompletionPromise<IGanttProject> barrier) {
         TaskManagerImpl.this.projectOpened();
       }
     };
@@ -695,11 +734,9 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   private void fireTaskModelReset() {
-    if (areEventsEnabled) {
       for (TaskListener next : myListeners) {
         next.taskModelReset();
       }
-    }
   }
 
   public TaskManagerConfig getConfig() {
@@ -818,17 +855,19 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public void processCriticalPath(Task root) {
-    try {
-      myAlgorithmCollection.getRecalculateTaskScheduleAlgorithm().run();
-    } catch (TaskDependencyException e) {
-      if (!GPLogger.log(e)) {
-        e.printStackTrace(System.err);
+    if (myAlgorithmCollection.getCriticalPathAlgorithm().isEnabled()) {
+      try {
+        myAlgorithmCollection.getRecalculateTaskScheduleAlgorithm().run();
+      } catch (TaskDependencyException e) {
+        if (!GPLogger.log(e)) {
+          e.printStackTrace(System.err);
+        }
       }
-    }
-    Task[] tasks = myAlgorithmCollection.getCriticalPathAlgorithm().getCriticalTasks();
-    resetCriticalPath();
-    for (Task task : tasks) {
-      task.setCritical(true);
+      Task[] tasks = myAlgorithmCollection.getCriticalPathAlgorithm().getCriticalTasks();
+      resetCriticalPath();
+      for (Task task : tasks) {
+        task.setCritical(true);
+      }
     }
   }
 

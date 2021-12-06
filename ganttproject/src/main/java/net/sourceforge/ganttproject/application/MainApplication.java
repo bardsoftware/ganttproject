@@ -73,11 +73,11 @@ public class MainApplication implements IPlatformRunnable {
       appBuilder.whenDocumentReady(project -> {
         var cliApp = new CommandLineExportApplication();
         Executors.newSingleThreadExecutor().submit(() -> {
-          try {
-            Thread.sleep(5000);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
+//          try {
+//            Thread.sleep(5000);
+//          } catch (InterruptedException e) {
+//            e.printStackTrace();
+//          }
           cliApp.export(appBuilder.getCliArgs(), project, ((GanttProject)project).getUIFacade());
 
         });

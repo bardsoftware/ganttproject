@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project
 
+import net.sourceforge.ganttproject.CompletionActivityRegistry
 import net.sourceforge.ganttproject.CompletionPromise
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
@@ -69,7 +70,10 @@ class SaveProjectAction private constructor(
     isEnabled = false
   }
 
-  override fun projectOpened() {
+  override fun projectOpened(
+    barrierRegistry: CompletionActivityRegistry,
+    barrier: CompletionPromise<IGanttProject>
+  ) {
     isEnabled = false
   }
 
