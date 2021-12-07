@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ColorOption;
@@ -69,18 +70,23 @@ import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.gui.view.ViewManagerImpl;
 import net.sourceforge.ganttproject.gui.window.ContentPaneBuilder;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
+import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.undo.UndoManagerImpl;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -90,6 +96,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -124,7 +131,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   protected final CountDownCompletionPromise<UIFacade> myUiInitializationPromise;
   private Updater myUpdater;
   protected final TaskActions myTaskActions;
-  private final GanttProjectImpl myProjectImpl = new GanttProjectImpl();
+  private final GanttProjectImpl myProjectImpl;
 
   TaskTableChartConnector myTaskTableChartConnector = new TaskTableChartConnector(
       new SimpleIntegerProperty(-1),
@@ -141,9 +148,17 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected final TaskFilterManager myTaskFilterManager;
 
+  @Override
+  public Map<Task, Task> importProject(
+      @NotNull BufferProject bufferProject,
+      @NotNull HumanResourceMerger.MergeResourcesOption mergeResourcesOption,
+      @Nullable ImportCalendarOption importCalendarOption) {
+    return myProjectImpl.importProject(bufferProject, mergeResourcesOption, importCalendarOption);
+  }
+
 
   class TaskManagerConfigImpl implements TaskManagerConfig {
-    final DefaultColorOption myDefaultColorOption = new GanttProjectImpl.DefaultTaskColorOption();
+    final DefaultColorOption myDefaultColorOption = new DefaultTaskColorOption();
     final DefaultBooleanOption mySchedulerDisabledOption = new DefaultBooleanOption("scheduler.disabled", false);
 
     @Override
@@ -200,7 +215,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     super("GanttProject");
     myTaskManagerConfig = new TaskManagerConfigImpl();
     myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig);
-
+    myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager);
     statusBar = new GanttStatusBar(this);
     myTabPane = new GanttTabbedPane();
     myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());

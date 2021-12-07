@@ -19,12 +19,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject
 
 import biz.ganttproject.core.calendar.GPCalendarCalc
+import biz.ganttproject.core.calendar.ImportCalendarOption
 import biz.ganttproject.core.time.TimeUnitStack
 import biz.ganttproject.ganttview.TaskFilterManager
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.gui.UIConfiguration
+import net.sourceforge.ganttproject.importer.BufferProject
+import net.sourceforge.ganttproject.importer.TaskMapping
 import net.sourceforge.ganttproject.resource.HumanResourceManager
+import net.sourceforge.ganttproject.resource.HumanResourceMerger
 import net.sourceforge.ganttproject.roles.RoleManager
 import net.sourceforge.ganttproject.task.TaskManager
 import java.io.IOException
@@ -44,6 +48,11 @@ interface IGanttProject {
   val humanResourceManager: HumanResourceManager
   val roleManager: RoleManager
   val taskManager: TaskManager
+  val resourceCustomPropertyManager: CustomPropertyManager
+  val taskCustomColumnManager: CustomPropertyManager
+  val taskFilterManager: TaskFilterManager
+  val baselines: List<GanttPreviousState>
+
   val activeCalendar: GPCalendarCalc
   val timeUnitStack: TimeUnitStack
   fun setModified()
@@ -56,11 +65,10 @@ interface IGanttProject {
 
   @Throws(IOException::class, Document.DocumentException::class)
   fun open(document: Document)
-  val resourceCustomPropertyManager: CustomPropertyManager
-  val taskCustomColumnManager: CustomPropertyManager
-  val baselines: List<GanttPreviousState>
+  fun importProject(bufferProject: BufferProject,
+                    mergeOption: HumanResourceMerger.MergeResourcesOption,
+                    importCalendarOption: ImportCalendarOption?): TaskMapping
 
   @Throws(Document.DocumentException::class, IOException::class)
   fun restore(fromDocument: Document)
-  val taskFilterManager: TaskFilterManager
 }

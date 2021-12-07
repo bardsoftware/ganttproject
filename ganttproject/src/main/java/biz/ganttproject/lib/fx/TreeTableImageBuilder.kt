@@ -65,7 +65,7 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
     columns = columnMap.values.toList(),
     items = rootSceneItems
   )
-  val painter = StyledPainterImpl(ChartUIConfiguration( taskTable.project.uiConfiguration))
+  val painter = StyledPainterImpl(ChartUIConfiguration( taskTable.project.uIConfiguration))
   painter.setGraphics(graphics2D)
 
   graphics2D.setRenderingHint(

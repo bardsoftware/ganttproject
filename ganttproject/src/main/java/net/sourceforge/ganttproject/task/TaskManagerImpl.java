@@ -149,7 +149,7 @@ public class TaskManagerImpl implements TaskManager {
 
   private Boolean isZeroMilestones = true;
 
-  TaskManagerImpl(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory, TaskManagerConfig config) {
+  public TaskManagerImpl(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory, TaskManagerConfig config) {
     myFacadeFactory = containmentFacadeFactory == null ? new FacadeFactoryImpl() : containmentFacadeFactory;
     myCustomPropertyListener = new CustomPropertyListenerImpl(this);
     myCustomColumnsManager = new CustomColumnsManager();
@@ -160,7 +160,11 @@ public class TaskManagerImpl implements TaskManager {
         config.getSchedulerDisabledOption(),
         new SchedulerImpl(myDependencyGraph, myHierarchySupplier)
     );
-    myDependencyGraph.addListener(myScheduler::run);
+    myDependencyGraph.addListener(() -> {
+      if (areEventsEnabled) {
+        myScheduler.run();
+      }
+    });
     myHierarchyManager = new TaskHierarchyManagerImpl();
     EventDispatcher dispatcher = new EventDispatcher() {
       @Override
@@ -223,7 +227,9 @@ public class TaskManagerImpl implements TaskManager {
     addTaskListener(new TaskListenerAdapter() {
       @Override
       public void dependencyChanged(TaskDependencyEvent e) {
-        myScheduler.run();
+        if (areEventsEnabled) {
+          myScheduler.run();
+        }
       }
 
       @Override

@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject
 
 import biz.ganttproject.core.calendar.GPCalendarCalc
+import biz.ganttproject.core.calendar.ImportCalendarOption
 import biz.ganttproject.core.calendar.WeekendCalendarImpl
 import biz.ganttproject.core.option.BooleanOption
 import biz.ganttproject.core.option.ColorOption
@@ -32,13 +33,14 @@ import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.gui.NotificationManager
 import net.sourceforge.ganttproject.gui.UIConfiguration
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter
+import net.sourceforge.ganttproject.importer.BufferProject
+import net.sourceforge.ganttproject.importer.TaskMapping
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.resource.HumanResourceManager
+import net.sourceforge.ganttproject.resource.HumanResourceMerger
+import net.sourceforge.ganttproject.resource.OverwritingMerger
 import net.sourceforge.ganttproject.roles.RoleManager
-import net.sourceforge.ganttproject.task.CustomColumnsManager
-import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskManager
-import net.sourceforge.ganttproject.task.TaskManagerConfig
+import net.sourceforge.ganttproject.task.*
 import java.awt.Color
 import java.io.IOException
 import java.net.URL
@@ -49,7 +51,7 @@ fun interface ErrorUi {
   fun show(ex: Exception)
 }
 
-open class GanttProjectImpl : IGanttProject {
+open class GanttProjectImpl(taskManager: TaskManagerImpl? = null) : IGanttProject {
   val listeners: MutableList<ProjectEventListener> = mutableListOf()
   override val baselines: List<GanttPreviousState> = ArrayList()
 
@@ -66,10 +68,10 @@ open class GanttProjectImpl : IGanttProject {
   )
   override val resourceCustomPropertyManager: CustomPropertyManager get() = humanResourceManager.customPropertyManager
   private val myTaskManagerConfig = TaskManagerConfigImpl(humanResourceManager, myCalendar)
-  override val taskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig)
+  override val taskManager = taskManager ?: TaskManagerImpl(null, myTaskManagerConfig)
   override val uIConfiguration = UIConfiguration(Color.BLUE, true)
   override val taskCustomColumnManager = CustomColumnsManager()
-  override val taskFilterManager = TaskFilterManager(taskManager)
+  override val taskFilterManager = TaskFilterManager(this.taskManager)
   override val roleManager: RoleManager
     get() = RoleManager.Access.getInstance()
   override var isModified: Boolean = false
@@ -150,6 +152,34 @@ open class GanttProjectImpl : IGanttProject {
   override fun open(document: Document) {
     // TODO Auto-generated method stub
   }
+
+  override fun importProject(bufferProject: BufferProject,
+                    mergeOption: HumanResourceMerger.MergeResourcesOption,
+                    importCalendarOption: ImportCalendarOption?): TaskMapping {
+    roleManager.importData(bufferProject.roleManager)
+    if (importCalendarOption != null) {
+      activeCalendar.importCalendar(bufferProject.activeCalendar, importCalendarOption)
+    }
+    val that2thisResourceCustomDefs = resourceCustomPropertyManager.importData(bufferProject.resourceCustomPropertyManager)
+    val original2ImportedResource = humanResourceManager.importData(
+      bufferProject.humanResourceManager, OverwritingMerger(mergeOption), that2thisResourceCustomDefs
+    )
+    val that2thisCustomDefs = taskCustomColumnManager.importData(bufferProject.taskCustomColumnManager)
+    val origTaskManager = taskManager
+    return try {
+      origTaskManager.setEventsEnabled(false)
+      val result = origTaskManager.importData(bufferProject.taskManager, that2thisCustomDefs)
+      origTaskManager.importAssignments(
+        bufferProject.taskManager, humanResourceManager,
+        result, original2ImportedResource
+      )
+      result.also {
+        fireProjectOpened()
+      }
+    } finally {
+      origTaskManager.setEventsEnabled(true)
+    }
+  }
 }
 
 private val DEFAULT_TASK_COLOR = Color(140, 182, 206)
@@ -204,6 +234,7 @@ private class TaskManagerConfigImpl(
 
 internal class DefaultTaskColorOption internal constructor(defaultColor: Color) :
   DefaultColorOption("taskDefaultColor", defaultColor), GP1XOptionConverter {
+  constructor() : this(DEFAULT_TASK_COLOR)
 
   override fun getTagName(): String {
     return "colors"
