@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.service.prefs.Preferences;
 import org.w3c.util.DateParser;
 import org.w3c.util.InvalidDateException;
@@ -109,10 +110,22 @@ public abstract class ExporterBase implements Exporter {
   }
 
   @Override
-  public String[] getCommandLineKeys() {
-    // By default use the same
-    return getFileExtensions();
+  public @Nullable Exporter withFormat(String format) {
+    if (Arrays.asList(getFileExtensions()).contains(format)) {
+      setFormat(format);
+      return this;
+    } else {
+      return null;
+    }
   }
+
+  protected void setFormat(String format) {}
+
+  //  @Override
+//  public String[] getCommandLineKeys() {
+//    // By default use the same
+//    return getFileExtensions();
+//  }
 
   public GanttExportSettings createExportSettings() {
     GanttExportSettings result = new GanttExportSettings();

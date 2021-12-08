@@ -653,7 +653,7 @@ class TaskTable(
   }
 
   private fun keepSelection(code: ()->Unit) {
-    Platform.runLater {
+    val body = {
       val selectedTasks =
         treeTable.selectionModel.selectedItems.associate {
           it.value to (it.previousSibling()
@@ -668,6 +668,11 @@ class TaskTable(
         treeTable.selectionModel.select(whatSelect)
       }
       treeTable.requestFocus()
+    }
+    if (Platform.isFxApplicationThread()){
+      body()
+    } else {
+      Platform.runLater { body() }
     }
   }
 

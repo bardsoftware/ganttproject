@@ -303,11 +303,13 @@ class CountDownCompletionPromise<T>(private val value: T) : CompletionPromise<T>
     return {
       if (counter.get() > 0) {
         BARRIER_LOGGER.debug("Barrier reached: $activity")
+        //println("Barrier reached: $activity")
         activities.remove(activity)
         tick()
       }
     }.also {
       BARRIER_LOGGER.debug("Barrier waiting: $activity")
+      //println("Barrier waiting: $activity")
       activities[activity] = it
       counter.incrementAndGet()
     }

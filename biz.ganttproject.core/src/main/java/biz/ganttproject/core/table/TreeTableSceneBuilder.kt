@@ -39,7 +39,7 @@ class TreeTableSceneBuilder(private val input: InputApi) {
     }
   }
 
-  class Item(
+  data class Item(
     val values: Map<Column, String>,
     val subitems: MutableList<Item> = mutableListOf()
   ) {

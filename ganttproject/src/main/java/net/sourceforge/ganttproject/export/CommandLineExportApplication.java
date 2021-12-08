@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.export;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.FileConverter;
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.PluginPreferencesImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -31,10 +30,6 @@ import org.osgi.service.prefs.Preferences;
 import org.w3c.util.DateParser;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 public class CommandLineExportApplication {
@@ -62,26 +57,21 @@ public class CommandLineExportApplication {
 
   }
 
-  private final Map<String, Exporter> myFlag2exporter = new HashMap<String, Exporter>();
-
-  public CommandLineExportApplication() {
-    for (Exporter exporter : PluginManager.getExporters()) {
-      List<String> keys = Arrays.asList(exporter.getCommandLineKeys());
-      for (String key : keys) {
-        myFlag2exporter.put(key, exporter);
-      }
-    }
-  }
-
   public boolean export(Args args, IGanttProject project, UIFacade uiFacade) {
     if (args.exporter == null) {
       return false;
     }
-    Exporter exporter = myFlag2exporter.get(args.exporter);
-    GPLogger.log("Using exporter=" + exporter);
-    if (exporter == null) {
-      return false;
+    for (Exporter exp: PluginManager.getExporters()) {
+      var expWithFormat = exp.withFormat(args.exporter);
+      if (expWithFormat != null) {
+        return export(expWithFormat, args, project, uiFacade);
+      }
     }
+    return false;
+  }
+
+  private boolean export(Exporter exporter, Args args, IGanttProject project, UIFacade uiFacade) {
+    GPLogger.log("Using exporter=" + exporter);
     ConsoleUIFacade consoleUI = new ConsoleUIFacade(uiFacade);
     // TODO: bring back task expanding
 //    if (myArgs.expandTasks) {
@@ -123,7 +113,6 @@ public class CommandLineExportApplication {
     } catch (Exception e) {
       consoleUI.showErrorDialog(e);
     }
-    GanttProject.doQuitApplication(true);
     return true;
   }
 }
