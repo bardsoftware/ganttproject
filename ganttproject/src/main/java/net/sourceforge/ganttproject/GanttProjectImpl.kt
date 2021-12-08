@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject
 
+import biz.ganttproject.app.SimpleBarrier
+import biz.ganttproject.app.TwoPhaseBarrierImpl
 import biz.ganttproject.core.calendar.GPCalendarCalc
 import biz.ganttproject.core.calendar.ImportCalendarOption
 import biz.ganttproject.core.calendar.WeekendCalendarImpl
@@ -44,7 +46,6 @@ import net.sourceforge.ganttproject.task.*
 import java.awt.Color
 import java.io.IOException
 import java.net.URL
-import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.SwingUtilities
 
 fun interface ErrorUi {
@@ -138,7 +139,7 @@ open class GanttProjectImpl(taskManager: TaskManagerImpl? = null) : IGanttProjec
   }
 
   protected open fun fireProjectOpened() {
-    val barrier = CountDownCompletionPromise<IGanttProject>(this)
+    val barrier = TwoPhaseBarrierImpl<IGanttProject>(this)
     for (l in listeners) {
       l.projectOpened(barrier, barrier)
     }
@@ -252,7 +253,7 @@ internal class DefaultTaskColorOption internal constructor(defaultColor: Color) 
 
 
 internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: List<ProjectEventListener>) {
-  val completionPromise = CompletionPromiseImpl<Document>()
+  val completionPromise = SimpleBarrier<Document>()
   listeners.forEach { it.projectRestoring(completionPromise) }
   val projectDocument = document
   close()
@@ -271,54 +272,3 @@ internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: L
   document = projectDocument
 }
 
-typealias Subscriber<T> = (T)->Unit
-typealias ActivityTermination = ()->Unit
-
-interface CompletionActivityRegistry {
-  fun add(activity: String): ActivityTermination
-}
-fun interface CompletionPromise<T> {
-  fun await(code: Subscriber<T>)
-}
-
-class CompletionPromiseImpl<T> : CompletionPromise<T> {
-  private val subscribers = mutableListOf<Subscriber<T>>()
-  override fun await(code: Subscriber<T>) { subscribers.add(code) }
-  internal fun resolve(value: T) = subscribers.forEach { it(value) }
-}
-
-class CountDownCompletionPromise<T>(private val value: T) : CompletionPromise<T>, CompletionActivityRegistry {
-  private val counter = AtomicInteger(0)
-  private val subscribers = mutableListOf<Subscriber<T>>()
-  private val activities = mutableMapOf<String, ActivityTermination>()
-  override fun await(code: Subscriber<T>) {
-    if (counter.get() == 0) {
-      code(value)
-    } else {
-      subscribers.add(code)
-    }
-  }
-
-  override fun add(activity: String): ActivityTermination {
-    return {
-      if (counter.get() > 0) {
-        BARRIER_LOGGER.debug("Barrier reached: $activity")
-        //println("Barrier reached: $activity")
-        activities.remove(activity)
-        tick()
-      }
-    }.also {
-      BARRIER_LOGGER.debug("Barrier waiting: $activity")
-      //println("Barrier waiting: $activity")
-      activities[activity] = it
-      counter.incrementAndGet()
-    }
-  }
-  private fun tick() {
-    if (counter.decrementAndGet() == 0) {
-      subscribers.forEach { it(value) }
-    }
-  }
-}
-
-private val BARRIER_LOGGER = GPLogger.create("App.Barrier")

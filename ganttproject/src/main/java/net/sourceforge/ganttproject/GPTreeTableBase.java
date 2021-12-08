@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.BarrierEntrance;
+import biz.ganttproject.app.Barrier;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
@@ -677,7 +679,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       }
 
       @Override
-      public void projectOpened(CompletionActivityRegistry barrierRegistry, CompletionPromise<IGanttProject> barrier) {
+      public void projectOpened(BarrierEntrance barrierRegistry, Barrier<IGanttProject> barrier) {
         onProjectOpened();
       }
 

@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import net.sourceforge.ganttproject.document.Document;
+import biz.ganttproject.app.BarrierEntrance;
+import biz.ganttproject.app.Barrier;
 
 public interface ProjectEventListener {
   void projectModified();
@@ -27,11 +29,11 @@ public interface ProjectEventListener {
 
   void projectClosed();
 
-  void projectOpened(CompletionActivityRegistry barrierRegistry, CompletionPromise<IGanttProject> barrier);
+  void projectOpened(BarrierEntrance barrierRegistry, Barrier<IGanttProject> barrier);
 
   void projectCreated();
 
-  void projectRestoring(CompletionPromise<Document> completion);
+  void projectRestoring(Barrier<Document> completion);
 
   class Stub implements ProjectEventListener {
     @Override
@@ -47,7 +49,7 @@ public interface ProjectEventListener {
     }
 
     @Override
-    public void projectOpened(CompletionActivityRegistry barrierRegistry, CompletionPromise<IGanttProject> barrier) {
+    public void projectOpened(BarrierEntrance barrierRegistry, Barrier<IGanttProject> barrier) {
     }
 
     @Override
@@ -55,7 +57,7 @@ public interface ProjectEventListener {
     }
 
     @Override
-    public void projectRestoring(CompletionPromise<Document> completion) {
+    public void projectRestoring(Barrier<Document> completion) {
 
     }
   }

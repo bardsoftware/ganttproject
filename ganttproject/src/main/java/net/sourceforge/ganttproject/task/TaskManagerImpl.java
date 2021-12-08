@@ -4,6 +4,8 @@
  */
 package net.sourceforge.ganttproject.task;
 
+import biz.ganttproject.app.BarrierEntrance;
+import biz.ganttproject.app.Barrier;
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
@@ -636,7 +638,7 @@ public class TaskManagerImpl implements TaskManager {
       }
 
       @Override
-      public void projectOpened(CompletionActivityRegistry barrierRegistry, CompletionPromise<IGanttProject> barrier) {
+      public void projectOpened(BarrierEntrance barrierRegistry, Barrier<IGanttProject> barrier) {
         TaskManagerImpl.this.projectOpened();
       }
     };

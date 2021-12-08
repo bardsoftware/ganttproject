@@ -84,7 +84,7 @@ class TaskTable(
   private val taskActions: TaskActions,
   private val undoManager: GPUndoManager,
   private val filters: TaskFilterManager,
-  initializationPromise: CountDownCompletionPromise<*>
+  initializationPromise: TwoPhaseBarrierImpl<*>
 ) {
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   private val treeModel = taskManager.taskHierarchy
@@ -137,7 +137,7 @@ class TaskTable(
   }
   private val placeholderEmpty by lazy { Pane() }
 
-  private val initializationCompleted = initializationPromise.add("Task table initialization")
+  private val initializationCompleted = initializationPromise.register("Task table initialization")
   init {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
 
@@ -264,17 +264,17 @@ class TaskTable(
 
   private fun initProjectEventHandlers() {
     project.addProjectEventListener(object : ProjectEventListener.Stub() {
-      override fun projectRestoring(completion: CompletionPromise<Document>) {
+      override fun projectRestoring(completion: Barrier<Document>) {
         completion.await {
           sync()
         }
       }
 
       override fun projectOpened(
-        barrierRegistry: CompletionActivityRegistry,
-        barrier: CompletionPromise<IGanttProject>
+        barrierRegistry: BarrierEntrance,
+        barrier: Barrier<IGanttProject>
       ) {
-        reload(barrierRegistry.add("Reload Task Table"))
+        reload(barrierRegistry.register("Reload Task Table"))
       }
 
       override fun projectCreated() {
@@ -557,7 +557,7 @@ class TaskTable(
     }
   }
 
-  fun reload(termination: ActivityTermination? = null) {
+  fun reload(termination: OnBarrierReached? = null) {
     Platform.runLater {
       treeTable.root.children.clear()
       treeTable.selectionModel.clearSelection()

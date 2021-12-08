@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.Barrier;
+import biz.ganttproject.app.TwoPhaseBarrierImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
@@ -128,7 +130,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   protected final ContentPaneBuilder myContentPaneBuilder;
   final TaskManagerConfigImpl myTaskManagerConfig;
   private final TaskManager myTaskManager;
-  protected final CountDownCompletionPromise<UIFacade> myUiInitializationPromise;
+  protected final TwoPhaseBarrierImpl<UIFacade> myUiInitializationPromise;
   private Updater myUpdater;
   protected final TaskActions myTaskActions;
   private final GanttProjectImpl myProjectImpl;
@@ -222,7 +224,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
     myUIFacade = new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
-    myUiInitializationPromise = new CountDownCompletionPromise<>(myUIFacade);
+    myUiInitializationPromise = new TwoPhaseBarrierImpl<>(myUIFacade);
 
     GPLogger.setUIFacade(myUIFacade);
     myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
@@ -286,7 +288,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
 
-  public CompletionPromise<UIFacade> getUiInitializationPromise() {
+  public Barrier<UIFacade> getUiInitializationPromise() {
     return myUiInitializationPromise;
   }
 

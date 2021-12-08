@@ -19,6 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject
 
 import biz.ganttproject.LoggerApi
+import biz.ganttproject.app.BarrierEntrance
+import biz.ganttproject.app.Barrier
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.SingleTranslationLocalizer
 import biz.ganttproject.app.showAsync
@@ -171,8 +173,8 @@ class AppBuilder(args: Array<String>) {
       )
       ganttProject.addProjectEventListener(object : ProjectEventListener.Stub() {
         override fun projectOpened(
-          barrierRegistry: CompletionActivityRegistry,
-          barrier: CompletionPromise<IGanttProject>
+          barrierRegistry: BarrierEntrance,
+          barrier: Barrier<IGanttProject>
         ) {
           barrier.await { runWhenDocumentReady.forEach { cmd -> cmd(ganttProject.project) } }
         }

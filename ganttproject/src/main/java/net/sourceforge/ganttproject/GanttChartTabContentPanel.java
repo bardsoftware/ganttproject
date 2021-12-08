@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.app.MenuBuilderFx;
 import biz.ganttproject.app.ToolbarKt;
@@ -60,9 +61,9 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
                             JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
-                            TaskActions taskActions, CountDownCompletionPromise<UIFacade> initializationPromise) {
+                            TaskActions taskActions, BarrierEntrance initializationPromise) {
     super(project, workbenchFacade, workbenchFacade.getGanttChart());
-    myInitializationCompleted = initializationPromise.add("Task table inserted into the component tree");
+    myInitializationCompleted = initializationPromise.register("Task table inserted into the component tree");
     myTaskActions = taskActions;
     myTaskTableSupplier = taskTableSupplier;
     myWorkbenchFacade = workbenchFacade;
