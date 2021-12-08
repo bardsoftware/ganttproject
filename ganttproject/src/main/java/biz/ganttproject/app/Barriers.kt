@@ -24,10 +24,26 @@ import java.util.concurrent.atomic.AtomicInteger
 typealias BarrierExit<T> = (T)->Unit
 typealias OnBarrierReached = ()->Unit
 
+/**
+ * Interface for registration of a barrier entrance activity. The activity
+ * receives OnBarrierReached callback which it must call once it is completed.
+ */
 interface BarrierEntrance {
   fun register(activity: String): OnBarrierReached
 }
+
+/**
+ * This is an interface of a synchronization primitive which allows for
+ * starting a number of activities, called "barrier exits", once the barrier
+ * entrance condition becomes true.
+ *
+ * In GanttProject code, the exit opens once a few entrance activities complete and
+ * reach the barrier.
+ */
 fun interface Barrier<T> {
+  /**
+   * Registers barrier exit code which will start running when the exit opens.
+   */
   fun await(code: BarrierExit<T>)
 }
 
@@ -37,6 +53,16 @@ class SimpleBarrier<T> : Barrier<T> {
   internal fun resolve(value: T) = subscribers.forEach { it(value) }
 }
 
+/**
+ * This barrier implementation has two phases. In the first phase entrance activities
+ * register themselves in the barrier entrance. This phase is supposed to be synchronous,
+ * that is, it runs in the same thread/coroutine where the barrier was created.
+ * In the second phase the registered entrance activities complete (most likely asynchronously)
+ * and notify about the completion using OnBarrierReached callback which they obtain
+ * at the registration moment.
+ * Once all registered entrance activities reach the barrier, it opens it's exit and
+ * starts the exit activities.
+ */
 class TwoPhaseBarrierImpl<T>(private val value: T) : Barrier<T>, BarrierEntrance {
   private val counter = AtomicInteger(0)
   private val exits = mutableListOf<BarrierExit<T>>()
