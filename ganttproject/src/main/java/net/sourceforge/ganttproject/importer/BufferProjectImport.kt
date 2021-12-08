@@ -32,6 +32,8 @@ data class ImportBufferProjectApi(
   val resourceColumnList: () -> ColumnList,
   val refresh: () -> Unit
 )
+
+typealias TaskMapping = Map<Task, Task>
 /**
  * @author dbarashev@bardsoftware.com
  */
@@ -41,33 +43,8 @@ fun importBufferProject(
   importApi: ImportBufferProjectApi,
   mergeOption: MergeResourcesOption,
   importCalendarOption: ImportCalendarOption?
-): Map<Task, Task> {
-  targetProject.roleManager.importData(bufferProject.roleManager)
-  if (importCalendarOption != null) {
-    targetProject.activeCalendar.importCalendar(bufferProject.activeCalendar, importCalendarOption)
-  }
-  val targetResCustomPropertyMgr = targetProject.resourceCustomPropertyManager
-  val that2thisResourceCustomDefs = targetResCustomPropertyMgr.importData(bufferProject.resourceCustomPropertyManager)
-  val original2ImportedResource = targetProject.humanResourceManager.importData(
-    bufferProject.humanResourceManager, OverwritingMerger(mergeOption), that2thisResourceCustomDefs
-  )
-  val result = run {
-    val targetCustomColumnStorage = targetProject.taskCustomColumnManager
-    val that2thisCustomDefs =
-      targetCustomColumnStorage.importData(bufferProject.taskCustomColumnManager)
-    val origTaskManager = targetProject.taskManager as TaskManagerImpl
-    try {
-      origTaskManager.setEventsEnabled(false)
-      val result = origTaskManager.importData(bufferProject.taskManager, that2thisCustomDefs)
-      origTaskManager.importAssignments(
-        bufferProject.taskManager, targetProject.humanResourceManager,
-        result, original2ImportedResource
-      )
-      result
-    } finally {
-      origTaskManager.setEventsEnabled(true)
-    }
-  }
+): TaskMapping {
+  val result = targetProject.importProject(bufferProject, mergeOption, importCalendarOption)
   importApi.refresh()
   importApi.taskColumnList().importData(bufferProject.visibleFields, true)
   importApi.resourceColumnList().importData(bufferProject.myResourceVisibleFields, true)

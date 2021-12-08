@@ -23,7 +23,7 @@ import biz.ganttproject.core.time.CalendarFactory
 
 fun TaskManager.TaskBuilder.setupNewTask(task: TaskImpl, manager: TaskManagerImpl) {
   val name = myName ?: run {
-    myPrototype?.name ?: manager.getTaskNamePrefixOption().getValue().toString() + "_" + task.taskID
+    myPrototype?.name ?: manager.taskNamePrefixOption.value.toString() + "_" + task.taskID
   }
   task.name = name
 
@@ -32,9 +32,9 @@ fun TaskManager.TaskBuilder.setupNewTask(task: TaskImpl, manager: TaskManagerImp
 
   val duration = myDuration ?: myPrototype?.duration ?: run {
     if (myEndDate == null) {
-      manager.createLength(manager.getTimeUnitStack().getDefaultTimeUnit(), 1.0f)
+      manager.createLength(manager.timeUnitStack.defaultTimeUnit, 1.0f)
     } else {
-      manager.createLength(manager.getTimeUnitStack().getDefaultTimeUnit(), myStartDate, myEndDate)
+      manager.createLength(manager.timeUnitStack.defaultTimeUnit, myStartDate, myEndDate)
     }
   }
   duration?.let { task.duration = it }

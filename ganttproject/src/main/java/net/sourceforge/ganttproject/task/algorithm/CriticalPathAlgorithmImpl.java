@@ -28,7 +28,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint.Col
 import java.util.*;
 import java.util.logging.Logger;
 
-public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
+public class CriticalPathAlgorithmImpl extends AlgorithmBase implements CriticalPathAlgorithm {
   private static final Logger ourLogger = GPLogger.getLogger(CriticalPathAlgorithm.class);
 
   private final TaskManager myTaskManager;
@@ -37,6 +37,7 @@ public class CriticalPathAlgorithmImpl implements CriticalPathAlgorithm {
   public CriticalPathAlgorithmImpl(TaskManager taskManager, GPCalendarCalc calendar) {
     myTaskManager = taskManager;
     myCalendar = calendar;
+    setEnabled(false);
   }
 
   static class Node {

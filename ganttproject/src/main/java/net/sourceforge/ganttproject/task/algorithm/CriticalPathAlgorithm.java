@@ -25,5 +25,7 @@ public interface CriticalPathAlgorithm {
    * @return All tasks which are included in any critical path (if there are
    *         many of them).
    */
-  public Task[] getCriticalTasks();
+  Task[] getCriticalTasks();
+  boolean isEnabled();
+  void setEnabled(boolean value);
 }

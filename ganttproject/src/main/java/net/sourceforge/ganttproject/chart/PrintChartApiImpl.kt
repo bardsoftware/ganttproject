@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2021 Dmitry Barashev, BarD Software s.r.o.
+ *
+ * This file is part of GanttProject, an open-source project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package net.sourceforge.ganttproject.chart
 
 import biz.ganttproject.print.PrintChartApi
@@ -25,6 +43,7 @@ class PrintChartApiImpl(
       it.endDate = endDate
       it.zoomLevel =
         if (zoomLevel < 0) zoomManager.zoomState else zoomManager.getZoomState(zoomLevel)
+      it.isCommandLineMode = isHeadless
     }
     val visitor = ChartRasterImageBuilder()
     buildImage(exportSettings, visitor)
@@ -62,7 +81,7 @@ internal class ChartRasterImageBuilder : ChartImageVisitor {
     }
     val g = getGraphics(d)
     g!!.background = Color.WHITE
-    g.clearRect(0, d.logoHeight, d.treeWidth, d.chartHeight - d.logoHeight)
+    g.clearRect(0, d.logoHeight, d.treeWidth, d.chartHeight + d.logoHeight)
     g.translate(0, d.logoHeight)
     val header = treeTable.tableHeaderComponent.invoke()
     if (header != null) {
@@ -82,8 +101,7 @@ internal class ChartRasterImageBuilder : ChartImageVisitor {
       myTreeImage = BufferedImage(1, d.chartHeight, BufferedImage.TYPE_INT_RGB)
     }
     myRenderedImage = RenderedChartImage(
-      model, myTreeImage, d.chartWidth, d.chartHeight
-          + d.logoHeight, d.logoHeight
+      model, myTreeImage, d.chartWidth, d.chartHeight, d.logoHeight
     )
   }
 

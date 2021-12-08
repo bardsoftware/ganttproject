@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2021 Dmitry Barashev, BarD Software s.r.o.
+ *
+ * This file is part of GanttProject, an open-source project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package biz.ganttproject.lib.fx
 
 import biz.ganttproject.core.chart.canvas.Canvas
@@ -5,7 +23,6 @@ import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.TableSceneBuilder
 import biz.ganttproject.core.table.TreeTableSceneBuilder
-import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.ganttview.TaskTable
 import biz.ganttproject.ganttview.depthFirstWalk
 import javafx.scene.control.TreeItem
@@ -15,7 +32,6 @@ import net.sourceforge.ganttproject.task.Task
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.RenderingHints
-import java.awt.image.BufferedImage
 import java.util.*
 
 /**
@@ -24,7 +40,6 @@ import java.util.*
 fun TaskTable.buildImage(graphics2D: Graphics2D) {
 
   val taskTable = this
-//  val bufferedImage = taskTable.treeTable.createEmptyBufferedImage()
   val textMetrics = TextLengthCalculatorImpl(graphics2D)
   val sceneBuilderInput = TreeTableSceneBuilder.InputApi(
     textMetrics = textMetrics,
@@ -54,18 +69,18 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
         val value: String = TaskDefaultColumn.find(it.id)?.let { tdc ->
           taskTable.taskTableModel.getValueAt(item.value, tdc).toString()
         } ?: ""
-        key?.let { key to value } ?: columnMap.values.first() to ""
+        key?.let { key to value } ?: (columnMap.values.first() to "")
       }
     )
     treeItem2sceneItem[item] = sceneItem
-    treeItem2sceneItem[item.parent]?.let { it.subitems.add(sceneItem) } ?: run { rootSceneItems.add(sceneItem) }
+    treeItem2sceneItem[item.parent]?.subitems?.add(sceneItem) ?: run { rootSceneItems.add(sceneItem) }
     item.isExpanded
   }
   val canvas = treeTableSceneBuilder.build(
     columns = columnMap.values.toList(),
     items = rootSceneItems
   )
-  val painter = StyledPainterImpl(ChartUIConfiguration( taskTable.project.uiConfiguration))
+  val painter = StyledPainterImpl(ChartUIConfiguration( taskTable.project.uIConfiguration))
   painter.setGraphics(graphics2D)
 
   graphics2D.setRenderingHint(
@@ -77,11 +92,6 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
 
   canvas.paint(painter)
 }
-
-fun GPTreeTableView<*>.createEmptyBufferedImage(): BufferedImage =
-  BufferedImage(width.toInt(), height.toInt(), BufferedImage.TYPE_INT_RGB).also {
-    val g2 = it.graphics as Graphics2D
-  }
 
 fun (TaskDefaultColumn?).alignment(): Canvas.HAlignment? {
   if (this == null) {

@@ -18,6 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject
 
+import biz.ganttproject.LoggerApi
+import biz.ganttproject.app.BarrierEntrance
+import biz.ganttproject.app.Barrier
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.SingleTranslationLocalizer
 import biz.ganttproject.app.showAsync
@@ -26,41 +29,40 @@ import com.bardsoftware.eclipsito.update.UpdateMetadata
 import com.bardsoftware.eclipsito.update.UpdateProgressMonitor
 import com.bardsoftware.eclipsito.update.Updater
 import com.beust.jcommander.JCommander
-import net.sourceforge.ganttproject.document.DocumentCreator
+import javafx.application.Platform
+import net.sourceforge.ganttproject.export.CommandLineExportApplication
+import net.sourceforge.ganttproject.gui.CommandLineProjectOpenStrategy
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.plugins.PluginManager
+import net.sourceforge.ganttproject.task.TaskManagerImpl
+import org.slf4j.Logger
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import java.io.File
+import java.io.PrintStream
 import java.lang.Thread.UncaughtExceptionHandler
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
-import javafx.application.Platform
-import java.awt.Toolkit
-import java.io.File
-import java.lang.reflect.Field
+import javax.swing.JFrame
 import javax.swing.SwingUtilities
 
 
 fun main(args: Array<String>) {
-  val mainArgs = GanttProject.Args()
-  JCommander(arrayOf<Any>(mainArgs), *args)
-  GPLogger.init(mainArgs.logbackConfig)
-  RootLocalizer = SingleTranslationLocalizer(ResourceBundle.getBundle("i18n"))
-  PluginManager.setCharts(listOf())
-  GanttLanguage.getInstance()
-  // This is a dummy updater just to make gradle run working
-  val updater = object : Updater {
-    override fun getUpdateMetadata(p0: String?) = CompletableFuture.completedFuture(listOf<UpdateMetadata>())
-    override fun installUpdate(p0: UpdateMetadata?, p1: UpdateProgressMonitor?, p2: UpdateIntegrityChecker?): CompletableFuture<File> {
-      TODO("Not yet implemented")
+  AppBuilder(args).withLogging().withWindowVisible().runBeforeUi {
+    RootLocalizer = SingleTranslationLocalizer(ResourceBundle.getBundle("i18n"))
+    PluginManager.setCharts(listOf())
+    GanttLanguage.getInstance()
+  }.whenAppInitialized {
+    // This is a dummy updater just to make gradle run working
+    val updater = object : Updater {
+      override fun getUpdateMetadata(p0: String?) = CompletableFuture.completedFuture(listOf<UpdateMetadata>())
+      override fun installUpdate(p0: UpdateMetadata?, p1: UpdateProgressMonitor?, p2: UpdateIntegrityChecker?): CompletableFuture<File> {
+        TODO("Not yet implemented")
+      }
     }
-  }
-  startUiApp(mainArgs) {
     it.updater = updater
-  }
+  }.launch()
 }
 
 val mainWindow = AtomicReference<GanttProject?>(null)
@@ -69,61 +71,144 @@ val mainWindow = AtomicReference<GanttProject?>(null)
  * @author dbarashev@bardsoftware.com
  */
 @JvmOverloads
-fun startUiApp(args: GanttProject.Args, configure: (GanttProject) -> Unit = {}) {
-  try {
-    val toolkit: Toolkit = Toolkit.getDefaultToolkit()
-    val awtAppClassNameField: Field = toolkit.javaClass.getDeclaredField("awtAppClassName")
-    awtAppClassNameField.isAccessible = true
-    awtAppClassNameField.set(toolkit, RootLocalizer.formatText("appliTitle"))
-  } catch (e: NoSuchFieldException) {
-    APP_LOGGER.error("Can't set awtAppClassName (needed on Linux to show app name in the top panel)")
-  } catch (e: IllegalAccessException) {
-    APP_LOGGER.error("Can't set awtAppClassName (needed on Linux to show app name in the top panel)")
-  }
-  val autosaveCleanup = DocumentCreator.createAutosaveCleanup()
-
-  val splashCloser = showAsync()
+fun startUiApp(configure: (GanttProject) -> Unit = {}) {
 
   Platform.setImplicitExit(false)
-  Platform.runLater {
-    Thread.currentThread().uncaughtExceptionHandler = UncaughtExceptionHandler {
-        _, e -> GPLogger.log(e)
-    }
-  }
   SwingUtilities.invokeLater {
     try {
       val ganttFrame = GanttProject(false)
       configure(ganttFrame)
       APP_LOGGER.debug("Main frame created")
       mainWindow.set(ganttFrame)
-      ganttFrame.addWindowListener(object : WindowAdapter() {
-        override fun windowOpened(e: WindowEvent) {
-          try {
-            splashCloser.get().run()
-          } catch (ex: Exception) {
-            ex.printStackTrace()
-          }
-        }
-      })
     } catch (e: Exception) {
       APP_LOGGER.error("Failure when launching application", exception = e)
     } finally {
-      Thread.currentThread().uncaughtExceptionHandler = UncaughtExceptionHandler {
-        _, e -> GPLogger.log(e)
-      }
-      Thread.setDefaultUncaughtExceptionHandler { _, e ->
-        GPLogger.log(e)
-      }
     }
-  }
-
-  SwingUtilities.invokeLater { mainWindow.get()!!.doShow() }
-  SwingUtilities.invokeLater { mainWindow.get()!!.doOpenStartupDocument(args) }
-  if (autosaveCleanup != null) {
-    ourExecutor.submit(autosaveCleanup)
   }
 }
 
-private val ourExecutor: ExecutorService = Executors.newSingleThreadExecutor()
-val APP_LOGGER = GPLogger.create("App")
+val APP_LOGGER: LoggerApi<Logger> = GPLogger.create("App")
 
+typealias RunBeforeUi = ()->Unit
+typealias RunAfterWindowOpened = (JFrame) -> Unit
+typealias RunAfterAppInitialized = (GanttProject) -> Unit
+typealias RunWhenDocumentReady = (IGanttProject) -> Unit
+
+class AppBuilder(args: Array<String>) {
+  val mainArgs = GanttProject.Args()
+  val cliArgs = CommandLineExportApplication.Args()
+  val cliParser = JCommander(arrayOf(mainArgs, cliArgs), *args)
+
+  fun isCli(): Boolean = !cliArgs.exporter.isNullOrBlank()
+  private val runBeforeUiCommands = mutableListOf<RunBeforeUi>()
+  private val runAfterWindowOpenedCommands = mutableListOf<RunAfterWindowOpened>()
+  private val runAfterAppInitializedCommands = mutableListOf<RunAfterAppInitialized>()
+  private val runWhenDocumentReady = mutableListOf<RunWhenDocumentReady>()
+
+  fun runBeforeUi(cmd: RunBeforeUi): AppBuilder {
+    runBeforeUiCommands.add(cmd)
+    return this
+  }
+  fun withLogging(): AppBuilder {
+    runBeforeUi {
+      if (mainArgs.log && "auto" == mainArgs.logFile) {
+        mainArgs.logFile = System.getProperty("user.home") + File.separator + "ganttproject.log"
+      }
+      if (mainArgs.log && mainArgs.logFile.trim().isNotEmpty()) {
+        try {
+          GPLogger.setLogFile(mainArgs.logFile)
+          File(mainArgs.logFile).also {
+            System.setErr(PrintStream(it.outputStream()))
+          }
+        } catch (ex: Exception) {
+          println("Failed to write log to file: " + ex.message)
+          ex.printStackTrace()
+        }
+      }
+
+      GPLogger.logSystemInformation()
+
+    }
+    Thread.setDefaultUncaughtExceptionHandler { _, e ->
+      GPLogger.log(e)
+    }
+    SwingUtilities.invokeLater {
+      Thread.currentThread().uncaughtExceptionHandler = UncaughtExceptionHandler {
+          _, e -> GPLogger.log(e)
+      }
+    }
+    whenWindowOpened {
+      Platform.runLater {
+        Thread.currentThread().uncaughtExceptionHandler = UncaughtExceptionHandler {
+            _, e -> GPLogger.log(e)
+        }
+      }
+    }
+    return this
+  }
+  fun withSplash(): AppBuilder {
+    val splashCloser = showAsync().get()
+    whenWindowOpened {
+      try {
+        splashCloser.run()
+      } catch (ex: Exception) {
+        ex.printStackTrace()
+      }
+    }
+    return this
+  }
+  fun withWindowVisible(): AppBuilder {
+    whenAppInitialized { ganttProject ->
+      SwingUtilities.invokeLater { ganttProject.doShow() }
+    }
+    return this
+  }
+  fun withDocument(path: String): AppBuilder {
+    whenAppInitialized { ganttProject ->
+      val strategy = CommandLineProjectOpenStrategy(
+        ganttProject.project, ganttProject.documentManager,
+        ganttProject.taskManager as TaskManagerImpl,
+        ganttProject.uiFacade, ganttProject.projectUIFacade,
+        ganttProject.ganttOptions.pluginPreferences
+      )
+      ganttProject.addProjectEventListener(object : ProjectEventListener.Stub() {
+        override fun projectOpened(
+          barrierRegistry: BarrierEntrance,
+          barrier: Barrier<IGanttProject>
+        ) {
+          barrier.await { runWhenDocumentReady.forEach { cmd -> cmd(ganttProject.project) } }
+        }
+      })
+      strategy.openStartupDocument(path)
+    }
+    return this
+  }
+
+  fun whenAppInitialized(code: RunAfterAppInitialized): AppBuilder {
+    runAfterAppInitializedCommands.add(code)
+    return this
+  }
+  fun whenWindowOpened(code: RunAfterWindowOpened): AppBuilder {
+    runAfterWindowOpenedCommands.add(code)
+    return this
+  }
+  fun whenDocumentReady(code: RunWhenDocumentReady): AppBuilder {
+    runWhenDocumentReady.add(code)
+    return this
+  }
+
+  fun launch() {
+    runBeforeUiCommands.forEach { cmd -> cmd() }
+    startUiApp { ganttProject: GanttProject ->
+      ganttProject.updater = org.eclipse.core.runtime.Platform.getUpdater()
+      ganttProject.addWindowListener(object : WindowAdapter() {
+        override fun windowOpened(e: WindowEvent?) {
+          runAfterWindowOpenedCommands.forEach { cmd -> cmd(ganttProject) }
+        }
+      })
+      ganttProject.uiInitializationPromise.await {
+        runAfterAppInitializedCommands.forEach { cmd -> cmd(ganttProject) }
+      }
+    }
+  }
+}

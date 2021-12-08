@@ -18,19 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task.algorithm;
 
+import biz.ganttproject.core.time.GanttCalendar;
+import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskMutator;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import biz.ganttproject.core.time.GanttCalendar;
-
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskMutator;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
  * @author bard
@@ -46,7 +45,7 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
 
 
   @Override
-  protected boolean isEnabled() {
+  public boolean isEnabled() {
     return false;
   }
 

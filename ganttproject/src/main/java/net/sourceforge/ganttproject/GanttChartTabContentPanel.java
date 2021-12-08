@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.app.MenuBuilderFx;
 import biz.ganttproject.app.ToolbarKt;
@@ -28,6 +29,8 @@ import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.action.BaselineDialogAction;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -52,13 +55,15 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final BaselineDialogAction myBaselineAction;
   private final Supplier<TaskTable> myTaskTableSupplier;
   private final TaskActions myTaskActions;
+  private final Function0<Unit> myInitializationCompleted;
   private JComponent myComponent;
   private TaskTable taskTable;
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
                             JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
-                            TaskActions taskActions) {
+                            TaskActions taskActions, BarrierEntrance initializationPromise) {
     super(project, workbenchFacade, workbenchFacade.getGanttChart());
+    myInitializationCompleted = initializationPromise.register("Task table inserted into the component tree");
     myTaskActions = taskActions;
     myTaskTableSupplier = taskTableSupplier;
     myWorkbenchFacade = workbenchFacade;
@@ -148,6 +153,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     Platform.runLater(() -> {
       jfxPanel.setScene(new Scene(myTaskTableSupplier.get().getControl()));
       setMyHeaderHeight(() -> myTaskTableSupplier.get().getHeaderHeightProperty().intValue());
+      myInitializationCompleted.invoke();
     });
     var taskTable = myTaskTableSupplier.get();
     taskTable.getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> updateTimelineHeight());
@@ -156,7 +162,9 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
       return null;
     });
     taskTable.setSwingComponent(jfxPanel);
-    taskTable.getColumnListWidthProperty().addListener((observable, oldValue, newValue) -> setTableWidth(newValue.doubleValue()));
+    taskTable.getColumnListWidthProperty().addListener((observable, oldValue, newValue) ->
+      SwingUtilities.invokeLater(() -> setTableWidth(newValue.doubleValue()))
+    );
     taskTable.loadDefaultColumns();
     this.taskTable = taskTable;
     return jfxPanel;

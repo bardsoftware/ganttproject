@@ -29,20 +29,13 @@ import biz.ganttproject.platform.UpdateKt;
 import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
 import biz.ganttproject.storage.cloud.GPCloudStatusBar;
-import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import kotlin.Unit;
-import net.sourceforge.ganttproject.action.ActiveActionProvider;
-import net.sourceforge.ganttproject.action.ArtefactAction;
-import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
-import net.sourceforge.ganttproject.action.ArtefactNewAction;
-import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
-import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.*;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
@@ -55,8 +48,6 @@ import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.export.CommandLineExportApplication;
-import net.sourceforge.ganttproject.gui.CommandLineProjectOpenStrategy;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -75,23 +66,13 @@ import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
-import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.awt.event.*;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
@@ -155,7 +136,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private RoleManager myRoleManager;
 
-  private static Consumer<Boolean> ourQuitCallback;
+  private static Consumer<Boolean> ourQuitCallback = withSystemExit -> {
+    if (withSystemExit) {
+      System.exit(0);
+    } else {
+      System.err.println("Quit application was called without System.exit() request");
+    }
+  };
 
   private FXSearchUi mySearchUi;
 
@@ -263,7 +250,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     myGanttChartTabContent = new GanttChartTabContentPanel(
         getProject(), getUIFacade(), area.getJComponent(),
-        getUIConfiguration(), myTaskTableSupplier, myTaskActions);
+        getUIConfiguration(), myTaskTableSupplier, myTaskActions, myUiInitializationPromise);
 
     getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
     getViewManager().toggleVisible(myGanttChartTabContent);
@@ -612,7 +599,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       Document newDocument = getDocumentManager().newUntitledDocument();
       getProject().setDocument(newDocument);
       myObservableDocument.set(newDocument);
-      fireProjectCreated();
+      getProjectImpl().fireProjectCreated();
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -632,18 +619,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // myDelayManager.fireDelayObservation(); // it is done in repaint2
     addMouseListenerToAllContainer(this.getComponents());
 
-    fireProjectOpened();
-  }
-
-  public void openStartupDocument(String path) {
-    if (path == null) {
-      return;
-    }
-    var strategy = new CommandLineProjectOpenStrategy(getProject(), getDocumentManager(), (TaskManagerImpl) getTaskManager(), getUIFacade(), getProjectUIFacade(), getGanttOptions().getPluginPreferences());
-    strategy.openStartupDocument(path, () -> {
-      fireProjectCreated();
-      return Unit.INSTANCE;
-    });
+    getProjectImpl().fireProjectOpened();
   }
 
   /**
@@ -682,9 +658,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         getProject().close();
         setVisible(false);
         dispose();
-        if (ourQuitCallback != null) {
-          ourQuitCallback.accept(withSystemExit);
-        }
+        doQuitApplication(withSystemExit);
         return true;
       } else {
         setVisible(true);
@@ -696,7 +670,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   public void setAskForSave(boolean afs) {
-    fireProjectModified(afs);
+    getProjectImpl().fireProjectModified(afs, (ex) -> getUIFacade().showErrorDialog(ex) );
     String title = getTitle();
     askForSave = afs;
     try {
@@ -763,66 +737,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     @Parameter(names = {"-version"}, description = "Print version number")
     public boolean version = false;
 
+    @Parameter(names = "--fix-menu-bar-title", description = "Fixes the application title in the menu bar on Linux with Unity desktop environment")
+    public boolean fixMenuBarTitle = false;
+
     @Parameter(description = "Input file name")
     public List<String> file = null;
-  }
-
-  /**
-   * The main
-   */
-  public static boolean main(String[] arg) throws InvocationTargetException, InterruptedException {
-    CommandLineExportApplication cmdlineApplication = new CommandLineExportApplication();
-    final Args mainArgs = new Args();
-    try {
-      JCommander cmdLineParser = new JCommander(new Object[]{mainArgs, cmdlineApplication.getArguments()}, arg);
-      GPLogger.init(mainArgs.logbackConfig);
-      if (mainArgs.help) {
-        cmdLineParser.usage();
-        System.exit(0);
-      }
-      if (mainArgs.version) {
-        System.out.println(GPVersion.getCurrentVersionNumber());
-        System.exit(0);
-      }
-    } catch (Throwable e) {
-      e.printStackTrace();
-      return false;
-    }
-    if (mainArgs.log && "auto".equals(mainArgs.logFile)) {
-      mainArgs.logFile = System.getProperty("user.home") + File.separator + "ganttproject.log";
-    }
-    if (mainArgs.log && !mainArgs.logFile.trim().isEmpty()) {
-      try {
-        GPLogger.setLogFile(mainArgs.logFile);
-        File logFile = new File(mainArgs.logFile);
-        System.setErr(new PrintStream(new FileOutputStream(logFile)));
-
-      } catch (IOException e) {
-        System.err.println("Failed to write log to file: " + e.getMessage());
-        e.printStackTrace();
-      }
-    }
-
-    GPLogger.logSystemInformation();
-    // Check if an export was requested from the command line
-    if (cmdlineApplication.export(mainArgs)) {
-      // Export succeeded so exit application
-      return false;
-    }
-
-
-    AppKt.startUiApp(mainArgs, ganttProject -> {
-      ganttProject.setUpdater(org.eclipse.core.runtime.Platform.getUpdater());
-      return null;
-    });
-    return true;
-  }
-
-  void doOpenStartupDocument(Args args) {
-    fireProjectCreated();
-    if (args.file != null && !args.file.isEmpty()) {
-      openStartupDocument(args.file.get(0));
-    }
   }
 
   // ///////////////////////////////////////////////////////
@@ -922,7 +841,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   @Override
   public void close() {
-    fireProjectClosed();
+    getProjectImpl().fireProjectClosed();
     prjInfos = new PrjInfos();
     RoleManager.Access.getInstance().clear();
     myObservableDocument.set(null);
@@ -1055,9 +974,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ourQuitCallback = callback;
   }
 
+  public static void doQuitApplication(boolean withSystemExit) {
+    ourQuitCallback.accept(withSystemExit);
+  }
   @Override
   public void refresh() {
-    getTaskManager().processCriticalPath(getTaskManager().getRootTask());
     getResourcePanel().getResourceTreeTableModel().updateResources();
     getResourcePanel().getResourceTreeTable().setRowHeight(getResourceChart().getModel().calculateRowHeight());
     for (Chart chart : PluginManager.getCharts()) {
@@ -1065,4 +986,5 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
     super.repaint();
   }
+
 }

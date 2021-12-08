@@ -18,7 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.Barrier;
+import biz.ganttproject.app.TwoPhaseBarrierImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
+import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ColorOption;
@@ -69,18 +72,23 @@ import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.gui.view.ViewManagerImpl;
 import net.sourceforge.ganttproject.gui.window.ContentPaneBuilder;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManagerConfig;
+import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.undo.UndoManagerImpl;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -88,10 +96,9 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -107,10 +114,9 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   protected final static GanttLanguage language = GanttLanguage.getInstance();
   protected final WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
   private final ViewManagerImpl myViewManager;
-  private final List<ProjectEventListener> myModifiedStateChangeListeners = new ArrayList<ProjectEventListener>();
   private final UIFacadeImpl myUIFacade;
   private final GanttStatusBar statusBar;
-  private final TimeUnitStack myTimeUnitStack = new GPTimeUnitStack();;
+  private final TimeUnitStack myTimeUnitStack = new GPTimeUnitStack();
   private final ProjectUIFacadeImpl myProjectUIFacade;
   private final DocumentManager myDocumentManager;
   protected final SimpleObjectProperty<Document> myObservableDocument = new SimpleObjectProperty<>();
@@ -124,8 +130,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   protected final ContentPaneBuilder myContentPaneBuilder;
   final TaskManagerConfigImpl myTaskManagerConfig;
   private final TaskManager myTaskManager;
+  protected final TwoPhaseBarrierImpl<UIFacade> myUiInitializationPromise;
   private Updater myUpdater;
   protected final TaskActions myTaskActions;
+  private final GanttProjectImpl myProjectImpl;
 
   TaskTableChartConnector myTaskTableChartConnector = new TaskTableChartConnector(
       new SimpleIntegerProperty(-1),
@@ -142,9 +150,17 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected final TaskFilterManager myTaskFilterManager;
 
+  @Override
+  public Map<Task, Task> importProject(
+      @NotNull BufferProject bufferProject,
+      @NotNull HumanResourceMerger.MergeResourcesOption mergeResourcesOption,
+      @Nullable ImportCalendarOption importCalendarOption) {
+    return myProjectImpl.importProject(bufferProject, mergeResourcesOption, importCalendarOption);
+  }
+
 
   class TaskManagerConfigImpl implements TaskManagerConfig {
-    final DefaultColorOption myDefaultColorOption = new GanttProjectImpl.DefaultTaskColorOption();
+    final DefaultColorOption myDefaultColorOption = new DefaultTaskColorOption();
     final DefaultBooleanOption mySchedulerDisabledOption = new DefaultBooleanOption("scheduler.disabled", false);
 
     @Override
@@ -201,13 +217,15 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     super("GanttProject");
     myTaskManagerConfig = new TaskManagerConfigImpl();
     myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig);
-
+    myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager);
     statusBar = new GanttStatusBar(this);
     myTabPane = new GanttTabbedPane();
     myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());
 
     NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
     myUIFacade = new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
+    myUiInitializationPromise = new TwoPhaseBarrierImpl<>(myUIFacade);
+
     GPLogger.setUIFacade(myUIFacade);
     myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
         () -> getViewManager(),
@@ -220,7 +238,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myTaskFilterManager = new TaskFilterManager(getTaskManager());
     myTaskTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(
         () -> new TaskTable(getProject(), getTaskManager(),
-            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions, getUndoManager(), myTaskFilterManager)
+            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions, getUndoManager(),
+          myTaskFilterManager, myUiInitializationPromise)
     ));
     myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
       @Override
@@ -250,58 +269,27 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myUIFacade.addOptions(myRssChecker.getUiOptions());
   }
 
+  protected GanttProjectImpl getProjectImpl() {
+    return myProjectImpl;
+  }
   @Override
   public void restore(Document fromDocument) throws Document.DocumentException, IOException {
-    GanttProjectImplKt.restoreProject(this, fromDocument, myModifiedStateChangeListeners);
+    GanttProjectImplKt.restoreProject(this, fromDocument, myProjectImpl.getListeners());
   }
 
   @Override
   public void addProjectEventListener(ProjectEventListener listener) {
-    myModifiedStateChangeListeners.add(listener);
+    myProjectImpl.addProjectEventListener(listener);
   }
 
   @Override
   public void removeProjectEventListener(ProjectEventListener listener) {
-    myModifiedStateChangeListeners.remove(listener);
+    myProjectImpl.removeProjectEventListener(listener);
   }
 
-  protected void fireProjectModified(boolean isModified) {
-    for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
-      try {
-        if (isModified) {
-          modifiedStateChangeListener.projectModified();
-        } else {
-          modifiedStateChangeListener.projectSaved();
-        }
-      } catch (Exception e) {
-        showErrorDialog(e);
-      }
-    }
-  }
 
-  protected void fireProjectCreated() {
-    for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
-      modifiedStateChangeListener.projectCreated();
-    }
-    // A new project just got created, so it is not yet modified
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        setModified(false);
-      }
-    });
-  }
-
-  protected void fireProjectClosed() {
-    for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
-      modifiedStateChangeListener.projectClosed();
-    }
-  }
-
-  protected void fireProjectOpened() {
-    for (ProjectEventListener modifiedStateChangeListener : myModifiedStateChangeListeners) {
-      modifiedStateChangeListener.projectOpened();
-    }
+  public Barrier<UIFacade> getUiInitializationPromise() {
+    return myUiInitializationPromise;
   }
 
   // ////////////////////////////////////////////////////////////////
@@ -575,9 +563,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   public TaskManager getTaskManager() {
     return myTaskManager;
   }
-
-//  @Override
-//  public abstract TaskContainmentHierarchyFacade getTaskContainment();
 
   @Override
   public GPCalendarCalc getActiveCalendar() {

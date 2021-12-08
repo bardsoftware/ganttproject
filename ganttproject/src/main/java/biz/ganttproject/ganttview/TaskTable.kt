@@ -83,7 +83,8 @@ class TaskTable(
   private val selectionManager: TaskSelectionManager,
   private val taskActions: TaskActions,
   private val undoManager: GPUndoManager,
-  private val filters: TaskFilterManager
+  private val filters: TaskFilterManager,
+  initializationPromise: TwoPhaseBarrierImpl<*>
 ) {
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   private val treeModel = taskManager.taskHierarchy
@@ -136,6 +137,7 @@ class TaskTable(
   }
   private val placeholderEmpty by lazy { Pane() }
 
+  private val initializationCompleted = initializationPromise.register("Task table initialization")
   init {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
 
@@ -243,7 +245,13 @@ class TaskTable(
       TreeTableApi(
         rowHeight = { taskTableChartConnector.rowHeight.value },
         tableHeaderHeight = { treeTable.headerHeight.intValue()  },
-        width = { treeTable.width.toInt() - treeTable.vbarWidth().toInt() },
+        width = { fullWidthNotViewport ->
+          if (fullWidthNotViewport) {
+            columnList.totalWidth.toInt()
+          } else {
+            treeTable.width.toInt() - treeTable.vbarWidth().toInt()
+          }
+        },
         tableHeaderComponent = { null },
         tableComponent = { null },
         tablePainter = { this.buildImage(it) }
@@ -256,14 +264,17 @@ class TaskTable(
 
   private fun initProjectEventHandlers() {
     project.addProjectEventListener(object : ProjectEventListener.Stub() {
-      override fun projectRestoring(completion: CompletionPromise<Document>) {
+      override fun projectRestoring(completion: Barrier<Document>) {
         completion.await {
           sync()
         }
       }
 
-      override fun projectOpened() {
-        reload()
+      override fun projectOpened(
+        barrierRegistry: BarrierEntrance,
+        barrier: Barrier<IGanttProject>
+      ) {
+        reload(barrierRegistry.register("Reload Task Table"))
       }
 
       override fun projectCreated() {
@@ -546,11 +557,12 @@ class TaskTable(
     }
   }
 
-  fun reload() {
+  fun reload(termination: OnBarrierReached? = null) {
     Platform.runLater {
       treeTable.root.children.clear()
       treeTable.selectionModel.clearSelection()
       sync()
+      termination?.invoke()
     }
   }
 
@@ -598,6 +610,7 @@ class TaskTable(
           placeholderEmpty
         }
       }
+      initializationCompleted()
     }
   }
 
@@ -640,7 +653,7 @@ class TaskTable(
   }
 
   private fun keepSelection(code: ()->Unit) {
-    Platform.runLater {
+    val body = {
       val selectedTasks =
         treeTable.selectionModel.selectedItems.associate {
           it.value to (it.previousSibling()
@@ -655,6 +668,11 @@ class TaskTable(
         treeTable.selectionModel.select(whatSelect)
       }
       treeTable.requestFocus()
+    }
+    if (Platform.isFxApplicationThread()){
+      body()
+    } else {
+      Platform.runLater { body() }
     }
   }
 

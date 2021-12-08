@@ -24,7 +24,7 @@ class ChartDimensions internal constructor(settings: GanttExportSettings, treeTa
   val logoHeight: Int = settings.logo.getHeight(null)
   val treeHeight: Int = treeTable.rowHeight() * settings.rowCount
   val tableHeaderHeight: Int = treeTable.tableHeaderHeight()
-  val treeWidth: Int = treeTable.width()
+  val treeWidth: Int = treeTable.width(settings.isCommandLineMode)
   var chartWidth = 0
   val chartHeight: Int
     get() = treeHeight + tableHeaderHeight + logoHeight

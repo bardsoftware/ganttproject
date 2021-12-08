@@ -103,6 +103,15 @@ public class ExporterToImage extends ExporterBase {
   }
 
   @Override
+  protected void setFormat(String format) {
+    for (int i = 0; i < FileTypeOption.FILE_EXTENSION.length; i++) {
+      if (FileTypeOption.FILE_EXTENSION[i].equalsIgnoreCase(format)) {
+        myFileTypeOption.setValue(FileTypeOption.FILE_FORMAT_ID[i]);
+      }
+    }
+  }
+
+  @Override
   public String getFileTypeDescription() {
     return MessageFormat.format(GanttLanguage.getInstance().getText("impex.image.description"),
         new Object[] { proposeFileExtension() });

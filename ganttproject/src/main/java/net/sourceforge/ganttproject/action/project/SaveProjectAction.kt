@@ -18,7 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project
 
-import net.sourceforge.ganttproject.CompletionPromise
+import biz.ganttproject.app.BarrierEntrance
+import biz.ganttproject.app.Barrier
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.action.GPAction
@@ -69,11 +70,14 @@ class SaveProjectAction private constructor(
     isEnabled = false
   }
 
-  override fun projectOpened() {
+  override fun projectOpened(
+    barrierRegistry: BarrierEntrance,
+    barrier: Barrier<IGanttProject>
+  ) {
     isEnabled = false
   }
 
-  override fun projectRestoring(completion: CompletionPromise<Document>) {}
+  override fun projectRestoring(completion: Barrier<Document>) {}
 
   override fun asToolbarAction(): SaveProjectAction {
     val result = SaveProjectAction(myProject, myProjectUiFacade)

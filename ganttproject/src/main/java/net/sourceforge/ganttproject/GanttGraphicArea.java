@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.BarrierEntrance;
+import biz.ganttproject.app.Barrier;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.option.ColorOption;
@@ -344,7 +346,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   }
 
   @Override
-  public void projectOpened() {
+  public void projectOpened(BarrierEntrance barrierRegistry, Barrier<IGanttProject> barrier) {
   }
 
   @Override
@@ -354,7 +356,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   }
 
   @Override
-  public void projectRestoring(CompletionPromise<Document> completion) {
+  public void projectRestoring(Barrier<Document> completion) {
   }
 
   @Override

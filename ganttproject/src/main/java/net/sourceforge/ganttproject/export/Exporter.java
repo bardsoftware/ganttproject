@@ -18,16 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.export;
 
-import java.awt.Component;
-import java.io.File;
-import java.util.List;
-
+import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
-
+import org.jetbrains.annotations.Nullable;
 import org.osgi.service.prefs.Preferences;
 
-import biz.ganttproject.core.option.GPOptionGroup;
+import java.awt.*;
+import java.io.File;
+import java.util.List;
 
 /**
  * @author bard
@@ -48,7 +47,9 @@ public interface Exporter {
 
   String[] getFileExtensions();
 
-  String[] getCommandLineKeys();
+  @Nullable
+  Exporter withFormat(String format);
+  //String[] getCommandLineKeys();
 
   void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs);
 

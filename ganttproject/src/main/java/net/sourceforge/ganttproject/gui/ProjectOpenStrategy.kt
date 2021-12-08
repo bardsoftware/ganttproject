@@ -25,14 +25,12 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.DefaultEnumerationOption
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.*
-import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
@@ -88,9 +86,9 @@ internal class ProjectOpenStrategy(
     myDiagnostics = ProjectOpenDiagnosticImpl(this.uiFacade)
     myAlgs = this.project.taskManager.algorithmCollection
     myEnableAlgorithmsCmd = AutoCloseable {
-      myAlgs.scheduler.setEnabled(true)
-      myAlgs.recalculateTaskScheduleAlgorithm.setEnabled(true)
-      myAlgs.adjustTaskBoundsAlgorithm.setEnabled(true)
+      myAlgs.scheduler.isEnabled = true
+      myAlgs.recalculateTaskScheduleAlgorithm.isEnabled = true
+      myAlgs.adjustTaskBoundsAlgorithm.isEnabled = true
     }
   }
 
@@ -249,9 +247,9 @@ internal class ProjectOpenStrategy(
   @Throws(Exception::class)
   fun openFileAsIs(document: Document): Step1 {
     myCloseables.add(myEnableAlgorithmsCmd)
-    myAlgs.scheduler.setEnabled(false)
-    myAlgs.recalculateTaskScheduleAlgorithm.setEnabled(false)
-    myAlgs.adjustTaskBoundsAlgorithm.setEnabled(false)
+    myAlgs.scheduler.isEnabled = false
+    myAlgs.recalculateTaskScheduleAlgorithm.isEnabled = false
+    myAlgs.adjustTaskBoundsAlgorithm.isEnabled = false
     myAlgs.scheduler.setDiagnostic(myDiagnostics)
     try {
       project.open(document)
@@ -287,7 +285,7 @@ internal class ProjectOpenStrategy(
         else
           milestonesOption.selectedValue
         when (option) {
-          ProjectOpenStrategy.ConvertMilestones.UNKNOWN -> myTasks.add(Runnable {
+          ConvertMilestones.UNKNOWN -> myTasks.add(Runnable {
             try {
               project.taskManager.algorithmCollection.scheduler.setDiagnostic(myDiagnostics)
               tryPatchMilestones(project, taskManager)
@@ -295,11 +293,11 @@ internal class ProjectOpenStrategy(
               project.taskManager.algorithmCollection.scheduler.setDiagnostic(null)
             }
           })
-          ProjectOpenStrategy.ConvertMilestones.TRUE -> {
+          ConvertMilestones.TRUE -> {
             taskManager.isZeroMilestones = true
             myResetModifiedState = false
           }
-          ProjectOpenStrategy.ConvertMilestones.FALSE -> taskManager.isZeroMilestones = false
+          ConvertMilestones.FALSE -> taskManager.isZeroMilestones = false
           else -> taskManager.isZeroMilestones = false
         }
       }
@@ -467,7 +465,7 @@ internal class CommandLineProjectOpenStrategy(
   private val projectUiFacade: ProjectUIFacade,
   private val preferences: Preferences
 ) {
-  fun openStartupDocument(path: String, hackFireProjectCreated: ()->Unit) {
+  fun openStartupDocument(path: String) {
     val document: Document = documentManager.getDocument(path)
     val finishChannel = Channel<Boolean>()
     GlobalScope.launch { projectUiFacade.openProject(document, project, finishChannel) }
@@ -475,12 +473,10 @@ internal class CommandLineProjectOpenStrategy(
       try {
         finishChannel.receive()
       } catch (e: Document.DocumentException) {
-        hackFireProjectCreated() // this will create columns in the tables, which are removed by previous call to openProject()
         if (!tryImportDocument(document)) {
           uiFacade.showErrorDialog(e)
         }
       } catch (e: IOException) {
-        hackFireProjectCreated() // this will create columns in the tables, which are removed by previous call to openProject()
         if (!tryImportDocument(document)) {
           uiFacade.showErrorDialog(e)
         }
