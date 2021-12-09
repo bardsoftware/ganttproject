@@ -47,4 +47,6 @@ fun GPTreeTableBase.asTreeTableApi(): TreeTableApi = TreeTableApi(
   tableHeaderComponent = { this.tableHeader },
   tableComponent = { this.table },
   verticalOffset = { -1 }
-)
+).also {
+  this.expandAll()
+}

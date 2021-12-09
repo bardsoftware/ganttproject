@@ -18,8 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.app.Barrier;
+import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
@@ -50,6 +50,7 @@ import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.table.NumberEditorExt;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import javax.annotation.Nullable;
@@ -1218,7 +1219,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
     {
       Rectangle bounds = getTable().getBounds();
-      getTable().setBounds(bounds.x, bounds.y, visibleWidth, getTable().getRowCount() * getTable().getRowHeight());
+      MutableTreeTableNode rootNode = (MutableTreeTableNode) getTreeTable().getTreeTableModel().getRoot();
+      var rowCount = TreeUtil.collectSubtree(rootNode).size() - 1;
+      getTable().setBounds(bounds.x, bounds.y, visibleWidth, rowCount * getTree().getRowHeight());
     }
   }
 
