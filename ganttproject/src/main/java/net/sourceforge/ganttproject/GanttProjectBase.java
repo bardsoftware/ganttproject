@@ -145,13 +145,13 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
       () -> null,
       TreeTableCellsKt.getMinCellHeight()
   );
-  private TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
+  private final TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
   protected final Supplier<TaskTable> myTaskTableSupplier;
 
   protected final TaskFilterManager myTaskFilterManager;
 
   @Override
-  public Map<Task, Task> importProject(
+  public @NotNull Map<Task, Task> importProject(
       @NotNull BufferProject bufferProject,
       @NotNull HumanResourceMerger.MergeResourcesOption mergeResourcesOption,
       @Nullable ImportCalendarOption importCalendarOption) {
@@ -228,7 +228,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
     GPLogger.setUIFacade(myUIFacade);
     myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
-        () -> getViewManager(),
+        this::getViewManager,
         new Function0<>() {
       @Override
       public TaskTableActionConnector invoke() {
@@ -273,17 +273,17 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     return myProjectImpl;
   }
   @Override
-  public void restore(Document fromDocument) throws Document.DocumentException, IOException {
+  public void restore(@NotNull Document fromDocument) throws Document.DocumentException, IOException {
     GanttProjectImplKt.restoreProject(this, fromDocument, myProjectImpl.getListeners());
   }
 
   @Override
-  public void addProjectEventListener(ProjectEventListener listener) {
+  public void addProjectEventListener(@NotNull ProjectEventListener listener) {
     myProjectImpl.addProjectEventListener(listener);
   }
 
   @Override
-  public void removeProjectEventListener(ProjectEventListener listener) {
+  public void removeProjectEventListener(@NotNull ProjectEventListener listener) {
     myProjectImpl.removeProjectEventListener(listener);
   }
 
@@ -499,17 +499,17 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   @Override
-  public TimeUnitStack getTimeUnitStack() {
+  public @NotNull TimeUnitStack getTimeUnitStack() {
     return myTimeUnitStack;
   }
 
   @Override
-  public CustomPropertyManager getTaskCustomColumnManager() {
+  public @NotNull CustomPropertyManager getTaskCustomColumnManager() {
     return getTaskManager().getCustomPropertyManager();
   }
 
   @Override
-  public CustomPropertyManager getResourceCustomPropertyManager() {
+  public @NotNull CustomPropertyManager getResourceCustomPropertyManager() {
     return myResourceCustomPropertyManager;
   }
 
@@ -527,45 +527,45 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   @Override
-  public abstract String getProjectName();
+  public abstract @NotNull String getProjectName();
 
   @Override
-  public abstract void setProjectName(String projectName);
+  public abstract void setProjectName(@NotNull String projectName);
 
   @Override
-  public abstract String getDescription();
+  public abstract @NotNull String getDescription();
 
   @Override
-  public abstract void setDescription(String description);
+  public abstract void setDescription(@NotNull String description);
 
   @Override
-  public abstract String getOrganization();
+  public abstract @NotNull String getOrganization();
 
   @Override
-  public abstract void setOrganization(String organization);
+  public abstract void setOrganization(@NotNull String organization);
 
   @Override
-  public abstract String getWebLink();
+  public abstract @NotNull String getWebLink();
 
   @Override
-  public abstract void setWebLink(String webLink);
+  public abstract void setWebLink(@NotNull String webLink);
 
   @Override
-  public abstract UIConfiguration getUIConfiguration();
+  public abstract @NotNull UIConfiguration getUIConfiguration();
 
   @Override
-  public abstract HumanResourceManager getHumanResourceManager();
+  public abstract @NotNull HumanResourceManager getHumanResourceManager();
 
   @Override
-  public abstract RoleManager getRoleManager();
+  public abstract @NotNull RoleManager getRoleManager();
 
   @Override
-  public TaskManager getTaskManager() {
+  public @NotNull TaskManager getTaskManager() {
     return myTaskManager;
   }
 
   @Override
-  public GPCalendarCalc getActiveCalendar() {
+  public @NotNull GPCalendarCalc getActiveCalendar() {
     return myCalendar;
   }
 
@@ -576,19 +576,19 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   public abstract void close();
 
   @Override
-  public abstract Document getDocument();
+  public abstract @NotNull Document getDocument();
 
   protected GanttStatusBar getStatusBar() {
     return statusBar;
   }
 
   @Override
-  public DocumentManager getDocumentManager() {
+  public @NotNull DocumentManager getDocumentManager() {
     return myDocumentManager;
   }
 
   protected abstract ParserFactory getParserFactory();
-  public TaskFilterManager getTaskFilterManager() {
+  public @NotNull TaskFilterManager getTaskFilterManager() {
     return myTaskFilterManager;
   }
 }

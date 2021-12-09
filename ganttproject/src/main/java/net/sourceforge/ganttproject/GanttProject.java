@@ -66,6 +66,7 @@ import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -634,7 +635,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    * @return the UIConfiguration.
    */
   @Override
-  public UIConfiguration getUIConfiguration() {
+  public @NotNull UIConfiguration getUIConfiguration() {
     return myUIConfiguration;
   }
 
@@ -747,51 +748,51 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   // ///////////////////////////////////////////////////////
   // IGanttProject implementation
   @Override
-  public String getProjectName() {
+  public @NotNull String getProjectName() {
     return prjInfos.getName();
   }
 
   @Override
-  public void setProjectName(String projectName) {
+  public void setProjectName(@NotNull String projectName) {
     prjInfos.setName(projectName);
     setAskForSave(true);
   }
 
   @Override
-  public String getDescription() {
+  public @NotNull String getDescription() {
     return prjInfos.getDescription();
   }
 
   @Override
-  public void setDescription(String description) {
+  public void setDescription(@NotNull String description) {
     prjInfos.setDescription(description);
     setAskForSave(true);
   }
 
   @Override
-  public String getOrganization() {
+  public @NotNull String getOrganization() {
     return prjInfos.getOrganization();
   }
 
   @Override
-  public void setOrganization(String organization) {
+  public void setOrganization(@NotNull String organization) {
     prjInfos.setOrganization(organization);
     setAskForSave(true);
   }
 
   @Override
-  public String getWebLink() {
+  public @NotNull String getWebLink() {
     return prjInfos.getWebLink();
   }
 
   @Override
-  public void setWebLink(String webLink) {
+  public void setWebLink(@NotNull String webLink) {
     prjInfos.setWebLink(webLink);
     setAskForSave(true);
   }
 
   @Override
-  public HumanResourceManager getHumanResourceManager() {
+  public @NotNull HumanResourceManager getHumanResourceManager() {
     if (myHumanResourceManager == null) {
       myHumanResourceManager = new HumanResourceManager(getRoleManager().getDefaultRole(),
           getResourceCustomPropertyManager());
@@ -801,7 +802,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   @Override
-  public RoleManager getRoleManager() {
+  public @NotNull RoleManager getRoleManager() {
     if (myRoleManager == null) {
       myRoleManager = RoleManager.Access.getInstance();
     }
@@ -809,7 +810,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   @Override
-  public Document getDocument() {
+  public @NotNull Document getDocument() {
     return myObservableDocument.get();
   }
 

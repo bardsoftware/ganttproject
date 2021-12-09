@@ -63,13 +63,13 @@ open class GanttProjectImpl(taskManager: TaskManagerImpl? = null) : IGanttProjec
 
   val language: GanttLanguage get() = GanttLanguage.getInstance()
   private val myCalendar = WeekendCalendarImpl()
-  override val humanResourceManager = HumanResourceManager(
+  final override val humanResourceManager = HumanResourceManager(
     RoleManager.Access.getInstance().defaultRole,
     CustomColumnsManager()
   )
   override val resourceCustomPropertyManager: CustomPropertyManager get() = humanResourceManager.customPropertyManager
   private val myTaskManagerConfig = TaskManagerConfigImpl(humanResourceManager, myCalendar)
-  override val taskManager = taskManager ?: TaskManagerImpl(null, myTaskManagerConfig)
+  final override val taskManager = taskManager ?: TaskManagerImpl(null, myTaskManagerConfig)
   override val uIConfiguration = UIConfiguration(Color.BLUE, true)
   override val taskCustomColumnManager = CustomColumnsManager()
   override val taskFilterManager = TaskFilterManager(this.taskManager)
@@ -86,12 +86,6 @@ open class GanttProjectImpl(taskManager: TaskManagerImpl? = null) : IGanttProjec
 
   init {
     myCalendar.addListener { setModified() }
-  }
-
-  fun newTask(): Task {
-    val result: Task = taskManager.createTask()
-    taskManager.taskHierarchy.move(result, taskManager.rootTask)
-    return result
   }
 
   override fun setModified() {
@@ -260,12 +254,12 @@ internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: L
   val algs = taskManager.algorithmCollection
   try {
     algs.scheduler.isEnabled = false
-    algs.recalculateTaskScheduleAlgorithm.setEnabled(false)
-    algs.adjustTaskBoundsAlgorithm.setEnabled(false)
+    algs.recalculateTaskScheduleAlgorithm.isEnabled = false
+    algs.adjustTaskBoundsAlgorithm.isEnabled = false
     fromDocument.read()
   } finally {
-    algs.recalculateTaskScheduleAlgorithm.setEnabled(true)
-    algs.adjustTaskBoundsAlgorithm.setEnabled(true)
+    algs.recalculateTaskScheduleAlgorithm.isEnabled = true
+    algs.adjustTaskBoundsAlgorithm.isEnabled = true
     algs.scheduler.isEnabled = true
   }
   completionPromise.resolve(projectDocument)
