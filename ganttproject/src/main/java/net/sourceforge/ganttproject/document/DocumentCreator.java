@@ -25,6 +25,7 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.ParserFactory;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -184,14 +185,14 @@ public class DocumentCreator implements DocumentManager {
     return getDocument(tempFile.getAbsolutePath());
   }
 
-  public static Runnable createAutosaveCleanup() {
+  public static @NotNull Runnable createAutosaveCleanup() {
     long now = CalendarFactory.newCalendar().getTimeInMillis();
     final File tempDir = getTempDir();
     final long cutoff;
     try {
       File optionsFile = GanttOptions.getOptionsFile();
       if (!optionsFile.exists()) {
-        return null;
+        return () -> {};
       }
       BasicFileAttributes attrs = Files.readAttributes(optionsFile.toPath(), BasicFileAttributes.class);
       FileTime accessTime = attrs.lastAccessTime();
@@ -200,7 +201,7 @@ public class DocumentCreator implements DocumentManager {
       cutoff = Math.min(lastFileTime, now);
     } catch (IOException e) {
       GPLogger.log(e);
-      return null;
+      return () -> {};
     }
     return new Runnable() {
       @Override

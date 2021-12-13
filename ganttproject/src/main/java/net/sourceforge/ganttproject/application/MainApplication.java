@@ -23,8 +23,8 @@ import java.util.function.Consumer;
  * @author bard
  */
 public class MainApplication implements IPlatformRunnable {
-  private AtomicBoolean myLock = new AtomicBoolean(true);
-  private final LoggerApi logger = GPLogger.create("Window");
+  private final AtomicBoolean myLock = new AtomicBoolean(true);
+  private final LoggerApi<?> logger = GPLogger.create("Window");
 
   // The hack with waiting is necessary because when you
   // launch Runtime Workbench in Eclipse, it exists as soon as
@@ -55,15 +55,13 @@ public class MainApplication implements IPlatformRunnable {
         return Unit.INSTANCE;
       });
       if (appBuilder.getMainArgs().fixMenuBarTitle) {
-        appBuilder.whenWindowOpened(frame -> {
+        appBuilder.runBeforeUi(() -> {
           try {
             var toolkit = Toolkit.getDefaultToolkit();
             var awtAppClassNameField = toolkit.getClass().getDeclaredField("awtAppClassName");
             awtAppClassNameField.setAccessible(true);
             awtAppClassNameField.set(toolkit, InternationalizationKt.getRootLocalizer().formatText("appliTitle"));
-          } catch (NoSuchFieldException ex) {
-            System.err.println("Can't set awtAppClassName (needed on Linux to show app name in the top panel)");
-          } catch (IllegalAccessException ex) {
+          } catch (NoSuchFieldException | IllegalAccessException ex) {
             System.err.println("Can't set awtAppClassName (needed on Linux to show app name in the top panel)");
           }
           return Unit.INSTANCE;

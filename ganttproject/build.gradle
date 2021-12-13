@@ -13,7 +13,6 @@ buildscript {
     }
 }
 
-apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
@@ -90,10 +89,6 @@ sourceSets {
     test.kotlin.srcDirs += "src/test/java"
 }
 
-application {
-    applicationDefaultJvmArgs = ['-ea', '--add-opens', 'javafx.controls/javafx.scene.control.skin=ALL-UNNAMED', '--add-exports',  'javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED', '--add-exports', 'javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED']
-}
-
 task updateVersion {
     doFirst {
         def gpVersionFile = new File("${projectDir}/src/net/sourceforge/ganttproject/GPVersion.java")
@@ -148,7 +143,7 @@ task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) {
     }
 }
 
-mainClassName = "net.sourceforge.ganttproject.AppKt"
+//mainClassName = "net.sourceforge.ganttproject.AppKt"
 
 test {
     useJUnitPlatform()
