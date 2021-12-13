@@ -133,7 +133,7 @@ check_java() {
   [[ "$VERSION" =~ "13." ]] && return 0;
   [[ "$VERSION" =~ "14." ]] && return 0;
   [[ "$VERSION" =~ "15." ]] && return 0;
-  [[ "$VERSION" =~ "16." ]] && return 0;
+  [[ "$VERSION" =~ "16" ]] && return 0;
   log "...this seems to be an old Java Runtime";
   JAVA_COMMAND=""
   return 1
@@ -191,7 +191,14 @@ export CLASSPATH
 ECLIPSITO_ARGS="--verbosity 1 --version-dirs $GP_HOME/plugins:~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject"
 BOOT_CLASS=com.bardsoftware.eclipsito.Launch
 
-JAVA_ARGS="-Xmx1024m --add-exports javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED -Duser.dir=$(pwd) $DEBUG_ARGS $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
+JAVA_EXPORTS="--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED\
+  --add-exports javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED\
+  --add-exports javafx.controls/com.sun.javafx.scene.control.skin.resources=ALL-UNNAMED\
+  --add-exports javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED\
+  --add-exports javafx.graphics/com.sun.javafx.scene.traversal=ALL-UNNAMED\
+  --add-exports javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED\
+  --add-opens java.desktop/sun.swing=ALL-UNNAMED"
+JAVA_ARGS="-Xmx1024m $JAVA_EXPORTS -Duser.dir=$(pwd) $DEBUG_ARGS $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
 if [ -n "$(echo \"$*\" | sed -n '/\(^\|\s\)-/{p;}')" ]; then
   "$JAVA_COMMAND" $JAVA_ARGS "$@"
 else
