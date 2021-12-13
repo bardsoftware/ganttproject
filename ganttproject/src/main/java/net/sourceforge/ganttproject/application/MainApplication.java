@@ -15,6 +15,7 @@ import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import org.eclipse.core.runtime.IPlatformRunnable;
 
 import java.awt.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -70,9 +71,12 @@ public class MainApplication implements IPlatformRunnable {
       }
     } else {
       appBuilder.whenDocumentReady(project -> {
-        var cliApp = new CommandLineExportApplication();
-        cliApp.export(appBuilder.getCliArgs(), project, ((GanttProject)project).getUIFacade());
-        GanttProject.doQuitApplication(true);
+        var executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+          var cliApp = new CommandLineExportApplication();
+          cliApp.export(appBuilder.getCliArgs(), project, ((GanttProject) project).getUIFacade());
+          GanttProject.doQuitApplication(true);
+        });
         return Unit.INSTANCE;
       });
     }

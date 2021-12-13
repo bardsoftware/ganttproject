@@ -39,8 +39,10 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Region
 import javafx.util.Callback
 import org.apache.commons.lang3.reflect.FieldUtils
+import kotlin.math.max
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -116,6 +118,57 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     prefWidth = totalPrefWidth + vbarWidth()
     columns.setAll(tableColumns)
   }
+
+  fun autosizeColumns() {
+    val totalWidth = columns.map { autosizeColumn(it as TreeTableColumn<T, Any>) }.sum()
+    this.prefWidth = totalWidth
+  }
+
+  fun autosizeColumn(tc: TreeTableColumn<T, Any>): Double {
+    val cellFactory = tc.cellFactory ?: return 0.0
+    val cell = cellFactory.call(tc) ?: return 0.0
+
+    // set this property to tell the TableCell we want to know its actual
+    // preferred width, not the width of the associated TableColumnBase
+    cell.properties["deferToParentPrefWidth"] = true;
+
+    // determine cell padding
+    var padding = 0.0
+    val node = cell.skin?.node
+    if (node is Region) {
+      padding = node.snappedLeftInset() + node.snappedRightInset()
+    }
+
+    val treeTableRow = MyTreeTableRow<T>()
+    treeTableRow.updateTreeTableView(this);
+
+    val rows = expandedItemCount
+    var maxWidth = 0.0;
+    for (row in 0 until rows) {
+      treeTableRow.updateIndex(row);
+      treeTableRow.updateTreeItem(getTreeItem(row));
+
+      cell.updateTreeTableColumn(tc)
+      cell.updateTreeTableView(this)
+      cell.updateTreeTableRow(treeTableRow)
+      cell.updateIndex(row)
+
+      if (cell.text?.isNotEmpty() == true || cell.graphic != null) {
+        children.add(cell)
+        cell.applyCss()
+        maxWidth = max(maxWidth, cell.prefWidth(-1.0))
+        children.remove(cell)
+        //println("text=${cell.text} maxWidth=$maxWidth")
+      }
+    }
+
+    // dispose of the cell to prevent it retaining listeners (see RT-31015)
+    cell.updateIndex(-1)
+    println("width=${maxWidth} padding=${padding}")
+    tc.prefWidth = maxWidth + padding
+    return maxWidth + padding
+  }
+
 }
 
 class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableViewSkin<T>(table) {
@@ -282,3 +335,4 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
     }
   }
 }
+

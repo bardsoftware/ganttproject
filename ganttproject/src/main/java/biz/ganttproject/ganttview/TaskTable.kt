@@ -44,11 +44,8 @@ import javafx.scene.layout.*
 import javafx.scene.paint.Color.rgb
 import javafx.scene.shape.Circle
 import javafx.util.Callback
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.javafx.JavaFx
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.export.TreeTableApi
@@ -247,6 +244,15 @@ class TaskTable(
         tableHeaderHeight = { treeTable.headerHeight.intValue()  },
         width = { fullWidthNotViewport ->
           if (fullWidthNotViewport) {
+            // TODO: we need to autosize onl if column widths are not in the file,
+            // that is, when we import from MS Project or CSV
+            val job = CoroutineScope(Dispatchers.JavaFx).launch {
+              treeTable.autosizeColumns()
+              columnList.reloadWidthFromUi()
+            }
+            runBlocking {
+              job.join()
+            }
             columnList.totalWidth.toInt()
           } else {
             treeTable.width.toInt() - treeTable.vbarWidth().toInt()

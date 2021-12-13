@@ -184,6 +184,20 @@ class ColumnListImpl(
       if (builtinColumns.isZeroWidth(it.id)) 0 else it.width
     }.toDouble()
   }
+
+  fun reloadWidthFromUi() {
+    synchronized(columnList) {
+      tableColumns().forEachIndexed { index, column ->
+        (column.userData as ColumnList.Column).let { userData ->
+          columnList.firstOrNull { it.id == userData.id }?.let {
+            it.order = index
+            it.width = column.width.toInt()
+          }
+        }
+      }
+      updateTotalWidth()
+    }
+  }
 }
 
 fun ColumnList.copyOf(): List<ColumnList.Column> {
