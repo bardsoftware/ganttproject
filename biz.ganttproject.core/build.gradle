@@ -14,7 +14,7 @@ dependencies {
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.+'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.5.+'
-    api 'org.jetbrains.kotlin:kotlin-reflect:1.6.0'
+    api 'org.jetbrains.kotlin:kotlin-reflect:1.6.10'
     api "com.google.guava:guava:31.+"
 
     direct configurations.api
