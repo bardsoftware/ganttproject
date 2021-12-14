@@ -1,5 +1,4 @@
 buildscript {
-    ext.kotlin_version = '1.6.0'
     repositories {
         mavenCentral()
         maven {
@@ -8,14 +7,16 @@ buildscript {
     }
     dependencies {
         classpath "gradle.plugin.io.miret.etienne.gradle:sass-gradle-plugin:1.+"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'org.openjfx:javafx-plugin:0.0.10'
     }
 }
 
-apply plugin: 'java'
-apply plugin: 'kotlin'
-apply plugin: 'maven-publish'
+plugins {
+    id "org.jetbrains.kotlin.jvm"
+    id "maven-publish"
+}
+
+apply plugin: 'application'
 apply plugin: 'org.openjfx.javafxplugin'
 apply plugin: 'io.miret.etienne.sass'
 
@@ -143,8 +144,10 @@ task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) {
     }
 }
 
-//mainClassName = "net.sourceforge.ganttproject.AppKt"
-
+mainClassName = "net.sourceforge.ganttproject.AppKt"
+application {
+    applicationDefaultJvmArgs = project.ext.javaExportOptions
+}
 test {
     useJUnitPlatform()
     testLogging {

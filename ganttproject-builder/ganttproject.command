@@ -128,12 +128,19 @@ export CLASSPATH
 BOOT_CLASS=com.bardsoftware.eclipsito.Launch
 ECLIPSITO_ARGS="--verbosity 4 --version-dirs plugins --app net.sourceforge.ganttproject.GanttProject"
 MACOS_ARGS="-Dapple.laf.useScreenMenuBar=true -Dcom.apple.macos.useScreenMenuBar=true	-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject -Xdock:name=GanttProject -Xdock:icon=ganttproject.icns"
-JAVA_ARGS="-Duser.dir=$GP_HOME -Xmx1024m -ea -Dfile.encoding=UTF-8 $MACOS_ARGS $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
+JAVA_EXPORTS="--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED\
+  --add-exports javafx.base/com.sun.javafx=ALL-UNNAMED\
+  --add-exports javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED\
+  --add-exports javafx.controls/com.sun.javafx.scene.control.skin=ALL-UNNAMED\
+  --add-exports javafx.controls/com.sun.javafx.scene.control.skin.resources=ALL-UNNAMED\
+  --add-exports javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED\
+  --add-exports javafx.graphics/com.sun.javafx.scene.traversal=ALL-UNNAMED\
+  --add-exports javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED\
+  --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED\
+  --add-exports javafx.graphics/com.sun.javafx.util=ALL-UNNAMED\
+  --add-opens java.desktop/sun.swing=ALL-UNNAMED\
+  --add-opens java.desktop/sun.awt.X11=ALL-UNNAMED"
+JAVA_ARGS=" -Xmx1024m $JAVA_EXPORTS -Duser.dir=$GP_HOME -ea -Dfile.encoding=UTF-8 $MACOS_ARGS $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
 
-if [ -n "$(echo \"$*\" | sed -n '/\(^\|\s\)-/{p;}')" ]; then
-  "$JAVA_COMMAND" $JAVA_ARGS "$@"
-else
-  echo $JAVA_COMMAND
-  "$JAVA_COMMAND" $JAVA_ARGS "$@" &
-fi
+"$JAVA_COMMAND" $JAVA_ARGS "$@"
 
