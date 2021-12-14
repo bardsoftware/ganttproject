@@ -23,12 +23,25 @@ import javafx.beans.property.SimpleDoubleProperty
 import javafx.scene.control.TreeTableColumn
 import net.sourceforge.ganttproject.CustomPropertyManager
 
+/**
+ * Provides a list of "built-in" columns, that is, those which are not
+ * user-defined. A column may have zero width, in this case its data
+ * appears as a label in some other column (example: task color).
+ */
 data class BuiltinColumns(
-  val isZeroWidth: (String) -> Boolean,
+  /**
+   * @return true if a column with the given id is zero width
+   */
+  val isZeroWidth: (columnId: String) -> Boolean,
   val allColumns: () -> List<ColumnList.Column>
 )
 
 /**
+ * This is a sort of "column model" for the tree table. It maintains a list of
+ * Column objects and loosely keeps it synchronized with the UI columns. It is not always
+ * in sync: UI columns may change their width and order without changes here. However,
+ * there are methods to sync this list with the UI.
+ *
  * @author dbarashev@bardsoftware.com
  */
 class ColumnListImpl(
@@ -161,14 +174,7 @@ class ColumnListImpl(
 
   override fun exportData(): List<ColumnList.Column> {
     synchronized(columnList) {
-      tableColumns().forEachIndexed { index, column ->
-        (column.userData as ColumnList.Column).let { userData ->
-          columnList.firstOrNull { it.id == userData.id }?.let {
-            it.order = index
-            it.width = column.width.toInt()
-          }
-        }
-      }
+      reloadWidthFromUi()
       return copyOf()
     }
   }
