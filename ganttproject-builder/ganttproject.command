@@ -5,6 +5,36 @@
 
 SCRIPT_FILE="$0"
 
+# If we can write to /tmp/ganttproject-launcher.log then LOG_TEXT
+# will be empty, and we'll write the launcher logs to the file
+# Otherwise it will be not empty and will accumulate the
+# logged information in memory.
+LOG_TEXT=""
+echo "" > /tmp/ganttproject-launcher.log || LOG_TEXT="----"
+
+log() {
+  if [ ! -z "$LOG_TEXT" ]; then
+    LOG_TEXT="$LOG_TEXT\n$1";
+  else
+    echo $1 >> /tmp/ganttproject-launcher.log
+  fi
+  [ -z "$DEBUG_ARGS" ] || echo $1
+}
+
+trap 'print_log' ERR
+trap 'print_log' EXIT
+
+print_log() {
+  if [ "$?" -eq "0" ]; then
+    return;
+  fi
+  if [ ! -z "$LOG_TEXT" ]; then
+    >&2 echo $LOG_TEXT
+  else
+    >&2 cat /tmp/ganttproject-launcher.log
+  fi
+}
+
 find_ganttproject_home() {
   WORKING_DIR="$(pwd)"
   # We want to find the directory where the real script file resides.
@@ -28,6 +58,48 @@ if [ -z "$GP_HOME" ]; then
   exit 1
 fi
 
+USE_BUNDLED_RUNTIME=1
+DEBUG_ARGS=""
+APP_ARGS=()
+
+while true; do
+  case "$1" in
+    # Debug will switch on some debugging output and will allow for connecting to Java
+    # process with a debugger
+    -d|--debug)
+      case "$2" in
+        +[:digit:])
+          DEBUG_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,address=$2,suspend=n"
+          shift 2
+          ;;
+        *)
+          DEBUG_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n"
+          shift 1
+          ;;
+      esac
+      log "Debug arguments: $DEBUG_ARGS"
+      ;;
+    # This allows for specifying the path to Java Runtime instead of the default bundled Java Runtime
+    -j|--java-home)
+      USE_BUNDLED_RUNTIME=0
+      if [ -d "$2" ]; then
+        JAVA_HOME="$2"
+        log "Using JAVA_HOME=$2"
+        shift 2
+      else
+        log "This is not a directory: $2"
+        exit 1
+      fi
+      ;;
+    "")
+      break;
+      ;;
+    *)
+      APP_ARGS+=("$1")
+      shift 1
+      ;;
+  esac
+done
 
 # Create log directory
 GP_LOG_DIR="$HOME/.ganttproject.d"
@@ -50,17 +122,6 @@ if [ -e "$LOG_FILE" ] && [ ! -w "$LOG_FILE" ]; then
   exit 1
 fi
 
-LOG_TEXT=""
-echo "" > /tmp/ganttproject-launcher.log || LOG_TEXT="----"
-
-log() {
-  if [ ! -z "$LOG_TEXT" ]; then
-    LOG_TEXT="$LOG_TEXT\n$1";
-  else
-    echo $1 >> /tmp/ganttproject-launcher.log
-  fi
-}
-
 check_java() {
   JAVA_COMMAND=$1
   log  "Searching for Java in $JAVA_COMMAND"
@@ -73,12 +134,13 @@ check_java() {
 
   VERSION="$( $JAVA_COMMAND -version 2>&1 | head -n 1)"
   log "...found $VERSION"
-  [[ "$VERSION" =~ "11." ]] && return 0;
-  [[ "$VERSION" =~ "12." ]] && return 0;
-  [[ "$VERSION" =~ "13." ]] && return 0;
-  [[ "$VERSION" =~ "14." ]] && return 0;
-  [[ "$VERSION" =~ "15." ]] && return 0;
-  [[ "$VERSION" =~ "16." ]] && return 0;
+  [[ "$VERSION" =~ 11\.? ]] && return 0;
+  [[ "$VERSION" =~ 12\.? ]] && return 0;
+  [[ "$VERSION" =~ 13\.? ]] && return 0;
+  [[ "$VERSION" =~ 14\.? ]] && return 0;
+  [[ "$VERSION" =~ 15\.? ]] && return 0;
+  [[ "$VERSION" =~ 16\.? ]] && return 0;
+  [[ "$VERSION" =~ 17\.? ]] && return 0;
   log "... this seems to be an old Java Runtime";
   JAVA_COMMAND=""
   return 1
@@ -113,6 +175,9 @@ find_java() {
 }
 
 report_java_not_found() {
+  log "JavaVM executable not found.
+  You may want to set the path to the root of your Java Runtime installation
+  in JAVA_HOME environment variable or pass it to ganttproject in --java-home argument";
   if [ -z "$LOG_TEXT" ]; then
     LOG_TEXT="$(cat /tmp/ganttproject-launcher.log)"
   fi
@@ -121,13 +186,26 @@ report_java_not_found() {
   osascript -e 'tell app "System Events" to display alert "Java Runtime not found" message "GanttProject cannot find a suitable Java Runtime.\n\nWhat we have tried:\n'"$LOG_TEXT"'\n\nYou can find this log in /tmp/ganttproject-launcher.log file\nProceed to http://docs.ganttproject.biz/user/troubleshooting-installation to learn how to fix this."'
 }
 
+# Create updates directory if not exists
+USER_UPDATES_DIR="$HOME/.ganttproject.d/updates"
+mkdir -p "$USER_UPDATES_DIR"
+
 find_java
+
+if [ ! -f "$GP_HOME/eclipsito.jar" ]; then
+  log "Can't find the required Eclipsito library at $GP_HOME/eclipsito.jar"
+  exit 1
+fi
 CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME"
 export CLASSPATH
-
 BOOT_CLASS=com.bardsoftware.eclipsito.Launch
-ECLIPSITO_ARGS="--verbosity 4 --version-dirs plugins --app net.sourceforge.ganttproject.GanttProject"
 MACOS_ARGS="-Dapple.laf.useScreenMenuBar=true -Dcom.apple.macos.useScreenMenuBar=true	-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject -Xdock:name=GanttProject -Xdock:icon=ganttproject.icns"
+
+log "JAVA_HOME=$JAVA_HOME"
+log "JAVA_COMMAND=$JAVA_COMMAND"
+log "GP_HOME=$GP_HOME"
+log "user.dir=$(pwd)"
+
 JAVA_EXPORTS="--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED\
   --add-exports javafx.base/com.sun.javafx=ALL-UNNAMED\
   --add-exports javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED\
@@ -140,7 +218,4 @@ JAVA_EXPORTS="--add-exports javafx.controls/com.sun.javafx.scene.control.behavio
   --add-exports javafx.graphics/com.sun.javafx.util=ALL-UNNAMED\
   --add-opens java.desktop/sun.swing=ALL-UNNAMED\
   --add-opens java.desktop/sun.awt.X11=ALL-UNNAMED"
-JAVA_ARGS=" -Xmx1024m $JAVA_EXPORTS -Duser.dir=$GP_HOME -ea -Dfile.encoding=UTF-8 $MACOS_ARGS $BOOT_CLASS $ECLIPSITO_ARGS -log true -log_file $LOG_FILE"
-
-"$JAVA_COMMAND" $JAVA_ARGS "$@"
-
+"$JAVA_COMMAND" -Xmx1024m $JAVA_EXPORTS -Duser.dir="$GP_HOME" -Dfile.encoding=UTF-8 $MACOS_ARGS $DEBUG_ARGS $BOOT_CLASS --version-dirs "$GP_HOME"/plugins:~/.ganttproject.d/updates -log true -log_file "$LOG_FILE" "${APP_ARGS[@]}"
