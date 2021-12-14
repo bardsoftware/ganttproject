@@ -77,8 +77,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private GanttCalendar myThird;
 
-  private JTabbedPane tabbedPane; // TabbedPane that includes the following four
-                                  // items
+  // items
 
   private JPanel generalPanel;
 
@@ -91,8 +90,6 @@ public class GanttTaskPropertiesBean extends JPanel {
   private JTextField nameField1;
 
   private JTextField tfWebLink;
-
-  private JButton bWebLink;
 
   private JSpinner percentCompleteSlider;
 
@@ -107,11 +104,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   /** Shape chooser combo Box */
   private JPaintCombo shapeComboBox;
 
-  private JScrollPane scrollPaneNotes;
-
   private JTextArea noteAreaNotes;
-
-  private JPanel secondRowPanelNotes;
 
   private String originalName;
 
@@ -235,7 +228,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     tfWebLink = new JTextField(20);
     weblinkBox.add(tfWebLink);
     weblinkBox.add(Box.createHorizontalStrut(2));
-    bWebLink = new TestGanttRolloverButton(new ImageIcon(getClass().getResource("/icons/web_16.gif")));
+    JButton bWebLink = new TestGanttRolloverButton(new ImageIcon(getClass().getResource("/icons/web_16.gif")));
     bWebLink.setToolTipText(GanttProject.getToolTip(language.getText("openWebLink")));
     weblinkBox.add(bWebLink);
 
@@ -320,7 +313,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   /** Construct the notes panel */
   private void constructNotesPanel() {
-    secondRowPanelNotes = new JPanel(new BorderLayout());
+    JPanel secondRowPanelNotes = new JPanel(new BorderLayout());
     UIUtil.createTitle(secondRowPanelNotes, language.getText("notesTask"));
 
     noteAreaNotes = new JTextArea(8, 40);
@@ -328,7 +321,7 @@ public class GanttTaskPropertiesBean extends JPanel {
     noteAreaNotes.setWrapStyleWord(true);
     noteAreaNotes.setBackground(new Color(1.0f, 1.0f, 1.0f));
 
-    scrollPaneNotes = new JScrollPane(noteAreaNotes);
+    JScrollPane scrollPaneNotes = new JScrollPane(noteAreaNotes);
     secondRowPanelNotes.add(scrollPaneNotes, BorderLayout.CENTER);
     notesPanel = secondRowPanelNotes;
   }
@@ -337,10 +330,11 @@ public class GanttTaskPropertiesBean extends JPanel {
   private void init() {
     constructNotesPanel();
 
-    tabbedPane = new JTabbedPane() {
+    // TabbedPane that includes the following four
+    JTabbedPane tabbedPane = new JTabbedPane() {
       @Override
       public void addTab(String title, Icon icon, Component component) {
-        super.addTab(title, icon, UIUtil.contentPaneBorder((JComponent)component));
+        super.addTab(title, icon, UIUtil.contentPaneBorder((JComponent) component));
       }
     };
     constructGeneralPanel();
@@ -451,7 +445,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
     setName(selectedTasks[0].toString());
 
-    percentCompleteSlider.setValue(new Integer(originalCompletionPercentage));
+    percentCompleteSlider.setValue(originalCompletionPercentage);
     priorityComboBox.setSelectedIndex(originalPriority.ordinal());
 
     myTaskScheduleDates.setUnpluggedClone(myUnpluggedClone);
@@ -528,7 +522,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   }
 
   private int getPercentComplete() {
-    return ((Integer) percentCompleteSlider.getValue()).hashCode();
+    return percentCompleteSlider.getValue().hashCode();
   }
 
   private Task.Priority getPriority() {

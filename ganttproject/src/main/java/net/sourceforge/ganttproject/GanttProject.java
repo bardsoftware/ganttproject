@@ -22,8 +22,6 @@ import biz.ganttproject.LoggerApi;
 import biz.ganttproject.app.FXSearchUi;
 import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
-import biz.ganttproject.core.option.ChangeValueEvent;
-import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.platform.UpdateKt;
 import biz.ganttproject.platform.UpdateOptions;
@@ -35,7 +33,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import net.sourceforge.ganttproject.action.*;
+import net.sourceforge.ganttproject.action.ArtefactAction;
+import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
+import net.sourceforge.ganttproject.action.ArtefactNewAction;
+import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
@@ -69,12 +71,14 @@ import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -90,7 +94,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   /**
    * GanttGraphicArea for the calendar with Gantt
    */
-  private GanttGraphicArea area;
+  private final GanttGraphicArea area;
 
   /**
    * GanttPeoplePanel to edit person that work on the project
@@ -125,11 +129,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private MouseListener myStopEditingMouseListener = null;
 
-  private GanttChartTabContentPanel myGanttChartTabContent;
+  private final GanttChartTabContentPanel myGanttChartTabContent;
 
-  private ResourceChartTabContentPanel myResourceChartTabContent;
+  private final ResourceChartTabContentPanel myResourceChartTabContent;
 
-  private List<RowHeightAligner> myRowHeightAligners = Lists.newArrayList();
+  private final List<RowHeightAligner> myRowHeightAligners = Lists.newArrayList();
 
   private ParserFactory myParserFactory;
 
@@ -167,12 +171,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     setIconImage(icon.getImage());
 
 
-    //myFacadeInvalidator = new FacadeInvalidator(getTree().getModel(), myRowHeightAligners);
-    //getProject().addProjectEventListener(myFacadeInvalidator);
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
         myTaskTableChartConnector,
         Suppliers.memoize(() -> myTaskTableSupplier.get().getActionConnector()));
-    //getTree().init();
     options.addOptionGroups(getUIFacade().getOptions());
     options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
     options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
@@ -185,17 +186,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     startupLogger.debug("2. loading options");
     initOptions();
 
-    //getTree().setGraphicArea(area);
     getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
-    //myRowHeightAligners.add(getTree().getRowHeightAligner());
-    getUiFacadeImpl().getAppFontOption().addChangeValueListener(new ChangeValueListener() {
-      @Override
-      public void changeValue(ChangeValueEvent event) {
-        getGanttChart().reset();
-//        for (RowHeightAligner aligner : myRowHeightAligners) {
-//          aligner.optionsChanged();
-//        }
-      }
+    getUiFacadeImpl().getAppFontOption().addChangeValueListener(event -> {
+      getGanttChart().reset();
     });
     TreeTableCellsKt.initFontProperty(getUiFacadeImpl().getAppFontOption());
     TreeTableCellsKt.initColorProperties();
@@ -212,17 +205,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     setJMenuBar(bar);
     // Allocation of the menus
 
-    // Project menu related sub menus and items
-//    ProjectMRUMenu mruMenu = new ProjectMRUMenu(this, getUIFacade(), getProjectUIFacade(), "lastOpen");
-//    mruMenu.setIcon(new ImageIcon(getClass().getResource("/icons/recent_16.gif")));
-//    getDocumentManager().addListener(mruMenu);
-
     myProjectMenu = new ProjectMenu(this, "project");
     bar.add(myProjectMenu);
 
     myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), () -> mySearchUi.requestFocus(), "edit");
     bar.add(myEditMenu);
-    //getTree().getTreeTable().setupActionMaps(myEditMenu.getSearchAction());
     getResourcePanel().getTreeTable().setupActionMaps(myEditMenu.getSearchAction());
 
     ViewMenu viewMenu = new ViewMenu(getProject(), getViewManager(), getUiFacadeImpl().getDpiOption(), getUiFacadeImpl().getChartFontOption(), "view");
@@ -264,15 +251,12 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     addComponentListener(new ComponentAdapter() {
       @Override
       public void componentShown(ComponentEvent e) {
-        SwingUtilities.invokeLater(new Runnable() {
-          @Override
-          public void run() {
-            getGanttChart().reset();
-            getResourceChart().reset();
-            // This will clear any modifications which might be caused by
-            // adjusting widths of table columns during initial layout process.
-            getProject().setModified(false);
-          }
+        SwingUtilities.invokeLater(() -> {
+          getGanttChart().reset();
+          getResourceChart().reset();
+          // This will clear any modifications which might be caused by
+          // adjusting widths of table columns during initial layout process.
+          getProject().setModified(false);
         });
       }
     });
@@ -399,21 +383,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
 
-//  @Override
-//  public TaskContainmentHierarchyFacade getTaskContainment() {
-//    if (myFacadeInvalidator == null) {
-//      return TaskContainmentHierarchyFacade.STUB;
-//    }
-//    if (!myFacadeInvalidator.isValid() || myCachedFacade == null) {
-//      myCachedFacade = new TaskContainmentHierarchyFacadeImpl(tree);
-//      myFacadeInvalidator.reset();
-//    }
-//    return myCachedFacade;
-//  }
-
   private void initOptions() {
-    // Color color = GanttGraphicArea.taskDefaultColor;
-    // myApplicationConfig.register(options);
     options.setUIConfiguration(myUIConfiguration);
     options.load();
     myUIConfiguration = options.getUIConfiguration();
@@ -495,12 +465,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     {
       final GPAction taskNewAction = myTaskActions.getCreateAction().asToolbarAction();
       final GPAction resourceNewAction = getResourceTree().getNewAction().asToolbarAction();
-      newAction = new ArtefactNewAction(new ActiveActionProvider() {
-        @Override
-        public AbstractAction getActiveAction() {
-          return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskNewAction : resourceNewAction;
-        }
-      }, new Action[]{taskNewAction, resourceNewAction});
+      newAction = new ArtefactNewAction(() -> getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskNewAction : resourceNewAction, new Action[]{taskNewAction, resourceNewAction});
       builder.addButton(taskNewAction).addButton(resourceNewAction);
     }
 
@@ -508,12 +473,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     {
       final GPAction taskDeleteAction = myTaskActions.getDeleteAction();
       final GPAction resourceDeleteAction = getResourceTree().getDeleteAction().asToolbarAction();
-      deleteAction = new ArtefactDeleteAction(new ActiveActionProvider() {
-        @Override
-        public AbstractAction getActiveAction() {
-          return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskDeleteAction : resourceDeleteAction;
-        }
-      }, new Action[]{taskDeleteAction, resourceDeleteAction});
+      deleteAction = new ArtefactDeleteAction(() -> getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskDeleteAction : resourceDeleteAction, new Action[]{taskDeleteAction, resourceDeleteAction});
     }
     builder.setArtefactActions(newAction, deleteAction);
 
@@ -521,27 +481,19 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     {
       final GPAction taskPropertiesAction = myTaskActions.getPropertiesAction().asToolbarAction();
       final GPAction resourcePropertiesAction = getResourceTree().getPropertiesAction().asToolbarAction();
-      propertiesAction = new ArtefactPropertiesAction(new ActiveActionProvider() {
-        @Override
-        public AbstractAction getActiveAction() {
-          return getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskPropertiesAction : resourcePropertiesAction;
-        }
-      }, new Action[]{taskPropertiesAction, resourcePropertiesAction});
+      propertiesAction = new ArtefactPropertiesAction(() -> getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskPropertiesAction : resourcePropertiesAction, new Action[]{taskPropertiesAction, resourcePropertiesAction});
     }
 
     UIUtil.registerActions(getRootPane(), false, newAction, propertiesAction, deleteAction);
     UIUtil.registerActions(myGanttChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
     UIUtil.registerActions(myResourceChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
-    getTabs().addChangeListener(new ChangeListener() {
-      @Override
-      public void stateChanged(ChangeEvent e) {
-        // Tell artefact actions that the active provider changed, so they
-        // are able to update their state according to the current delegate
-        newAction.actionStateChanged();
-        propertiesAction.actionStateChanged();
-        deleteAction.actionStateChanged();
-        getTabs().getSelectedComponent().requestFocus();
-      }
+    getTabs().addChangeListener(e -> {
+      // Tell artefact actions that the active provider changed, so they
+      // are able to update their state according to the current delegate
+      newAction.actionStateChanged();
+      propertiesAction.actionStateChanged();
+      deleteAction.actionStateChanged();
+      getTabs().getSelectedComponent().requestFocus();
     });
 
     builder.addButton(deleteAction)
@@ -674,20 +626,15 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getProjectImpl().fireProjectModified(afs, (ex) -> getUIFacade().showErrorDialog(ex) );
     String title = getTitle();
     askForSave = afs;
-    try {
-      if (System.getProperty("mrj.version") != null) {
-        rootPane.putClientProperty("windowModified", Boolean.valueOf(afs));
-        // see http://developer.apple.com/qa/qa2001/qa1146.html
-      } else {
-        if (askForSave) {
-          if (!title.endsWith(" *")) {
-            setTitle(title + " *");
-          }
+    if (System.getProperty("mrj.version") != null) {
+      rootPane.putClientProperty("windowModified", Boolean.valueOf(afs));
+      // see http://developer.apple.com/qa/qa2001/qa1146.html
+    } else {
+      if (askForSave) {
+        if (!title.endsWith(" *")) {
+          setTitle(title + " *");
         }
       }
-    } catch (AccessControlException e) {
-      // This can happen when running in a sandbox (Java WebStart)
-      System.err.println(e + ": " + e.getMessage());
     }
   }
 
@@ -929,14 +876,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public void setResourceDividerLocation(int location) {
     myResourceChartTabContent.setDividerLocation(location);
   }
-
-//  @Override
-//  public TaskTreeUIFacade getTaskTree() {
-//    if (tree == null) {
-//      tree = new GanttTree2(this, getTaskManager(), getTaskSelectionManager(), getUIFacade(), myTaskActions);
-//    }
-//    return tree;
-//  }
 
   @Override
   public ResourceTreeUIFacade getResourceTree() {

@@ -85,8 +85,6 @@ public class GanttOptions extends SaverBase {
 
   private int lockDAVMinutes;
 
-  private int undoNumber;
-
   private String xslDir;
 
   private String xslFo;
@@ -105,22 +103,9 @@ public class GanttOptions extends SaverBase {
 
   public static final int ICONS = 0;
 
-  public static final int ICONS_TEXT = 1;
-
   public static final int TEXT = 2;
 
   private int buttonsshow;
-
-  /**
-   * FTP options
-   */
-  private String FTPUrl = "";
-
-  private String FTPDirectory = "";
-
-  private String FTPUser = "";
-
-  private String FTPPwd = "";
 
   /**
    * Export options.
@@ -181,7 +166,6 @@ public class GanttOptions extends SaverBase {
     automatic = false;
     redline = false;
     lockDAVMinutes = 240;
-    undoNumber = 50;
     xslDir = String.valueOf(GanttOptions.class.getResource("/xslt"));
     xslFo = String.valueOf(GanttOptions.class.getResource("/xslfo/ganttproject.xsl"));
     toolBarPosition = JToolBar.HORIZONTAL;
@@ -756,73 +740,10 @@ public class GanttOptions extends SaverBase {
   }
 
   /**
-   * @return the color for resources.
-   */
-  public Color getResourceColor() {
-    return getUIConfiguration().getResourceColor();
-  }
-
-  /**
-   * @return the lock DAV Minutes.
-   */
-  public int getLockDAVMinutes() {
-    return lockDAVMinutes;
-  }
-
-  /**
-   * @return the undo number
-   */
-  public int getUndoNumber() {
-    return undoNumber;
-  }
-
-  /**
-   * @return the working directory.
-   */
-  public String getWorkingDir() {
-    return workingDir;
-  }
-
-  /**
-   * @return the xsl directory.
-   */
-  public String getXslDir() {
-    return xslDir;
-  }
-
-  /**
-   * @return the xsl-fo file.
-   */
-  public String getXslFo() {
-    return (new File(xslFo).exists()) ? xslFo : getClass().getResource("/xslfo/ganttproject.xsl").toString();
-  }
-
-  /**
-   * @return automatic launch properties box when create a new task.
-   */
-  public boolean getAutomatic() {
-    return automatic;
-  }
-
-  /**
    * @return true is options are loaded from the options file.
    */
   public boolean isLoaded() {
     return isloaded;
-  }
-
-  /**
-   * @return true if show the status bar.
-   */
-  public boolean getShowStatusBar() {
-    return bShowStatusBar;
-  }
-
-  /**
-   * set show the status bar.
-   */
-  public void setShowStatusBar(boolean showStatusBar) {
-    bShowStatusBar = showStatusBar;
   }
 
   /**
@@ -865,13 +786,6 @@ public class GanttOptions extends SaverBase {
   }
 
   /**
-   * @return the toolbar position.
-   */
-  public int getToolBarPosition() {
-    return toolBarPosition;
-  }
-
-  /**
    * @return the size of the icons on the toolbar.
    */
   public String getIconSize() {
@@ -879,86 +793,10 @@ public class GanttOptions extends SaverBase {
   }
 
   /**
-   * @return true if you want to export the name of the task on the exported
-   * chart.
-   */
-  public boolean getExportName() {
-    return bExportName;
-  }
-
-  /**
-   * @return true if you want to export the complete percent of the task on the
-   * exported chart.
-   */
-  public boolean getExportComplete() {
-    return bExportComplete;
-  }
-
-  /**
-   * @return true if you want to export the relations of the task on the
-   * exported chart.
-   */
-  public boolean getExportRelations() {
-    return bExportRelations;
-  }
-
-  /**
-   * @return the 3d borders export.
-   */
-  public boolean getExport3dBorders() {
-    return bExport3DBorders;
-  }
-
-  public GanttExportSettings getExportSettings() {
-    return new GanttExportSettings(bExportName, bExportComplete, bExportRelations, bExport3DBorders);
-  }
-
-  public void setExportName(boolean exportName) {
-    bExportName = exportName;
-  }
-
-  public void setExportComplete(boolean exportComplete) {
-    bExportComplete = exportComplete;
-  }
-
-  public void setExportRelations(boolean eportRelations) {
-    bExportRelations = eportRelations;
-  }
-
-  public void setExport3dBorders(boolean borders3d) {
-    bExport3DBorders = borders3d;
-  }
-
-  /**
-   * @return the button show attribute must be GanttOptions.ICONS or
-   * GanttOptions.TEXT ir GanttOptions.ICONS_TEXT
-   */
-  public int getButtonShow() {
-    return buttonsshow;
-  }
-
-  /**
-   * set a new button show value must be GanttOptions.ICONS or GanttOptions.TEXT
-   * ir GanttOptions.ICONS_TEXT
-   */
-  public void setButtonShow(int buttonShow) {
-    if (buttonShow != GanttOptions.ICONS && buttonShow != GanttOptions.TEXT && buttonShow != GanttOptions.ICONS_TEXT)
-      buttonShow = GanttOptions.ICONS;
-    buttonsshow = buttonShow;
-  }
-
-  /**
    * Set a new icon size. Must be 16, 24 (or 32 exceptionnally)
    */
   public void setIconSize(String sIconSize) {
     iconSize = sIconSize;
-  }
-
-  /**
-   * set the toolbar position.
-   */
-  public void setToolBarPosition(int iToolBarPosition) {
-    toolBarPosition = iToolBarPosition;
   }
 
   /**
@@ -976,27 +814,6 @@ public class GanttOptions extends SaverBase {
     this.width = width;
     this.height = height;
     this.isMaximized = isMaximized;
-  }
-
-  /**
-   * Set new working directory value.
-   */
-  public void setWorkingDirectory(String workingDirectory) {
-    workingDir = workingDirectory;
-  }
-
-  /**
-   * set a new value for web dav locking.
-   */
-  public void setLockDAVMinutes(int minuteslock) {
-    lockDAVMinutes = minuteslock;
-  }
-
-  /**
-   * set a new value for undo number.
-   */
-  public void setUndoNumber(int number) {
-    undoNumber = number;
   }
 
   /**
@@ -1021,27 +838,6 @@ public class GanttOptions extends SaverBase {
   }
 
   /**
-   * set a new previous tasks color.
-   */
-  public void setPreviousTaskColor(Color color) {
-    getUIConfiguration().setPreviousTaskColor(color);
-  }
-
-  /**
-   * set a new earlier previous tasks color.
-   */
-  public void setEarlierPreviousTaskColor(Color color) {
-    getUIConfiguration().setEarlierPreviousTaskColor(color);
-  }
-
-  /**
-   * set a new later previous tasks color.
-   */
-  public void setLaterPreviousTaskColor(Color color) {
-    getUIConfiguration().setLaterPreviousTaskColor(color);
-  }
-
-  /**
    * Set a new week end color.
    */
   public void setWeekEndColor(Color color) {
@@ -1055,66 +851,8 @@ public class GanttOptions extends SaverBase {
     getUIConfiguration().setDayOffColor(color);
   }
 
-  /**
-   * Set a new xsl directory for html export.
-   */
-  public void setXslDir(String xslDir) {
-    this.xslDir = xslDir;
-  }
-
-  /**
-   * Set a new xsl-fo file for pdf export.
-   */
-  public void setXslFo(String xslFo) {
-    this.xslFo = xslFo;
-  }
-
   public void setUIConfiguration(UIConfiguration uiConfiguration) {
     this.myUIConfig = uiConfiguration;
-  }
-
-  /**
-   * set new automatic launch value.
-   */
-  public void setAutomatic(boolean automatic) {
-    this.automatic = automatic;
-  }
-
-  public void setRedline(boolean isOn) {
-    this.redline = isOn;
-    getUIConfiguration().setRedlineOn(isOn);
-  }
-
-  public String getFTPDirectory() {
-    return FTPDirectory;
-  }
-
-  public String getFTPPwd() {
-    return FTPPwd;
-  }
-
-  public String getFTPUrl() {
-    return FTPUrl;
-  }
-
-  public String getFTPUser() {
-    return FTPUser;
-  }
-
-  public void setFTPDirectory(String pvString) {
-    FTPDirectory = pvString;
-  }
-
-  public void setFTPPwd(String pvString) {
-    FTPPwd = pvString;
-  }
-
-  public void setFTPUrl(String pvString) {
-    FTPUrl = pvString;
-  }
-
-  public void setFTPUser(String pvString) {
-    FTPUser = pvString;
   }
 
   public void addOptionGroups(GPOptionGroup... optionGroups) {
