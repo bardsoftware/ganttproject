@@ -20,17 +20,18 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.LoggerApi;
 import biz.ganttproject.LoggerImpl;
-import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
-import java.security.AccessControlException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
@@ -43,8 +44,9 @@ public class GPLogger {
   private static final Logger ourLogger = Logger.getLogger("net.sourceforge.ganttproject");
   private static Handler ourHandler;
   private static UIFacade ourUIFacade;
-  private static Map<String, Logger> ourLoggers = Maps.newHashMap();
+  private static final Map<String, Logger> ourLoggers = new HashMap<>();
   private static String ourLogFileName;
+  private static PrintStream ourStderr;
 
   static {
     ourHandler = new ConsoleHandler();
@@ -53,7 +55,7 @@ public class GPLogger {
     ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
   }
 
-  public static void init(String logbackFilePath) {
+  public static void init() {
     //System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, logbackFilePath);
     URL logConfig = GanttProject.class.getResource("/logging.properties");
     if (logConfig != null) {
@@ -136,15 +138,22 @@ public class GPLogger {
     }
   }
 
+  public static void printLogLocation() {
+    (ourStderr == null ? System.err : ourStderr).printf("The log was written to %s%n", ourLogFileName);
+  }
+
   public static void setLogFile(String logFileName) {
     try {
-      ourLogger.info(String.format("Writing log to file %s", logFileName));
       Handler fileHandler = new FileHandler(logFileName, true);
       fileHandler.setFormatter(new java.util.logging.SimpleFormatter());
       ourLogger.removeHandler(ourHandler);
       ourLogger.addHandler(fileHandler);
       ourHandler = fileHandler;
       ourLogFileName = logFileName;
+      var logFile = new File(logFileName);
+      ourStderr = System.err;
+      System.setErr(new PrintStream(new FileOutputStream(logFile)));
+
 
 //      ourLogbackAppender = new FileAppender();
 //      ourLogbackAppender.setFile(logFileName);
@@ -153,9 +162,7 @@ public class GPLogger {
 //      for (LoggerImpl pendingLogger : ourPendingLoggers) {
 //        ((AppenderAttachable<ILoggingEvent>) pendingLogger.delegate()).addAppender(ourLogbackAppender);
 //      }
-    } catch (SecurityException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
+    } catch (SecurityException | IOException e) {
       e.printStackTrace();
     }
   }
@@ -196,29 +203,23 @@ public class GPLogger {
     return "Log to file has not been configured, sorry. If you started GanttProject from console, try looking there";
   }
 
-  private static String[] SYSTEM_PROPERTIES = new String[] { "java.class.path", "java.home", "java.ext.dirs", "java.io.tmpdir",
+  private static final String[] SYSTEM_PROPERTIES = new String[] { "java.class.path", "java.home", "java.ext.dirs", "java.io.tmpdir",
       "java.runtime.version", "java.vendor", "java.vm.name", "java.vm.vendor", "java.vm.version", "os.arch", "os.name",
       "os.version", "sun.java.command", "user.country", "user.dir", "user.home", "user.language", "user.timezone" };
 
   public static void logSystemInformation() {
-    try {
-      StringBuilder result = new StringBuilder();
-      result.append("GanttProject " + GPVersion.getCurrentVersionNumber()).append("\n");
-      File optionsFile = GanttOptions.getOptionsFile();
-      result.append("Settings file:\n");
-      result.append("\tlocation: ").append(optionsFile.getAbsolutePath()).append("\n");
-      result.append("\tsize:").append(optionsFile.length()).append("\n");
-      result.append("\tis readable: ").append(optionsFile.canRead()).append("\n");
-      for (String name : SYSTEM_PROPERTIES) {
-        result.append(name).append(": ").append(System.getProperty(name)).append("\n");
-      }
-
-      System.err.println(result.toString());
-    } catch (AccessControlException e) {
-      // This can happen when running in a sandbox (Java WebStart)
-      System.err.println(e + ": " + e.getMessage());
+    StringBuilder result = new StringBuilder();
+    result.append("GanttProject ").append(GPVersion.getCurrentVersionNumber()).append("\n");
+    File optionsFile = GanttOptions.getOptionsFile();
+    result.append("Settings file:\n");
+    result.append("\tlocation: ").append(optionsFile.getAbsolutePath()).append("\n");
+    result.append("\tsize:").append(optionsFile.length()).append("\n");
+    result.append("\tis readable: ").append(optionsFile.canRead()).append("\n");
+    for (String name : SYSTEM_PROPERTIES) {
+      result.append(name).append(": ").append(System.getProperty(name)).append("\n");
     }
 
+    System.err.println(result);
   }
 
   public static void close() {

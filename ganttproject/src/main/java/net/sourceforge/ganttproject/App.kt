@@ -117,9 +117,6 @@ class AppBuilder(args: Array<String>) {
       if (mainArgs.log && mainArgs.logFile.trim().isNotEmpty()) {
         try {
           GPLogger.setLogFile(mainArgs.logFile)
-          File(mainArgs.logFile).also {
-            System.setErr(PrintStream(it.outputStream()))
-          }
         } catch (ex: Exception) {
           println("Failed to write log to file: " + ex.message)
           ex.printStackTrace()
@@ -129,6 +126,9 @@ class AppBuilder(args: Array<String>) {
       GPLogger.logSystemInformation()
 
     }
+    Runtime.getRuntime().addShutdownHook(Thread {
+      GPLogger.printLogLocation()
+    })
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
       GPLogger.log(e)
     }
