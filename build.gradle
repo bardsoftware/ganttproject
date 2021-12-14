@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.6.0" apply false
+    id "org.jetbrains.kotlin.jvm" version "1.6.10" apply false
 }
 ext.semver = '3.2'
 ext.buildNum = '3200'
