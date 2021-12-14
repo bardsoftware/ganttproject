@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -64,7 +63,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -140,8 +138,8 @@ public class GanttOptions extends SaverBase {
    */
   private CSVOptions csvOptions;
 
-  private Map<String, GPOption<?>> myGPOptions = Maps.newLinkedHashMap();
-  private Map<String, GP1XOptionConverter> myTagDotAttribute_Converter = new HashMap<String, GP1XOptionConverter>();
+  private final Map<String, GPOption<?>> myGPOptions = Maps.newLinkedHashMap();
+  private final Map<String, GP1XOptionConverter> myTagDotAttribute_Converter = new HashMap<String, GP1XOptionConverter>();
 
   private final DocumentManager myDocumentManager;
 
@@ -149,20 +147,17 @@ public class GanttOptions extends SaverBase {
 
   private String myVersion;
 
-  private ExecutorService mySaveExecutor = Executors.newSingleThreadExecutor();
-  private AtomicBoolean mySaveScheduled = new AtomicBoolean(true);
+  private final ExecutorService mySaveExecutor = Executors.newSingleThreadExecutor();
+  private final AtomicBoolean mySaveScheduled = new AtomicBoolean(true);
 
-  private ChangeValueListener myOnOptionValueChange = new ChangeValueListener() {
-    @Override
-    public void changeValue(ChangeValueEvent event) {
-      if (!Objects.equal(event.getOldValue(), event.getNewValue())) {
-        if (!mySaveScheduled.get()) {
-          mySaveScheduled.set(true);
-          mySaveExecutor.submit(() -> {
-            GanttOptions.this.save();
-            mySaveScheduled.set(false);
-          });
-        }
+  private final ChangeValueListener myOnOptionValueChange = event -> {
+    if (!Objects.equal(event.getOldValue(), event.getNewValue())) {
+      if (!mySaveScheduled.get()) {
+        mySaveScheduled.set(true);
+        mySaveExecutor.submit(() -> {
+          GanttOptions.this.save();
+          mySaveScheduled.set(false);
+        });
       }
     }
   };
@@ -172,12 +167,7 @@ public class GanttOptions extends SaverBase {
     myRoleManager = roleManager;
     myPluginPreferencesRootNode = new PluginPreferencesImpl(null, "");
     initDefault();
-    try {
-      this.workingDir = System.getProperty("user.home");
-    } catch (AccessControlException e) {
-      // This can happen when running in a sandbox (Java WebStart)
-      System.err.println(e + ": " + e.getMessage());
-    }
+    this.workingDir = System.getProperty("user.home");
   }
 
   public Preferences getPluginPreferences() {
@@ -387,14 +377,14 @@ public class GanttOptions extends SaverBase {
     AttributesImpl attrs = new AttributesImpl();
     startElement(node.name(), attrs, handler);
     String[] keys = node.keys();
-    for (int i = 0; i < keys.length; i++) {
-      addAttribute("name", keys[i], attrs);
-      addAttribute("value", node.get(keys[i], ""), attrs);
+    for (String key : keys) {
+      addAttribute("name", key, attrs);
+      addAttribute("value", node.get(key, ""), attrs);
       emptyElement("option", attrs, handler);
     }
     String[] children = node.childrenNames();
-    for (int i = 0; i < children.length; i++) {
-      savePreferences(node.node(children[i]), handler);
+    for (String child : children) {
+      savePreferences(node.node(child), handler);
     }
     endElement(node.name(), handler);
   }
@@ -491,11 +481,11 @@ public class GanttOptions extends SaverBase {
 
   private void saveRoleSets(TransformerHandler handler) throws TransformerFactoryConfigurationError, SAXException {
     RoleSet[] roleSets = getRoleManager().getRoleSets();
-    for (int i = 0; i < roleSets.length; i++) {
+    for (RoleSet roleSet : roleSets) {
       AttributesImpl attrs = new AttributesImpl();
-      attrs.addAttribute("", "roleset-name", "roleset-name", "CDATA", roleSets[i].getName());
+      attrs.addAttribute("", "roleset-name", "roleset-name", "CDATA", roleSet.getName());
       handler.startElement("", "roles", "roles", attrs);
-      saveRoles(roleSets[i], handler);
+      saveRoles(roleSet, handler);
       handler.endElement("", "roles", "roles");
     }
   }
@@ -503,8 +493,7 @@ public class GanttOptions extends SaverBase {
   private void saveRoles(RoleSet roleSet, TransformerHandler handler) throws SAXException {
     Role[] roles = roleSet.getRoles();
     AttributesImpl attrs = new AttributesImpl();
-    for (int i = 0; i < roles.length; i++) {
-      Role next = roles[i];
+    for (Role next : roles) {
       addAttribute("id", "" + next.getID(), attrs);
       addAttribute("name", next.getName(), attrs);
       emptyElement("role", attrs, handler);
@@ -605,21 +594,21 @@ public class GanttOptions extends SaverBase {
           }
           if (qName.equals("task-color")) {
             if (aName.equals("red")) {
-              r = new Integer(value).hashCode();
+              r = Integer.valueOf(value).hashCode();
             } else if (aName.equals("green")) {
-              g = new Integer(value).hashCode();
+              g = Integer.valueOf(value).hashCode();
             } else if (aName.equals("blue")) {
-              b = new Integer(value).hashCode();
+              b = Integer.valueOf(value).hashCode();
             }
           } else if (qName.equals("geometry")) {
             if (aName.equals("x")) {
-              x = new Integer(value).hashCode();
+              x = Integer.valueOf(value).hashCode();
             } else if (aName.equals("y")) {
-              y = new Integer(value).hashCode();
+              y = Integer.valueOf(value).hashCode();
             } else if (aName.equals("width")) {
-              width = new Integer(value).hashCode();
+              width = Integer.valueOf(value).hashCode();
             } else if (aName.equals("height")) {
-              height = new Integer(value).hashCode();
+              height = Integer.valueOf(value).hashCode();
             } else if ("maximized".equals(aName)) {
               isMaximized = Boolean.parseBoolean(value);
             }
@@ -629,11 +618,11 @@ public class GanttOptions extends SaverBase {
             }
           } else if (qName.equals("automatic-launch")) {
             if (aName.equals("value")) {
-              automatic = (new Boolean(value)).booleanValue();
+              automatic = Boolean.parseBoolean(value);
             }
           } else if (qName.equals("lockdavminutes")) {
             if (aName.equals("value")) {
-              lockDAVMinutes = (new Integer(value)).intValue();
+              lockDAVMinutes = Integer.parseInt(value);
             }
           } else if (qName.equals("xsl-dir")) {
             if (aName.equals("dir")) {
@@ -652,49 +641,44 @@ public class GanttOptions extends SaverBase {
             }
           } else if (qName.equals("toolBar")) {
             if (aName.equals("position"))
-              toolBarPosition = (new Integer(value)).intValue();
+              toolBarPosition = Integer.parseInt(value);
             else if (aName.equals("icon-size"))
               iconSize = value;
             else if (aName.equals("show"))
-              buttonsshow = (new Integer(value)).intValue();
+              buttonsshow = Integer.parseInt(value);
           } else if (qName.equals("statusBar")) {
             if (aName.equals("show"))
-              bShowStatusBar = (new Boolean(value)).booleanValue();
+              bShowStatusBar = Boolean.parseBoolean(value);
           } else if (qName.equals("export")) {
             if (aName.equals("name")) {
-              bExportName = (new Boolean(value)).booleanValue();
+              bExportName = Boolean.parseBoolean(value);
             } else if (aName.equals("complete")) {
-              bExportComplete = (new Boolean(value)).booleanValue();
+              bExportComplete = Boolean.parseBoolean(value);
             } else if (aName.equals("relations")) {
-              bExportRelations = (new Boolean(value)).booleanValue();
+              bExportRelations = Boolean.parseBoolean(value);
             } else if (aName.equals("border3d")) {
-              bExport3DBorders = (new Boolean(value)).booleanValue();
+              bExport3DBorders = Boolean.parseBoolean(value);
             }
           } else if (qName.equals("colors")) {
             if (aName.equals("resources")) {
               Color colorR = ColorConvertion.determineColor(value);
-              if (colorR != null)
-                setResourceColor(colorR);
+              setResourceColor(colorR);
             } else if (aName.equals("resourcesOverload")) {
               Color colorR = ColorConvertion.determineColor(value);
-              if (colorR != null)
-                setResourceOverloadColor(colorR);
+              setResourceOverloadColor(colorR);
             } else if (aName.equals("resourcesUnderload")) {
               Color colorR = ColorConvertion.determineColor(value);
-              if (colorR != null)
-                setResourceUnderloadColor(colorR);
+              setResourceUnderloadColor(colorR);
             } else if (aName.equals("weekEnd")) {
               Color colorR = ColorConvertion.determineColor(value);
-              if (colorR != null)
-                setWeekEndColor(colorR);
+              setWeekEndColor(colorR);
             } else if (aName.equals("daysOff")) {
               Color colorD = ColorConvertion.determineColor(value);
-              if (colorD != null)
-                setDaysOffColor(colorD);
+              setDaysOffColor(colorD);
             }
           } else if (qName.equals("csv-general")) {
             if (aName.equals("fixed"))
-              csvOptions.bFixedSize = (new Boolean(value)).booleanValue();
+              csvOptions.bFixedSize = Boolean.parseBoolean(value);
             if (aName.equals("separatedChar"))
               csvOptions.sSeparatedChar = value;
             if (aName.equals("separatedTextChar"))
@@ -1147,8 +1131,7 @@ public class GanttOptions extends SaverBase {
 
   public void addOptions(GPOptionGroup optionGroup) {
     GPOption[] options = optionGroup.getOptions();
-    for (int i = 0; i < options.length; i++) {
-      GPOption nextOption = options[i];
+    for (GPOption nextOption : options) {
       nextOption.addChangeValueListener(myOnOptionValueChange);
       myGPOptions.put(optionGroup.getID() + "." + nextOption.getID(), nextOption);
       if (nextOption instanceof GP1XOptionConverter) {
