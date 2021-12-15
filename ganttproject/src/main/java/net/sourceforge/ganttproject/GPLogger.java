@@ -53,6 +53,7 @@ public class GPLogger {
     ourLogger.addHandler(ourHandler);
     ourLogger.setLevel(Level.ALL);
     ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
+    init();
   }
 
   public static void init() {

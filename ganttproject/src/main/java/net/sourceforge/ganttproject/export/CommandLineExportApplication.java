@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
+import biz.ganttproject.LoggerApi;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.FileConverter;
 import net.sourceforge.ganttproject.GPLogger;
@@ -30,6 +31,7 @@ import org.osgi.service.prefs.Preferences;
 import org.w3c.util.DateParser;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 
 public class CommandLineExportApplication {
@@ -57,6 +59,8 @@ public class CommandLineExportApplication {
 
   }
 
+  private LoggerApi logger = GPLogger.create("Export");
+
   public boolean export(Args args, IGanttProject project, UIFacade uiFacade) {
     if (args.exporter == null) {
       return false;
@@ -71,8 +75,9 @@ public class CommandLineExportApplication {
   }
 
   private boolean export(Exporter exporter, Args args, IGanttProject project, UIFacade uiFacade) {
-    GPLogger.log("Using exporter=" + exporter);
+    logger.debug("Using exporter {}", new Object[]{exporter}, new HashMap<>());
     ConsoleUIFacade consoleUI = new ConsoleUIFacade(uiFacade);
+    GPLogger.setUIFacade(consoleUI);
     // TODO: bring back task expanding
 //    if (myArgs.expandTasks) {
 //      for (Task t : project.getTaskManager().getTasks()) {
@@ -80,7 +85,7 @@ public class CommandLineExportApplication {
 //      }
 //    }
 
-    Job.getJobManager().setProgressProvider(null);
+    Job.getJobManager().setProgressProvider(new ConsoleProgressProvider());
     File outputFile = args.outputFile == null ? FileChooserPage.proposeOutputFile(project, exporter)
         : args.outputFile;
 

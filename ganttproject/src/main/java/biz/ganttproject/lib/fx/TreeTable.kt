@@ -164,7 +164,6 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
 
     // dispose of the cell to prevent it retaining listeners (see RT-31015)
     cell.updateIndex(-1)
-    println("width=${maxWidth} padding=${padding}")
     tc.prefWidth = maxWidth + padding
     return maxWidth + padding
   }

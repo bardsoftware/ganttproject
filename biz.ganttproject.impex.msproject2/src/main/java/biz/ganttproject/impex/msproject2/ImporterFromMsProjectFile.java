@@ -81,7 +81,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
       Map<GanttTask, Date> originalDates = importer.getOriginalStartDates();
 
       findChangedDates(originalDates, buffer2realTask, errors);
-      reportErrors(errors, "MSProject");
+      reportErrors(errors, "Import.MSProject");
     } catch (MPXJException e) {
       getUiFacade().showErrorDialog(e);
     } finally {

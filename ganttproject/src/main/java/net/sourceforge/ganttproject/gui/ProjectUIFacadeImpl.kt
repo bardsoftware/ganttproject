@@ -228,10 +228,10 @@ class ProjectUIFacadeImpl(
             when (ex) {
               // If channel was closed with a cause and it was because of HTTP 403, we show UI for sign-in
               is DocumentException -> {
-                onFinish?.close(ex) ?: GPLogger.log(ex)
+                onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
               }
               else -> {
-                onFinish?.close(ex) ?: GPLogger.log(DocumentException("Can't open document $document", ex ))
+                onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("Can't open document $document", ex)
               }
             }
             null
@@ -425,3 +425,5 @@ class ProjectSaveFlow(
     saveAs()
   }
 }
+
+private val DOCUMENT_ERROR_LOGGER = GPLogger.create("Document.Error")

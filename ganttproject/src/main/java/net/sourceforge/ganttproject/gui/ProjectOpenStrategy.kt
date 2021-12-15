@@ -500,9 +500,8 @@ internal class CommandLineProjectOpenStrategy(
           success = true
           break
         } catch (e: Throwable) {
-          if (!GPLogger.log(e)) {
-            e.printStackTrace(System.err)
-          }
+          DOCUMENT_ERROR_LOGGER.error("Import with importer={} failed", importer, exception = e)
+          uiFacade.showErrorDialog(e)
         } finally {
           taskManager.setEventsEnabled(true)
         }
@@ -511,3 +510,4 @@ internal class CommandLineProjectOpenStrategy(
     return success
   }
 }
+private val DOCUMENT_ERROR_LOGGER = GPLogger.create("Document.Error")

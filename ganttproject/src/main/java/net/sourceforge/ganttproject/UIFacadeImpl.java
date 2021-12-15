@@ -364,7 +364,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
    */
   @Override
   public void showErrorDialog(Throwable e) {
-    GPLogger.logToLogger(e);
     showNotificationDialog(NotificationChannel.ERROR, buildMessage(e));
   }
 

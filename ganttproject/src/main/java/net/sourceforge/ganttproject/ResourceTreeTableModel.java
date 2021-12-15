@@ -304,9 +304,11 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
   public void resourceAssignmentsChanged(Iterable<HumanResource> resources) {
     for (HumanResource resource : resources) {
       ResourceNode nextNode = getNodeForResource(resource);
-      SelectionKeeper selectionKeeper = new SelectionKeeper(mySelectionModel, nextNode);
-      buildAssignmentsSubtree(nextNode);
-      selectionKeeper.restoreSelection();
+      if (nextNode != null) {
+        SelectionKeeper selectionKeeper = new SelectionKeeper(mySelectionModel, nextNode);
+        buildAssignmentsSubtree(nextNode);
+        selectionKeeper.restoreSelection();
+      }
     }
   }
 
