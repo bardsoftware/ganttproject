@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.task
 
 import biz.ganttproject.core.table.ColumnList
+import biz.ganttproject.ganttview.NewTaskActor
 import biz.ganttproject.ganttview.TaskTableActionConnector
 import net.sourceforge.ganttproject.CustomPropertyManager
 import net.sourceforge.ganttproject.IGanttProject
@@ -42,8 +43,9 @@ class TaskActions(private val project: IGanttProject,
                   private val uiFacade: UIFacade,
                   private val selectionManager: TaskSelectionManager,
                   private val viewManager: () -> GPViewManager,
-                  private val tableConnector: () -> TaskTableActionConnector) {
-  val createAction = TaskNewAction(project, uiFacade, tableConnector)
+                  private val tableConnector: () -> TaskTableActionConnector,
+                  private val newTaskActor: NewTaskActor<Task>) {
+  val createAction = TaskNewAction(project, uiFacade, newTaskActor)
   val propertiesAction = TaskPropertiesAction(project, selectionManager, uiFacade)
   val deleteAction = TaskDeleteAction(project.taskManager, selectionManager, uiFacade)
   val indentAction = TaskIndentAction(project.taskManager, selectionManager, uiFacade, tableConnector)

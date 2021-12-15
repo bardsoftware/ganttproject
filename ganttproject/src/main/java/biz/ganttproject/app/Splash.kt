@@ -38,11 +38,13 @@ fun showAsync(): CompletableFuture<Runnable> {
   JFXPanel()
   val result = CompletableFuture<Runnable>()
   Platform.runLater {
-    val splash1 = ImageView(Image(GanttProject::class.java.getResourceAsStream("/icons/splash.png")))
+    val image = Image(GanttProject::class.java.getResourceAsStream("/icons/splash.png"))
+    val splash1 = ImageView(image)
     val splashLayout = VBox()
     splashLayout.children.addAll(splash1)
     splashLayout.effect = DropShadow()
     val splashScene = Scene(splashLayout)
+    splashScene.stylesheets.add("/biz/ganttproject/app/Splash.css")
     splashScene.fill = javafx.scene.paint.Color.TRANSPARENT
     val stage = Stage(StageStyle.TRANSPARENT)
     stage.isAlwaysOnTop = true
@@ -50,6 +52,8 @@ fun showAsync(): CompletableFuture<Runnable> {
     val bounds = Screen.getPrimary().bounds
     stage.x = bounds.minX + bounds.width / 2 - SPLASH_WIDTH / 2
     stage.y = bounds.minY + bounds.height / 2 - SPLASH_HEIGHT / 2
+    stage.width = image.width
+    stage.height = image.height
     stage.show()
     result.complete(Runnable {
       Platform.runLater {

@@ -18,8 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.task;
 
-import biz.ganttproject.ganttview.TaskTableActionConnector;
-import kotlin.jvm.functions.Function0;
+import biz.ganttproject.ganttview.NewTaskActor;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -33,28 +32,28 @@ import java.util.List;
 public class TaskNewAction extends GPAction {
   private final IGanttProject myProject;
   private final UIFacade myUiFacade;
-  private final Function0<TaskTableActionConnector> taskTableActionConnector;
+  private final NewTaskActor newTaskActor;
 
 
-  public TaskNewAction(IGanttProject project, UIFacade uiFacade, Function0<TaskTableActionConnector> taskTableActionConnector) {
-    this(project, uiFacade, taskTableActionConnector, IconSize.MENU);
+  public TaskNewAction(IGanttProject project, UIFacade uiFacade, NewTaskActor<Task> newTaskActor) {
+    this(project, uiFacade, newTaskActor, IconSize.MENU);
   }
 
-  private TaskNewAction(IGanttProject project, UIFacade uiFacade, Function0<TaskTableActionConnector> taskTableActionConnector, IconSize size) {
+  private TaskNewAction(IGanttProject project, UIFacade uiFacade, NewTaskActor<Task> newTaskActor, IconSize size) {
     super("task.new", size.asString());
     myProject = project;
     myUiFacade = uiFacade;
-    this.taskTableActionConnector = taskTableActionConnector;
+    this.newTaskActor = newTaskActor;
   }
 
   @Override
   public GPAction withIcon(IconSize size) {
-    return new TaskNewAction(myProject, myUiFacade, taskTableActionConnector, size);
+    return new TaskNewAction(myProject, myUiFacade, newTaskActor, size);
   }
 
   @Override
   public boolean isEnabled() {
-    return taskTableActionConnector.invoke().getCanAddTask().invoke().get();
+    return newTaskActor.getCanAddTask().get();
   }
 
   @Override
@@ -62,7 +61,7 @@ public class TaskNewAction extends GPAction {
     if (calledFromAppleScreenMenu(e)) {
       return;
     }
-    if (taskTableActionConnector.invoke().getCanAddTask().invoke().get() == false) {
+    if (!newTaskActor.getCanAddTask().get()) {
       return;
     }
     myUiFacade.getUndoManager().undoableEdit(getLocalizedDescription(), () -> {
@@ -95,7 +94,7 @@ public class TaskNewAction extends GPAction {
 
   @Override
   public TaskNewAction asToolbarAction() {
-    TaskNewAction result = new TaskNewAction(myProject, myUiFacade, taskTableActionConnector);
+    TaskNewAction result = new TaskNewAction(myProject, myUiFacade, newTaskActor);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
     return result;
   }

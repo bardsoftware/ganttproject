@@ -81,7 +81,8 @@ class TaskTable(
   private val taskActions: TaskActions,
   private val undoManager: GPUndoManager,
   private val filters: TaskFilterManager,
-  initializationPromise: TwoPhaseBarrierImpl<*>
+  initializationPromise: TwoPhaseBarrierImpl<*>,
+  private val newTaskActor: NewTaskActor<Task>
 ) {
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   private val treeModel = taskManager.taskHierarchy
@@ -452,7 +453,8 @@ class TaskTable(
         } else {
           createTextColumn(taskDefaultColumn.getName(),
             { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
-            { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
+            { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) },
+            { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
           )
         }
       }
@@ -520,7 +522,8 @@ class TaskTable(
       CustomPropertyClass.TEXT -> {
         createTextColumn(customProperty.name,
           { taskTableModel.getValue(it, customProperty)?.toString() },
-          { task, value -> taskTableModel.setValue(value, task, customProperty) }
+          { task, value -> taskTableModel.setValue(value, task, customProperty) },
+          { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
         )
       }
       CustomPropertyClass.BOOLEAN -> {
@@ -838,13 +841,9 @@ private val taskNameConverter = MyStringConverter<Task, Task>(
   }
 )
 
-private val newTaskActor = NewTaskActor<Task>().also { it.start() }
 private val dragAndDropSupport = DragAndDropSupport()
 private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->
   dragAndDropSupport.install(cell)
-  cell.onEditingCompleted = {
-    runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
-  }
 
   cell.graphicSupplier = { task: Task? ->
     if (task == null) {

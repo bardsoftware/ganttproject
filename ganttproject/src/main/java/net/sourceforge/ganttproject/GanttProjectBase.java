@@ -23,22 +23,11 @@ import biz.ganttproject.app.TwoPhaseBarrierImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
-import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.ColorOption;
-import biz.ganttproject.core.option.DefaultBooleanOption;
-import biz.ganttproject.core.option.DefaultColorOption;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionChangeListener;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-import biz.ganttproject.ganttview.TaskFilterManager;
-import biz.ganttproject.ganttview.TaskTable;
-import biz.ganttproject.ganttview.TaskTableActionConnector;
-import biz.ganttproject.ganttview.TaskTableChartConnector;
+import biz.ganttproject.ganttview.*;
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
@@ -56,17 +45,7 @@ import net.sourceforge.ganttproject.client.RssFeedChecker;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
-import net.sourceforge.ganttproject.gui.GanttStatusBar;
-import net.sourceforge.ganttproject.gui.GanttTabbedPane;
-import net.sourceforge.ganttproject.gui.NotificationChannel;
-import net.sourceforge.ganttproject.gui.NotificationManager;
-import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
-import net.sourceforge.ganttproject.gui.ProjectUIFacade;
-import net.sourceforge.ganttproject.gui.ProjectUIFacadeImpl;
-import net.sourceforge.ganttproject.gui.TaskSelectionContext;
-import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.gui.view.ViewManagerImpl;
@@ -78,13 +57,7 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.CustomColumnsManager;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskManagerConfig;
-import net.sourceforge.ganttproject.task.TaskManagerImpl;
-import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.task.TaskView;
+import net.sourceforge.ganttproject.task.*;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.undo.UndoManagerImpl;
 import org.jetbrains.annotations.NotNull;
@@ -227,6 +200,9 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myUiInitializationPromise = new TwoPhaseBarrierImpl<>(myUIFacade);
 
     GPLogger.setUIFacade(myUIFacade);
+    var newTaskActor = new NewTaskActor<Task>();
+    newTaskActor.start();
+
     myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
         this::getViewManager,
         new Function0<>() {
@@ -234,12 +210,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
       public TaskTableActionConnector invoke() {
         return myTaskTableSupplier.get().getActionConnector();
       }
-    });
+    }, newTaskActor);
     myTaskFilterManager = new TaskFilterManager(getTaskManager());
-    myTaskTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(
-        () -> new TaskTable(getProject(), getTaskManager(),
-            myTaskTableChartConnector, myTaskCollapseView, getTaskSelectionManager(), myTaskActions, getUndoManager(),
-          myTaskFilterManager, myUiInitializationPromise)
+    myTaskTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(() ->
+      new TaskTable(getProject(), getTaskManager(), myTaskTableChartConnector, myTaskCollapseView,
+        getTaskSelectionManager(), myTaskActions, getUndoManager(), myTaskFilterManager, myUiInitializationPromise, newTaskActor)
     ));
     myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
       @Override

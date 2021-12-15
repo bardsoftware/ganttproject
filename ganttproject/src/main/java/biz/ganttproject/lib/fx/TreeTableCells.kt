@@ -290,12 +290,14 @@ class TextCell<S, T>(
     }
 }
 
-fun <S> createTextColumn(name: String, getValue: (S) -> String?, setValue: (S, String) -> Unit): TreeTableColumn<S, String> =
+fun <S> createTextColumn(name: String, getValue: (S) -> String?, setValue: (S, String) -> Unit, onEditingCompleted: () -> Unit): TreeTableColumn<S, String> =
   TreeTableColumn<S, String>(name).apply {
     setCellValueFactory {
       ReadOnlyStringWrapper(getValue(it.value.value) ?: "")
     }
     cellFactory = TextCellFactory<S, String>(converter = DefaultStringConverter().adapt()) {
+      it.onEditingCompleted = onEditingCompleted
+
       it.styleClass.add("text-left")
     }
     onEditCommit = EventHandler { event ->
