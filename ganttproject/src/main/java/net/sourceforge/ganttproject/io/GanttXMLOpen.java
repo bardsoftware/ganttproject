@@ -176,11 +176,11 @@ public class GanttXMLOpen implements GPParser {
             else if (aName.equals("view-date")) {
               myUIFacade.getScrollingManager().scrollTo(GanttCalendar.parseXMLDate(attrs.getValue(i)).getTime());
             } else if (aName.equals("view-index")) {
-              viewIndex = new Integer(attrs.getValue(i)).hashCode();
+              viewIndex = Integer.valueOf(attrs.getValue(i)).hashCode();
             } else if (aName.equals("gantt-divider-location")) {
-              ganttDividerLocation = new Integer(attrs.getValue(i)).intValue();
+              ganttDividerLocation = Integer.parseInt(attrs.getValue(i));
             } else if (aName.equals("resource-divider-location")) {
-              resourceDividerLocation = new Integer(attrs.getValue(i)).intValue();
+              resourceDividerLocation = Integer.parseInt(attrs.getValue(i));
             }
           } else if (eName.equals("tasks")) {
             if ("empty-milestones".equals(aName)) {

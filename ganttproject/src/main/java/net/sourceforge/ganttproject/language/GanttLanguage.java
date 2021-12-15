@@ -150,7 +150,7 @@ public class GanttLanguage {
     myLongFormat = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale);
     UIManager.put("JXDatePicker.longFormat", myLongFormat.toPattern());
     UIManager.put("JXDatePicker.mediumFormat", currentDateFormat.toPattern());
-    UIManager.put("JXDatePicker.numColumns", new Integer(10));
+    UIManager.put("JXDatePicker.numColumns", 10);
     myDayShortNames = getShortDayNames(locale);
     UIManager.put("JXMonthView.daysOfTheWeek", myDayShortNames.toArray(new String[7]));
   }

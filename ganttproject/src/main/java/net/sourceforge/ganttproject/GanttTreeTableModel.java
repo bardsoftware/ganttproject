@@ -269,10 +269,10 @@ public class GanttTreeTableModel extends DefaultTreeTableModel implements TableC
         res = t.getDisplayEnd();
         break;
       case DURATION:
-        res = new Integer(tn.getDuration());
+        res = tn.getDuration();
         break;
       case COMPLETION:
-        res = new Integer(tn.getCompletionPercentage());
+        res = tn.getCompletionPercentage();
         break;
       case COORDINATOR:
         ResourceAssignment[] tAssign = t.getAssignments();

@@ -18,19 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.time.impl;
 
+import biz.ganttproject.core.time.*;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-
-import biz.ganttproject.core.time.DateFrameable;
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.TimeUnit;
-import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
-import biz.ganttproject.core.time.TimeUnitGraph;
-import biz.ganttproject.core.time.TimeUnitPair;
-import biz.ganttproject.core.time.TimeUnitStack;
 
 
 /**
@@ -70,10 +64,10 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
 
     DAY = ourGraph.createDateFrameableTimeUnit("day", HOUR, 24, DAY_FRAMER);
     MONTH = ourGraph.createTimeUnitFunctionOfDate("month", DAY, MONTH_FRAMER);
-    ourUnit2field.put(DAY, new Integer(Calendar.DAY_OF_MONTH));
-    ourUnit2field.put(HOUR, new Integer(Calendar.HOUR_OF_DAY));
-    ourUnit2field.put(MINUTE, new Integer(Calendar.MINUTE));
-    ourUnit2field.put(SECOND, new Integer(Calendar.SECOND));
+    ourUnit2field.put(DAY, Calendar.DAY_OF_MONTH);
+    ourUnit2field.put(HOUR, Calendar.HOUR_OF_DAY);
+    ourUnit2field.put(MINUTE, Calendar.MINUTE);
+    ourUnit2field.put(SECOND, Calendar.SECOND);
   }
 
   public GregorianTimeUnitStack() {

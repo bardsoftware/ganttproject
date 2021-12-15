@@ -18,13 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.chart.text;
 
+import biz.ganttproject.core.chart.text.TimeFormatters.LocaleApi;
+import biz.ganttproject.core.time.CalendarFactory;
+
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
-
-import biz.ganttproject.core.chart.text.TimeFormatters.LocaleApi;
-import biz.ganttproject.core.time.CalendarFactory;
 
 
 public class WeekTextFormatter extends CachingTextFormatter implements TimeFormatter {
@@ -43,7 +43,7 @@ public class WeekTextFormatter extends CachingTextFormatter implements TimeForma
   }
 
   private TimeUnitText createTopText() {
-    Integer weekNo = new Integer(myCalendar.get(Calendar.WEEK_OF_YEAR));
+    Integer weekNo = myCalendar.get(Calendar.WEEK_OF_YEAR);
     String shortText = weekNo.toString();
     String middleText = MessageFormat.format("{0} {1}", myWeekText, weekNo);
     String longText = middleText;
