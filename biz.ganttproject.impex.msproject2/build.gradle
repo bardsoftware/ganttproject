@@ -1,15 +1,6 @@
-buildscript {
-    ext.kotlin_version = '1.6.0'
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
+plugins {
+    id "org.jetbrains.kotlin.jvm"
 }
-
-apply plugin: 'java'
-apply plugin: 'kotlin'
 
 configurations {
     api
@@ -27,6 +18,17 @@ dependencies {
 
     implementation configurations.providedCompile
     implementation fileTree(dir: project.ext.libDir, include: ['*.jar'])
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
 }
 
 task copyPlugin(dependsOn: assemble) {
