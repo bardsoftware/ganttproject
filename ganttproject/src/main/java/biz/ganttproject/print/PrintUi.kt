@@ -98,7 +98,7 @@ fun showPrintDialog(activeChart: Chart) {
           },
 
           // -- Date range
-          Label("print.preview.dateRange").also {
+          Label(i18n.formatText("print.preview.dateRange")).also {
             HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
           },
           DateRangePicker(activeChart).let {
@@ -280,7 +280,7 @@ private fun exportPages(pages: List<PrintPage>, project: IGanttProject, dlg: Dia
   fileChooser.extensionFilters.add(
     FileChooser.ExtensionFilter(RootLocalizer.formatText("filterzip"), "zip")
   )
-  fileChooser.initialFileName = "${FileUtil.replaceExtension(project.document.fileName, "zip")}"
+  fileChooser.initialFileName = FileUtil.replaceExtension(project.document.fileName, "zip")
   val file = fileChooser.showSaveDialog(null)
   if (file != null) {
     try {
