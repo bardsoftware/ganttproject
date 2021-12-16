@@ -18,13 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.action.task;
 
-import java.util.Collection;
-
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 
-import com.google.common.base.Function;
+import java.util.Collection;
+import java.util.function.Function;
 
 /**
  * Creates functions resolving move targets for outdent operations. When outdenting move target does not depend on
@@ -32,9 +31,9 @@ import com.google.common.base.Function;
  *
  * @author dbarashev
  */
-class OutdentTargetFunctionFactory implements Function<Collection<Task>, Function<Task, Task>> {
+public class OutdentTargetFunctionFactory implements Function<Collection<Task>, Function<Task, Task>> {
   private final TaskManager myTaskManager;
-  private final Function<Task, Task> myGetMoveTargetFxn = new Function<Task, Task>() {
+  private final Function<Task, Task> myGetMoveTargetFxn = new Function<>() {
     @Override
     public Task apply(Task whatMove) {
       Task currentParent = getTaskHierarchy().getContainer(whatMove);
@@ -45,7 +44,7 @@ class OutdentTargetFunctionFactory implements Function<Collection<Task>, Functio
     }
   };
 
-  OutdentTargetFunctionFactory(TaskManager taskManager) {
+  public OutdentTargetFunctionFactory(TaskManager taskManager) {
     myTaskManager = taskManager;
   }
 

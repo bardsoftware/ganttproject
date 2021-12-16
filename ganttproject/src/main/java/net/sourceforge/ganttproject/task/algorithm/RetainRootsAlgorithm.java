@@ -18,12 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.task.algorithm;
 
+import com.google.common.collect.Sets;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Sets;
+import java.util.function.Function;
 
 /**
  * Examines the given array of nodes and retains only those

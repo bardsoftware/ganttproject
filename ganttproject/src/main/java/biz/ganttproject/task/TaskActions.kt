@@ -31,9 +31,13 @@ import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.view.GPViewManager
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
+import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskSelectionManager
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.awt.event.ActionEvent
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import javax.swing.Action
 
 /**
@@ -41,17 +45,102 @@ import javax.swing.Action
  */
 class TaskActions(private val project: IGanttProject,
                   private val uiFacade: UIFacade,
-                  private val selectionManager: TaskSelectionManager,
+                  selectionManager: TaskSelectionManager,
                   private val viewManager: () -> GPViewManager,
                   private val tableConnector: () -> TaskTableActionConnector,
-                  private val newTaskActor: NewTaskActor<Task>) {
+                  newTaskActor: NewTaskActor<Task>) {
   val createAction = TaskNewAction(project, uiFacade, newTaskActor)
   val propertiesAction = TaskPropertiesAction(project, selectionManager, uiFacade)
   val deleteAction = TaskDeleteAction(project.taskManager, selectionManager, uiFacade)
-  val indentAction = TaskIndentAction(project.taskManager, selectionManager, uiFacade, tableConnector)
-  val unindentAction = TaskUnindentAction(project.taskManager, selectionManager, uiFacade, tableConnector)
-  val moveUpAction = TaskMoveUpAction(project.taskManager, selectionManager, uiFacade, tableConnector)
-  val moveDownAction = TaskMoveDownAction(project.taskManager, selectionManager, uiFacade, tableConnector)
+
+  /**
+   * "Indents" the selection, that is, moves tasks downwards in the task tree which in the UI looks
+   * as if they move rightwards (get indented)
+   *
+   * 1. For a single selected task T, this action is enabled if there is a task S
+   * which is a sibling of T (that is, they both have the same parent P) and sits
+   * immediately before T in the list of P's children (that is, T is not the first child).
+   * This action moves T under S.
+   *
+   * 2. For multiple selected tasks, if they are all children of the same task P and form a
+   * consecutive range of P's children, it works as if they all were at the place of the first task
+   * in the range.
+   *
+   * 3. For multiple selected tasks, which are not in a consecutive range of siblings, it works by partitioning
+   * the selection into consecutive ranges of siblings, and indenting every range as written above.
+   */
+  val indentAction: GPAction = TaskMoveAction("task.indent", project.taskManager, selectionManager, uiFacade, tableConnector,
+    isEnabledPredicate = { selection ->
+      TaskMoveEnabledPredicate(project.taskManager, IndentTargetFunctionFactory(project.taskManager)).test(selection)
+    },
+    onAction = { selection ->
+      indent(selection, project.taskManager.taskHierarchy)
+      selection.first()
+    }
+  )
+
+  /**
+   * "Outdents" the selected tasks by moving them upwards in the task tree, which in the UI looks
+   * as if they move leftwards (indent is decreased).
+   *
+   * 1. For a single selected task T, this action is enabled if there is a parent task P.
+   * This action moves T upwards, so that it becomes a sibling of P and immediately follows
+   * P in the list of P's siblings.
+   *
+   * 2. For multiple selected tasks, if they are all children of the same task P and form a
+   * consecutive range of P's children, it works as if they all were at the place of the first task
+   * in the range.
+   *
+   * 3. For multiple selected tasks, which are not in a consecutive range of siblings, it works by partitioning
+   * the selection into consecutive ranges of siblings, and indenting every range as written above.
+   */
+  val unindentAction: GPAction = TaskMoveAction("task.unindent", project.taskManager, selectionManager, uiFacade, tableConnector,
+    isEnabledPredicate = { selection ->
+      TaskMoveEnabledPredicate(project.taskManager, OutdentTargetFunctionFactory(project.taskManager)).test(selection)
+    },
+    onAction = { selection ->
+      unindent(selection, project.taskManager.taskHierarchy)
+      selection.first()
+    }
+  )
+
+  /**
+   * Swaps the selected tasks with their siblings, moving closer to the beginning of the list
+   * of siblings. In the UI it looks as if they move upwards.
+   */
+  val moveUpAction: GPAction = TaskMoveAction("task.move.up", project.taskManager, selectionManager, uiFacade, tableConnector,
+    isEnabledPredicate = { selection ->
+      selection.find { project.taskManager.taskHierarchy.getPreviousSibling(it) == null } == null
+    },
+    onAction = { selection ->
+      val taskHierarchy = project.taskManager.taskHierarchy
+      selection.forEach { task ->
+        val parent = taskHierarchy.getContainer(task)
+        val index = taskHierarchy.getTaskIndex(task) - 1
+        taskHierarchy.move(task, parent, index)
+      }
+      selection.first()
+    }
+  )
+
+  /**
+   * Swaps the selected tasks with their siblings, moving closer to the end of the list
+   * of siblings. In the UI it looks as if they move downwards.
+   */
+  val moveDownAction: GPAction = TaskMoveAction("task.move.down", project.taskManager, selectionManager, uiFacade, tableConnector,
+    isEnabledPredicate = { selection ->
+      selection.find { project.taskManager.taskHierarchy.getNextSibling(it) == null } == null
+    },
+    onAction = { selection ->
+      val taskHierarchy = project.taskManager.taskHierarchy
+      selection.asReversed().forEach { task ->
+        val parent = taskHierarchy.getContainer(task)
+        val index = taskHierarchy.getTaskIndex(task) + 1
+        taskHierarchy.move(task, parent, index)
+      }
+      selection.last()
+    }
+  )
   val copyAction get() = viewManager().copyAction
   val cutAction get() = viewManager().cutAction
   val pasteAction get() = viewManager().pasteAction
@@ -87,3 +176,73 @@ class ManageColumnsAction(
     dialog.show()
   }
 }
+
+/**
+ * Action for moving tasks in the task tree.
+ */
+private class TaskMoveAction(
+  actionId: String,
+  taskManager: TaskManager,
+  selectionManager: TaskSelectionManager,
+  uiFacade: UIFacade,
+  private val myTableConnector: () -> TaskTableActionConnector,
+  private val isEnabledPredicate: (List<Task>) -> Boolean,
+  private val onAction: (List<Task>) -> Task
+) : TaskActionBase(actionId, taskManager, selectionManager, uiFacade) {
+
+  init {
+    uiFacade.mainFrame.addWindowListener(object: WindowAdapter() {
+      override fun windowOpened(e: WindowEvent?) {
+        myTableConnector().isSorted.addListener { _, _, newValue: Boolean ->
+          isEnabled = !newValue
+        }
+      }
+    })
+  }
+
+  override fun isEnabled(selection: List<Task>): Boolean {
+    if (selection.isEmpty()) {
+      return false
+    }
+    if (myTableConnector().isSorted.get()) {
+      return false
+    }
+    return isEnabledPredicate(selection)
+  }
+
+  override fun run(selection: List<Task>) {
+    myTableConnector().commitEdit()
+
+    taskManager.algorithmCollection.scheduler.isEnabled = false
+    try {
+      myTableConnector().scrollTo(onAction(selection))
+    } finally {
+      taskManager.algorithmCollection.scheduler.isEnabled = true
+    }
+  }
+
+  override fun asToolbarAction(): GPAction {
+    return this
+  }
+}
+
+/**
+ * The logic of indenting the selection.
+ */
+fun indent(selection: List<Task>, taskHierarchy: TaskContainmentHierarchyFacade) =
+  documentOrdered(retainRoots(selection), taskHierarchy).forEach { task ->
+    val newParent = taskHierarchy.getPreviousSibling(task)
+    taskHierarchy.move(task, newParent)
+  }
+
+/**
+ * The logic of unindenting the selection.
+ */
+fun unindent(selection: List<Task>, taskHierarchy: TaskContainmentHierarchyFacade) =
+  documentOrdered(retainRoots(selection), taskHierarchy).asReversed().forEach { task ->
+    val parent = taskHierarchy.getContainer(task)
+    val ancestor = taskHierarchy.getContainer(parent)
+    val index = taskHierarchy.getTaskIndex(parent) + 1
+    taskHierarchy.move(task, ancestor, index)
+  }
+

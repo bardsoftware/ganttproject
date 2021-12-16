@@ -18,13 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.action.task;
 
-import java.util.Collection;
-
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 
-import com.google.common.base.Function;
+import java.util.Collection;
+import java.util.function.Function;
+
 
 /**
  * Creates functions resolving move target for indent operations. Function depends on the set of tasks being moved so
@@ -32,9 +32,9 @@ import com.google.common.base.Function;
  *
  * @author dbarashev
  */
-class IndentTargetFunctionFactory implements Function<Collection<Task>, Function<Task, Task>> {
+public class IndentTargetFunctionFactory implements Function<Collection<Task>, Function<Task, Task>> {
   private final TaskManager myTaskManager;
-  IndentTargetFunctionFactory(TaskManager taskManager) {
+  public IndentTargetFunctionFactory(TaskManager taskManager) {
     myTaskManager = taskManager;
   }
 

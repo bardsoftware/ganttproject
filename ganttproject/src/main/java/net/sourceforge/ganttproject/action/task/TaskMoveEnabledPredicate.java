@@ -18,19 +18,19 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.action.task;
 
-import java.util.Collection;
-import java.util.List;
-
+import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.algorithm.DependencyGraph;
 import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+import org.jetbrains.annotations.NotNull;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Predicate which enables or disables move of a collection of tasks (for indent and ourdent operations).
@@ -39,28 +39,23 @@ import com.google.common.collect.Lists;
  *
  * @author dbarashev
  */
-class TaskMoveEnabledPredicate implements Predicate<List<Task>> {
+public class TaskMoveEnabledPredicate implements Predicate<List<Task>> {
   private final RetainRootsAlgorithm<Task> myRetainRootsAlgorithm = new RetainRootsAlgorithm<Task>();
   private final TaskManager myTaskManager;
   private final Function<Collection<Task>, Function<Task, Task>> myGetMoveTargetFxnFactory;
 
-  TaskMoveEnabledPredicate(TaskManager taskManager, Function<Collection<Task>, Function<Task, Task>> getMoveTargetFxnFactory) {
+  public TaskMoveEnabledPredicate(TaskManager taskManager, Function<Collection<Task>, Function<Task, Task>> getMoveTargetFxnFactory) {
     myTaskManager = taskManager;
     myGetMoveTargetFxnFactory = getMoveTargetFxnFactory;
   }
 
   @Override
-  public boolean apply(List<Task> selection) {
+  public boolean test(@NotNull List<Task> selection) {
     if (selection.isEmpty()) {
       return false;
     }
     final TaskContainmentHierarchyFacade taskHierarchy = getTaskManager().getTaskHierarchy();
-    Function<Task, Task> getParent = new Function<Task, Task>() {
-      @Override
-      public Task apply(Task task) {
-        return taskHierarchy.getContainer(task);
-      }
-    };
+    Function<Task, Task> getParent = task -> taskHierarchy.getContainer(task);
 
     // If there are tasks in selection which are in ancestor-descendant relationship,
     // we'll retain only topmost ones.

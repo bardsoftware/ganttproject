@@ -34,9 +34,9 @@ public class TaskMoveEnabledPredicateTest extends TaskTestCase {
   public void testSimpleIndent() {
     Task[] tasks = new Task[] {createTask(), createTask()};
     TaskMoveEnabledPredicate predicate = new TaskMoveEnabledPredicate(getTaskManager(), new IndentTargetFunctionFactory(getTaskManager()));
-    assertTrue(predicate.apply(ImmutableList.of(tasks[1])));
-    assertFalse(predicate.apply(ImmutableList.of(tasks[0])));
-    assertFalse(predicate.apply(ImmutableList.of(tasks[0], tasks[1])));
+    assertTrue(predicate.test(ImmutableList.of(tasks[1])));
+    assertFalse(predicate.test(ImmutableList.of(tasks[0])));
+    assertFalse(predicate.test(ImmutableList.of(tasks[0], tasks[1])));
   }
 
   public void testIndentLinkedTasks() {
@@ -44,8 +44,8 @@ public class TaskMoveEnabledPredicateTest extends TaskTestCase {
     getTaskManager().getDependencyGraph().addDependency(createDependency(tasks[2], tasks[1]));
 
     TaskMoveEnabledPredicate predicate = new TaskMoveEnabledPredicate(getTaskManager(), new IndentTargetFunctionFactory(getTaskManager()));
-    assertTrue(predicate.apply(ImmutableList.of(tasks[1], tasks[2])));
-    assertFalse(predicate.apply(ImmutableList.of(tasks[2])));
+    assertTrue(predicate.test(ImmutableList.of(tasks[1], tasks[2])));
+    assertFalse(predicate.test(ImmutableList.of(tasks[2])));
   }
 
   public void testSimpleOutdent() {
@@ -53,8 +53,8 @@ public class TaskMoveEnabledPredicateTest extends TaskTestCase {
     DependencyGraphTest.move(tasks[1], tasks[0], getTaskManager().getDependencyGraph());
 
     TaskMoveEnabledPredicate predicate = new TaskMoveEnabledPredicate(getTaskManager(), new OutdentTargetFunctionFactory(getTaskManager()));
-    assertTrue(predicate.apply(ImmutableList.of(tasks[1])));
-    assertFalse(predicate.apply(ImmutableList.of(tasks[0])));
-    assertFalse(predicate.apply(ImmutableList.of(tasks[0], tasks[1])));
+    assertTrue(predicate.test(ImmutableList.of(tasks[1])));
+    assertFalse(predicate.test(ImmutableList.of(tasks[0])));
+    assertFalse(predicate.test(ImmutableList.of(tasks[0], tasks[1])));
   }
 }

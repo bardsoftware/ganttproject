@@ -85,6 +85,7 @@ class TaskTable(
   private val newTaskActor: NewTaskActor<Task>
 ) {
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
+  private val isSortedProperty = SimpleBooleanProperty()
   private val treeModel = taskManager.taskHierarchy
   val rootItem = TreeItem(treeModel.rootTask)
   val treeTable = GPTreeTableView<Task>(rootItem)
@@ -98,9 +99,9 @@ class TaskTable(
       runKeepingExpansion = { task, code -> code(task) },
       scrollTo = {},
       columnList = { columnList },
-      canAddTask = { newTaskActor.canAddTask },
       taskPropertiesAction = { taskActions.propertiesAction },
-      contextMenuActions = this::contextMenuActions
+      contextMenuActions = this::contextMenuActions,
+      isSorted = isSortedProperty
     )
   }
   private val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
@@ -166,12 +167,19 @@ class TaskTable(
         }
     })
     treeTable.onSort = EventHandler {
-      if (treeTable.sortOrder.isEmpty()) {
-        reload()
-      } else {
-        taskTableChartConnector.visibleTasks.clear()
-        getExpandedTasks().also {
-          taskTableChartConnector.visibleTasks.addAll(it)
+      // It is important to run this later because the event is sent _before_ the
+      // actual sorting, so if we collect the expanded tasks synchronously, we
+      // get the order before sorting.
+      Platform.runLater {
+        if (treeTable.sortOrder.isEmpty()) {
+          isSortedProperty.value = false
+          reload()
+        } else {
+          isSortedProperty.value = true
+          taskTableChartConnector.visibleTasks.clear()
+          getExpandedTasks().also {
+            taskTableChartConnector.visibleTasks.addAll(it)
+          }
         }
       }
     }
@@ -746,12 +754,12 @@ data class TaskTableChartConnector(
 
 data class TaskTableActionConnector(
   val commitEdit: ()->Unit,
-  val runKeepingExpansion: ((task: Task, code: (Task)->Void) -> Unit),
+  val runKeepingExpansion: ((task: Task, code: (Task)->Unit) -> Unit),
   val scrollTo: (task: Task) -> Unit,
   val columnList: () -> ColumnList,
-  val canAddTask: () -> ReadOnlyBooleanProperty,
   val taskPropertiesAction: () -> GPAction,
-  val contextMenuActions: (MenuBuilder) -> Unit
+  val contextMenuActions: (MenuBuilder) -> Unit,
+  val isSorted: ReadOnlyBooleanProperty
 )
 
 private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (Task, Task?, Int) -> Boolean) {

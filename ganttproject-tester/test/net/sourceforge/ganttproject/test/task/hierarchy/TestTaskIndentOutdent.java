@@ -1,9 +1,8 @@
 // Copyright (C) 2018 BarD Software
 package net.sourceforge.ganttproject.test.task.hierarchy;
 
+import biz.ganttproject.task.TaskActionsKt;
 import com.google.common.collect.ImmutableList;
-import net.sourceforge.ganttproject.action.task.TaskIndentAction;
-import net.sourceforge.ganttproject.action.task.TaskUnindentAction;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 
@@ -13,19 +12,19 @@ import java.util.Arrays;
  * @author dbarashev@bardsoftware.com
  */
 public class TestTaskIndentOutdent extends TaskTestCase {
-  private static TaskIndentAction.IndentApplyFxn INDENT_APPLY_FXN = new TaskIndentAction.IndentApplyFxn() {
-    @Override
-    public void apply(Task task, Task newParent) {
-      task.move(newParent);
-    }
-  };
+//  private static TaskIndentAction.IndentApplyFxn INDENT_APPLY_FXN = new TaskIndentAction.IndentApplyFxn() {
+//    @Override
+//    public void apply(Task task, Task newParent) {
+//      task.move(newParent);
+//    }
+//  };
 
   public void testSimpleIndent() {
     Task task1 = getTaskManager().createTask();
     Task task2 = getTaskManager().createTask();
     Task task3 = getTaskManager().createTask();
 
-    TaskIndentAction.indent(ImmutableList.of(task2, task3), getTaskManager().getTaskHierarchy(), INDENT_APPLY_FXN);
+    TaskActionsKt.indent(ImmutableList.of(task2, task3), getTaskManager().getTaskHierarchy());
     Task[] children = getTaskManager().getTaskHierarchy().getNestedTasks(task1);
     assertEquals(2, children.length);
     assertEquals(task2, children[0]);
@@ -41,7 +40,7 @@ public class TestTaskIndentOutdent extends TaskTestCase {
     task4.move(task2);
     task5.move(task3);
 
-    TaskIndentAction.indent(ImmutableList.of(task2, task3, task4, task5), getTaskManager().getTaskHierarchy(), INDENT_APPLY_FXN);
+    TaskActionsKt.indent(ImmutableList.of(task2, task3, task4, task5), getTaskManager().getTaskHierarchy());
     Task[] children = getTaskManager().getTaskHierarchy().getNestedTasks(task1);
     assertEquals(2, children.length);
     assertEquals(task2, children[0]);
@@ -59,7 +58,7 @@ public class TestTaskIndentOutdent extends TaskTestCase {
     task4.move(task2);
     task5.move(task3);
 
-    TaskIndentAction.indent(ImmutableList.of(task2, task3), getTaskManager().getTaskHierarchy(), INDENT_APPLY_FXN);
+    TaskActionsKt.indent(ImmutableList.of(task2, task3), getTaskManager().getTaskHierarchy());
     Task[] children = getTaskManager().getTaskHierarchy().getNestedTasks(task1);
     assertEquals(2, children.length);
     assertEquals(task2, children[0]);
@@ -75,19 +74,19 @@ public class TestTaskIndentOutdent extends TaskTestCase {
     Task task4 = getTaskManager().createTask();
     Task task5 = getTaskManager().createTask();
 
-    TaskIndentAction.indent(ImmutableList.of(task2, task4, task5), getTaskManager().getTaskHierarchy(), INDENT_APPLY_FXN);
+    TaskActionsKt.indent(ImmutableList.of(task2, task4, task5), getTaskManager().getTaskHierarchy());
     assertEquals(task2, getTaskManager().getTaskHierarchy().getNestedTasks(task1)[0]);
     assertEquals(task4, getTaskManager().getTaskHierarchy().getNestedTasks(task3)[0]);
     assertEquals(task5, getTaskManager().getTaskHierarchy().getNestedTasks(task3)[1]);
   }
 
 
-  private static TaskUnindentAction.UnindentApplyFxn OUTDENT_APPLY_FXN = new TaskUnindentAction.UnindentApplyFxn() {
-    @Override
-    public void apply(Task task, Task newParent, int position) {
-      task.move(newParent, position);
-    }
-  };
+//  private static TaskUnindentAction.UnindentApplyFxn OUTDENT_APPLY_FXN = new TaskUnindentAction.UnindentApplyFxn() {
+//    @Override
+//    public void apply(Task task, Task newParent, int position) {
+//      task.move(newParent, position);
+//    }
+//  };
 
   public void testSimpleOutdent() {
     Task task1 = getTaskManager().createTask();
@@ -96,7 +95,7 @@ public class TestTaskIndentOutdent extends TaskTestCase {
     task2.move(task1);
     task3.move(task1);
 
-    TaskUnindentAction.unindent(ImmutableList.of(task2, task3), getTaskManager().getTaskHierarchy(), OUTDENT_APPLY_FXN);
+    TaskActionsKt.unindent(ImmutableList.of(task2, task3), getTaskManager().getTaskHierarchy());
     Task[] children = getTaskManager().getTaskHierarchy().getNestedTasks(getTaskManager().getRootTask());
     assertEquals(3, children.length);
     assertEquals(Arrays.asList(children).toString(), task1, children[0]);
@@ -118,7 +117,7 @@ public class TestTaskIndentOutdent extends TaskTestCase {
     task5.move(task4);
     task4.move(task1);
 
-    TaskUnindentAction.unindent(ImmutableList.of(task2, task3, task4, task5), getTaskManager().getTaskHierarchy(), OUTDENT_APPLY_FXN);
+    TaskActionsKt.unindent(ImmutableList.of(task2, task3, task4, task5), getTaskManager().getTaskHierarchy());
     Task[] children = getTaskManager().getTaskHierarchy().getNestedTasks(getTaskManager().getRootTask());
     assertEquals(3, children.length);
     assertEquals(Arrays.asList(children).toString(), task1, children[0]);
@@ -139,7 +138,7 @@ public class TestTaskIndentOutdent extends TaskTestCase {
     task5.move(task4);
     task4.move(task1);
 
-    TaskUnindentAction.unindent(ImmutableList.of(task2, task4), getTaskManager().getTaskHierarchy(), OUTDENT_APPLY_FXN);
+    TaskActionsKt.unindent(ImmutableList.of(task2, task4), getTaskManager().getTaskHierarchy());
     Task[] children = getTaskManager().getTaskHierarchy().getNestedTasks(getTaskManager().getRootTask());
     assertEquals(3, children.length);
     assertEquals(Arrays.asList(children).toString(), task1, children[0]);
@@ -159,7 +158,7 @@ public class TestTaskIndentOutdent extends TaskTestCase {
 
     task5.move(task4);
 
-    TaskUnindentAction.unindent(ImmutableList.of(task2, task3, task5), getTaskManager().getTaskHierarchy(), OUTDENT_APPLY_FXN);
+    TaskActionsKt.unindent(ImmutableList.of(task2, task3, task5), getTaskManager().getTaskHierarchy());
 
     Task[] children = getTaskManager().getTaskHierarchy().getNestedTasks(getTaskManager().getRootTask());
     assertEquals(4, children.length);
