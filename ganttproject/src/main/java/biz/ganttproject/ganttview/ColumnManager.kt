@@ -180,6 +180,7 @@ internal fun CustomPropertyDefinition.getPropertyType(): PropertyType = when (th
   CustomPropertyClass.INTEGER -> PropertyType.INTEGER
   CustomPropertyClass.DOUBLE -> PropertyType.DECIMAL
   CustomPropertyClass.BOOLEAN -> PropertyType.BOOLEAN
+  else -> PropertyType.STRING
 }
 
 internal fun PropertyType.getCustomPropertyClass(): CustomPropertyClass = when (this) {
@@ -188,7 +189,6 @@ internal fun PropertyType.getCustomPropertyClass(): CustomPropertyClass = when (
   PropertyType.DATE -> CustomPropertyClass.DATE
   PropertyType.BOOLEAN -> CustomPropertyClass.BOOLEAN
   PropertyType.DECIMAL -> CustomPropertyClass.DOUBLE
-  else -> CustomPropertyClass.TEXT
 }
 
 internal fun PropertyType.createValidator(): ValueValidator<*> = when (this) {
@@ -226,7 +226,7 @@ internal class CustomPropertyEditor(
   internal val propertySheetLabel = Label().also {
     it.styleClass.add("title")
   }
-  var isPropertyChangeIgnored = false
+  private var isPropertyChangeIgnored = false
   var selectedItem: ColumnAsListItem? = null
   set(selectedItem) {
     isPropertyChangeIgnored = true
@@ -296,7 +296,7 @@ internal class CustomPropertyEditor(
           errorUi(ex.message ?: "")
         }
       }
-      listItems.set(listItems.indexOf(selectedItem), selectedItem)
+      listItems[listItems.indexOf(selectedItem)] = selectedItem
     }
   }
 

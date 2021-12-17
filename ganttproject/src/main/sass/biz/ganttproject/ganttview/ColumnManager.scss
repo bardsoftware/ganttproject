@@ -23,6 +23,7 @@
       .glyph-icon {
         -glyph-size: 18;
         -fx-alignment: center;
+        -fx-fill: $gp-dark-gray;
 
         &:hover {
           -fx-cursor: hand;
@@ -31,7 +32,11 @@
         }
       }
       &.is-hidden > * {
-        -fx-strikethrough: true;
+        -fx-fill: lighten($gp-medium-gray, 20%);
+      }
+      &.is-hidden .glyph-icon {
+        -fx-opacity: 1.0;
+        -fx-fill: $gp-dark-gray;
       }
 
       &:selected {
