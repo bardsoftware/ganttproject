@@ -31,7 +31,7 @@
         }
       }
       &.is-hidden > * {
-        -fx-strikethrough: true;
+        -fx-fill: lighten($gp-medium-gray, 20%);
       }
 
       &:selected {
