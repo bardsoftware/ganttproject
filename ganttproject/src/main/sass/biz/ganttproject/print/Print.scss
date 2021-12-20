@@ -1,3 +1,4 @@
+@import "../app/buttons";
 @import "../app/dialogs";
 @import "../app/theme";
 
@@ -35,4 +36,59 @@
   .button-pane {
     @include dialog-button-pane();
   }
+
+
+  /* ------- MAIN BUTTON ------- */
+  .combo-box-base  {
+    -fx-background-color: $gp-light-gray;
+    -fx-border-color: $gp-medium-gray;
+    -fx-border-radius: 5;
+    //-fx-background-radius: 5, 5, 4, 3;
+    //-fx-background-insets: 0 0 -1 0, 0, 1, 2;
+    -fx-padding: 0;
+  }
+
+  .combo-box-base:hover {
+    @include control-hovered();
+  }
+
+  /*------- THIS SPECIFIES THE BUTTON COLOR WHEN THE POPUP MENU IS SHOWING -------*/
+  .combo-box-base:showing {
+    -fx-color: -fx-pressed-base;
+  }
+
+  .combo-box-base:focused {
+    @include control-hovered();
+    //-fx-background-color: -fx-focus-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
+    //-fx-background-radius: 6.4, 4, 5, 3;
+    //-fx-background-insets: -1.4, 0, 1, 2;
+  }
+
+  .combo-box-base:disabled {
+    -fx-opacity: .4;
+  }
+
+  /* ------- OPEN BUTTON ------- */
+  .combo-box-base > .arrow-button {
+    -fx-background-color: $gp-light-gray;
+    -fx-border-radius: 5;
+    //-fx-background-insets: 0, 1, 2;
+    //-fx-background-radius: 0 5 5 0, 0 4 4 0, 0 3 3 0;
+    //-fx-padding: 0 0.667em 0 0.667em; /* 6 8 6 8 */
+    /*-fx-padding: 0; *//* 6 8 6 8 */
+  }
+
+  .combo-box-base:hover > .arrow-button,
+  .date-picker:hover > .arrow-button {
+    //-fx-background-color: -fx-outer-border, -fx-inner-border, -fx-body-color;
+    //-fx-background-insets: 0, 1, 2;
+    //-fx-background-radius: 0 5 5 0, 0 4 4 0, 0 3 3 0;
+    @include control-hovered();
+  }
+
+  .combo-box-base:showing > .arrow-button,
+  .date-picker:showing > .arrow-button {
+    -fx-color: -fx-pressed-base;
+  }
+
 }
