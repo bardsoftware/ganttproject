@@ -18,7 +18,35 @@
  */
 @import "theme";
 
-@mixin control-hovered() {
+@mixin btn-normal() {
+  -fx-background-color: $gp-light-gray;
+  -fx-border-color: derive($gp-light-gray, -20%);
+  -fx-border-radius: 5;
+}
+
+@mixin btn-hovered() {
   -fx-background-color: derive($gp-light-gray, 20%);
   -fx-fill: derive($gp-dark-gray, -20%);
+}
+
+@mixin btn-focused() {
+  -fx-border-color: derive($gp-dark-gray, -20%);
+}
+
+.btn-regular {
+  @include btn-normal();
+  &:hover {
+    @include btn-hovered();
+  }
+  &:focused {
+    @include btn-hovered();
+    @include btn-focused();
+  }
+  &:disabled {
+    -fx-opacity: .4;
+  }
+}
+
+.btn-regular .secondary {
+  -fx-background-color: transparent;
 }
