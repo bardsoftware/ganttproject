@@ -51,7 +51,7 @@ interface IGanttProject {
   val resourceCustomPropertyManager: CustomPropertyManager
   val taskCustomColumnManager: CustomPropertyManager
   val taskFilterManager: TaskFilterManager
-  val baselines: List<GanttPreviousState>
+  val baselines: MutableList<GanttPreviousState>
 
   val activeCalendar: GPCalendarCalc
   val timeUnitStack: TimeUnitStack

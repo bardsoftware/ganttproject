@@ -54,7 +54,7 @@ fun interface ErrorUi {
 
 open class GanttProjectImpl(taskManager: TaskManagerImpl? = null) : IGanttProject {
   val listeners: MutableList<ProjectEventListener> = mutableListOf()
-  override val baselines: List<GanttPreviousState> = ArrayList()
+  override val baselines: MutableList<GanttPreviousState> = ArrayList()
 
   override var projectName: String = ""
   override var description: String = ""
