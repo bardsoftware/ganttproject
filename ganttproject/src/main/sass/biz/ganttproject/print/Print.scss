@@ -17,6 +17,14 @@
         -fx-background-color: transparent;
         -fx-border-insets: 5 5 5 5;
       }
+
+      &:hover .scroll-bar {
+        -fx-opacity: 1;
+      }
+      .scroll-bar {
+        @include scroll-bar(15);
+      }
+
     }
     .page {
       -fx-padding: 1;
@@ -26,6 +34,28 @@
     }
   }
 
+  .slider {
+    .thumb {
+      -fx-background-color: derive($gp-light-gray, -20%), $gp-light-gray;
+      -fx-background-insets: 0, 1;
+      -fx-background-radius: 1.0em; /* makes sure this remains circular */
+      -fx-padding: 0.583333em; /* 7 */
+    }
+    &:focused .thumb,&:hover:focused .thumb {
+      -fx-background-color: $gp-orange,
+      derive($gp-dark-gray, -20%),
+      derive($gp-light-gray, 20%);
+      -fx-background-insets: -2, 0, 1;
+      -fx-background-radius: 1.0em; /* makes sure this remains circular */
+    }
+    &:hover .thumb {
+      -fx-background-color:
+      derive($gp-dark-gray, -20%),
+      derive($gp-light-gray, 20%);
+      -fx-background-insets: 0, 1;
+      -fx-background-radius: 1.0em; /* makes sure this remains circular */
+    }
+  }
 
   .btn-small-attention {
     -fx-background-color: $gp-orange;
@@ -41,15 +71,13 @@
     @include btn-normal();
 
     .arrow-button {
-      @include btn-normal();
-      -fx-border-color: transparent;
+      @include btn-normal(transparent);
     }
 
     &:hover {
       @include btn-hovered();
       .arrow-button {
-        @include btn-hovered();
-        -fx-border-color: transparent;
+        @include btn-hovered(transparent);
       }
     }
 
@@ -58,8 +86,7 @@
       @include btn-focused();
 
       .arrow-button {
-        @include btn-hovered();
-        -fx-border-color: transparent;
+        @include btn-hovered(transparent);
       }
     }
 

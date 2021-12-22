@@ -7,12 +7,6 @@
         -fx-font-weight: normal;
     }
     -fx-border-width: 0;
-    // Hamburger icon in the header
-    .show-hide-column-image {
-        -fx-scale-x: 1.3;
-        -fx-scale-y: 1.3;
-        -fx-shape: "M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"
-    }
     & > .column-header-background {
         & > .show-hide-columns-button {
             -fx-cursor: hand;

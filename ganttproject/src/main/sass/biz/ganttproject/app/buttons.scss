@@ -18,19 +18,22 @@
  */
 @import "theme";
 
-@mixin btn-normal() {
-  -fx-background-color: $gp-light-gray;
-  -fx-border-color: derive($gp-light-gray, -20%);
-  -fx-border-radius: 5;
+@mixin btn-normal($border: derive($gp-light-gray, -20%)) {
+  -fx-background-color: $border, $gp-light-gray;
+  -fx-background-insets: 0, 1;
+  -fx-background-radius: 5;
 }
 
-@mixin btn-hovered() {
-  -fx-background-color: derive($gp-light-gray, 20%);
+@mixin btn-hovered($border: derive($gp-light-gray, -20%)) {
+  -fx-background-color: $border, derive($gp-light-gray, 20%);
   -fx-fill: derive($gp-dark-gray, -20%);
 }
 
 @mixin btn-focused() {
-  -fx-border-color: derive($gp-dark-gray, -20%);
+  -fx-background-color: derive($gp-dark-gray, -20%), derive($gp-light-gray, 20%);
+  -fx-background-insets: 0, 1;
+  -fx-border-color: transparent;
+  -fx-border-width: 0;
 }
 
 .btn-regular {
@@ -49,4 +52,42 @@
 
 .btn-regular .secondary {
   -fx-background-color: transparent;
+}
+
+@mixin scroll-bar($width) {
+  -fx-background-color: transparent;
+  -fx-opacity: 0.2;
+  -fx-max-width: $width;
+  -fx-pref-width: $width;
+
+  & > .track {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0.5em;
+  }
+
+  & > .track-background {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0, 1;
+  }
+
+  & > .thumb {
+    -fx-background-color: $gp-light-gray;
+  }
+
+  & > .increment-button, .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0;
+
+    .increment-arrow, .decrement-arrow {
+      -fx-shape: " ";
+      -fx-padding: 0;
+    }
+  }
+  //& > .increment-arrow,.decrement-arrow {
+  //  -fx-shape: " ";
+  //  -fx-padding:0;
+  //}
+
 }

@@ -122,9 +122,11 @@ fun showPrintDialog(activeChart: Chart) {
         hbox.alignment = Pos.CENTER_LEFT
         hbox.children.addAll(
           // -- Preview zoom
+
           Label(i18n.formatText("print.preview.scale")).also {
             HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
           },
+          //FontAwesomeIconView(FontAwesomeIcon.BAR_CHART),
           Slider(0.0, 10.0, 0.0).also { slider ->
             //slider.isShowTickMarks = true
             slider.majorTickUnit = 1.0
@@ -135,6 +137,10 @@ fun showPrintDialog(activeChart: Chart) {
             }
             slider.value = 4.0
           },
+//          FontAwesomeIconView(FontAwesomeIcon.BAR_CHART).also {
+//            it.scaleX =2.0
+//            it.scaleY =2.0
+//          },
         )
       }
     )
