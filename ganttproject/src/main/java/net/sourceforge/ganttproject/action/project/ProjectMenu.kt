@@ -26,8 +26,6 @@ import biz.ganttproject.storage.StorageDialogBuilder
 import net.sourceforge.ganttproject.GanttProject
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
-import java.util.*
-import javax.swing.AbstractAction
 import javax.swing.Action
 import javax.swing.JMenu
 import javax.swing.JMenuItem
@@ -56,7 +54,7 @@ class ProjectMenu(project: GanttProject, key: String) : JMenu(GPAction.createVoi
       project.uiFacade, project, project.ganttOptions.pluginPreferences)
   //private val printAction = PrintAction(project)
   //private val printPreviewAction = ProjectPreviewAction(project)
-  private val printAction = createPrintAction(project.uiFacade)
+  private val printAction = createPrintAction(project.uiFacade, project.ganttOptions.pluginPreferences)
   private val exitAction = ExitAction(project)
 
   override fun add(a: Action): JMenuItem {

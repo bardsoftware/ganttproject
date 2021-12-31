@@ -43,6 +43,7 @@ import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.util.FileUtil
+import org.osgi.service.prefs.Preferences
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.Executors
@@ -55,10 +56,10 @@ import javafx.print.Paper as FxPaper
 /**
  * @author dbarashev@bardsoftware.com
  */
-fun showPrintDialog(activeChart: Chart) {
+fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
   val i18n = RootLocalizer
-  Previews.initChart(activeChart)
-  Previews.setMediaSize("A4")
+  Previews.initChart(activeChart, preferences)
+  Previews.setMediaSize(Previews.mediaSizeKey)
   dialog { dlg ->
     dlg.addStyleClass("dlg", "dlg-print-preview")
     dlg.addStyleSheet(
@@ -81,7 +82,7 @@ fun showPrintDialog(activeChart: Chart) {
             comboBox.setOnAction {
               Previews.setMediaSize(comboBox.selectionModel.selectedItem)
             }
-            comboBox.selectionModel.select("A4")
+            comboBox.selectionModel.select(Previews.mediaSizeKey)
           },
 
           // -- Page orientation
@@ -171,17 +172,24 @@ private object Previews {
 
   lateinit var chart: Chart
   lateinit var dateRange: ClosedRange<Date>
-
-  fun initChart(chart: Chart) {
-    this.chart = chart
-    this.dateRange = chart.startDate.rangeTo(chart.endDate)
-  }
+  private lateinit var preferences: Preferences
 
   val mediaSizes: Map<String, MediaSize> = mutableMapOf<String, MediaSize>().let {
     it.putAll(mediaSizes(MediaSize.ISO::class))
     it.putAll(mediaSizes(MediaSize.JIS::class))
     it.putAll(mediaSizes(MediaSize.NA::class))
     it.toMap()
+  }
+
+
+  fun initChart(chart: Chart, preferences: Preferences) {
+    this.chart = chart
+    this.dateRange = chart.startDate.rangeTo(chart.endDate)
+    this.preferences = preferences.node("/configuration/print")
+    mediaSizes[this.preferences.get("page-size", MediaSize.ISO.A4.name)]?.let {
+      mediaSize = it
+    }
+    orientation = Orientation.valueOf(this.preferences.get("page-orientation", Orientation.LANDSCAPE.name).uppercase())
   }
 
   val papers: Map<String, FxPaper> = mutableMapOf<String, FxPaper>().let {
@@ -201,6 +209,9 @@ private object Previews {
     updateTiles()
   }
 
+  val mediaSizeKey: String get() =
+    this.mediaSizes.filter { it.value == this.mediaSize }.firstNotNullOfOrNull { it.key } ?: MediaSize.ISO.A4.name
+
   var paper: FxPaper = FxPaper.A4
   set(value) {
     field = value
@@ -208,6 +219,7 @@ private object Previews {
   }
   fun setMediaSize(name: String) {
     mediaSizes[name]?.let { mediaSize = it }
+    preferences.put("page-size", name)
     //papers[name]?.let { paper = it }
   }
 
@@ -220,6 +232,7 @@ private object Previews {
   var orientation: Orientation = Orientation.LANDSCAPE
   set(value) {
     field = value
+    preferences.put("page-orientation", value.name.lowercase())
     updateTiles()
   }
 
@@ -301,9 +314,9 @@ private fun exportPages(pages: List<PrintPage>, project: IGanttProject, dlg: Dia
   }
 }
 
-fun createPrintAction(uiFacade: UIFacade): GPAction {
+fun createPrintAction(uiFacade: UIFacade, preferences: Preferences): GPAction {
   return GPAction.create("project.print") {
-    showPrintDialog(uiFacade.activeChart)
+    showPrintDialog(uiFacade.activeChart, preferences)
   }
 }
 
