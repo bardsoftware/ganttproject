@@ -21,6 +21,7 @@ package biz.ganttproject.print
 
 import biz.ganttproject.app.*
 import biz.ganttproject.lib.DateRangePicker
+import biz.ganttproject.lib.DateRangePickerModel
 import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
@@ -45,7 +46,6 @@ import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.util.FileUtil
 import org.osgi.service.prefs.Preferences
 import java.io.IOException
-import java.util.*
 import java.util.concurrent.Executors
 import javax.print.attribute.standard.MediaSize
 import kotlin.reflect.KClass
@@ -58,8 +58,10 @@ import javafx.print.Paper as FxPaper
  */
 fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
   val i18n = RootLocalizer
-  Previews.initChart(activeChart, preferences)
-  Previews.setMediaSize(Previews.mediaSizeKey)
+  val prefixedLocalizer = RootLocalizer.createWithRootKey("print.preview")
+  val previews = Previews(activeChart, preferences)
+  previews.setMediaSize(previews.mediaSizeKey)
+  previews.autoUpdate = true
   dialog { dlg ->
     dlg.addStyleClass("dlg", "dlg-print-preview")
     dlg.addStyleSheet(
@@ -77,12 +79,12 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
           },
           ComboBox(FXCollections.observableList(
             //Previews.papers.keys.toList()
-            Previews.mediaSizes.keys.toList()
+            mediaSizes.keys.toList()
           )).also { comboBox ->
             comboBox.setOnAction {
-              Previews.setMediaSize(comboBox.selectionModel.selectedItem)
+              previews.setMediaSize(comboBox.selectionModel.selectedItem)
             }
-            comboBox.selectionModel.select(Previews.mediaSizeKey)
+            comboBox.selectionModel.select(previews.mediaSizeKey)
           },
 
           // -- Page orientation
@@ -93,19 +95,22 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
             Orientation.values().map { i18n.formatText(it.name.lowercase()) }.toList()
           )).also { comboBox ->
             comboBox.setOnAction {
-              Previews.orientation = Orientation.values()[comboBox.selectionModel.selectedIndex]
+              previews.orientation = Orientation.values()[comboBox.selectionModel.selectedIndex]
             }
-            comboBox.selectionModel.select(i18n.formatText(Previews.orientation.name.lowercase()))
+            comboBox.selectionModel.select(i18n.formatText(previews.orientation.name.lowercase()))
           },
 
           // -- Date range
           Label(i18n.formatText("print.preview.dateRange")).also {
             HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
           },
-          DateRangePicker(activeChart).let {
-            it.selectedRange.addListener { _, _, newValue ->
-              Previews.onDateRangeChange(newValue.startDate, newValue.endDate)
-            }
+          DateRangePicker(previews.dateRangeModel, MappingLocalizer(mapOf(
+            "custom" to { prefixedLocalizer.formatText("dateRange.custom") },
+            "view" to { prefixedLocalizer.formatText("dateRange.currentView") },
+            "project" to { i18n.formatText("wholeProject") }
+          )) { key ->
+            i18n.formatText(key)
+          }).let {
             it.button.styleClass.addAll("btn-regular")
             it.component
           }
@@ -115,7 +120,7 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
 
     val contentPane = BorderPane().also {
       it.styleClass.add("content-pane")
-      it.center = ScrollPane(Pane(Previews.gridPane).also {it.styleClass.add("all-pages")})
+      it.center = ScrollPane(Pane(previews.gridPane).also {it.styleClass.add("all-pages")})
     }
     dlg.setContent(contentPane)
     dlg.setButtonPaneNode(
@@ -134,7 +139,7 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
             slider.blockIncrement = 1.0
             slider.isSnapToTicks = true
             slider.valueProperty().addListener { _, _, newValue ->
-              Previews.zooming = newValue.toInt()
+              previews.zooming = newValue.toInt()
             }
             slider.value = 4.0
           },
@@ -149,7 +154,7 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
       it.text = i18n.formatText("print.export.button.exportAsZip").removeMnemonicsPlaceholder()
       it.styleClass.addAll("btn-attention", "secondary")
       it.onAction = EventHandler {
-        exportPages(Previews.pages, activeChart.project, dlg)
+        exportPages(previews.pages, activeChart.project, dlg)
       }
     }
     val btnApply = dlg.setupButton(ButtonType.APPLY) {
@@ -157,7 +162,7 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
       it.styleClass.addAll("btn-attention")
       it.onAction = EventHandler {
         //printPages(Previews.pages, Previews.paper)
-        printPages(Previews.pages, Previews.mediaSize, Previews.orientation)
+        printPages(previews.pages, previews.mediaSize, previews.orientation)
       }
     }
     dlg.onShown = {
@@ -166,36 +171,29 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
   }
 }
 
-private object Previews {
-  private val zoomFactors = listOf(1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0)
-  private val readImageScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+private val zoomFactors = listOf(1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0)
+private val readImageScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+val mediaSizes: Map<String, MediaSize> = mutableMapOf<String, MediaSize>().let {
+  it.putAll(mediaSizes(MediaSize.ISO::class))
+  it.putAll(mediaSizes(MediaSize.JIS::class))
+  it.putAll(mediaSizes(MediaSize.NA::class))
+  it.toMap()
+}
 
-  lateinit var chart: Chart
-  lateinit var dateRange: ClosedRange<Date>
-  private lateinit var preferences: Preferences
+private class Previews(val chart: Chart, private val preferences: Preferences) {
 
-  val mediaSizes: Map<String, MediaSize> = mutableMapOf<String, MediaSize>().let {
-    it.putAll(mediaSizes(MediaSize.ISO::class))
-    it.putAll(mediaSizes(MediaSize.JIS::class))
-    it.putAll(mediaSizes(MediaSize.NA::class))
-    it.toMap()
-  }
-
-
-  fun initChart(chart: Chart, preferences: Preferences) {
-    this.chart = chart
-    this.dateRange = chart.startDate.rangeTo(chart.endDate)
-    this.preferences = preferences.node("/configuration/print")
-    mediaSizes[this.preferences.get("page-size", MediaSize.ISO.A4.name)]?.let {
-      mediaSize = it
+  val dateRangeModel = DateRangePickerModel(chart).also {
+    it.selectedRange.addListener { _, _, newValue ->
+      this.preferences.put("date-range", newValue.persistentValue)
+      updateTiles()
     }
-    orientation = Orientation.valueOf(this.preferences.get("page-orientation", Orientation.LANDSCAPE.name).uppercase())
   }
-
+  /*
   val papers: Map<String, FxPaper> = mutableMapOf<String, FxPaper>().let {
     it.putAll(papers())
     it.toMap()
   }
+  */
 
   val gridPane = GridPane().also {
     it.vgap = 10.0
@@ -210,13 +208,15 @@ private object Previews {
   }
 
   val mediaSizeKey: String get() =
-    this.mediaSizes.filter { it.value == this.mediaSize }.firstNotNullOfOrNull { it.key } ?: MediaSize.ISO.A4.name
+    mediaSizes.filter { it.value == this.mediaSize }.firstNotNullOfOrNull { it.key } ?: MediaSize.ISO.A4.name
 
+  /*
   var paper: FxPaper = FxPaper.A4
   set(value) {
     field = value
     mediaSize = MediaSize((field.width/72.0).toFloat(), (field.height/72.0).toFloat(), MediaSize.INCH)
   }
+  */
   fun setMediaSize(name: String) {
     mediaSizes[name]?.let { mediaSize = it }
     preferences.put("page-size", name)
@@ -248,23 +248,43 @@ private object Previews {
     zoomFactor = zoomFactors[value]
   }
 
-  fun onDateRangeChange(start: Date, end: Date) {
-    dateRange = start.rangeTo(end)
-    updateTiles()
+  var autoUpdate: Boolean = false
+  set(value) {
+    field = value
+    if (value) {
+      updateTiles()
+    }
+  }
+  init {
+    mediaSizes[this.preferences.get("page-size", MediaSize.ISO.A4.name)]?.let {
+      mediaSize = it
+    }
+    orientation = Orientation.valueOf(
+      this.preferences.get("page-orientation", Orientation.LANDSCAPE.name).uppercase()
+    )
+    dateRangeModel.init(this.preferences.get("date-range", "view"))
   }
 
-  private fun updateTiles() {
-    val channel = Channel<PrintPage>()
-    readImages(channel)
-    createImages(chart, mediaSize, 144, orientation, dateRange, channel)
+  fun updateTiles() {
+    if (autoUpdate) {
+      val channel = Channel<PrintPage>()
+      readImages(channel)
+      createImages(chart, mediaSize, 144, orientation, dateRangeModel.selectedRange.get().asClosedRange(), channel)
+    }
   }
 
   private fun updatePreviews() {
     Platform.runLater {
       gridPane.children.clear()
       pages.forEach { page ->
-        val previewWidth = mediaSize.previewWidth() * zoomFactor * page.widthFraction
-        val previewHeight = mediaSize.previewHeight() * zoomFactor * page.heightFraction
+        val pageWidth = zoomFactor *
+            (if (orientation == Orientation.LANDSCAPE) mediaSize.previewWidth()
+            else mediaSize.previewHeight())
+        val pageHeight = zoomFactor *
+            (if (orientation == Orientation.LANDSCAPE) mediaSize.previewHeight()
+            else mediaSize.previewWidth())
+        val previewWidth = pageWidth * page.widthFraction
+        val previewHeight = pageHeight * page.heightFraction
         Pane(ImageView(
           Image(
             page.imageFile.inputStream(),
@@ -273,10 +293,10 @@ private object Previews {
             true
           )
         )).also {
-          it.prefWidth = zoomFactor * (if (orientation == Orientation.LANDSCAPE) mediaSize.previewWidth() else mediaSize.previewHeight())
-          it.prefHeight = zoomFactor * (if (orientation == Orientation.LANDSCAPE) mediaSize.previewHeight() else mediaSize.previewWidth())
-          gridPane.add(StackPane(it).also {
-              border -> border.styleClass.add("page")
+          it.prefWidth = pageWidth
+          it.prefHeight = pageHeight
+          gridPane.add(StackPane(it).also { border ->
+            border.styleClass.add("page")
           }, page.column, page.row)
         }
       }
@@ -289,8 +309,11 @@ private object Previews {
     }
   }
 
-  private fun MediaSize.previewWidth() = BASE_PREVIEW_WIDTH * this.getX(MediaSize.MM) / MediaSize.ISO.A4.getX(MediaSize.MM)
-  private fun MediaSize.previewHeight() = BASE_PREVIEW_HEIGHT * this.getY(MediaSize.MM) / MediaSize.ISO.A4.getY(MediaSize.MM)
+  private fun MediaSize.previewWidth() = BASE_PREVIEW_WIDTH *
+      this.getX(MediaSize.MM) / MediaSize.ISO.A4.getX(MediaSize.MM)
+
+  private fun MediaSize.previewHeight() = BASE_PREVIEW_HEIGHT *
+      this.getY(MediaSize.MM) / MediaSize.ISO.A4.getY(MediaSize.MM)
 }
 
 private fun exportPages(pages: List<PrintPage>, project: IGanttProject, dlg: DialogController) {
@@ -316,7 +339,7 @@ private fun exportPages(pages: List<PrintPage>, project: IGanttProject, dlg: Dia
 
 fun createPrintAction(uiFacade: UIFacade, preferences: Preferences): GPAction {
   return GPAction.create("project.print") {
-    showPrintDialog(uiFacade.activeChart, preferences)
+    showPrintDialog(uiFacade.activeChart, preferences.node("/configuration/print"))
   }
 }
 
@@ -332,6 +355,6 @@ private fun papers(): Map<String, FxPaper> =
       .filter { it.get() is FxPaper }
       .associate { it.name to it.get() as FxPaper }
 
-private const val BASE_PREVIEW_WIDTH = 270.0
+private const val BASE_PREVIEW_WIDTH = 297.0
 private const val BASE_PREVIEW_HEIGHT = 210.0
 private val ourLogger = GPLogger.create("Print")
