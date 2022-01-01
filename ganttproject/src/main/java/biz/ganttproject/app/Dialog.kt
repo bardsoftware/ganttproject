@@ -204,10 +204,10 @@ class DialogControllerSwing : DialogController {
           it.consume()
         }
       }
-      if (it.code == KeyCode.ESCAPE) {
-        hide()
-        it.consume()
-      }
+//      if (it.code == KeyCode.ESCAPE) {
+//        hide()
+//        it.consume()
+//      }
     }
     isBuilt = true
     return this.paneBuilder.vbox
