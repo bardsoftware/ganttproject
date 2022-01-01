@@ -149,6 +149,13 @@ open class DefaultLocalizer(
       DefaultLocalizer(rootKey, baseLocalizer, this, this.currentTranslation)
 }
 
+class MappingLocalizer(val key2lambda: Map<String, (()->String)?>, val unhandledKey: (String)->String?) : Localizer {
+  override fun create(key: String) = LocalizedString(key, this)
+
+  override fun formatTextOrNull(key: String, vararg args: Any): String? =
+    key2lambda[key]?.invoke() ?: unhandledKey(key)
+}
+
 /**
  * Localizer which always uses the given resource bundle.
  */
