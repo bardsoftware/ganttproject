@@ -79,7 +79,6 @@ public class GPLogger {
         }
       }
       ourUIFacade.showErrorDialog(e);
-      return true;
     }
     return logToLogger(e);
   }
