@@ -23,6 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.chart.export.RenderedChartImage
 import org.imgscalr.Scalr
@@ -46,11 +47,27 @@ internal enum class Orientation {
   PORTRAIT, LANDSCAPE
 }
 
+/**
+ * Represents a tile of the whole image which is supposed to be printed on its own page.
+ * The tiles are built taking into account the specified page dimensions and dots per inch
+ * (DPI) value.
+ * All tiles are grouped into a grid, very grid element is a single image which
+ * is written into a temporary file.
+ */
 internal data class PrintPage(
   val row: Int,
   val column: Int,
   val imageFile: File,
+  /**
+   * Some images may occupy less than the whole page. This is the fraction of the
+   * page width which is occupied by the image.
+   */
   val widthFraction: Double,
+  /**
+   * Some images may occupy less than the whole page. This is the fraction of the
+   * page height which is occupied by the image. All images in the same row have the same
+   * heightFraction value.
+   */
   val heightFraction: Double
 )
 
@@ -67,8 +84,7 @@ internal class PrintImageProcessor(
   private val channel: Channel<PrintPage>) {
 
   fun run() {
-    println("media width pt=${media.getX(Size2DSyntax.INCH)*72}, height pt=${media.getY(Size2DSyntax.INCH)*72}")
-    println("media width px=${media.pageWidthPx(dpi)} height px=${media.pageHeightPx(dpi)}")
+    ourLogger.debug("Started generating images", mapOf("orientation" to orientation))
     imageScope.launch {
 
       val wholeImage = chart.asPrintChartApi()
@@ -82,6 +98,11 @@ internal class PrintImageProcessor(
       if (wholeImage is BufferedImage) {
         val pageWidth = if (orientation == Orientation.PORTRAIT) media.pageWidthPx(dpi) else media.pageHeightPx(dpi)
         val pageHeight = if (orientation == Orientation.PORTRAIT) media.pageHeightPx(dpi) else media.pageWidthPx(dpi)
+        ourLogger.debug("Calculated page properties:", mapOf(
+          "width(px)" to pageWidth,
+          "height(px)" to pageHeight,
+          "dpi" to dpi
+        ))
         val imageHeight = wholeImage.height
 
         for (row in 0..imageHeight/pageHeight) {
@@ -91,7 +112,7 @@ internal class PrintImageProcessor(
           val topy = (row * pageHeight)
           val rowImages = buildRowImages(wholeImage, topy, rowHeight)
           rowImages.forEachIndexed { column, image ->
-            println("size=${image.width}x${image.height} page=${pageWidth}x${pageHeight}")
+            //println("size=${image.width}x${image.height} page=${pageWidth}x${pageHeight}")
             val widthFraction = image.width.toDouble()/pageWidth
             val file = kotlin.io.path.createTempFile().toFile()
             ImageIO.write(image, "png", file)
@@ -130,3 +151,4 @@ private fun MediaSize.pageWidthPx(dpi: Int) = (this.getX(Size2DSyntax.INCH) * dp
 private fun MediaSize.pageHeightPx(dpi: Int) = (this.getY(Size2DSyntax.INCH) * dpi).toInt()
 
 private val imageScope = CoroutineScope(Dispatchers.IO)
+private val ourLogger = GPLogger.create("Print.ImageProcessor")
