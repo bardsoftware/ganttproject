@@ -456,5 +456,6 @@ fun createAlertBody(message: String): Node =
       scroll.isFitToHeight = true
     }
 
+fun createAlertBody(ex: Exception): Node = createAlertBody(ex.message ?: "")
 val THEME_STYLESHEET = "/biz/ganttproject/app/Theme.css"
 val DIALOG_STYLESHEET = "/biz/ganttproject/app/Dialog.css"

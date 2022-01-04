@@ -50,7 +50,7 @@ import java.util.concurrent.Executors
 import javax.print.attribute.standard.MediaSize
 import kotlin.reflect.KClass
 import kotlin.reflect.full.staticProperties
-import javafx.print.Paper as FxPaper
+//import javafx.print.Paper as FxPaper
 
 
 /**
@@ -59,10 +59,14 @@ import javafx.print.Paper as FxPaper
 fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
   val i18n = RootLocalizer
   val prefixedLocalizer = RootLocalizer.createWithRootKey("print.preview")
-  val previews = Previews(activeChart, preferences)
-  previews.setMediaSize(previews.mediaSizeKey)
-  previews.autoUpdate = true
+
   dialog { dlg ->
+    val previews = Previews(activeChart, preferences, onError = { ex ->
+      dlg.showAlert(prefixedLocalizer.create("alert.title"), createAlertBody(ex))
+    })
+    previews.setMediaSize(previews.mediaSizeKey)
+    previews.autoUpdate = true
+
     dlg.addStyleClass("dlg", "dlg-print-preview")
     dlg.addStyleSheet(
       "/biz/ganttproject/app/Dialog.css",
@@ -120,7 +124,7 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
 
     val contentPane = BorderPane().also {
       it.styleClass.add("content-pane")
-      it.center = ScrollPane(Pane(previews.gridPane).also {it.styleClass.add("all-pages")})
+      it.center = ScrollPane(Pane(previews.gridPane).also {p -> p.styleClass.add("all-pages")})
     }
     dlg.setContent(contentPane)
     dlg.setButtonPaneNode(
@@ -162,7 +166,12 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
       it.styleClass.addAll("btn-attention")
       it.onAction = EventHandler {
         //printPages(Previews.pages, Previews.paper)
-        printPages(previews.pages, previews.mediaSize, previews.orientation)
+        try {
+          printPages(previews.pages, previews.mediaSize, previews.orientation)
+        } catch (ex: Exception) {
+          ourLogger.error("Print job failed", ex)
+          dlg.showAlert(i18n.create("print.job.alert.title"), createAlertBody(ex))
+        }
       }
     }
     dlg.onShown = {
@@ -180,7 +189,8 @@ val mediaSizes: Map<String, MediaSize> = mutableMapOf<String, MediaSize>().let {
   it.toMap()
 }
 
-private class Previews(val chart: Chart, private val preferences: Preferences) {
+private typealias ErrorUi = (Exception) -> Unit
+private class Previews(val chart: Chart, private val preferences: Preferences, private val onError: ErrorUi) {
 
   val dateRangeModel = DateRangePickerModel(chart).also {
     it.selectedRange.addListener { _, _, newValue ->
@@ -265,7 +275,10 @@ private class Previews(val chart: Chart, private val preferences: Preferences) {
     dateRangeModel.init(this.preferences.get("date-range", "view"))
   }
 
-  fun updateTiles() {
+  /**
+   * This function re-generates image tiles.
+   */
+  private fun updateTiles() {
     if (autoUpdate) {
       val channel = Channel<PrintPage>()
       readImages(channel)
@@ -273,6 +286,9 @@ private class Previews(val chart: Chart, private val preferences: Preferences) {
     }
   }
 
+  /**
+   * This function updates the preview nodes, without re-generating the tiles themselves.
+   */
   private fun updatePreviews() {
     Platform.runLater {
       gridPane.children.clear()
@@ -303,9 +319,14 @@ private class Previews(val chart: Chart, private val preferences: Preferences) {
     }
   }
 
-  fun readImages(channel: Channel<PrintPage>) {
+  private fun readImages(channel: Channel<PrintPage>) {
     readImageScope.launch {
-      pages = channel.receiveAsFlow().toList()
+      try {
+        pages = channel.receiveAsFlow().toList()
+      } catch (ex: Exception) {
+        ourLogger.error("Images generation failed", ex)
+        onError(ex)
+      }
     }
   }
 
@@ -349,12 +370,12 @@ private fun mediaSizes(clazz: KClass<*>): Map<String, MediaSize> =
   }.associate {
     it.name to it.get() as MediaSize
   }
-
+/*
 private fun papers(): Map<String, FxPaper> =
     FxPaper::class.staticProperties
       .filter { it.get() is FxPaper }
       .associate { it.name to it.get() as FxPaper }
-
+*/
 private const val BASE_PREVIEW_WIDTH = 297.0
 private const val BASE_PREVIEW_HEIGHT = 210.0
 private val ourLogger = GPLogger.create("Print")

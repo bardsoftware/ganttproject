@@ -34,6 +34,7 @@ import java.util.*
 import javax.imageio.ImageIO
 import javax.print.attribute.Size2DSyntax
 import javax.print.attribute.standard.MediaSize
+import kotlin.jvm.Throws
 import kotlin.math.min
 
 /**
@@ -84,64 +85,70 @@ internal class PrintImageProcessor(
   private val channel: Channel<PrintPage>) {
 
   fun run() {
-    ourLogger.debug("Started generating images", mapOf("orientation" to orientation))
-    imageScope.launch {
+    val job = imageScope.launch {
+      try {
+        doRun()
+      } catch (ex: IOException) {
+        ourLogger.error("Image generation job failed", ex)
+        channel.close(ex)
+      }
+    }
+    ourLogger.debug("Started image generation job ${job.key}", mapOf("orientation" to orientation))
+  }
 
-      val wholeImage = chart.asPrintChartApi()
-        .exportChart(startDate = dateRange.start, endDate = dateRange.endInclusive).let {
+  @Throws(IOException::class)
+  private suspend fun doRun() {
+    val wholeImage = chart.asPrintChartApi()
+      .exportChart(startDate = dateRange.start, endDate = dateRange.endInclusive).let {
         when (it) {
           is RenderedChartImage -> it.wholeImage
           is BufferedImage -> it
           else -> null
         }
       }
-      if (wholeImage is BufferedImage) {
-        val pageWidth = if (orientation == Orientation.PORTRAIT) media.pageWidthPx(dpi) else media.pageHeightPx(dpi)
-        val pageHeight = if (orientation == Orientation.PORTRAIT) media.pageHeightPx(dpi) else media.pageWidthPx(dpi)
-        ourLogger.debug("Calculated page properties:", mapOf(
-          "width(px)" to pageWidth,
-          "height(px)" to pageHeight,
-          "dpi" to dpi
-        ))
-        val imageHeight = wholeImage.height
+    if (wholeImage is BufferedImage) {
+      val pageWidth = if (orientation == Orientation.PORTRAIT) media.pageWidthPx(dpi) else media.pageHeightPx(dpi)
+      val pageHeight = if (orientation == Orientation.PORTRAIT) media.pageHeightPx(dpi) else media.pageWidthPx(dpi)
+      ourLogger.debug("Calculated page properties:", mapOf(
+        "width(px)" to pageWidth,
+        "height(px)" to pageHeight,
+        "dpi" to dpi
+      ))
+      val imageHeight = wholeImage.height
 
-        for (row in 0..imageHeight/pageHeight) {
-          val rowHeight = (imageHeight - (row * pageHeight)).let {
-            if (it < 0) pageHeight else min(pageHeight, it)
-          }
-          val topy = (row * pageHeight)
-          val rowImages = buildRowImages(wholeImage, topy, rowHeight)
-          rowImages.forEachIndexed { column, image ->
-            //println("size=${image.width}x${image.height} page=${pageWidth}x${pageHeight}")
-            val widthFraction = image.width.toDouble()/pageWidth
-            val file = kotlin.io.path.createTempFile().toFile()
-            ImageIO.write(image, "png", file)
-            channel.send(PrintPage(row, column, file, widthFraction, rowHeight.toDouble()/pageHeight))
-          }
+      for (row in 0..imageHeight/pageHeight) {
+        val rowHeight = (imageHeight - (row * pageHeight)).let {
+          if (it < 0) pageHeight else min(pageHeight, it)
         }
-        channel.close()
+        val topy = (row * pageHeight)
+        val rowImages = buildRowImages(wholeImage, topy, rowHeight)
+        rowImages.forEachIndexed { column, image ->
+          //println("size=${image.width}x${image.height} page=${pageWidth}x${pageHeight}")
+          val widthFraction = image.width.toDouble()/pageWidth
+          val file = kotlin.io.path.createTempFile().toFile()
+          ImageIO.write(image, "png", file)
+          channel.send(PrintPage(row, column, file, widthFraction, rowHeight.toDouble()/pageHeight))
+        }
       }
+      channel.close()
     }
   }
 
+  @Throws(IOException::class)
   private fun buildRowImages(wholeImage: BufferedImage, topy: Int, rowHeight: Int): List<BufferedImage> {
     val pageWidth = if (orientation == Orientation.PORTRAIT) media.pageWidthPx(dpi) else media.pageHeightPx(dpi)
     val imageWidth = wholeImage.width
     val result = mutableListOf<BufferedImage>()
     for (column in 0..imageWidth/pageWidth) {
-      try {
-        result.add(Scalr.crop(
-          wholeImage,
-          (column * pageWidth),
-          topy,
-          (imageWidth - (column * pageWidth)).let {
-            if (it < 0) pageWidth else min(pageWidth, it)
-          },
-          rowHeight
-        ))
-      } catch (e: IOException) {
-        println(e)
-      }
+      result.add(Scalr.crop(
+        wholeImage,
+        (column * pageWidth),
+        topy,
+        (imageWidth - (column * pageWidth)).let {
+          if (it < 0) pageWidth else min(pageWidth, it)
+        },
+        rowHeight
+      ))
     }
     return result
   }
