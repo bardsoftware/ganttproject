@@ -18,27 +18,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.impex.msproject2;
 
-import java.awt.Component;
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
-
 import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.mpx.MPXWriter;
 import net.sf.mpxj.mspdi.MSPDIWriter;
 import net.sf.mpxj.writer.ProjectWriter;
 import net.sourceforge.ganttproject.export.ExporterBase;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -100,6 +98,17 @@ public class ExporterToMsProjectFile extends ExporterBase {
   @Override
   public String getFileNamePattern() {
     return myFileFormat;
+  }
+
+  @Override
+  protected void setFormat(String format) {
+    for (int i = 0; i < FILE_EXTENSIONS.length; i++) {
+      if (FILE_EXTENSIONS[i].equalsIgnoreCase(format)) {
+        myFileFormatOption.setValue(FILE_FORMAT_IDS[i]);
+        myFileFormatOption.commit();
+        break;
+      }
+    }
   }
 
   @Override

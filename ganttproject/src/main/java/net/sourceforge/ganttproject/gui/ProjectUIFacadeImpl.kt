@@ -237,16 +237,20 @@ class ProjectUIFacadeImpl(
             null
           }
         }?.let {
-          GlobalScope.launch { onFinish?.send(true) }
           // If document is obtained, we need to run further steps.
           // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
           SwingUtilities.invokeLater {
-            beforeClose()
-            project.close()
-            strategy.openFileAsIs(it)
-              .checkLegacyMilestones()
-              .checkEarliestStartConstraints()
-              .runUiTasks()
+            try {
+              beforeClose()
+              project.close()
+              strategy.openFileAsIs(it)
+                .checkLegacyMilestones()
+                .checkEarliestStartConstraints()
+                .runUiTasks()
+              GlobalScope.launch { onFinish?.send(true) }
+            } catch (ex: DocumentException) {
+              onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
+            }
           }
         }
       }

@@ -140,6 +140,7 @@ public class GanttXMLOpen implements GPParser {
   private class DefaultTagHandler extends AbstractTagHandler {
     private final Set<String> myTags = ImmutableSet.of("project", "tasks", "description", "notes");
     private boolean hasCdata = false;
+    private boolean hasProjectTag = false;
 
     DefaultTagHandler() {
       super(null, true);
@@ -151,6 +152,13 @@ public class GanttXMLOpen implements GPParser {
       String eName = sName; // element name
       if ("".equals(eName)) {
         eName = qName; // not namespace aware
+      }
+      if (!hasProjectTag) {
+        if (eName.equals("project") && attrs.getValue("version") != null) {
+          hasProjectTag = true;
+        } else {
+          throw new RuntimeException("This doesn't seem to be a GanttProject file");
+        }
       }
       setTagStarted(myTags.contains(eName));
       hasCdata = "description".equals(eName) || "notes".equals(eName);

@@ -187,6 +187,8 @@ public class ProxyDocument implements Document {
     try {
       getTaskManager().setEventsEnabled(false);
       parsing.enter();
+    } catch (Exception e) {
+      throw new DocumentException("Failed to parse document", e);
     } finally {
       getTaskManager().setEventsEnabled(true);
     }
