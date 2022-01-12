@@ -739,6 +739,47 @@ class TaskTable(
     treeTable.requestFocus()
     this.requestSwingFocus()
   }
+
+  private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->
+    dragAndDropSupport.install(cell)
+
+    cell.onEditingCompleted = {runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }}
+    cell.graphicSupplier = { task: Task? ->
+      if (task == null) {
+        null
+      } else {
+        if (TaskDefaultColumn.COLOR.stub.isVisible || TaskDefaultColumn.INFO.stub.isVisible) {
+          HBox().also { hbox ->
+            hbox.alignment = Pos.CENTER
+            Region().also {
+              hbox.children.add(it)
+              HBox.setHgrow(it, Priority.ALWAYS)
+            }
+            if (TaskDefaultColumn.INFO.stub.isVisible) {
+              task.getProgressStatus().getIcon()?.let { icon ->
+                StackPane(icon).also {
+                  it.styleClass.add("badge")
+                  hbox.children.add(it)
+                }
+
+              }
+            }
+            if (TaskDefaultColumn.COLOR.stub.isVisible) {
+              StackPane(Circle().also {
+                it.fill = rgb(task.color.red, task.color.green, task.color.blue)
+                it.radius = 4.0
+              }).also {
+                it.styleClass.add("badge")
+                hbox.children.add(it)
+              }
+            }
+          }
+        } else null
+      }
+    }
+    cell.contentDisplay = ContentDisplay.RIGHT
+    cell.alignment = Pos.CENTER_LEFT
+  }
 }
 
 data class TaskTableChartConnector(
@@ -850,45 +891,6 @@ private val taskNameConverter = MyStringConverter<Task, Task>(
 )
 
 private val dragAndDropSupport = DragAndDropSupport()
-private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->
-  dragAndDropSupport.install(cell)
-
-  cell.graphicSupplier = { task: Task? ->
-    if (task == null) {
-      null
-    } else {
-      if (TaskDefaultColumn.COLOR.stub.isVisible || TaskDefaultColumn.INFO.stub.isVisible) {
-        HBox().also { hbox ->
-          hbox.alignment = Pos.CENTER
-          Region().also {
-            hbox.children.add(it)
-            HBox.setHgrow(it, Priority.ALWAYS)
-          }
-          if (TaskDefaultColumn.INFO.stub.isVisible) {
-            task.getProgressStatus().getIcon()?.let { icon ->
-              StackPane(icon).also {
-                it.styleClass.add("badge")
-                hbox.children.add(it)
-              }
-
-            }
-          }
-          if (TaskDefaultColumn.COLOR.stub.isVisible) {
-            StackPane(Circle().also {
-              it.fill = rgb(task.color.red, task.color.green, task.color.blue)
-              it.radius = 4.0
-            }).also {
-              it.styleClass.add("badge")
-              hbox.children.add(it)
-            }
-          }
-        }
-      } else null
-    }
-  }
-  cell.contentDisplay = ContentDisplay.RIGHT
-  cell.alignment = Pos.CENTER_LEFT
-}
 
 private fun Task.ProgressStatus.getIcon() : GlyphIcon<*>? =
   when (this) {
