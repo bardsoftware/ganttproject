@@ -23,11 +23,13 @@ import biz.ganttproject.app.MenuBuilderSwing;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
+import biz.ganttproject.core.option.DefaultDoubleOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.DefaultFileOption;
 import biz.ganttproject.core.option.DefaultFontOption;
 import biz.ganttproject.core.option.DefaultIntegerOption;
 import biz.ganttproject.core.option.DefaultStringOption;
+import biz.ganttproject.core.option.DoubleOption;
 import biz.ganttproject.core.option.FontOption;
 import biz.ganttproject.core.option.FontSpec;
 import biz.ganttproject.core.option.FontSpec.Size;
@@ -139,7 +141,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     }
   };
   private final DefaultIntegerOption myDpiOption = new DefaultIntegerOption("screenDpi", DEFAULT_DPI);
-
+  private final DefaultDoubleOption myRowPaddingOption = new DefaultDoubleOption("taskRowPadding", 20.0);
   @Override
   public IntegerOption getDpiOption() {
     return myDpiOption;
@@ -235,7 +237,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 //    myFontSizeOption = new DefaultIntegerOption("ui.appFontSize");
 //    myFontSizeOption.setHasUi(false);
 
-    GPOption[] options = new GPOption[]{myLafOption, myAppFontOption, myChartFontOption, myDpiOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
+    GPOption[] options = new GPOption[]{myLafOption, myAppFontOption, myChartFontOption, myDpiOption, myLanguageOption, myRowPaddingOption, dateFormatSwitchOption, shortDateFormatOption,
         dateSampleOption};
     myOptions = new GPOptionGroup("ui", options);
     I18N i18n = new OptionsPageBuilder.I18N();
@@ -745,5 +747,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   FontOption getAppFontOption() {
     return myAppFontOption;
+  }
+
+  DoubleOption getRowPaddingOption() {
+    return myRowPaddingOption;
   }
 }

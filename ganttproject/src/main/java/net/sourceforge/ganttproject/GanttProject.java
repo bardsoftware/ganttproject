@@ -190,7 +190,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getUiFacadeImpl().getAppFontOption().addChangeValueListener(event -> {
       getGanttChart().reset();
     });
-    TreeTableCellsKt.initFontProperty(getUiFacadeImpl().getAppFontOption());
+    TreeTableCellsKt.initFontProperty(getUiFacadeImpl().getAppFontOption(), getUiFacadeImpl().getRowPaddingOption());
     TreeTableCellsKt.initColorProperties();
     getZoomManager().addZoomListener(area.getZoomListener());
 

@@ -21,10 +21,7 @@ package biz.ganttproject.lib.fx
 //import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.getModifiers
-import biz.ganttproject.core.option.FontOption
-import biz.ganttproject.core.option.FontSpec
-import biz.ganttproject.core.option.ValidationException
-import biz.ganttproject.core.option.createStringDateValidator
+import biz.ganttproject.core.option.*
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
@@ -49,7 +46,6 @@ import javafx.util.converter.NumberStringConverter
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.math.BigDecimal
 import javax.swing.UIManager
-import kotlin.math.max
 
 data class MyStringConverter<S, T>(
   val toString: (cell: TextCell<S, T>, cellValue: T?) -> String?,
@@ -63,13 +59,15 @@ fun <S, T> StringConverter<T>.adapt(): MyStringConverter<S, T> =
 
 val applicationFont = SimpleObjectProperty(Font.getDefault())
 val minCellHeight = SimpleDoubleProperty(Font.getDefault().size)
+var cellPadding = 20.0
 fun calculateMinCellHeight(fontSpec: FontSpec) {
   Font.font(fontSpec.family, fontSpec.size.factor * Font.getDefault().size)?.let { font ->
     applicationFont.set(font)
-    minCellHeight.value = font.size + max(15.0, font.size * 1.2)
+    minCellHeight.value = font.size + cellPadding
   }
 }
-fun initFontProperty(appFontOption: FontOption) {
+fun initFontProperty(appFontOption: FontOption, rowPaddingOption: DoubleOption) {
+  cellPadding = rowPaddingOption.value
   calculateMinCellHeight(appFontOption.value)
   appFontOption.addChangeValueListener { event ->
     event.newValue?.let {
