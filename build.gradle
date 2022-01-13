@@ -18,7 +18,6 @@ allprojects {
     repositories {
         mavenCentral()
         google()
-        jcenter()
     }
     apply plugin: 'java'
     ext {
