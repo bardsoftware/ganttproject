@@ -75,6 +75,9 @@
                 & .tree-table-cell {
                     -fx-fill: white;
                     -fx-text-fill: white;
+                    &.odd {
+                        -fx-background-color: $gp-medium-gray;
+                    }
                 }
                 & .glyph-icon {
                     -fx-fill: white;
@@ -94,6 +97,9 @@
             -fx-border-color: $gp-orange;
             -fx-fill: white;
             -fx-text-fill: white;
+        }
+        &.odd {
+            -fx-background-color: lighten($gp-light-gray, 5%);
         }
         &.validation-error {
             @include validation-error();

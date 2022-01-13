@@ -229,6 +229,15 @@ class TextCell<S, T>(
     } else {
       styleClass.removeAll("focused")
     }
+    styleClass.removeAll("odd")
+    styleClass.removeAll("even")
+    if (!empty) {
+      if (treeTableRow.index % 2 == 0) {
+        styleClass.add("even")
+      } else {
+        styleClass.add("odd")
+      }
+    }
     doUpdateItem()
   }
 

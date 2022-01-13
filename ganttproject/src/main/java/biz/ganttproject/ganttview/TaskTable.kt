@@ -743,7 +743,9 @@ class TaskTable(
   private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->
     dragAndDropSupport.install(cell)
 
-    cell.onEditingCompleted = {runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }}
+    cell.onEditingCompleted = {
+      runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
+    }
     cell.graphicSupplier = { task: Task? ->
       if (task == null) {
         null
