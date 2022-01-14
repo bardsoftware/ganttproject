@@ -34,11 +34,13 @@ import javafx.scene.image.ImageView
 import net.sourceforge.ganttproject.GPLogger
 import java.awt.print.*
 import javax.print.attribute.HashPrintRequestAttributeSet
+import kotlin.math.min
 import javafx.print.Paper as FxPaper
 
 internal fun printPages(images: List<PrintPage>, mediaSize: MediaSize, orientation: Orientation) {
   val printJob = PrinterJob.getPrinterJob()
-  printJob.setPageable(PageableImpl(images, mediaSize, orientation))
+  val pageable = PageableImpl(images, mediaSize, orientation)
+  printJob.setPageable(pageable)
   val attr = HashPrintRequestAttributeSet().also {
     it.add(DialogTypeSelection.NATIVE)
     it.add(mediaSize.mediaSizeName)
@@ -46,6 +48,14 @@ internal fun printPages(images: List<PrintPage>, mediaSize: MediaSize, orientati
   }
   if (printJob.printDialog(attr)) {
     try {
+      val printableArea = attr.get(MediaPrintableArea::class.java) as? MediaPrintableArea
+      val mediaSizeName = attr.get(MediaSizeName::class.java) as? MediaSizeName
+      val selectedMediaSize = mediaSizeName?.let { mediaSizes.values.firstOrNull { it.mediaSizeName == it } } ?: mediaSize
+      //val mediaSize = attr.get(MediaSize::class.java) as? MediaSize
+      val orientation = attr.get(OrientationRequested::class.java) as? OrientationRequested
+      if (printableArea != null && mediaSize != null && orientation != null) {
+        pageable.pageFormat = createPageFormat(selectedMediaSize, printableArea, if (orientation == OrientationRequested.LANDSCAPE) Orientation.LANDSCAPE else Orientation.PORTRAIT)
+      }
       printJob.print(attr)
     } catch (e: Exception) {
       if (!GPLogger.log(e)) {
@@ -69,8 +79,11 @@ internal fun printPages(images: List<PrintPage>, paper: FxPaper) {
 
 internal class PageableImpl(private val pages: List<PrintPage>, mediaSize: MediaSize, orientation: Orientation) : Pageable {
   private val commonScale = AtomicDouble(0.0)
-  private val pageFormat = PageFormat().also {
+  internal var pageFormat = PageFormat().also {
     it.orientation = if (orientation == Orientation.LANDSCAPE) PageFormat.LANDSCAPE else PageFormat.PORTRAIT
+    it.paper = Paper().also {
+      it.setImageableArea(0.0, 0.0, it.width, it.height)
+    }
   }
   override fun getNumberOfPages() = pages.size
   override fun getPageFormat(pageIndex: Int) = pageFormat
@@ -80,37 +93,42 @@ internal class PageableImpl(private val pages: List<PrintPage>, mediaSize: Media
 internal class PrintableImpl(private val page: PrintPage, private val commonScale: AtomicDouble) : Printable {
   override fun print(graphics: Graphics, pageFormat: PageFormat, pageIndex: Int): Int {
     val image = ImageIO.read(page.imageFile)
-    val g2d = graphics as? Graphics2D
+    val g2d = graphics as? Graphics2D ?: return Printable.NO_SUCH_PAGE
 
     val scale = if (commonScale.get() == 0.0) {
       val imageWidthPt = image.width
       val imageHeightPt = image.height
-      val scaleX = if (imageWidthPt < pageFormat.width) 1.0 else imageWidthPt/pageFormat.width
-      val scaleY = if (imageHeightPt < pageFormat.height) 1.0 else imageHeightPt/pageFormat.height
+      val scaleX = pageFormat.imageableWidth/image.width
+      val scaleY = pageFormat.imageableHeight/image.height
 
-      println("image width px=${image.width} pt=${imageWidthPt}")
-      println("image height px=${image.height} pt=${imageHeightPt}")
-      println("page width pt=${pageFormat.imageableWidth}")
-      println("page height pt=${pageFormat.imageableHeight}")
-      println("scaleX=$scaleX scaleY=$scaleY")
+//      println("image width px=${image.width} pt=${imageWidthPt}")
+//      println("image height px=${image.height} pt=${imageHeightPt}")
+//      println("page width pt=${pageFormat.imageableWidth}")
+//      println("page height pt=${pageFormat.imageableHeight}")
+//      println("scaleX=$scaleX scaleY=$scaleY")
 
-      1/(max(scaleX, scaleY))
+      min(scaleX, scaleY)
     } else commonScale.get()
-    println("scale=$scale")
     commonScale.set(scale)
-    g2d?.setClip(
-      0,
-      0,
-      image.width,
-      image.height
-    )
-
-    val transform = AffineTransform.getScaleInstance(scale, scale)
-    g2d?.drawRenderedImage(image, transform)
+    g2d.translate(pageFormat.imageableX, pageFormat.imageableY)
+    g2d.scale(scale, scale)
+    g2d.drawImage(image, 0, 0, null)
 
     return Printable.PAGE_EXISTS
   }
 
 }
 
+private fun createPageFormat(mediaSize: MediaSize, printableArea: MediaPrintableArea, orientation: Orientation) = PageFormat().also {
+  it.paper = Paper().also {
+    it.setImageableArea(
+      printableArea.getX(MediaPrintableArea.INCH)*72.0,
+      printableArea.getY(MediaPrintableArea.INCH)*72.0,
+      printableArea.getWidth(MediaPrintableArea.INCH)*72.0,
+      printableArea.getHeight(MediaPrintableArea.INCH)*72.0
+    )
+    it.setSize(mediaSize.getX(MediaSize.INCH)*72.0, mediaSize.getY(MediaSize.INCH)*72.0)
+  }
+  it.orientation = if (orientation == Orientation.LANDSCAPE) PageFormat.LANDSCAPE else PageFormat.PORTRAIT
+}
 
