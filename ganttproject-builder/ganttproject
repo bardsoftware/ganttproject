@@ -73,11 +73,11 @@ while true; do
     -d|--debug)
       case "$2" in
         +[:digit:])
-          DEBUG_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,address=$2,suspend=n"
+          DEBUG_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,address=*:$2,suspend=y"
           shift 2
           ;;
         *)
-          DEBUG_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n"
+          DEBUG_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,address=*:5005,suspend=y"
           shift 1
           ;;
       esac
@@ -108,12 +108,12 @@ done
 # Create log directory
 GP_LOG_DIR="$HOME/.ganttproject.d/logs"
 # Check if log dir is present (or create it)
-if [ ! -d $GP_LOG_DIR ]; then
-  if [ -e  $GP_LOG_DIR ]; then
+if [ ! -d "$GP_LOG_DIR" ]; then
+  if [ -e  "$GP_LOG_DIR" ]; then
     echo "File $GP_LOG_DIR exists and is not a directory. Please remove it and launch $SCRIPT_FILE again" >&2
     exit 1
   fi
-  if ! mkdir -p $GP_LOG_DIR ; then
+  if ! mkdir -p "$GP_LOG_DIR" ; then
     echo "Could not create $GP_LOG_DIR directory. Is directory $HOME writable?" >&2
     exit 1
   fi

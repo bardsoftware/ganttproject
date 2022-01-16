@@ -14,6 +14,7 @@ import net.sourceforge.ganttproject.document.DocumentCreator;
 import net.sourceforge.ganttproject.export.CommandLineExportApplication;
 import org.eclipse.core.runtime.IPlatformRunnable;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,6 +48,19 @@ public class MainApplication implements IPlatformRunnable {
     }
 
     appBuilder.withLogging();
+    try {
+      Class.forName("javafx.application.Platform");
+    } catch (Exception e) {
+      var msg = String.format(
+          "GanttProject requires Java Runtime with JavaFX. You are using %s %s %s. " +
+              "JavaFX is available in BellSoft Liberica or Azul Zulu Java Runtime.",
+          System.getProperty("java.vm.vendor"),
+          System.getProperty("java.vm.name"),
+          System.getProperty("java.vm.version"));
+      System.err.println(msg);
+      JOptionPane.showMessageDialog(null, msg, "Inappropriate Java Runtime", JOptionPane.ERROR_MESSAGE);
+      System.exit(1);
+    }
     if (!appBuilder.isCli()) {
       appBuilder.withSplash();
       appBuilder.withWindowVisible();

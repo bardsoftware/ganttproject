@@ -69,11 +69,11 @@ while true; do
     -d|--debug)
       case "$2" in
         +[:digit:])
-          DEBUG_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,address=$2,suspend=n"
+          DEBUG_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,address=*:$2,suspend=y"
           shift 2
           ;;
         *)
-          DEBUG_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n"
+          DEBUG_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,address=*:5005,suspend=y"
           shift 1
           ;;
       esac
@@ -102,20 +102,20 @@ while true; do
 done
 
 # Create log directory
-GP_LOG_DIR="$HOME/.ganttproject.d"
+GP_LOG_DIR="$HOME/.ganttproject.d/logs"
 # Check if log dir is present (or create it)
-if [ ! -d $GP_LOG_DIR ]; then
-  if [ -e  $GP_LOG_DIR ]; then
-    echo "file $GP_LOG_DIR exists and is not a directory" >&2
+if [ ! -d "$GP_LOG_DIR" ]; then
+  if [ -e  "$GP_LOG_DIR" ]; then
+    echo "File $GP_LOG_DIR exists and is not a directory. Please remove it and launch $SCRIPT_FILE again" >&2
     exit 1
   fi
-  if ! mkdir $GP_LOG_DIR ; then
-    echo "Could not create $GP_LOG_DIR directory" >&2
+  if ! mkdir -p "$GP_LOG_DIR" ; then
+    echo "Could not create $GP_LOG_DIR directory. Is directory $HOME writable?" >&2
     exit 1
   fi
 fi
 
-# Create unique name for log file
+# Create unique name for the application log file
 LOG_FILE="$GP_LOG_DIR/.ganttproject-"$(date +%Y%m%d%H%M%S)".log"
 if [ -e "$LOG_FILE" ] && [ ! -w "$LOG_FILE" ]; then
   echo "Log file $LOG_FILE is not writable" >2
