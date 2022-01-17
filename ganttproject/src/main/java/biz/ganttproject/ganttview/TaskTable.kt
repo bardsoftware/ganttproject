@@ -326,7 +326,10 @@ class TaskTable(
       }
 
       override fun taskMoved(e: TaskHierarchyEvent)  {
-        keepSelection {
+        if (e.oldContainer == null) {
+          return
+        }
+        keepSelection(keepFocus = true) {
           val taskTreeItem = task2treeItem[e.oldContainer]?.let { containerItem ->
             val idx = containerItem.children.indexOfFirst { it.value == e.task }
             if (idx >= 0) {
@@ -669,7 +672,7 @@ class TaskTable(
     return result
   }
 
-  private fun keepSelection(code: ()->Unit) {
+  private fun keepSelection(keepFocus: Boolean = false, code: ()->Unit) {
     val body = {
       val selectedTasks =
         treeTable.selectionModel.selectedItems.associate {
@@ -677,12 +680,23 @@ class TaskTable(
             ?: it.parent?.let { parent -> if (parent == treeTable.root) null else parent }
             ?: it.nextSibling())
         }
+      val focusedTask = treeTable.focusModel.focusedItem?.value
+      val focusedCell = treeTable.focusModel.focusedCell
       code()
       treeTable.selectionModel.clearSelection()
       for ((task, parentTreeItem) in selectedTasks) {
         val liveTask = taskManager.getTask(task.taskID)
         val whatSelect = task2treeItem[liveTask] ?: parentTreeItem
         treeTable.selectionModel.select(whatSelect)
+      }
+      if (keepFocus && focusedTask != null) {
+        val liveTask = taskManager.getTask(focusedTask.taskID)
+        task2treeItem[liveTask]?.let { it ->
+          val row = treeTable.getRow(it)
+          Platform.runLater {
+            treeTable.focusModel.focus(TreeTablePosition(treeTable, row, focusedCell.tableColumn))
+          }
+        }
       }
       treeTable.requestFocus()
     }
