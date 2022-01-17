@@ -13,9 +13,7 @@ AppDir:
     arch: [amd64]
     allow_unauthenticated: true
     sources:
-    - sourceline: deb http://archive.canonical.com/ubuntu focal partner
-    - sourceline: deb http://mirror.yandex.ru/ubuntu/ focal main restricted
-    - sourceline: deb http://mirror.yandex.ru/ubuntu/ focal-updates main restricted
+    - sourceline: deb http://archive.ubuntu.com/ubuntu/ focal main universe
     include: [bash, coreutils]
   files:
     include: []
