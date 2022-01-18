@@ -45,6 +45,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -150,12 +152,21 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   @Override
   protected @NotNull Component getTreeComponent() {
     var jfxPanel = new JFXPanel();
+    var taskTable = myTaskTableSupplier.get();
+    jfxPanel.addKeyListener(new KeyAdapter() {
+      @Override
+      public void keyPressed(KeyEvent e) {
+        // Otherwise pressing Delete when editing a task name will delete the task itself.
+        if (e.getKeyCode() == KeyEvent.VK_DELETE && taskTable.getTreeTable().getEditingCell() != null) {
+          e.consume();
+        }
+      }
+    });
     Platform.runLater(() -> {
-      jfxPanel.setScene(new Scene(myTaskTableSupplier.get().getControl()));
-      setMyHeaderHeight(() -> myTaskTableSupplier.get().getHeaderHeightProperty().intValue());
+      jfxPanel.setScene(new Scene(taskTable.getControl()));
+      setMyHeaderHeight(() -> taskTable.getHeaderHeightProperty().intValue());
       myInitializationCompleted.invoke();
     });
-    var taskTable = myTaskTableSupplier.get();
     taskTable.getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> updateTimelineHeight());
     taskTable.setRequestSwingFocus(() -> {
       jfxPanel.requestFocus();
