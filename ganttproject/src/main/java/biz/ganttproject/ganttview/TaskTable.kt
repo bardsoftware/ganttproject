@@ -26,6 +26,7 @@ import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
+import com.sun.javafx.scene.control.behavior.CellBehaviorBase
 import de.jensd.fx.glyphs.GlyphIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
@@ -137,6 +138,8 @@ class TaskTable(
   private val placeholderEmpty by lazy { Pane() }
 
   private val initializationCompleted = initializationPromise.register("Task table initialization")
+  private val treeTableSelectionListener = TreeSelectionListenerImpl(treeTable.selectionModel.selectedItems, selectionManager, this@TaskTable)
+
   init {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
 
@@ -159,13 +162,6 @@ class TaskTable(
     initChartConnector()
     initKeyboardEventHandlers()
     initSelectionListeners()
-    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
-    treeTable.selectionModel.selectedItems.addListener(ListChangeListener {
-      copyOf(treeTable.selectionModel.selectedItems.filterNotNull()).map { it.value }
-        .filter { it.manager.taskHierarchy.contains(it) }.also {
-          selectionManager.setSelectedTasks(it, this@TaskTable)
-        }
-    })
     treeTable.onSort = EventHandler {
       // It is important to run this later because the event is sent _before_ the
       // actual sorting, so if we collect the expanded tasks synchronously, we
@@ -310,6 +306,7 @@ class TaskTable(
           runBlocking { newTaskActor.inboxChannel.send(TaskReady(e.task)) }
           CoroutineScope(Dispatchers.JavaFx).launch {
             treeTable.selectionModel.clearSelection()
+            CellBehaviorBase.removeAnchor(treeTable)
             val treeItem = e.newContainer.addChildTreeItem(e.task, e.indexAtNew)
             taskTableChartConnector.visibleTasks.clear()
             taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
@@ -422,7 +419,18 @@ class TaskTable(
         // TODO: commit editing
       }
     })
+//    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
+//    treeTable.selectionModel.selectedItems.addListener(ListChangeListener {
+//      copyOf(treeTable.selectionModel.selectedItems.filterNotNull()).map { it.value }
+//        .filter { it.manager.taskHierarchy.contains(it) }.also {
+//          selectionManager.setSelectedTasks(it, this@TaskTable)
+//        }
+//    })
+
+    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
+    treeTable.selectionModel.selectedItems.addListener(treeTableSelectionListener)
   }
+
   private fun findNameColumn() = treeTable.columns.find { (it.userData as ColumnList.Column).id == TaskDefaultColumn.NAME.stub.id }
 
   private fun buildColumns(columns: List<ColumnList.Column>) {
@@ -682,13 +690,21 @@ class TaskTable(
         }
       val focusedTask = treeTable.focusModel.focusedItem?.value
       val focusedCell = treeTable.focusModel.focusedCell
+      treeTableSelectionListener.disabled = true
       code()
       treeTable.selectionModel.clearSelection()
-      for ((task, parentTreeItem) in selectedTasks) {
-        val liveTask = taskManager.getTask(task.taskID)
-        val whatSelect = task2treeItem[liveTask] ?: parentTreeItem
-        treeTable.selectionModel.select(whatSelect)
-      }
+      treeTable.selectionModel.selectedIndices.clear()
+      CellBehaviorBase.removeAnchor(treeTable)
+      treeTableSelectionListener.disabled = false
+      val selectedRows = selectedTasks.map { task2treeItem[taskManager.getTask(it.key.taskID)] ?: it.value }.map { treeTable.getRow(it) }.toIntArray()
+      treeTable.selectionModel.selectIndices(-1, *selectedRows)
+//      for ((task, parentTreeItem) in selectedTasks) {
+//        CellBehaviorBase.removeAnchor(treeTable)
+//        val liveTask = taskManager.getTask(task.taskID)
+//        val whatSelect = task2treeItem[liveTask] ?: parentTreeItem
+//
+//        treeTable.selectionModel.select(whatSelect)
+//      }
       if (keepFocus && focusedTask != null) {
         val liveTask = taskManager.getTask(focusedTask.taskID)
         task2treeItem[liveTask]?.let { it ->
@@ -795,6 +811,24 @@ class TaskTable(
     }
     cell.contentDisplay = ContentDisplay.RIGHT
     cell.alignment = Pos.CENTER_LEFT
+  }
+}
+
+private class TreeSelectionListenerImpl(
+  private val selectedItems: ObservableList<TreeItem<Task>?>,
+  private val selectionManager: TaskSelectionManager,
+  private val selectionSource: Any)
+  : ListChangeListener<TreeItem<Task>> {
+
+  var disabled: Boolean = false
+
+  override fun onChanged(c: ListChangeListener.Change<out TreeItem<Task>>?) {
+    if (!disabled) {
+      copyOf(selectedItems.filterNotNull()).map { it.value }
+        .filter { it.manager.taskHierarchy.contains(it) }.also {
+          selectionManager.setSelectedTasks(it, selectionSource)
+        }
+    }
   }
 }
 
