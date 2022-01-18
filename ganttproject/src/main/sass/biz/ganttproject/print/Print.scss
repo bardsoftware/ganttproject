@@ -11,6 +11,10 @@
 
   .content-pane {
     -fx-background-color: $gp-control-background;
+    .controls {
+      -fx-background-color: whitesmoke;
+      -fx-padding: $default-vertical-padding 1em 0 1em;
+    }
     .scroll-pane {
       -fx-background-color: $gp-control-background;
       & > .viewport {

@@ -22,6 +22,7 @@ package biz.ganttproject.print
 import biz.ganttproject.app.*
 import biz.ganttproject.lib.DateRangePicker
 import biz.ganttproject.lib.DateRangePickerModel
+import biz.ganttproject.lib.fx.vbox
 import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
@@ -72,58 +73,69 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
       "/biz/ganttproject/app/Dialog.css",
       "/biz/ganttproject/print/Print.css"
     )
-    dlg.setHeader(
-      HBox().also { hbox ->
-        hbox.alignment = Pos.CENTER_LEFT
-        hbox.styleClass.add("header")
-        hbox.children.addAll(
-          // -- Page format
-          Label(i18n.formatText("choosePaperFormat")).also {
-            HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
-          },
-          ComboBox(FXCollections.observableList(
-            //Previews.papers.keys.toList()
-            mediaSizes.keys.toList()
-          )).also { comboBox ->
-            comboBox.setOnAction {
-              previews.setMediaSize(comboBox.selectionModel.selectedItem)
-            }
-            comboBox.selectionModel.select(previews.mediaSizeKey)
-          },
 
-          // -- Page orientation
-          Label(i18n.formatText("option.export.itext.landscape.label")).also {
-            HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
-          },
-          ComboBox(FXCollections.observableList(
-            Orientation.values().map { i18n.formatText(it.name.lowercase()) }.toList()
-          )).also { comboBox ->
-            comboBox.setOnAction {
-              previews.orientation = Orientation.values()[comboBox.selectionModel.selectedIndex]
-            }
-            comboBox.selectionModel.select(i18n.formatText(previews.orientation.name.lowercase()))
-          },
-
-          // -- Date range
-          Label(i18n.formatText("print.preview.dateRange")).also {
-            HBox.setMargin(it, Insets(0.0, 5.0, 0.0, 15.0))
-          },
-          DateRangePicker(previews.dateRangeModel, MappingLocalizer(mapOf(
-            "custom" to { prefixedLocalizer.formatText("dateRange.custom") },
-            "view" to { prefixedLocalizer.formatText("dateRange.currentView") },
-            "project" to { i18n.formatText("wholeProject") }
-          )) { key ->
-            i18n.formatText(key)
-          }).let {
-            it.button.styleClass.addAll("btn-regular")
-            it.component
+    val controls = vbox {
+      add(
+        // -- Page format
+        Label(i18n.formatText("choosePaperFormat")).also {
+          VBox.setMargin(it, Insets(0.0, 0.0, 3.0, 0.0))
+        }
+      )
+      add(
+        ComboBox(FXCollections.observableList(
+          //Previews.papers.keys.toList()
+          mediaSizes.keys.toList()
+        )).also { comboBox ->
+          comboBox.setOnAction {
+            previews.setMediaSize(comboBox.selectionModel.selectedItem)
           }
-        )
-      }
-    )
+          comboBox.selectionModel.select(previews.mediaSizeKey)
+        }
+      )
+
+        // -- Page orientation
+      add(
+        Label(i18n.formatText("option.export.itext.landscape.label")).also {
+          VBox.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
+        }
+      )
+      add(
+        ComboBox(FXCollections.observableList(
+          Orientation.values().map { i18n.formatText(it.name.lowercase()) }.toList()
+        )).also { comboBox ->
+          comboBox.setOnAction {
+            previews.orientation = Orientation.values()[comboBox.selectionModel.selectedIndex]
+          }
+          comboBox.selectionModel.select(i18n.formatText(previews.orientation.name.lowercase()))
+        }
+      )
+
+        // -- Date range
+      add(
+        Label(i18n.formatText("print.preview.dateRange")).also {
+          VBox.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
+        }
+      )
+      add(
+        DateRangePicker(previews.dateRangeModel, MappingLocalizer(mapOf(
+          "custom" to { prefixedLocalizer.formatText("dateRange.custom") },
+          "view" to { prefixedLocalizer.formatText("dateRange.currentView") },
+          "project" to { i18n.formatText("wholeProject") }
+        )) { key ->
+          i18n.formatText(key)
+        }).let {
+          it.button.styleClass.addAll("btn-regular")
+          it.component
+        }
+      )
+    }
 
     val contentPane = BorderPane().also {
       it.styleClass.add("content-pane")
+      it.right = BorderPane().also {
+        it.top = controls
+        it.styleClass.add("controls")
+      }
       it.center = ScrollPane(Pane(previews.gridPane).also {p -> p.styleClass.add("all-pages")})
     }
     dlg.setContent(contentPane)
