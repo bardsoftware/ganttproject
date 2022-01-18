@@ -19,15 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject
 
 import biz.ganttproject.LoggerApi
-import biz.ganttproject.app.BarrierEntrance
-import biz.ganttproject.app.Barrier
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.SingleTranslationLocalizer
-import biz.ganttproject.app.showAsync
-import com.bardsoftware.eclipsito.update.UpdateIntegrityChecker
-import com.bardsoftware.eclipsito.update.UpdateMetadata
-import com.bardsoftware.eclipsito.update.UpdateProgressMonitor
-import com.bardsoftware.eclipsito.update.Updater
+import biz.ganttproject.app.*
+import biz.ganttproject.platform.DummyUpdater
 import com.beust.jcommander.JCommander
 import javafx.application.Platform
 import net.sourceforge.ganttproject.export.CommandLineExportApplication
@@ -39,10 +32,8 @@ import org.slf4j.Logger
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.File
-import java.io.PrintStream
 import java.lang.Thread.UncaughtExceptionHandler
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
@@ -54,14 +45,7 @@ fun main(args: Array<String>) {
     PluginManager.setCharts(listOf())
     GanttLanguage.getInstance()
   }.whenAppInitialized {
-    // This is a dummy updater just to make gradle run working
-    val updater = object : Updater {
-      override fun getUpdateMetadata(p0: String?) = CompletableFuture.completedFuture(listOf<UpdateMetadata>())
-      override fun installUpdate(p0: UpdateMetadata?, p1: UpdateProgressMonitor?, p2: UpdateIntegrityChecker?): CompletableFuture<File> {
-        TODO("Not yet implemented")
-      }
-    }
-    it.updater = updater
+    it.updater = DummyUpdater
   }.launch()
 }
 
@@ -200,7 +184,7 @@ class AppBuilder(args: Array<String>) {
   fun launch() {
     runBeforeUiCommands.forEach { cmd -> cmd() }
     startUiApp { ganttProject: GanttProject ->
-      ganttProject.updater = org.eclipse.core.runtime.Platform.getUpdater()
+      ganttProject.updater = org.eclipse.core.runtime.Platform.getUpdater() ?: DummyUpdater
       ganttProject.addWindowListener(object : WindowAdapter() {
         override fun windowOpened(e: WindowEvent?) {
           runAfterWindowOpenedCommands.forEach { cmd -> cmd(ganttProject) }

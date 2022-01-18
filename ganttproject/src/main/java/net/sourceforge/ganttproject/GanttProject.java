@@ -23,7 +23,6 @@ import biz.ganttproject.app.FXSearchUi;
 import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
-import biz.ganttproject.platform.UpdateKt;
 import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
 import biz.ganttproject.storage.cloud.GPCloudStatusBar;
@@ -33,11 +32,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import net.sourceforge.ganttproject.action.ArtefactAction;
-import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
-import net.sourceforge.ganttproject.action.ArtefactNewAction;
-import net.sourceforge.ganttproject.action.ArtefactPropertiesAction;
-import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.*;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
@@ -72,12 +67,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -520,8 +510,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getActiveChart().reset();
     getRssFeedChecker().setOptionsVersion(getGanttOptions().getVersion());
     getRssFeedChecker().run();
-
-    UpdateKt.checkAvailableUpdates(getUpdater(), getUIFacade());
     setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
   }
 

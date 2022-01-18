@@ -29,7 +29,9 @@ import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.createToggleSwitch
 import biz.ganttproject.lib.fx.openInBrowser
 import biz.ganttproject.platform.PgpUtil.verifyFile
+import com.bardsoftware.eclipsito.update.UpdateIntegrityChecker
 import com.bardsoftware.eclipsito.update.UpdateMetadata
+import com.bardsoftware.eclipsito.update.UpdateProgressMonitor
 import com.bardsoftware.eclipsito.update.Updater
 import com.google.common.base.Strings
 import com.sandec.mdfx.MDFXNode
@@ -319,4 +321,11 @@ object UpdateOptions {
   val updateUrl = DefaultStringOption("url", System.getProperty("platform.update.url", "https://www.ganttproject.biz/dl/updates/ganttproject-3.0.json"))
   val optionGroup: GPOptionGroup = GPOptionGroup("platform.update", isCheckEnabled, latestShownVersion, updateUrl)
 
+}
+
+object DummyUpdater : Updater {
+  override fun getUpdateMetadata(p0: String?) = CompletableFuture.completedFuture(listOf<UpdateMetadata>())
+  override fun installUpdate(p0: UpdateMetadata?, p1: UpdateProgressMonitor?, p2: UpdateIntegrityChecker?): CompletableFuture<File> {
+    TODO("Not yet implemented")
+  }
 }

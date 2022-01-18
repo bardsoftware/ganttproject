@@ -31,6 +31,7 @@ import biz.ganttproject.ganttview.*;
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
+import biz.ganttproject.platform.UpdateKt;
 import biz.ganttproject.task.TaskActions;
 import com.bardsoftware.eclipsito.update.Updater;
 import com.google.common.base.Suppliers;
@@ -490,6 +491,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected void setUpdater(Updater updater) {
     myUpdater = updater;
+    UpdateKt.checkAvailableUpdates(updater, getUIFacade());
   }
 
   protected Updater getUpdater() {
