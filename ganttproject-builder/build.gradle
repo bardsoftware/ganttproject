@@ -47,6 +47,7 @@ task distBin(dependsOn: [
                 include "lib/javagalician.jar"
                 include "ganttproject.bat"
                 include "ganttproject.exe"
+                include "ganttproject.l4j.ini"
                 include "HouseBuildingSample.gan"
                 include "LICENSE"
                 include "logback.xml"
