@@ -20,12 +20,12 @@ package biz.ganttproject.lib.fx
 
 //import javafx.scene.control.skin.TreeTableRowSkin
 import javafx.scene.control.skin.TreeTableViewSkin
-//import javafx.scene.control.skin.VirtualFlow
+import javafx.scene.control.skin.VirtualFlow
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.app.MenuBuilderFx
 import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
 //import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
-import biz.ganttproject.lib.fx.treetable.VirtualFlow
+//import biz.ganttproject.lib.fx.treetable.VirtualFlow
 import com.sun.javafx.scene.control.behavior.TreeTableViewBehavior
 import com.sun.javafx.scene.control.inputmap.InputMap
 import com.sun.javafx.scene.control.inputmap.KeyBinding
@@ -36,6 +36,7 @@ import javafx.beans.property.SimpleDoubleProperty
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
@@ -77,10 +78,10 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   }
   override fun createDefaultSkin(): Skin<*> {
     return GPTreeTableViewSkin(this).also {
-//      it.scrollValue.addListener { _, _, newValue -> this.scrollListener(newValue.toDouble()) }
-//      it.headerHeight.addListener { _, _, _ ->
-//        headerHeight.value = it.fullHeaderHeight
-//      }
+      it.scrollValue.addListener { _, _, newValue -> this.scrollListener(newValue.toDouble()) }
+      it.headerHeight.addListener { _, _, _ ->
+        headerHeight.value = it.fullHeaderHeight
+      }
     }
   }
 
@@ -92,11 +93,11 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   }
 
   fun scrollBy(value: Double) {
-    //skin?.let { (it as GPTreeTableViewSkin<T>).scrollBy(value) }
+    skin?.let { (it as GPTreeTableViewSkin<T>).scrollBy(value) }
   }
 
   fun scrollTo(item: TreeItem<T>) {
-    //skin?.let { (it as GPTreeTableViewSkin<T>).scrollTo(getRow(item)) }
+    skin?.let { (it as GPTreeTableViewSkin<T>).scrollTo(getRow(item)) }
   }
 
   override fun requestFocus() {
@@ -112,8 +113,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
       onColumnResize()
     }
 
-  //fun vbarWidth(): Double = skin?.let { (it as GPTreeTableViewSkin<T>).vbarWidth() } ?: 0.0
-  fun vbarWidth(): Double = 15.0
+  fun vbarWidth(): Double = skin?.let { (it as GPTreeTableViewSkin<T>).vbarWidth() } ?: 0.0
   fun setColumns(tableColumns: List<TreeTableColumn<T, out Any>>) {
     val totalPrefWidth = tableColumns.filter { it.isVisible }.sumOf { it.prefWidth }
     prefWidth = totalPrefWidth + vbarWidth()
@@ -172,7 +172,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
 }
 
 class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableViewSkin<T>(table) {
-/*
+
   val scrollValue = SimpleDoubleProperty()
   val headerHeight: ReadOnlyDoubleProperty
   get() = tableHeaderRow.heightProperty()
@@ -192,38 +192,28 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
       updateScrollValue()
     }
 
-//    val cornerRegion = this.tableHeaderRow.lookup(".show-hide-columns-button") as Region
-//    cornerRegion.onMousePressed = EventHandler { me: MouseEvent ->
-//      table.tableMenu.items.clear()
-//      table.tableMenuActions(MenuBuilderFx(table.tableMenu))
-//      table.tableMenu.show(cornerRegion, Side.BOTTOM, 0.0, 0.0)
-//      me.consume()
-//    }
-    val behavior = FieldUtils.readField(this, "behavior", true) as TreeTableViewBehavior<T>
-    behavior.inputMap.removeKey {
-      (it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)
-        && it.alt != KeyBinding.OptionalBoolean.TRUE
-        && it.shift != KeyBinding.OptionalBoolean.TRUE
-        && it.meta != KeyBinding.OptionalBoolean.TRUE
-        && it.ctrl != KeyBinding.OptionalBoolean.TRUE
+    table.addEventHandler(KeyEvent.KEY_PRESSED) {
+      if ((it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)
+        && !it.isAltDown
+        && !it.isShiftDown
+        && !it.isMetaDown
+        && !it.isControlDown) {
+        it.consume()
+        return@addEventHandler
+      }
+      if (it.code == KeyCode.PAGE_DOWN) {
+        pageDown()
+        it.consume()
+        return@addEventHandler
+      }
+      if (it.code == KeyCode.PAGE_UP) {
+        pageUp()
+        it.consume()
+        return@addEventHandler
+      }
     }
-    behavior.inputMap.removeKey {
-      it.code == KeyCode.PAGE_DOWN || it.code == KeyCode.PAGE_UP
-    }
-    behavior.inputMap.mappings.add(InputMap.KeyMapping(KeyCode.PAGE_DOWN) {
-      pageDown()
-    })
-    behavior.inputMap.mappings.add(InputMap.KeyMapping(KeyCode.PAGE_UP) {
-      pageUp()
-    })
   }
 
-  private fun (InputMap<*>).removeKey(predicate: (KeyBinding) -> Boolean) {
-    this.mappings.filter { mapping ->
-      mapping.mappingKey.let { it is KeyBinding && predicate(it) }
-    }.forEach { it.isDisabled = true }
-    this.childInputMaps.forEach { it.removeKey(predicate) }
-  }
   override fun createVirtualFlow(): VirtualFlow<TreeTableRow<T>> {
     return MyVirtualFlow()
   }
@@ -253,7 +243,6 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
     this.table.selectionModel.select(firstCell.treeItem)
   }
 
- */
 }
 
 interface TreeCollapseView<T> {

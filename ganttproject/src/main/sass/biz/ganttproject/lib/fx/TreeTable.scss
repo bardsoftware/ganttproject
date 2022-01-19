@@ -122,31 +122,6 @@
             -fx-text-fill: white;
         }
     }
-  .indent-0 {
-    -fx-padding: 0 0 0 15;
-  }
-    .indent-1 {
-      -fx-padding: 0 0 0 18;
-    }
-  .indent-2 {
-    -fx-padding: 0 0 0 21;
-  }
-  .indent-3 {
-    -fx-padding: 0 0 0 24;
-  }
-  .indent-4 {
-    -fx-padding: 0 0 0 27;
-  }
-  .indent-5 {
-    -fx-padding: 0 0 0 30;
-  }
-  .indent-6 {
-    -fx-padding: 0 0 0 33;
-  }
-  .indent-7 {
-    -fx-padding: 0 0 0 36;
-  }
-
   // This is when editing starts. The treetable itself is not :focused anymore because the focus
     // is now in the text field.
     & > .virtual-flow {
@@ -157,14 +132,14 @@
 //
     .tree-table-row-cell {
         & > .tree-disclosure-node {
-            //-fx-padding: 0 5 0 5;
+            -fx-padding: 0 0 0 5;
             //-fx-background-color: yellow;
             -fx-border-width: 0 0 2 0;
             -fx-border-color: transparent;
             & > .glyph-icon {
                 -fx-fill: $gp-medium-gray;
             }
-            -fx-pref-width: 12;
+            -fx-pref-width: 15;
         }
     }
 }

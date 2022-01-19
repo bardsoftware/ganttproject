@@ -813,9 +813,9 @@ class TaskTable(
     }
     cell.contentDisplay = ContentDisplay.RIGHT
     cell.alignment = Pos.CENTER_LEFT
-    cell.styleSupplier = {
-      task -> "indent-${task.manager.taskHierarchy.getDepth(task)}"
-    }
+//    cell.styleSupplier = {
+//      task -> "indent-${task.manager.taskHierarchy.getDepth(task)}"
+//    }
   }
 }
 

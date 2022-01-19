@@ -18,13 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
-//import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
+import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.getModifiers
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
-import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import de.jensd.fx.glyphs.GlyphIcon
 import javafx.application.Platform
 import javafx.beans.property.*
@@ -34,6 +33,7 @@ import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
+//import javafx.scene.control.skin.TreeTableCellSkin
 import javafx.scene.effect.InnerShadow
 import javafx.scene.input.KeyCode
 import javafx.scene.paint.Color
