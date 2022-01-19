@@ -96,7 +96,7 @@ class GPCloudOfflinePane(val mode: StorageDialogBuilder.Mode) : FlowPage() {
 
     return VBoxBuilder("option-pane", "option-pane-padding").apply {
       i18n = ourLocalizer
-      addStylesheets(THEME_STYLESHEET, OPTION_PANE_STYLESHEET, DIALOG_STYLESHEET)
+      addStylesheets(OPTION_PANE_STYLESHEET, DIALOG_STYLESHEET)
       add(optionPaneBuilder.createHeader())
       add(optionPaneBuilder.buildPane(), alignment = Pos.CENTER, growth = Priority.ALWAYS)
       add(btnContinue, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER)

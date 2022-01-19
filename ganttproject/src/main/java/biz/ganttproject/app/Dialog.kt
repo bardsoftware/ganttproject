@@ -77,7 +77,7 @@ fun dialogFx(contentBuilder: (DialogController) -> Unit) {
       val dialogBuildApi = DialogControllerFx(it.dialogPane)
       it.dialogPane.apply {
         styleClass.addAll("dlg")
-        stylesheets.addAll("/biz/ganttproject/app/Theme.css", DIALOG_STYLESHEET)
+        stylesheets.addAll(DIALOG_STYLESHEET)
 
         contentBuilder(dialogBuildApi)
         val window = scene.window
@@ -146,7 +146,7 @@ class DialogControllerSwing : DialogController {
   private lateinit var dialogFrame: UIFacade.Dialog
   private val paneBuilder = VBoxBuilder().also {
     it.vbox.styleClass.add("dlg")
-    it.vbox.stylesheets.addAll("/biz/ganttproject/app/Theme.css", DIALOG_STYLESHEET)
+    it.vbox.stylesheets.addAll(DIALOG_STYLESHEET)
   }
 
   private val contentStack = StackPane()
@@ -457,5 +457,4 @@ fun createAlertBody(message: String): Node =
     }
 
 fun createAlertBody(ex: Exception): Node = createAlertBody(ex.message ?: "")
-val THEME_STYLESHEET = "/biz/ganttproject/app/Theme.css"
-val DIALOG_STYLESHEET = "/biz/ganttproject/app/Dialog.css"
+const val DIALOG_STYLESHEET = "/biz/ganttproject/app/Dialog.css"

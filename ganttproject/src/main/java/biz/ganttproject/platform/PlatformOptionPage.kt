@@ -78,7 +78,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
 
     val group = BorderPane().also {
       it.styleClass.addAll("dlg-information", "dlg", "dialog-pane", "border-etched")
-      it.stylesheets.addAll("/biz/ganttproject/app/Theme.css", DIALOG_STYLESHEET)
+      it.stylesheets.addAll(DIALOG_STYLESHEET)
     }
     val dialogBuildApi = DialogControllerImpl(group)
     val updateUi = UpdateDialog(filteredUpdates, filteredUpdates) {
