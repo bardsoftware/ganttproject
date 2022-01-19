@@ -21,22 +21,29 @@ package biz.ganttproject.lib
 
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.lib.fx.vbox
 import javafx.beans.property.SimpleObjectProperty
+import javafx.collections.FXCollections
 import javafx.event.EventHandler
-import javafx.geometry.Pos
-import javafx.scene.Node
-import javafx.scene.control.*
-import javafx.scene.layout.GridPane
-import javafx.scene.layout.Priority
+import javafx.geometry.Insets
+import javafx.scene.control.ComboBox
+import javafx.scene.control.DatePicker
+import javafx.scene.control.Label
+import javafx.scene.control.TitledPane
+import javafx.scene.layout.Pane
+import javafx.scene.layout.VBox
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.language.GanttLanguage
-import org.controlsfx.control.PopOver
 import org.w3c.util.DateParser
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.*
 
+/**
+ * Just a range of dates with some identifier. Although it looks like generic, in practice there are three
+ * date ranges: "view" (with the dates corresponding to the current chart view), "project" (with the dates matching the
+ * project date range) and "custom" (with user-defined date range).
+ */
 data class DateRange(val startDate: Date, val endDate: Date, val id: String, val isEditable: Boolean) {
   val persistentValue: String
     get() =
@@ -52,11 +59,16 @@ data class DateRange(val startDate: Date, val endDate: Date, val id: String, val
   fun withEndDate(newEndDate: Date) = DateRange(startDate, newEndDate, id, isEditable)
 }
 
+/**
+ * The model class for the date picker component. It keeps all available date ranges and the selected date range.
+ */
 class DateRangePickerModel(chart: Chart) {
-  val rangeCurrentView = DateRange(
+  val allRanges: List<DateRange> get() = listOf(rangeCurrentView, rangeWholeProject, rangeCustom)
+
+  private val rangeCurrentView = DateRange(
     chart.startDate, chart.endDate, "view", false
   )
-  val rangeWholeProject = if (chart.project.taskManager.projectLength.value > 0.0) {
+  private val rangeWholeProject = if (chart.project.taskManager.projectLength.value > 0.0) {
     DateRange(
       chart.project.taskManager.projectStart, chart.project.taskManager.projectEnd, "project", false
     )
@@ -66,6 +78,13 @@ class DateRangePickerModel(chart: Chart) {
   var rangeCustom = DateRange(
     chart.startDate, chart.endDate, "custom", true
   )
+  set(value) {
+    val current = field
+    field = value
+    if (current == selectedRange.value) {
+      selectedRange.set(value)
+    }
+  }
   val selectedRange = SimpleObjectProperty(rangeCurrentView)
 
   fun init(value: String) {
@@ -78,100 +97,63 @@ class DateRangePickerModel(chart: Chart) {
     })
   }
 }
+
+/**
+ * The date range picker component. It consists of a dropdown, a range label and optional control with the date pickers.
+ * The dropdown lists the names of the possible date ranges, the range label displays the start and end date of the selected
+ * range and date pickers allow for choosing the start and end dates if the selected range is "custom".
+ */
 class DateRangePicker(private val model: DateRangePickerModel, private val i18n: Localizer = RootLocalizer) {
-  private val selectedRangeText: String get() =
-    model.selectedRange.get().let { "${i18n.formatText(it.id)}: ${it.rangeLabel}" }
-  val button = Button(selectedRangeText).also { btn ->
-    btn.onAction = EventHandler {
-      PopOver(popoverContent).also {
-        it.arrowLocation = PopOver.ArrowLocation.TOP_CENTER
-        it.show(btn)
-      }
-    }
-    model.selectedRange.addListener { _, _, _ ->
-      btn.text = selectedRangeText
-      btn.parent.requestLayout()
+  private val dropdown = ComboBox(FXCollections.observableList(model.allRanges.map { i18n.formatText(it.id) }.toList())).also { dropdown ->
+    dropdown.setOnAction {
+      model.selectedRange.set(model.allRanges[dropdown.selectionModel.selectedIndex])
     }
   }
-  val component: Control get() = button
 
-  private fun createRadioButton(toggleGroup: ToggleGroup, dateRange: DateRange) =
-    RadioButton().also { radio ->
-      radio.toggleGroup = toggleGroup
-      radio.contentDisplay = ContentDisplay.GRAPHIC_ONLY
-      radio.graphic = VBoxBuilder("section").let {
-        it.addTitle(i18n.formatText(dateRange.id))
-        it.add(Label(dateRange.rangeLabel).also { label ->
-          label.styleClass.add("helpline")
+  private val expandablePane = TitledPane()
+  private val startDatePicker = DatePicker(
+    LocalDate.ofInstant(model.rangeCustom.startDate.toInstant(), ZoneId.systemDefault())
+  ).also { dp ->
+    dp.onAction = EventHandler {
+      model.rangeCustom = model.rangeCustom.withStartDate(dp.value.asDate())
+    }
+  }
+  private val endDatePicker = DatePicker(
+    LocalDate.ofInstant(model.rangeCustom.endDate.toInstant(), ZoneId.systemDefault())
+  ).also { dp ->
+    dp.onAction = EventHandler {
+      model.rangeCustom = model.rangeCustom.withEndDate(dp.value.asDate())
+    }
+  }
+
+  private fun updateSelectedRange(range: DateRange) {
+    dropdown.selectionModel.select(i18n.formatText(range.id))
+    if (range.id == "custom") {
+      expandablePane.content = vbox {
+        add(Label(i18n.formatText("option.export.range.start.label")).also {
+          VBox.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
         })
-        it.vbox
-      }
-      radio.userData = dateRange
-    }
-
-  private val popoverContent: Node by lazy {
-    val toggleGroup = ToggleGroup().also {
-      it.selectedToggleProperty().addListener { _, _, _ ->
-        it.toggles.forEach { toggle ->
-          (toggle as RadioButton).graphic.styleClass.remove("selected")
-          toggle.graphic.isDisable = true
-        }
-        it.selectedToggle.let { toggle ->
-          (toggle as RadioButton).graphic.styleClass.add("selected")
-          toggle.graphic.isDisable = false
-        }
-      }
-    }
-    val radioCurrentView = createRadioButton(toggleGroup, model.rangeCurrentView)
-    val radioWholeProject = createRadioButton(toggleGroup, model.rangeWholeProject)
-    val radioCustom = RadioButton().also { radio ->
-      radio.contentDisplay = ContentDisplay.GRAPHIC_ONLY
-      radio.toggleGroup = toggleGroup
-      radio.userData = model.rangeCustom
-      radio.graphic = VBoxBuilder("section").let {
-        it.addTitle("Custom")
-        it.add(GridPane().also { grid ->
-          grid.vgap = 5.0
-          grid.add(Label(i18n.formatText("option.export.range.start.label")), 0, 0)
-          val startDatePicker = DatePicker(
-            LocalDate.ofInstant(model.rangeCustom.startDate.toInstant(), ZoneId.systemDefault())
-          ).also { dp ->
-            dp.onAction = EventHandler {
-              radio.userData = (radio.userData as DateRange).withStartDate(dp.value.asDate())
-            }
-          }
-          grid.add(startDatePicker, 1, 0)
-
-          val endDatePicker = DatePicker(
-            LocalDate.ofInstant(model.rangeCustom.endDate.toInstant(), ZoneId.systemDefault())
-          ).also { dp ->
-            dp.onAction = EventHandler {
-              radio.userData = (radio.userData as DateRange).withEndDate(dp.value.asDate())
-            }
-          }
-          grid.add(Label(i18n.formatText("option.export.range.end.label")), 0, 1)
-          grid.add(endDatePicker, 1, 1)
+        add(startDatePicker)
+        add(Label(i18n.formatText("option.export.range.end.label")).also {
+          VBox.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
         })
-        it.vbox
+        add(endDatePicker)
       }
+      expandablePane.isExpanded = true
+      expandablePane.isCollapsible = false
+    } else {
+      expandablePane.content = Pane()
+      expandablePane.isExpanded = false
+      expandablePane.isCollapsible = false
     }
-    toggleGroup.selectToggle(when (model.selectedRange.get()) {
-      model.rangeCurrentView -> radioCurrentView
-      model.rangeWholeProject -> radioWholeProject
-      else -> radioCustom
-    })
-    VBoxBuilder("popover-content").let {
-      it.addStylesheets("/biz/ganttproject/lib/DateRangePicker.css")
-      it.add(radioCurrentView)
-      it.add(radioWholeProject)
-      it.add(radioCustom)
-      it.add(Button(i18n.formatText("apply")).also { btn ->
-        btn.styleClass.add("btn-small-attention")
-        btn.onAction = EventHandler {
-          model.selectedRange.set(toggleGroup.selectedToggle.userData as DateRange)
-        }
-      }, Pos.BASELINE_RIGHT, Priority.NEVER)
-      it.vbox
+    expandablePane.text = range.rangeLabel
+  }
+  val component by lazy {
+    model.selectedRange.addListener { _, _, newRange -> updateSelectedRange(newRange) }
+    updateSelectedRange(model.selectedRange.value)
+    vbox {
+      add(dropdown)
+      add(expandablePane)
     }
   }
 }

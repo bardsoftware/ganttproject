@@ -75,8 +75,8 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
     )
 
     val controls = vbox {
+      // -- Page format
       add(
-        // -- Page format
         Label(i18n.formatText("choosePaperFormat")).also {
           VBox.setMargin(it, Insets(0.0, 0.0, 3.0, 0.0))
         }
@@ -93,7 +93,7 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
         }
       )
 
-        // -- Page orientation
+      // -- Page orientation
       add(
         Label(i18n.formatText("option.export.itext.landscape.label")).also {
           VBox.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
@@ -110,7 +110,7 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
         }
       )
 
-        // -- Date range
+      // -- Date range
       add(
         Label(i18n.formatText("print.preview.dateRange")).also {
           VBox.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
@@ -118,23 +118,20 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
       )
       add(
         DateRangePicker(previews.dateRangeModel, MappingLocalizer(mapOf(
-          "custom" to { prefixedLocalizer.formatText("dateRange.custom") },
-          "view" to { prefixedLocalizer.formatText("dateRange.currentView") },
-          "project" to { i18n.formatText("wholeProject") }
-        )) { key ->
-          i18n.formatText(key)
-        }).let {
-          it.button.styleClass.addAll("btn-regular")
-          it.component
-        }
+        "custom" to { prefixedLocalizer.formatText("dateRange.custom") },
+        "view" to { prefixedLocalizer.formatText("dateRange.currentView") },
+        "project" to { i18n.formatText("wholeProject") }
+      )) { key ->
+        i18n.formatText(key)
+      }).component
       )
     }
 
     val contentPane = BorderPane().also {
       it.styleClass.add("content-pane")
-      it.right = BorderPane().also {
-        it.top = controls
-        it.styleClass.add("controls")
+      it.right = BorderPane().apply {
+        top = controls
+        styleClass.add("controls")
       }
       it.center = ScrollPane(Pane(previews.gridPane).also {p -> p.styleClass.add("all-pages")})
     }
@@ -150,7 +147,6 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
           },
           //FontAwesomeIconView(FontAwesomeIcon.BAR_CHART),
           Slider(0.0, 10.0, 0.0).also { slider ->
-            //slider.isShowTickMarks = true
             slider.majorTickUnit = 1.0
             slider.blockIncrement = 1.0
             slider.isSnapToTicks = true
@@ -159,10 +155,6 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
             }
             slider.value = 4.0
           },
-//          FontAwesomeIconView(FontAwesomeIcon.BAR_CHART).also {
-//            it.scaleX =2.0
-//            it.scaleY =2.0
-//          },
         )
       }
     )
