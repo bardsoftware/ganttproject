@@ -13,7 +13,7 @@
   <stayAlive>true</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>.\ganttproject.ico</icon>
+  <icon>ganttproject.ico</icon>
   <classPath>
     <mainClass>com.bardsoftware.eclipsito.Launch</mainClass>
     <cp>%EXEDIR%</cp>
@@ -29,11 +29,25 @@
     <initialHeapSize>256</initialHeapSize>
     <maxHeapSize>1024</maxHeapSize>
   </jre>
+  <versionInfo>
+    <fileVersion>3.2.3200.0</fileVersion>
+    <txtFileVersion>GanttProject 3.2</txtFileVersion>
+    <fileDescription>GanttProject Launcher</fileDescription>
+    <copyright>Copyright (C) 2022 BarD Software s.r.o.</copyright>
+    <productVersion>3.2.3200.0</productVersion>
+    <txtProductVersion>GanttProject 3.2</txtProductVersion>
+    <productName>GanttProject</productName>
+    <companyName></companyName>
+    <internalName>GanttProject</internalName>
+    <originalFilename>ganttproject.exe</originalFilename>
+    <trademarks></trademarks>
+    <language>ENGLISH_US</language>
+  </versionInfo>
   <messages>
     <startupErr>GanttProject failed to start. Please visit https://help.ganttproject.biz to get support.</startupErr>
     <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.
         </bundledJreErr>
-    <jreVersionErr>GanttProject needs Java 11 or higher. Please visit https://help.ganttproject.biz to get support.</jreVersionErr>
+    <jreVersionErr>GanttProject needs Java 11+ with JavaFX modules. Please visit https://help.ganttproject.biz to get support.</jreVersionErr>
     <launcherErr>Java Runtime not found or is corrupted. Please visit https://help.ganttproject.biz to get support.
         </launcherErr>
     <instanceAlreadyExistsMsg>An application instance is already running.</instanceAlreadyExistsMsg>
