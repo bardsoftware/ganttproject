@@ -30,6 +30,7 @@ import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
@@ -99,6 +100,7 @@ class TextCell<S, T>(
 
   private var savedGraphic: Node? = null
   var graphicSupplier: (T) -> Node? = { null }
+  var styleSupplier: (T) -> String = { "" }
   private val disclosureNode: Node? get() = parent?.lookup(".arrow")
 
   private val textField: TextField = createTextField().also {
@@ -238,6 +240,10 @@ class TextCell<S, T>(
         styleClass.add("odd")
       }
     }
+    if (cellValue != null) {
+      styleClass.removeIf { it.startsWith("indent") }
+      styleClass.add(styleSupplier(cellValue))
+    }
     doUpdateItem()
   }
 
@@ -251,6 +257,7 @@ class TextCell<S, T>(
   }
 
   private fun doUpdateFilledItem() {
+
     if (isEditing) {
       textField.text = getItemText()
       text = null

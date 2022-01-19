@@ -19,12 +19,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 //import javafx.scene.control.skin.TreeTableRowSkin
-//import javafx.scene.control.skin.TreeTableViewSkin
+import javafx.scene.control.skin.TreeTableViewSkin
 //import javafx.scene.control.skin.VirtualFlow
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.app.MenuBuilderFx
 import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
-import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
+//import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
 import biz.ganttproject.lib.fx.treetable.VirtualFlow
 import com.sun.javafx.scene.control.behavior.TreeTableViewBehavior
 import com.sun.javafx.scene.control.inputmap.InputMap
@@ -77,10 +77,10 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   }
   override fun createDefaultSkin(): Skin<*> {
     return GPTreeTableViewSkin(this).also {
-      it.scrollValue.addListener { _, _, newValue -> this.scrollListener(newValue.toDouble()) }
-      it.headerHeight.addListener { _, _, _ ->
-        headerHeight.value = it.fullHeaderHeight
-      }
+//      it.scrollValue.addListener { _, _, newValue -> this.scrollListener(newValue.toDouble()) }
+//      it.headerHeight.addListener { _, _, _ ->
+//        headerHeight.value = it.fullHeaderHeight
+//      }
     }
   }
 
@@ -92,11 +92,11 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   }
 
   fun scrollBy(value: Double) {
-    skin?.let { (it as GPTreeTableViewSkin<T>).scrollBy(value) }
+    //skin?.let { (it as GPTreeTableViewSkin<T>).scrollBy(value) }
   }
 
   fun scrollTo(item: TreeItem<T>) {
-    skin?.let { (it as GPTreeTableViewSkin<T>).scrollTo(getRow(item)) }
+    //skin?.let { (it as GPTreeTableViewSkin<T>).scrollTo(getRow(item)) }
   }
 
   override fun requestFocus() {
@@ -112,7 +112,8 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
       onColumnResize()
     }
 
-  fun vbarWidth(): Double = skin?.let { (it as GPTreeTableViewSkin<T>).vbarWidth() } ?: 0.0
+  //fun vbarWidth(): Double = skin?.let { (it as GPTreeTableViewSkin<T>).vbarWidth() } ?: 0.0
+  fun vbarWidth(): Double = 15.0
   fun setColumns(tableColumns: List<TreeTableColumn<T, out Any>>) {
     val totalPrefWidth = tableColumns.filter { it.isVisible }.sumOf { it.prefWidth }
     prefWidth = totalPrefWidth + vbarWidth()
@@ -171,7 +172,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
 }
 
 class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableViewSkin<T>(table) {
-
+/*
   val scrollValue = SimpleDoubleProperty()
   val headerHeight: ReadOnlyDoubleProperty
   get() = tableHeaderRow.heightProperty()
@@ -251,6 +252,8 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
     this.table.selectionModel.clearSelection()
     this.table.selectionModel.select(firstCell.treeItem)
   }
+
+ */
 }
 
 interface TreeCollapseView<T> {
@@ -278,7 +281,7 @@ class MyVirtualFlow<T: IndexedCell<*>> : VirtualFlow<T>() {
 }
 
 class MyTreeTableRow<T> : TreeTableRow<T>() {
-  override fun createDefaultSkin() = TreeTableRowSkin(this)
+  //override fun createDefaultSkin() = TreeTableRowSkin(this)
 
   init {
     disclosureNode = HBox().also { hbox ->

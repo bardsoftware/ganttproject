@@ -36,6 +36,7 @@ import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
+import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Parent
 import javafx.scene.control.*
@@ -773,6 +774,7 @@ class TaskTable(
   private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->
     dragAndDropSupport.install(cell)
 
+    cell.alignment = Pos.CENTER_LEFT
     cell.onEditingCompleted = {
       runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
     }
@@ -811,6 +813,9 @@ class TaskTable(
     }
     cell.contentDisplay = ContentDisplay.RIGHT
     cell.alignment = Pos.CENTER_LEFT
+    cell.styleSupplier = {
+      task -> "indent-${task.manager.taskHierarchy.getDepth(task)}"
+    }
   }
 }
 
