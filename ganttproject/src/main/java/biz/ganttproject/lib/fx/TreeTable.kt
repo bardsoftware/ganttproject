@@ -31,6 +31,7 @@ import com.sun.javafx.scene.control.inputmap.InputMap
 import com.sun.javafx.scene.control.inputmap.KeyBinding
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.geometry.Pos
@@ -88,6 +89,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   val headerHeight = SimpleDoubleProperty(0.0)
 
   var scrollListener: (Double)->Unit = {}
+
   fun addScrollListener(listener: (Double)->Unit) {
     this.scrollListener = listener
   }
@@ -169,6 +171,13 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     return maxWidth + padding
   }
 
+  fun registerTreeItem(treeItem: TreeItem<T>) {
+    treeItem.expandedProperty().addListener { _, _, _ ->
+      Platform.runLater {
+        skin?.let { (it as GPTreeTableViewSkin<T>).updateScrollValue() }
+      }
+    }
+  }
 }
 
 class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableViewSkin<T>(table) {
@@ -178,7 +187,8 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
   get() = tableHeaderRow.heightProperty()
   val fullHeaderHeight: Double get() = headerHeight.value + tableHeaderRow.boundsInParent.minX
 
-  fun updateScrollValue() {
+  internal fun updateScrollValue() {
+    updateItemCount()
     var totalCellHeight = 0.0
     for (idx in 0 until virtualFlow.cellCount) {
       totalCellHeight += virtualFlow.getCell(idx).height

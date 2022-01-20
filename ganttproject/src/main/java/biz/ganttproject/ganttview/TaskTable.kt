@@ -645,7 +645,7 @@ class TaskTable(
 
   private fun Task.addChildTreeItem(child: Task, pos: Int = -1): TreeItem<Task> {
     val parentItem = task2treeItem[this] ?: run {
-      println(task2treeItem)
+      //println(task2treeItem)
       throw NullPointerException("NPE! this=$this")
     }
     val childItem = createTreeItem(child)
@@ -661,6 +661,7 @@ class TaskTable(
   private fun createTreeItem(task: Task) = TreeItem(task).also {
     it.isExpanded = treeCollapseView.isExpanded(task)
     it.expandedProperty().addListener { _, _, _ -> onExpanded() }
+    treeTable.registerTreeItem(it)
   }
 
   private fun onExpanded() {
@@ -670,8 +671,8 @@ class TaskTable(
     }
     taskTableChartConnector.visibleTasks.clear()
     val expandedTasks = getExpandedTasks()
-    println(expandedTasks)
     taskTableChartConnector.visibleTasks.addAll(expandedTasks)
+
   }
 
   private fun getExpandedTasks(): List<Task> {
