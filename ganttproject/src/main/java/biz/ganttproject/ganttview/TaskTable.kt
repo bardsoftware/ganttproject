@@ -670,8 +670,7 @@ class TaskTable(
       true
     }
     taskTableChartConnector.visibleTasks.clear()
-    val expandedTasks = getExpandedTasks()
-    taskTableChartConnector.visibleTasks.addAll(expandedTasks)
+    taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
 
   }
 
@@ -819,9 +818,6 @@ class TaskTable(
     }
     cell.contentDisplay = ContentDisplay.RIGHT
     cell.alignment = Pos.CENTER_LEFT
-//    cell.styleSupplier = {
-//      task -> "indent-${task.manager.taskHierarchy.getDepth(task)}"
-//    }
   }
 }
 

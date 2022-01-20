@@ -18,22 +18,21 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
-import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
+//import javafx.scene.control.skin.TreeTableCellSkin
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.getModifiers
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import de.jensd.fx.glyphs.GlyphIcon
 import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
-import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
-//import javafx.scene.control.skin.TreeTableCellSkin
 import javafx.scene.effect.InnerShadow
 import javafx.scene.input.KeyCode
 import javafx.scene.paint.Color
@@ -100,7 +99,6 @@ class TextCell<S, T>(
 
   private var savedGraphic: Node? = null
   var graphicSupplier: (T) -> Node? = { null }
-  var styleSupplier: (T) -> String = { "" }
   private val disclosureNode: Node? get() = parent?.lookup(".arrow")
 
   private val textField: TextField = createTextField().also {
@@ -239,10 +237,6 @@ class TextCell<S, T>(
       } else {
         styleClass.add("odd")
       }
-    }
-    if (cellValue != null) {
-      styleClass.removeIf { it.startsWith("indent") }
-      styleClass.add(styleSupplier(cellValue))
     }
     doUpdateItem()
   }
@@ -406,25 +400,6 @@ class TextCellFactory<S, T>(
 ): Callback<TreeTableColumn<S, T>, TreeTableCell<S, T>> {
   internal var editingCell: TextCell<S, T>? = null
 
-  private fun setEditingCell(cell: TextCell<S, T>?): Boolean {
-    //println("editingcell=$editingCell cell=$cell")
-    return when {
-      editingCell == null && cell == null -> true
-      editingCell == null && cell != null -> {
-        editingCell = cell
-        true
-      }
-      editingCell != null && cell == null -> {
-        editingCell = cell
-        true
-      }
-      editingCell != null && cell != null -> {
-        // new editing cell when old is not yet released
-        editingCell?.treeTableRow?.index != cell.treeTableRow.index
-      }
-      else -> true
-    }
-  }
   override fun call(param: TreeTableColumn<S, T>?) =
     TextCell(converter).also(cellSetup)
 }
