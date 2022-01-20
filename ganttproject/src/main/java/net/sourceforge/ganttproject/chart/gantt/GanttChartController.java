@@ -191,6 +191,7 @@ public class GanttChartController extends AbstractChartImplementation implements
       model.setTopTimeUnit(getViewState().getTopTimeUnit());
       model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
       List<Task> visibleTasks = myTaskTableConnector.getVisibleTasks();
+      System.err.println("visible tasks="+visibleTasks);
       model.setVisibleTasks(visibleTasks);
       myChartModel.setTimelineTasks(getUIFacade().getCurrentTaskView().getTimelineTasks());
       model.paint(g);

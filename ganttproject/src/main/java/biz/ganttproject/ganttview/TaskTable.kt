@@ -669,7 +669,9 @@ class TaskTable(
       true
     }
     taskTableChartConnector.visibleTasks.clear()
-    taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
+    val expandedTasks = getExpandedTasks()
+    println(expandedTasks)
+    taskTableChartConnector.visibleTasks.addAll(expandedTasks)
   }
 
   private fun getExpandedTasks(): List<Task> {
@@ -691,21 +693,24 @@ class TaskTable(
         }
       val focusedTask = treeTable.focusModel.focusedItem?.value
       val focusedCell = treeTable.focusModel.focusedCell
+      // This way we ignore table selection changes which happen when we manipulate with the tree items in code()
       treeTableSelectionListener.disabled = true
       code()
+      // Yup, sometimes clearSelection() call is not enough, and selectedIndices remain not empty after it.
       treeTable.selectionModel.clearSelection()
       treeTable.selectionModel.selectedIndices.clear()
       CellBehaviorBase.removeAnchor(treeTable)
       treeTableSelectionListener.disabled = false
-      val selectedRows = selectedTasks.map { task2treeItem[taskManager.getTask(it.key.taskID)] ?: it.value }.map { treeTable.getRow(it) }.toIntArray()
+
+      // The array of row numbers is passed as vararg argument to selectIndices
+      val selectedRows = selectedTasks
+        .map { task2treeItem[taskManager.getTask(it.key.taskID)] ?: it.value }
+        .map { treeTable.getRow(it) }
+        .toIntArray()
       treeTable.selectionModel.selectIndices(-1, *selectedRows)
-//      for ((task, parentTreeItem) in selectedTasks) {
-//        CellBehaviorBase.removeAnchor(treeTable)
-//        val liveTask = taskManager.getTask(task.taskID)
-//        val whatSelect = task2treeItem[liveTask] ?: parentTreeItem
-//
-//        treeTable.selectionModel.select(whatSelect)
-//      }
+
+      // Sometimes we need to keep the focus, e.g. when we move some task in the tree, but sometimes we want to focus
+      // some other item. E.g. if a task was added due to user action, the user would expect the new task to be focused.
       if (keepFocus && focusedTask != null) {
         val liveTask = taskManager.getTask(focusedTask.taskID)
         task2treeItem[liveTask]?.let { it ->

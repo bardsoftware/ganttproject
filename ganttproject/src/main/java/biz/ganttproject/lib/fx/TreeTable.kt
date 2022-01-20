@@ -192,15 +192,22 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
       updateScrollValue()
     }
 
-    table.addEventHandler(KeyEvent.KEY_PRESSED) {
+    table.addEventFilter(KeyEvent.KEY_PRESSED) {
       if ((it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)
         && !it.isAltDown
         && !it.isShiftDown
         && !it.isMetaDown
         && !it.isControlDown) {
         it.consume()
-        return@addEventHandler
+        if (it.code == KeyCode.LEFT) {
+          table.focusModel.focusLeftCell()
+        } else {
+          table.focusModel.focusRightCell()
+        }
+        return@addEventFilter
       }
+    }
+    table.addEventHandler(KeyEvent.KEY_PRESSED) {
       if (it.code == KeyCode.PAGE_DOWN) {
         pageDown()
         it.consume()
