@@ -178,11 +178,11 @@ public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, Tr
     int nodeLevel = treeTable.getTreeItemLevel(treeItem);
     if (! treeTable.isShowRoot()) nodeLevel--;
 
-    double indentPerLevel = 10;
-    if (treeTableRow.getSkin() instanceof TreeTableRowSkin) {
-      indentPerLevel = ((TreeTableRowSkin<?>)treeTableRow.getSkin()).getIndentationPerLevel();
-    }
-    leftPadding += nodeLevel * indentPerLevel;
+    double indentPerLevel = 13.0;
+//    if (treeTableRow.getSkin() instanceof javafx.scene.control.skin.TreeTableRowSkin) {
+//      indentPerLevel = ((javafx.scene.control.skin.TreeTableRowSkin<?>)treeTableRow.getSkin()).getIndentationPerLevel();
+//    }
+    leftPadding += 10 + nodeLevel * indentPerLevel;
 
     // add in the width of the disclosure node, if one exists
     Map<TableColumnBase<?,?>, Double> mdwp = TableRowSkinBase.maxDisclosureWidthMap;

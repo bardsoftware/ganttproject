@@ -19,23 +19,25 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 //import javafx.scene.control.skin.TreeTableRowSkin
-//import javafx.scene.control.skin.TreeTableViewSkin
-//import javafx.scene.control.skin.VirtualFlow
+import javafx.scene.control.skin.TreeTableViewSkin
+import javafx.scene.control.skin.VirtualFlow
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.app.MenuBuilderFx
 import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
-import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
-import biz.ganttproject.lib.fx.treetable.VirtualFlow
+//import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
+//import biz.ganttproject.lib.fx.treetable.VirtualFlow
 import com.sun.javafx.scene.control.behavior.TreeTableViewBehavior
 import com.sun.javafx.scene.control.inputmap.InputMap
 import com.sun.javafx.scene.control.inputmap.KeyBinding
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
@@ -87,6 +89,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   val headerHeight = SimpleDoubleProperty(0.0)
 
   var scrollListener: (Double)->Unit = {}
+
   fun addScrollListener(listener: (Double)->Unit) {
     this.scrollListener = listener
   }
@@ -168,6 +171,13 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     return maxWidth + padding
   }
 
+  fun registerTreeItem(treeItem: TreeItem<T>) {
+    treeItem.expandedProperty().addListener { _, _, _ ->
+      Platform.runLater {
+        skin?.let { (it as GPTreeTableViewSkin<T>).updateScrollValue() }
+      }
+    }
+  }
 }
 
 class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableViewSkin<T>(table) {
@@ -177,7 +187,8 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
   get() = tableHeaderRow.heightProperty()
   val fullHeaderHeight: Double get() = headerHeight.value + tableHeaderRow.boundsInParent.minX
 
-  fun updateScrollValue() {
+  internal fun updateScrollValue() {
+    updateItemCount()
     var totalCellHeight = 0.0
     for (idx in 0 until virtualFlow.cellCount) {
       totalCellHeight += virtualFlow.getCell(idx).height
@@ -191,38 +202,35 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
       updateScrollValue()
     }
 
-//    val cornerRegion = this.tableHeaderRow.lookup(".show-hide-columns-button") as Region
-//    cornerRegion.onMousePressed = EventHandler { me: MouseEvent ->
-//      table.tableMenu.items.clear()
-//      table.tableMenuActions(MenuBuilderFx(table.tableMenu))
-//      table.tableMenu.show(cornerRegion, Side.BOTTOM, 0.0, 0.0)
-//      me.consume()
-//    }
-    val behavior = FieldUtils.readField(this, "behavior", true) as TreeTableViewBehavior<T>
-    behavior.inputMap.removeKey {
-      (it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)
-        && it.alt != KeyBinding.OptionalBoolean.TRUE
-        && it.shift != KeyBinding.OptionalBoolean.TRUE
-        && it.meta != KeyBinding.OptionalBoolean.TRUE
-        && it.ctrl != KeyBinding.OptionalBoolean.TRUE
+    table.addEventFilter(KeyEvent.KEY_PRESSED) {
+      if ((it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)
+        && !it.isAltDown
+        && !it.isShiftDown
+        && !it.isMetaDown
+        && !it.isControlDown) {
+        it.consume()
+        if (it.code == KeyCode.LEFT) {
+          table.focusModel.focusLeftCell()
+        } else {
+          table.focusModel.focusRightCell()
+        }
+        return@addEventFilter
+      }
     }
-    behavior.inputMap.removeKey {
-      it.code == KeyCode.PAGE_DOWN || it.code == KeyCode.PAGE_UP
+    table.addEventHandler(KeyEvent.KEY_PRESSED) {
+      if (it.code == KeyCode.PAGE_DOWN) {
+        pageDown()
+        it.consume()
+        return@addEventHandler
+      }
+      if (it.code == KeyCode.PAGE_UP) {
+        pageUp()
+        it.consume()
+        return@addEventHandler
+      }
     }
-    behavior.inputMap.mappings.add(InputMap.KeyMapping(KeyCode.PAGE_DOWN) {
-      pageDown()
-    })
-    behavior.inputMap.mappings.add(InputMap.KeyMapping(KeyCode.PAGE_UP) {
-      pageUp()
-    })
   }
 
-  private fun (InputMap<*>).removeKey(predicate: (KeyBinding) -> Boolean) {
-    this.mappings.filter { mapping ->
-      mapping.mappingKey.let { it is KeyBinding && predicate(it) }
-    }.forEach { it.isDisabled = true }
-    this.childInputMaps.forEach { it.removeKey(predicate) }
-  }
   override fun createVirtualFlow(): VirtualFlow<TreeTableRow<T>> {
     return MyVirtualFlow()
   }
@@ -251,6 +259,7 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
     this.table.selectionModel.clearSelection()
     this.table.selectionModel.select(firstCell.treeItem)
   }
+
 }
 
 interface TreeCollapseView<T> {
@@ -278,7 +287,7 @@ class MyVirtualFlow<T: IndexedCell<*>> : VirtualFlow<T>() {
 }
 
 class MyTreeTableRow<T> : TreeTableRow<T>() {
-  override fun createDefaultSkin() = TreeTableRowSkin(this)
+  //override fun createDefaultSkin() = TreeTableRowSkin(this)
 
   init {
     disclosureNode = HBox().also { hbox ->

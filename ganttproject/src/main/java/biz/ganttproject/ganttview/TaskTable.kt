@@ -36,6 +36,7 @@ import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
+import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Parent
 import javafx.scene.control.*
@@ -644,7 +645,7 @@ class TaskTable(
 
   private fun Task.addChildTreeItem(child: Task, pos: Int = -1): TreeItem<Task> {
     val parentItem = task2treeItem[this] ?: run {
-      println(task2treeItem)
+      //println(task2treeItem)
       throw NullPointerException("NPE! this=$this")
     }
     val childItem = createTreeItem(child)
@@ -660,6 +661,7 @@ class TaskTable(
   private fun createTreeItem(task: Task) = TreeItem(task).also {
     it.isExpanded = treeCollapseView.isExpanded(task)
     it.expandedProperty().addListener { _, _, _ -> onExpanded() }
+    treeTable.registerTreeItem(it)
   }
 
   private fun onExpanded() {
@@ -669,6 +671,7 @@ class TaskTable(
     }
     taskTableChartConnector.visibleTasks.clear()
     taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
+
   }
 
   private fun getExpandedTasks(): List<Task> {
@@ -690,21 +693,24 @@ class TaskTable(
         }
       val focusedTask = treeTable.focusModel.focusedItem?.value
       val focusedCell = treeTable.focusModel.focusedCell
+      // This way we ignore table selection changes which happen when we manipulate with the tree items in code()
       treeTableSelectionListener.disabled = true
       code()
+      // Yup, sometimes clearSelection() call is not enough, and selectedIndices remain not empty after it.
       treeTable.selectionModel.clearSelection()
       treeTable.selectionModel.selectedIndices.clear()
       CellBehaviorBase.removeAnchor(treeTable)
       treeTableSelectionListener.disabled = false
-      val selectedRows = selectedTasks.map { task2treeItem[taskManager.getTask(it.key.taskID)] ?: it.value }.map { treeTable.getRow(it) }.toIntArray()
+
+      // The array of row numbers is passed as vararg argument to selectIndices
+      val selectedRows = selectedTasks
+        .map { task2treeItem[taskManager.getTask(it.key.taskID)] ?: it.value }
+        .map { treeTable.getRow(it) }
+        .toIntArray()
       treeTable.selectionModel.selectIndices(-1, *selectedRows)
-//      for ((task, parentTreeItem) in selectedTasks) {
-//        CellBehaviorBase.removeAnchor(treeTable)
-//        val liveTask = taskManager.getTask(task.taskID)
-//        val whatSelect = task2treeItem[liveTask] ?: parentTreeItem
-//
-//        treeTable.selectionModel.select(whatSelect)
-//      }
+
+      // Sometimes we need to keep the focus, e.g. when we move some task in the tree, but sometimes we want to focus
+      // some other item. E.g. if a task was added due to user action, the user would expect the new task to be focused.
       if (keepFocus && focusedTask != null) {
         val liveTask = taskManager.getTask(focusedTask.taskID)
         task2treeItem[liveTask]?.let { it ->
@@ -773,6 +779,7 @@ class TaskTable(
   private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->
     dragAndDropSupport.install(cell)
 
+    cell.alignment = Pos.CENTER_LEFT
     cell.onEditingCompleted = {
       runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
     }

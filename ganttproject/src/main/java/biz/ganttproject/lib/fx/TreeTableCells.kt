@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
-//import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
+//import javafx.scene.control.skin.TreeTableCellSkin
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.getModifiers
 import biz.ganttproject.core.option.*
@@ -251,6 +251,7 @@ class TextCell<S, T>(
   }
 
   private fun doUpdateFilledItem() {
+
     if (isEditing) {
       textField.text = getItemText()
       text = null
@@ -399,25 +400,6 @@ class TextCellFactory<S, T>(
 ): Callback<TreeTableColumn<S, T>, TreeTableCell<S, T>> {
   internal var editingCell: TextCell<S, T>? = null
 
-  private fun setEditingCell(cell: TextCell<S, T>?): Boolean {
-    //println("editingcell=$editingCell cell=$cell")
-    return when {
-      editingCell == null && cell == null -> true
-      editingCell == null && cell != null -> {
-        editingCell = cell
-        true
-      }
-      editingCell != null && cell == null -> {
-        editingCell = cell
-        true
-      }
-      editingCell != null && cell != null -> {
-        // new editing cell when old is not yet released
-        editingCell?.treeTableRow?.index != cell.treeTableRow.index
-      }
-      else -> true
-    }
-  }
   override fun call(param: TreeTableColumn<S, T>?) =
     TextCell(converter).also(cellSetup)
 }
