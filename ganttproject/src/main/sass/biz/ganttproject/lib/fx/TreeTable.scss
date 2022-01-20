@@ -27,13 +27,12 @@
             -fx-pref-width: 15;
 
             & > .track {
-                -fx-background-color: transparent;
+                -fx-background-color: whitesmoke;
                 -fx-background-insets: 0;
                 -fx-background-radius: 0.5em;
             }
 
             & > .track-background {
-                -fx-background-color: transparent;
                 -fx-background-insets: 0, 1;
             }
 
@@ -92,7 +91,7 @@
     -fx-text-fill: white;
   }
   .tree-table-row-cell:filled:odd {
-    -fx-background-color: lighten($gp-light-gray, 5%);
+    -fx-background-color: $gp-zebra-gray;
   }
   .tree-table-row-cell:filled:odd:selected {
     -fx-background-color: $gp-medium-gray;
