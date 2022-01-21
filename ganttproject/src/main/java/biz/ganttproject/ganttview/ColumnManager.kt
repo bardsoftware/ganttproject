@@ -50,6 +50,7 @@ import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty
 import org.controlsfx.property.editor.PropertyEditor
 import java.beans.PropertyDescriptor
+import javax.swing.SwingUtilities
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -71,6 +72,7 @@ class ColumnManager(
     it.styleClass.addAll("hint-validation-pane", "noerror")
     it.children.add(errorLabel)
   }
+
   private val customPropertyEditor = CustomPropertyEditor(
     customColumnsManager, btnDeleteController, listItems,
     errorUi = {
@@ -89,6 +91,7 @@ class ColumnManager(
     })
   internal val content: Node
   private val mergedColumns: MutableList<ColumnList.Column> = mutableListOf()
+
   init {
     mergedColumns.addAll(currentTableColumns.exportData())
     // First go columns which are shown in the table now
@@ -141,9 +144,11 @@ class ColumnManager(
     listView.selectionModel.select(item)
     customPropertyEditor.focus()
   }
+
   private fun onDeleteColumn() {
     listItems.removeAll(listView.selectionModel.selectedItems)
   }
+
   fun applyChanges() {
     mergedColumns.forEach { existing ->
       listItems.find { it.column?.id == existing.id } ?: run {
@@ -164,7 +169,7 @@ class ColumnManager(
         }
       }
     }
-
+    mergedColumns.filter { it.isVisible }.forEachIndexed { index, column -> column.order = index }
     currentTableColumns.importData(ColumnList.Immutable.fromList(mergedColumns), false)
   }
 }
@@ -396,7 +401,8 @@ private class CellImpl : ListCell<ColumnAsListItem>() {
   }
 }
 
-fun show(columnList: ColumnList, customColumnsManager: CustomPropertyManager) {
+enum class ApplyExecutorType { DIRECT, SWING }
+fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomPropertyManager, applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
   dialog { dlg ->
     dlg.addStyleClass("dlg-column-manager")
     dlg.addStyleSheet("/biz/ganttproject/ganttview/ColumnManager.css")
@@ -414,7 +420,10 @@ fun show(columnList: ColumnList, customColumnsManager: CustomPropertyManager) {
       btn.text = RootLocalizer.formatText("apply")
       btn.styleClass.add("btn-attention")
       btn.setOnAction {
-        columnManager.applyChanges()
+        when (applyExecutor) {
+          ApplyExecutorType.DIRECT -> columnManager.applyChanges()
+          ApplyExecutorType.SWING -> SwingUtilities.invokeLater { columnManager.applyChanges() }
+        }
         dlg.hide()
       }
     }

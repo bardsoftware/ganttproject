@@ -18,12 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.task
 
-import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.ganttview.NewTaskActor
 import biz.ganttproject.ganttview.TaskTableActionConnector
-import net.sourceforge.ganttproject.CustomPropertyManager
+import biz.ganttproject.ganttview.showColumnManager
 import net.sourceforge.ganttproject.IGanttProject
-import net.sourceforge.ganttproject.ShowHideColumnsDialog
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction
 import net.sourceforge.ganttproject.action.task.*
@@ -35,7 +33,6 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskSelectionManager
 import net.sourceforge.ganttproject.undo.GPUndoManager
-import java.awt.event.ActionEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.Action
@@ -44,7 +41,7 @@ import javax.swing.Action
  * @author dbarashev@bardsoftware.com
  */
 class TaskActions(private val project: IGanttProject,
-                  private val uiFacade: UIFacade,
+                  uiFacade: UIFacade,
                   selectionManager: TaskSelectionManager,
                   private val viewManager: () -> GPViewManager,
                   private val tableConnector: () -> TaskTableActionConnector,
@@ -147,8 +144,10 @@ class TaskActions(private val project: IGanttProject,
   val linkTasksAction = TaskLinkAction(project.taskManager, selectionManager, uiFacade)
   val unlinkTasksAction = TaskUnlinkAction(project.taskManager, selectionManager, uiFacade)
 
-  val manageColumnsAction get() = ManageColumnsAction(uiFacade, tableConnector().columnList, project.taskCustomColumnManager)
-
+  val manageColumnsAction: GPAction
+    get() = GPAction.create("columns.manage.label") {
+      showColumnManager(tableConnector().columnList(), project.taskCustomColumnManager)
+    }
   fun all() = listOf(indentAction, unindentAction, moveDownAction, moveUpAction, linkTasksAction, unlinkTasksAction)
   fun assignments(task: Task, hrManager: HumanResourceManager, undoManager: GPUndoManager): List<GPAction> {
     val human2action = hrManager.resources.associateWith {
@@ -164,18 +163,6 @@ class TaskActions(private val project: IGanttProject,
   }
 }
 
-class ManageColumnsAction(
-  private val uiFacade: UIFacade,
-  private val columnList: () -> ColumnList,
-  private val customPropertyManager: CustomPropertyManager) : GPAction("columns.manage.label") {
-
-  override fun actionPerformed(e: ActionEvent?) {
-    val dialog = ShowHideColumnsDialog(
-      uiFacade, columnList(), customPropertyManager
-    )
-    dialog.show()
-  }
-}
 
 /**
  * Action for moving tasks in the task tree.

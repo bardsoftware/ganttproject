@@ -23,6 +23,8 @@ import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
+import biz.ganttproject.ganttview.ApplyExecutorType;
+import biz.ganttproject.ganttview.ColumnManagerKt;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -90,6 +92,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 public abstract class GPTreeTableBase extends JXTreeTable implements CustomPropertyListener {
   private final IGanttProject myProject;
@@ -119,9 +122,9 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   private GPAction myManageColumnsAction = new GPAction("columns.manage.label") {
     @Override
     public void actionPerformed(ActionEvent e) {
-      ShowHideColumnsDialog dialog = new ShowHideColumnsDialog(myUiFacade, myTableHeaderFacade,
-          myCustomPropertyManager);
-      dialog.show();
+      ColumnManagerKt.showColumnManager(myTableHeaderFacade,
+          myCustomPropertyManager, ApplyExecutorType.SWING);
+
     }
   };
   private GPAction myNewRowAction;
@@ -361,7 +364,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
           mine.getStub().setOrder(foreign.getOrder());
           mine.getStub().setVisible(foreign.isVisible());
           mine.getStub().setWidth(foreign.getWidth());
-          anyVisible = foreign.isVisible();
+          anyVisible |= foreign.isVisible();
         }
       }
       return anyVisible;
@@ -408,7 +411,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
 
     @Override
     public List<Column> exportData() {
-      return List.copyOf(myColumns);
+      return myColumns.stream().map(col -> new ColumnStub(col)).collect(Collectors.toList());
     }
 
     private int getModelIndex(Column c) {

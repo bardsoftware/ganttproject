@@ -19,11 +19,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.gui.taskproperties;
 
 import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.ganttview.ApplyExecutorType;
+import biz.ganttproject.ganttview.ColumnManagerKt;
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.CustomPropertyHolder;
 import net.sourceforge.ganttproject.CustomPropertyManager;
-import net.sourceforge.ganttproject.ShowHideColumnsDialog;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -77,9 +78,8 @@ public class CustomColumnsPanel {
     buttonPanel.add(new JButton(new GPAction("columns.manage.label") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        ShowHideColumnsDialog dialog = new ShowHideColumnsDialog(myUiFacade, myTableHeaderFacade,
-            myCustomPropertyManager);
-        dialog.show();
+        ColumnManagerKt.showColumnManager(myTableHeaderFacade,
+            myCustomPropertyManager, ApplyExecutorType.SWING);
         myModel.fireTableStructureChanged();
       }
     }), BorderLayout.WEST);
