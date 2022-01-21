@@ -55,6 +55,7 @@ import java.beans.PropertyDescriptor
  * @author dbarashev@bardsoftware.com
  */
 class ColumnManager(
+  // The list of columns shown in the task table
   private val currentTableColumns: ColumnList,
   private val customColumnsManager: CustomPropertyManager) {
 
@@ -90,7 +91,11 @@ class ColumnManager(
   private val mergedColumns: MutableList<ColumnList.Column> = mutableListOf()
   init {
     mergedColumns.addAll(currentTableColumns.exportData())
-    listItems.setAll(mergedColumns.map { ColumnAsListItem(it, it.isVisible, false, customColumnsManager) })
+    // First go columns which are shown in the table now
+    listItems.setAll(mergedColumns.map { col ->
+      val isCustom = customColumnsManager.definitions.find { it.id == col.id } != null
+      ColumnAsListItem(col, col.isVisible, isCustom, customColumnsManager)
+    })
     customColumnsManager.definitions.forEach { def ->
       if (mergedColumns.find { it.id == def.id } == null) {
         val columnStub = ColumnList.ColumnStub(def.id, def.name, false, -1, -1)
@@ -214,6 +219,9 @@ internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {
   else -> PropertyType.STRING
 }
 
+/**
+ * Editor component shown to the right of the property list.
+ */
 internal class CustomPropertyEditor(
   customColumnsManager: CustomPropertyManager,
   private val btnDeleteController: BtnController,
@@ -264,12 +272,15 @@ internal class CustomPropertyEditor(
     }
   )
   val props = listOf(title, type, defaultValue)
-  val editors = mutableMapOf<String, PropertyEditor<*>>()
+  private val editors = mutableMapOf<String, PropertyEditor<*>>()
 
   init {
     val defaultEditor = propertySheet.propertyEditorFactory
     propertySheet.propertyEditorFactory = Callback { item ->
-      defaultEditor.call(item).also { propertyEditor -> editors[item.name] = propertyEditor }
+      val propertyName = props.map {it.propertyDescriptor}.find { it.displayName == item.name }?.name
+      defaultEditor.call(item).also { propertyEditor ->
+        editors[propertyName!!] = propertyEditor
+      }
     }
     props.forEach { it.observableValue.get().addListener { _, _, _ -> onPropertyChange() } }
 
