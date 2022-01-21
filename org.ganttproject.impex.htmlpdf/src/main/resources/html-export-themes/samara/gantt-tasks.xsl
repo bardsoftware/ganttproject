@@ -67,7 +67,7 @@ h5.header {
 		<td valign="top" class="cell">
 		<div style="margin:0; padding:0; padding-left:{$indent}">
         <xsl:for-each select='$current-task//*[@id=$field-id]'>
-          <div style="margin: 0; padding: 0;">
+          <div style="margin: 0; padding: 0; text-align: {@alignment};">
           <xsl:value-of select="text()" />
           </div>
 	        <xsl:if test="$field-id='tpd3' and $current-task/notes/text()">

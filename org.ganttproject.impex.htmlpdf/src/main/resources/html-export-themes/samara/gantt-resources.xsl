@@ -48,7 +48,9 @@ h5.header {
 	      <xsl:variable name="field-id" select="@id" />
     		<td valign="top" class="cell">
 	          <xsl:for-each select='$current-resource//*[@id=$field-id]'>
-	            <xsl:value-of select="text()" />
+                  <div style="margin: 0; padding: 0; text-align: {@alignment};">
+                      <xsl:value-of select="text()" />
+                  </div>
 	          </xsl:for-each>
 	      </td>
 	    </xsl:for-each>

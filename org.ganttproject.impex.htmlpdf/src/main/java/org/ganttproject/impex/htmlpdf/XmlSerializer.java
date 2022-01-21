@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf;
 
+import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.table.ColumnList;
 import com.google.common.base.Joiner;
@@ -172,7 +173,8 @@ public class XmlSerializer extends SaverBase {
         textElement("duration", myAttrs, String.valueOf(t.getDuration().getLength()), handler);
 
         addAttribute("id", TaskDefaultColumn.COST.getStub().getID(), myAttrs);
-        textElement("cost", myAttrs, String.valueOf(t.getCost().getValue()), handler);
+        addAttribute("alignment", "right", myAttrs);
+        textElement("cost", myAttrs, InternationalizationKt.getNumberFormat().format(t.getCost().getValue()), handler);
 
         addAttribute("id", TaskDefaultColumn.ID.getStub().getID(), myAttrs);
         textElement("task-id", myAttrs, String.valueOf(t.getTaskID()), handler);
@@ -234,8 +236,13 @@ public class XmlSerializer extends SaverBase {
           CustomColumnsValues customValues = t.getCustomValues();
           for (CustomPropertyDefinition def : taskManager.getCustomPropertyManager().getDefinitions()) {
             Object value = customValues.getValue(def);
-            String valueAsString = value == null ? "" : value.toString();
+            String valueAsString = value == null ? "" : def.getPropertyClass().isNumeric() ? InternationalizationKt.getNumberFormat().format(value) : value.toString();
             addAttribute("id", def.getID(), attrs);
+            if (def.getPropertyClass().isNumeric()) {
+              addAttribute("alignment", "right", attrs);
+            } else {
+              addAttribute("alignment", "left", attrs);
+            }
             textElement("custom-field", attrs, valueAsString, handler);
           }
         }
@@ -284,17 +291,23 @@ public class XmlSerializer extends SaverBase {
         addAttribute("id", "3", attrs);
         textElement("phone", attrs, p.getPhone(), handler);
         addAttribute("id", "5", attrs);
-        textElement("rate", attrs, p.getStandardPayRate().toPlainString(), handler);
+        textElement("rate", attrs, InternationalizationKt.getNumberFormat().format(p.getStandardPayRate()), handler);
         addAttribute("id", "6", attrs);
-        textElement("totalCost", attrs, p.getTotalCost().toPlainString(), handler);
+        textElement("totalCost", attrs, InternationalizationKt.getNumberFormat().format(p.getTotalCost()), handler);
         addAttribute("id", "7", attrs);
-        textElement("totalLoad", attrs, String.valueOf(p.getTotalLoad()), handler);
+        textElement("totalLoad", attrs, InternationalizationKt.getNumberFormat().format(p.getTotalLoad()), handler);
 
         List<CustomProperty> customFields = p.getCustomProperties();
         for (int j = 0; j < customFields.size(); j++) {
           CustomProperty nextProperty = customFields.get(j);
-          addAttribute("id", nextProperty.getDefinition().getID(), attrs);
-          String value = nextProperty.getValueAsString();
+          CustomPropertyDefinition def = nextProperty.getDefinition();
+          addAttribute("id", def.getID(), attrs);
+          if (def.getPropertyClass().isNumeric()) {
+            addAttribute("alignment", "right", attrs);
+          } else {
+            addAttribute("alignment", "left", attrs);
+          }
+          String value = def.getPropertyClass().isNumeric() ? InternationalizationKt.getNumberFormat().format(nextProperty.getValue()) : nextProperty.getValueAsString();
           textElement("custom-field", attrs, value, handler);
         }
         endPrefixedElement("resource", handler);
