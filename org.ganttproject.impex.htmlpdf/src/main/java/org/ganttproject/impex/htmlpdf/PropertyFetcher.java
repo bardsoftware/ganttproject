@@ -68,7 +68,7 @@ public class PropertyFetcher {
     CustomColumnsValues customValues = t.getCustomValues();
     for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
       Object value = customValues.getValue(def);
-      String valueAsString = value == null ? "" : value.toString();
+      String valueAsString = value == null ? "" : def.getPropertyClass().isNumeric() ? InternationalizationKt.getNumberFormat().format(value) : value.toString();
       id2value.put(def.getID(), valueAsString);
     }
   }

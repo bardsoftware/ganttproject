@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  */
 public class TaskDisplayColumnsTagHandler extends AbstractTagHandler {
 
-  private final List<Column> myBuffer = new ArrayList<Column>();
+  private final List<Column> myBuffer = new ArrayList<>();
   private final String myIDPropertyName;
   private final String myOrderPropertyName;
   private final String myWidthPropertyName;

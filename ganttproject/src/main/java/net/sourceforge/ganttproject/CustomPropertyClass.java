@@ -60,6 +60,9 @@ public enum CustomPropertyClass {
     return null;
   }
 
+  public boolean isNumeric() {
+    return this == INTEGER || this == DOUBLE;
+  }
   public static CustomPropertyClass fromJavaClass(Class<?> javaClass) {
     for (CustomPropertyClass klass : CustomPropertyClass.values()) {
       if (klass.getJavaClass().equals(javaClass)) {

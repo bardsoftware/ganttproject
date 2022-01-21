@@ -440,6 +440,8 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   private void writeProperties(ArrayList<Column> orderedColumns, Map<String, String> id2value, PdfPTable table,
                                Map<String, PdfPCell> id2cell) {
     for (Column column : orderedColumns) {
+      var taskCustomColumn = myProject.getTaskCustomColumnManager().getCustomPropertyDefinition(column.getID());
+      var resourceCustomColumn = myProject.getResourceCustomPropertyManager().getCustomPropertyDefinition(column.getID());
       PdfPCell cell = id2cell.get(column.getID());
       if (cell == null) {
         String value = id2value.get(column.getID());
@@ -451,7 +453,9 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         if (TaskDefaultColumn.COST.getStub().getID().equals(column.getID())
             || ResourceDefaultColumn.STANDARD_RATE.getStub().getID().equals(column.getID())
             || ResourceDefaultColumn.TOTAL_COST.getStub().getID().equals(column.getID())
-            || ResourceDefaultColumn.TOTAL_LOAD.getStub().getID().equals(column.getID())) {
+            || ResourceDefaultColumn.TOTAL_LOAD.getStub().getID().equals(column.getID())
+            || (taskCustomColumn != null && taskCustomColumn.getPropertyClass().isNumeric())
+            || (resourceCustomColumn != null && resourceCustomColumn.getPropertyClass().isNumeric())) {
           cell.setHorizontalAlignment(PdfPCell.ALIGN_RIGHT);
         }
         cell.setBorderWidth(0);
