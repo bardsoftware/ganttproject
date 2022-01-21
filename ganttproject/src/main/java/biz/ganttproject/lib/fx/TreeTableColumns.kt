@@ -90,10 +90,16 @@ class ColumnListImpl(
     } else emptyList()
 
     var importedList = source.copyOf()
+    // Mark all columns in the imported list which should be visible because they are visible now.
     remainVisible.forEach { old -> importedList.firstOrNull { new -> new.id == old.id }?.isVisible = true }
+
+    // If it turns out that none of the imported columns is visible, we shall do something so that the table was not empty.
+    // Here we just replace the list with the default built-in columns.
     if (importedList.firstOrNull { it.isVisible } == null) {
       importedList = builtinColumns.allColumns()
     }
+
+
     importedList = importedList.sortedWith { left, right ->
       // test1 places visible columns before invisible
       val test1 = (if (left.isVisible) -1 else 0) + if (right.isVisible) 1 else 0
@@ -130,6 +136,7 @@ class ColumnListImpl(
           }
           if (currentList[idxImported] != column) {
             currentList[idxImported] = ColumnList.ColumnStub(column).also {
+              customPropertyManager.getCustomPropertyDefinition(it.id)?.let { def -> it.name = def.name }
               it.setOnChange {
                 updateTotalWidth()
                 onColumnChange()
@@ -138,6 +145,7 @@ class ColumnListImpl(
           }
         } else {
           currentList.add(idxImported, ColumnList.ColumnStub(column).also {
+            customPropertyManager.getCustomPropertyDefinition(it.id)?.let { def -> it.name = def.name }
             it.setOnChange {
               updateTotalWidth()
               onColumnChange()

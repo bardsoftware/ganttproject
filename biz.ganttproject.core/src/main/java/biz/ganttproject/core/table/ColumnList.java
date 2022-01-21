@@ -20,6 +20,7 @@ package biz.ganttproject.core.table;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.Objects;
 
 public interface ColumnList {
   int getSize();
@@ -60,7 +61,7 @@ public interface ColumnList {
     private final String myID;
     private int myOrder;
     private int myWidth;
-    private final String myName;
+    private String myName;
     private boolean isVisible;
     private SortOrder mySortOrder = SortOrder.UNSORTED;
     private Runnable onChange = () -> {};
@@ -111,6 +112,10 @@ public interface ColumnList {
       return myName;
     }
 
+    public void setName(String name) {
+      this.myName = name;
+    }
+
     @Override
     public void setVisible(boolean visible) {
       var wasVisible = isVisible;
@@ -148,8 +153,7 @@ public interface ColumnList {
       if (myOrder != that.myOrder) return false;
       if (myWidth != that.myWidth) return false;
       if (isVisible != that.isVisible) return false;
-      if (myID != null ? !myID.equals(that.myID) : that.myID != null) return false;
-      return myName != null ? myName.equals(that.myName) : that.myName == null;
+      return Objects.equals(myID, that.myID);
     }
 
     @Override
