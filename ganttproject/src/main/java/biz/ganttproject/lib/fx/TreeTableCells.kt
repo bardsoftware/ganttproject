@@ -21,6 +21,7 @@ package biz.ganttproject.lib.fx
 //import javafx.scene.control.skin.TreeTableCellSkin
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.getModifiers
+import biz.ganttproject.app.getNumberFormat
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
@@ -51,6 +52,7 @@ data class MyStringConverter<S, T>(
   val toString: (cell: TextCell<S, T>, cellValue: T?) -> String?,
   val fromString: (cell: TextCell<S, T>, stringValue: String) -> T?
 )
+
 fun <S, T> StringConverter<T>.adapt(): MyStringConverter<S, T> =
   MyStringConverter(
     toString = { _, cellValue -> this.toString(cellValue) },
@@ -341,7 +343,7 @@ fun <S> createIntegerColumn(name: String, getValue: (S) -> Int?, setValue: (S, I
       ReadOnlyIntegerWrapper(getValue(it.value.value) ?: 0)
     }
     cellFactory = Callback {
-      TextCell<S, Number>(NumberStringConverter().adapt()).also {
+      TextCell<S, Number>(NumberStringConverter(getNumberFormat()).adapt()).also {
         it.styleClass.add("text-right")
       }
     }
@@ -354,7 +356,7 @@ fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S,
       ReadOnlyDoubleWrapper(getValue(it.value.value) ?: 0.0)
     }
     cellFactory = Callback {
-      TextCell<S, Number>(NumberStringConverter().adapt()).also {
+      TextCell<S, Number>(NumberStringConverter(getNumberFormat()).adapt()).also {
         it.styleClass.add("text-right")
       }
     }
@@ -367,7 +369,13 @@ fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue
       ReadOnlyObjectWrapper(getValue(it.value.value) ?: 0.toBigDecimal())
     }
     cellFactory = Callback {
-      TextCell<S, BigDecimal>(BigDecimalStringConverter().adapt()).also {
+      val converter = MyStringConverter<S, BigDecimal>(
+        toString = { _, value ->
+          value?.let { getNumberFormat().format(it) } ?: ""
+        },
+        fromString = { _, value -> BigDecimalStringConverter().fromString(value) }
+      )
+      TextCell(converter).also {
         it.styleClass.add("text-right")
       }
     }

@@ -24,6 +24,7 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.util.PropertiesUtil
 import org.eclipse.core.runtime.Platform
 import java.text.MessageFormat
+import java.text.NumberFormat
 import java.util.*
 
 /**
@@ -84,6 +85,9 @@ interface Localizer {
   fun formatTextOrNull(key: String, vararg args: Any): String?
 }
 
+/**
+ * This is a dummy localizer which can be used as a stub.
+ */
 object DummyLocalizer : Localizer {
   override fun create(key: String): LocalizedString {
     return LocalizedString(key, this)
@@ -149,6 +153,10 @@ open class DefaultLocalizer(
       DefaultLocalizer(rootKey, baseLocalizer, this, this.currentTranslation)
 }
 
+/**
+ * This localizer searches for key values in a map. The map values are lambdas which
+ * allows for values calculation.
+ */
 class MappingLocalizer(val key2lambda: Map<String, (()->String)?>, val unhandledKey: (String)->String?) : Localizer {
   override fun create(key: String) = LocalizedString(key, this)
 
@@ -163,8 +171,11 @@ class SingleTranslationLocalizer(val bundle: ResourceBundle) : DefaultLocalizer(
 
 var RootLocalizer : DefaultLocalizer = DefaultLocalizer(currentTranslation = { ourCurrentTranslation })
 
+private var ourLocale: Locale = Locale.getDefault()
 private var ourCurrentTranslation: ResourceBundle? = getResourceBundle(Locale.getDefault(), true)
+
 fun setLocale(locale: Locale) {
+  ourLocale = locale
   ourCurrentTranslation = getResourceBundle(locale, true)
 }
 
@@ -244,3 +255,5 @@ fun getAvailableTranslations(): List<Locale> {
 }
 
 fun String.removeMnemonicsPlaceholder(): String = this.replace("$", "")
+
+fun getNumberFormat(): NumberFormat = NumberFormat.getInstance(ourLocale)

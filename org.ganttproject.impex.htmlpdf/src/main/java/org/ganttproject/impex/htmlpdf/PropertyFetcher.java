@@ -18,14 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ganttproject.impex.htmlpdf;
 
-import java.text.DateFormat;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import com.google.common.base.Joiner;
-
+import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import com.google.common.base.Joiner;
 import net.sourceforge.ganttproject.CustomProperty;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -35,6 +30,11 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.task.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskProperties;
+
+import java.text.DateFormat;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class PropertyFetcher {
   private static final GanttLanguage language = GanttLanguage.getInstance();
@@ -63,7 +63,7 @@ public class PropertyFetcher {
     List<Integer> outlinePath = t.getManager().getTaskHierarchy().getOutlinePath(t);
     id2value.put(TaskDefaultColumn.OUTLINE_NUMBER.getStub().getID(), Joiner.on('.').join(outlinePath));
     id2value.put(TaskDefaultColumn.ID.getStub().getID(), String.valueOf(t.getTaskID()));
-    id2value.put(TaskDefaultColumn.COST.getStub().getID(), t.getCost().getValue().toPlainString());
+    id2value.put(TaskDefaultColumn.COST.getStub().getID(), InternationalizationKt.getNumberFormat().format(t.getCost().getValue()));
 
     CustomColumnsValues customValues = t.getCustomValues();
     for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
@@ -78,9 +78,12 @@ public class PropertyFetcher {
     id2value.put(ResourceDefaultColumn.ROLE.getStub().getID(), hr.getRole().getName());
     id2value.put(ResourceDefaultColumn.EMAIL.getStub().getID(), hr.getMail());
     id2value.put(ResourceDefaultColumn.PHONE.getStub().getID(), hr.getPhone());
-    id2value.put(ResourceDefaultColumn.STANDARD_RATE.getStub().getID(), hr.getStandardPayRate().toPlainString());
-    id2value.put(ResourceDefaultColumn.TOTAL_COST.getStub().getID(), hr.getTotalCost().toPlainString());
-    id2value.put(ResourceDefaultColumn.TOTAL_LOAD.getStub().getID(), String.valueOf(hr.getTotalLoad()));
+    id2value.put(ResourceDefaultColumn.STANDARD_RATE.getStub().getID(),
+        InternationalizationKt.getNumberFormat().format(hr.getStandardPayRate()));
+    id2value.put(ResourceDefaultColumn.TOTAL_COST.getStub().getID(),
+        InternationalizationKt.getNumberFormat().format(hr.getTotalCost()));
+    id2value.put(ResourceDefaultColumn.TOTAL_LOAD.getStub().getID(),
+        InternationalizationKt.getNumberFormat().format(hr.getTotalLoad()));
 
     List<CustomProperty> customFields = hr.getCustomProperties();
     for (CustomProperty property : customFields) {

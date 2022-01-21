@@ -561,13 +561,13 @@ class TaskTable(
       }
       CustomPropertyClass.INTEGER -> {
         createIntegerColumn(customProperty.name,
-          { taskTableModel.getValue(it, customProperty) as Int },
+          { taskTableModel.getValue(it, customProperty) as Int? },
           { task, value -> taskTableModel.setValue(value, task, customProperty) }
         )
       }
       CustomPropertyClass.DOUBLE -> {
         createDoubleColumn(customProperty.name,
-          { taskTableModel.getValue(it, customProperty) as Double },
+          { taskTableModel.getValue(it, customProperty) as Double? },
           { task, value -> taskTableModel.setValue(value, task, customProperty) }
         )
       }
