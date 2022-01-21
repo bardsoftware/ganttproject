@@ -137,7 +137,7 @@ class ColumnManager(
       null,
       isVisible = true, isCustom = true, customColumnsManager
     ).also {
-      it.title = "Untitled Custom Column"
+      it.title = RootLocalizer.formatText("addCustomColumn")
     }
     listItems.add(item)
     listView.scrollTo(item)
@@ -179,7 +179,11 @@ internal data class BtnController(
   val onAction: () -> Unit
 )
 internal enum class PropertyType(private val displayName: String) {
-  STRING("Text"), INTEGER("Integer value"), DATE("Date"), DECIMAL("Numeric/decimal"), BOOLEAN("True or false");
+  STRING(RootLocalizer.formatText("text")),
+  INTEGER(RootLocalizer.formatText("integer")),
+  DATE(RootLocalizer.formatText("date")),
+  DECIMAL(RootLocalizer.formatText("double")),
+  BOOLEAN(RootLocalizer.formatText("boolean"));
 
   override fun toString() = this.displayName
 }
@@ -190,7 +194,6 @@ internal fun CustomPropertyDefinition.getPropertyType(): PropertyType = when (th
   CustomPropertyClass.INTEGER -> PropertyType.INTEGER
   CustomPropertyClass.DOUBLE -> PropertyType.DECIMAL
   CustomPropertyClass.BOOLEAN -> PropertyType.BOOLEAN
-  else -> PropertyType.STRING
 }
 
 internal fun PropertyType.getCustomPropertyClass(): CustomPropertyClass = when (this) {
