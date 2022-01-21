@@ -22,6 +22,7 @@ import biz.ganttproject.LoggerApi;
 import biz.ganttproject.app.FXSearchUi;
 import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
+import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
@@ -173,6 +174,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.addOptions(getRssFeedChecker().getOptions());
     options.addOptions(UpdateOptions.INSTANCE.getOptionGroup());
     options.addOptions(myTaskManagerConfig.getTaskOptions());
+    options.addOptions(new GPOptionGroup("ui", getUiFacadeImpl().getRowPaddingOption()));
     startupLogger.debug("2. loading options");
     initOptions();
 
