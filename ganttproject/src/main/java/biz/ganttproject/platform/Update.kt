@@ -41,11 +41,11 @@ import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Insets
 import javafx.scene.Node
-import javafx.scene.control.*
+import javafx.scene.control.ButtonBar
+import javafx.scene.control.ButtonType
+import javafx.scene.control.Label
+import javafx.scene.control.ScrollPane
 import javafx.scene.layout.GridPane
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.UIFacade
 import org.controlsfx.control.HyperlinkLabel
@@ -58,13 +58,18 @@ import org.eclipse.core.runtime.Platform as Eclipsito
 const val PRIVACY_URL = "https://www.ganttproject.biz/about/privacy"
 
 fun checkAvailableUpdates(updater: Updater, uiFacade: UIFacade) {
-  updater.getUpdateMetadata(UpdateOptions.updateUrl.value).thenAccept { updateMetadata ->
-    if (updateMetadata.isNotEmpty()) {
-      showUpdateDialog(updateMetadata, uiFacade, false)
+  if (UpdateOptions.isCheckEnabled.value) {
+    LOG.debug("Fetching updates from {}", UpdateOptions.updateUrl.value)
+    updater.getUpdateMetadata(UpdateOptions.updateUrl.value).thenAccept { updateMetadata ->
+      if (updateMetadata.isNotEmpty()) {
+        showUpdateDialog(updateMetadata, uiFacade, false)
+      }
+    }.exceptionally { ex ->
+      LOG.error(msg = "Failed to fetch updates from {}", UpdateOptions.updateUrl.value, exception = ex)
+      null
     }
-  }.exceptionally { ex ->
-    LOG.error(msg = "Failed to fetch updates from {}", UpdateOptions.updateUrl.value, exception = ex)
-    null
+  } else {
+    LOG.debug("Updates are disabled")
   }
 }
 
@@ -107,7 +112,7 @@ internal class UpdateDialog(
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
   private val hasUpdates: Boolean get() = this.visibleUpdates.isNotEmpty()
 
-  fun createPane(bean: PlatformBean): Node {
+  private fun createPane(bean: PlatformBean): Node {
     val bodyBuilder = VBoxBuilder("content-pane")
 
     val props = GridPane().also { it.styleClass.add("props") }
@@ -241,9 +246,7 @@ internal class UpdateDialog(
           else installFuture.thenCompose { update.install(progressMonitor) }
     }
     installFuture?.thenAccept {
-      GlobalScope.launch(Dispatchers.Main) {
-        completed.value = true
-      }
+      completed.value = true
     }?.exceptionally { ex ->
       GPLogger.logToLogger(ex)
       this.dialogApi.showAlert(ourLocalizer.create("alert.title"), createAlertBody(ex.message ?: ""))
@@ -272,29 +275,22 @@ private fun (UpdateMetadata).sizeAsString(): String {
 }
 
 private class UpdateComponentUi(val update: UpdateMetadata) {
-  val title: Label
-  val subtitle: Label
-  val text: MDFXNode
-  val progressText = ourLocalizer.create("bodyItem.progress")
-  val progress: Label
-  var progressValue: Int = -1
-
-  init {
-    title = Label(ourLocalizer.formatText("bodyItem.title", update.version)).also { l ->
-      l.styleClass.add("title")
-    }
-    subtitle = Label(ourLocalizer.formatText("bodyItem.subtitle", update.date, update.sizeAsString())).also { l ->
-      l.styleClass.add("subtitle")
-    }
-    text = MDFXNode(ourLocalizer.formatText("bodyItem.description", update.description)).also { l ->
-      l.styleClass.add("par")
-    }
-    progress = Label().also {
-      it.textProperty().bind(progressText)
-      it.styleClass.add("progress")
-      it.isVisible = false
-    }
+  val title: Label = Label(ourLocalizer.formatText("bodyItem.title", update.version)).also { l ->
+    l.styleClass.add("title")
   }
+  val subtitle: Label = Label(ourLocalizer.formatText("bodyItem.subtitle", update.date, update.sizeAsString())).also { l ->
+    l.styleClass.add("subtitle")
+  }
+  val text: MDFXNode = MDFXNode(ourLocalizer.formatText("bodyItem.description", update.description)).also { l ->
+    l.styleClass.add("par")
+  }
+  val progressText = ourLocalizer.create("bodyItem.progress")
+  val progress: Label = Label().also {
+    it.textProperty().bind(progressText)
+    it.styleClass.add("progress")
+    it.isVisible = false
+  }
+  var progressValue: Int = -1
 
   fun updateProgress(percents: Int) {
     Platform.runLater {
