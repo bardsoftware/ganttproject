@@ -516,19 +516,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   /**
-   * Refresh the information of the project on the status bar.
-   */
-  public void refreshProjectInformation() {
-    if (getTaskManager().getTaskCount() == 0 && resp.nbPeople() == 0) {
-      getStatusBar().setSecondText("");
-    } else {
-      getStatusBar().setSecondText(
-          language.getCorrectedLabel("task") + " : " + getTaskManager().getTaskCount() + "  "
-              + language.getCorrectedLabel("resources") + " : " + resp.nbPeople());
-    }
-  }
-
-  /**
    * Create a new project
    */
   public void newProject() {
@@ -798,21 +785,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   // ResourceView implementation
   @Override
   public void resourceAdded(ResourceEvent event) {
-    if (getStatusBar() != null) {
-      // tabpane.setSelectedIndex(1);
-      String description = language.getCorrectedLabel("resource.new.description");
-      if (description == null) {
-        description = language.getCorrectedLabel("resource.new");
-      }
-      getUIFacade().setStatusText(description);
-      setAskForSave(true);
-      refreshProjectInformation();
-    }
+    setAskForSave(true);
   }
 
   @Override
   public void resourcesRemoved(ResourceEvent event) {
-    refreshProjectInformation();
     setAskForSave(true);
   }
 
