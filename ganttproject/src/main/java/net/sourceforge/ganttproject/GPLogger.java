@@ -108,6 +108,12 @@ public class GPLogger {
     return getLogger(o.getClass());
   }
 
+  public static LoggerApi<org.slf4j.Logger> create(String name) {
+    var result = new LoggerImpl(name);
+    getLogger(name); // To initialize handlers
+    return result;
+  }
+
   public static Logger getLogger(String name) {
     Logger logger = ourLoggers.get(name);
     if (logger == null) {
@@ -116,12 +122,6 @@ public class GPLogger {
       ourLoggers.put(name, logger);
     }
     return logger;
-  }
-
-  public static LoggerApi<org.slf4j.Logger> create(String name) {
-    var result = new LoggerImpl(name);
-    getLogger(name); // To initialize handlers
-    return result;
   }
 
   public static Logger getLogger(Class<?> clazz) {

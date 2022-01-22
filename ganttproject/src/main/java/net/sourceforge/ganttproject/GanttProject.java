@@ -65,6 +65,7 @@ import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -79,8 +80,7 @@ import java.util.function.Consumer;
  */
 public class GanttProject extends GanttProjectBase implements ResourceView, GanttLanguage.Listener {
 
-  private final LoggerApi boundsLogger = GPLogger.create("Window.Bounds");
-  private final LoggerApi startupLogger = GPLogger.create("Window.Startup");
+  private final LoggerApi<Logger> boundsLogger = GPLogger.create("Window.Bounds");
 
   /**
    * GanttGraphicArea for the calendar with Gantt
@@ -106,17 +106,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    */
   public boolean askForSave = false;
 
-  private final ResourceActionSet myResourceActions;
-
   private final ZoomActionSet myZoomActions;
-
-  //private final FacadeInvalidator myFacadeInvalidator;
 
   private UIConfiguration myUIConfiguration;
 
   private final GanttOptions options;
 
-  private ArrayList<GanttPreviousState> myPreviousStates = new ArrayList<GanttPreviousState>();
+  private ArrayList<GanttPreviousState> myPreviousStates = new ArrayList<>();
 
   private MouseListener myStopEditingMouseListener = null;
 
@@ -143,11 +139,12 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private FXSearchUi mySearchUi;
 
   public GanttProject(boolean isOnlyViewer) {
+    LoggerApi<Logger> startupLogger = GPLogger.create("Window.Startup");
     startupLogger.debug("Creating main frame...");
     ToolTipManager.sharedInstance().setInitialDelay(200);
     ToolTipManager.sharedInstance().setDismissDelay(60000);
 
-    myCalendar.addListener(() -> GanttProject.this.setModified());
+    myCalendar.addListener(GanttProject.this::setModified);
 
     setFocusable(true);
     startupLogger.debug("1. loading look'n'feels");
@@ -179,9 +176,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     initOptions();
 
     getUIFacade().setLookAndFeel(getUIFacade().getLookAndFeel());
-    getUiFacadeImpl().getAppFontOption().addChangeValueListener(event -> {
-      getGanttChart().reset();
-    });
+    getUiFacadeImpl().getAppFontOption().addChangeValueListener(event -> getGanttChart().reset());
     TreeTableCellsKt.initFontProperty(getUiFacadeImpl().getAppFontOption(), getUiFacadeImpl().getRowPaddingOption());
     TreeTableCellsKt.initColorProperties();
     getZoomManager().addZoomListener(area.getZoomListener());
@@ -191,7 +186,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     scrollingManager.addScrollingListener(getResourcePanel().area.getViewState());
 
     startupLogger.debug("3. creating menus...");
-    myResourceActions = getResourcePanel().getResourceActionSet();
+    ResourceActionSet myResourceActions = getResourcePanel().getResourceActionSet();
     myZoomActions = new ZoomActionSet(getZoomManager());
     JMenuBar bar = new JMenuBar();
     setJMenuBar(bar);
@@ -516,7 +511,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   @Override
-  public List<GanttPreviousState> getBaselines() {
+  public @NotNull List<GanttPreviousState> getBaselines() {
     return myPreviousStates;
   }
 
@@ -568,9 +563,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   /**
    * Save the project as (with a dialog file chooser)
    */
-  public boolean saveAsProject() {
+  public void saveAsProject() {
     getProjectUIFacade().saveProjectAs(getProject());
-    return true;
   }
 
   /**
@@ -617,7 +611,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     String title = getTitle();
     askForSave = afs;
     if (System.getProperty("mrj.version") != null) {
-      rootPane.putClientProperty("windowModified", Boolean.valueOf(afs));
+      rootPane.putClientProperty("windowModified", afs);
       // see http://developer.apple.com/qa/qa2001/qa1146.html
     } else {
       if (askForSave) {
@@ -660,8 +654,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   public static class Args {
-    @Parameter(names = "-logback-config", description = "Path to logback configuration file", arity = 1)
-    public String logbackConfig = "logback.xml";
 
     @Parameter(names = "-log", description = "Enable logging", arity = 1)
     public boolean log = true;
@@ -752,7 +744,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   @Override
-  public void setDocument(Document document) {
+  public void setDocument(@NotNull Document document) {
     myObservableDocument.set(document);
   }
 
@@ -766,7 +758,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     setAskForSave(modified);
 
     String title = getTitle();
-    if (modified == false && title.endsWith(" *")) {
+    if (!modified && title.endsWith(" *")) {
       // Remove * from title
       setTitle(title.substring(0, title.length() - 2));
     }
@@ -786,10 +778,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getTaskCustomColumnManager().reset();
     getResourceCustomPropertyManager().reset();
 
-    for (int i = 0; i < myPreviousStates.size(); i++) {
-      myPreviousStates.get(i).remove();
+    for (GanttPreviousState myPreviousState : myPreviousStates) {
+      myPreviousState.remove();
     }
-    myPreviousStates = new ArrayList<GanttPreviousState>();
+    myPreviousStates = new ArrayList<>();
     myCalendar.reset();
     //myFacadeInvalidator.projectClosed();
   }
