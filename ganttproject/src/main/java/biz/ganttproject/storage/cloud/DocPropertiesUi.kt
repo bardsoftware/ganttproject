@@ -37,11 +37,8 @@ import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.javafx.JavaFx
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.ProjectOpenStrategy
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
@@ -156,9 +153,9 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     return OptionPaneBuilder<OnlineDocumentMode>().apply {
       i18n = OFFLINE_MIRROR_LOCALIZER
       elements = listOf(
-          OptionElementData(OnlineDocumentMode.MIRROR.name.toLowerCase(), OnlineDocumentMode.MIRROR,
+          OptionElementData(OnlineDocumentMode.MIRROR.name.lowercase(), OnlineDocumentMode.MIRROR,
               isSelected = document.mode.value == OnlineDocumentMode.MIRROR),
-          OptionElementData(OnlineDocumentMode.ONLINE_ONLY.name.toLowerCase(), OnlineDocumentMode.ONLINE_ONLY,
+          OptionElementData(OnlineDocumentMode.ONLINE_ONLY.name.lowercase(), OnlineDocumentMode.ONLINE_ONLY,
               isSelected = document.mode.value == OnlineDocumentMode.ONLINE_ONLY)
       )
     }
@@ -204,7 +201,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       listView.selectionModel.selectedItemProperty().addListener { _, _, _ -> btnGet.isDisable = listView.selectionModel.isEmpty }
       btnGet.addEventHandler(ActionEvent.ACTION) {
         val selected = listView.selectionModel.selectedItem?.resource?.get() ?: return@addEventHandler
-        GlobalScope.launch {
+        ourCoroutines.launch {
           folderView.document?.fetchVersion(selected.generation)?.also {
             it.update()
             fetchConsumer(it)
@@ -364,7 +361,7 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
     val jfxPanel = JFXPanel()
     val wrapper = JPanel(BorderLayout())
     wrapper.add(jfxPanel, BorderLayout.CENTER)
-    GlobalScope.launch(Dispatchers.JavaFx) {
+    ourCoroutines.launch {
       jfxPanel.scene = buildScene()
     }
     return wrapper
@@ -396,7 +393,7 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
 
   private fun onOnlineDocFetch(fetchResult: FetchResult) {
     val document = this.project.document
-    ProjectOpenStrategy(project, uiFacade, { onAuth -> onAuth() }).use { strategy ->
+    ProjectOpenStrategy(project, uiFacade) { onAuth -> onAuth() }.use { strategy ->
       val docFuture = strategy.open(document)
       runBlocking {
         try {
@@ -454,3 +451,4 @@ class NotOnlineDocumentMainPage: FlowPage() {
 private val OFFLINE_MIRROR_LOCALIZER = RootLocalizer.createWithRootKey(
         "cloud.offlineMirrorOptionPane", BROWSE_PANE_LOCALIZER)
 private val LOCK_LOCALIZER = RootLocalizer.createWithRootKey("cloud.lockOptionPane")
+private val ourCoroutines = CoroutineScope(Dispatchers.JavaFx)
