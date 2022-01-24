@@ -18,14 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.resource;
 
-import java.math.BigDecimal;
-import java.util.EnumSet;
-import java.util.Set;
-
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.TreeUtil;
 import net.sourceforge.ganttproject.roles.Role;
+
+import java.math.BigDecimal;
+import java.util.EnumSet;
+import java.util.Set;
 
 public class ResourceNode extends ResourceTableNode {
   private static final Set<ResourceDefaultColumn> ourApplicableColumns = EnumSet.complementOf(
@@ -75,6 +75,7 @@ public class ResourceNode extends ResourceTableNode {
   @Override
   public Object getStandardField(ResourceDefaultColumn def) {
     switch (def) {
+      case ID: return resource.getId();
     case NAME: return getName();
     case ROLE: return getDefaultRole();
     case EMAIL: return getEMail();
