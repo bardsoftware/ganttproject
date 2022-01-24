@@ -206,6 +206,7 @@ interface OnlineDocument {
   val mode: ObjectProperty<OnlineDocumentMode>
   val fetchResultProperty: ObservableObjectValue<FetchResult?>
   val latestVersionProperty: ObservableObjectValue<LatestVersion>
+  val id: String
 
   fun setMirrored(mirrored: Boolean)
   suspend fun fetch(): FetchResult

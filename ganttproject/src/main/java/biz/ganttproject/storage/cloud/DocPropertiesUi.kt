@@ -45,6 +45,7 @@ import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.awt.BorderLayout
 import java.awt.Component
+import java.io.IOException
 import java.time.Duration
 import java.util.*
 import javax.swing.JPanel
@@ -202,9 +203,20 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       btnGet.addEventHandler(ActionEvent.ACTION) {
         val selected = listView.selectionModel.selectedItem?.resource?.get() ?: return@addEventHandler
         ourCoroutines.launch {
-          folderView.document?.fetchVersion(selected.generation)?.also {
-            it.update()
-            fetchConsumer(it)
+          folderView.document?.let { doc ->
+            try {
+              doc.fetchVersion(selected.generation).also {
+                it.update()
+                fetchConsumer(it)
+              }
+            } catch (ex: IOException) {
+              ourLogger.error("Failed to fetch the document version from the history", mapOf(
+                "doc" to doc.id,
+                "user" to GPCloudOptions.userId.value,
+                "generation" to selected.generation
+              ))
+              errorUi(ex.message ?: "")
+            }
           }
         }
       }
@@ -461,3 +473,4 @@ private val OFFLINE_MIRROR_LOCALIZER = RootLocalizer.createWithRootKey(
         "cloud.offlineMirrorOptionPane", BROWSE_PANE_LOCALIZER)
 private val LOCK_LOCALIZER = RootLocalizer.createWithRootKey("cloud.lockOptionPane")
 private val ourCoroutines = CoroutineScope(Dispatchers.JavaFx)
+private val ourLogger = GPLogger.create("Cloud.Document.History")
