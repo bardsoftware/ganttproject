@@ -180,7 +180,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 
   private data class HistoryPaneData(val pane: Pane, val loader: (GPCloudDocument) -> Nothing?)
 
-  private fun createHistoryPane(fetchConsumer: (FetchResult) -> Unit): HistoryPaneData {
+  private fun createHistoryPane(fetchConsumer: (FetchResult) -> Unit, errorUi: (String) -> Unit): HistoryPaneData {
     val folderView = FolderView(
         exceptionUi = {},
         maybeCellFactory = this@DocPropertiesUi::createHistoryCell
@@ -283,7 +283,8 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     val commitChanges: () -> Unit
   )
 
-  fun buildPane(document: GPCloudDocument, fetchConsumer: (FetchResult) -> Unit): LockOfflinePaneElements {
+  fun buildPane(document: GPCloudDocument, fetchConsumer: (FetchResult) -> Unit,
+                errorUi: (String) -> Unit): LockOfflinePaneElements {
     val lockToggleGroup = ToggleGroup()
     val mirrorToggleGroup = ToggleGroup()
 
@@ -315,7 +316,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     }
 
     val lockingOffline = Tab(RootLocalizer.formatText("cloud.lockAndOfflinePane.tab"), vboxBuilder.vbox)
-    val historyPane = createHistoryPane(fetchConsumer)
+    val historyPane = createHistoryPane(fetchConsumer, errorUi)
     val versions = Tab(RootLocalizer.formatText("cloud.historyPane.tab"), historyPane.pane)
     val tabPane = TabPane(lockingOffline, versions).also {
       it.tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
@@ -342,7 +343,10 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 
   fun showDialog(document: GPCloudDocument, fetchConsumer: (FetchResult) -> Unit) {
     dialog { dialogController ->
-      val paneElements = buildPane(document, fetchConsumer)
+      val errorUi = { msg: String ->
+        dialogController.showAlert(RootLocalizer.create("cloud.historyPane.title"), createAlertBody(msg))
+      }
+      val paneElements = buildPane(document, fetchConsumer, errorUi)
       dialogController.addStyleClass("dlg-lock")
       dialogController.addStyleClass("dlg-cloud-file-options")
       dialogController.addStyleSheet(
@@ -386,7 +390,7 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   private fun buildScene(): Scene {
     val onlineDocument = this.project.document.asOnlineDocument() ?: return buildNotOnlineDocumentScene()
     return if (onlineDocument is GPCloudDocument) {
-      DocPropertiesUi(errorUi = {}, busyUi = {}).buildPane(onlineDocument, this::onOnlineDocFetch).let {
+      DocPropertiesUi(errorUi = {}, busyUi = {}).buildPane(onlineDocument, this::onOnlineDocFetch, {}).let {
         paneElements = it
         Scene(vbox {
           addClasses("dlg-lock", "dlg-cloud-file-options")
