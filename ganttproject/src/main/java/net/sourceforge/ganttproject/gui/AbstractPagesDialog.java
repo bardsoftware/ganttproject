@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.gui;
 
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
+import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import javax.swing.*;
@@ -76,12 +77,14 @@ public abstract class AbstractPagesDialog {
     final String name;
     final Container component;
     final String id;
+    private final OptionPageProvider provider;
 
-    public ListItem(boolean isGroupHeader, String id, String name, Container component) {
+    public ListItem(boolean isGroupHeader, String id, String name, Container component, OptionPageProvider provider) {
       this.isGroupHeader = isGroupHeader;
       this.id = id;
       this.name = name;
       this.component = component;
+      this.provider = provider;
     }
   }
 
@@ -152,6 +155,7 @@ public abstract class AbstractPagesDialog {
       } else {
         final CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
         cardLayout.show(contentPanel, listItem.id);
+        listItem.provider.setActive(true);
       }
     });
     myPagesList.setBorder(BorderFactory.createEtchedBorder());
