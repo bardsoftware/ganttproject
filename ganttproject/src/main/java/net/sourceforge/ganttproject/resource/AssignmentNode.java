@@ -18,14 +18,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.resource;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 public class AssignmentNode extends ResourceTableNode {
   private static final Set<ResourceDefaultColumn> ourApplicableColumns = EnumSet.of(ResourceDefaultColumn.ROLE_IN_TASK);
@@ -71,6 +71,7 @@ public class AssignmentNode extends ResourceTableNode {
     switch (def) {
     case NAME: return getTask().getName();
     case ROLE_IN_TASK: return getRoleForAssigment();
+    case ID: return getTask().getTaskID();
     default: return "";
     }
   }
