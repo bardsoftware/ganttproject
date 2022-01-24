@@ -27,9 +27,6 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 abstract class FlowPage {
   open var active: Boolean
@@ -83,42 +80,39 @@ class GPCloudUiFlow(
 //  private val offlineUi: Pane by lazy { offlinePane.createUi() }
   private var startCount = 0
 
-  fun start() {
+  fun start(sceneId: SceneId = SceneId.SIGNIN) {
     if (startCount++ >= 5) {
       return
     }
+    if (sceneId == SceneId.SIGNUP) {
+      transition(sceneId)
+      return
+    }
+    // At the moment we do not consider any other start scenes besides SIGNUP and SIGNIN.
     tryAccessToken(
-        onSuccess = {
-          //webSocket.start()
-          GlobalScope.launch(Dispatchers.Main) {
-            sceneChanger(mainPane, SceneId.BROWSER)
-            mainPane.resetUi()
+      onSuccess = {
+        //webSocket.start()
+        sceneChanger(mainPane, SceneId.BROWSER)
+        mainPane.resetUi()
+      },
+      onError = {
+        when (it) {
+          "NO_ACCESS_TOKEN" -> {
+            sceneChanger(signupPane, SceneId.SIGNUP)
           }
-        },
-        onError = {
-          when (it) {
-            "NO_ACCESS_TOKEN" -> {
-              GlobalScope.launch(Dispatchers.Main) {
-                sceneChanger(signupPane, SceneId.SIGNUP)
-              }
-            }
-            "ACCESS_TOKEN_EXPIRED" -> {
-              GlobalScope.launch(Dispatchers.Main) {
-                sceneChanger(signinPane, SceneId.SIGNIN)
-              }
-            }
-            "INVALID" -> {
-              GlobalScope.launch(Dispatchers.Main) {
-                sceneChanger(signupPane, SceneId.SIGNUP)
-              }
-            }
-            "OFFLINE" -> {
-              sceneChanger(offlineAlertPage, SceneId.OFFLINE)
-            }
-            else -> {
-            }
+          "ACCESS_TOKEN_EXPIRED" -> {
+            sceneChanger(signinPane, SceneId.SIGNIN)
+          }
+          "INVALID" -> {
+            sceneChanger(signupPane, SceneId.SIGNUP)
+          }
+          "OFFLINE" -> {
+            sceneChanger(offlineAlertPage, SceneId.OFFLINE)
+          }
+          else -> {
           }
         }
+      }
     )
   }
 
@@ -138,11 +132,10 @@ class GPCloudUiFlow(
   }
 
   private fun sceneChanger(newPage: FlowPage, sceneId: SceneId) {
-    //Exception("sceneChanger: sceneId=$sceneId").printStackTrace()
     Platform.runLater {
       currentPage.active = false
-      when (sceneId) {
-        SceneId.SIGNIN -> httpd.onTokenReceived = { token, validity, userId, websocketToken ->
+      if (sceneId == SceneId.SIGNIN) {
+        httpd.onTokenReceived = { token, validity, userId, websocketToken ->
           GPCloudOptions.onAuthToken().invoke(token, validity, userId, websocketToken)
           transition(SceneId.BROWSER)
         }
@@ -161,6 +154,8 @@ class GPCloudUiFlow(
       }
       SceneId.BROWSER -> { sceneChanger(mainPane, page) }
       SceneId.OFFLINE_BROWSER -> { sceneChanger(offlineMainPage, page) }
+      SceneId.SIGNUP -> { sceneChanger(signupPane, page) }
+      else -> error("Transition to $page was not expected")
     }
   }
 
@@ -171,8 +166,8 @@ class GPCloudUiFlowBuilder {
   lateinit var mainPage: FlowPage
   var offlineAlertPage: FlowPage = EmptyFlowPage()
   var offlineMainPage: FlowPage = EmptyFlowPage()
-  var signinPage: FlowPage = SigninPane()
-  var signupPane: FlowPage = GPCloudSignupPane()
+  private var signinPage: FlowPage = SigninPane()
+  private var signupPane: FlowPage = GPCloudSignupPane()
 
 
   fun build(): GPCloudUiFlow = GPCloudUiFlow(

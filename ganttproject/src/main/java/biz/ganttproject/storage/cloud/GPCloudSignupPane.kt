@@ -19,26 +19,25 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.Spinner
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.openInBrowser
-import biz.ganttproject.lib.fx.vbox
 import com.google.common.base.Strings
 import com.sandec.mdfx.MDFXNode
 import javafx.event.ActionEvent
 import javafx.geometry.Insets
 import javafx.geometry.Pos
-import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Label
-import javafx.scene.image.Image
-import javafx.scene.image.ImageView
-import javafx.scene.layout.*
-import java.time.Duration
-import java.time.Instant
+import javafx.scene.layout.ColumnConstraints
+import javafx.scene.layout.GridPane
+import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
 
 
 /**
+ * This page shows a small introduction which explains what is GanttProject Cloud and
+ * provides "Sign In" and "Register" buttons.
+ *
  * @author dbarashev@bardsoftware.com
  */
 class GPCloudSignupPane() : FlowPage() {
@@ -51,7 +50,7 @@ class GPCloudSignupPane() : FlowPage() {
     this.controller = controller
   }
 
-  fun createPane(msgIntro: String? = null): Pane {
+  private fun createPane(msgIntro: String? = null): Pane {
     val vboxBuilder = VBoxBuilder()
     vboxBuilder.addTitle(i18n.formatText("title"))
     vboxBuilder.add(Label().apply {

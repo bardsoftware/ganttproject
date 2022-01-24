@@ -424,10 +424,19 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   private fun buildNotOnlineDocumentScene(): Scene {
     val wrapperPane = BorderPane()
     this.onActive = {
-      GPCloudUiFlowBuilder().apply {
-        flowPageChanger = createFlowPageChanger(wrapperPane)
-        mainPage = NotOnlineDocumentMainPage()
-        build().start()
+      val pageChanger = createFlowPageChanger(wrapperPane)
+      val cloudUiFlow = GPCloudUiFlowBuilder().let {
+        it.flowPageChanger = pageChanger
+        it.mainPage = NotOnlineDocumentMainPage()
+        it.build()
+      }
+      when (GPCloudOptions.cloudStatus.value) {
+        CloudStatus.CONNECTED -> {
+          cloudUiFlow.start(SceneId.SIGNIN)
+        }
+        CloudStatus.DISCONNECTED, CloudStatus.UNKNOWN -> {
+          cloudUiFlow.start(SceneId.SIGNUP)
+        }
       }
     }
     return Scene(wrapperPane)
