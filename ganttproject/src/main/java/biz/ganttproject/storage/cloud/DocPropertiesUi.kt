@@ -21,7 +21,7 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.app.*
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.platform.DialogControllerImpl
+import biz.ganttproject.app.DialogControllerPane
 import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -439,7 +439,7 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
     val onlineDocument = this.project.document.asOnlineDocument() ?: return buildNotOnlineDocumentScene()
     return if (onlineDocument is GPCloudDocument) {
       val group = BorderPane()
-      val dialogBuildApi = DialogControllerImpl(group)
+      val dialogBuildApi = DialogControllerPane(group)
       DocPropertiesUi(errorUi = {}, busyUi = {}).addContent(dialogBuildApi, onlineDocument, this::onOnlineDocFetch)
       return Scene(group)
     } else {

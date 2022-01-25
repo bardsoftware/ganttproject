@@ -18,21 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.platform
 
-import biz.ganttproject.app.DIALOG_STYLESHEET
-import biz.ganttproject.app.DialogController
-import biz.ganttproject.app.LocalizedString
-import biz.ganttproject.app.createAlertPane
+import biz.ganttproject.app.*
 import biz.ganttproject.core.option.GPOptionGroup
 import com.bardsoftware.eclipsito.update.UpdateMetadata
 import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
-import javafx.scene.Node
 import javafx.scene.Scene
-import javafx.scene.control.Button
-import javafx.scene.control.ButtonBar
-import javafx.scene.control.ButtonType
 import javafx.scene.layout.BorderPane
-import javafx.scene.layout.StackPane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
 import java.awt.BorderLayout
@@ -80,7 +72,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
       it.styleClass.addAll("dlg-information", "dlg", "dialog-pane", "border-etched")
       it.stylesheets.addAll(DIALOG_STYLESHEET)
     }
-    val dialogBuildApi = DialogControllerImpl(group)
+    val dialogBuildApi = DialogControllerPane(group)
     val updateUi = UpdateDialog(filteredUpdates, filteredUpdates) {
       SwingUtilities.invokeLater {
         uiFacade.quitApplication(false)
@@ -93,88 +85,3 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
 
 }
 
-class DialogControllerImpl(private val root: BorderPane) : DialogController {
-  override var beforeShow: () -> Unit = {}
-  override var onShown: () -> Unit = {}
-  override var onClosed: () -> Unit = {}
-
-  private lateinit var contentNode: Node
-  private val buttonBar = ButtonBar().also {
-    it.maxWidth = Double.MAX_VALUE
-  }
-  private val stackPane = StackPane().also {
-    it.styleClass.add("layers")
-    root.center = it
-    root.bottom = buttonBar
-  }
-
-  override fun setContent(content: Node) {
-    this.contentNode = content
-    content.styleClass.add("content-pane")
-    this.stackPane.children.add(content)
-  }
-
-  override fun setupButton(type: ButtonType, code: (Button) -> Unit): Button? {
-    if (type == ButtonType.APPLY) {
-      val btn = createButton(type)
-      code(btn)
-      this.buttonBar.buttons.add(btn)
-      return btn
-    } else {
-      return null
-    }
-  }
-
-  override fun showAlert(title: LocalizedString, content: Node) {
-    Platform.runLater {
-      createAlertPane(this.contentNode, this.stackPane, title, content)
-    }
-  }
-
-  override fun showAlert(title: String, content: Node) {
-    Platform.runLater {
-      createAlertPane(this.contentNode, this.stackPane, title, content)
-    }
-  }
-
-  override fun addStyleClass(vararg styleClass: String) {
-    root.styleClass.addAll(styleClass)
-  }
-
-  override fun addStyleSheet(vararg stylesheets: String) {
-    root.stylesheets.addAll(stylesheets)
-  }
-
-  override fun setHeader(header: Node) {
-    root.top = header.also { it.styleClass.add("header") }
-  }
-
-  override fun hide() {
-  }
-
-  override fun setButtonPaneNode(content: Node) {
-    TODO("Not yet implemented")
-  }
-
-  override fun removeButtonBar() {
-  }
-
-  override fun toggleProgress(shown: Boolean): () -> Unit {
-    return {}
-  }
-
-  override fun resize() {
-
-  }
-
-  private fun createButton(buttonType: ButtonType): Button {
-    val button = Button(buttonType.text)
-    val buttonData = buttonType.buttonData
-    ButtonBar.setButtonData(button, buttonData)
-    button.isDefaultButton = buttonData.isDefaultButton
-    button.isCancelButton = buttonData.isCancelButton
-
-    return button
-  }
-
-}
