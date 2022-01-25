@@ -131,6 +131,12 @@ class DialogControllerImpl(private val root: BorderPane) : DialogController {
     }
   }
 
+  override fun showAlert(title: String, content: Node) {
+    Platform.runLater {
+      createAlertPane(this.contentNode, this.stackPane, title, content)
+    }
+  }
+
   override fun addStyleClass(vararg styleClass: String) {
     root.styleClass.addAll(styleClass)
   }
