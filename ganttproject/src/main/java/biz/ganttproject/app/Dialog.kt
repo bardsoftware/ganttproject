@@ -119,6 +119,7 @@ interface DialogController {
   fun setContent(content: Node)
   fun setupButton(type: ButtonType, code: (Button) -> Unit = {}): Button?
   fun showAlert(title: LocalizedString, content: Node)
+  fun showAlert(title: String, content: Node)
   fun addStyleClass(vararg styleClass: String)
   fun addStyleSheet(vararg stylesheets: String)
   fun setHeader(header: Node)
@@ -280,6 +281,12 @@ class DialogControllerSwing : DialogController {
     }
   }
 
+  override fun showAlert(title: String, content: Node) {
+    Platform.runLater {
+      createAlertPane(this.content, this.contentStack, title, content)
+    }
+  }
+
   override fun addStyleClass(vararg styleClass: String) {
     this.paneBuilder.vbox.styleClass.addAll(styleClass)
   }
@@ -385,6 +392,12 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
     }
   }
 
+  override fun showAlert(title: String, content: Node) {
+    Platform.runLater {
+      createAlertPane(this.content, this.stackPane, title, content)
+    }
+  }
+
   override fun addStyleClass(vararg styleClass: String) {
     this.dialogPane.styleClass.addAll(styleClass)
   }
@@ -437,6 +450,14 @@ fun createOverlayPane(underlayPane: Node, stackPane: StackPane, overlayBuilder: 
 }
 
 fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: LocalizedString, body: Node) {
+  doCreateAlertPane(underlayPane, stackPane, { it.addTitle(title) }, body)
+}
+
+fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: String, body: Node) {
+  doCreateAlertPane(underlayPane, stackPane, { it.addTitleString(title) }, body)
+}
+
+private fun doCreateAlertPane(underlayPane: Node, stackPane: StackPane, title: (VBoxBuilder)->HBox, body: Node) {
   createOverlayPane(underlayPane, stackPane) { pane ->
     pane.styleClass.add("alert-glasspane")
     buildAlertPane(title, body, true).let {

@@ -30,10 +30,10 @@ import javafx.scene.layout.Region
 
 data class AlertPane(val contents: Node, val btnClose: Button?)
 
-fun buildAlertPane(title: LocalizedString, body: Node, withClose: Boolean): AlertPane {
+fun buildAlertPane(title: (VBoxBuilder)->HBox, body: Node, withClose: Boolean): AlertPane {
   val vboxBuilder = VBoxBuilder("alert-box")
   var btnClose: Button?
-  vboxBuilder.addTitle(title).also { hbox ->
+  title(vboxBuilder).also { hbox ->
     hbox.alignment = Pos.CENTER_LEFT
     hbox.isFillHeight = true
     hbox.children.add(Region().also { node -> HBox.setHgrow(node, Priority.ALWAYS) })
