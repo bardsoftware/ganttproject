@@ -20,6 +20,7 @@ package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.DocumentUri
+import biz.ganttproject.storage.ForbiddenException
 import biz.ganttproject.storage.Path
 import biz.ganttproject.storage.cloud.http.JsonTask
 import com.fasterxml.jackson.databind.JsonNode
@@ -187,6 +188,9 @@ class HistoryTask(private val busyIndicator: (Boolean) -> Unit,
         with(log) {
           warning(
               "Failed to get project history. Response code=${resp.code} reason=${resp.reason}")
+        }
+        if (resp.code == 401 || resp.code == 403) {
+          throw ForbiddenException()
         }
         throw IOException("Server responded with HTTP ${resp.code}")
       }

@@ -73,6 +73,8 @@ class GPCloudDocument(val teamRefid: String?,
   override val mode = SimpleObjectProperty(OnlineDocumentMode.ONLINE_ONLY)
   override val fetchResultProperty = SimpleObjectProperty<FetchResult>()
   override val latestVersionProperty = SimpleObjectProperty<LatestVersion>(this, "")
+  override val id: String
+    get() = this.projectRefid ?: ""
 
   private val queryArgs: String
     get() = "?projectRefid=${this.projectRefid}"
@@ -300,11 +302,12 @@ class GPCloudDocument(val teamRefid: String?,
     return callReadProject()
   }
 
+  @Throws(ForbiddenException::class, PaymentRequiredException::class, ForbiddenException::class)
   override suspend fun fetchVersion(version: Long): FetchResult {
     return callReadProject(version)
   }
 
-  @Throws(ForbiddenException::class)
+  @Throws(ForbiddenException::class, PaymentRequiredException::class, ForbiddenException::class)
   private fun callReadProject(version: Long = -1): FetchResult {
     LOG.debug("Calling /p/read")
     val http = this.httpClientFactory()

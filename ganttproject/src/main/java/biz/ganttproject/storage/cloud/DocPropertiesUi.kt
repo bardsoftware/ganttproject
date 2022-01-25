@@ -21,7 +21,7 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.app.*
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.lib.fx.vbox
+import biz.ganttproject.app.DialogControllerPane
 import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -37,14 +37,18 @@ import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.ProjectOpenStrategy
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.awt.BorderLayout
 import java.awt.Component
+import java.io.IOException
 import java.time.Duration
 import java.util.*
 import javax.swing.JPanel
@@ -179,9 +183,11 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
 
   private data class HistoryPaneData(val pane: Pane, val loader: (GPCloudDocument) -> Nothing?)
 
-  private fun createHistoryPane(fetchConsumer: (FetchResult) -> Unit): HistoryPaneData {
+  private fun createHistoryPane(fetchConsumer: (FetchResult) -> Unit, errorUi: (String, String) -> Unit): HistoryPaneData {
     val folderView = FolderView(
-        exceptionUi = {},
+        exceptionUi = {
+
+        },
         maybeCellFactory = this@DocPropertiesUi::createHistoryCell
     )
     val vboxBuilder = VBoxBuilder("tab-contents", "section", "history-pane").apply {
@@ -202,9 +208,39 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       btnGet.addEventHandler(ActionEvent.ACTION) {
         val selected = listView.selectionModel.selectedItem?.resource?.get() ?: return@addEventHandler
         ourCoroutines.launch {
-          folderView.document?.fetchVersion(selected.generation)?.also {
-            it.update()
-            fetchConsumer(it)
+          folderView.document?.let { doc ->
+            val logDetails = { ex: Exception ->
+              ourLogger.error("Failed to fetch the document version from the history", mapOf(
+                "doc" to doc.id,
+                "user" to GPCloudOptions.userId.value,
+                "generation" to selected.generation
+              ), ex)
+            }
+            try {
+              doc.fetchVersion(selected.generation).also {
+                it.update()
+                fetchConsumer(it)
+              }
+            } catch (ex: IOException) {
+              logDetails(ex)
+              errorUi("GanttProject Cloud Error",
+                """Failed to fetch version ${selected.formatTimestamp()}: 
+                  |
+                  |${ex.message ?: ""}""".trimMargin())
+            } catch (ex: ForbiddenException) {
+              logDetails(ex)
+              errorUi("Access Denied",
+                """Failed to fetch version ${selected.formatTimestamp()}: 
+                  |
+                  |It appears that you are not signed in or not authorized to access this document.""".trimMargin())
+            } catch (ex: PaymentRequiredException) {
+              logDetails(ex)
+              errorUi("Payment Required",
+                """Failed to fetch version ${selected.formatTimestamp()}: 
+                  |
+                  |It appears that the team has ran out of credit. Please contact the team owner to resolve this issue.""".trimMargin())
+
+            }
           }
         }
       }
@@ -225,7 +261,28 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
           }
           onFailed = EventHandler {
             busyIndicator(false)
-            //dialogUi.error("History loading has failed")
+            it.source.exception?.let { ex ->
+              ourLogger.error("Failed to fetch the document history", mapOf(
+                "doc" to doc.id,
+                "user" to GPCloudOptions.userId.value,
+              ), ex)
+              when (ex) {
+                is ForbiddenException -> {
+                  errorUi("Access Denied",
+                    """Failed to get the document history. 
+                      |
+                      |It appears that you are not signed in or not authorized to access this document.""".trimMargin())
+                }
+                else -> {
+                  errorUi("GanttProject Cloud Error",
+                    """
+                    Failed to get the document history.
+                    
+                    ${ex.message ?: ""}
+                  """.trimIndent())
+                }
+              }
+            }
           }
           onCancelled = EventHandler {
             this.busyIndicator(false)
@@ -271,7 +328,8 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     val commitChanges: () -> Unit
   )
 
-  fun buildPane(document: GPCloudDocument, fetchConsumer: (FetchResult) -> Unit): LockOfflinePaneElements {
+  private fun buildPane(document: GPCloudDocument, fetchConsumer: (FetchResult) -> Unit,
+                        errorUi: (String, String) -> Unit): LockOfflinePaneElements {
     val lockToggleGroup = ToggleGroup()
     val mirrorToggleGroup = ToggleGroup()
 
@@ -303,7 +361,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     }
 
     val lockingOffline = Tab(RootLocalizer.formatText("cloud.lockAndOfflinePane.tab"), vboxBuilder.vbox)
-    val historyPane = createHistoryPane(fetchConsumer)
+    val historyPane = createHistoryPane(fetchConsumer, errorUi)
     val versions = Tab(RootLocalizer.formatText("cloud.historyPane.tab"), historyPane.pane)
     val tabPane = TabPane(lockingOffline, versions).also {
       it.tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
@@ -327,26 +385,32 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
     return LockOfflinePaneElements(tabPane, ::commitChanges)
   }
 
-
-  fun showDialog(document: GPCloudDocument, fetchConsumer: (FetchResult) -> Unit) {
-    dialog { dialogController ->
-      val paneElements = buildPane(document, fetchConsumer)
-      dialogController.addStyleClass("dlg-lock")
-      dialogController.addStyleClass("dlg-cloud-file-options")
-      dialogController.addStyleSheet(
-          "/biz/ganttproject/app/TabPane.css",
-          "/biz/ganttproject/storage/cloud/DocPropertiesUi.css",
-          "/biz/ganttproject/storage/StorageDialog.css"
-      )
-      dialogController.setContent(paneElements.pane)
-      dialogController.setupButton(ButtonType.APPLY) {btn ->
-        btn.textProperty().bind(RootLocalizer.create("cloud.offlineMirrorOptionPane.btnApply"))
-        btn.styleClass.add("btn-attention")
-        btn.addEventHandler(ActionEvent.ACTION) {
-          paneElements.commitChanges()
-        }
+  fun addContent(dialogController: DialogController, document: GPCloudDocument, fetchConsumer: (FetchResult) -> Unit) {
+    val errorUi = { title: String, msg: String ->
+      dialogController.showAlert(title, createAlertBody(msg))
+    }
+    val paneElements = buildPane(document, fetchConsumer, errorUi)
+    dialogController.addStyleClass("dlg")
+    dialogController.addStyleClass("dlg-lock")
+    dialogController.addStyleClass("dlg-cloud-file-options")
+    dialogController.addStyleSheet(
+      "/biz/ganttproject/app/TabPane.css",
+      "/biz/ganttproject/app/Dialog.css",
+      "/biz/ganttproject/storage/cloud/DocPropertiesUi.css",
+      "/biz/ganttproject/storage/StorageDialog.css"
+    )
+    dialogController.setContent(paneElements.pane)
+    dialogController.setupButton(ButtonType.APPLY) {btn ->
+      btn.textProperty().bind(RootLocalizer.create("cloud.offlineMirrorOptionPane.btnApply"))
+      btn.styleClass.add("btn-attention")
+      btn.addEventHandler(ActionEvent.ACTION) {
+        paneElements.commitChanges()
       }
     }
+  }
+
+  fun showDialog(document: GPCloudDocument, fetchConsumer: (FetchResult) -> Unit) {
+    dialog { dialogController -> addContent( dialogController, document, fetchConsumer) }
   }
 }
 
@@ -374,18 +438,10 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   private fun buildScene(): Scene {
     val onlineDocument = this.project.document.asOnlineDocument() ?: return buildNotOnlineDocumentScene()
     return if (onlineDocument is GPCloudDocument) {
-      DocPropertiesUi(errorUi = {}, busyUi = {}).buildPane(onlineDocument, this::onOnlineDocFetch).let {
-        paneElements = it
-        Scene(vbox {
-          addClasses("dlg-lock", "dlg-cloud-file-options")
-          addStylesheets(
-            "/biz/ganttproject/app/TabPane.css",
-            "/biz/ganttproject/storage/cloud/DocPropertiesUi.css",
-            "/biz/ganttproject/storage/StorageDialog.css"
-          )
-          add(it.pane, Pos.CENTER, Priority.ALWAYS)
-        })
-      }
+      val group = BorderPane()
+      val dialogBuildApi = DialogControllerPane(group)
+      DocPropertiesUi(errorUi = {}, busyUi = {}).addContent(dialogBuildApi, onlineDocument, this::onOnlineDocFetch)
+      return Scene(group)
     } else {
       buildNotOnlineDocumentScene()
     }
@@ -461,3 +517,4 @@ private val OFFLINE_MIRROR_LOCALIZER = RootLocalizer.createWithRootKey(
         "cloud.offlineMirrorOptionPane", BROWSE_PANE_LOCALIZER)
 private val LOCK_LOCALIZER = RootLocalizer.createWithRootKey("cloud.lockOptionPane")
 private val ourCoroutines = CoroutineScope(Dispatchers.JavaFx)
+private val ourLogger = GPLogger.create("Cloud.Document.History")

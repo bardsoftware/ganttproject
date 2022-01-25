@@ -24,8 +24,6 @@ import javafx.animation.FadeTransition
 import javafx.animation.ParallelTransition
 import javafx.animation.Transition
 import javafx.application.Platform
-import javafx.collections.FXCollections
-import javafx.collections.ListChangeListener
 import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -48,7 +46,6 @@ import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.mainWindow
-import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.SwingUtilities
@@ -119,6 +116,7 @@ interface DialogController {
   fun setContent(content: Node)
   fun setupButton(type: ButtonType, code: (Button) -> Unit = {}): Button?
   fun showAlert(title: LocalizedString, content: Node)
+  fun showAlert(title: String, content: Node)
   fun addStyleClass(vararg styleClass: String)
   fun addStyleSheet(vararg stylesheets: String)
   fun setHeader(header: Node)
@@ -132,6 +130,10 @@ interface DialogController {
   var onClosed: () -> Unit
 }
 
+/**
+ * This is an implementation of a DialogController on top of a Swing dialog with embedded
+ * JavaFX components.
+ */
 class DialogControllerSwing : DialogController {
   private var buttonPaneNode: Node? = null
   override var beforeShow: () -> Unit = {}
@@ -280,6 +282,12 @@ class DialogControllerSwing : DialogController {
     }
   }
 
+  override fun showAlert(title: String, content: Node) {
+    Platform.runLater {
+      createAlertPane(this.content, this.contentStack, title, content)
+    }
+  }
+
   override fun addStyleClass(vararg styleClass: String) {
     this.paneBuilder.vbox.styleClass.addAll(styleClass)
   }
@@ -340,6 +348,9 @@ class DialogControllerSwing : DialogController {
 
 }
 
+/**
+ * This is an implementation of a DialogController on top of JavaFX dialog.
+ */
 class DialogControllerFx(private val dialogPane: DialogPane) : DialogController {
   override var beforeShow: () -> Unit = {}
   override var onShown: () -> Unit = {}
@@ -385,6 +396,12 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
     }
   }
 
+  override fun showAlert(title: String, content: Node) {
+    Platform.runLater {
+      createAlertPane(this.content, this.stackPane, title, content)
+    }
+  }
+
   override fun addStyleClass(vararg styleClass: String) {
     this.dialogPane.styleClass.addAll(styleClass)
   }
@@ -407,6 +424,97 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
   }
 
   override fun setButtonPaneNode(content: Node) {
+  }
+}
+
+/**
+ * This implementation provides DialogController interface on top of BorderPane.
+ * It is useful when the same component is used both as a standalone dialog and as
+ * a part of a more complex window. Examples are "Cloud Document Properties" and "App Update"
+ * panes.
+ */
+class DialogControllerPane(private val root: BorderPane) : DialogController {
+  override var beforeShow: () -> Unit = {}
+  override var onShown: () -> Unit = {}
+  override var onClosed: () -> Unit = {}
+
+  private lateinit var contentNode: Node
+  private val buttonBar = ButtonBar().also {
+    it.maxWidth = Double.MAX_VALUE
+  }
+  private val stackPane = StackPane().also {
+    it.styleClass.add("layers")
+    root.center = it
+    root.bottom = buttonBar
+  }
+
+  override fun setContent(content: Node) {
+    this.contentNode = content
+    content.styleClass.add("content-pane")
+    this.stackPane.children.add(content)
+  }
+
+  override fun setupButton(type: ButtonType, code: (Button) -> Unit): Button? {
+    if (type == ButtonType.APPLY) {
+      val btn = createButton(type)
+      code(btn)
+      this.buttonBar.buttons.add(btn)
+      return btn
+    } else {
+      return null
+    }
+  }
+
+  override fun showAlert(title: LocalizedString, content: Node) {
+    Platform.runLater {
+      createAlertPane(this.contentNode, this.stackPane, title, content)
+    }
+  }
+
+  override fun showAlert(title: String, content: Node) {
+    Platform.runLater {
+      createAlertPane(this.contentNode, this.stackPane, title, content)
+    }
+  }
+
+  override fun addStyleClass(vararg styleClass: String) {
+    root.styleClass.addAll(styleClass)
+  }
+
+  override fun addStyleSheet(vararg stylesheets: String) {
+    root.stylesheets.addAll(stylesheets)
+  }
+
+  override fun setHeader(header: Node) {
+    root.top = header.also { it.styleClass.add("header") }
+  }
+
+  override fun hide() {
+  }
+
+  override fun setButtonPaneNode(content: Node) {
+    TODO("Not yet implemented")
+  }
+
+  override fun removeButtonBar() {
+  }
+
+  override fun toggleProgress(shown: Boolean): () -> Unit {
+    return {}
+  }
+
+  override fun resize() {
+
+  }
+
+  private fun createButton(buttonType: ButtonType): Button {
+    val button = Button(buttonType.text)
+    val buttonData = buttonType.buttonData
+    ButtonBar.setButtonData(button, buttonData)
+    button.isDefaultButton = buttonData.isDefaultButton
+    button.isCancelButton = buttonData.isCancelButton
+
+    return button
   }
 }
 
@@ -437,6 +545,14 @@ fun createOverlayPane(underlayPane: Node, stackPane: StackPane, overlayBuilder: 
 }
 
 fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: LocalizedString, body: Node) {
+  doCreateAlertPane(underlayPane, stackPane, { it.addTitle(title) }, body)
+}
+
+fun createAlertPane(underlayPane: Node, stackPane: StackPane, title: String, body: Node) {
+  doCreateAlertPane(underlayPane, stackPane, { it.addTitleString(title) }, body)
+}
+
+private fun doCreateAlertPane(underlayPane: Node, stackPane: StackPane, title: (VBoxBuilder)->HBox, body: Node) {
   createOverlayPane(underlayPane, stackPane) { pane ->
     pane.styleClass.add("alert-glasspane")
     buildAlertPane(title, body, true).let {
@@ -458,3 +574,4 @@ fun createAlertBody(message: String): Node =
 
 fun createAlertBody(ex: Exception): Node = createAlertBody(ex.message ?: "")
 const val DIALOG_STYLESHEET = "/biz/ganttproject/app/Dialog.css"
+
