@@ -65,7 +65,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
     val runningVersion = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "2900"
     val runningUpdateMetadata = UpdateMetadata(
       runningVersion,
-      null, null, null, 0, "")
+      null, null, null, 0, "", false)
     val filteredUpdates = updateMetadata.filter { it > runningUpdateMetadata }
 
     val group = BorderPane().also {

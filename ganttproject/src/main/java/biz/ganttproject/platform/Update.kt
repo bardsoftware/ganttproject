@@ -78,13 +78,13 @@ private fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, 
   val cutoffVersion = listOf(UpdateOptions.latestShownVersion.value ?: runningVersion, runningVersion).maxOrNull()
   val latestShownUpdateMetadata = UpdateMetadata(
       cutoffVersion,
-      null, null, null, 0, "")
+      null, null, null, 0, "", false)
   val visibleUpdates = updates
       .filter { showSkipped || Strings.nullToEmpty(latestShownUpdateMetadata.version).isEmpty() || it > latestShownUpdateMetadata }
   if (visibleUpdates.isNotEmpty()) {
     val runningUpdateMetadata = UpdateMetadata(
       runningVersion,
-      null, null, null, 0, "")
+      null, null, null, 0, "", false)
     val applyUpdates = updates.filter { it > runningUpdateMetadata }
     val dlg = UpdateDialog(applyUpdates, visibleUpdates) {
       SwingUtilities.invokeLater {
@@ -111,6 +111,7 @@ internal class UpdateDialog(
   private lateinit var dialogApi: DialogController
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
   private val hasUpdates: Boolean get() = this.visibleUpdates.isNotEmpty()
+  private val majorUpdate: UpdateMetadata? get() = this.updates.firstOrNull { it.isMajorUpdate }
 
   private fun createPane(bean: PlatformBean): Node {
     val bodyBuilder = VBoxBuilder("content-pane")
@@ -143,7 +144,13 @@ internal class UpdateDialog(
 
     if (this.hasUpdates) {
       val updateBox = VBoxBuilder()
-      this.visibleUpdates
+      this.majorUpdate?.let { majorUpdate ->
+         val componentUi = UpdateComponentUi(majorUpdate)
+        updateBox.add(componentUi.title)
+        updateBox.add(componentUi.subtitle)
+        updateBox.add(componentUi.text)
+      } ?: run {
+        this.visibleUpdates
           .map {
             UpdateComponentUi(it).also { ui ->
               version2ui[it.version] = ui
@@ -154,7 +161,7 @@ internal class UpdateDialog(
             updateBox.add(it.text)
             updateBox.add(it.progress)
           }
-
+      }
       bodyBuilder.add(ScrollPane(updateBox.vbox.also {
         it.styleClass.add("body")
       }).also {
