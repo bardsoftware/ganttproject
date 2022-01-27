@@ -36,7 +36,7 @@ import kotlin.collections.ArrayList
 fun initLocale() {
   object : CalendarFactory() {
     init {
-      CalendarFactory.setLocaleApi(object : CalendarFactory.LocaleApi {
+      setLocaleApi(object : LocaleApi {
         override fun getLocale(): Locale {
           return Locale.US
         }
@@ -90,7 +90,5 @@ class ProjectCalendarTest: TestCase() {
     assertTrue(publicHolidays[1].type == CalendarEvent.Type.HOLIDAY)
     assertEquals(parser.parse("2018-04-30"), publicHolidays[1].myDate)
   }
-
-
 }
 
