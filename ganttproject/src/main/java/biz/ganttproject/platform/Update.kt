@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.platform
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.app.DialogController
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.createAlertBody
@@ -28,6 +29,7 @@ import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.createToggleSwitch
 import biz.ganttproject.lib.fx.openInBrowser
+import biz.ganttproject.lib.fx.vbox
 import biz.ganttproject.platform.PgpUtil.verifyFile
 import com.bardsoftware.eclipsito.update.UpdateIntegrityChecker
 import com.bardsoftware.eclipsito.update.UpdateMetadata
@@ -41,11 +43,8 @@ import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Insets
 import javafx.scene.Node
-import javafx.scene.control.ButtonBar
-import javafx.scene.control.ButtonType
-import javafx.scene.control.Label
-import javafx.scene.control.ScrollPane
-import javafx.scene.layout.GridPane
+import javafx.scene.control.*
+import javafx.scene.layout.*
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.UIFacade
 import org.controlsfx.control.HyperlinkLabel
@@ -56,6 +55,7 @@ import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
 
 const val PRIVACY_URL = "https://www.ganttproject.biz/about/privacy"
+const val UPGRADE_URL = "https://www.ganttproject.biz/download/upgrade"
 
 fun checkAvailableUpdates(updater: Updater, uiFacade: UIFacade) {
   if (UpdateOptions.isCheckEnabled.value) {
@@ -78,13 +78,13 @@ private fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, 
   val cutoffVersion = listOf(UpdateOptions.latestShownVersion.value ?: runningVersion, runningVersion).maxOrNull()
   val latestShownUpdateMetadata = UpdateMetadata(
       cutoffVersion,
-      null, null, null, 0, "")
+      null, null, null, 0, "", false)
   val visibleUpdates = updates
       .filter { showSkipped || Strings.nullToEmpty(latestShownUpdateMetadata.version).isEmpty() || it > latestShownUpdateMetadata }
   if (visibleUpdates.isNotEmpty()) {
     val runningUpdateMetadata = UpdateMetadata(
       runningVersion,
-      null, null, null, 0, "")
+      null, null, null, 0, "", false)
     val applyUpdates = updates.filter { it > runningUpdateMetadata }
     val dlg = UpdateDialog(applyUpdates, visibleUpdates) {
       SwingUtilities.invokeLater {
@@ -101,8 +101,10 @@ private fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, 
 
 typealias AppRestarter = () -> Unit
 data class PlatformBean(var checkUpdates: Boolean = true, val version: String)
+
 /**
- * @author dbarashev@bardsoftware.com
+ * UI with the information about the running GanttProject version, the list of available updates amd
+ * controls to install updates or disable update checking.
  */
 internal class UpdateDialog(
     private val updates: List<UpdateMetadata>,
@@ -111,51 +113,92 @@ internal class UpdateDialog(
   private lateinit var dialogApi: DialogController
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
   private val hasUpdates: Boolean get() = this.visibleUpdates.isNotEmpty()
+  // Major update metadata, if found in the JSON
+  private val majorUpdate: UpdateMetadata? get() = this.updates.firstOrNull { it.isMajorUpdate }
+  // The list of visible updates with major updates filtered out
+  private val minorUpdates get() = this.visibleUpdates.filter { !it.isMajorUpdate }
+  // The action to install minor updates shall be disabled if we show a major update UI,
+  // but if we switch to "show minor updates", it shall become enabled.
+  private val minorUpdatesDisabled = SimpleBooleanProperty(false)
+  // Progress indicator
+  private val progressText = ourLocalizer.create("installProgress")
+  private val progressLabel: Label = Label().also {
+    it.textProperty().bind(progressText)
+    it.styleClass.add("progress")
+    it.isVisible = false
+  }
 
   private fun createPane(bean: PlatformBean): Node {
     val bodyBuilder = VBoxBuilder("content-pane")
 
-    val props = GridPane().also { it.styleClass.add("props") }
-    props.add(Label(ourLocalizer.formatText("installedVersion")).also {
-      GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
-    }, 0, 0)
-    props.add(Label(bean.version).also {
-      GridPane.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
-    }, 1, 0)
-    props.add(Label(ourLocalizer.formatText("checkUpdates")).also {
-      GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
-    }, 0, 1)
-    val toggleSwitch = createToggleSwitch().also {
-      it.selectedProperty().value = UpdateOptions.isCheckEnabled.value
-      it.selectedProperty().addListener { _, _, newValue -> UpdateOptions.isCheckEnabled.value = newValue }
+    // The upper part of the dialog which shows the running version number and a toggle to switch
+    // the update checking on and off.
+    val props = GridPane().apply {
+      styleClass.add("props")
+      add(Label(ourLocalizer.formatText("installedVersion")).also {
+        GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
+      }, 0, 0)
+      add(Label(bean.version).also {
+        GridPane.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
+      }, 1, 0)
+      add(Label(ourLocalizer.formatText("checkUpdates")).also {
+        GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
+      }, 0, 1)
+      val toggleSwitch = createToggleSwitch().also {
+        it.selectedProperty().value = UpdateOptions.isCheckEnabled.value
+        it.selectedProperty().addListener { _, _, newValue -> UpdateOptions.isCheckEnabled.value = newValue }
+      }
+      add(toggleSwitch, 1, 1)
+      add(HyperlinkLabel(ourLocalizer.formatText("checkUpdates.helpline")).also {
+        it.styleClass.add("helpline")
+        it.onAction = EventHandler { openInBrowser(PRIVACY_URL) }
+      }, 1, 2)
+      if (this@UpdateDialog.majorUpdate == null) {
+        add(
+          Label(
+            if (this@UpdateDialog.hasUpdates) ourLocalizer.formatText("availableUpdates")
+            else ourLocalizer.formatText("noUpdates.title")
+          ).also {
+            GridPane.setMargin(it, Insets(30.0, 0.0, 5.0, 0.0))
+          },
+          0, 3)
+      }
     }
-    props.add(toggleSwitch, 1, 1)
-    props.add(HyperlinkLabel(ourLocalizer.formatText("checkUpdates.helpline")).also {
-      it.styleClass.add("helpline")
-      it.onAction = EventHandler { openInBrowser(PRIVACY_URL) }
-    }, 1, 2)
-    props.add(
-      Label(if (this.hasUpdates) ourLocalizer.formatText("availableUpdates") else ourLocalizer.formatText("noUpdates.title")).also {
-        GridPane.setMargin(it, Insets(30.0, 0.0, 5.0, 0.0))
-      },
-      0, 3)
     bodyBuilder.add(props)
 
     if (this.hasUpdates) {
-      val updateBox = VBoxBuilder()
-      this.visibleUpdates
-          .map {
-            UpdateComponentUi(it).also { ui ->
-              version2ui[it.version] = ui
-            }
-          }.forEach {
-            updateBox.add(it.title)
-            updateBox.add(it.subtitle)
-            updateBox.add(it.text)
-            updateBox.add(it.progress)
-          }
 
-      bodyBuilder.add(ScrollPane(updateBox.vbox.also {
+      val wrapperPane = BorderPane()
+      val minorUpdates = this.minorUpdates.map {
+        UpdateComponentUi(it).also { ui ->
+          version2ui[it.version] = ui
+        }
+      }
+
+      val minorUpdatesUi = vbox {
+        addClasses("minor-update")
+        minorUpdates.forEach {
+            add(it.title)
+            add(it.subtitle)
+            add(it.text)
+          }
+        vbox
+      }
+
+      wrapperPane.center = this.majorUpdate?.let { majorUpdate ->
+        // If we have a "major update" record, we will show only that one.
+        // The action to install minor updates shall be disabled.
+        minorUpdatesDisabled.value = true
+        MajorUpdateUi(majorUpdate, minorUpdates.isNotEmpty()) {
+          FXUtil.transitionCenterPane(wrapperPane, minorUpdatesUi) {
+            // If we transition to the minor updates, we enable the install action.
+            dialogApi.resize()
+            minorUpdatesDisabled.value = false
+          }
+        }.component
+      } ?: minorUpdatesUi
+
+      bodyBuilder.add(ScrollPane(wrapperPane.also {
         it.styleClass.add("body")
       }).also {
         it.isFitToWidth = true
@@ -172,27 +215,18 @@ internal class UpdateDialog(
     this.dialogApi = dialogApi
     dialogApi.addStyleClass("dlg-platform-update")
     dialogApi.addStyleSheet(
-        "/biz/ganttproject/platform/Update.css",
-        "/biz/ganttproject/storage/StorageDialog.css",
-        "/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+      "/biz/ganttproject/app/Dialog.css",
+      "/biz/ganttproject/platform/Update.css"
+    )
 
     dialogApi.setHeader(VBoxBuilder("header").apply {
       addTitle(ourLocalizer.formatText(
           if (this@UpdateDialog.hasUpdates) "hasUpdates.title" else "noUpdates.title")
       )
-      add(Label().apply {
-        this.styleClass.add("help")
-        if (this@UpdateDialog.hasUpdates) {
-          this.text = ourLocalizer.formatText("hasUpdates.titleHelp",
-              installedVersion,
-              this@UpdateDialog.updates.first().version
-          )
-        }
-      })
     }.vbox)
 
     val downloadCompleted = SimpleBooleanProperty(false)
-    if (this.hasUpdates) {
+    if (this.minorUpdates.isNotEmpty()) {
       dialogApi.setupButton(ButtonType.APPLY) { btn ->
         ButtonBar.setButtonUniformSize(btn, false)
         btn.styleClass.add("btn-attention")
@@ -214,6 +248,9 @@ internal class UpdateDialog(
             btn.properties["restart"] = true
           }
         }
+        minorUpdatesDisabled.addListener { _, _, newValue ->
+          btn.isDisable = newValue
+        }
       }
     }
     dialogApi.setupButton(ButtonType.CLOSE) { btn ->
@@ -229,6 +266,7 @@ internal class UpdateDialog(
       }
     }
     dialogApi.setContent(this.createPane(bean))
+    dialogApi.setButtonPaneNode(this.progressLabel)
   }
 
   private fun onRestart() {
@@ -237,9 +275,23 @@ internal class UpdateDialog(
 
   private fun onDownload(completed: SimpleBooleanProperty) {
     var installFuture: CompletableFuture<File>? = null
-    for (update in updates.reversed()) {
+    for (update in updates.filter { !it.isMajorUpdate }.reversed()) {
+      val minorUpdateUi = this.version2ui[update.version]
       val progressMonitor: (Int) -> Unit = { percents: Int ->
-        this.version2ui[update.version]?.updateProgress(percents)
+        if (minorUpdateUi != null) {
+          Platform.runLater {
+            if (minorUpdateUi.progressValue == -1) {
+              this.progressLabel.isVisible = true
+            }
+            if (minorUpdateUi.progressValue != percents) {
+              minorUpdateUi.progressValue = percents
+              progressText.update(update.version, percents.toString())
+              if (percents == 100) {
+                this.progressLabel.isVisible = false
+              }
+            }
+          }
+        }
       }
       installFuture =
           if (installFuture == null) update.install(progressMonitor)
@@ -252,6 +304,9 @@ internal class UpdateDialog(
       this.dialogApi.showAlert(ourLocalizer.create("alert.title"), createAlertBody(ex.message ?: ""))
       null
     }
+  }
+
+  private fun updateProgress(percents: Int) {
   }
 }
 
@@ -274,6 +329,9 @@ private fun (UpdateMetadata).sizeAsString(): String {
   }
 }
 
+/**
+ * Encapsulates UI controls which show information and status of individual updates.
+ */
 private class UpdateComponentUi(val update: UpdateMetadata) {
   val title: Label = Label(ourLocalizer.formatText("bodyItem.title", update.version)).also { l ->
     l.styleClass.add("title")
@@ -284,30 +342,56 @@ private class UpdateComponentUi(val update: UpdateMetadata) {
   val text: MDFXNode = MDFXNode(ourLocalizer.formatText("bodyItem.description", update.description)).also { l ->
     l.styleClass.add("par")
   }
-  val progressText = ourLocalizer.create("bodyItem.progress")
-  val progress: Label = Label().also {
-    it.textProperty().bind(progressText)
-    it.styleClass.add("progress")
-    it.isVisible = false
-  }
   var progressValue: Int = -1
-
-  fun updateProgress(percents: Int) {
-    Platform.runLater {
-      if (progressValue == -1) {
-        this.progress.isVisible = true
-      }
-      if (progressValue != percents) {
-        progressValue = percents
-        progressText.update(percents.toString())
-        if (progressValue == 100) {
-          listOf(title, subtitle, text, progress).forEach { it.opacity = 0.5 }
-        }
-      }
+  set(value) {
+    field = value
+    if (value == 100) {
+      listOf(title, subtitle, text).forEach { it.opacity = 0.5 }
     }
   }
 }
 
+/**
+ * User interface for the major update record.
+ */
+private class MajorUpdateUi(update: UpdateMetadata, hasMinorUpdates: Boolean, private val onShowMinorUpdates: ()->Unit) {
+  val title: Label = Label(ourLocalizer.formatText("majorUpdate.title", update.version)).also { l ->
+    l.styleClass.add("title",)
+  }
+  val subtitle = Label(ourLocalizer.formatText("majorUpdate.subtitle", update.version)).apply {
+    styleClass.add("subtitle")
+  }
+  val text: MDFXNode = MDFXNode(ourLocalizer.formatText("majorUpdate.description", update.description)).also { l ->
+    l.styleClass.add("par")
+  }
+  val btnMinorUpdates = Button(ourLocalizer.formatText("majorUpdate.showBugfixUpdates")).also {
+    it.styleClass.addAll("btn", "btn-attention", "secondary")
+    it.onAction = EventHandler {
+      this.onShowMinorUpdates()
+    }
+  }
+  val btnDownload = Button(ourLocalizer.formatText("majorUpdate.download")).apply {
+    styleClass.addAll("btn", "btn-attention")
+    onAction = EventHandler { openInBrowser(UPGRADE_URL) }
+  }
+  val component = vbox {
+    addClasses("major-update")
+    addStylesheets("/biz/ganttproject/app/Dialog.css")
+    add(title)
+    add(subtitle)
+    add(text)
+    add(GridPane().apply {
+      add(btnDownload.also {
+        GridPane.setMargin(it, Insets(00.0, 5.0, 0.0, 0.0))
+      }, 0, 0)
+      if (hasMinorUpdates) {
+        add(btnMinorUpdates, 1, 0)
+      }
+      VBox.setMargin(this, Insets(15.0, 0.0, 0.0, 0.0))
+    })
+    vbox
+  }
+}
 private val LOG = GPLogger.create("App.Update")
 private val ourLocalizer = RootLocalizer.createWithRootKey("platform.update")
 

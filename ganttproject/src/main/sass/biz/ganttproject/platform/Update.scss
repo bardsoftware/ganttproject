@@ -1,0 +1,125 @@
+/*!
+ * Copyright (c) 2022 Dmitry Barashev, BarD Software s.r.o.
+ *
+ * This file is part of GanttProject, an open-source project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
+@import "../app/theme";
+@import "../app/dialogs";
+@import "../app/buttons";
+
+/* A single item in the list of available updates */
+.body {
+  //-fx-background-color: transparent;
+}
+
+.dlg-platform-update {
+  -fx-min-height: 400;
+  .header {
+    @include dialog-header($gp-orange);
+  }
+
+  .content-pane {
+    -fx-padding: 20 20 20 20;
+
+    .help {
+      -fx-padding: 0 0 2ex 0;
+    }
+
+    .scroll-pane {
+      -fx-padding: 20 1em;
+      -fx-border-color: transparent;
+      -fx-background-color: $gp-control-background;
+      & > .viewport {
+        -fx-background-color: transparent;
+      }
+
+      &:hover .scroll-bar {
+        -fx-opacity: 1;
+      }
+      .scroll-bar {
+        @include scroll-bar(15);
+      }
+
+      .body {
+        -fx-background-color: transparent;
+
+        .major-update {
+          .title {
+            -fx-fill: $gp-dark-gray;
+            -fx-font-size: 140%;
+          }
+          .subtitle {
+            -fx-fill: $gp-medium-gray;
+            -fx-font-size: 100%;
+            -fx-font-weight: normal;
+          }
+          .par {
+            -fx-fill: $gp-medium-gray;
+            -fx-padding: 2ex 0 0.5ex 0;
+          }
+        }
+
+        .minor-update {
+          -fx-background-color: transparent;
+          .title {
+            -fx-fill: $gp-dark-gray;
+            -fx-font-size: 110%;
+          }
+
+          .subtitle {
+            -fx-fill: $gp-medium-gray;
+            -fx-font-size: 80%;
+            -fx-font-weight: normal;
+          }
+
+          .par {
+            -fx-fill: $gp-medium-gray;
+            -fx-padding: 0.5ex 0 0.5ex 0;
+          }
+
+          .progress {
+            -fx-font-size: 80%;
+            -fx-fill: $gp-medium-gray;
+            -fx-padding: 0 0 2ex 0;
+          }
+        }
+      }
+    }
+
+  }
+
+  Label.no-updates {
+    -fx-font-size: 200%;
+
+    .glyph-icon {
+      -glyph-size: 40px;
+    }
+  }
+
+  .props {
+    -fx-font-size: 120%;
+
+    .toggle-switch {
+      -fx-content-display: left;
+      -fx-graphic-text-gap: 0;
+    }
+  }
+
+  .button-pane {
+    @include dialog-button-pane();
+  }
+}
+
