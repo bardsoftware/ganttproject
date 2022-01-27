@@ -247,17 +247,19 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
   }
 
   private fun pageDown() {
-    val lastCell = this.virtualFlow.lastVisibleCell
-    this.virtualFlow.scrollToTop(lastCell)
-    this.table.selectionModel.clearSelection()
-    this.table.selectionModel.select(lastCell.treeItem)
+    this.virtualFlow.lastVisibleCell?.let { lastCell ->
+      this.virtualFlow.scrollToTop(lastCell)
+      this.table.selectionModel.clearSelection()
+      this.table.selectionModel.select(lastCell.treeItem)
+    }
   }
 
   private fun pageUp() {
-    val firstCell = this.virtualFlow.firstVisibleCell
-    this.virtualFlow.scrollToBottom(firstCell)
-    this.table.selectionModel.clearSelection()
-    this.table.selectionModel.select(firstCell.treeItem)
+    this.virtualFlow.firstVisibleCell?.let { firstCell ->
+      this.virtualFlow.scrollToBottom(firstCell)
+      this.table.selectionModel.clearSelection()
+      this.table.selectionModel.select(firstCell.treeItem)
+    }
   }
 
 }
