@@ -1,5 +1,6 @@
 @import "../../app/theme";
 @import "../../app/typography";
+@import "../../app/buttons";
 @import "../../app/validation";
 
 .gp-tree-table-view {
@@ -13,50 +14,11 @@
         }
     }
 
-    // Vertical scroll bar visually appears on hover
-    &:hover > .virtual-flow > .scroll-bar:vertical {
-        -fx-opacity: 1;
-        -fx-max-width: 15;
-        -fx-pref-width: 15;
+    &:hover .scroll-bar {
+      -fx-opacity: 1;
     }
-    & > .virtual-flow {
-        & > .scroll-bar:vertical {
-            -fx-background-color: transparent;
-            -fx-opacity: 0.2;
-            -fx-max-width: 15;
-            -fx-pref-width: 15;
-
-            & > .track {
-                -fx-background-color: whitesmoke;
-                -fx-background-insets: 0;
-                -fx-background-radius: 0.5em;
-            }
-
-            & > .track-background {
-                -fx-background-insets: 0, 1;
-            }
-
-            & > .thumb {
-                -fx-background-color: $gp-light-gray;
-            }
-
-            & > .increment-button, .decrement-button {
-                -fx-background-color: transparent;
-                -fx-background-radius: 0em;
-                -fx-padding: 0 10 0 0;
-
-                & > .increment-arrow, .decrement-arrow {
-                    -fx-shape: " ";
-                    -fx-padding: 0;
-                }
-            }
-        }
-    }
-    & > .scroll-bar {
-        & > .increment-arrow,.decrement-arrow {
-            -fx-shape: " ";
-            -fx-padding:0;
-        }
+    .scroll-bar {
+      @include scroll-bar(15);
     }
 
     &:focused {

@@ -165,6 +165,7 @@ internal class UpdateDialog(
       }
 
       val minorUpdatesUi = vbox {
+        addClasses("minor-update")
         minorUpdates.forEach {
             add(it.title)
             add(it.subtitle)
@@ -349,11 +350,12 @@ private class MajorUpdateUi(update: UpdateMetadata, hasMinorUpdates: Boolean, pr
     }
   }
   val btnDownload = Button(ourLocalizer.formatText("majorUpdate.download")).apply {
-    styleClass.addAll("btn", "btn-attention", "secondary")
+    styleClass.addAll("btn", "btn-attention")
     onAction = EventHandler { openInBrowser(UPGRADE_URL) }
   }
   val component = vbox {
     addClasses("major-update")
+    addStylesheets("/biz/ganttproject/app/Dialog.css")
     add(title)
     add(subtitle)
     add(text)

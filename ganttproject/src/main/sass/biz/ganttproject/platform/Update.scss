@@ -18,37 +18,11 @@
  */
 @import "../app/theme";
 @import "../app/dialogs";
+@import "../app/buttons";
 
 /* A single item in the list of available updates */
 .body {
-  -fx-background-color: transparent;
-}
-
-
-.body * {
-  -fx-background-color: transparent;
-
-  .title {
-    -fx-fill: $gp-dark-gray;
-    -fx-font-size: 110%;
-  }
-
-  .subtitle {
-    -fx-fill: $gp-medium-gray;
-    -fx-font-size: 80%;
-    -fx-font-weight: normal;
-  }
-
-  .par {
-    -fx-fill: $gp-medium-gray;
-    -fx-padding: 0.5ex 0 0.5ex 0;
-  }
-
-  .progress {
-    -fx-font-size: 80%;
-    -fx-fill: $gp-medium-gray;
-    -fx-padding: 0 0 2ex 0;
-  }
+  //-fx-background-color: transparent;
 }
 
 .dlg-platform-update {
@@ -64,14 +38,53 @@
       -fx-padding: 0 0 2ex 0;
     }
 
-    ScrollPane {
+    .scroll-pane {
       -fx-padding: 20 1em;
       -fx-border-color: transparent;
-      -fx-background-color: transparent;
+      -fx-background-color: $gp-control-background;
+      & > .viewport {
+        -fx-background-color: transparent;
+      }
 
-      .major-update {
-        .title {
-          -fx-font-size: 140%;
+      &:hover .scroll-bar {
+        -fx-opacity: 1;
+      }
+      .scroll-bar {
+        @include scroll-bar(15);
+      }
+
+      .body {
+        -fx-background-color: transparent;
+
+        .major-update {
+          .title {
+            -fx-font-size: 140%;
+          }
+        }
+
+        .minor-update {
+          -fx-background-color: transparent;
+          .title {
+            -fx-fill: $gp-dark-gray;
+            -fx-font-size: 110%;
+          }
+
+          .subtitle {
+            -fx-fill: $gp-medium-gray;
+            -fx-font-size: 80%;
+            -fx-font-weight: normal;
+          }
+
+          .par {
+            -fx-fill: $gp-medium-gray;
+            -fx-padding: 0.5ex 0 0.5ex 0;
+          }
+
+          .progress {
+            -fx-font-size: 80%;
+            -fx-fill: $gp-medium-gray;
+            -fx-padding: 0 0 2ex 0;
+          }
         }
       }
     }
