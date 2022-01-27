@@ -24,15 +24,15 @@ package net.sourceforge.ganttproject.resource;
 public interface ResourceView {
   /**
    * This method is called whenever new resource appears in the resource manager
-   * 
+   *
    * @param event
    *          Resource event object
    */
-  public void resourceAdded(ResourceEvent event);
+  void resourceAdded(ResourceEvent event);
 
-  public void resourcesRemoved(ResourceEvent event);
+  void resourcesRemoved(ResourceEvent event);
 
-  public void resourceChanged(ResourceEvent e);
+  void resourceChanged(ResourceEvent e);
 
-  public void resourceAssignmentsChanged(ResourceEvent e);
+  void resourceAssignmentsChanged(ResourceEvent e);
 }

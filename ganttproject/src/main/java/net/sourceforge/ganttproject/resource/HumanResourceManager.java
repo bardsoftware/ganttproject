@@ -27,11 +27,9 @@ import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
-import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -78,17 +76,6 @@ public class HumanResourceManager {
       return this;
     }
 
-    public ResourceBuilder withStandardRate(String rate) {
-      if (rate != null) {
-        try {
-          myStandardRate = new BigDecimal(rate);
-        } catch (NumberFormatException e) {
-          myStandardRate = null;
-        }
-      }
-      return this;
-    }
-
     public ResourceBuilder withStandardRate(BigDecimal rate) {
       myStandardRate = rate;
       return this;
@@ -97,9 +84,9 @@ public class HumanResourceManager {
     public abstract HumanResource build();
   }
 
-  private List<ResourceView> myViews = new ArrayList<ResourceView>();
+  private final List<ResourceView> myViews = new ArrayList<>();
 
-  private List<HumanResource> resources = new ArrayList<HumanResource>();
+  private final List<HumanResource> resources = new ArrayList<>();
 
   private int nextFreeId = 0;
 
@@ -173,9 +160,9 @@ public class HumanResourceManager {
     // Linear search is not really efficient, but we do not have so many
     // resources !?
     HumanResource pr = null;
-    for (int i = 0; i < resources.size(); i++)
-      if (resources.get(i).getId() == id) {
-        pr = resources.get(i);
+    for (HumanResource resource : resources)
+      if (resource.getId() == id) {
+        pr = resource;
         break;
       }
     return pr;
@@ -192,16 +179,10 @@ public class HumanResourceManager {
 
   public void remove(HumanResource resource, GPUndoManager myUndoManager) {
     final HumanResource res = resource;
-    myUndoManager.undoableEdit("Delete Human OK", new Runnable() {
-      @Override
-      public void run() {
-        fireResourcesRemoved(new HumanResource[] { res });
-        resources.remove(res);
-      }
+    myUndoManager.undoableEdit("Delete Human OK", () -> {
+      fireResourcesRemoved(new HumanResource[] { res });
+      resources.remove(res);
     });
-  }
-
-  public void save(OutputStream target) {
   }
 
   public void clear() {
@@ -215,38 +196,34 @@ public class HumanResourceManager {
 
   private void fireResourceAdded(HumanResource resource) {
     ResourceEvent e = new ResourceEvent(this, resource);
-    for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
-      ResourceView nextView = i.next();
+    for (ResourceView nextView : myViews) {
       nextView.resourceAdded(e);
     }
   }
 
   void fireResourceChanged(HumanResource resource) {
     ResourceEvent e = new ResourceEvent(this, resource);
-    for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
-      ResourceView nextView = i.next();
+    for (ResourceView nextView : myViews) {
       nextView.resourceChanged(e);
     }
   }
 
   private void fireResourcesRemoved(HumanResource[] resources) {
     ResourceEvent e = new ResourceEvent(this, resources);
-    for (int i = 0; i < myViews.size(); i++) {
-      ResourceView nextView = myViews.get(i);
+    for (ResourceView nextView : myViews) {
       nextView.resourcesRemoved(e);
     }
   }
 
   public void fireAssignmentsChanged(HumanResource resource) {
     ResourceEvent e = new ResourceEvent(this, resource);
-    for (Iterator<ResourceView> i = myViews.iterator(); i.hasNext();) {
-      ResourceView nextView = i.next();
+    for (ResourceView nextView : myViews) {
       nextView.resourceAssignmentsChanged(e);
     }
   }
 
   private void fireCleanup() {
-    fireResourcesRemoved(resources.toArray(new HumanResource[resources.size()]));
+    fireResourcesRemoved(resources.toArray(new HumanResource[0]));
   }
 
   /** Move up the resource number index */
@@ -272,11 +249,10 @@ public class HumanResourceManager {
       HumanResourceManager hrManager,
       HumanResourceMerger merger,
       Map<CustomPropertyDefinition, CustomPropertyDefinition> that2thisCustomDefs) {
-    Map<HumanResource, HumanResource> foreign2native = new HashMap<HumanResource, HumanResource>();
+    Map<HumanResource, HumanResource> foreign2native = new HashMap<>();
     List<HumanResource> foreignResources = hrManager.getResources();
     List<HumanResource> createdResources = Lists.newArrayList();
-    for (int i = 0; i < foreignResources.size(); i++) {
-      HumanResource foreignHR = foreignResources.get(i);
+    for (HumanResource foreignHR : foreignResources) {
       HumanResource nativeHR = merger.findNative(foreignHR, this);
       if (nativeHR == null) {
         nativeHR = new HumanResource(foreignHR.getName(), nextFreeId + createdResources.size(), this);
