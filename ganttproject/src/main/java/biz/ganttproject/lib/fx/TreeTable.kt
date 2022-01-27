@@ -19,16 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 //import javafx.scene.control.skin.TreeTableRowSkin
-import javafx.scene.control.skin.TreeTableViewSkin
-import javafx.scene.control.skin.VirtualFlow
-import biz.ganttproject.app.MenuBuilder
-import biz.ganttproject.app.MenuBuilderFx
-import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
 //import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
 //import biz.ganttproject.lib.fx.treetable.VirtualFlow
-import com.sun.javafx.scene.control.behavior.TreeTableViewBehavior
-import com.sun.javafx.scene.control.inputmap.InputMap
-import com.sun.javafx.scene.control.inputmap.KeyBinding
+import biz.ganttproject.app.MenuBuilder
+import biz.ganttproject.app.MenuBuilderFx
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
@@ -36,6 +30,8 @@ import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.geometry.Pos
 import javafx.scene.control.*
+import javafx.scene.control.skin.TreeTableViewSkin
+import javafx.scene.control.skin.VirtualFlow
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
@@ -43,7 +39,6 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Region
 import javafx.util.Callback
-import org.apache.commons.lang3.reflect.FieldUtils
 import kotlin.math.max
 
 /**
@@ -123,7 +118,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   }
 
   fun autosizeColumns() {
-    val totalWidth = columns.map { autosizeColumn(it as TreeTableColumn<T, Any>) }.sum()
+    val totalWidth = columns.sumOf { autosizeColumn(it as TreeTableColumn<T, Any>) }
     this.prefWidth = totalWidth
   }
 
@@ -133,7 +128,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
 
     // set this property to tell the TableCell we want to know its actual
     // preferred width, not the width of the associated TableColumnBase
-    cell.properties["deferToParentPrefWidth"] = true;
+    cell.properties["deferToParentPrefWidth"] = true
 
     // determine cell padding
     var padding = 0.0
@@ -143,13 +138,13 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     }
 
     val treeTableRow = MyTreeTableRow<T>()
-    treeTableRow.updateTreeTableView(this);
+    treeTableRow.updateTreeTableView(this)
 
     val rows = expandedItemCount
-    var maxWidth = 0.0;
+    var maxWidth = 0.0
     for (row in 0 until rows) {
-      treeTableRow.updateIndex(row);
-      treeTableRow.updateTreeItem(getTreeItem(row));
+      treeTableRow.updateIndex(row)
+      treeTableRow.updateTreeItem(getTreeItem(row))
 
       cell.updateTreeTableColumn(tc)
       cell.updateTreeTableView(this)
