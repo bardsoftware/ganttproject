@@ -42,7 +42,6 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Insets
-import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.*
@@ -114,8 +113,20 @@ internal class UpdateDialog(
   private lateinit var dialogApi: DialogController
   private val version2ui = mutableMapOf<String, UpdateComponentUi>()
   private val hasUpdates: Boolean get() = this.visibleUpdates.isNotEmpty()
+  // Major update metadata, if found in the JSON
   private val majorUpdate: UpdateMetadata? get() = this.updates.firstOrNull { it.isMajorUpdate }
-
+  // The list of visible updates with major updates filtered out
+  private val minorUpdates get() = this.visibleUpdates.filter { !it.isMajorUpdate }
+  // The action to install minor updates shall be disabled if we show a major update UI,
+  // but if we switch to "show minor updates", it shall become enabled.
+  private val minorUpdatesDisabled = SimpleBooleanProperty(false)
+  // Progress indicator
+  private val progressText = ourLocalizer.create("installProgress")
+  private val progressLabel: Label = Label().also {
+    it.textProperty().bind(progressText)
+    it.styleClass.add("progress")
+    it.isVisible = false
+  }
 
   private fun createPane(bean: PlatformBean): Node {
     val bodyBuilder = VBoxBuilder("content-pane")
@@ -158,7 +169,7 @@ internal class UpdateDialog(
     if (this.hasUpdates) {
 
       val wrapperPane = BorderPane()
-      val minorUpdates = this.visibleUpdates.filter { !it.isMajorUpdate }.map {
+      val minorUpdates = this.minorUpdates.map {
         UpdateComponentUi(it).also { ui ->
           version2ui[it.version] = ui
         }
@@ -170,15 +181,20 @@ internal class UpdateDialog(
             add(it.title)
             add(it.subtitle)
             add(it.text)
-            add(it.progress)
           }
         vbox
       }
 
       wrapperPane.center = this.majorUpdate?.let { majorUpdate ->
         // If we have a "major update" record, we will show only that one.
+        // The action to install minor updates shall be disabled.
+        minorUpdatesDisabled.value = true
         MajorUpdateUi(majorUpdate, minorUpdates.isNotEmpty()) {
-          FXUtil.transitionCenterPane(wrapperPane, minorUpdatesUi) {dialogApi.resize()}
+          FXUtil.transitionCenterPane(wrapperPane, minorUpdatesUi) {
+            // If we transition to the minor updates, we enable the install action.
+            dialogApi.resize()
+            minorUpdatesDisabled.value = false
+          }
         }.component
       } ?: minorUpdatesUi
 
@@ -200,8 +216,7 @@ internal class UpdateDialog(
     dialogApi.addStyleClass("dlg-platform-update")
     dialogApi.addStyleSheet(
       "/biz/ganttproject/app/Dialog.css",
-      "/biz/ganttproject/platform/Update.css",
-//      "/biz/ganttproject/storage/StorageDialog.css",
+      "/biz/ganttproject/platform/Update.css"
     )
 
     dialogApi.setHeader(VBoxBuilder("header").apply {
@@ -211,7 +226,7 @@ internal class UpdateDialog(
     }.vbox)
 
     val downloadCompleted = SimpleBooleanProperty(false)
-    if (this.hasUpdates) {
+    if (this.minorUpdates.isNotEmpty()) {
       dialogApi.setupButton(ButtonType.APPLY) { btn ->
         ButtonBar.setButtonUniformSize(btn, false)
         btn.styleClass.add("btn-attention")
@@ -233,6 +248,9 @@ internal class UpdateDialog(
             btn.properties["restart"] = true
           }
         }
+        minorUpdatesDisabled.addListener { _, _, newValue ->
+          btn.isDisable = newValue
+        }
       }
     }
     dialogApi.setupButton(ButtonType.CLOSE) { btn ->
@@ -248,6 +266,7 @@ internal class UpdateDialog(
       }
     }
     dialogApi.setContent(this.createPane(bean))
+    dialogApi.setButtonPaneNode(this.progressLabel)
   }
 
   private fun onRestart() {
@@ -256,9 +275,23 @@ internal class UpdateDialog(
 
   private fun onDownload(completed: SimpleBooleanProperty) {
     var installFuture: CompletableFuture<File>? = null
-    for (update in updates.reversed()) {
+    for (update in updates.filter { !it.isMajorUpdate }.reversed()) {
+      val minorUpdateUi = this.version2ui[update.version]
       val progressMonitor: (Int) -> Unit = { percents: Int ->
-        this.version2ui[update.version]?.updateProgress(percents)
+        if (minorUpdateUi != null) {
+          Platform.runLater {
+            if (minorUpdateUi.progressValue == -1) {
+              this.progressLabel.isVisible = true
+            }
+            if (minorUpdateUi.progressValue != percents) {
+              minorUpdateUi.progressValue = percents
+              progressText.update(update.version, percents.toString())
+              if (percents == 100) {
+                this.progressLabel.isVisible = false
+              }
+            }
+          }
+        }
       }
       installFuture =
           if (installFuture == null) update.install(progressMonitor)
@@ -271,6 +304,9 @@ internal class UpdateDialog(
       this.dialogApi.showAlert(ourLocalizer.create("alert.title"), createAlertBody(ex.message ?: ""))
       null
     }
+  }
+
+  private fun updateProgress(percents: Int) {
   }
 }
 
@@ -306,26 +342,11 @@ private class UpdateComponentUi(val update: UpdateMetadata) {
   val text: MDFXNode = MDFXNode(ourLocalizer.formatText("bodyItem.description", update.description)).also { l ->
     l.styleClass.add("par")
   }
-  val progressText = ourLocalizer.create("bodyItem.progress")
-  val progress: Label = Label().also {
-    it.textProperty().bind(progressText)
-    it.styleClass.add("progress")
-    it.isVisible = false
-  }
   var progressValue: Int = -1
-
-  fun updateProgress(percents: Int) {
-    Platform.runLater {
-      if (progressValue == -1) {
-        this.progress.isVisible = true
-      }
-      if (progressValue != percents) {
-        progressValue = percents
-        progressText.update(percents.toString())
-        if (progressValue == 100) {
-          listOf(title, subtitle, text, progress).forEach { it.opacity = 0.5 }
-        }
-      }
+  set(value) {
+    field = value
+    if (value == 100) {
+      listOf(title, subtitle, text).forEach { it.opacity = 0.5 }
     }
   }
 }

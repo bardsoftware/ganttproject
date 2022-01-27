@@ -58,7 +58,17 @@
 
         .major-update {
           .title {
+            -fx-fill: $gp-dark-gray;
             -fx-font-size: 140%;
+          }
+          .subtitle {
+            -fx-fill: $gp-medium-gray;
+            -fx-font-size: 100%;
+            -fx-font-weight: normal;
+          }
+          .par {
+            -fx-fill: $gp-medium-gray;
+            -fx-padding: 2ex 0 0.5ex 0;
           }
         }
 
