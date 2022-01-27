@@ -75,6 +75,7 @@ open class GanttProjectImpl(taskManager: TaskManagerImpl? = null) : IGanttProjec
   override val taskFilterManager = TaskFilterManager(this.taskManager)
   override val roleManager: RoleManager
     get() = RoleManager.Access.getInstance()
+
   override var isModified: Boolean = false
   override val activeCalendar: GPCalendarCalc get() = myTaskManagerConfig.calendar
   override val timeUnitStack: TimeUnitStack get() = myTaskManagerConfig.timeUnitStack

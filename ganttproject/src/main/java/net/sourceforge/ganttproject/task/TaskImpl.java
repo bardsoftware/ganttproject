@@ -146,7 +146,7 @@ public class TaskImpl implements Task {
     myManager = taskManager;
     myID = taskID;
 
-    myAssignments = new ResourceAssignmentCollectionImpl(this, myManager.getConfig().getResourceManager());
+    myAssignments = new ResourceAssignmentCollectionImpl(this, () -> myManager.getConfig().getResourceManager());
     myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection(), TaskDependencySlice.COMPLETE_SLICE_FXN);
     myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this, myManager.getDependencyCollection());
     myDependencySliceAsDependee = new TaskDependencySliceAsDependee(this, myManager.getDependencyCollection());
@@ -170,7 +170,7 @@ public class TaskImpl implements Task {
     } else {
       myTaskHierarchyItem = copy.myTaskHierarchyItem;
     }
-    myAssignments = new ResourceAssignmentCollectionImpl(this, myManager.getConfig().getResourceManager());
+    myAssignments = new ResourceAssignmentCollectionImpl(this, () -> myManager.getConfig().getResourceManager());
     myAssignments.importData(copy.getAssignmentCollection());
     myName = copy.myName;
     myWebLink = copy.myWebLink;

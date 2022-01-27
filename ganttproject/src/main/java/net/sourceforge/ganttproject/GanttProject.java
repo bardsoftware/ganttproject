@@ -124,10 +124,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private ParserFactory myParserFactory;
 
-  private HumanResourceManager myHumanResourceManager;
-
-  private RoleManager myRoleManager;
-
   private static Consumer<Boolean> ourQuitCallback = withSystemExit -> {
     if (withSystemExit) {
       System.exit(0);
@@ -144,6 +140,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ToolTipManager.sharedInstance().setInitialDelay(200);
     ToolTipManager.sharedInstance().setDismissDelay(60000);
 
+    getProjectImpl().getHumanResourceManager().addView(this);
     myCalendar.addListener(GanttProject.this::setModified);
 
     setFocusable(true);
@@ -709,20 +706,12 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   @Override
   public @NotNull HumanResourceManager getHumanResourceManager() {
-    if (myHumanResourceManager == null) {
-      myHumanResourceManager = new HumanResourceManager(getRoleManager().getDefaultRole(),
-          getResourceCustomPropertyManager());
-      myHumanResourceManager.addView(this);
-    }
-    return myHumanResourceManager;
+    return getProjectImpl().getHumanResourceManager();
   }
 
   @Override
   public @NotNull RoleManager getRoleManager() {
-    if (myRoleManager == null) {
-      myRoleManager = RoleManager.Access.getInstance();
-    }
-    return myRoleManager;
+    return getProjectImpl().getRoleManager();
   }
 
   @Override

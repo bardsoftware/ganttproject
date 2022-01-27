@@ -29,15 +29,16 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
   private final Map<HumanResource, ResourceAssignment> myAssignments = new LinkedHashMap<HumanResource, ResourceAssignment>();
 
   private final TaskImpl myTask;
 
-  private HumanResourceManager myResourceManager;
+  private Supplier<HumanResourceManager> myResourceManager;
 
-  public ResourceAssignmentCollectionImpl(TaskImpl task, HumanResourceManager resourceManager) {
+  public ResourceAssignmentCollectionImpl(TaskImpl task, Supplier<HumanResourceManager> resourceManager) {
     myTask = task;
     myResourceManager = resourceManager;
   }
@@ -358,7 +359,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
       for (int i = 0; i < assignments.length; i++) {
         ResourceAssignment next = assignments[i];
         HumanResource nextResource = next.getResource();
-        HumanResource nextImportedResource = myResourceManager.getById(nextResource.getId());
+        HumanResource nextImportedResource = myResourceManager.get().getById(nextResource.getId());
         if (nextImportedResource != null) {
           ResourceAssignment copy = new ResourceAssignmentImpl(nextImportedResource);
           copy.setLoad(next.getLoad());
