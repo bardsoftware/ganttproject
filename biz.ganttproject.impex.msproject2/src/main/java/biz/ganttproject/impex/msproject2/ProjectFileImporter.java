@@ -29,7 +29,6 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -95,6 +94,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
@@ -104,9 +104,9 @@ class ProjectFileImporter {
   private final File myForeignFile;
   private Map<ResourceField, CustomPropertyDefinition> myResourceCustomPropertyMapping;
   private Map<TaskField, CustomPropertyDefinition> myTaskCustomPropertyMapping;
-  private Map<String, Object> myCustomPropertyUniqueValueMapping = new HashMap<String, Object>();
-  private ColumnList myTaskFields;
-  private List<Pair<Level, String>> myErrors = Lists.newArrayList();
+  private final Map<String, Object> myCustomPropertyUniqueValueMapping = new HashMap<>();
+  private final ColumnList myTaskFields;
+  private final List<Pair<Level, String>> myErrors = Lists.newArrayList();
   private ProjectFile myProjectFile;
   private Map<GanttTask, Date> myNativeTask2foreignStart;
   private boolean myPatchMspdi = true;
@@ -117,12 +117,13 @@ class ProjectFileImporter {
       return null;
     }
     String fileExt = file.getName().substring(lastDot + 1).toLowerCase();
-    if ("mpp".equals(fileExt)) {
-      return new MPPReader();
-    } else if ("xml".equals(fileExt)) {
-      return new MSPDIReader();
-    } else if ("mpx".equals(fileExt)) {
-      return new MPXReader();
+    switch (fileExt) {
+      case "mpp":
+        return new MPPReader();
+      case "xml":
+        return new MSPDIReader();
+      case "mpx":
+        return new MPXReader();
     }
     return null;
   }
@@ -162,7 +163,7 @@ class ProjectFileImporter {
   }
 
   @SuppressWarnings("unused")
-  private List<String> debugTransformation() throws MPXJException {
+  private List<String> debugTransformation() {
     try {
       BufferedReader is = new BufferedReader(new InputStreamReader(createPatchedStream(myForeignFile)));
       for (String s = is.readLine(); s != null; s = is.readLine()) {
@@ -188,15 +189,13 @@ class ProjectFileImporter {
           e);
     } catch (TransformerFactoryConfigurationError e) {
       throw new MPXJException("Failed to create a transformer factory");
-    } catch (IOException e) {
-      throw new MPXJException("Failed to read input file=" + myForeignFile.getAbsolutePath(), e);
-    } catch (RuntimeException e) {
+    } catch (IOException | RuntimeException e) {
       throw new MPXJException("Failed to read input file=" + myForeignFile.getAbsolutePath(), e);
     }
     myProjectFile = pf;
-    Map<Integer, GanttTask> foreignId2nativeTask = new HashMap<Integer, GanttTask>();
+    Map<Integer, GanttTask> foreignId2nativeTask = new HashMap<>();
     myNativeTask2foreignStart = Maps.newHashMap();
-    Map<Integer, HumanResource> foreignId2nativeResource = new HashMap<Integer, HumanResource>();
+    Map<Integer, HumanResource> foreignId2nativeResource = new HashMap<>();
     importCalendar(pf);
     importResources(pf, foreignId2nativeResource);
 
@@ -250,7 +249,7 @@ class ProjectFileImporter {
         @Override
         public void addHoliday(Date date, Optional<String> title) {
           holidays.add(CalendarEvent.newEvent(date, false,
-              e.getWorking() ? CalendarEvent.Type.WORKING_DAY : CalendarEvent.Type.HOLIDAY, title.orNull(), null));
+              e.getWorking() ? CalendarEvent.Type.WORKING_DAY : CalendarEvent.Type.HOLIDAY, title.orElse(null), null));
         }
 
         @Override
@@ -259,7 +258,7 @@ class ProjectFileImporter {
               date,
               true,
               e.getWorking() ? CalendarEvent.Type.WORKING_DAY : CalendarEvent.Type.HOLIDAY,
-              title.orNull(),
+              title.orElse(null),
               null));
         }
 
@@ -299,18 +298,18 @@ class ProjectFileImporter {
           importYearlyHoliday(e, adder);
           break;
         default:
-          getErrors().add(Pair.create(Level.WARNING, String.format("Skipped calendar exception:\n%s", e.toString())));
+          getErrors().add(Pair.create(Level.WARNING, String.format("Skipped calendar exception:\n%s", e)));
       }
     } else {
       importHolidays(e.getFromDate(), e.getToDate(),
-          Optional.fromNullable(e.getName()), adder);
+          Optional.ofNullable(e.getName()), adder);
     }
   }
 
   private void importYearlyHoliday(ProjectCalendarException e, HolidayAdder adder) {
     RecurringData recurringData = e.getRecurring();
     Date date = CalendarFactory.createGanttCalendar(1, recurringData.getMonthNumber() - 1, recurringData.getDayNumber()).getTime();
-    adder.addYearlyHoliday(date, Optional.fromNullable(e.getName()));
+    adder.addYearlyHoliday(date, Optional.ofNullable(e.getName()));
   }
 
   private void importDailyHoliday(ProjectCalendarException e, HolidayAdder adder) {
@@ -318,11 +317,11 @@ class ProjectFileImporter {
     if (recurringData.getUseEndDate()) {
       importHolidays(
           recurringData.getStartDate(), recurringData.getFinishDate(),
-          Optional.fromNullable(e.getName()), adder);
+          Optional.ofNullable(e.getName()), adder);
     } else {
       importHolidays(
           recurringData.getStartDate(), recurringData.getOccurrences(),
-          Optional.fromNullable(e.getName()), adder);
+          Optional.ofNullable(e.getName()), adder);
     }
   }
 
@@ -345,7 +344,7 @@ class ProjectFileImporter {
   }
 
   private void importResources(ProjectFile pf, Map<Integer, HumanResource> foreignId2humanResource) {
-    myResourceCustomPropertyMapping = new HashMap<ResourceField, CustomPropertyDefinition>();
+    myResourceCustomPropertyMapping = new HashMap<>();
     for (Resource r : pf.getResources()) {
       HumanResource nativeResource = myNativeProject.getHumanResourceManager().newHumanResource();
       nativeResource.setId(r.getUniqueID());
@@ -353,7 +352,7 @@ class ProjectFileImporter {
       nativeResource.setMail(r.getEmailAddress());
       Rate standardRate = r.getStandardRate();
       if (standardRate != null && standardRate.getAmount() != 0.0 && r.getStandardRateUnits() == TimeUnit.DAYS) {
-        nativeResource.setStandardPayRate(new BigDecimal(standardRate.getAmount()));
+        nativeResource.setStandardPayRate(BigDecimal.valueOf(standardRate.getAmount()));
       }
       myNativeProject.getHumanResourceManager().add(nativeResource);
       importDaysOff(r, nativeResource);
@@ -364,7 +363,7 @@ class ProjectFileImporter {
 
   private void importCustomProperties(Resource r, HumanResource nativeResource) {
     for (ResourceField rf : ResourceField.values()) {
-      if (r.getCurrentValue(rf) == null || !isCustomField(rf)) {
+      if (r.getCurrentValue(rf) == null || isNotCustomField(rf)) {
         continue;
       }
       CustomPropertyDefinition def = myResourceCustomPropertyMapping.get(rf);
@@ -403,9 +402,9 @@ class ProjectFileImporter {
   }
 
   private void importTasks(ProjectFile foreignProject, Map<Integer, GanttTask> foreignId2nativeTask, Map<GanttTask, Date> nativeTask2foreignStart) {
-    myTaskCustomPropertyMapping = new HashMap<TaskField, CustomPropertyDefinition>();
+    myTaskCustomPropertyMapping = new HashMap<>();
     for (Task t : foreignProject.getChildTasks()) {
-      importTask(foreignProject, t, getTaskManager().getRootTask(), foreignId2nativeTask, nativeTask2foreignStart);
+      importTask(t, getTaskManager().getRootTask(), foreignId2nativeTask, nativeTask2foreignStart);
     }
   }
 
@@ -422,7 +421,7 @@ class ProjectFileImporter {
   }
 
 
-  private void importTask(ProjectFile foreignProject, Task t, net.sourceforge.ganttproject.task.Task supertask,
+  private void importTask(Task t, net.sourceforge.ganttproject.task.Task supertask,
                           Map<Integer, GanttTask> foreignId2nativeTask, Map<GanttTask, Date> nativeTask2foreignStart) {
     if (t.getNull()) {
       myErrors.add(Pair.create(Level.INFO,
@@ -433,7 +432,7 @@ class ProjectFileImporter {
       boolean isRealTask = t.getName() != null && !t.getChildTasks().isEmpty();
       if (!isRealTask) {
         for (Task child : t.getChildTasks()) {
-          importTask(foreignProject, child, getTaskManager().getRootTask(), foreignId2nativeTask, nativeTask2foreignStart);
+          importTask(child, getTaskManager().getRootTask(), foreignId2nativeTask, nativeTask2foreignStart);
         }
         return;
       }
@@ -498,7 +497,7 @@ class ProjectFileImporter {
     }
     if (!t.getChildTasks().isEmpty()) {
       for (Task child : t.getChildTasks()) {
-        importTask(foreignProject, child, nativeTask, foreignId2nativeTask, nativeTask2foreignStart);
+        importTask(child, nativeTask, foreignId2nativeTask, nativeTask2foreignStart);
       }
     }
     importCustomFields(t, nativeTask);
@@ -512,7 +511,7 @@ class ProjectFileImporter {
 
   private void importCustomFields(Task t, GanttTask nativeTask) {
     for (TaskField tf : TaskField.values()) {
-      if (!isCustomField(tf) || t.getCurrentValue(tf) == null) {
+      if (isNotCustomField(tf) || t.getCurrentValue(tf) == null) {
         continue;
       }
 
@@ -545,11 +544,11 @@ class ProjectFileImporter {
     }
   }
 
-  private static Pattern CUSTOM_FIELD_NAME = Pattern.compile("^\\p{Lower}+\\p{Digit}+$");
+  private static final Pattern CUSTOM_FIELD_NAME = Pattern.compile("^\\p{Lower}+\\p{Digit}+$");
 
-  private boolean isCustomField(FieldType tf) {
-    return tf != null && tf.getName() != null
-        && ProjectFileImporter.CUSTOM_FIELD_NAME.matcher(tf.getName().toLowerCase()).matches();
+  private boolean isNotCustomField(FieldType tf) {
+    return tf == null || tf.getName() == null
+        || !ProjectFileImporter.CUSTOM_FIELD_NAME.matcher(tf.getName().toLowerCase()).matches();
   }
 
   private String convertDataType(FieldType tf) {
@@ -638,7 +637,7 @@ class ProjectFileImporter {
   }
 
   private final Function<Task, Pair<TimeDuration, TimeDuration>> DURATION_FROM_START_FINISH =
-      new Function<Task, Pair<TimeDuration, TimeDuration>>() {
+      new Function<>() {
         @Override
         public Pair<TimeDuration, TimeDuration> apply(Task t) {
           if (t.getMilestone()) {
@@ -649,7 +648,7 @@ class ProjectFileImporter {
       };
 
   private final Function<Task, Pair<TimeDuration, TimeDuration>> DURATION_FROM_START_AND_DURATION =
-      new Function<Task, Pair<TimeDuration, TimeDuration>>() {
+      new Function<>() {
         @Override
         public Pair<TimeDuration, TimeDuration> apply(Task t) {
           if (t.getMilestone()) {

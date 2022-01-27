@@ -50,16 +50,15 @@ import org.eclipse.core.runtime.Status;
 
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -97,7 +96,7 @@ public class TaskImpl implements Task {
 
   private TimeDuration myLength;
 
-  private final List<TaskActivity> myActivities = new ArrayList<TaskActivity>();
+  private final List<TaskActivity> myActivities = new ArrayList<>();
 
   private boolean bExpand;
 
@@ -200,13 +199,12 @@ public class TaskImpl implements Task {
 
   @Override
   public Task unpluggedClone() {
-    TaskImpl result = new TaskImpl(myManager, this, true, this.myID) {
+    return new TaskImpl(TaskImpl.this.myManager, TaskImpl.this, true, TaskImpl.this.myID) {
       @Override
       public boolean isSupertask() {
         return false;
       }
     };
-    return result;
   }
 
   @Override
@@ -214,7 +212,7 @@ public class TaskImpl implements Task {
     return getTaskID();
   }
 
-  class MutatorException extends RuntimeException {
+  static class MutatorException extends RuntimeException {
     public MutatorException(String msg) {
       super(msg);
     }
@@ -262,7 +260,7 @@ public class TaskImpl implements Task {
   @Override
   public List<Document> getAttachments() {
     if (getWebLink() != null && !"".equals(getWebLink())) {
-      return Collections.singletonList((Document) new AbstractURLDocument() {
+      return Collections.singletonList(new AbstractURLDocument() {
         @Override
         public boolean canRead() {
           return true;
@@ -279,12 +277,12 @@ public class TaskImpl implements Task {
         }
 
         @Override
-        public InputStream getInputStream() throws IOException {
+        public InputStream getInputStream() {
           return null;
         }
 
         @Override
-        public OutputStream getOutputStream() throws IOException {
+        public OutputStream getOutputStream() {
           return null;
         }
 
@@ -311,12 +309,8 @@ public class TaskImpl implements Task {
               return null;
             }
             URL relative = new URL(context, getWebLink());
-            return new URI(URLEncoder.encode(relative.toString(), "utf-8"));
-          } catch (URISyntaxException e) {
-            // Do nothing
-          } catch (MalformedURLException e) {
-            // Do nothing
-          } catch (UnsupportedEncodingException e) {
+            return new URI(URLEncoder.encode(relative.toString(), StandardCharsets.UTF_8));
+          } catch (URISyntaxException | MalformedURLException e) {
             // Do nothing
           }
           return null;
@@ -333,7 +327,7 @@ public class TaskImpl implements Task {
         }
 
         @Override
-        public void write() throws IOException {
+        public void write() {
         }
       });
     }
@@ -544,7 +538,7 @@ public class TaskImpl implements Task {
     return myManager;
   }
 
-  private static interface EventSender {
+  private interface EventSender {
     void enable();
 
     void fireEvent();
@@ -608,9 +602,9 @@ public class TaskImpl implements Task {
   }
 
   private class MutatorImpl implements TaskMutator {
-    private EventSender myPropertiesEventSender = new PropertiesEventSender();
+    private final EventSender myPropertiesEventSender = new PropertiesEventSender();
 
-    private EventSender myProgressEventSender = new ProgressEventSender();
+    private final EventSender myProgressEventSender = new ProgressEventSender();
 
     private FieldChange myCompletionPercentageChange;
 
@@ -626,11 +620,10 @@ public class TaskImpl implements Task {
 
     private Pair<FieldChange, FieldChange> myShiftChange;
 
-    private final List<Runnable> myCommands = new ArrayList<Runnable>();
+    private final List<Runnable> myCommands = new ArrayList<>();
 
     private int myIsolationLevel;
 
-    public final Exception myException = new Exception();
     @Override
     public void commit() {
       try {
@@ -696,7 +689,7 @@ public class TaskImpl implements Task {
 
     public List<TaskActivity> getActivities() {
       if (myActivities == null && (myStartChange != null) || (myDurationChange != null)) {
-        myActivities = new ArrayList<TaskActivity>();
+        myActivities = new ArrayList<>();
         TaskImpl.recalculateActivities(myManager.getConfig().getCalendar(), TaskImpl.this, myActivities,
             getStart().getTime(), TaskImpl.this.getEnd().getTime());
       }
@@ -705,42 +698,22 @@ public class TaskImpl implements Task {
 
     @Override
     public void setName(final String name) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setName(name);
-        }
-      });
+      myCommands.add(() -> TaskImpl.this.setName(name));
     }
 
     @Override
     public void setProjectTask(final boolean projectTask) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setProjectTask(projectTask);
-        }
-      });
+      myCommands.add(() -> TaskImpl.this.setProjectTask(projectTask));
     }
 
     @Override
     public void setMilestone(final boolean milestone) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setMilestone(milestone);
-        }
-      });
+      myCommands.add(() -> TaskImpl.this.setMilestone(milestone));
     }
 
     @Override
     public void setPriority(final Priority priority) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setPriority(priority);
-        }
-      });
+      myCommands.add(() -> TaskImpl.this.setPriority(priority));
     }
 
     @Override
@@ -772,12 +745,7 @@ public class TaskImpl implements Task {
 
     @Override
     public void setThird(final GanttCalendar third, final int thirdDateConstraint) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setThirdDateConstraint(thirdDateConstraint);
-        }
-      });
+      myCommands.add(() -> TaskImpl.this.setThirdDateConstraint(thirdDateConstraint));
       if (myThirdChange == null) {
         myThirdChange = new FieldChange();
         myThirdChange.myEventSender = myPropertiesEventSender;
@@ -813,12 +781,7 @@ public class TaskImpl implements Task {
 
     @Override
     public void setExpand(final boolean expand) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setExpand(expand);
-        }
-      });
+      myCommands.add(() -> TaskImpl.this.setExpand(expand));
     }
 
     @Override
@@ -835,68 +798,38 @@ public class TaskImpl implements Task {
 
     @Override
     public void setCritical(final boolean critical) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setCritical(critical);
-        }
-      });
+      myCommands.add(() -> TaskImpl.this.setCritical(critical));
     }
 
     @Override
     public void setShape(final ShapePaint shape) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setShape(shape);
-        }
-      });
+      myCommands.add(() -> TaskImpl.this.setShape(shape));
     }
 
     @Override
     public void setColor(final Color color) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setColor(color);
-        }
-      });
+      myCommands.add(() -> TaskImpl.this.setColor(color));
     }
 
     @Override
     public void setWebLink(final String webLink) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setWebLink(webLink);
-        }
-      });
+      myCommands.add(() -> TaskImpl.this.setWebLink(webLink));
     }
 
     @Override
     public void setNotes(final String notes) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setNotes(notes);
-        }
-      });
+      myCommands.add(() -> TaskImpl.this.setNotes(notes));
     }
 
     @Override
     public void addNotes(final String notes) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.addNotes(notes);
-        }
-      });
+      myCommands.add(() -> TaskImpl.this.addNotes(notes));
     }
 
     @Override
     public int getCompletionPercentage() {
       return myCompletionPercentageChange == null ? TaskImpl.this.myCompletionPercentage
-          : ((Integer) myCompletionPercentageChange.myFieldValue).intValue();
+          : (Integer) myCompletionPercentageChange.myFieldValue;
     }
 
     GanttCalendar getStart() {
@@ -1106,7 +1039,7 @@ public class TaskImpl implements Task {
       return;
     }
     if (isMilestone) {
-      myMilestoneActivity = ImmutableList.<TaskActivity>of(new MilestoneTaskFakeActivity(this));
+      myMilestoneActivity = ImmutableList.of(new MilestoneTaskFakeActivity(this));
       return;
     }
 
