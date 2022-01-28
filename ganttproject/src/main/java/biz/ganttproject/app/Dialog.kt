@@ -153,27 +153,10 @@ class DialogControllerSwing : DialogController {
 
   private val contentStack = StackPane()
   private lateinit var content: Node
-  private var buttonBar: ButtonBar = ButtonBar().also { it.styleClass.add("button-pane") }
+  private var buttonBar: ButtonBar = ButtonBar().also {
+    it.maxWidth = Double.MAX_VALUE
+  }
   private var buttonBarDisabled = false
-//  private val buttons = FXCollections.observableArrayList<ButtonType>().also {
-//    it.addListener(ListChangeListener { c ->
-//      while (c.next()) {
-//        if (c.wasRemoved()) {
-//          c.removed.forEach { buttonType -> buttonNodes.remove(buttonType) }
-//        }
-//        if (c.wasAdded()) {
-//          c.addedSubList.forEach { buttonType ->
-//            buttonNodes.getOrPut(buttonType) {
-//              createButton(buttonType)
-//            }
-//          }
-//        }
-//      }
-//    })
-//  }
-
-//  private val buttonNodes = WeakHashMap<ButtonType, Button>()
-
   private var header: Node? = null
   private var isBuilt = false
 
@@ -188,12 +171,19 @@ class DialogControllerSwing : DialogController {
     if (!this.buttonBarDisabled) {
       this.paneBuilder.add(
         this.buttonPaneNode?.let { buttonPaneNode ->
-          HBox().also {
+          BorderPane().also {
             it.styleClass.add("button-pane")
-            HBox.setHgrow(this.buttonBar, Priority.ALWAYS)
-            it.children.addAll(buttonPaneNode, this.buttonBar)
+            //HBox.setHgrow(this.buttonBar, Priority.ALWAYS)
+            it.center = this.buttonBar
+            it.left = buttonPaneNode
           }
-        } ?: this.buttonBar
+        } ?: run {
+          BorderPane().also {
+            it.styleClass.add("button-pane")
+            //HBox.setHgrow(this.buttonBar, Priority.ALWAYS)
+            it.center = this.buttonBar
+          }
+        }
       )
     }
     val defaultButton = this.buttonBar.buttons?.firstOrNull {
@@ -274,6 +264,9 @@ class DialogControllerSwing : DialogController {
     SwingUtilities.invokeLater {
       this.dialogFrame.layout()
     }
+    Platform.runLater {
+      buttonBar.layout()
+    }
   }
 
   override fun showAlert(title: LocalizedString, content: Node) {
@@ -343,6 +336,7 @@ class DialogControllerSwing : DialogController {
     ButtonBar.setButtonData(button, buttonData)
     button.isDefaultButton = buttonData.isDefaultButton
     button.isCancelButton = buttonData.isCancelButton
+    ButtonBar.setButtonUniformSize(button, false)
     return button
   }
 

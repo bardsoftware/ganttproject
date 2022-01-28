@@ -243,9 +243,11 @@ internal class UpdateDialog(
         }
         downloadCompleted.addListener { _, _, newValue ->
           if (newValue) {
-            btn.disableProperty().set(false)
-            btn.text = ourLocalizer.formatText("restart")
-            btn.properties["restart"] = true
+            Platform.runLater {
+              btn.disableProperty().set(false)
+              btn.text = ourLocalizer.formatText("restart")
+              btn.properties["restart"] = true
+            }
           }
         }
         minorUpdatesDisabled.addListener { _, _, newValue ->
@@ -254,14 +256,20 @@ internal class UpdateDialog(
       }
     }
     dialogApi.setupButton(ButtonType.CLOSE) { btn ->
+      ButtonBar.setButtonUniformSize(btn, false)
+      btn.maxWidth = Double.MAX_VALUE
       btn.styleClass.add("btn")
       btn.text = ourLocalizer.formatText("button.close_skip")
       btn.addEventFilter(ActionEvent.ACTION) {
         UpdateOptions.latestShownVersion.value = this.updates.first().version
+        dialogApi.hide()
       }
       downloadCompleted.addListener { _, _, newValue ->
         if (newValue) {
-          btn.text = ourLocalizer.formatText("close")
+          Platform.runLater {
+            btn.text = RootLocalizer.formatText("close")
+            dialogApi.resize()
+          }
         }
       }
     }
@@ -288,6 +296,7 @@ internal class UpdateDialog(
               progressText.update(update.version, percents.toString())
               if (percents == 100) {
                 this.progressLabel.isVisible = false
+                this.progressText.clear()
               }
             }
           }
@@ -304,9 +313,6 @@ internal class UpdateDialog(
       this.dialogApi.showAlert(ourLocalizer.create("alert.title"), createAlertBody(ex.message ?: ""))
       null
     }
-  }
-
-  private fun updateProgress(percents: Int) {
   }
 }
 
