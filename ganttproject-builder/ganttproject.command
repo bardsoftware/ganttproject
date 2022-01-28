@@ -218,4 +218,7 @@ JAVA_EXPORTS="--add-exports javafx.controls/com.sun.javafx.scene.control.behavio
   --add-exports javafx.graphics/com.sun.javafx.util=ALL-UNNAMED\
   --add-opens java.desktop/sun.swing=ALL-UNNAMED\
   --add-opens java.desktop/sun.awt.X11=ALL-UNNAMED"
-"$JAVA_COMMAND" -Xmx1024m $JAVA_EXPORTS -Duser.dir="$GP_HOME" -Dfile.encoding=UTF-8 $MACOS_ARGS $DEBUG_ARGS $BOOT_CLASS --version-dirs "$GP_HOME"/plugins:~/.ganttproject.d/updates -log true -log_file "$LOG_FILE" "${APP_ARGS[@]}"
+"$JAVA_COMMAND" -Xmx1024m $JAVA_EXPORTS -Duser.dir="$GP_HOME" -Dfile.encoding=UTF-8 $MACOS_ARGS $DEBUG_ARGS $BOOT_CLASS \
+  --app net.sourceforge.ganttproject.GanttProject \
+  --version-dirs "$GP_HOME"/plugins:~/.ganttproject.d/updates \
+  -log true -log_file "$LOG_FILE" "${APP_ARGS[@]}"
