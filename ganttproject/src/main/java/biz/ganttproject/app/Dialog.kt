@@ -434,6 +434,7 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
  * panes.
  */
 class DialogControllerPane(private val root: BorderPane) : DialogController {
+  private var buttonPaneNodeWrapper = StackPane()
   override var beforeShow: () -> Unit = {}
   override var onShown: () -> Unit = {}
   override var onClosed: () -> Unit = {}
@@ -445,8 +446,12 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
   private val stackPane = StackPane().also {
     it.styleClass.add("layers")
     root.center = it
-    root.bottom = buttonBar
-  }
+    root.bottom = HBox().also {
+        it.styleClass.add("button-pane")
+        HBox.setHgrow(this.buttonBar, Priority.ALWAYS)
+        it.children.addAll(this.buttonPaneNodeWrapper, this.buttonBar)
+      }
+    }
 
   override fun setContent(content: Node) {
     this.contentNode = content
@@ -492,8 +497,9 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
   override fun hide() {
   }
 
-  override fun setButtonPaneNode(content: Node) {
-    TODO("Not yet implemented")
+  override fun setButtonPaneNode(node: Node) {
+    this.buttonPaneNodeWrapper.children.clear()
+    this.buttonPaneNodeWrapper.children.add(node)
   }
 
   override fun removeButtonBar() {
