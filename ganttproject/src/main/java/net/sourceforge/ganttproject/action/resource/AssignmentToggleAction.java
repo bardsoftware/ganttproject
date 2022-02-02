@@ -27,6 +27,7 @@ import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
 
 
 /**
@@ -53,6 +54,7 @@ public class AssignmentToggleAction extends GPAction {
   }
 
   public void delete(HumanResource hr) {
+    Arrays.stream(myTask.getAssignments()).filter(asg -> asg.getResource() == hr).forEach(asg -> asg.delete());
     ResourceAssignmentMutator mutator = myTask.getAssignmentCollection().createMutator();
     mutator.deleteAssignment(hr);
     mutator.commit();
