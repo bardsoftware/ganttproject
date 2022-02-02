@@ -18,26 +18,17 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.app.Barrier;
+import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.option.ColorOption;
-import biz.ganttproject.core.option.DefaultColorOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionChangeListener;
-import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
-import net.sourceforge.ganttproject.chart.ChartModelBase;
-import net.sourceforge.ganttproject.chart.ChartModelImpl;
-import net.sourceforge.ganttproject.chart.ChartOptionGroup;
-import net.sourceforge.ganttproject.chart.ChartViewState;
-import net.sourceforge.ganttproject.chart.GanttChart;
-import net.sourceforge.ganttproject.chart.ProjectCalendarDialogAction;
+import net.sourceforge.ganttproject.chart.*;
 import net.sourceforge.ganttproject.chart.gantt.GanttChartController;
 import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
@@ -311,7 +302,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   GanttChartController getChartImplementation() {
     if (myChartComponentImpl == null) {
       myChartComponentImpl = new GanttChartController(getProject(), getUIFacade(), myChartModel, this,
-          getViewState(), this.taskTableChartConnector, this.taskTableActionFacade);
+          getViewState(), this.taskTableChartConnector, this.taskTableActionFacade::get);
     }
     return myChartComponentImpl;
   }

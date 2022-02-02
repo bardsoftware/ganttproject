@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.chart.gantt;
 import biz.ganttproject.app.MenuBuilderAsList;
 import biz.ganttproject.ganttview.TaskTableActionConnector;
 import com.google.common.base.Function;
-import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -41,6 +40,7 @@ import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 class MouseListenerImpl extends MouseListenerBase {
   private static final Function<Task, Task> getParentTask = new Function<Task, Task>() {
@@ -121,7 +121,7 @@ class MouseListenerImpl extends MouseListenerBase {
 
     // Now examine what exactly is under the pointer
     ChartItem itemUnderPoint = myChartImplementation.getChartItemUnderMousePoint(e.getX(), e.getY());
-    if (itemUnderPoint instanceof TaskRegularAreaChartItem) {
+    if (itemUnderPoint instanceof TaskRegularAreaChartItem || taskUnderPointer.isMilestone()) {
       // If it is a plain task area then either drag the task or create a
       // dependency,
       // depending on the settings.

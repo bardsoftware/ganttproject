@@ -18,33 +18,27 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.gantt;
 
-import java.awt.Cursor;
-import java.awt.event.MouseEvent;
-import java.util.Date;
-
-import com.google.common.base.Strings;
-
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.time.CalendarFactory;
+import com.google.common.base.Strings;
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.GanttGraphicArea;
-import net.sourceforge.ganttproject.chart.ChartModelImpl;
-import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
-import net.sourceforge.ganttproject.chart.item.ChartItem;
-import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
-import net.sourceforge.ganttproject.chart.item.TaskNotesChartItem;
-import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
+import net.sourceforge.ganttproject.chart.item.*;
 import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.util.Date;
+
 class MouseMotionListenerImpl extends MouseMotionListenerBase {
   private final ChartComponentBase myChartComponent;
-  private GanttChartController myChartController;
+  private final GanttChartController myChartController;
 
-  public MouseMotionListenerImpl(GanttChartController chartImplementation, ChartModelImpl chartModel,
-      UIFacade uiFacade, ChartComponentBase chartComponent) {
+  public MouseMotionListenerImpl(GanttChartController chartImplementation,
+                                 UIFacade uiFacade, ChartComponentBase chartComponent) {
     super(uiFacade, chartImplementation);
     myChartController = chartImplementation;
     myChartComponent = chartComponent;
@@ -80,7 +74,7 @@ class MouseMotionListenerImpl extends MouseMotionListenerBase {
         }
       }
     }
-    else if (itemUnderPoint instanceof TaskBoundaryChartItem) {
+    else if (itemUnderPoint instanceof TaskBoundaryChartItem && !taskUnderPoint.isMilestone()) {
       Cursor cursor = ((TaskBoundaryChartItem) itemUnderPoint).isStartBoundary() ? GanttGraphicArea.W_RESIZE_CURSOR
           : GanttGraphicArea.E_RESIZE_CURSOR;
       myChartComponent.setCursor(cursor);

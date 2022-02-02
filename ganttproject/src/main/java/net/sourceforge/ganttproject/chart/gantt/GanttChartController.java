@@ -18,11 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.gantt;
 
-import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
 import biz.ganttproject.print.PrintChartApi;
-import com.google.common.base.Supplier;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import kotlin.Unit;
@@ -30,35 +28,17 @@ import kotlin.jvm.functions.Function1;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.CustomBalloonTip;
 import net.java.balloontip.styles.ToolTipBalloonStyle;
-import net.sourceforge.ganttproject.AbstractChartImplementation;
-import net.sourceforge.ganttproject.ChartComponentBase;
-import net.sourceforge.ganttproject.ChartImplementation;
-import net.sourceforge.ganttproject.GanttExportSettings;
-import net.sourceforge.ganttproject.GanttGraphicArea;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.chart.ChartModel;
-import net.sourceforge.ganttproject.chart.ChartModelBase;
-import net.sourceforge.ganttproject.chart.ChartModelImpl;
-import net.sourceforge.ganttproject.chart.ChartSelection;
-import net.sourceforge.ganttproject.chart.ChartViewState;
-import net.sourceforge.ganttproject.chart.PrintChartApiImpl;
-import net.sourceforge.ganttproject.chart.TaskChartModelFacade;
-import net.sourceforge.ganttproject.chart.TaskRendererImpl2;
+import net.sourceforge.ganttproject.*;
+import net.sourceforge.ganttproject.chart.*;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
-import net.sourceforge.ganttproject.chart.mouse.ChangeTaskEndInteraction;
-import net.sourceforge.ganttproject.chart.mouse.ChangeTaskProgressInteraction;
-import net.sourceforge.ganttproject.chart.mouse.ChangeTaskStartInteraction;
-import net.sourceforge.ganttproject.chart.mouse.DrawDependencyInteraction;
-import net.sourceforge.ganttproject.chart.mouse.MoveTaskInteractions;
-import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
+import net.sourceforge.ganttproject.chart.mouse.*;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -69,6 +49,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class GanttChartController extends AbstractChartImplementation implements ChartImplementation {
   private final TaskManager myTaskManager;
@@ -89,20 +70,18 @@ public class GanttChartController extends AbstractChartImplementation implements
     myTaskManager = project.getTaskManager();
     myChartModel = chartModel;
     myMouseListener = new MouseListenerImpl(this, uiFacade, chartComponent, taskTableActionFacade);
-    myMouseMotionListener = new MouseMotionListenerImpl(this, chartModel, uiFacade, chartComponent);
+    myMouseMotionListener = new MouseMotionListenerImpl(this, uiFacade, chartComponent);
     mySelectionManager = uiFacade.getTaskSelectionManager();
     mySelection = new GanttChartSelection(myTaskManager, mySelectionManager);
     myTaskTableConnector = taskTableConnector;
     myTaskTableConnector.getVisibleTasks().addListener(
-        (ListChangeListener<Task>) c -> SwingUtilities.invokeLater(() -> reset())
+        (ListChangeListener<Task>) c -> SwingUtilities.invokeLater(this::reset)
     );
     myTaskTableConnector.getTableScrollOffset().addListener(
-        (ChangeListener<? super Number>) (wtf, old, newValue) -> {
-          SwingUtilities.invokeLater(() -> {
-            getChartModel().setVerticalOffset(newValue.intValue());
-            reset();
-          });
-        }
+        (ChangeListener<? super Number>) (wtf, old, newValue) -> SwingUtilities.invokeLater(() -> {
+          getChartModel().setVerticalOffset(newValue.intValue());
+          reset();
+        })
     );
     setVScrollController(new VScrollController() {
       @Override
@@ -144,12 +123,7 @@ public class GanttChartController extends AbstractChartImplementation implements
   @Override
   public void beginChangeTaskProgressInteraction(MouseEvent e, TaskProgressChartItem taskProgress) {
     setActiveInteraction(new ChangeTaskProgressInteraction(e, taskProgress, new TimelineFacadeImpl(getChartModel(),
-        getTaskManager()), new TaskChartModelFacade() {
-      @Override
-      public List<Rectangle> getTaskRectangles(Task t) {
-        return TaskRendererImpl2.getTaskRectangles(t, myChartModel);
-      }
-    }, getUIFacade()));
+        getTaskManager()), t -> TaskRendererImpl2.getTaskRectangles(t, myChartModel), getUIFacade()));
     setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);
   }
 
@@ -165,7 +139,7 @@ public class GanttChartController extends AbstractChartImplementation implements
 
       @Override
       public Hardness getDefaultHardness() {
-        return TaskDependency.Hardness.parse(getTaskManager().getDependencyHardnessOption().getValue());
+        return Hardness.parse(getTaskManager().getDependencyHardnessOption().getValue());
       }
     }, getUIFacade(), getTaskManager().getDependencyCollection()));
 
@@ -215,7 +189,7 @@ public class GanttChartController extends AbstractChartImplementation implements
     return Status.OK_STATUS;
   }
 
-  private GanttChartSelection mySelection;
+  private final GanttChartSelection mySelection;
 
   @Override
   public ChartSelection getSelection() {
@@ -237,8 +211,7 @@ public class GanttChartController extends AbstractChartImplementation implements
   }
 
   public ChartItem getChartItemUnderMousePoint(int xpos, int ypos) {
-    ChartItem result = myChartModel.getChartItemWithCoordinates(xpos, ypos);
-    return result;
+    return myChartModel.getChartItemWithCoordinates(xpos, ypos);
   }
 
   @Override
@@ -265,7 +238,7 @@ public class GanttChartController extends AbstractChartImplementation implements
     if (myTooltip == null) {
       scheduleTask(() -> {
         if (myTooltip == null) {
-          java.awt.Rectangle offset = new java.awt.Rectangle(x - 30, y, 0, 0);
+          Rectangle offset = new Rectangle(x - 30, y, 0, 0);
           myTooltip = new CustomBalloonTip(
             getChartComponent(),
             new JLabel(text), offset,
