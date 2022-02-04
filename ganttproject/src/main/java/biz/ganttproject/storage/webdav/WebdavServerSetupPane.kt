@@ -35,9 +35,10 @@ import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty
 import org.controlsfx.property.editor.AbstractPropertyEditor
 import org.controlsfx.property.editor.DefaultPropertyEditorFactory
-import org.controlsfx.property.editor.PropertyEditor
 import java.beans.IntrospectionException
 import java.beans.PropertyDescriptor
+import java.net.MalformedURLException
+import java.net.URL
 import java.util.*
 import java.util.function.Consumer
 
@@ -134,8 +135,18 @@ class WebdavServerSetupPane(
       }, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER)
     }
 
+  override fun focus() {
+    super.focus()
+    onPropertyChange()
+  }
+
   private fun onPropertyChange() {
-    btnApply.isDisable = myWebdavServer.name.isNullOrBlank() || myWebdavServer.rootUrl.isNullOrBlank()
+    btnApply.isDisable = myWebdavServer.name.isNullOrBlank() || try {
+      URL(myWebdavServer.rootUrl)
+      false
+    } catch (ex: MalformedURLException) {
+      true
+    }
   }
 
   override fun createSettingsUi(): Optional<Pane> {
