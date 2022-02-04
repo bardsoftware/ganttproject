@@ -237,11 +237,13 @@ class TaskTable(
 //      taskTableChartConnector.rowHeight.value = maxOf(applicationFont.get().size.toInt() + 20, treeTable.fixedCellSize.toInt())
 //    }
     taskTableChartConnector.chartScrollOffset.addListener { _, _, newValue ->
+      println("scrolling by $newValue")
       Platform.runLater {
         treeTable.scrollBy(newValue.toDouble())
       }
     }
     treeTable.addScrollListener { newValue ->
+      println("new scroll value=$newValue")
       taskTableChartConnector.tableScrollOffset.value = newValue
     }
     taskTableChartConnector.exportTreeTableApi = {

@@ -16,89 +16,100 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package net.sourceforge.ganttproject.document.webdav;
+package net.sourceforge.ganttproject.document.webdav
 
-import io.milton.common.Path;
-
-import java.net.MalformedURLException;
-import java.net.URL;
+import io.milton.common.Path
+import java.util.Locale
+import java.net.MalformedURLException
+import java.net.URL
 
 /**
  * Encapsulates WebDAV resource location.
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class WebDavUri {
-  public final String hostUrl;
-  public final String rootPath;
-  public final String path;
-  public final String hostName;
-  public final int port;
-  public final boolean isSecure;
+class WebDavUri {
+  @JvmField
+  val hostUrl: String
+  @JvmField
+  val rootPath: String
+  @JvmField
+  val path: String
+  @JvmField
+  val hostName: String
+  @JvmField
+  val port: Int
+  @JvmField
+  val isSecure: Boolean
 
-  public WebDavUri(String fullUrl) {
-    String tryHostUrl;
-    String tryPath;
-    int tryPort;
-    boolean trySecure = false;
+  constructor(fullUrl: String) {
+    var tryHostUrl: String
+    var tryPath: String
+    var tryPort: Int
+    var trySecure = false
     try {
-      URL url = new URL(fullUrl);
-      tryHostUrl = url.getHost();
-      trySecure = "https".equals(url.getProtocol().toLowerCase());
-      tryPort = url.getPort();
-      tryPath = url.getPath();
-    } catch (MalformedURLException e) {
-      tryHostUrl = fullUrl;
-      tryPort = -1;
-      tryPath = "";
+      val url = URL(fullUrl)
+      tryHostUrl = url.host
+      trySecure = "https" == url.protocol.lowercase(Locale.getDefault())
+      tryPort = url.port
+      tryPath = url.path
+    } catch (e: MalformedURLException) {
+      tryHostUrl = fullUrl
+      tryPort = -1
+      tryPath = ""
     }
-    this.hostName = "";
-    this.hostUrl = tryHostUrl;
-    this.port = tryPort;
-    this.rootPath = "";
-    this.path = tryPath;
-    this.isSecure = trySecure;
+    hostName = ""
+    hostUrl = tryHostUrl
+    port = tryPort
+    rootPath = ""
+    path = tryPath
+    isSecure = trySecure
   }
 
-  public WebDavUri(String hostName, String hostUrl, String path) {
-    assert !hostUrl.endsWith("/");
-    assert path.isEmpty() || path.startsWith("/");
-    this.hostName = hostName;
-
-    String tryHostUrl;
-    String tryRootPath;
-    int tryPort;
-    boolean trySecure = false;
+  constructor(hostName: String, hostUrl: String, path: String) {
+    assert(!hostUrl.endsWith("/"))
+    assert(path.isEmpty() || path.startsWith("/"))
+    this.hostName = hostName
+    var tryHostUrl: String
+    var tryRootPath: String
+    var tryPort: Int
+    var trySecure = false
     try {
-      URL url = new URL(hostUrl);
-      tryHostUrl = url.getHost();
-      trySecure = "https".equals(url.getProtocol().toLowerCase());
-      tryPort = url.getPort();
-      tryRootPath = url.getPath();
-    } catch (MalformedURLException e) {
-      tryHostUrl = hostUrl;
-      tryPort = 80;
-      tryRootPath = "";
+      val url = URL(hostUrl)
+      tryHostUrl = url.host
+      trySecure = "https" == url.protocol.lowercase(Locale.getDefault())
+      tryPort = url.port
+      tryRootPath = url.path
+    } catch (e: MalformedURLException) {
+      tryHostUrl = hostUrl
+      tryPort = 80
+      tryRootPath = ""
     }
-    this.hostUrl = tryHostUrl;
-    this.port = tryPort;
-    this.rootPath = tryRootPath;
-    this.path = path;
-    this.isSecure = trySecure;
+    this.hostUrl = tryHostUrl
+    port = tryPort
+    rootPath = tryRootPath
+    this.path = path
+    isSecure = trySecure
   }
 
-  public String buildUrl() {
-    return buildRootUrl() + path;
+  fun buildUrl(): String {
+    return buildRootUrl() + path
   }
 
-  String buildRootUrl() {
-    return (isSecure ? "https://" : "http://") + hostUrl + (port == -1 ? "" :  ":" + port) + rootPath;
-  }
-  public WebDavUri buildParent() {
-    return new WebDavUri(hostName, buildRootUrl(), Path.path(path).getParent().toString());
+  fun buildRootUrl(): String =
+    if (hostUrl.isBlank()) {
+      ""
+    } else {
+      val scheme = if (isSecure) "https://" else "http://"
+      val port = if (port == -1 || port == 80) "" else ":$port"
+      "$scheme$hostUrl$port$rootPath"
+    }
+
+  fun buildParent(): WebDavUri {
+    return WebDavUri(hostName, buildRootUrl(), Path.path(path).parent.toString())
   }
 
-  public WebDavUri buildChild(String name) {
-    return new WebDavUri(hostName, buildRootUrl(), Path.path(path).child(name).toString());
+  fun buildChild(name: String?): WebDavUri {
+    return WebDavUri(hostName, buildRootUrl(), Path.path(path).child(name).toString())
   }
 }

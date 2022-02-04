@@ -77,11 +77,12 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
 
       @Override
       public void scrollTo(int xpos, int ypos) {
-        myDelegate.scrollTo(xpos, ypos);
         if (myVScrollController != null && myVScrollController.isScrollable()) {
+          System.err.println("yscroll: delta="+(myStartYpos - ypos));
           myVScrollController.scrollBy(myStartYpos - ypos);
         }
         myStartYpos = ypos;
+        myDelegate.scrollTo(xpos, ypos);
       }
 
       @Override

@@ -49,9 +49,14 @@ public class ScrollViewInteraction extends MouseInteractionBase implements Mouse
       MouseWheelEvent wheelEvent = (MouseWheelEvent) event;
       int scrollIncrement = (int)(
           Math.max(wheelEvent.getScrollAmount(), 10)
-              * (wheelEvent.getWheelRotation() < 0 ? myWheelFactor : -myWheelFactor)
+              * (wheelEvent.getWheelRotation() < 0 ? myWheelFactor : (wheelEvent.getWheelRotation() > 0 ? -myWheelFactor : 0))
       );
-      if ((event.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) == 0) {
+      if (scrollIncrement == 0) {
+        return;
+      }
+      if ((event.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) == 0) {    
+        System.err.println(event);
+        System.err.println(scrollIncrement);
         // Vertical scroll
         myCurY += scrollIncrement;
       } else {
