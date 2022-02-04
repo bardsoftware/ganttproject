@@ -399,6 +399,7 @@ class TaskTable(
     this.treeTable.focusedProperty().addListener { _, oldValue, newValue ->
       if (newValue && newValue != oldValue) {
         this.selectionManager.setUserInputConsumer(this@TaskTable)
+        this.treeTableSelectionListener.onChanged(null)
       }
     }
 
