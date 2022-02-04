@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.webdav
 
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.vbox
 import biz.ganttproject.storage.StorageUi
 import javafx.beans.property.StringProperty
@@ -50,7 +51,31 @@ class WebdavServerSetupPane(
     private val onDone: Consumer<WebDavServerDescriptor?>,
     private val hasDelete: Boolean) : StorageUi {
   private val myWebdavServer: WebDavServerDescriptor = webdavServer.clone()
-
+  private val props = listOf(
+    BeanProperty(myWebdavServer,
+      WebDavPropertyDescriptor("name", "webdav.serverName")
+    ),
+    BeanProperty(myWebdavServer,
+      WebDavPropertyDescriptor("rootUrl", "option.webdav.server.url.label")
+    ),
+    BeanProperty(myWebdavServer,
+      WebDavPropertyDescriptor("username", "option.webdav.server.username.label")
+    ),
+    BeanProperty(myWebdavServer,
+      WebDavPropertyDescriptor("password", "option.webdav.server.password.label")
+    ),
+    BeanProperty(myWebdavServer,
+      WebDavPropertyDescriptor("savePassword", "option.webdav.server.savePassword.label.trailing")
+    )
+  ).also {
+    it.forEach {
+      it.observableValue.get().addListener { _, _, _ -> onPropertyChange() }
+    }
+  }
+  private val btnApply = Button(RootLocalizer.formatText("apply")).apply {
+    styleClass.add("btn-attention")
+    addEventHandler(ActionEvent.ACTION) { onDone() }
+  }
   override val id: String
     get() = "webdav-setup"
 
@@ -69,55 +94,48 @@ class WebdavServerSetupPane(
   }
 
   @Throws(IntrospectionException::class)
-  private fun doCreateUi() = vbox {
-    vbox.styleClass.add("pane-service-contents")
-    vbox.stylesheets.add("/biz/ganttproject/storage/StorageDialog.css")
+  private fun doCreateUi() : Pane = vbox {
+      vbox.styleClass.add("pane-service-contents")
+      vbox.stylesheets.add("/biz/ganttproject/storage/StorageDialog.css")
 
-    addTitle(if (hasDelete) "webdav.ui.title.editServer" else "webdav.ui.title.newServer").also {
-      it.styleClass.add("title-integrated")
+      addTitle(if (hasDelete) "webdav.ui.title.editServer" else "webdav.ui.title.newServer").also {
+        it.styleClass.add("title-integrated")
+      }
+
+      add(PropertySheet().apply {
+        styleClass.addAll("property-sheet")
+        isModeSwitcherVisible = false
+        isSearchBoxVisible = false
+        val defaultFactory = DefaultPropertyEditorFactory()
+        setPropertyEditorFactory { item ->
+          if (item.name == i18n.formatText("password")) {
+            PasswordPropertyEditor(item)
+          } else {
+            defaultFactory.call(item)
+          }
+        }
+        props.forEach {
+          items.add(it)
+        }
+      }, alignment = null, growth = Priority.ALWAYS)
+
+      add(HBox().apply {
+        styleClass.add("doclist-save-box")
+        if (hasDelete) {
+          children.add(Button(i18n.formatText("delete")).apply {
+            addEventHandler(ActionEvent.ACTION) { onDone.accept(null) }
+            isFocusTraversable = false
+          })
+        }
+        children.add(Pane().apply {
+          HBox.setHgrow(this, Priority.ALWAYS)
+        })
+        children.add(btnApply)
+      }, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER)
     }
 
-    add(PropertySheet().apply {
-      styleClass.addAll("property-sheet")
-      isModeSwitcherVisible = false
-      isSearchBoxVisible = false
-      val defaultFactory = DefaultPropertyEditorFactory()
-      setPropertyEditorFactory { item ->
-        if (item.name == i18n.formatText("password")) {
-          PasswordPropertyEditor(item)
-        } else {
-          defaultFactory.call(item)
-        }
-      }
-      items.add(BeanProperty(
-          myWebdavServer, WebDavPropertyDescriptor("name", "webdav.serverName")))
-      items.add(BeanProperty(
-          myWebdavServer, WebDavPropertyDescriptor("rootUrl", "option.webdav.server.url.label")))
-      items.add(BeanProperty(
-          myWebdavServer, WebDavPropertyDescriptor("username", "option.webdav.server.username.label")))
-      items.add(BeanProperty(
-          myWebdavServer, WebDavPropertyDescriptor("password", "option.webdav.server.password.label")))
-      items.add(BeanProperty(
-          myWebdavServer, WebDavPropertyDescriptor("savePassword", "option.webdav.server.savePassword.label.trailing")))
-
-    }, alignment = null, growth = Priority.ALWAYS)
-
-    add(HBox().apply {
-      styleClass.add("doclist-save-box")
-      if (hasDelete) {
-        children.add(Button(i18n.formatText("delete")).apply {
-          addEventHandler(ActionEvent.ACTION) { onDone.accept(null) }
-          isFocusTraversable = false
-        })
-      }
-      children.add(Pane().apply {
-        HBox.setHgrow(this, Priority.ALWAYS)
-      })
-      children.add(Button(i18n.formatText("apply")).apply {
-        styleClass.add("btn-attention")
-        addEventHandler(ActionEvent.ACTION) { onDone() }
-      })
-    }, alignment = Pos.CENTER_RIGHT, growth = Priority.NEVER)
+  private fun onPropertyChange() {
+    btnApply.isDisable = myWebdavServer.name.isNullOrBlank() || myWebdavServer.rootUrl.isNullOrBlank()
   }
 
   override fun createSettingsUi(): Optional<Pane> {

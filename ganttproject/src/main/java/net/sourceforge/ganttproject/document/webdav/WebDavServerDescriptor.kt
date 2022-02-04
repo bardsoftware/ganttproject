@@ -1,4 +1,5 @@
 /*
+Copyright 2022 BarD Software s.r.o.
 Copyright 2012 GanttProject Team
 
 This file is part of GanttProject, an opensource project management tool.
@@ -16,92 +17,79 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package net.sourceforge.ganttproject.document.webdav;
+package net.sourceforge.ganttproject.document.webdav
 
-import com.google.common.base.Objects;
+import com.google.common.base.Objects
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleStringProperty
 
 /**
  * Encapsulates server access information.
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class WebDavServerDescriptor {
+class WebDavServerDescriptor {
+  private val _name = SimpleStringProperty("")
+  var name: String
+  get() = _name.value
+  set(value) { _name.value = value }
+  fun nameProperty() = _name
 
-  public String name;
-  private WebDavUri rootUri;
-  public String username;
-  String password = null;
-  boolean savePassword = false;
-
-  public WebDavServerDescriptor() {
-  }
-
-  WebDavServerDescriptor(String name, String rootUrl, String username) {
-    this.name = name;
-    setRootUrl(rootUrl);
-    this.username = username;
-  }
-
-  public WebDavServerDescriptor(String name, String rootUrl, String username, String password) {
-    this(name, rootUrl, username);
-    this.password = password;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (obj instanceof WebDavServerDescriptor == false) {
-      return false;
+  private var rootUri: WebDavUri? = null
+  private val _rootUrl = SimpleStringProperty("")
+  var rootUrl: String
+    get() = if (rootUri == null) "" else rootUri!!.buildRootUrl()
+    set(value) {
+      var v = value
+      do {
+        v = v.removeSuffix("/")
+      } while (v.endsWith("/"))
+      rootUri = WebDavUri(name, v, "")
+      _rootUrl.value = v
     }
-    WebDavServerDescriptor that = (WebDavServerDescriptor) obj;
-    return Objects.equal(this.getRootUrl(), that.getRootUrl());
+  fun rootUrlProperty() = _rootUrl
+
+  private val _username = SimpleStringProperty("")
+  var username: String
+  get() = _username.value
+  set(value) { _username.value = value }
+  fun usernameProperty() = _username
+
+  private val _password = SimpleStringProperty("")
+  var password: String
+  get() = _password.value
+  set(value) { _password.value = value }
+  fun passwordProperty() = _password
+
+  private val _savePassword = SimpleBooleanProperty(false)
+  var savePassword: Boolean
+  get() =  _savePassword.value
+  set(value) { _savePassword.value = value }
+  fun savePasswordProperty() = _savePassword
+
+  constructor() {}
+  internal constructor(name: String?, rootUrl: String, username: String?) {
+    this.name = name ?: ""
+    this.rootUrl = rootUrl
+    this.username = username ?: ""
   }
 
-  public String getName() {
-    return name;
+  constructor(name: String?, rootUrl: String, username: String?, password: String?) : this(name, rootUrl, username) {
+    this.password = password ?: ""
   }
 
-  public void setName(String name) {
-    this.name = name;
+  override fun equals(obj: Any?): Boolean = (obj as? WebDavServerDescriptor)?.let {
+    Objects.equal(this.rootUrl, it.rootUrl)
+  } ?: false
+
+  override fun hashCode(): Int {
+    return Objects.hashCode(rootUrl)
   }
 
-  public String getUsername() {
-    return this.username;
-  }
-  public void setUsername(String username) { this.username = username; }
-  public String getPassword() {
-    return this.password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(this.getRootUrl());
-  }
-
-  public String getRootUrl() {
-    return rootUri == null ? "" : rootUri.buildRootUrl();
-  }
-
-  public void setRootUrl(String rootUrl) {
-    while (rootUrl.endsWith("/")) {
-      rootUrl = rootUrl.substring(0, rootUrl.length() - 1);
-    }
-    this.rootUri = new WebDavUri(this.name, rootUrl, "");
-  }
-
-  public boolean getSavePassword() {
-    return savePassword;
-  }
-
-  public void setSavePassword(boolean value) {
-    savePassword = value;
-  }
-
-  public WebDavServerDescriptor clone() {
-    WebDavServerDescriptor result = new WebDavServerDescriptor(name, getRootUrl(), username, password);
-    result.setSavePassword(getSavePassword());
-    return result;
+  fun clone(): WebDavServerDescriptor {
+    val result = WebDavServerDescriptor(name, rootUrl, username, password)
+    result.savePassword = savePassword
+    return result
   }
 }
+

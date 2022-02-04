@@ -28,7 +28,7 @@ class WebdavStorage(
 
   override val name: String
     get() {
-      return myServer.getName()
+      return myServer.name
     }
 
   override val category = "webdav"

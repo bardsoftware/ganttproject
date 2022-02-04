@@ -223,7 +223,7 @@ class GanttURLChooser {
       @Override
       public void changeValue(ChangeValueEvent event) {
         if (myServers.getValue() != null) {
-          myServers.getValue().username = myUsername.getValue();
+          myServers.getValue().setUsername(myUsername.getValue());
         }
       }
     }));
@@ -232,7 +232,7 @@ class GanttURLChooser {
       @Override
       public void changeValue(ChangeValueEvent event) {
         if (myServers.getValue() != null) {
-          myServers.getValue().password = myPassword.getValue();
+          myServers.getValue().setPassword(myPassword.getValue());
         }
       }
     }));
@@ -329,7 +329,7 @@ class GanttURLChooser {
     if (!path.startsWith("/")) {
       path = "/" + path;
     }
-    return new WebDavUri(server.name, host, path);
+    return new WebDavUri(server.getName(), host, path);
   }
 
   private WebDavResource getSelectedResource() {
@@ -502,8 +502,8 @@ class GanttURLChooser {
 
   private void updateUsernameAndPassword() {
     WebDavServerDescriptor server = myServers.getValue();
-    myUsername.setValue(server == null ? "" : server.username);
-    myPassword.setValue(server == null ? "" : server.password);
+    myUsername.setValue(server == null ? "" : server.getUsername());
+    myPassword.setValue(server == null ? "" : server.getPassword());
     setWebDavActionsEnabled(
         !Strings.isNullOrEmpty(myUsername.getValue()) && !Strings.isNullOrEmpty(myPassword.getValue()));
   }

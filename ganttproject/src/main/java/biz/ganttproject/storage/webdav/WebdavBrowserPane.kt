@@ -223,5 +223,5 @@ private data class State(
 )
 
 private fun createDocument(server: WebDavServerDescriptor, resource: WebDavResource): Document {
-  return HttpDocument(resource, server.getUsername(), server.password, HttpDocument.NO_LOCK)
+  return HttpDocument(resource, server.username, server.password, HttpDocument.NO_LOCK)
 }

@@ -278,7 +278,10 @@ class StoragePane internal constructor(
         cloudStorageOptions.addValue(it)
       }
     }, false)
-    FXUtil.transitionCenterPane(borderPane, setupPane.createUi()) { dialogUi.resize() }
+    FXUtil.transitionCenterPane(borderPane, setupPane.createUi()) {
+      dialogUi.resize()
+      setupPane.focus()
+    }
   }
 }
 

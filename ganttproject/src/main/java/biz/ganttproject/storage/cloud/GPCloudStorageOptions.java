@@ -50,7 +50,12 @@ public class GPCloudStorageOptions extends GPAbstractOption<WebDavServerDescript
   }
 
   public ObservableList<WebDavServerDescriptor> getWebdavServers() {
-    return myObservableList.filtered(server -> !GANTTPROJECT_CLOUD_SERVERS.contains(server.getRootUrl()));
+    return myObservableList.filtered(server -> {
+      if (server.getName() == null || server.getRootUrl() == null) {
+        return false;
+      }
+      return !GANTTPROJECT_CLOUD_SERVERS.contains(server.getRootUrl());
+    });
   }
 
   private WebDavServerDescriptor findCloudServerDescriptor(Collection<String> goodUrls) {
@@ -101,7 +106,7 @@ public class GPCloudStorageOptions extends GPAbstractOption<WebDavServerDescript
   public String getPersistentValue() {
     StringBuilder result = new StringBuilder();
     for (WebDavServerDescriptor server : myServers) {
-      result.append("\n").append(server.name).append("\t").append(server.getRootUrl()).append("\t").append(server.username);
+      result.append("\n").append(server.getName()).append("\t").append(server.getRootUrl()).append("\t").append(server.getUsername());
       if (server.getSavePassword()) {
         result.append("\t").append(server.getPassword());
       }
@@ -116,13 +121,13 @@ public class GPCloudStorageOptions extends GPAbstractOption<WebDavServerDescript
         String[] parts = s.split("\\t");
         WebDavServerDescriptor server = new WebDavServerDescriptor();
         if (parts.length >= 1) {
-          server.name = parts[0];
+          server.setName(parts[0]);
         }
         if (parts.length >= 2) {
           server.setRootUrl(parts[1]);
         }
         if (parts.length >= 3) {
-          server.username = parts[2];
+          server.setUsername(parts[2]);
         }
         if (parts.length >= 4) {
           server.setPassword(parts[3]);

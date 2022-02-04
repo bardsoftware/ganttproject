@@ -49,7 +49,7 @@ public class WebdavLoadService extends Service<ObservableList<WebDavResource>> {
     while (host.endsWith("/")) {
       host = host.substring(0, host.length() - 1);
     }
-    return new WebDavUri(myServer.name, host, myPath);
+    return new WebDavUri(myServer.getName(), host, myPath);
   }
 
 }

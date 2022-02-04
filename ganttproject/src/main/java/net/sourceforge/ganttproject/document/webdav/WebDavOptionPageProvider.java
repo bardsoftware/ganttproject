@@ -1,27 +1,22 @@
 package net.sourceforge.ganttproject.document.webdav;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.util.Collections;
-import java.util.List;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-
-import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent.SelectionListener;
-import net.sourceforge.ganttproject.gui.EditableList;
-import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
-import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.ListOption;
-
 import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent.SelectionListener;
+import net.sourceforge.ganttproject.gui.EditableList;
+import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.language.GanttLanguage;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Collections;
+import java.util.List;
 
 public class WebDavOptionPageProvider extends OptionPageProviderBase {
 
@@ -51,8 +46,8 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
 
           @Override
           protected WebDavServerDescriptor updateValue(WebDavServerDescriptor newValue, WebDavServerDescriptor curValue) {
-            newValue.username = curValue.username;
-            newValue.password = curValue.password;
+            newValue.setUsername(curValue.getUsername());
+            newValue.setPassword(curValue.getPassword());
             newValue.setRootUrl(curValue.getRootUrl());
             serversOption.updateValue(curValue, newValue);
             return newValue;
@@ -80,7 +75,7 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
 
           @Override
           protected String getStringValue(WebDavServerDescriptor t) {
-            return t.name;
+            return t.getName();
           }
     };
     serverList.getTableComponent().setPreferredSize(new Dimension(150, 300));
@@ -101,7 +96,7 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
       @Override
       public void changeValue(ChangeValueEvent event) {
         if (serverList.getSelectedObject() != null) {
-          serverList.getSelectedObject().username = usernameOption.getValue();
+          serverList.getSelectedObject().setUsername(usernameOption.getValue());
         }
       }
     });
@@ -111,7 +106,7 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
       @Override
       public void changeValue(ChangeValueEvent event) {
         if (serverList.getSelectedObject() != null) {
-          serverList.getSelectedObject().password = passwordOption.getValue();
+          serverList.getSelectedObject().setPassword(passwordOption.getValue());
         }
       }
     });
@@ -122,7 +117,7 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
       @Override
       public void changeValue(ChangeValueEvent event) {
         if (serverList.getSelectedObject() != null) {
-          serverList.getSelectedObject().savePassword = savePasswordOption.getValue();
+          serverList.getSelectedObject().setSavePassword(savePasswordOption.getValue());
         }
       }
     });
@@ -135,9 +130,9 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
         if (selection.size() == 1) {
           WebDavServerDescriptor selected = selection.get(0);
           urlOption.setValue(selected.getRootUrl());
-          usernameOption.setValue(selected.username);
-          passwordOption.setValue(selected.password);
-          savePasswordOption.setValue(selected.savePassword);
+          usernameOption.setValue(selected.getUsername());
+          passwordOption.setValue(selected.getPassword());
+          savePasswordOption.setValue(selected.getSavePassword());
         }
       }
     });
