@@ -132,9 +132,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
   @Override
   protected AbstractChartImplementation getImplementation() {
-    if (myChartImplementation == null) {
-      myChartImplementation = new ResourceChartImplementation(this, getProject(), getUIFacade(), myChartModel, this);
-    }
     return myChartImplementation;
   }
 
@@ -147,7 +144,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
   private MouseListener myMouseListener;
 
-  private AbstractChartImplementation myChartImplementation;
+  private final AbstractChartImplementation myChartImplementation;
 
   @Override
   public ChartViewState getViewState() {

@@ -31,8 +31,8 @@ public class ScrollViewInteraction extends MouseInteractionBase implements Mouse
   private final double myWheelFactor = Double.parseDouble(GPAction.getKeyStrokeText("mouse.wheel.factor"));
   private int myCurY;
   private int myCurX;
-  private ScrollingSession myScrollingSession;
-  private Component myComponent;
+  private final ScrollingSession myScrollingSession;
+  private final Component myComponent;
 
   public ScrollViewInteraction(MouseEvent e, TimelineFacade timelineFacade) {
     super(timelineFacade.getDateAt(0), timelineFacade);
@@ -47,6 +47,9 @@ public class ScrollViewInteraction extends MouseInteractionBase implements Mouse
   public void apply(MouseEvent event) {
     if (event instanceof MouseWheelEvent) {
       MouseWheelEvent wheelEvent = (MouseWheelEvent) event;
+      if (wheelEvent.getWheelRotation() == 0) {
+        return;
+      }
       int scrollIncrement = (int)(
           Math.max(wheelEvent.getScrollAmount(), 10)
               * (wheelEvent.getWheelRotation() < 0 ? myWheelFactor : -myWheelFactor)

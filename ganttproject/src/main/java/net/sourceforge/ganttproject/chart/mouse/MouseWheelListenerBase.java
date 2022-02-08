@@ -37,6 +37,9 @@ public abstract class MouseWheelListenerBase implements MouseWheelListener {
 
   @Override
   public void mouseWheelMoved(MouseWheelEvent e) {
+    if (e.getWheelRotation() == 0) {
+      return;
+    }
     String text = MouseUtil.toString(e);
     if (text.equals(myZoomKeyStroke)) {
       if (isRotationUp(e)) {
