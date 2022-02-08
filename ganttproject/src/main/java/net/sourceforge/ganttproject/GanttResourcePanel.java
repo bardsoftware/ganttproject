@@ -24,6 +24,7 @@ import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
@@ -124,6 +125,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   @Override
   protected void init() {
     getTreeTable().initTreeTable();
+    area.setVScrollController(getTreeTable().getVScrollController());
   }
 
   public GanttProjectBase.RowHeightAligner getRowHeightAligner() {
@@ -390,6 +392,11 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   @Override
   public AbstractAction getMoveDownAction() {
     return myResourceActionSet.getResourceMoveDownAction();
+  }
+
+  @Override
+  public TimelineChart.VScrollController getVScrollController() {
+    return getTreeTable().getVScrollController();
   }
 
   @Override

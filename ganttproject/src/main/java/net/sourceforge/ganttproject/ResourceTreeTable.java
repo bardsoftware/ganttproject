@@ -18,15 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
+import biz.ganttproject.core.table.ColumnList.Column;
+import com.google.common.base.Joiner;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.AssignmentNode;
@@ -37,15 +35,19 @@ import net.sourceforge.ganttproject.roles.RoleManager.RoleEvent;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
-import biz.ganttproject.core.table.ColumnList.Column;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
+import javax.swing.*;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class ResourceTreeTable extends GPTreeTableBase {
   private final RoleManager myRoleManager;
@@ -53,6 +55,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
   private final ResourceTreeTableModel myResourceTreeModel;
 
   private final UIFacade myUiFacade;
+  private final Supplier<VscrollAdjustmentListener> vscrollController;
 
   public ResourceTreeTable(IGanttProject project, ResourceTreeTableModel model, UIFacade uiFacade) {
     super(project, uiFacade, project.getResourceCustomPropertyManager(), model);
@@ -78,6 +81,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
     getTableHeaderUiFacade().createDefaultColumns(ResourceDefaultColumn.getColumnStubs());
     setTreeTableModel(model);
     myResourceTreeModel.setSelectionModel(getTreeSelectionModel());
+    vscrollController = Suppliers.memoize(() -> new VscrollAdjustmentListener(myUiFacade.getResourceChart(), false));
   }
 
   @Override
@@ -118,6 +122,10 @@ public class ResourceTreeTable extends GPTreeTableBase {
     return myUiFacade.getResourceChart();
   }
 
+  public TimelineChart.VScrollController getVScrollController() {
+    return vscrollController.get();
+  }
+
   private static class AscendingNameComparator implements Comparator<HumanResource> {
     @Override
     public int compare(HumanResource o1, HumanResource o2) {
@@ -131,7 +139,7 @@ public class ResourceTreeTable extends GPTreeTableBase {
     super.doInit();
     myResourceTreeModel.updateResources();
     getTable().getModel().addTableModelListener(new ModelListener());
-    getVerticalScrollBar().addAdjustmentListener(new VscrollAdjustmentListener(myUiFacade.getResourceChart(), false));
+    getVerticalScrollBar().addAdjustmentListener(vscrollController.get());
     getTableHeader().addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent mouseEvent) {

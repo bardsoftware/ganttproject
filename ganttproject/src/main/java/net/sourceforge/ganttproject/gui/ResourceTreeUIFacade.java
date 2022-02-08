@@ -18,12 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import javax.swing.AbstractAction;
-
+import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.resource.HumanResource;
+
+import javax.swing.*;
 
 public interface ResourceTreeUIFacade extends TreeUiFacade<HumanResource> {
   AbstractAction getMoveUpAction();
 
   AbstractAction getMoveDownAction();
+
+  TimelineChart.VScrollController getVScrollController();
 }

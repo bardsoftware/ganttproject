@@ -91,7 +91,10 @@ public class GanttChartController extends AbstractChartImplementation implements
 
       @Override
       public void scrollBy(int pixels) {
-        myTaskTableConnector.getChartScrollOffset().setValue(pixels);
+        var scrollConsumer = myTaskTableConnector.getChartScrollOffset();
+        if (scrollConsumer != null) {
+          scrollConsumer.accept(0.0 + pixels);
+        }
       }
     });
   }

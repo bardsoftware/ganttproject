@@ -67,6 +67,7 @@ import java.awt.Component
 import java.math.BigDecimal
 import java.util.*
 import java.util.List.copyOf
+import java.util.function.Consumer
 import javax.swing.SwingUtilities
 import kotlin.math.ceil
 
@@ -233,17 +234,12 @@ class TaskTable(
         treeTable.fixedCellSize = ceil(maxOf(newValue.toDouble(), minCellHeight.value))
       }
     }
-//    if (taskTableChartConnector.rowHeight.get() == -1) {
-//      taskTableChartConnector.rowHeight.value = maxOf(applicationFont.get().size.toInt() + 20, treeTable.fixedCellSize.toInt())
-//    }
-    taskTableChartConnector.chartScrollOffset.addListener { _, _, newValue ->
-      println("scrolling by $newValue")
+    taskTableChartConnector.chartScrollOffset = Consumer { newValue ->
       Platform.runLater {
-        treeTable.scrollBy(newValue.toDouble())
+        treeTable.scrollBy(newValue)
       }
     }
     treeTable.addScrollListener { newValue ->
-      println("new scroll value=$newValue")
       taskTableChartConnector.tableScrollOffset.value = newValue
     }
     taskTableChartConnector.exportTreeTableApi = {
@@ -847,7 +843,7 @@ data class TaskTableChartConnector(
   val visibleTasks: ObservableList<Task>,
   val tableScrollOffset: DoubleProperty,
   var isTableScrollable: Boolean,
-  val chartScrollOffset: DoubleProperty,
+  var chartScrollOffset: Consumer<Double>?,
   var exportTreeTableApi: () -> TreeTableApi? = { null },
   var focus: () -> Unit = {},
   val minRowHeight: DoubleProperty

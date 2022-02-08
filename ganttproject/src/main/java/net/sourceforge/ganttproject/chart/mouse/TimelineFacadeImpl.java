@@ -18,8 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.mouse;
 
-import java.util.Date;
-
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.walker.WorkingUnitCounter;
 import biz.ganttproject.core.time.TimeDuration;
@@ -29,6 +27,8 @@ import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
 import net.sourceforge.ganttproject.chart.TimelineChart.VScrollController;
 import net.sourceforge.ganttproject.task.TaskManager;
+
+import java.util.Date;
 
 public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
   private final ChartModelBase myChartModel;
@@ -78,7 +78,6 @@ public class TimelineFacadeImpl implements MouseInteraction.TimelineFacade {
       @Override
       public void scrollTo(int xpos, int ypos) {
         if (myVScrollController != null && myVScrollController.isScrollable()) {
-          System.err.println("yscroll: delta="+(myStartYpos - ypos));
           myVScrollController.scrollBy(myStartYpos - ypos);
         }
         myStartYpos = ypos;

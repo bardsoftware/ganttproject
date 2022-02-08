@@ -114,7 +114,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
       FXCollections.observableArrayList(),
       new SimpleDoubleProperty(0.0),
       true,
-      new SimpleDoubleProperty(0.0),
+      null,
       () -> null,
       () -> null,
       TreeTableCellsKt.getMinCellHeight()
