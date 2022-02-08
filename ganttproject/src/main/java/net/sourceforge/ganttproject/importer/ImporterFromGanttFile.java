@@ -25,7 +25,6 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.table.ColumnList;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
@@ -34,7 +33,6 @@ import org.osgi.service.prefs.Preferences;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,9 +106,7 @@ public class ImporterFromGanttFile extends ImporterBase {
 
       importBufferProject(targetProject, bufferProject, BufferProjectImportKt.asImportBufferProjectApi(getUiFacade()),
           myMergeResourcesOption, myImportCalendarOption);
-    } catch (DocumentException e) {
-      getUiFacade().showErrorDialog(e);
-    } catch (IOException e) {
+    } catch (Exception  e) {
       getUiFacade().showErrorDialog(e);
     }
   }

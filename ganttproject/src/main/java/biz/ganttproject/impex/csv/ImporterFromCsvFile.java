@@ -19,7 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.option.GPOption;
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.importer.BufferProjectImportKt;
@@ -28,7 +27,6 @@ import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -76,8 +74,8 @@ public class ImporterFromCsvFile extends ImporterBase {
       importBufferProject(getProject(), bufferProject, BufferProjectImportKt.asImportBufferProjectApi(getUiFacade()),
           myMergeResourcesOption, null);
       reportErrors(errors, "CSV");
-    } catch (IOException e) {
-      GPLogger.log(e);
+    } catch (Exception e) {
+      getUiFacade().showErrorDialog(e);
     }
   }
 }

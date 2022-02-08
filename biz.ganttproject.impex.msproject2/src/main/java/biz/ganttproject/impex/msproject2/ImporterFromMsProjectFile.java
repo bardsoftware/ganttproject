@@ -21,7 +21,6 @@ package biz.ganttproject.impex.msproject2;
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.option.GPOption;
 import com.google.common.collect.Lists;
-import net.sf.mpxj.MPXJException;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.importer.BufferProjectImportKt;
@@ -82,7 +81,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
 
       findChangedDates(originalDates, buffer2realTask, errors);
       reportErrors(errors, "Import.MSProject");
-    } catch (MPXJException e) {
+    } catch (Exception e) {
       getUiFacade().showErrorDialog(e);
     } finally {
       getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(true);

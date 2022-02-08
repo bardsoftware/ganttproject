@@ -840,13 +840,15 @@ public class TaskManagerImpl implements TaskManager {
       CustomColumnsValues customValues = task.getCustomValues();
       for (CustomPropertyDefinition thatDef : importRoot.getManager().getCustomPropertyManager().getDefinitions()) {
         CustomPropertyDefinition thisDef = customPropertyMapping.get(thatDef);
-        Object value = customValues.getValue(thatDef);
-        if (value != null) {
-          try {
-            nextImported.getCustomValues().setValue(thisDef, value);
-          } catch (CustomColumnsException e) {
-            if (!GPLogger.log(e)) {
-              e.printStackTrace(System.err);
+        if (thisDef != null) {
+          Object value = customValues.getValue(thatDef);
+          if (value != null) {
+            try {
+              nextImported.getCustomValues().setValue(thisDef, value);
+            } catch (CustomColumnsException e) {
+              if (!GPLogger.log(e)) {
+                e.printStackTrace(System.err);
+              }
             }
           }
         }

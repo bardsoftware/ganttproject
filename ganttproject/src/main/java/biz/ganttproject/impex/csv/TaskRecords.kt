@@ -217,7 +217,7 @@ class TaskRecords(
       if (value == null) {
         continue
       }
-      val depSpecs = value.split(";")
+      val depSpecs = value.split(";").filter { it.isNotBlank() }
       try {
         val constructors = TaskProperties.parseDependencies(
           depSpecs, successor, taskIndex
