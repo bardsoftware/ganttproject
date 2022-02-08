@@ -851,6 +851,8 @@ public class TaskManagerImpl implements TaskManager {
               }
             }
           }
+        } else {
+          GPLogger.log("Can't find custom property definition matching "+thatDef);
         }
       }
       original2imported.put(task, nextImported);
