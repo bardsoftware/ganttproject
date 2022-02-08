@@ -59,7 +59,7 @@ import java.util.TimerTask;
 public abstract class AbstractChartImplementation implements TimelineChart, ZoomListener {
   private final ChartModelBase myChartModel;
   private final IGanttProject myProject;
-  private Set<ChartSelectionListener> mySelectionListeners = new LinkedHashSet<>();
+  private final Set<ChartSelectionListener> mySelectionListeners = new LinkedHashSet<>();
   private final ChartComponentBase myChartComponent;
   private MouseInteraction myActiveInteraction;
   private final UIFacade myUiFacade;

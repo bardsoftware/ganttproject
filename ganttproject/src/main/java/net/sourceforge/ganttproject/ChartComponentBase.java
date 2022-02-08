@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.core.calendar.GPCalendarListener;
 import biz.ganttproject.core.option.FontOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
@@ -27,14 +26,7 @@ import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.print.PrintChartApi;
 import net.sourceforge.ganttproject.action.view.ViewChartOptionsDialogAction;
-import net.sourceforge.ganttproject.chart.ChartModel;
-import net.sourceforge.ganttproject.chart.ChartModelBase;
-import net.sourceforge.ganttproject.chart.ChartRendererBase;
-import net.sourceforge.ganttproject.chart.ChartSelection;
-import net.sourceforge.ganttproject.chart.ChartSelectionListener;
-import net.sourceforge.ganttproject.chart.ChartUIConfiguration;
-import net.sourceforge.ganttproject.chart.ChartViewState;
-import net.sourceforge.ganttproject.chart.TimelineChart;
+import net.sourceforge.ganttproject.chart.*;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
 import net.sourceforge.ganttproject.chart.mouse.MouseWheelListenerBase;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
@@ -69,11 +61,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
        hand = Toolkit.getDefaultToolkit().createCustomCursor(
            ImageIO.read(ChartComponentBase.class.getResource("/icons/16x16/chart-hand.png")),
            new Point(16, 16), ChartComponentBase.class.getSimpleName() + "-hand");
-    } catch (HeadlessException e) {
-      GPLogger.logToLogger(e);
-    } catch (IndexOutOfBoundsException e) {
-      GPLogger.logToLogger(e);
-    } catch (IOException e) {
+    } catch (HeadlessException | IOException | IndexOutOfBoundsException e) {
       GPLogger.logToLogger(e);
     }
     CURSOR_DRAG = drag;
@@ -83,7 +71,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
 
   private final ZoomManager myZoomManager;
 
-  private MouseWheelListenerBase myMouseWheelListener;
+  private final MouseWheelListenerBase myMouseWheelListener;
 
   private final UIFacade myUIFacade;
 
@@ -109,12 +97,9 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
         }
       }
     };
-    myProject.getActiveCalendar().addListener(new GPCalendarListener() {
-      @Override
-      public void onCalendarChange() {
-        getChartModel().resetOffsets();
-        reset();
-      }
+    myProject.getActiveCalendar().addListener(() -> {
+      getChartModel().resetOffsets();
+      reset();
     });
   }
 
