@@ -69,9 +69,9 @@ open class GanttProjectImpl(taskManager: TaskManagerImpl? = null) : IGanttProjec
   )
   override val resourceCustomPropertyManager: CustomPropertyManager get() = humanResourceManager.customPropertyManager
   private val myTaskManagerConfig = TaskManagerConfigImpl(humanResourceManager, myCalendar)
-  final override val taskManager = taskManager ?: TaskManagerImpl(null, myTaskManagerConfig)
+  final override val taskManager: TaskManagerImpl = taskManager ?: TaskManagerImpl(null, myTaskManagerConfig)
   override val uIConfiguration = UIConfiguration(Color.BLUE, true)
-  override val taskCustomColumnManager = CustomColumnsManager()
+  override val taskCustomColumnManager: CustomPropertyManager get() = taskManager.customPropertyManager
   override val taskFilterManager = TaskFilterManager(this.taskManager)
   override val roleManager: RoleManager
     get() = RoleManager.Access.getInstance()
@@ -79,7 +79,7 @@ open class GanttProjectImpl(taskManager: TaskManagerImpl? = null) : IGanttProjec
   override var isModified: Boolean = false
   override val activeCalendar: GPCalendarCalc get() = myTaskManagerConfig.calendar
   override val timeUnitStack: TimeUnitStack get() = myTaskManagerConfig.timeUnitStack
-  override var document: Document get() { TODO() } set(value) {
+  override var document: Document get() { TODO() } set(_) {
     TODO()
   }
   override val documentManager: DocumentManager
