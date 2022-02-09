@@ -18,18 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.parser;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttPreviousState;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
-import biz.ganttproject.core.time.GanttCalendar;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author nbohn
@@ -93,8 +91,8 @@ public class PreviousStateTasksTagHandler extends DefaultHandler implements TagH
 
     boolean nested = Boolean.parseBoolean(attrs.getValue("super"));
 
-    GanttPreviousStateTask task = new GanttPreviousStateTask(new Integer(id).intValue(),
-        GanttCalendar.parseXMLDate(start), new Integer(duration).intValue(), meeting, nested);
+    GanttPreviousStateTask task = new GanttPreviousStateTask(Integer.parseInt(id),
+        GanttCalendar.parseXMLDate(start), Integer.parseInt(duration), meeting, nested);
     tasks.add(task);
   }
 

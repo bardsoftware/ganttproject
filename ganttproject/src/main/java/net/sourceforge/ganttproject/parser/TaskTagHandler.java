@@ -177,7 +177,7 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
       int count = 0;
       while (st1.hasMoreTokens()) {
         token = st1.nextToken();
-        array[count] = (new Integer(token)).intValue();
+        array[count] = Integer.parseInt(token);
         count++;
       }
       task.setShape(new ShapePaint(4, 4, array, Color.white, task.getColor()));

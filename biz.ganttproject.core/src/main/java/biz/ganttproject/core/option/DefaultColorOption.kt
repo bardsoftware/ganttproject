@@ -33,8 +33,6 @@ open class DefaultColorOption : GPAbstractOption<Color?>, ColorOption {
   }
 
   override fun loadPersistentValue(value: String) {
-    if (value != null) {
-      resetValue(determineColor(value), true)
-    }
+    resetValue(determineColor(value), true)
   }
 }

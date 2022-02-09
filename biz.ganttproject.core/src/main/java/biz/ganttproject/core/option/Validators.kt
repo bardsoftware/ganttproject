@@ -23,6 +23,7 @@ import com.google.common.base.Supplier
 import org.apache.commons.math3.util.Pair
 import java.text.DateFormat
 import java.text.ParseException
+import java.time.Duration
 import java.util.*
 
 interface ValueValidator<T> {
@@ -87,7 +88,7 @@ object DateValidators {
   }
 
   fun dateInRange(center: Date, yearDiff: Int): DateValidatorType = { value: Date ->
-    val diff = Math.abs(value.year - center.year)
+    val diff = Duration.between(value.toInstant(), center.toInstant()).abs().dividedBy(Duration.ofDays(365))
     if (diff > yearDiff) {
       Pair.create(false, String.format(
           "Date %s is far away (%d years) from expected date %s. Any mistake?", value, diff, center

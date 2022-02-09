@@ -236,7 +236,7 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
     if (deps.length == 0) {
       return;
     }
-    Integer key = new Integer(distance);
+    var key = distance;
     List<TaskDependency> depsList = myDistance2dependencyList.get(key);
     if (depsList == null) {
       depsList = new ArrayList<TaskDependency>();

@@ -108,7 +108,7 @@ class ResourcesTableModel extends TableModelExt<ResourceAssignment>
           result = String.valueOf(assignment.getLoad());
           break;
         case 3:
-          result = new Boolean(assignment.isCoordinator());
+          result = assignment.isCoordinator();
           break;
         case 4:
           result = assignment.getRoleForAssignment();
