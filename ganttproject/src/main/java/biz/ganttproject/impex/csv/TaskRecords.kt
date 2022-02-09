@@ -50,7 +50,7 @@ class TaskRecords(
 ) : RecordGroup(
   "Task group",
   TaskFields.values().map { it.toString() }.toSet(),
-  setOf(TaskFields.NAME.toString(), TaskFields.BEGIN_DATE.toString()),
+  setOf(TaskFields.NAME.toString()),
   null
 ) {
   /** List of known (and supported) Task attributes  */
@@ -94,7 +94,9 @@ class TaskRecords(
       return false
     }
 
-    val startDate = record.digDate(TaskFields.BEGIN_DATE.toString(), this::addError)
+    val startDate = record.digDate(TaskFields.BEGIN_DATE.toString(), this::addError).let {
+      myTimeUnitStack.defaultTimeUnit.adjustLeft(it)
+    }
 
       // Create the task
     var builder = taskManager.newTaskBuilder()
@@ -153,6 +155,9 @@ class TaskRecords(
       }
     }
 
+    if (record.isSet(TaskDefaultColumn.ID.getName())) {
+      builder = record.getInt(TaskDefaultColumn.ID.getName())?.let { builder.withId(it)} ?: builder
+    }
     val task = builder.build()
     if (record.isSet(TaskDefaultColumn.ID.getName())) {
       record.getInt(TaskDefaultColumn.ID.getName())?.let {
@@ -354,6 +359,9 @@ fun SpreadsheetRecord.digDate(column: String, addError: (Level, String) -> Unit)
   this.getDate(column) ?: parseDateOrError1(this[column], addError)
 
 private fun parseDateOrError1(strDate: String?, addError: (Level, String) -> Any): Date? {
+  if (strDate.isNullOrBlank()) {
+    return Date()
+  }
   val result = GanttCSVOpen.language.parseDate(strDate)
   if (result == null) {
     addError(

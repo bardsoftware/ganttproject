@@ -21,6 +21,7 @@ package biz.ganttproject.impex.csv;
 import biz.ganttproject.app.DefaultLocalizer;
 import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -53,6 +54,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -389,6 +391,23 @@ public class GPCsvImportTest extends TestCase {
     importer.load();
     Map<String, Task> taskMap = buildTaskMap(taskManager);
     assertEquals(4.0f, taskMap.get("t1").getDuration().getLength(builder.getTimeUnitStack().getDefaultTimeUnit()));
+  }
+
+  public void testOnlyNameColumn() throws Exception {
+    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+    TaskManager taskManager = builder.build();
+
+    String header1 = buildTaskHeader(
+        TaskRecords.TaskFields.NAME
+    );
+    String data1 = "t1";
+
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(Joiner.on('\n').join(header1, data1).getBytes(Charsets.UTF_8)),
+        SpreadsheetFormat.CSV,
+        taskManager, null, null, builder.getTimeUnitStack());
+    importer.load();
+    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    assertEquals(GregorianTimeUnitStack.DAY.adjustLeft(new Date()), taskMap.get("t1").getStart().getTime());
   }
 
   public void testImportTotalCostAndTotalLoad() throws Exception {

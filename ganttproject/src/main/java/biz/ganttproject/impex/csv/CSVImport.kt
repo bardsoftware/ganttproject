@@ -85,11 +85,19 @@ internal class CsvRecordImpl(private val myRecord: CSVRecord) : SpreadsheetRecor
   override fun getDouble(idx: Int): Double? = get(idx)?.toDoubleOrNull()
 
   override fun getDate(name: String): Date? = get(name)?.let {
-    GanttCSVOpen.language.parseDate(it)
+    if (it.isNullOrBlank()) {
+      Date()
+    } else {
+      GanttCSVOpen.language.parseDate(it)
+    }
   }
 
   override fun getDate(idx: Int): Date? = get(idx)?.let {
-    GanttCSVOpen.language.parseDate(it)
+    if (it.isNullOrBlank()) {
+      Date()
+    } else {
+      GanttCSVOpen.language.parseDate(it)
+    }
   }
 
   override fun getInt(name: String): Int? = get(name)?.toIntOrNull()
