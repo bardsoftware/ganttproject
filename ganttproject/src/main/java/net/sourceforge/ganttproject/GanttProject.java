@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.paint.Color;
 import net.sourceforge.ganttproject.action.*;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
@@ -158,7 +159,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
         myTaskTableChartConnector,
-        Suppliers.memoize(() -> myTaskTableSupplier.get().getActionConnector()));
+      Suppliers.memoize(() -> myTaskTableSupplier.get().getActionConnector())::get);
     options.addOptionGroups(getUIFacade().getOptions());
     options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
     options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
@@ -251,7 +252,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       GPCloudStatusBar cloudStatusBar = new GPCloudStatusBar(
           myObservableDocument, getUIFacade(), getProjectUIFacade(), getProject()
       );
-      Scene statusBarScene = new Scene(cloudStatusBar.getLockPanel(), javafx.scene.paint.Color.TRANSPARENT);
+      Scene statusBarScene = new Scene(cloudStatusBar.getLockPanel(), Color.TRANSPARENT);
       statusBarScene.getStylesheets().add("biz/ganttproject/app/StatusBar.css");
       getStatusBar().setLeftScene(statusBarScene);
     });

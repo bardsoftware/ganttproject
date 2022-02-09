@@ -86,10 +86,10 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
       }
       TaskDefaultColumn.BEGIN_DATE -> {
         val startDate = value as GanttCalendar
-        val earliestStart = task.third ?: startDate
+        val earliestStart = if (task.thirdDateConstraint == 1) task.third else null
 
         task.createMutatorFixingDuration().let {
-          it.setStart(minOf(startDate, earliestStart))
+          it.setStart(minOf(startDate, earliestStart ?: startDate))
           it.commit()
         }
       }

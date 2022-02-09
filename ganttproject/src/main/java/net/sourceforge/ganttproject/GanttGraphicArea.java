@@ -23,11 +23,13 @@ import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.app.TimerBarrier;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
-import biz.ganttproject.core.option.*;
+import biz.ganttproject.core.option.ColorOption;
+import biz.ganttproject.core.option.DefaultColorOption;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
-import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.chart.*;
@@ -47,11 +49,10 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static net.sourceforge.ganttproject.task.event.TaskListenerAdapterKt.createTaskListenerWithTimerBarrier;
 
@@ -102,12 +103,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     myUndoManager = undoManager;
 
     myChartModel = new ChartModelImpl(getTaskManager(), app.getTimeUnitStack(), app.getUIConfiguration());
-    myChartModel.addOptionChangeListener(new GPOptionChangeListener() {
-      @Override
-      public void optionsChanged() {
-        repaint();
-      }
-    });
+    myChartModel.addOptionChangeListener(this::repaint);
     myStateDiffOptions = createBaselineColorOptions(myChartModel, app.getUIConfiguration());
     //this.tree = ttree;
     myViewState = new ChartViewState(this, app.getUIFacade());
@@ -193,7 +189,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   public Action[] getPopupMenuActions(MouseEvent e) {
     List<Action> actions = Lists.newArrayList(getOptionsDialogAction(), myPublicHolidayDialogAction);
     actions.addAll(createToggleHolidayAction(e.getX()));
-    return actions.toArray(new Action[actions.size()]);
+    return actions.toArray(new Action[0]);
   }
 
   private List<Action> createToggleHolidayAction(int x) {
@@ -249,24 +245,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     return myBaseline;
   }
 
-//  static class MouseSupport {
-//    private final ChartModelImpl myChartModel;
-//
-//    MouseSupport(ChartModelImpl chartModel) {
-//      myChartModel = chartModel;
-//    }
-//
-//    protected Task findTaskUnderMousePointer(int xpos, int ypos) {
-//      ChartItem chartItem = myChartModel.getChartItemWithCoordinates(xpos, ypos);
-//      return chartItem == null ? null : chartItem.getTask();
-//    }
-//
-//    protected ChartItem getChartItemUnderMousePoint(int xpos, int ypos) {
-//      ChartItem result = myChartModel.getChartItemWithCoordinates(xpos, ypos);
-//      return result;
-//    }
-//  }
-
   @Override
   protected AbstractChartImplementation getImplementation() {
     return getChartImplementation();
@@ -275,7 +253,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   GanttChartController getChartImplementation() {
     if (myChartComponentImpl == null) {
       myChartComponentImpl = new GanttChartController(getProject(), getUIFacade(), myChartModel, this,
-          getViewState(), this.taskTableChartConnector, this.taskTableActionFacade::get);
+          getViewState(), this.taskTableChartConnector, this.taskTableActionFacade);
     }
     return myChartComponentImpl;
   }
@@ -330,28 +308,13 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
 
   private static ChartOptionGroup createBaselineColorOptions(ChartModelImpl chartModel, final UIConfiguration projectConfig) {
     final ColorOption myTaskAheadOfScheduleColor = new DefaultColorOption("ganttChartStateDiffColors.taskAheadOfScheduleColor", new Color(50, 229, 50));
-    myTaskAheadOfScheduleColor.addPropertyChangeListener(new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        projectConfig.setEarlierPreviousTaskColor(myTaskAheadOfScheduleColor.getValue());
-      }
-    });
+    myTaskAheadOfScheduleColor.addPropertyChangeListener(evt -> projectConfig.setEarlierPreviousTaskColor(myTaskAheadOfScheduleColor.getValue()));
     //
     final ColorOption myTaskBehindScheduleColor = new DefaultColorOption("ganttChartStateDiffColors.taskBehindScheduleColor", new Color(229, 50, 50));
-    myTaskBehindScheduleColor.addPropertyChangeListener(new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        projectConfig.setLaterPreviousTaskColor(myTaskBehindScheduleColor.getValue());
-      }
-    });
+    myTaskBehindScheduleColor.addPropertyChangeListener(evt -> projectConfig.setLaterPreviousTaskColor(myTaskBehindScheduleColor.getValue()));
     //
     final ColorOption myTaskOnScheduleColor = new DefaultColorOption("ganttChartStateDiffColors.taskOnScheduleColor", Color.LIGHT_GRAY);
-    myTaskOnScheduleColor.addPropertyChangeListener(new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        projectConfig.setPreviousTaskColor(myTaskOnScheduleColor.getValue());
-      }
-    });
+    myTaskOnScheduleColor.addPropertyChangeListener(evt -> projectConfig.setPreviousTaskColor(myTaskOnScheduleColor.getValue()));
     //
     return new ChartOptionGroup("ganttChartStateDiffColors", new GPOption[] { myTaskOnScheduleColor,
         myTaskAheadOfScheduleColor, myTaskBehindScheduleColor }, chartModel.getOptionEventDispatcher());

@@ -18,11 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.core.calendar.walker;
 
-import java.util.Date;
-
-import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendar.DayMask;
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.time.TimeUnit;
+
+import java.util.Date;
 
 
 /**
@@ -53,7 +53,7 @@ public abstract class ForwardTimeWalker {
       boolean isWeekendState = (myCalendar.getDayMask(unitStart) & DayMask.WORKING) == 0;
       if (isWeekendState) {
         Date workingUnitStart = myCalendar.findClosestWorkingTime(unitStart);
-        assert workingUnitStart.after(unitStart);
+        assert workingUnitStart.after(unitStart) : "it is expected that " + workingUnitStart + " >" + unitStart;
         processNonWorkingTime(unitStart, workingUnitStart);
         unitStart = workingUnitStart;
         continue;
