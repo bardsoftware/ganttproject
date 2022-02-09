@@ -18,7 +18,7 @@ configurations {
 }
 
 dependencies {
-    exported 'org.slf4j:slf4j-api:1.7.35'
+    exported 'org.slf4j:slf4j-api:1.7.36'
     implementation 'org.slf4j:slf4j-jdk14:1.7.35'
     implementation "com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:0.62.+"
     implementation "com.vladsch.flexmark:flexmark-ext-tables:0.62.+"
