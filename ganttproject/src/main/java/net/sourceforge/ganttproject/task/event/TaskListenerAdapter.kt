@@ -16,50 +16,68 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.task.event;
+package net.sourceforge.ganttproject.task.event
+
+import biz.ganttproject.app.TimerBarrier
+
 
 /**
- * Created by IntelliJ IDEA. User: bard
+ * This adapter class allows for delegating all events to the single handler and overriding handling of each
+ * particular event type.
+ *
+ * @author Dmitry Barashev(dbarashev@ganttproject.biz)
  */
-public abstract class TaskListenerAdapter implements TaskListener {
-  @Override
-  public void taskScheduleChanged(TaskScheduleEvent e) {
+open class TaskListenerAdapter(private val allEventsHandler: ()->Unit = {}) : TaskListener {
+  var dependencyAddedHandler: ((TaskDependencyEvent) -> Unit)? = null
+  var dependencyRemovedHandler: ((TaskDependencyEvent) -> Unit)? = null
+  var dependencyChangedHandler: ((TaskDependencyEvent) -> Unit)? = null
+  var taskAddedHandler: ((TaskHierarchyEvent) -> Unit)? = null
+  var taskRemovedHandler: ((TaskHierarchyEvent) -> Unit)? = null
+  var taskMovedHandler: ((TaskHierarchyEvent) -> Unit)? = null
+  var taskPropertiesChangedHandler: ((TaskPropertyEvent) -> Unit)? = null
+  var taskProgressChangedHandler: ((TaskPropertyEvent) -> Unit)? = null
+  var taskScheduleChangedHandler: ((TaskScheduleEvent) -> Unit)? = null
+  var taskModelResetHandler: (() -> Unit)? = null
+
+  override fun taskScheduleChanged(e: TaskScheduleEvent) {
+    taskScheduleChangedHandler?.also { it(e) } ?: allEventsHandler()
   }
 
-  @Override
-  public void dependencyAdded(TaskDependencyEvent e) {
+  override fun dependencyAdded(e: TaskDependencyEvent) {
+    dependencyAddedHandler?.also { it(e) } ?: allEventsHandler()
   }
 
-  @Override
-  public void dependencyRemoved(TaskDependencyEvent e) {
+  override fun dependencyRemoved(e: TaskDependencyEvent) {
+    dependencyRemovedHandler?.also { it(e) } ?: allEventsHandler()
   }
 
-  @Override
-  public void dependencyChanged(TaskDependencyEvent e) {
+  override fun dependencyChanged(e: TaskDependencyEvent) {
+    dependencyChangedHandler?.also { it(e) } ?: allEventsHandler()
   }
 
-  @Override
-  public void taskAdded(TaskHierarchyEvent e) {
+  override fun taskAdded(e: TaskHierarchyEvent) {
+    taskAddedHandler?.also { it(e) } ?: allEventsHandler()
   }
 
-  @Override
-  public void taskRemoved(TaskHierarchyEvent e) {
+  override fun taskRemoved(e: TaskHierarchyEvent) {
+    taskRemovedHandler?.also { it(e) } ?: allEventsHandler()
   }
 
-  @Override
-  public void taskMoved(TaskHierarchyEvent e) {
+  override fun taskMoved(e: TaskHierarchyEvent) {
+    taskMovedHandler?.also { it(e) } ?: allEventsHandler()
   }
 
-  @Override
-  public void taskPropertiesChanged(TaskPropertyEvent e) {
+  override fun taskPropertiesChanged(e: TaskPropertyEvent) {
+    taskPropertiesChangedHandler?.also { it(e) } ?: allEventsHandler()
   }
 
-  @Override
-  public void taskProgressChanged(TaskPropertyEvent e) {
+  override fun taskProgressChanged(e: TaskPropertyEvent) {
+    taskProgressChangedHandler?.also { it(e) } ?: allEventsHandler()
   }
-
-  @Override
-  public void taskModelReset() {
+  override fun taskModelReset() {
+    taskModelResetHandler?.also { it() } ?: allEventsHandler()
   }
-
 }
+
+fun createTaskListenerWithTimerBarrier(timerBarrier: TimerBarrier) =
+  TaskListenerAdapter(allEventsHandler = { timerBarrier.inc() })

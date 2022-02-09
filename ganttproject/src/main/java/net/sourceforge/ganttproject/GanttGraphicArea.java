@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.app.Barrier;
 import biz.ganttproject.app.BarrierEntrance;
+import biz.ganttproject.app.TimerBarrier;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.option.*;
@@ -28,6 +29,7 @@ import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.chart.*;
 import net.sourceforge.ganttproject.chart.gantt.GanttChartController;
 import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
@@ -37,13 +39,7 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.CustomPropertyEvent;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.algorithm.RecalculateTaskScheduleAlgorithm;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
-import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
-import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import javax.swing.*;
@@ -56,6 +52,8 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
+
+import static net.sourceforge.ganttproject.task.event.TaskListenerAdapterKt.createTaskListenerWithTimerBarrier;
 
 /**
  * Class for the graphic part of the soft
@@ -84,11 +82,9 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
 
   private final ChartModelImpl myChartModel;
 
-  private final TaskManager myTaskManager;
+  private final GPUndoManager myUndoManager;
 
-  private GPUndoManager myUndoManager;
-
-  private ChartViewState myViewState;
+  private final ChartViewState myViewState;
 
   private GanttPreviousState myBaseline;
 
@@ -103,7 +99,6 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     this.setBackground(Color.WHITE);
     this.taskTableChartConnector = taskTableChartConnector;
     this.taskTableActionFacade = taskTableActionFacade;
-    myTaskManager = taskManager;
     myUndoManager = undoManager;
 
     myChartModel = new ChartModelImpl(getTaskManager(), app.getTimeUnitStack(), app.getUIConfiguration());
@@ -119,34 +114,12 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     app.getUIFacade().getZoomManager().addZoomListener(myViewState);
 
     super.setStartDate(CalendarFactory.newCalendar().getTime());
-    myTaskManager.addTaskListener(new TaskListenerAdapter() {
-      @Override
-      public void taskScheduleChanged(TaskScheduleEvent e) {
-        adjustDependencies((Task) e.getSource());
-      }
-
-      @Override
-      public void dependencyAdded(TaskDependencyEvent e) {
-        adjustDependencies(e.getDependency().getDependee());
-        repaint();
-      }
-
-      @Override
-      public void dependencyRemoved(TaskDependencyEvent e) {
-        repaint();
-      }
-
-      private void adjustDependencies(Task task) {
-        RecalculateTaskScheduleAlgorithm alg = myTaskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm();
-        if (!alg.isRunning()) {
-          try {
-            alg.run(task);
-          } catch (TaskDependencyException e1) {
-            e1.printStackTrace();
-          }
-        }
-      }
+    var timerBarrier = new TimerBarrier(1000);
+    timerBarrier.await((unit) -> {
+      SwingUtilities.invokeLater(this::reset);
+      return Unit.INSTANCE;
     });
+    taskManager.addTaskListener(createTaskListenerWithTimerBarrier(timerBarrier));
     myPublicHolidayDialogAction = new ProjectCalendarDialogAction(getProject(), getUIFacade());
     getProject().getTaskCustomColumnManager().addListener(this);
     initMouseListeners();
@@ -276,23 +249,23 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     return myBaseline;
   }
 
-  static class MouseSupport {
-    private final ChartModelImpl myChartModel;
-
-    MouseSupport(ChartModelImpl chartModel) {
-      myChartModel = chartModel;
-    }
-
-    protected Task findTaskUnderMousePointer(int xpos, int ypos) {
-      ChartItem chartItem = myChartModel.getChartItemWithCoordinates(xpos, ypos);
-      return chartItem == null ? null : chartItem.getTask();
-    }
-
-    protected ChartItem getChartItemUnderMousePoint(int xpos, int ypos) {
-      ChartItem result = myChartModel.getChartItemWithCoordinates(xpos, ypos);
-      return result;
-    }
-  }
+//  static class MouseSupport {
+//    private final ChartModelImpl myChartModel;
+//
+//    MouseSupport(ChartModelImpl chartModel) {
+//      myChartModel = chartModel;
+//    }
+//
+//    protected Task findTaskUnderMousePointer(int xpos, int ypos) {
+//      ChartItem chartItem = myChartModel.getChartItemWithCoordinates(xpos, ypos);
+//      return chartItem == null ? null : chartItem.getTask();
+//    }
+//
+//    protected ChartItem getChartItemUnderMousePoint(int xpos, int ypos) {
+//      ChartItem result = myChartModel.getChartItemWithCoordinates(xpos, ypos);
+//      return result;
+//    }
+//  }
 
   @Override
   protected AbstractChartImplementation getImplementation() {

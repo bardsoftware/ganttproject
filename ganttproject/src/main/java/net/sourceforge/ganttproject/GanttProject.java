@@ -301,7 +301,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     startupLogger.debug("8. finalizing...");
     // applyComponentOrientation(GanttLanguage.getInstance()
     // .getComponentOrientation());
-    getTaskManager().addTaskListener(new TaskModelModificationListener(this, getUIFacade()));
+    getTaskManager().addTaskListener(GanttProjectImplKt.createProjectModificationListener(this, getUIFacade()));
     addMouseListenerToAllContainer(this.getComponents());
 
     // Add globally available actions/key strokes

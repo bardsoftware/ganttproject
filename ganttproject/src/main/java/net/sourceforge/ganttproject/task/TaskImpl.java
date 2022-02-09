@@ -706,8 +706,12 @@ public class TaskImpl implements Task {
     @Override
     public void setName(final String name) {
       myCommands.add(new Runnable() {
+        private FieldChange myFieldChange = new FieldChange();
+
         @Override
         public void run() {
+          myFieldChange.myEventSender = myPropertiesEventSender;
+          myFieldChange.setValue(name);
           TaskImpl.this.setName(name);
         }
       });

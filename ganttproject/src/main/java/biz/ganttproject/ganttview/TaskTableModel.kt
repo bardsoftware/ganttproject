@@ -80,7 +80,10 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
 
   fun setValue(value: Any, task: Task, property: TaskDefaultColumn) {
     when (property) {
-      TaskDefaultColumn.NAME -> task.name = value.toString()
+      TaskDefaultColumn.NAME -> task.createMutator().also {
+        it.setName(value.toString())
+        it.commit()
+      }
       TaskDefaultColumn.BEGIN_DATE -> {
         val startDate = value as GanttCalendar
         val earliestStart = task.third ?: startDate
@@ -135,14 +138,14 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
           throw ValidationException(e)
         }
       }
-        TaskDefaultColumn.COST -> try {
+      TaskDefaultColumn.COST -> try {
         val cost = BigDecimal(value.toString())
         task.cost.isCalculated = false
         task.cost.value = cost
       } catch (e: NumberFormatException) {
         throw ValidationException(MessageFormat.format("Can't parse {0} as number", value))
       }
-        else -> {
+      else -> {
       }
     }
   }

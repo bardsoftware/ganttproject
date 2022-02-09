@@ -199,10 +199,12 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
 
     table.addEventFilter(KeyEvent.KEY_PRESSED) {
       if ((it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)
+        && it.target !is TextField
         && !it.isAltDown
         && !it.isShiftDown
         && !it.isMetaDown
         && !it.isControlDown) {
+
         it.consume()
         if (it.code == KeyCode.LEFT) {
           table.focusModel.focusLeftCell()

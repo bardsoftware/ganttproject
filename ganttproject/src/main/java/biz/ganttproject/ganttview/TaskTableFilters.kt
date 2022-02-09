@@ -50,8 +50,8 @@ class FilterCompletedTasks(
   private val filterManager: TaskFilterManager,
   taskManager: TaskManager) : GPAction("taskTable.filter.completedTasks") {
 
-  private val taskListener = object : TaskListenerAdapter() {
-    override fun taskProgressChanged(e: TaskPropertyEvent?) {
+  private val taskListener = TaskListenerAdapter().also {
+    it.taskProgressChangedHandler = { e: TaskPropertyEvent ->
       val isChecked = getValue(Action.SELECTED_KEY)
       if (isChecked is java.lang.Boolean && isChecked.booleanValue()) {
         filterManager.sync()

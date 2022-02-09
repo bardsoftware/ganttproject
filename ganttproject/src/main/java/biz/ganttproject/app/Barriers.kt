@@ -19,6 +19,8 @@
 package biz.ganttproject.app
 
 import net.sourceforge.ganttproject.GPLogger
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 typealias BarrierExit<T> = (T)->Unit
@@ -97,4 +99,31 @@ class TwoPhaseBarrierImpl<T>(private val value: T) : Barrier<T>, BarrierEntrance
   }
 }
 
+/**
+ * TimeBarrier opens the exit and calls exit activities once per specified time interval, provided that there have been
+ * any entrance activities in that interval.
+ */
+class TimerBarrier(intervalMillis: Long) : Barrier<Unit> {
+  private val exits = mutableListOf<BarrierExit<Unit>>()
+  private val timer = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(
+    this::tick, intervalMillis, intervalMillis, TimeUnit.MILLISECONDS
+  )
+  private val counter = AtomicInteger(0)
+
+  override fun await(code: BarrierExit<Unit>) {
+    exits.add(code)
+  }
+
+  fun inc() {
+    counter.incrementAndGet()
+  }
+
+  private fun tick() {
+    val value = counter.get()
+    if (value > 0) {
+      exits.forEach { it(Unit) }
+      counter.compareAndSet(value, 0)
+    }
+  }
+}
 private val BARRIER_LOGGER = GPLogger.create("App.Barrier")

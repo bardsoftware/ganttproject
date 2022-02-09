@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject
 
 import biz.ganttproject.app.SimpleBarrier
+import biz.ganttproject.app.TimerBarrier
 import biz.ganttproject.app.TwoPhaseBarrierImpl
 import biz.ganttproject.core.calendar.GPCalendarCalc
 import biz.ganttproject.core.calendar.ImportCalendarOption
@@ -34,6 +35,7 @@ import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.gui.NotificationManager
 import net.sourceforge.ganttproject.gui.UIConfiguration
+import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter
 import net.sourceforge.ganttproject.importer.BufferProject
 import net.sourceforge.ganttproject.importer.TaskMapping
@@ -43,6 +45,7 @@ import net.sourceforge.ganttproject.resource.HumanResourceMerger
 import net.sourceforge.ganttproject.resource.OverwritingMerger
 import net.sourceforge.ganttproject.roles.RoleManager
 import net.sourceforge.ganttproject.task.*
+import net.sourceforge.ganttproject.task.event.createTaskListenerWithTimerBarrier
 import java.awt.Color
 import java.io.IOException
 import java.net.URL
@@ -267,3 +270,13 @@ internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: L
   document = projectDocument
 }
 
+internal fun createProjectModificationListener(project: IGanttProject, uiFacade: UIFacade) =
+  createTaskListenerWithTimerBarrier(timerBarrier = TimerBarrier(1000).apply {
+    await { project.setModified() }
+  }).also {
+      it.taskAddedHandler = {
+        project.setModified()
+        uiFacade.viewIndex = UIFacade.GANTT_INDEX
+        uiFacade.refresh()
+      }
+    }

@@ -206,23 +206,11 @@ class TaskTable(
 
   private fun initKeyboardEventHandlers() {
     treeTable.onKeyPressed = EventHandler { event ->
-      val action = taskActions.all().firstOrNull { action ->
+      taskActions.all().firstOrNull { action ->
         action.triggeredBy(event)
-      }
-      if (action != null) {
+      }?.let { action ->
         undoManager.undoableEdit(action.name) {
           action.actionPerformed(null)
-        }
-      } else {
-        if (event.getModifiers() == 0) {
-          when (event.code) {
-            KeyCode.LEFT -> {
-              treeTable.focusModel.focusLeftCell()
-              event.consume()
-            }
-            KeyCode.RIGHT -> treeTable.focusModel.focusRightCell()
-            else -> {}
-          }
         }
       }
     }
@@ -462,10 +450,11 @@ class TaskTable(
               event.newValue?.let { copyTask ->
                 taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
               }
-              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
+              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(targetTask)) }
             }
-            onEditCancel = EventHandler {
-              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
+            onEditCancel = EventHandler { event ->
+              val targetTask: Task = event.rowValue.value
+              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(targetTask)) }
             }
             treeTable.treeColumn = this
           }
