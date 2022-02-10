@@ -50,11 +50,25 @@ jpackage --type app-image \
                     -Xdock:icon=$APPDIR/ganttproject.icns 
                     -Xmx1024m 
                     -Dfile.encoding=UTF-8
-                    -Duser.dir=$APPDIR' \
+                    --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED
+                    --add-exports javafx.base/com.sun.javafx=ALL-UNNAMED
+                    --add-exports javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED
+                    --add-exports javafx.controls/com.sun.javafx.scene.control.skin=ALL-UNNAMED
+                    --add-exports javafx.controls/com.sun.javafx.scene.control.skin.resources=ALL-UNNAMED
+                    --add-exports javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED
+                    --add-exports javafx.graphics/com.sun.javafx.scene.traversal=ALL-UNNAMED
+                    --add-exports javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED
+                    --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED
+                    --add-exports javafx.graphics/com.sun.javafx.util=ALL-UNNAMED
+                    --add-opens java.desktop/sun.swing=ALL-UNNAMED
+                    -classpath $APPDIR:$APPDIR/eclipsito.jar
+                    -Duser.dir=$APPDIR
+                    -DversionDirs=plugins:~/.ganttproject.d/updates
+                    -Dapp=net.sourceforge.ganttproject.GanttProject' \
     --arguments '--verbosity 4' \
     --arguments '--version-dirs plugins:~/.ganttproject.d/updates' \
     --arguments '--app net.sourceforge.ganttproject.GanttProject' \
-    --copyright 'Copyright (C) 2020 BarD Software s.r.o.' \
+    --copyright 'Copyright (C) 2022 BarD Software s.r.o.' \
     --app-version ${VERSION} \
     --runtime-image ${OUTPUT}/runtime \
     --icon build-cfg/ganttproject.icns \
