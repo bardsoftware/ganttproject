@@ -12,14 +12,16 @@ import com.google.common.collect.Lists
 import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.CustomPropertyManager
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.task.*
+import net.sourceforge.ganttproject.task.CustomColumnsException
+import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskManager
+import net.sourceforge.ganttproject.task.TaskProperties
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
 import java.math.BigDecimal
 import java.text.MessageFormat
 import java.util.*
-import javax.swing.ImageIcon
-import kotlin.reflect.KClass
+import javax.swing.SwingUtilities
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -88,24 +90,30 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
         val startDate = value as GanttCalendar
         val earliestStart = if (task.thirdDateConstraint == 1) task.third else null
 
-        task.createMutatorFixingDuration().let {
-          it.setStart(minOf(startDate, earliestStart ?: startDate))
-          it.commit()
+        SwingUtilities.invokeLater {
+          task.createMutatorFixingDuration().let {
+            it.setStart(minOf(startDate, earliestStart ?: startDate))
+            it.commit()
+          }
         }
       }
       TaskDefaultColumn.END_DATE -> {
-        task.createMutatorFixingDuration().let {
-          it.setEnd(CalendarFactory.createGanttCalendar(
-            GPTimeUnitStack.DAY.adjustRight((value as GanttCalendar).time)
-          ))
-          it.commit()
+        SwingUtilities.invokeLater {
+          task.createMutatorFixingDuration().let {
+            it.setEnd(CalendarFactory.createGanttCalendar(
+              GPTimeUnitStack.DAY.adjustRight((value as GanttCalendar).time)
+            ))
+            it.commit()
+          }
         }
       }
       TaskDefaultColumn.DURATION -> {
         val tl = task.duration
-        task.createMutator().let {
-          it.setDuration(task.manager.createLength(tl.timeUnit, (value as Number).toInt().toFloat()))
-          it.commit()
+        SwingUtilities.invokeLater {
+          task.createMutator().let {
+            it.setDuration(task.manager.createLength(tl.timeUnit, (value as Number).toInt().toFloat()))
+            it.commit()
+          }
         }
       }
       TaskDefaultColumn.COMPLETION -> task.createMutator().let {
@@ -125,16 +133,21 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
           promises = TaskProperties.parseDependencies(
             specs, task
           ) { id -> task.manager.getTask(id!!) }
-          val taskManager = task.manager
-          taskManager.algorithmCollection.scheduler.setEnabled(false)
-          task.dependenciesAsDependant.clear()
-          for (promise in promises.values) {
-            promise.get()
+          SwingUtilities.invokeLater {
+            try {
+              val taskManager = task.manager
+              taskManager.algorithmCollection.scheduler.setEnabled(false)
+              task.dependenciesAsDependant.clear()
+              for (promise in promises.values) {
+                promise.get()
+              }
+              taskManager.algorithmCollection.scheduler.setEnabled(true)
+            } catch (e: TaskDependencyException) {
+              // TODO: propagate this exception to the UI
+              throw ValidationException(e)
+            }
           }
-          taskManager.algorithmCollection.scheduler.setEnabled(true)
         } catch (e: IllegalArgumentException) {
-          throw ValidationException(e)
-        } catch (e: TaskDependencyException) {
           throw ValidationException(e)
         }
       }

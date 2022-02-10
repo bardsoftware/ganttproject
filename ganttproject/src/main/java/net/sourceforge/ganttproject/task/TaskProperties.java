@@ -219,15 +219,12 @@ public class TaskProperties {
       if (predecessor == null) {
         throw new IllegalArgumentException(String.format("Can't find task with ID=%s", depSpec));
       }
-      out.put(predecessorId, new Supplier<TaskDependency>() {
-        @Override
-        public TaskDependency get() {
-          if (taskMgr.getDependencyCollection().canCreateDependency(successor, predecessor)) {
-            return taskMgr.getDependencyCollection().createDependency(successor, predecessor);
-          }
-          throw new TaskDependencyException(MessageFormat.format(
-              "Can't create dependency between task {0} and {1}", successor.getName(), predecessor.getName()));
+      out.put(predecessorId, () -> {
+        if (taskMgr.getDependencyCollection().canCreateDependency(successor, predecessor)) {
+          return taskMgr.getDependencyCollection().createDependency(successor, predecessor);
         }
+        throw new TaskDependencyException(String.format(
+            "Can't create dependency between task %s and %s", successor.getName(), predecessor.getName()));
       });
       return;
     }

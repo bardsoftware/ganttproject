@@ -428,7 +428,7 @@ public class TaskImpl implements Task {
     if (activities == null) {
       activities = myActivities;
     }
-    return activities;
+    return ImmutableList.copyOf(activities);
   }
 
   @Override
@@ -1110,7 +1110,7 @@ public class TaskImpl implements Task {
       return;
     }
     if (isMilestone) {
-      myMilestoneActivity = ImmutableList.<TaskActivity>of(new MilestoneTaskFakeActivity(this));
+      myMilestoneActivity = ImmutableList.of(new MilestoneTaskFakeActivity(this));
       return;
     }
 
