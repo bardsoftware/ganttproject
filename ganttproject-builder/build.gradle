@@ -152,6 +152,7 @@ task distDebPre {
             commandLine "mv"
             args "deb/usr/share/doc/ganttproject/CHANGELOG.gz", "deb/usr/share/doc/ganttproject/changelog.Debian.gz"
         }
+        mkdir("${rootProject.buildDir}/distributions")
     }
 }
 
