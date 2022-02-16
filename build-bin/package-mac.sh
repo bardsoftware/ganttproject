@@ -38,6 +38,7 @@ else
   echo "Skipping Java Runtime building"
 fi
 
+rm -rf ganttproject-3.2.3200 && unzip ganttproject-3.2.3200.zip && rm -rf /tmp/plugins/ && rm -rf ganttproject/build/GanttProject.app/
 mv ${INPUT}/plugins /tmp
 jpackage --type app-image \
     --name GanttProject \
