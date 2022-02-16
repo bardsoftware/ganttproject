@@ -26,6 +26,6 @@ do_staple() {
 	xcrun stapler staple build/GanttProject.app
 }
 
-#do_prepare
+do_prepare
 #do_notarize
-do_staple
+#do_staple
