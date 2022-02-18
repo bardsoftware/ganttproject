@@ -16,94 +16,77 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.io;
+package net.sourceforge.ganttproject.io
 
-import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.DefaultBooleanOption;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import net.sourceforge.ganttproject.ResourceDefaultColumn;
+import biz.ganttproject.core.model.task.TaskDefaultColumn
+import biz.ganttproject.core.option.BooleanOption
+import biz.ganttproject.core.option.DefaultBooleanOption
+import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableSet
+import com.google.common.collect.Maps
+import com.google.common.collect.Sets
+import net.sourceforge.ganttproject.ResourceDefaultColumn
 
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+class CSVOptions {
+  private val myTaskOptions: MutableMap<String, BooleanOption> = Maps.newLinkedHashMap()
+  private val myResourceOptions: MutableMap<String, BooleanOption> = Maps.newLinkedHashMap()
+  val bomOption: BooleanOption = DefaultBooleanOption("write-bom", false)
 
-public class CSVOptions {
-  private static final Set<TaskDefaultColumn> ourIgnoredTaskColumns = ImmutableSet.of(
-      TaskDefaultColumn.TYPE, TaskDefaultColumn.PRIORITY, TaskDefaultColumn.INFO);
-  private final Map<String, BooleanOption> myTaskOptions = Maps.newLinkedHashMap();
-  private final Map<String, BooleanOption> myResourceOptions = Maps.newLinkedHashMap();
-  private final BooleanOption myBomOption = new DefaultBooleanOption("write-bom", false);
+  fun createTaskExportOption(taskColumn: TaskDefaultColumn): BooleanOption {
+    val result = DefaultBooleanOption(taskColumn.stub.id, true)
+    myTaskOptions[taskColumn.stub.id] = result
+    return result
+  }
 
-  public CSVOptions() {
-    List<TaskDefaultColumn> orderedColumns = ImmutableList.of(
-        TaskDefaultColumn.ID, TaskDefaultColumn.NAME, TaskDefaultColumn.BEGIN_DATE, TaskDefaultColumn.END_DATE,
-        TaskDefaultColumn.DURATION, TaskDefaultColumn.COMPLETION, TaskDefaultColumn.COST);
-    LinkedHashSet<TaskDefaultColumn> columns = Sets.newLinkedHashSet(Arrays.asList(TaskDefaultColumn.values()));
-    columns.removeAll(orderedColumns);
-    for (TaskDefaultColumn taskColumn : orderedColumns) {
-      createTaskExportOption(taskColumn);
+  fun createTaskExportOption(id: String): BooleanOption {
+    val result = DefaultBooleanOption(id, true)
+    myTaskOptions[id] = result
+    return result
+  }
+
+  val taskOptions: Map<String, BooleanOption>
+    get() = myTaskOptions
+  val resourceOptions: Map<String, BooleanOption>
+    get() = myResourceOptions
+  @JvmField
+  var bFixedSize = false
+  @JvmField
+  var sSeparatedChar = ","
+  @JvmField
+  var sSeparatedTextChar = "\""
+
+  init {
+    val orderedColumns: List<TaskDefaultColumn> = ImmutableList.of(
+      TaskDefaultColumn.ID, TaskDefaultColumn.NAME, TaskDefaultColumn.BEGIN_DATE, TaskDefaultColumn.END_DATE,
+      TaskDefaultColumn.DURATION, TaskDefaultColumn.COMPLETION, TaskDefaultColumn.COST
+    )
+    val columns = Sets.newLinkedHashSet(listOf(*TaskDefaultColumn.values()))
+    columns.removeAll(orderedColumns)
+    for (taskColumn in orderedColumns) {
+      createTaskExportOption(taskColumn)
     }
-    for (TaskDefaultColumn taskColumn : columns) {
+    for (taskColumn in columns) {
       if (!ourIgnoredTaskColumns.contains(taskColumn)) {
-        createTaskExportOption(taskColumn);
+        createTaskExportOption(taskColumn)
       }
     }
-    createTaskExportOption("webLink");
-    createTaskExportOption("notes");
-
-    myResourceOptions.put("id", new DefaultBooleanOption("id", true));
-    for (ResourceDefaultColumn resourceColumn : ResourceDefaultColumn.values()) {
-      createResourceExportOption(resourceColumn);
-    }
+    createTaskExportOption("webLink")
+    createTaskExportOption("notes")
+    myResourceOptions["id"] = DefaultBooleanOption("id", true)
+    ResourceDefaultColumn.values().filter { it != ResourceDefaultColumn.ID }.map {
+      DefaultBooleanOption(it.stub.id, true)
+    }.forEach { myResourceOptions[it.id] = it }
   }
-
-  private BooleanOption createResourceExportOption(ResourceDefaultColumn resourceColumn) {
-    DefaultBooleanOption result = new DefaultBooleanOption(resourceColumn.getStub().getID(), true);
-    myResourceOptions.put(resourceColumn.getStub().getID(), result);
-    return result;
-  }
-
-  public BooleanOption createTaskExportOption(TaskDefaultColumn taskColumn) {
-    DefaultBooleanOption result = new DefaultBooleanOption(taskColumn.getStub().getID(), true);
-    myTaskOptions.put(taskColumn.getStub().getID(), result);
-    return result;
-  }
-
-  public BooleanOption createTaskExportOption(String id) {
-    DefaultBooleanOption result = new DefaultBooleanOption(id, true);
-    myTaskOptions.put(id, result);
-    return result;
-  }
-
-  public Map<String, BooleanOption> getTaskOptions() {
-    return myTaskOptions;
-  }
-
-  public Map<String, BooleanOption> getResourceOptions() {
-    return myResourceOptions;
-  }
-
-  public boolean bFixedSize = false;
-
-  public String sSeparatedChar = ",";
-
-  public String sSeparatedTextChar = "\"";
 
   /**
    * @return a list of the possible separated char.
    */
-  public String[] getSeparatedTextChars() {
-    String[] charText = {"   \'   ", "   \"   "};
-    return charText;
-  }
+  val separatedTextChars: Array<String>
+    get() = arrayOf("   \'   ", "   \"   ")
 
-  public BooleanOption getBomOption() {
-    return myBomOption;
+  companion object {
+    private val ourIgnoredTaskColumns: Set<TaskDefaultColumn> = ImmutableSet.of(
+      TaskDefaultColumn.TYPE, TaskDefaultColumn.PRIORITY, TaskDefaultColumn.INFO
+    )
   }
 }
