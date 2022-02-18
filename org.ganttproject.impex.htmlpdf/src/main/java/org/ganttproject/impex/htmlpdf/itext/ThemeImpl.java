@@ -64,7 +64,6 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -80,7 +79,7 @@ import java.util.Properties;
  * @author dbarashev (Dmitry Barashev)
  */
 class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet {
-  private static List<String> ourSizes = new ArrayList<>();
+  private static final List<String> ourSizes = new ArrayList<>();
   static {
     for (Field field : PageSize.class.getDeclaredFields()) {
       if (field.getType().equals(Rectangle.class)) {
@@ -98,15 +97,6 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   private final BooleanOption myLandscapeOption = new DefaultBooleanOption("export.itext.landscape");
   private final EnumerationOption myPageSizeOption = new DefaultEnumerationOption<String>("export.itext.pageSize",
       ourSizes);
-  private final LanguageOption myLanguageOption = new LanguageOption() {
-    {
-      setSelectedValue(GanttLanguage.getInstance().getLocale());
-    }
-
-    @Override
-    protected void applyLocale(Locale locale) {
-    }
-  };
   private final GPOptionGroup myPageOptions = new GPOptionGroup("export.itext.page", myPageSizeOption,
       myLandscapeOption);
   private final GPOptionGroup myDataOptions = new GPOptionGroup("export.itext.data",
@@ -130,6 +120,15 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     }
     myFontCache.setProperties(myProperties);
     I18N i18n = new OptionsPageBuilder.I18N();
+    LanguageOption myLanguageOption = new LanguageOption() {
+      {
+        setSelectedValue(GanttLanguage.getInstance().getLocale());
+      }
+
+      @Override
+      protected void applyLocale(Locale locale) {
+      }
+    };
     GPOptionGroup languageOptions = new GPOptionGroup("export.itext.language", myLanguageOption);
     languageOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(languageOptions), "language");
     languageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLanguageOption), "language");
@@ -339,7 +338,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   }
 
   private String buildProjectCompletionString() {
-    return String.valueOf(getProject().getTaskManager().getProjectCompletion()) + "%";
+    return getProject().getTaskManager().getProjectCompletion() + "%";
   }
 
   private String buildManagerString() {
@@ -394,14 +393,11 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         orderedColumns.add(c);
       }
     }
-    Collections.sort(orderedColumns, new Comparator<Column>() {
-      @Override
-      public int compare(Column lhs, Column rhs) {
-        if (lhs == null || rhs == null) {
-          return 0;
-        }
-        return lhs.getOrder() - rhs.getOrder();
+    orderedColumns.sort((lhs, rhs) -> {
+      if (lhs == null || rhs == null) {
+        return 0;
       }
+      return lhs.getOrder() - rhs.getOrder();
     });
     float[] widths = new float[orderedColumns.size()];
     for (int i = 0; i < orderedColumns.size(); i++) {
@@ -474,10 +470,10 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
       int myPreviousChildTaskCount = 0;
       int myPreviousChildlessTaskCount = 0;
 
-      PropertyFetcher myTaskProperty = new PropertyFetcher(getProject());
+      final PropertyFetcher myTaskProperty = new PropertyFetcher(getProject());
 
       @Override
-      protected String serializeTask(Task t, int depth) throws Exception {
+      protected String serializeTask(Task t, int depth) {
         boolean addEmptyRow = false;
         if (depth == 0) {
           addEmptyRow = myPreviousChildTaskCount > 0;

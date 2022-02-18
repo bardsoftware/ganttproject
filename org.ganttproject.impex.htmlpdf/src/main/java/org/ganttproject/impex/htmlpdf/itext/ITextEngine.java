@@ -76,6 +76,7 @@ public class ITextEngine extends AbstractEngine {
 
   public Component getCustomOptionsUI() {
     waitRegisterFonts();
+    mySubstitutionModel.init();
     JPanel result = new JPanel(new BorderLayout());
     result.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
     OptionsPageBuilder builder = new OptionsPageBuilder();
@@ -101,7 +102,6 @@ public class ITextEngine extends AbstractEngine {
   }
 
   public void setSelectedStylesheet(Stylesheet stylesheet) {
-    waitRegisterFonts();
     myStylesheet = (ITextStylesheet) stylesheet;
     if (getPreferences() != null) {
       Preferences node = getPreferences().node("/configuration/org.ganttproject.impex.htmlpdf/font-substitution");
