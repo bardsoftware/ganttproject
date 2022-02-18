@@ -25,7 +25,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +60,7 @@ public class FontSubstitutionModel {
   }
 
   private final TTFontCache myFontCache;
-  private final Map<String, FontSubstitution> mySubstitutions = new LinkedHashMap<String, FontSubstitution>();
+  private final Map<String, FontSubstitution> mySubstitutions = new LinkedHashMap<>();
   private final ArrayList<FontSubstitution> myIndexedSubstitutions = new ArrayList<>();
   private final ITextStylesheet myStylesheet;
   private final Preferences myPrefs;
@@ -73,10 +72,9 @@ public class FontSubstitutionModel {
   }
 
   public void init() {
-    List<FontSubstitution> unresolvedFonts = new ArrayList<FontSubstitution>();
-    List<FontSubstitution> resolvedFonts = new ArrayList<FontSubstitution>();
-    for (Iterator<String> families = myStylesheet.getFontFamilies().iterator(); families.hasNext();) {
-      String nextFamily = families.next();
+    List<FontSubstitution> unresolvedFonts = new ArrayList<>();
+    List<FontSubstitution> resolvedFonts = new ArrayList<>();
+    for (String nextFamily : myStylesheet.getFontFamilies()) {
       FontSubstitution fs = new FontSubstitution(nextFamily, myPrefs, myFontCache);
       Font awtFont = fs.getSubstitutionFont();
       if (awtFont == null) {
@@ -91,8 +89,7 @@ public class FontSubstitutionModel {
   }
 
   private void addSubstitutions(List<FontSubstitution> substitutions) {
-    for (int i = 0; i < substitutions.size(); i++) {
-      FontSubstitution nextSubstitution = substitutions.get(i);
+    for (FontSubstitution nextSubstitution : substitutions) {
       mySubstitutions.put(nextSubstitution.myOriginalFamily, nextSubstitution);
     }
   }
