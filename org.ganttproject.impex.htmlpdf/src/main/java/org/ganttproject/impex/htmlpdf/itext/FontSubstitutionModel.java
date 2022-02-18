@@ -18,7 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf.itext;
 
-import java.awt.Font;
+import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
+import org.osgi.service.prefs.Preferences;
+
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,9 +29,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
-import org.osgi.service.prefs.Preferences;
 
 public class FontSubstitutionModel {
 
@@ -62,15 +62,22 @@ public class FontSubstitutionModel {
 
   private final TTFontCache myFontCache;
   private final Map<String, FontSubstitution> mySubstitutions = new LinkedHashMap<String, FontSubstitution>();
-  private final ArrayList<FontSubstitution> myIndexedSubstitutions;
+  private final ArrayList<FontSubstitution> myIndexedSubstitutions = new ArrayList<>();
+  private final ITextStylesheet myStylesheet;
+  private final Preferences myPrefs;
 
   public FontSubstitutionModel(TTFontCache fontCache, ITextStylesheet stylesheet, Preferences prefs) {
     myFontCache = fontCache;
+    myStylesheet = stylesheet;
+    myPrefs = prefs;
+  }
+
+  public void init() {
     List<FontSubstitution> unresolvedFonts = new ArrayList<FontSubstitution>();
     List<FontSubstitution> resolvedFonts = new ArrayList<FontSubstitution>();
-    for (Iterator<String> families = stylesheet.getFontFamilies().iterator(); families.hasNext();) {
+    for (Iterator<String> families = myStylesheet.getFontFamilies().iterator(); families.hasNext();) {
       String nextFamily = families.next();
-      FontSubstitution fs = new FontSubstitution(nextFamily, prefs, myFontCache);
+      FontSubstitution fs = new FontSubstitution(nextFamily, myPrefs, myFontCache);
       Font awtFont = fs.getSubstitutionFont();
       if (awtFont == null) {
         unresolvedFonts.add(fs);
@@ -80,7 +87,7 @@ public class FontSubstitutionModel {
     }
     addSubstitutions(unresolvedFonts);
     addSubstitutions(resolvedFonts);
-    myIndexedSubstitutions = new ArrayList<FontSubstitution>(mySubstitutions.values());
+    myIndexedSubstitutions.addAll(mySubstitutions.values());
   }
 
   private void addSubstitutions(List<FontSubstitution> substitutions) {
