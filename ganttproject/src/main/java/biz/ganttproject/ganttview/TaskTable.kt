@@ -127,7 +127,7 @@ class TaskTable(
   val columnListWidthProperty = SimpleDoubleProperty()
   var requestSwingFocus: () -> Unit = {}
   lateinit var swingComponent: Component
-  private val filterCompletedTasksAction = filters.filterCompletedTasksAction
+  private val filterCompletedTasksAction = FilterCompletedTasks(filters, taskManager)
 
   private val placeholderShowHidden by lazy {
     Button(RootLocalizer.formatText("taskTable.placeholder.showHiddenTasks")).also {
