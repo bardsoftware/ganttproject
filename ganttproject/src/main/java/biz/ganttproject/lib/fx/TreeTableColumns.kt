@@ -159,23 +159,8 @@ class ColumnListImpl(
         currentList.subList(importedList.size, currentList.size).clear()
       }
 
-      var firstDiff = -1
-      columnList.forEachIndexed { index, column ->
-        if (firstDiff == -1 && currentList.indexOfFirst { it.id == column.id } != index) {
-          firstDiff = index
-        }
-      }
-      if (firstDiff == -1 && currentList.size > columnList.size) {
-        firstDiff = columnList.size
-      }
-      if (firstDiff != -1) {
-        if (firstDiff < columnList.size) {
-          columnList.subList(firstDiff, columnList.size).clear()
-        }
-        if (firstDiff < currentList.size) {
-          columnList.addAll(currentList.subList(firstDiff, currentList.size))
-        }
-      }
+      columnList.clear()
+      columnList.addAll(currentList)
       updateTotalWidth()
     }
   }
