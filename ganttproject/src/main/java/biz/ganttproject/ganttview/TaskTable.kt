@@ -36,7 +36,6 @@ import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
-import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Parent
 import javafx.scene.control.*
@@ -141,7 +140,7 @@ class TaskTable(
 
   private val initializationCompleted = initializationPromise.register("Task table initialization")
   private val treeTableSelectionListener = TreeSelectionListenerImpl(treeTable.selectionModel.selectedItems, selectionManager, this@TaskTable)
-
+  private var projectModified: () -> Unit = {}
   init {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
 
@@ -152,7 +151,10 @@ class TaskTable(
         columnListWidthProperty.value = newValue.toDouble() + treeTable.vbarWidth()
       }
     }
-    treeTable.onColumnResize = columnList.onColumnResize
+    treeTable.onColumnResize = {
+      columnList.onColumnResize
+      projectModified()
+    }
     Platform.runLater {
       treeTable.isShowRoot = false
       treeTable.isEditable = true
@@ -272,6 +274,11 @@ class TaskTable(
         barrierRegistry: BarrierEntrance,
         barrier: Barrier<IGanttProject>
       ) {
+        barrier.await {
+          this@TaskTable.projectModified = {
+            project.isModified = true
+          }
+        }
         reload(barrierRegistry.register("Reload Task Table"))
       }
 
