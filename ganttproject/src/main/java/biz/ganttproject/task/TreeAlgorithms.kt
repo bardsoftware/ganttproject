@@ -19,3 +19,20 @@ fun retainRoots(tasks: List<Task>) =
 
 fun documentOrdered(tasks: List<Task>, treeFacade: TaskContainmentHierarchyFacade) =
   tasks.toMutableList().also { it.sortWith(TaskDocumentOrderComparator(treeFacade)) }
+
+fun ancestors(tasks: List<Task>, treeFacade: TaskContainmentHierarchyFacade, deduplicate: Boolean = true): List<Task> {
+  val result = mutableListOf<Task>()
+  var cur = tasks
+  do {
+    val parents = cur.map { treeFacade.getContainer(it) }.filter { it != treeFacade.rootTask }.let {
+      if (deduplicate) {
+        retainRoots(it)
+      } else {
+        it
+      }
+    }
+    result.addAll(parents)
+    cur = parents
+  } while (cur.isNotEmpty())
+  return result
+}
