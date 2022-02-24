@@ -26,6 +26,7 @@ import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
+import biz.ganttproject.task.ancestors
 import com.sun.javafx.scene.control.behavior.CellBehaviorBase
 import de.jensd.fx.glyphs.GlyphIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -40,14 +41,22 @@ import javafx.geometry.Pos
 import javafx.scene.Parent
 import javafx.scene.control.*
 import javafx.scene.control.cell.CheckBoxTreeTableCell
-import javafx.scene.input.*
+import javafx.scene.input.ClipboardContent
+import javafx.scene.input.DataFormat
+import javafx.scene.input.DragEvent
+import javafx.scene.input.TransferMode
 import javafx.scene.layout.*
 import javafx.scene.paint.Color.rgb
 import javafx.scene.shape.Circle
 import javafx.util.Callback
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
-import net.sourceforge.ganttproject.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import net.sourceforge.ganttproject.CustomPropertyClass
+import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.export.TreeTableApi
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
@@ -400,6 +409,9 @@ class TaskTable(
       override fun selectionChanged(currentSelection: List<Task>, source: Any?) {
         if (source != this@TaskTable) {
           Platform.runLater {
+            ancestors(currentSelection, taskManager.taskHierarchy).reversed()
+              .forEach { task2treeItem[it]?.isExpanded = true }
+
             treeTable.selectionModel.clearSelection()
             for (task in currentSelection) {
               task2treeItem[task]?.let {
