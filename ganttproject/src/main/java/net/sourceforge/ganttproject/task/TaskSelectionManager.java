@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
+import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 
@@ -73,6 +74,9 @@ public class TaskSelectionManager implements TaskSelectionContext {
   }
 
   public void setSelectedTasks(List<Task> tasks, Object source) {
+    if (Sets.newHashSet(selectedTasks).equals(Sets.newHashSet(tasks))) {
+      return;
+    }
     // selection paths in Swing are stored in a hashtable
     // and thus come to selection listeners in pretty random order.
     // For correct indent/outdent operations with need

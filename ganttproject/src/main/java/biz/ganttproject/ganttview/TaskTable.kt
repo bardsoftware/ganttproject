@@ -26,6 +26,7 @@ import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
+import biz.ganttproject.task.retainRoots
 import com.sun.javafx.scene.control.behavior.CellBehaviorBase
 import de.jensd.fx.glyphs.GlyphIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -400,6 +401,11 @@ class TaskTable(
       override fun selectionChanged(currentSelection: List<Task>, source: Any?) {
         if (source != this@TaskTable) {
           Platform.runLater {
+            retainRoots(
+              currentSelection.map { it.manager.taskHierarchy.getContainer(it) }
+            ).filter { !treeCollapseView.isExpanded(it) }
+              .forEach { task2treeItem[it]?.isExpanded = true }
+
             treeTable.selectionModel.clearSelection()
             for (task in currentSelection) {
               task2treeItem[task]?.let {
