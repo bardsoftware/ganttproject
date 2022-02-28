@@ -444,7 +444,7 @@ class TaskTable(
     val tableColumns =
       columns.mapNotNull { column ->
         when (val taskDefaultColumn = TaskDefaultColumn.find(column.id)) {
-          TaskDefaultColumn.COLOR -> null
+          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO -> null
           null -> createCustomColumn(column)
           else -> createDefaultColumn(column, taskDefaultColumn)
         }?.also {
