@@ -467,7 +467,9 @@ class TaskTable(
             onEditCommit = EventHandler { event ->
               val targetTask: Task = event.rowValue.value
               event.newValue?.let { copyTask ->
-                taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
+                undoManager.undoableEdit("Edit properties of task ${copyTask.name}") {
+                  taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
+                }
               }
               runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(targetTask)) }
             }
