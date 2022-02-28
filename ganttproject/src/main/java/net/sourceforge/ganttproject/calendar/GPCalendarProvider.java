@@ -82,6 +82,7 @@ public class GPCalendarProvider {
       parser.parse(new BufferedInputStream(new FileInputStream(resource)));
       return calendar;
     } catch (IOException e) {
+      GPLogger.logToLogger("Failed to parse file "+resource.getAbsolutePath());
       GPLogger.logToLogger(e);
       return null;
     }
