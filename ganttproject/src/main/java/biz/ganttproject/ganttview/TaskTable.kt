@@ -444,7 +444,7 @@ class TaskTable(
     val tableColumns =
       columns.mapNotNull { column ->
         when (val taskDefaultColumn = TaskDefaultColumn.find(column.id)) {
-          TaskDefaultColumn.COLOR -> null
+          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO -> null
           null -> createCustomColumn(column)
           else -> createDefaultColumn(column, taskDefaultColumn)
         }?.also {
@@ -467,7 +467,9 @@ class TaskTable(
             onEditCommit = EventHandler { event ->
               val targetTask: Task = event.rowValue.value
               event.newValue?.let { copyTask ->
-                taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
+                undoManager.undoableEdit("Edit properties of task ${copyTask.name}") {
+                  taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
+                }
               }
               runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(targetTask)) }
             }
