@@ -727,7 +727,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   @Override
   public void setModified() {
-    setAskForSave(true);
+    setModified(true);
   }
 
   @Override

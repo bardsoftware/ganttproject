@@ -98,8 +98,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   private final GanttTabbedPane myTabPane;
   private final GPUndoManager myUndoManager;
 
-  private final CustomColumnsManager myResourceCustomPropertyManager = new CustomColumnsManager();
-
   private final RssFeedChecker myRssChecker;
   protected final ContentPaneBuilder myContentPaneBuilder;
   final TaskManagerConfigImpl myTaskManagerConfig;
@@ -486,7 +484,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   @Override
   public @NotNull CustomPropertyManager getResourceCustomPropertyManager() {
-    return myResourceCustomPropertyManager;
+    return getProjectImpl().getResourceCustomPropertyManager();
   }
 
   protected void setUpdater(Updater updater) {

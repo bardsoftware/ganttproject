@@ -22,7 +22,6 @@ import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import com.google.common.base.Charsets;
-import com.google.common.collect.Maps;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -33,13 +32,11 @@ import java.awt.*;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
-import java.util.Map;
 
 public class TaskTagHandler extends AbstractTagHandler implements ParsingListener {
   private final ParsingContext myContext;
   private final TaskManager myManager;
   private final TreeCollapseView<Task> myTreeFacade;
-  private final Map<Integer, Boolean> myTaskIdToExpansionState = Maps.newHashMap();
 
   public TaskTagHandler(TaskManager mgr, ParsingContext context, TreeCollapseView<Task> treeFacade) {
     super("task");
@@ -110,7 +107,7 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
     }
     Task task = builder.build();
 
-    myTaskIdToExpansionState.put(task.getTaskID(), task.getExpand());
+    myTreeFacade.setExpanded(task, Boolean.parseBoolean(isExpanded));
     String project = attrs.getValue("project");
     if (project != null) {
       task.setProjectTask(true);
@@ -204,10 +201,5 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
 
   @Override
   public void parsingFinished() {
-//    List<Task> tasksBottomUp = Lists.reverse(myManager.getTaskHierarchy().breadthFirstSearch(null, false));
-//
-//    for (Task t : tasksBottomUp) {
-//      myTreeFacade.setExpanded(t, MoreObjects.firstNonNull(myTaskIdToExpansionState.get(t.getTaskID()), Boolean.TRUE));
-//    }
   }
 }
