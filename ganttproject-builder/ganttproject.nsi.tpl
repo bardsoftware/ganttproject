@@ -1,6 +1,6 @@
 Unicode True
 !define VERSION "3.2"
-!define VERSION_BUILD "3200"
+!define VERSION_BUILD "3220"
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 
