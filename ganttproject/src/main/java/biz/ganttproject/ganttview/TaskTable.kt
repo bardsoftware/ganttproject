@@ -418,6 +418,9 @@ class TaskTable(
                 treeTable.selectionModel.select(it)
               }
             }
+            if (currentSelection.size == 1) {
+              task2treeItem[currentSelection[0]]?.let { treeTable.scrollTo(it) }
+            }
           }
         }
       }
