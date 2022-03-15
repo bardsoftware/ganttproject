@@ -589,7 +589,8 @@ class TaskTable(
           { task, value -> taskTableModel.setValue(value, task, customProperty) }
         )
       }
-    }.also {
+      else -> null
+    }?.also {
       it.isEditable = true
       it.isVisible = column.isVisible
       it.userData = column
