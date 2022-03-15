@@ -149,7 +149,7 @@ class TaskTable(
 
   private val initializationCompleted = initializationPromise.register("Task table initialization")
   private val treeTableSelectionListener = TreeSelectionListenerImpl(treeTable.selectionModel.selectedItems, selectionManager, this@TaskTable)
-  private var projectModified: () -> Unit = {}
+  private var projectModified: () -> Unit = { project.isModified = true }
   init {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
 
