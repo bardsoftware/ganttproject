@@ -418,6 +418,9 @@ class TaskTable(
                 treeTable.selectionModel.select(it)
               }
             }
+            if (currentSelection.size == 1) {
+              task2treeItem[currentSelection[0]]?.let { treeTable.scrollTo(it) }
+            }
           }
         }
       }
@@ -586,7 +589,8 @@ class TaskTable(
           { task, value -> taskTableModel.setValue(value, task, customProperty) }
         )
       }
-    }.also {
+      else -> null
+    }?.also {
       it.isEditable = true
       it.isVisible = column.isVisible
       it.userData = column
