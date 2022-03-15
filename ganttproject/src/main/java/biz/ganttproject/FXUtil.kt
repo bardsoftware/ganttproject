@@ -199,6 +199,7 @@ object FXUtil {
     }
     if (borderPane.center == null) {
       replacePane.run()
+      resizer()
     } else {
       val fadeIn = FadeTransition(Duration.seconds(0.5), borderPane)
       fadeIn.fromValue = 0.0
