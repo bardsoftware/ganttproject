@@ -325,21 +325,36 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
     if (visibleColumns.isEmpty()) {
       return
     }
+    if (newValue == 0.0) {
+      // This means that we're just collapsing the table pane. No action needed. When we expand it back, the column widths
+      // will be kept.
+      return
+    }
+    // We will spread the delta across all visible columns proportionally to their widths
+    val columnWidths = visibleColumns.map { it.width }
     val totalWidth = visibleColumns.sumOf { it.width }
-    var delta = newValue - totalWidth - table.vbarWidth()
-    if (delta > 0) {
-      visibleColumns.last().prefWidth += delta
-    } else {
-      delta = -delta
-      for (col in visibleColumns.reversed()) {
-        val decrement = kotlin.math.min(col.width - 30, delta)
-        col.prefWidth -=  decrement
-        delta -= decrement
-        if (delta <= 0) {
-          break
+    val columnWeights = columnWidths.map { it / totalWidth }
+
+    val delta = newValue - totalWidth - table.vbarWidth()
+    val newWidths =
+      if (delta > 0) {
+        // If the table gets wider, we just add delta to all columns proportionally.
+        columnWidths.zip(columnWeights).map { it.first + delta * it.second }
+      } else {
+        // If the table shrinks down, we first proportionally decrement widths...
+        val newWidths = columnWidths.zip(columnWeights).map { it.first + delta * it.second }
+        // .. however, we don't want to make column widths less than some minimum, so those columns
+        // which reached the minimum threshold will borrow some width from the remaining ones.
+        val totalOverdraft = newWidths.filter { it < 20.0 }.map { 20.0 - it }.sum()
+        newWidths.zip(columnWeights).map {
+          if (it.first < 20.0) {
+            20.0
+          } else {
+            it.first - totalOverdraft * it.second
+          }
         }
       }
-    }
+    visibleColumns.zip(newWidths).forEach { it.first.prefWidth = it.second }
   }
 }
 
