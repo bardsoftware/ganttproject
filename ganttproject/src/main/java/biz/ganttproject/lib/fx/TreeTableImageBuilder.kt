@@ -68,7 +68,12 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
         val key = columnMap[it]
         val value: String = TaskDefaultColumn.find(it.id)?.let { tdc ->
           taskTable.taskTableModel.getValueAt(item.value, tdc).toString()
-        } ?: ""
+        } ?: run {
+          val customPropertyManager = item.value.manager.customPropertyManager
+          val def = customPropertyManager.getCustomPropertyDefinition(it.id)
+          val customValue = item.value.customValues.getValue(def)
+          customValue?.toString() ?: ""
+        }
         key?.let { key to value } ?: (columnMap.values.first() to "")
       }
     )

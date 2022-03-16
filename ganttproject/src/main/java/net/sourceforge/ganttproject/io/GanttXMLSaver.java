@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.io;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.ganttview.TaskFilterManager;
+import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.GanttGraphicArea;
@@ -143,7 +144,8 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
   }
 
   private void saveTasks(TransformerHandler handler) throws SAXException, IOException {
-    new TaskSaver(getUIFacade().getTaskCollapseView()).save(getProject(), handler);
+    var collapseView = getUIFacade() != null ? getUIFacade().getTaskCollapseView() : new SimpleTreeCollapseView();
+    new TaskSaver(collapseView).save(getProject(), handler);
   }
 
   private void saveAssignments(TransformerHandler handler) throws SAXException {
