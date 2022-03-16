@@ -49,6 +49,7 @@ import org.osgi.service.prefs.Preferences
 import java.io.IOException
 import java.util.concurrent.Executors
 import javax.print.attribute.standard.MediaSize
+import javax.swing.SwingUtilities
 import kotlin.reflect.KClass
 import kotlin.reflect.full.staticProperties
 //import javafx.print.Paper as FxPaper
@@ -170,11 +171,15 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
       it.styleClass.addAll("btn-attention")
       it.onAction = EventHandler {
         //printPages(Previews.pages, Previews.paper)
-        try {
-          printPages(previews.pages, previews.mediaSize, previews.orientation)
-        } catch (ex: Exception) {
-          ourLogger.error("Print job failed", ex)
-          dlg.showAlert(i18n.create("print.job.alert.title"), createAlertBody(ex))
+        SwingUtilities.invokeLater {
+          try {
+            printPages(previews.pages, previews.mediaSize, previews.orientation)
+          } catch (ex: Exception) {
+            ourLogger.error("Print job failed", ex)
+            Platform.runLater {
+              dlg.showAlert(i18n.create("print.job.alert.title"), createAlertBody(ex))
+            }
+          }
         }
       }
     }
