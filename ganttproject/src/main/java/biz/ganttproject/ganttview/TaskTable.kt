@@ -200,7 +200,7 @@ class TaskTable(
     treeTable.contextMenuActions = this::contextMenuActions
     treeTable.tableMenuActions = this::tableMenuActions
 
-    filters.sync = this::sync
+    filters.sync = { this.sync() }
   }
 
   fun loadDefaultColumns() = Platform.runLater {
@@ -329,11 +329,11 @@ class TaskTable(
         if (e.oldContainer == null) {
           return
         }
-        sync()
+        Platform.runLater { sync(true) }
       }
 
       override fun taskRemoved(e: TaskHierarchyEvent) {
-        sync()
+        Platform.runLater { sync() }
       }
 
       override fun taskModelReset() {
@@ -584,8 +584,8 @@ class TaskTable(
     }
   }
 
-  fun sync() {
-    keepSelection {
+  fun sync(keepFocus: Boolean = false) {
+    keepSelection(keepFocus) {
       val treeModel = taskManager.taskHierarchy
       task2treeItem.clear()
       task2treeItem[treeModel.rootTask] = rootItem
@@ -682,6 +682,7 @@ class TaskTable(
         }
       val focusedTask = treeTable.focusModel.focusedItem?.value
       val focusedCell = treeTable.focusModel.focusedCell
+
       // This way we ignore table selection changes which happen when we manipulate with the tree items in code()
       treeTableSelectionListener.disabled = true
       code()
