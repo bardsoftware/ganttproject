@@ -329,35 +329,11 @@ class TaskTable(
         if (e.oldContainer == null) {
           return
         }
-        keepSelection(keepFocus = true) {
-          val taskTreeItem = task2treeItem[e.oldContainer]?.let { containerItem ->
-            val idx = containerItem.children.indexOfFirst { it.value == e.task }
-            if (idx >= 0) {
-              containerItem.children.removeAt(idx)
-            } else {
-              null
-            }
-          } ?: return@keepSelection
-          task2treeItem[e.newContainer]?.children?.add(e.indexAtNew, taskTreeItem)
-          taskTableChartConnector.visibleTasks.clear()
-          taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
-        }
+        sync()
       }
 
       override fun taskRemoved(e: TaskHierarchyEvent) {
-        keepSelection {
-          task2treeItem[e.oldContainer]?.let { treeItem ->
-            treeItem.depthFirstWalk { child ->
-              task2treeItem.remove(child.value)
-              true
-            }
-            val idx = treeItem.children.indexOfFirst { it.value == e.task }
-            if (idx >= 0) {
-              treeItem.children.removeAt(idx)
-            }
-          }
-          taskTableChartConnector.visibleTasks.setAll(getExpandedTasks())
-        }
+        sync()
       }
 
       override fun taskModelReset() {
