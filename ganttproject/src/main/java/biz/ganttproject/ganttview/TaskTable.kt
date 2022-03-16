@@ -200,7 +200,7 @@ class TaskTable(
     treeTable.contextMenuActions = this::contextMenuActions
     treeTable.tableMenuActions = this::tableMenuActions
 
-    filters.sync = this::sync
+    filters.sync = { this.sync() }
   }
 
   fun loadDefaultColumns() = Platform.runLater {
@@ -329,35 +329,11 @@ class TaskTable(
         if (e.oldContainer == null) {
           return
         }
-        keepSelection(keepFocus = true) {
-          val taskTreeItem = task2treeItem[e.oldContainer]?.let { containerItem ->
-            val idx = containerItem.children.indexOfFirst { it.value == e.task }
-            if (idx >= 0) {
-              containerItem.children.removeAt(idx)
-            } else {
-              null
-            }
-          } ?: return@keepSelection
-          task2treeItem[e.newContainer]?.children?.add(e.indexAtNew, taskTreeItem)
-          taskTableChartConnector.visibleTasks.clear()
-          taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
-        }
+        Platform.runLater { sync(true) }
       }
 
       override fun taskRemoved(e: TaskHierarchyEvent) {
-        keepSelection {
-          task2treeItem[e.oldContainer]?.let { treeItem ->
-            treeItem.depthFirstWalk { child ->
-              task2treeItem.remove(child.value)
-              true
-            }
-            val idx = treeItem.children.indexOfFirst { it.value == e.task }
-            if (idx >= 0) {
-              treeItem.children.removeAt(idx)
-            }
-          }
-          taskTableChartConnector.visibleTasks.setAll(getExpandedTasks())
-        }
+        Platform.runLater { sync() }
       }
 
       override fun taskModelReset() {
@@ -608,8 +584,8 @@ class TaskTable(
     }
   }
 
-  fun sync() {
-    keepSelection {
+  fun sync(keepFocus: Boolean = false) {
+    keepSelection(keepFocus) {
       val treeModel = taskManager.taskHierarchy
       task2treeItem.clear()
       task2treeItem[treeModel.rootTask] = rootItem
@@ -706,6 +682,7 @@ class TaskTable(
         }
       val focusedTask = treeTable.focusModel.focusedItem?.value
       val focusedCell = treeTable.focusModel.focusedCell
+
       // This way we ignore table selection changes which happen when we manipulate with the tree items in code()
       treeTableSelectionListener.disabled = true
       code()
