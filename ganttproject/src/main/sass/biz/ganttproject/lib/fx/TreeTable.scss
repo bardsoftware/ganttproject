@@ -32,18 +32,22 @@
         -fx-border-width: 0;
         -fx-padding: 0;
         .virtual-flow {
-            & > .tree-table-row-cell:selected, .tree-table-row-cell:focused {
+            & > .tree-table-row-cell:selected, .tree-table-row-cell:selected:focused {
                 & .tree-table-cell {
                     -fx-fill: white;
                     -fx-text-fill: white;
-                    &.odd {
-                        -fx-background-color: $gp-medium-gray;
-                    }
                 }
                 & .glyph-icon {
                     -fx-fill: white;
                 }
-                -fx-background-color: $gp-medium-gray;
+            }
+            & > .tree-table-row-cell:selected {
+              -fx-background-color: $gp-medium-gray;
+              & .tree-table-cell {
+                &.odd {
+                  -fx-background-color: $gp-medium-gray;
+                }
+              }
             }
         }
     }
@@ -67,8 +71,6 @@
         }
         &.focused {
             -fx-border-color: $gp-orange;
-            -fx-fill: white;
-            -fx-text-fill: white;
         }
         //&.odd {
         //    -fx-background-color: lighten($gp-light-gray, 5%);
