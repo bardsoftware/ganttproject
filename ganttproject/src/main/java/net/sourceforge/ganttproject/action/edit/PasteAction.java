@@ -41,6 +41,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Arrays;
 
 import static net.sourceforge.ganttproject.importer.BufferProjectImportKt.importBufferProject;
 
@@ -78,7 +79,7 @@ public class PasteAction extends GPAction {
       return;
     }
     ChartSelection selection = myViewmanager.getSelectedArtefacts();
-    System.err.println(selection);
+    System.err.println("\ntasks: " + Arrays.asList(myProject.getTaskManager().getTasks()) + "\n");
     if (!selection.isEmpty()) {
       pasteInternalFlavor(selection);
       return;
