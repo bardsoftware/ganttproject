@@ -78,6 +78,7 @@ public class PasteAction extends GPAction {
       return;
     }
     ChartSelection selection = myViewmanager.getSelectedArtefacts();
+    System.err.println(selection);
     if (!selection.isEmpty()) {
       pasteInternalFlavor(selection);
       return;
@@ -105,6 +106,7 @@ public class PasteAction extends GPAction {
   }
 
   private void pasteExternalDocument(byte[] bytes) {
+    System.err.println("pasteExternal!");
     try {
 
       final BufferProject bufferProject = new BufferProject(myProject, myUiFacade);
@@ -125,6 +127,7 @@ public class PasteAction extends GPAction {
   }
 
   private void pasteInternalFlavor(final ChartSelection selection) {
+    System.err.println("pasteInternal: selection="+selection);
     myUndoManager.undoableEdit(getLocalizedName(), new Runnable() {
       @Override
       public void run() {

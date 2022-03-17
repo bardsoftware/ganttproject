@@ -98,4 +98,12 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
   public void lostOwnership(Clipboard clipboard, Transferable contents) {
     // Do nothing
   }
+
+  @Override
+  public String toString() {
+    return "GanttChartSelection{" +
+      "myClipboardContents=" + myClipboardContents +
+      "mySelectedTasks=" + mySelectionManager.getSelectedTasks() +
+      '}';
+  }
 }
