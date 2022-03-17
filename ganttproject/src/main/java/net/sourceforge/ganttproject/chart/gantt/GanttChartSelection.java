@@ -24,8 +24,6 @@ import net.sourceforge.ganttproject.GPTransferable;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -44,7 +42,6 @@ import static biz.ganttproject.task.TreeAlgorithmsKt.retainRoots;
  */
 public class GanttChartSelection extends ChartSelectionImpl implements ClipboardOwner {
 
-  private final RetainRootsAlgorithm<DefaultMutableTreeTableNode> myRetainRootsAlgorithm = new RetainRootsAlgorithm<DefaultMutableTreeTableNode>();
   private final TaskManager myTaskManager;
   private final TaskSelectionManager mySelectionManager;
 
@@ -69,6 +66,10 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
 
   private void exportTasksIntoSystemClipboard() {
     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    // We create a copy of the task model here, to allow for manipulations with the tasks when builing
+    // an instance of the external document flavor.
+    // See issue https://github.com/bardsoftware/ganttproject/issues/2050
+    // Test case: GanttChartSelectionTest::testStartMoveTransactionAndExternalDocumentFlavor_Issue2050
     var exportedTaskManager = myTaskManager.emptyClone();
     var customDefMap = new HashMap<CustomPropertyDefinition, CustomPropertyDefinition>();
     for (var def : myTaskManager.getCustomPropertyManager().getDefinitions()) {
