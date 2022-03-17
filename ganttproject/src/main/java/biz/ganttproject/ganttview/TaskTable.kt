@@ -55,6 +55,7 @@ import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.CustomPropertyClass
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.action.GPAction
@@ -585,6 +586,7 @@ class TaskTable(
   }
 
   fun sync(keepFocus: Boolean = false) {
+    LOGGER.debug("Sync ===================================")
     keepSelection(keepFocus) {
       val treeModel = taskManager.taskHierarchy
       task2treeItem.clear()
@@ -592,27 +594,30 @@ class TaskTable(
 
       var filteredCount = 0
       treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx ->
+        LOGGER.debug("Sync: parent=$parent child=$child idx=$idx")
+        val parentItem = task2treeItem[parent]!!
         if (!this.filters.activeFilter(parent, child)) {
-          val parentItem = task2treeItem[parent]!!
           parentItem.children.remove(idx, parentItem.children.size)
           filteredCount++
           false
         } else {
           if (child == null) {
-            val parentItem = task2treeItem[parent]!!
             parentItem.children.remove(idx, parentItem.children.size)
           } else {
-            val parentItem = task2treeItem[parent]!!
+            LOGGER.debug("parentItem.children=${parentItem.children}")
             if (parentItem.children.size > idx) {
               val childItem = parentItem.children[idx]
+              LOGGER.debug("child@$idx=$childItem")
               if (childItem.value.taskID == child.taskID) {
                 childItem.value = child
                 task2treeItem[child] = childItem
               } else {
+                LOGGER.debug("replacing child")
                 parentItem.children.removeAt(idx)
                 parent.addChildTreeItem(child, idx)
               }
             } else {
+              LOGGER.debug("adding child")
               parent.addChildTreeItem(child)
             }
           }
@@ -630,6 +635,7 @@ class TaskTable(
       }
       initializationCompleted()
     }
+    LOGGER.debug("Sync <<<<<<<<<<<<<<<<<")
   }
 
   private fun Task.addChildTreeItem(child: Task, pos: Int = -1): TreeItem<Task> {
@@ -947,3 +953,4 @@ private fun Task.ProgressStatus.getIcon() : GlyphIcon<*>? =
   }
 
 private val TEXT_FORMAT = DataFormat("text/ganttproject-task-node")
+private val LOGGER = GPLogger.create("TaskTable")

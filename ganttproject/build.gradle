@@ -38,6 +38,7 @@ dependencies {
     providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
     providedCompile project(path: ':biz.ganttproject.app.localization')
 
+    api files("lib/core/eclipsito.jar")
     exportedLibs files("lib/core/eclipsito.jar")
 
     implementation configurations.direct

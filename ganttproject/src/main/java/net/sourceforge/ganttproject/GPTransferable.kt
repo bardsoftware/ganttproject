@@ -37,10 +37,6 @@ import java.io.InputStream
 class GPTransferable(private val myClipboardContents: ClipboardContents) : Transferable {
     @Throws(UnsupportedFlavorException::class)
     override fun getTransferData(flavor: DataFlavor): Any {
-      return createDocumentFlavor()?.let {
-        ExternalInternalFlavorMap.put(it, myClipboardContents)
-        ByteArrayInputStream(it)
-      } ?: throw UnsupportedFlavorException(flavor)
         if (INTERNAL_DATA_FLAVOR.equals(flavor)) {
             return myClipboardContents
         }
