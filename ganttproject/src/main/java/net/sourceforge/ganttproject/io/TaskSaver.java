@@ -38,10 +38,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Map;
+import java.util.*;
 
 class TaskSaver extends SaverBase {
   private final TreeCollapseView<Task> taskCollapseView;
@@ -62,6 +59,7 @@ class TaskSaver extends SaverBase {
     endElement("taskproperties", handler);
     Task rootTask = project.getTaskManager().getTaskHierarchy().getRootTask();
     Task[] tasks = project.getTaskManager().getTaskHierarchy().getNestedTasks(rootTask);
+    System.err.println("\nTaskSaver: tasks="+ Arrays.asList(tasks));
     for (Task task : tasks) {
       writeTask(handler, (GanttTask) task, project.getTaskCustomColumnManager());
     }
