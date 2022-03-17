@@ -45,7 +45,6 @@ class UndoableEditImpl extends AbstractUndoableEdit {
     myDocumentBefore = saveFile();
     editImpl.run();
     myDocumentAfter = saveFile();
-    System.err.println("\n\n" + localizedName + "docbefore="+myDocumentBefore.getURI()+" docafter="+myDocumentAfter.getURI()+"\n\n");
   }
 
   private Document saveFile() throws IOException {

@@ -825,13 +825,7 @@ private class TreeSelectionListenerImpl(
 
   var disabled: Boolean = false
 
-  var lastChangeTs = System.currentTimeMillis()
   override fun onChanged(c: ListChangeListener.Change<out TreeItem<Task>>?) {
-//    if (System.currentTimeMillis() - lastChangeTs < 500) {
-//      Exception("selectedItems=$selectedItems").printStackTrace()
-//    }
-    println("selectedItems=$selectedItems c=$c")
-    lastChangeTs = System.currentTimeMillis()
     if (!disabled) {
       copyOf(selectedItems.filterNotNull()).map { it.value }
         .filter { it.manager.taskHierarchy.contains(it) }.also {
