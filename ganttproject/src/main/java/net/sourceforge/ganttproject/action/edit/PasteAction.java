@@ -23,6 +23,7 @@ import net.sourceforge.ganttproject.GPTransferable;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartSelection;
+import net.sourceforge.ganttproject.chart.gantt.ExternalInternalFlavorMap;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -88,16 +89,24 @@ public class PasteAction extends GPAction {
         if (data instanceof InputStream == false) {
           return;
         }
-        pasteExternalDocument((InputStream) data);
+        byte[] bytes = ByteStreams.toByteArray((InputStream) data);
+//        var internalFlavor = ExternalInternalFlavorMap.INSTANCE.get(bytes);
+//        if (internalFlavor != null) {
+//
+//        } else {
+          myUndoManager.undoableEdit(getLocalizedName(), () -> {
+            pasteExternalDocument(bytes);
+          });
+//        }
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
   }
 
-  private void pasteExternalDocument(InputStream data) {
+  private void pasteExternalDocument(byte[] bytes) {
     try {
-      byte[] bytes = ByteStreams.toByteArray(data);
+
       final BufferProject bufferProject = new BufferProject(myProject, myUiFacade);
       File tmpFile = File.createTempFile("ganttPaste", "");
       Files.write(tmpFile.toPath(), bytes);
