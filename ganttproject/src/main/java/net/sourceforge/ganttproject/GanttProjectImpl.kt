@@ -251,6 +251,7 @@ internal class DefaultTaskColorOption internal constructor(defaultColor: Color) 
 
 
 internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: List<ProjectEventListener>) {
+  println("restoreDocument=${fromDocument.uri}")
   val completionPromise = SimpleBarrier<Document>()
   listeners.forEach { it.projectRestoring(completionPromise) }
   val projectDocument = document
@@ -261,6 +262,7 @@ internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: L
     algs.recalculateTaskScheduleAlgorithm.isEnabled = false
     algs.adjustTaskBoundsAlgorithm.isEnabled = false
     fromDocument.read()
+    println(taskManager.tasks.toList())
   } finally {
     algs.recalculateTaskScheduleAlgorithm.isEnabled = true
     algs.adjustTaskBoundsAlgorithm.isEnabled = true
