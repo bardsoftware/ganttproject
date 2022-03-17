@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart.gantt;
 
 import net.sourceforge.ganttproject.AbstractChartImplementation.ChartSelectionImpl;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GPTransferable;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -31,6 +32,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static biz.ganttproject.task.TreeAlgorithmsKt.retainRoots;
@@ -67,7 +69,13 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
 
   private void exportTasksIntoSystemClipboard() {
     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-    clipboard.setContents(new GPTransferable(myClipboardContents), this);
+    var exportedTaskManager = myTaskManager.emptyClone();
+    var customDefMap = new HashMap<CustomPropertyDefinition, CustomPropertyDefinition>();
+    for (var def : myTaskManager.getCustomPropertyManager().getDefinitions()) {
+      customDefMap.put(def, def);
+    }
+    exportedTaskManager.importData(myTaskManager, customDefMap);
+    clipboard.setContents(new GPTransferable(new ClipboardContents(exportedTaskManager)), this);
   }
 
   @Override
