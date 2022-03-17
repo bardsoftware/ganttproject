@@ -79,7 +79,7 @@ public class PasteAction extends GPAction {
       return;
     }
     ChartSelection selection = myViewmanager.getSelectedArtefacts();
-    System.err.println("\ntasks: " + Arrays.asList(myProject.getTaskManager().getTasks()) + "\n");
+    System.err.println("\ntasks: " + Arrays.asList(myProject.getTaskManager().getTasks()) + "manager="+ myProject.getTaskManager()+ "\n");
     if (!selection.isEmpty()) {
       pasteInternalFlavor(selection);
       return;
