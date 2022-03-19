@@ -43,12 +43,12 @@ public class CutAction extends GPAction {
     if (calledFromAppleScreenMenu(e)) {
       return;
     }
-    myUndoManager.undoableEdit(getLocalizedName(), new Runnable() {
-      @Override
-      public void run() {
+//    myUndoManager.undoableEdit(getLocalizedName(), new Runnable() {
+//      @Override
+//      public void run() {
         myViewmanager.getSelectedArtefacts().startMoveClipboardTransaction();
-      }
-    });
+//      }
+    //});
   }
 
   @Override

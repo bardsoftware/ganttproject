@@ -19,18 +19,18 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart.gantt;
 
 import net.sourceforge.ganttproject.AbstractChartImplementation.ChartSelectionImpl;
+import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GPTransferable;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
-import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static biz.ganttproject.task.TreeAlgorithmsKt.retainRoots;
@@ -42,7 +42,6 @@ import static biz.ganttproject.task.TreeAlgorithmsKt.retainRoots;
  */
 public class GanttChartSelection extends ChartSelectionImpl implements ClipboardOwner {
 
-  private final RetainRootsAlgorithm<DefaultMutableTreeTableNode> myRetainRootsAlgorithm = new RetainRootsAlgorithm<DefaultMutableTreeTableNode>();
   private final TaskManager myTaskManager;
   private final TaskSelectionManager mySelectionManager;
 
@@ -67,7 +66,17 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
 
   private void exportTasksIntoSystemClipboard() {
     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-    clipboard.setContents(new GPTransferable(myClipboardContents), this);
+    // We create a copy of the task model here, to allow for manipulations with the tasks when builing
+    // an instance of the external document flavor.
+    // See issue https://github.com/bardsoftware/ganttproject/issues/2050
+    // Test case: GanttChartSelectionTest::testStartMoveTransactionAndExternalDocumentFlavor_Issue2050
+    var exportedTaskManager = myTaskManager.emptyClone();
+    var customDefMap = new HashMap<CustomPropertyDefinition, CustomPropertyDefinition>();
+    for (var def : myTaskManager.getCustomPropertyManager().getDefinitions()) {
+      customDefMap.put(def, def);
+    }
+    exportedTaskManager.importData(myTaskManager, customDefMap);
+    clipboard.setContents(new GPTransferable(new ClipboardContents(exportedTaskManager)), this);
   }
 
   @Override
@@ -97,5 +106,13 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
   @Override
   public void lostOwnership(Clipboard clipboard, Transferable contents) {
     // Do nothing
+  }
+
+  @Override
+  public String toString() {
+    return "GanttChartSelection{" +
+      "myClipboardContents=" + myClipboardContents +
+      "mySelectedTasks=" + mySelectionManager.getSelectedTasks() +
+      '}';
   }
 }
