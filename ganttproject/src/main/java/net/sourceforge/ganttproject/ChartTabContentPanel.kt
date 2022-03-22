@@ -194,6 +194,7 @@ internal abstract class ChartTabContentPanel(
   }
 
   protected fun setTableWidth(width: Double) {
+    println("setTableWidth=$width")
     mySplitPane?.dividerLocation = width.toInt() + 1
   }
   fun addTableResizeListeners(tableContainer: Component, table: Component) {

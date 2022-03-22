@@ -322,6 +322,7 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
 
   private fun resizeTable(newValue: Double) {
     println("resizeTabe: newValue=$newValue")
+
     val visibleColumns = table.columns.filter { it.isVisible }
     if (visibleColumns.isEmpty()) {
       return
