@@ -40,6 +40,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Region
 import javafx.util.Callback
 import kotlin.math.max
+import kotlin.math.round
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -179,7 +180,7 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
 
   val scrollValue = SimpleDoubleProperty()
   val headerHeight: ReadOnlyDoubleProperty
-  get() = tableHeaderRow.heightProperty()
+    get() = tableHeaderRow.heightProperty()
   val fullHeaderHeight: Double get() = headerHeight.value + tableHeaderRow.boundsInParent.minX
 
   internal fun updateScrollValue() {
@@ -353,8 +354,11 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
             it.first - totalOverdraft * it.second
           }
         }
-      }
+      }.map { round(it) }
+    val newTotalWidth = newWidths.sum()
+    val diff = newValue - (newTotalWidth + table.vbarWidth())
     visibleColumns.zip(newWidths).forEach { it.first.prefWidth = it.second }
+    visibleColumns.last().prefWidth += diff
   }
 }
 
