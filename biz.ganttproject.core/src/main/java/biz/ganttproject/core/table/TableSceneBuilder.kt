@@ -133,8 +133,10 @@ class TableSceneBuilder(
       val letterWidth = config.textMetrics.getTextLength("m")
       val dots = "... "
       val lettersNumber = max(0, (widthLimit - config.textMetrics.getTextLength(dots)) / letterWidth)
-      fitString = fitString.substring(0, lettersNumber)
-      fitString += dots
+      if (lettersNumber < fitString.length) {
+        fitString = fitString.substring(0, lettersNumber)
+        fitString += dots
+      }
     }
     return canvas.createText(x, y, fitString)
   }
