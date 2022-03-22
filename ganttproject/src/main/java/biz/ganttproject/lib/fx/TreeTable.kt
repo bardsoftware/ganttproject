@@ -40,6 +40,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Region
 import javafx.util.Callback
 import kotlin.math.max
+import kotlin.math.round
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -356,9 +357,12 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
             it.first - totalOverdraft * it.second
           }
         }
-      }
-    println("newWidth=$newWidths")
+      }.map { round(it) }
+    val newTotalWidth = newWidths.sum()
+    val diff = newValue - (newTotalWidth + table.vbarWidth())
+    println("newWidth=$newWidths sum=$newTotalWidth")
     visibleColumns.zip(newWidths).forEach { it.first.prefWidth = it.second }
+    visibleColumns.last().prefWidth += diff
   }
 }
 
