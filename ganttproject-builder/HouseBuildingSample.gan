@@ -1,16 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?><project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="404" resource-divider-location="322" version="3.2.3200" locale="en">
+<?xml version="1.0" encoding="UTF-8"?><project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="451" resource-divider-location="322" version="3.2.3230" locale="en">
     <description/>
     <view zooming-state="default:8" id="gantt-chart">
-        <field id="tpd3" name="Name" width="200" order="0"/>
-        <field id="tpd4" name="Begin date" width="75" order="1"/>
-        <field id="tpd5" name="End date" width="75" order="2"/>
-        <field id="tpd12" name="Cost" width="38" order="3"/>
-        <option id="taskLabelUp" value=""/>
-        <option id="taskLabelLeft" value="name"/>
+        <field id="tpd3" name="Name" width="224" order="0"/>
+        <field id="tpd4" name="Begin date" width="84" order="1"/>
+        <field id="tpd5" name="End date" width="55" order="2"/>
+        <field id="tpd12" name="Cost" width="71" order="3"/>
+        <field id="tpd2" name="Alerts" width="-1" order="4"/>
         <option id="filter.completedTasks" value="false"/>
-        <timeline>
-            <![CDATA[49]]>
-        </timeline>
+        <timeline><![CDATA[49]]></timeline>
     </view>
     <view id="resource-table">
         <field id="0" name="Name" width="160" order="0"/>
@@ -61,9 +58,7 @@
             </task>
             <task id="13" name="Furniture selection" color="#99ccff" meeting="false" start="2022-03-03" duration="5" complete="0" expand="true"/>
             <task id="14" name="Equipment planning" color="#99ccff" meeting="false" start="2022-03-03" duration="5" complete="0" expand="true">
-                <notes>
-                    <![CDATA[Embedded devices, kitchen, washing machine, dryer etc]]>
-                </notes>
+                <notes><![CDATA[Embedded devices, kitchen, washing machine, dryer etc]]></notes>
             </task>
         </task>
         <task id="7" name="Construction phase" color="#99ccff" meeting="false" start="2022-03-17" duration="75" complete="0" expand="true">
@@ -98,6 +93,12 @@
         <task id="49" name="GanttProject 3.2" color="#ff3333" meeting="true" start="2022-02-10" duration="0" complete="0" thirdDate="2018-02-06" thirdDate-constraint="0" expand="true">
             <depend id="0" type="2" difference="0" hardness="Rubber"/>
         </task>
+        <task id="50" name="task_50" meeting="false" start="2022-01-03" duration="1" complete="0" expand="true"/>
+        <task id="54" name="hfhffhfdf" meeting="false" start="2022-01-03" duration="1" complete="0" expand="true"/>
+        <task id="53" name="task_53" meeting="false" start="2022-01-03" duration="1" complete="0" expand="true"/>
+        <task id="52" name="task_52" meeting="false" start="2022-01-03" duration="1" complete="0" expand="true"/>
+        <task id="51" name="task_51" meeting="false" start="2022-01-03" duration="1" complete="0" expand="true"/>
+        <task id="55" name="task_55" meeting="false" start="2022-01-03" duration="1" complete="0" expand="true"/>
     </tasks>
     <resources>
         <resource id="1" name="Jack House" function="Default:1" contacts="jack.house@myselfllc.net" phone="0044 077345456"/>

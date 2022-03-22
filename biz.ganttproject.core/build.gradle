@@ -20,6 +20,8 @@ dependencies {
     direct configurations.api
     implementation configurations.direct
     implementation configurations.providedCompile
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.12.+"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.+"
 
     testImplementation(
         'org.junit.jupiter:junit-jupiter-api:5.+',

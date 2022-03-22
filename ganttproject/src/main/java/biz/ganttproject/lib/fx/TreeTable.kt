@@ -321,6 +321,7 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
   }
 
   private fun resizeTable(newValue: Double) {
+    println("resizeTabe: newValue=$newValue")
     val visibleColumns = table.columns.filter { it.isVisible }
     if (visibleColumns.isEmpty()) {
       return
@@ -336,6 +337,7 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
     val columnWeights = columnWidths.map { it / totalWidth }
 
     val delta = newValue - totalWidth - table.vbarWidth()
+    println("columnWidth=$columnWidths")
     val newWidths =
       if (delta > 0) {
         // If the table gets wider, we just add delta to all columns proportionally.
@@ -354,6 +356,7 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
           }
         }
       }
+    println("newWidth=$newWidths")
     visibleColumns.zip(newWidths).forEach { it.first.prefWidth = it.second }
   }
 }
