@@ -133,7 +133,7 @@ class TaskTable(
     )
   )
 
-  val columnListWidthProperty = SimpleDoubleProperty()
+  val columnListWidthProperty = SimpleObjectProperty<Pair<Double, Double>>()
   var requestSwingFocus: () -> Unit = {}
   lateinit var swingComponent: Component
   private val filterCompletedTasksAction = FilterCompletedTasks(filters, taskManager)
@@ -158,7 +158,7 @@ class TaskTable(
       if (oldValue != newValue) {
         // We add vertical scroll bar width to the sum width of all columns, so that the split pane
         // which contains the table was resized appropriately.
-        columnListWidthProperty.value = newValue.toDouble() + treeTable.vbarWidth()
+        columnListWidthProperty.value = newValue.toDouble() to treeTable.vbarWidth()
       }
     }
     treeTable.onColumnResize = {

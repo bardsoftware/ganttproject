@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 import biz.ganttproject.core.table.ColumnList
+import javafx.application.Platform
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.scene.control.TreeTableColumn
 import net.sourceforge.ganttproject.CustomPropertyManager
@@ -161,7 +162,9 @@ class ColumnListImpl(
 
       columnList.clear()
       columnList.addAll(currentList)
-      updateTotalWidth()
+      Platform.runLater {
+        updateTotalWidth()
+      }
     }
   }
 

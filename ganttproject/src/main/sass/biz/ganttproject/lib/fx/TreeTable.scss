@@ -65,7 +65,7 @@
   .gp-tree-table-cell {
         -fx-border-width: 0 0 2 0;
         -fx-border-color: transparent;
-        -fx-padding: 0 0 0 10;
+        -fx-padding: 0 10 0 10;
         .badge {
             -fx-padding: 0 3 0 0;
         }
@@ -88,7 +88,7 @@
   // This is when editing starts. The treetable itself is not :focused anymore because the focus
     // is now in the text field.
     & > .virtual-flow {
-        & > .tree-table-row-cell:selected {
+      & > .tree-table-row-cell:selected {
             -fx-background: $gp-light-gray;
         }
     }
