@@ -201,6 +201,8 @@ class TextCell<S, T>(
     }
     treeTableView.requestFocus()
     if (cellIndex != -1) {
+      // It seems that the cell is not recreated after cancelling edit (e.g. with Escape) and we get a black
+      // rectangle instead of a task name. Moving focus back and forth re-creates the cell.
       treeTableView.focusModel.focus(-1)
       treeTableView.focusModel.focus(cellIndex)
     }
