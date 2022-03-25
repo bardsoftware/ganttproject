@@ -64,7 +64,7 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
       configure(ganttFrame)
       APP_LOGGER.debug("Main frame created")
       mainWindow.set(ganttFrame)
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
       APP_LOGGER.error("Failure when launching application", exception = e)
     } finally {
     }
