@@ -51,6 +51,7 @@ import org.controlsfx.control.HyperlinkLabel
 import java.io.File
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
 
@@ -89,7 +90,7 @@ private fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, 
     val dlg = UpdateDialog(applyUpdates, visibleUpdates) {
       SwingUtilities.invokeLater {
         uiFacade.quitApplication(false)
-        org.eclipse.core.runtime.Platform.restart()
+        Executors.newSingleThreadExecutor().run {  org.eclipse.core.runtime.Platform.restart() }
       }
     }
     dialog(
