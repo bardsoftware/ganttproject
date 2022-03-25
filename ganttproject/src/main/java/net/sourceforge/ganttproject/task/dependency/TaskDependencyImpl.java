@@ -23,6 +23,7 @@ import biz.ganttproject.core.model.task.ConstraintType;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskActivity;
 import biz.ganttproject.core.chart.scene.BarChartActivity;
+import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
 
 import java.awt.*;
 
@@ -47,7 +48,7 @@ public class TaskDependencyImpl implements TaskDependency {
   private TaskActivity myEndActivity;
 
   public TaskDependencyImpl(Task dependant, Task dependee, TaskDependencyCollectionImpl collection) {
-    this(dependant, dependee, collection, null);
+    this(dependant, dependee, collection, new FinishStartConstraintImpl());
   }
 
   TaskDependencyImpl(Task dependant, Task dependee, TaskDependencyCollectionImpl collection, TaskDependencyConstraint constraint) {
