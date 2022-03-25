@@ -121,7 +121,7 @@ class MouseListenerImpl extends MouseListenerBase {
 
     // Now examine what exactly is under the pointer
     ChartItem itemUnderPoint = myChartImplementation.getChartItemUnderMousePoint(e.getX(), e.getY());
-    if (itemUnderPoint instanceof TaskRegularAreaChartItem || taskUnderPointer.isMilestone()) {
+    if (itemUnderPoint instanceof TaskRegularAreaChartItem) {
       // If it is a plain task area then either drag the task or create a
       // dependency,
       // depending on the settings.
