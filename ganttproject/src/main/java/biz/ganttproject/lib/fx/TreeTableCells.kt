@@ -136,6 +136,9 @@ class TextCell<S, T>(
   }
 
   override fun startEdit() {
+    if (this.index == -1) {
+      return
+    }
     if (!isEditable) {
       onEditingCompleted()
       return
@@ -170,35 +173,43 @@ class TextCell<S, T>(
   }
 
   override fun cancelEdit() {
+    if (this.index == -1) {
+      return
+    }
     this.isCancellingOrCommitting = true
     try {
       if (treeTableView.editingCell != null) {
         super.cancelEdit()
       }
       styleClass.remove("validation-error")
-      disclosureNode?.let {
-        it.isVisible = true
-      }
-      doCancelEdit()
     } finally {
       this.isCancellingOrCommitting = false
       onEditingCompleted()
     }
-    treeTableView.requestFocus()
-    treeTableView.refresh()
+    val idx = this.index
+    Platform.runLater {
+      doCancelEdit(idx)
+    }
   }
 
-  private fun doCancelEdit() {
+  private fun doCancelEdit(cellIndex: Int) {
     text = getItemText()
     graphic = savedGraphic
     savedGraphic = null
     disclosureNode?.let {
       it.isVisible = true
     }
-    parent?.requestLayout()
+    treeTableView.requestFocus()
+    if (cellIndex != -1) {
+      treeTableView.focusModel.focus(-1)
+      treeTableView.focusModel.focus(cellIndex)
+    }
   }
 
   override fun commitEdit(newValue: T?) {
+    if (this.index == -1) {
+      return
+    }
     this.isCancellingOrCommitting = true
     try {
       disclosureNode?.let {
@@ -253,7 +264,6 @@ class TextCell<S, T>(
   }
 
   private fun doUpdateFilledItem() {
-
     if (isEditing) {
       textField.text = getItemText()
       text = null

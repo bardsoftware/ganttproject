@@ -195,7 +195,8 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
 
   init {
     this.virtualFlow.positionProperty().addListener { _, _, _ ->
-      updateScrollValue()
+      Platform.runLater { updateScrollValue() }
+
     }
 
     table.addEventFilter(KeyEvent.KEY_PRESSED) {

@@ -371,7 +371,7 @@ class TaskTable(
 
   private suspend fun commitEditing() {
     ourNameCellFactory.editingCell?.commitEdit()
-    newTaskActor.inboxChannel.send(EditingCompleted())
+    //newTaskActor.inboxChannel.send(EditingCompleted())
   }
 
   private fun initSelectionListeners() {
