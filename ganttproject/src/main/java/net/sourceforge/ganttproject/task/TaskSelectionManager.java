@@ -20,7 +20,9 @@ package net.sourceforge.ganttproject.task;
 
 import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.gui.TaskSelectionContext;
+import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +58,11 @@ public class TaskSelectionManager implements TaskSelectionContext {
       @Override
       public void taskModelReset() {
         clear();
+      }
+
+      @Override
+      public void taskRemoved(@NotNull TaskHierarchyEvent e) {
+        selectedTasks.remove(e.getTask());
       }
     });
   }
