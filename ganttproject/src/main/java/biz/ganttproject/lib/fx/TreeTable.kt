@@ -358,8 +358,11 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
       }.map { round(it) }
     val newTotalWidth = newWidths.sum()
     val diff = newValue - (newTotalWidth + table.vbarWidth())
+    //println("newValue=$newValue old width=$columnWidths new width=$newWidths diff=$diff vbar=${table.vbarWidth()}")
     visibleColumns.zip(newWidths).forEach { it.first.prefWidth = it.second }
-    visibleColumns.last().prefWidth += diff
+    if (diff > 0) {
+      visibleColumns.last().prefWidth += diff
+    }
   }
 }
 
