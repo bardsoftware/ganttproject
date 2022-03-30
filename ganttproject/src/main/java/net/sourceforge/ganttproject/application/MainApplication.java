@@ -106,10 +106,14 @@ public class MainApplication implements IPlatformRunnable {
     };
     GanttProject.setApplicationQuitCallback(onApplicationQuit);
     appBuilder.launch();
-    synchronized (myLock) {
-      logger.debug("Waiting until main window closes");
-      myLock.wait();
-      logger.debug("Main window has closed");
+    try {
+      synchronized (myLock) {
+        logger.debug("Waiting until main window closes");
+        myLock.wait();
+        logger.debug("Main window has closed");
+      }
+    } catch (InterruptedException ex) {
+      ex.printStackTrace();
     }
     logger.debug("Program terminated");
     GPLogger.close();

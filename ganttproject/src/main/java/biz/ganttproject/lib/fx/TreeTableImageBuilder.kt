@@ -26,6 +26,7 @@ import biz.ganttproject.core.table.TreeTableSceneBuilder
 import biz.ganttproject.ganttview.TaskTable
 import biz.ganttproject.ganttview.depthFirstWalk
 import javafx.scene.control.TreeItem
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration
 import net.sourceforge.ganttproject.chart.StyledPainterImpl
 import net.sourceforge.ganttproject.task.Task
@@ -71,8 +72,10 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
         } ?: run {
           val customPropertyManager = item.value.manager.customPropertyManager
           val def = customPropertyManager.getCustomPropertyDefinition(it.id)
-          val customValue = item.value.customValues.getValue(def)
-          customValue?.toString() ?: ""
+          if (def == null) {
+            LOGGER.error("can't find def for custom property=${it.id}")
+          }
+          def?.let { d -> item.value.customValues.getValue(d) }?.toString() ?: ""
         }
         key?.let { key to value } ?: (columnMap.values.first() to "")
       }
@@ -108,3 +111,5 @@ fun (TaskDefaultColumn?).alignment(): Canvas.HAlignment? {
     else -> Canvas.HAlignment.LEFT
   }
 }
+
+private val LOGGER = GPLogger.create("TaskTable.ImageBuilder")
