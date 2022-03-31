@@ -119,7 +119,7 @@ class RecentProjects(
     busyIndicator: Consumer<Boolean>,
     progressLabel: LocalizedString
   ) {
-    val result = FXCollections.observableArrayList<RecentDocAsFolderItem>()
+    val result = Collections.synchronizedList<RecentDocAsFolderItem>(mutableListOf())
     busyIndicator.accept(true)
     progressLabel.update("0", documentManager.recentDocuments.size.toString())
     val counter = AtomicInteger(0)
@@ -141,7 +141,7 @@ class RecentProjects(
     GlobalScope.launch {
       try {
         asyncs.awaitAll()
-        consumer.accept(result)
+        consumer.accept(FXCollections.observableArrayList(result))
       } finally {
         Platform.runLater {
           busyIndicator.accept(false)
