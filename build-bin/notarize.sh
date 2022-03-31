@@ -14,7 +14,7 @@ codesign -vvv --deep --strict build/GanttProject.app
 spctl -a -t exec -vv build/GanttProject.app
 
 
-jpackage --type dmg --app-image build/GanttProject.app -n "ganttproject-$VER"
+jpackage --type dmg --app-image build/GanttProject.app -n "GanttProject $VER"
 }
 
 do_notarize() {
@@ -26,6 +26,6 @@ do_staple() {
 	xcrun stapler staple build/GanttProject.app
 }
 
-#do_prepare
+do_prepare
 #do_notarize
-do_staple
+#do_staple
