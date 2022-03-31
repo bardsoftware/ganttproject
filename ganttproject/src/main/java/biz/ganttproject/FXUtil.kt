@@ -34,6 +34,23 @@ import javafx.util.Duration
  * @author dbarashev@bardsoftware.com
  */
 object FXUtil {
+  private var isJavaFxAvailable: Boolean? = null
+  fun runLater(code: () -> Unit) {
+    val javafxOk = isJavaFxAvailable ?: run {
+      try {
+        Platform.runLater {}
+        true
+      } catch (ex: java.lang.IllegalStateException) {
+        false
+      }
+    }
+    isJavaFxAvailable = javafxOk
+    if (javafxOk) {
+      Platform.runLater(code)
+    } else {
+      code()
+    }
+  }
   /*
   public static Label createHtmlLabel(String htmlContent, String css) {
     WebView browser = new WebView();

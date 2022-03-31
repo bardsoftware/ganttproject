@@ -18,8 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
+import biz.ganttproject.FXUtil
+import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
-import javafx.application.Platform
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.scene.control.TreeTableColumn
 import net.sourceforge.ganttproject.CustomPropertyManager
@@ -90,7 +91,7 @@ class ColumnListImpl(
       tableColumns().filter { it.isVisible }.map { it.userData as ColumnList.Column }
     } else emptyList()
 
-    var importedList = source.copyOf()
+    var importedList = source.copyOf().filter { TaskDefaultColumn.find(it.id) != null || customPropertyManager.getCustomPropertyDefinition(it.id)  != null }
     // Mark all columns in the imported list which should be visible because they are visible now.
     remainVisible.forEach { old -> importedList.firstOrNull { new -> new.id == old.id }?.isVisible = true }
 
@@ -162,7 +163,7 @@ class ColumnListImpl(
 
       columnList.clear()
       columnList.addAll(currentList)
-      Platform.runLater {
+      FXUtil.runLater {
         updateTotalWidth()
       }
     }

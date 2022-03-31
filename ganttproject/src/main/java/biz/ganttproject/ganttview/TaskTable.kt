@@ -952,5 +952,5 @@ private fun Task.ProgressStatus.getIcon() : GlyphIcon<*>? =
     Task.ProgressStatus.DEADLINE_MISS -> FontAwesomeIconView(FontAwesomeIcon.HOURGLASS_END)
   }
 
-private val TEXT_FORMAT = DataFormat("text/ganttproject-task-node")
+private val TEXT_FORMAT = DataFormat.lookupMimeType("text/ganttproject-task-node") ?: DataFormat("text/ganttproject-task-node")
 private val LOGGER = GPLogger.create("TaskTable")

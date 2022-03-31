@@ -22,8 +22,8 @@ import junit.framework.TestCase
 import net.sourceforge.ganttproject.GPTransferable
 import net.sourceforge.ganttproject.TestSetupHelper
 import net.sourceforge.ganttproject.task.TaskSelectionManager
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.awt.GraphicsEnvironment
 import java.awt.Toolkit
 
 class GanttChartSelectionTest: TestCase() {
@@ -52,9 +52,11 @@ class GanttChartSelectionTest: TestCase() {
     selectionManager.setSelectedTasks(listOf(task3), this)
     ganttChartSelection.startMoveClipboardTransaction()
 
-    val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-    assertTrue(clipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR))
-    assertNotNull(clipboard.getData(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR))
+    if (!GraphicsEnvironment.isHeadless()) {
+      val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+      assertTrue(clipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR))
+      assertNotNull(clipboard.getData(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR))
+    }
     assertEquals(setOf(task1, task2, task3), taskManager.taskHierarchy.tasksInDocumentOrder.toSet())
   }
 }

@@ -31,6 +31,7 @@ if [[ "$RUNTIME_ARG" == "--runtime" ]]; then
       --strip-debug \
       --compress=2
     test_runtime
+    exit 0
   }
   # We remove JavaFX jars from the binary distro because they will be in the runtime
   # find "${INPUT}" -name 'javafx*.jar.lib' -delete
@@ -38,7 +39,7 @@ else
   echo "Skipping Java Runtime building"
 fi
 
-rm -rf ganttproject-3.2.3200 && unzip ganttproject-3.2.3200.zip && rm -rf /tmp/plugins/ && rm -rf ganttproject/build/GanttProject.app/
+(cd .. && rm -rf ganttproject-$VERSION && unzip ganttproject-$VERSION.zip && rm -rf /tmp/plugins/ && rm -rf ganttproject/build/GanttProject.app/ )
 mv ${INPUT}/plugins /tmp
 jpackage --type app-image \
     --name GanttProject \
@@ -64,7 +65,7 @@ jpackage --type app-image \
                     --add-opens java.desktop/sun.swing=ALL-UNNAMED
                     -classpath $APPDIR:$APPDIR/eclipsito.jar
                     -Duser.dir=$APPDIR
-                    -DversionDirs=plugins:~/.ganttproject.d/updates
+                    -DversionDirs="plugins:~/.ganttproject.d/updates"
                     -Dapp=net.sourceforge.ganttproject.GanttProject' \
     --arguments '--verbosity 4' \
     --arguments '--version-dirs plugins:~/.ganttproject.d/updates' \

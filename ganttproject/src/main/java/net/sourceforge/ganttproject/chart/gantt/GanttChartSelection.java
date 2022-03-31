@@ -84,7 +84,9 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
     super.startMoveClipboardTransaction();
     myClipboardContents = buildClipboardContents();
     myClipboardContents.cut();
-    exportTasksIntoSystemClipboard();
+    if (!GraphicsEnvironment.isHeadless()) {
+      exportTasksIntoSystemClipboard();
+    }
   }
 
   public ClipboardContents buildClipboardContents() {
