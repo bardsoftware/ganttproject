@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import net.sourceforge.ganttproject.GPLogger
 import org.h2.jdbcx.JdbcDataSource
 import javax.sql.DataSource
 
@@ -41,9 +42,10 @@ class ProjectDatabase private constructor(private val dataSource: DataSource) {
         conn.createStatement().execute("SHUTDOWN")
       }
     } catch (e: Exception) {
-      // Ignore for now
+      LOG.error("Failed to shutdown datasource", e)
     }
   }
 }
 
+private val LOG = GPLogger.create("ProjectDatabase")
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state"
