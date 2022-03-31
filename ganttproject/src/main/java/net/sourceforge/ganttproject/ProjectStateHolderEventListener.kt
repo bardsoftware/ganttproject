@@ -30,15 +30,13 @@ import net.sourceforge.ganttproject.storage.ProjectDatabase
  * @param databaseFactory - factory for generating a project state storage.
  */
 class ProjectStateHolderEventListener(private val databaseFactory: () -> ProjectDatabase) : Stub() {
-  private var projectDatabase: ProjectDatabase? = null
-
-  override fun projectOpened(barrierRegistry: BarrierEntrance, barrier: Barrier<IGanttProject>) {
-    projectDatabase = databaseFactory()
-    // ...
-  }
+  private val lazyProjectDatabase = lazy { databaseFactory()  }
+  private val projectDatabase: ProjectDatabase by lazyProjectDatabase
 
   override fun projectClosed() {
-    // ...
-    projectDatabase?.shutdown()
+    if (lazyProjectDatabase.isInitialized()) {
+      // ...
+      projectDatabase.shutdown()
+    }
   }
 }
