@@ -48,7 +48,7 @@ dependencies {
     implementation fileTree(dir: project.ext.libDir, include: ['*.jar'])
     implementation files('src/main/resources/resources')
 
-    implementation group: 'com.h2database', name: 'h2', version: '1.4.+'
+    implementation group: 'com.h2database', name: 'h2', version: '2.1.+'
 
     testImplementation group: 'org.easymock', name: 'easymock', version: '4.+'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.+'

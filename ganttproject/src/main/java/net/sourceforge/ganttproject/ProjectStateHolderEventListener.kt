@@ -33,8 +33,8 @@ import net.sourceforge.ganttproject.storage.ProjectStateStorageFactory
 class ProjectStateHolderEventListener(private val storageFactory: ProjectStateStorageFactory) : Stub() {
   private var stateStorage: ProjectStateStorage? = null
 
-  override fun projectOpened(barrierRegistry: BarrierEntrance?, barrier: Barrier<IGanttProject>?) {
-    stateStorage = storageFactory.getStorage()
+  override fun projectOpened(barrierRegistry: BarrierEntrance, barrier: Barrier<IGanttProject>) {
+    stateStorage = storageFactory.createStorage()
     // ...
   }
 
