@@ -19,10 +19,31 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import org.h2.jdbcx.JdbcDataSource
+import javax.sql.DataSource
+
 /**
  * Storage for holding the current state of a Gantt project.
  */
-interface ProjectStateStorage {
+class ProjectDatabase private constructor(private val dataSource: DataSource) {
+  companion object Factory {
+    fun createInMemoryDatabase(): ProjectDatabase {
+      val dataSource = JdbcDataSource()
+      dataSource.setURL(H2_IN_MEMORY_URL)
+      return ProjectDatabase(dataSource)
+    }
+  }
+
   /** Release the resources. */
-  fun shutdown()
+  fun shutdown() {
+    try {
+      dataSource.connection.use { conn ->
+        conn.createStatement().execute("SHUTDOWN")
+      }
+    } catch (e: Exception) {
+      // Ignore for now
+    }
+  }
 }
+
+private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state"
