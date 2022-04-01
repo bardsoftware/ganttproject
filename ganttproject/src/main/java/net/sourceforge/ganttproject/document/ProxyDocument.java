@@ -335,8 +335,8 @@ public class ProxyDocument implements Document {
       opener.addParsingListener(customPropHandler);
 
       opener.addTagHandler(opener.getDefaultTagHandler());
-      opener.addTagHandler(opener.getTimelineTagHandler());
-      opener.addParsingListener((ParsingListener)opener.getTimelineTagHandler());
+      //opener.addTagHandler(opener.getTimelineTagHandler());
+      //opener.addParsingListener((ParsingListener)opener.getTimelineTagHandler());
       opener.addTagHandler(resourceHandler);
       opener.addTagHandler(dependencyHandler);
       opener.addTagHandler(allocationHandler);

@@ -836,7 +836,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private class ParserFactoryImpl implements ParserFactory {
     @Override
     public GPParser newParser() {
-      return new GanttXMLOpen(prjInfos, getUIConfiguration(), getTaskManager(), getUIFacade());
+      return new GanttXMLOpen(prjInfos, getTaskManager(), getUIFacade());
     }
 
     @Override

@@ -25,8 +25,8 @@ data class XmlProject (
   @get:JacksonXmlProperty(isAttribute = true, localName = "webLink") var webLink: String = "",
   @get:JacksonXmlProperty(isAttribute = true, localName = "view-date") var viewDate: String = "",
   @get:JacksonXmlProperty(isAttribute = true, localName = "view-index") var viewIndex: Int = 0,
-  @get:JacksonXmlProperty(isAttribute = true, localName = "gantt-divider-location") var ganttDividerLocation: Int = 0,
-  @get:JacksonXmlProperty(isAttribute = true, localName = "resource-divider-location") var resourceDividerLocation: Int = 0,
+  @get:JacksonXmlProperty(isAttribute = true, localName = "gantt-divider-location") var ganttDividerLocation: Int = 300,
+  @get:JacksonXmlProperty(isAttribute = true, localName = "resource-divider-location") var resourceDividerLocation: Int = 300,
   @get:JacksonXmlProperty(isAttribute = true) var version: String = "",
   @get:JacksonXmlProperty(isAttribute = true) var locale: String = "",
 
@@ -71,7 +71,7 @@ data class XmlView(
   var fields: List<XmlField>? = null,
   @get:JsonInclude(JsonInclude.Include.NON_NULL)
   @get:JacksonXmlCData
-  var timeline: String? = null,
+  var timeline: String = "",
   @get:JacksonXmlElementWrapper(useWrapping = false)
   @get:JacksonXmlProperty(localName = "option")
   @get:JsonInclude(JsonInclude.Include.NON_NULL)
@@ -343,6 +343,19 @@ fun XmlProject.toXml(): String = xmlMapper.writeValueAsString(this)
 
 fun parseXmlProject(xml: String): XmlProject = xmlMapper.readValue(xml, XmlProject::class.java)
 
+fun XmlProject.walkTasksDepthFirst(): List<XmlTasks.XmlTask> {
+  val result = mutableListOf<XmlTasks.XmlTask>()
+  var queue = this.tasks.tasks?.toMutableList() ?: mutableListOf()
+  while (queue.isNotEmpty()) {
+    queue.removeFirst().also {
+      result.add(it)
+      it.tasks?.toMutableList()?.also {
+        queue = (it + queue).toMutableList()
+      }
+    }
+  }
+  return result
+}
 private val xmlMapper = XmlMapper().also {
   it.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true)
   it.enable(SerializationFeature.INDENT_OUTPUT)

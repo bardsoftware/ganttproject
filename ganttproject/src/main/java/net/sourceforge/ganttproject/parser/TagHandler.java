@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.parser;
 
+import biz.ganttproject.core.io.XmlProject;
 import org.xml.sax.Attributes;
 
 public interface TagHandler {
@@ -31,4 +32,6 @@ public interface TagHandler {
 
   /** Method when finish to parse an attribute */
   public void endElement(String namespaceURI, String sName, String qName);
+
+  default void process(XmlProject xmlProject) {}
 }

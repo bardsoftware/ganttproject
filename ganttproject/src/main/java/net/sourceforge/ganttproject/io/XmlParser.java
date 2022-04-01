@@ -19,6 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.io;
 
+import biz.ganttproject.core.io.XmlSerializerKt;
+import com.google.common.base.Charsets;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.ParsingListener;
@@ -31,6 +33,7 @@ import org.xml.sax.ext.DefaultHandler2;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -107,6 +110,8 @@ public class XmlParser extends DefaultHandler2 {
   }
 
   public void parse(InputStream inStream) throws IOException {
+    var inputBytes = inStream.readAllBytes();
+
     // Use the default (non-validating) parser
     SAXParserFactory factory = SAXParserFactory.newInstance();
     try {
@@ -116,7 +121,12 @@ public class XmlParser extends DefaultHandler2 {
       XMLReader xmlReader = saxParser.getXMLReader();
       xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler",
           this);
-      saxParser.parse(inStream, this);
+      saxParser.parse(new ByteArrayInputStream(inputBytes), this);
+
+      var xmlProject = XmlSerializerKt.parseXmlProject(new String(inputBytes, Charsets.UTF_8));
+      for (var handler : myTagHandlers) {
+        handler.process(xmlProject);
+      }
     } catch (ParserConfigurationException | SAXException e) {
       if (!GPLogger.log(e)) {
         e.printStackTrace(System.err);
