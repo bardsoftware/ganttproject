@@ -88,8 +88,8 @@ class ProjectDatabase internal constructor(private val dataSource: DataSource) {
   /** Close connections and release the resources. */
   fun shutdown() {
     try {
-      dataSource.connection.use { conn ->
-        conn.createStatement().execute("SHUTDOWN")
+      dataSource.connection.use { connection ->
+        connection.createStatement().execute("shutdown")
       }
     } catch (e: Exception) {
       val message = "Failed to shutdown the database {}"

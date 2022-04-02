@@ -157,7 +157,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject-logo-512.png"));
     setIconImage(icon.getImage());
 
-    addProjectEventListener(new ProjectStateHolderEventListener(ProjectDatabase.Factory::createInMemoryDatabase));
+    ProjectStateHolderEventListener stateListener =
+      new ProjectStateHolderEventListener(ProjectDatabase.Factory::createInMemoryDatabase);
+    addProjectEventListener(stateListener);
+    getTaskManager().addTaskListener(stateListener);
 
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
         myTaskTableChartConnector,
