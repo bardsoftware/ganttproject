@@ -100,4 +100,4 @@ class ProjectDatabase internal constructor(private val dataSource: DataSource) {
 }
 
 private val LOG = GPLogger.create("ProjectDatabase")
-private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
+internal const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
