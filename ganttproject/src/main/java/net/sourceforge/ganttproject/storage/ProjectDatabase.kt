@@ -19,14 +19,24 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import net.sourceforge.ganttproject.storage.Tables.*
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.task.Task
 import org.h2.jdbcx.JdbcDataSource
+import org.jooq.DSLContext
+import org.jooq.SQLDialect
+import org.jooq.impl.DSL
+import org.jooq.impl.DSL.primaryKey
+import org.jooq.impl.SQLDataType.*
+import java.sql.SQLException
 import javax.sql.DataSource
+
+class ProjectDatabaseException(message: String) : Exception(message)
 
 /**
  * Storage for holding the current state of a Gantt project.
  */
-class ProjectDatabase private constructor(private val dataSource: DataSource) {
+class ProjectDatabase internal constructor(private val dataSource: DataSource) {
   companion object Factory {
     fun createInMemoryDatabase(): ProjectDatabase {
       val dataSource = JdbcDataSource()
@@ -35,17 +45,59 @@ class ProjectDatabase private constructor(private val dataSource: DataSource) {
     }
   }
 
-  /** Release the resources. */
+  private fun <T> withExecutor(
+    errorMessage: String = "Failed to execute query",
+    body: (executor: DSLContext) -> T
+  ): T {
+    try {
+      dataSource.connection.use { connection ->
+        try {
+          val executor = DSL.using(connection, SQLDialect.H2)
+          return body(executor)
+        } catch (e: Exception) {
+          LOG.error("$errorMessage {}", e)
+          throw ProjectDatabaseException(errorMessage)
+        }
+      }
+    } catch (e: SQLException) {
+      val message = "Failed to connect to the database"
+      LOG.error(message, e)
+      throw ProjectDatabaseException(message)
+    }
+  }
+
+  fun init() = withExecutor("Failed to initialize the database") { executor ->
+    executor
+      .createTable(TASK)
+      .column(TASK.ID, INTEGER)
+      .column(TASK.NAME, VARCHAR.notNull())
+      .column(TASK.COLOR, VARCHAR.null_())
+      .constraints(primaryKey(TASK.ID))
+      .execute()
+  }
+
+  fun insertTask(task: Task) = withExecutor("Failed to insert task ${task.taskID}") { executor ->
+    executor
+      .insertInto(TASK)
+      .set(TASK.ID, task.taskID)
+      .set(TASK.NAME, task.name)
+      .set(TASK.COLOR, task.color.toString())
+      .execute()
+  }
+
+  /** Close connections and release the resources. */
   fun shutdown() {
     try {
       dataSource.connection.use { conn ->
         conn.createStatement().execute("SHUTDOWN")
       }
     } catch (e: Exception) {
-      LOG.error("Failed to shutdown datasource", e)
+      val message = "Failed to shutdown the database {}"
+      LOG.error(message, e)
+      throw ProjectDatabaseException(message)
     }
   }
 }
 
 private val LOG = GPLogger.create("ProjectDatabase")
-private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state"
+private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
