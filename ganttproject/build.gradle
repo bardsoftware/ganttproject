@@ -89,6 +89,7 @@ compileKotlin {
         jvmTarget = "11"
     }
 }
+
 compileTestKotlin {
     kotlinOptions {
         jvmTarget = "11"
@@ -185,3 +186,8 @@ publishing {
         }
     }
 }
+
+compileKotlin.dependsOn generateJooq
+compileKotlin.dependsOn compileSass
+compileJava.dependsOn compileSass
+
