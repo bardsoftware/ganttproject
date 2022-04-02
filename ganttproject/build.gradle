@@ -14,6 +14,7 @@ buildscript {
 plugins {
     id "org.jetbrains.kotlin.jvm"
     id "maven-publish"
+    id "nu.studer.jooq" version "7.1.+"
 }
 
 apply plugin: 'application'
@@ -49,6 +50,7 @@ dependencies {
     implementation files('src/main/resources/resources')
 
     implementation group: 'com.h2database', name: 'h2', version: '2.1.+'
+    jooqGenerator 'org.jooq:jooq-meta-extensions'
 
     testImplementation group: 'org.easymock', name: 'easymock', version: '4.+'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.+'
@@ -56,6 +58,30 @@ dependencies {
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.+'
 
 //    implementation "de.jensd:fontawesomefx-materialicons:2.2.+"
+}
+
+jooq {
+    configurations {
+        main {
+            generationTool {
+                logging = org.jooq.meta.jaxb.Logging.WARN
+                generator {
+                    database {
+                        name = 'org.jooq.meta.extensions.ddl.DDLDatabase'
+                        properties {
+                            property {
+                                key = 'scripts'
+                                value = 'src/main/resources/sql/init-project-database.sql'
+                            }
+                        }
+                    }
+                    target {
+                        packageName = 'net.sourceforge.ganttproject.storage'
+                    }
+                }
+            }
+        }
+    }
 }
 
 compileKotlin {
@@ -147,6 +173,7 @@ test {
     testLogging {
         exceptionFormat = 'full'
     }
+    jvmArgs += ["-Dorg.jooq.no-logo=true"]
 }
 
 addPublishing(project)
