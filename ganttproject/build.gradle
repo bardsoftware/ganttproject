@@ -167,7 +167,7 @@ task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) {
 
 mainClassName = "net.sourceforge.ganttproject.AppKt"
 application {
-    applicationDefaultJvmArgs = project.ext.javaExportOptions
+    applicationDefaultJvmArgs = project.ext.javaExportOptions + ["-Dorg.jooq.no-logo=true"]
 }
 test {
     useJUnitPlatform()
