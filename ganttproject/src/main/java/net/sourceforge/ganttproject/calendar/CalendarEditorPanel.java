@@ -29,7 +29,12 @@ import biz.ganttproject.core.time.CalendarFactory;
 import com.google.common.base.*;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import javafx.collections.ObservableSet;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.DialogPane;
+import javafx.application.Platform;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -38,18 +43,23 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.taskproperties.CommonPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
+import org.apache.poi.ss.formula.functions.T;
 
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Implements a calendar editor component which consists of a table with calendar events (three columns: date, title, type)
@@ -73,6 +83,8 @@ public class CalendarEditorPanel {
   private final Runnable myOnChangeCallback;
   private final Runnable myOnCreate;
   private final UIFacade myUiFacade;
+
+
 
   private static Predicate<CalendarEvent> recurring(final boolean isRecurring) {
     return event -> event.isRecurring == isRecurring;
@@ -266,7 +278,7 @@ public class CalendarEditorPanel {
   }
 
 
-  private static AbstractTableAndActionsComponent<CalendarEvent> createTableComponent(final TableModelImpl tableModel, final DateFormat dateFormat, UIFacade uiFacade) {
+  private static <T> AbstractTableAndActionsComponent<CalendarEvent> createTableComponent(final TableModelImpl tableModel, final DateFormat dateFormat, UIFacade uiFacade) {
     final JTable table = new JTable(tableModel);
 
     UIUtil.setupTableUI(table);
@@ -316,6 +328,10 @@ public class CalendarEditorPanel {
         return tableModel.getValue(row);
       }
     };
+
+
+    tableAndActions.addAction(new CalendarAction(tableModel));
+
     Function<List<CalendarEvent>, Boolean> isDeleteEnabled = events -> events.size() != 1 || events.get(0) != null;
     tableAndActions.getDeleteItemAction().putValue(AbstractTableAndActionsComponent.PROPERTY_IS_ENABLED_FUNCTION, isDeleteEnabled);
     return tableAndActions;
@@ -470,4 +486,58 @@ public class CalendarEditorPanel {
       }
     }
   }
+
+  private static class CalendarAction extends GPAction {
+    private  TableModelImpl myTableModel;
+
+    public CalendarAction(TableModelImpl tableModel) {
+        super("Calendar"); // Need to localize
+      
+        myTableModel = tableModel;
+        
+        // Don't know how to set ENABLE for the action
+        //
+        putValue(AbstractTableAndActionsComponent.PROPERTY_IS_ENABLED_FUNCTION,
+          (Function<List<T>, Boolean>) input -> {
+            return true;
+        });
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      Platform.runLater(new Runnable() {
+        @Override
+        public void run() {
+
+          javafx.scene.control.Dialog dialog = new javafx.scene.control.Dialog();
+          dialog.setTitle("Calendar");
+
+          DialogPane dialogPane = dialog.getDialogPane();
+
+          MultiDatePicker multiDatePicker = new MultiDatePicker();
+          multiDatePicker.setValue(LocalDate.now());
+
+          dialogPane.setContent(multiDatePicker.getPopupContent());
+          dialogPane.getButtonTypes().add(ButtonType.APPLY);
+
+          Optional result = dialog.showAndWait();
+          
+          addDatesToTable(multiDatePicker.getSelectedDates());
+        }
+
+        private void addDatesToTable(List<LocalDate> selectedDates) {
+
+          // TableModelImpl returns wrong row count (+1)
+          //
+          int rowCount = myTableModel.getRowCount() - 1;
+
+          for (int i=0; i<selectedDates.size(); i++) {
+              LocalDate localDate = selectedDates.get(i);
+              Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+              myTableModel.setValueAt(CalendarFactory.createGanttCalendar(date), rowCount + i,0);
+          }
+        }
+      }); // runLater
+    }
+  };
 }
