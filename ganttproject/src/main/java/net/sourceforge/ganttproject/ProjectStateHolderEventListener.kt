@@ -26,18 +26,12 @@ import net.sourceforge.ganttproject.task.event.*
 /**
  * Holds the current state of a Gantt project, updating it on events.
  *
- * @param databaseFactory - factory for generating a project state storage.
+ * @param projectDatabase - database which holds the current project state.
  */
-class ProjectStateHolderEventListener(private val databaseFactory: () -> ProjectDatabase) : TaskListener, Stub() {
-  private var lazyProjectDatabase: ProjectDatabase? = null
-
-  private fun isInitialized(): Boolean = lazyProjectDatabase != null
-
-  private fun getDatabase(): ProjectDatabase {
-    return lazyProjectDatabase ?: databaseFactory().also { it.init(); lazyProjectDatabase = it }
+class ProjectStateHolderEventListener(private val projectDatabase: ProjectDatabase) : TaskListener, Stub() {
+  init {
+      projectDatabase.init()
   }
-
-  private fun resetDatabase() { lazyProjectDatabase = null  }
 
   private fun withLogger(errorMessage: String, body: () -> Unit) {
     try {
@@ -48,15 +42,12 @@ class ProjectStateHolderEventListener(private val databaseFactory: () -> Project
   }
 
   override fun projectClosed() = withLogger("Failed to close project") {
-    if (isInitialized()) {
-      // ...
-      getDatabase().shutdown()
-      resetDatabase()
-    }
+    // ...
+    projectDatabase.shutdown()
   }
 
   override fun taskAdded(event: TaskHierarchyEvent) = withLogger("Failed to add task ${event.task.taskID}") {
-    getDatabase().insertTask(event.task)
+    projectDatabase.insertTask(event.task)
   }
 
   override fun taskScheduleChanged(e: TaskScheduleEvent) {

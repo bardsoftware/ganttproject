@@ -64,7 +64,9 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.storage.LazyProjectDatabaseProxy;
 import net.sourceforge.ganttproject.storage.ProjectDatabase;
+import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -157,8 +159,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject-logo-512.png"));
     setIconImage(icon.getImage());
 
-    ProjectStateHolderEventListener stateListener =
-      new ProjectStateHolderEventListener(ProjectDatabase.Factory::createInMemoryDatabase);
+    ProjectDatabase projectDatabase = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase);
+    ProjectStateHolderEventListener stateListener = new ProjectStateHolderEventListener(projectDatabase);
     addProjectEventListener(stateListener);
     getTaskManager().addTaskListener(stateListener);
 

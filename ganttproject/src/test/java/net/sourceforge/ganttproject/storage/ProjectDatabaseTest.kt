@@ -42,7 +42,7 @@ class ProjectDatabaseTest {
     val ds = JdbcDataSource()
     ds.setURL(H2_IN_MEMORY_URL)
     dataSource = ds
-    projectDatabase = ProjectDatabase(dataSource)
+    projectDatabase = SqlProjectDatabaseImpl(dataSource)
   }
 
   @AfterEach
