@@ -50,6 +50,7 @@ dependencies {
     implementation files('src/main/resources/resources')
 
     implementation group: 'com.h2database', name: 'h2', version: '2.1.+'
+    implementation 'org.jooq:jooq:3.16.+'
     jooqGenerator 'org.jooq:jooq-meta-extensions'
 
     testImplementation group: 'org.easymock', name: 'easymock', version: '4.+'
