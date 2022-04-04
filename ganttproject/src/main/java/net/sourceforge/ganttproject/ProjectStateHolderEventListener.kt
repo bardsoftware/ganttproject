@@ -29,24 +29,21 @@ import net.sourceforge.ganttproject.task.event.*
  * @param projectDatabase - database which holds the current project state.
  */
 class ProjectStateHolderEventListener(private val projectDatabase: ProjectDatabase) : TaskListener, Stub() {
-  init {
-      projectDatabase.init()
-  }
 
-  private fun withLogger(errorMessage: String, body: () -> Unit) {
+  private fun withLogger(errorMessage: () -> String, body: () -> Unit) {
     try {
       body()
     } catch (e: Exception) {
-      LOG.error("$errorMessage {}", e)
+      LOG.error("${errorMessage()} {}", e)
     }
   }
 
-  override fun projectClosed() = withLogger("Failed to close project") {
+  override fun projectClosed() = withLogger({ "Failed to close project" }) {
     // ...
     projectDatabase.shutdown()
   }
 
-  override fun taskAdded(event: TaskHierarchyEvent) = withLogger("Failed to add task ${event.task.taskID}") {
+  override fun taskAdded(event: TaskHierarchyEvent) = withLogger({ "Failed to add task ${event.task.taskID}" }) {
     projectDatabase.insertTask(event.task)
   }
 

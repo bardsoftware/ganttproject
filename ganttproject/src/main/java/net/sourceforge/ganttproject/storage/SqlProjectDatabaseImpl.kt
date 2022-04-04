@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
-import net.sourceforge.ganttproject.storage.Tables.*
+import biz.ganttproject.storage.db.Tables.*
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.task.Task
 import org.h2.jdbcx.JdbcDataSource
@@ -31,8 +31,6 @@ import org.jooq.impl.SQLDataType.*
 import java.sql.SQLException
 import javax.sql.DataSource
 
-class SqlProjectDatabaseException(message: String) : ProjectDatabaseException(message)
-
 class SqlProjectDatabaseImpl internal constructor(private val dataSource: DataSource): ProjectDatabase {
   companion object Factory {
     fun createInMemoryDatabase(): ProjectDatabase {
@@ -42,29 +40,29 @@ class SqlProjectDatabaseImpl internal constructor(private val dataSource: DataSo
     }
   }
 
-  private fun <T> withExecutor(
-    errorMessage: String = "Failed to execute query",
-    body: (executor: DSLContext) -> T
+  private fun <T> withDSL(
+    errorMessage: () -> String = { "Failed to execute query" },
+    body: (dsl: DSLContext) -> T
   ): T {
     try {
       dataSource.connection.use { connection ->
         try {
-          val executor = DSL.using(connection, SQLDialect.H2)
-          return body(executor)
+          val dsl = DSL.using(connection, SQLDialect.H2)
+          return body(dsl)
         } catch (e: Exception) {
           LOG.error("$errorMessage {}", e)
-          throw SqlProjectDatabaseException(errorMessage)
+          throw ProjectDatabaseException(errorMessage())
         }
       }
     } catch (e: SQLException) {
       val message = "Failed to connect to the database {}"
       LOG.error(message, e)
-      throw SqlProjectDatabaseException(message)
+      throw ProjectDatabaseException(message)
     }
   }
 
-  override fun init(): Unit = withExecutor("Failed to initialize the database") { executor ->
-    executor
+  override fun init(): Unit = withDSL({ "Failed to initialize the database" }) { dsl ->
+    dsl
       .createTable(TASK)
       .column(TASK.ID, INTEGER)
       .column(TASK.NAME, VARCHAR.notNull())
@@ -73,8 +71,8 @@ class SqlProjectDatabaseImpl internal constructor(private val dataSource: DataSo
       .execute()
   }
 
-  override fun insertTask(task: Task): Unit = withExecutor("Failed to insert task ${task.taskID}") { executor ->
-    executor
+  override fun insertTask(task: Task): Unit = withDSL({ "Failed to insert task ${task.taskID}" }) { dsl ->
+    dsl
       .insertInto(TASK)
       .set(TASK.ID, task.taskID)
       .set(TASK.NAME, task.name)
@@ -90,7 +88,7 @@ class SqlProjectDatabaseImpl internal constructor(private val dataSource: DataSo
     } catch (e: Exception) {
       val message = "Failed to shutdown the database {}"
       LOG.error(message, e)
-      throw SqlProjectDatabaseException(message)
+      throw ProjectDatabaseException(message)
     }
   }
 }

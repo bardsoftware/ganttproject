@@ -77,7 +77,7 @@ jooq {
                         }
                     }
                     target {
-                        packageName = 'net.sourceforge.ganttproject.storage'
+                        packageName = 'biz.ganttproject.storage.db'
                     }
                 }
             }

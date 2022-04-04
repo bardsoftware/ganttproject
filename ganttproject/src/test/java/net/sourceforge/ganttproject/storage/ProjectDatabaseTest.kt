@@ -20,7 +20,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.storage
 
 import net.sourceforge.ganttproject.GanttTask
-import net.sourceforge.ganttproject.storage.tables.Task.*
+import biz.ganttproject.storage.db.tables.Task.*
 import org.easymock.EasyMock.*
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.SQLDialect
