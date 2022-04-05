@@ -32,7 +32,7 @@ import java.sql.SQLException
 import javax.sql.DataSource
 import kotlin.jvm.Throws
 
-class SqlProjectDatabaseImpl internal constructor(private val dataSource: DataSource): ProjectDatabase {
+class SqlProjectDatabaseImpl(private val dataSource: DataSource): ProjectDatabase {
   companion object Factory {
     fun createInMemoryDatabase(): ProjectDatabase {
       val dataSource = JdbcDataSource()
@@ -98,4 +98,4 @@ class SqlProjectDatabaseImpl internal constructor(private val dataSource: DataSo
 }
 
 private val LOG = GPLogger.create("SqlProjectDatabaseImpl")
-internal const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
+private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"

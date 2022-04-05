@@ -175,7 +175,6 @@ test {
     testLogging {
         exceptionFormat = 'full'
     }
-    jvmArgs += ["-Dorg.jooq.no-logo=true"]
 }
 
 addPublishing(project)

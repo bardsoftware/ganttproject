@@ -19,9 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
-import net.sourceforge.ganttproject.GanttTask
 import biz.ganttproject.storage.db.tables.Task.*
-import org.easymock.EasyMock.*
+import net.sourceforge.ganttproject.TestSetupHelper
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
@@ -30,7 +29,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.awt.Color
 import javax.sql.DataSource
 
 class ProjectDatabaseTest {
@@ -40,7 +38,7 @@ class ProjectDatabaseTest {
   @BeforeEach
   private fun init() {
     val ds = JdbcDataSource()
-    ds.setURL(H2_IN_MEMORY_URL)
+    ds.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
     dataSource = ds
     projectDatabase = SqlProjectDatabaseImpl(dataSource)
   }
@@ -65,12 +63,10 @@ class ProjectDatabaseTest {
   fun `test insert task`() {
     projectDatabase.init()
 
-    val mockTask: GanttTask = niceMock(GanttTask::class.java)
-    expect(mockTask.taskID).andReturn(2).anyTimes()
-    expect(mockTask.name).andReturn("Task2 name").anyTimes()
-    expect(mockTask.color).andReturn(Color.CYAN).anyTimes()
-    replay(mockTask)
-    projectDatabase.insertTask(mockTask)
+    val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+    val task = taskManager.createTask(2)
+    task.name = "Task2 name"
+    projectDatabase.insertTask(task)
 
     val tasks = DSL.using(dataSource, SQLDialect.H2)
       .selectFrom(TASK)
@@ -98,12 +94,11 @@ class ProjectDatabaseTest {
   @Test
   fun `test init after shutdown empty`() {
     projectDatabase.init()
-    val mockTask: GanttTask = niceMock(GanttTask::class.java)
-    expect(mockTask.taskID).andReturn(2).anyTimes()
-    expect(mockTask.name).andReturn("Task2 name").anyTimes()
-    expect(mockTask.color).andReturn(Color.CYAN).anyTimes()
-    replay(mockTask)
-    projectDatabase.insertTask(mockTask)
+
+    val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+    val task = taskManager.createTask(2)
+    task.name = "Task2 name"
+    projectDatabase.insertTask(task)
     projectDatabase.shutdown()
 
     projectDatabase.init()
