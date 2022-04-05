@@ -64,7 +64,10 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.storage.LazyProjectDatabaseProxy;
 import net.sourceforge.ganttproject.storage.ProjectDatabase;
+import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
+import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -74,6 +77,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -83,6 +87,7 @@ import java.util.function.Consumer;
 public class GanttProject extends GanttProjectBase implements ResourceView, GanttLanguage.Listener {
 
   private final LoggerApi<Logger> boundsLogger = GPLogger.create("Window.Bounds");
+  private final LoggerApi<Logger> gpLogger = GPLogger.create("GanttProject");
 
   /**
    * GanttGraphicArea for the calendar with Gantt
@@ -157,7 +162,15 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject-logo-512.png"));
     setIconImage(icon.getImage());
 
-    addProjectEventListener(new ProjectStateHolderEventListener(ProjectDatabase.Factory::createInMemoryDatabase));
+    try {
+      ProjectDatabase projectDatabase = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase);
+      projectDatabase.init();
+      ProjectStateHolderEventListener stateListener = new ProjectStateHolderEventListener(projectDatabase);
+      addProjectEventListener(stateListener);
+      getTaskManager().addTaskListener(stateListener);
+    } catch (ProjectDatabaseException e) {
+      gpLogger.error(Arrays.toString(e.getStackTrace()), new Object[]{}, ImmutableMap.of(), e);
+    }
 
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
         myTaskTableChartConnector,
@@ -317,7 +330,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     try {
       myObservableDocument.set(getDocumentManager().newUntitledDocument());
     } catch (IOException e) {
-      e.printStackTrace();
+      gpLogger.error(Arrays.toString(e.getStackTrace()), new Object[]{}, ImmutableMap.of(), e);
     }
   }
 
@@ -526,7 +539,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       myObservableDocument.set(newDocument);
       getProjectImpl().fireProjectCreated();
     } catch (IOException e) {
-      e.printStackTrace();
+      gpLogger.error(Arrays.toString(e.getStackTrace()), new Object[]{}, ImmutableMap.of(), e);
     }
   }
 

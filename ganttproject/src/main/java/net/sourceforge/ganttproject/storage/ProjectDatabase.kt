@@ -19,33 +19,22 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
-import net.sourceforge.ganttproject.GPLogger
-import org.h2.jdbcx.JdbcDataSource
-import javax.sql.DataSource
+import net.sourceforge.ganttproject.task.Task
+import kotlin.jvm.Throws
 
-/**
- * Storage for holding the current state of a Gantt project.
- */
-class ProjectDatabase private constructor(private val dataSource: DataSource) {
-  companion object Factory {
-    fun createInMemoryDatabase(): ProjectDatabase {
-      val dataSource = JdbcDataSource()
-      dataSource.setURL(H2_IN_MEMORY_URL)
-      return ProjectDatabase(dataSource)
-    }
-  }
+open class ProjectDatabaseException(message: String): Exception(message)
 
-  /** Release the resources. */
-  fun shutdown() {
-    try {
-      dataSource.connection.use { conn ->
-        conn.createStatement().execute("SHUTDOWN")
-      }
-    } catch (e: Exception) {
-      LOG.error("Failed to shutdown datasource", e)
-    }
-  }
+/** Storage for holding the current state of a Gantt project. */
+interface ProjectDatabase {
+  /** Initialize the database. */
+  @Throws(ProjectDatabaseException::class)
+  fun init()
+
+  /** Insert the task. */
+  @Throws(ProjectDatabaseException::class)
+  fun insertTask(task: Task)
+
+  /** Close connections and release the resources. */
+  @Throws(ProjectDatabaseException::class)
+  fun shutdown()
 }
-
-private val LOG = GPLogger.create("ProjectDatabase")
-private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state"
