@@ -30,6 +30,7 @@ import org.jooq.impl.DSL.primaryKey
 import org.jooq.impl.SQLDataType.*
 import java.sql.SQLException
 import javax.sql.DataSource
+import kotlin.jvm.Throws
 
 class SqlProjectDatabaseImpl internal constructor(private val dataSource: DataSource): ProjectDatabase {
   companion object Factory {
@@ -61,6 +62,7 @@ class SqlProjectDatabaseImpl internal constructor(private val dataSource: DataSo
     }
   }
 
+  @Throws(ProjectDatabaseException::class)
   override fun init(): Unit = withDSL({ "Failed to initialize the database" }) { dsl ->
     dsl
       .createTable(TASK)
@@ -71,6 +73,7 @@ class SqlProjectDatabaseImpl internal constructor(private val dataSource: DataSo
       .execute()
   }
 
+  @Throws(ProjectDatabaseException::class)
   override fun insertTask(task: Task): Unit = withDSL({ "Failed to insert task ${task.taskID}" }) { dsl ->
     dsl
       .insertInto(TASK)
@@ -80,6 +83,7 @@ class SqlProjectDatabaseImpl internal constructor(private val dataSource: DataSo
       .execute()
   }
 
+  @Throws(ProjectDatabaseException::class)
   override fun shutdown() {
     try {
       dataSource.connection.use { connection ->

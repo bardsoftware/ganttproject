@@ -20,17 +20,21 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.storage
 
 import net.sourceforge.ganttproject.task.Task
+import kotlin.jvm.Throws
 
 open class ProjectDatabaseException(message: String): Exception(message)
 
 /** Storage for holding the current state of a Gantt project. */
 interface ProjectDatabase {
   /** Initialize the database. */
+  @Throws(ProjectDatabaseException::class)
   fun init()
 
   /** Insert the task. */
+  @Throws(ProjectDatabaseException::class)
   fun insertTask(task: Task)
 
   /** Close connections and release the resources. */
+  @Throws(ProjectDatabaseException::class)
   fun shutdown()
 }
