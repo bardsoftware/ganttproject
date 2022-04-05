@@ -77,6 +77,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -86,6 +87,7 @@ import java.util.function.Consumer;
 public class GanttProject extends GanttProjectBase implements ResourceView, GanttLanguage.Listener {
 
   private final LoggerApi<Logger> boundsLogger = GPLogger.create("Window.Bounds");
+  private final LoggerApi<Logger> gpLogger = GPLogger.create("GanttProject");
 
   /**
    * GanttGraphicArea for the calendar with Gantt
@@ -167,7 +169,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       addProjectEventListener(stateListener);
       getTaskManager().addTaskListener(stateListener);
     } catch (ProjectDatabaseException e) {
-      e.printStackTrace();
+      gpLogger.error(Arrays.toString(e.getStackTrace()), new Object[]{}, ImmutableMap.of(), e);
     }
 
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
@@ -328,7 +330,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     try {
       myObservableDocument.set(getDocumentManager().newUntitledDocument());
     } catch (IOException e) {
-      e.printStackTrace();
+      gpLogger.error(Arrays.toString(e.getStackTrace()), new Object[]{}, ImmutableMap.of(), e);
     }
   }
 
@@ -537,7 +539,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       myObservableDocument.set(newDocument);
       getProjectImpl().fireProjectCreated();
     } catch (IOException e) {
-      e.printStackTrace();
+      gpLogger.error(Arrays.toString(e.getStackTrace()), new Object[]{}, ImmutableMap.of(), e);
     }
   }
 
