@@ -19,6 +19,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.calendar;
 
+import biz.ganttproject.app.DialogKt;
+import biz.ganttproject.app.InternationalizationKt;
+import biz.ganttproject.app.LocalizedString;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.option.DefaultColorOption;
@@ -29,7 +32,6 @@ import biz.ganttproject.core.time.CalendarFactory;
 import com.google.common.base.*;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
-import javafx.collections.ObservableSet;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.application.Platform;
@@ -207,7 +209,6 @@ public class CalendarEditorPanel {
       myFocusMover = focusSetter;
     }
 
-
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, final int row, int column) {
       TableCellRenderer renderer = table.getCellRenderer(row, column);
@@ -278,7 +279,7 @@ public class CalendarEditorPanel {
   }
 
 
-  private static <T> AbstractTableAndActionsComponent<CalendarEvent> createTableComponent(final TableModelImpl tableModel, final DateFormat dateFormat, UIFacade uiFacade) {
+  private static AbstractTableAndActionsComponent<CalendarEvent> createTableComponent(final TableModelImpl tableModel, final DateFormat dateFormat, UIFacade uiFacade) {
     final JTable table = new JTable(tableModel);
 
     UIUtil.setupTableUI(table);
@@ -303,12 +304,30 @@ public class CalendarEditorPanel {
     AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<>(table) {
       @Override
       protected void onAddEvent() {
-        int lastRow = tableModel.getRowCount() - 1;
-        Rectangle cellRect = table.getCellRect(lastRow, 0, true);
-        table.scrollRectToVisible(cellRect);
-        table.getSelectionModel().setSelectionInterval(lastRow, lastRow);
-        table.editCellAt(lastRow, 0);
-        table.getEditorComponent().requestFocus();
+        LocalizedString title = InternationalizationKt.getRootLocalizer().create("add");
+        DialogKt.dialog(title, controller -> {
+
+          MultiDatePicker multiDatePicker = new MultiDatePicker();
+          multiDatePicker.setValue(LocalDate.now());
+
+          controller.setContent(multiDatePicker.getPopupContent());
+
+          controller.setupButton(ButtonType.APPLY, button -> {
+            button.setText(InternationalizationKt.getRootLocalizer().formatText("add"));
+            button.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+              List < LocalDate > selectedDates = multiDatePicker.getSelectedDates();
+              int rowCount = tableModel.getRowCount() - 1;
+              for (int i = 0; i < selectedDates.size(); i++) {
+                LocalDate localDate = selectedDates.get(i);
+                Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                tableModel.setValueAt(CalendarFactory.createGanttCalendar(date), rowCount + i, 0);
+              }
+              controller.hide();
+            });
+            return null;
+          });
+          return null;
+        });
       }
 
       @Override
@@ -328,9 +347,6 @@ public class CalendarEditorPanel {
         return tableModel.getValue(row);
       }
     };
-
-
-    tableAndActions.addAction(new CalendarAction(tableModel));
 
     Function<List<CalendarEvent>, Boolean> isDeleteEnabled = events -> events.size() != 1 || events.get(0) != null;
     tableAndActions.getDeleteItemAction().putValue(AbstractTableAndActionsComponent.PROPERTY_IS_ENABLED_FUNCTION, isDeleteEnabled);
@@ -486,58 +502,4 @@ public class CalendarEditorPanel {
       }
     }
   }
-
-  private static class CalendarAction extends GPAction {
-    private  TableModelImpl myTableModel;
-
-    public CalendarAction(TableModelImpl tableModel) {
-        super("Calendar"); // Need to localize
-      
-        myTableModel = tableModel;
-        
-        // Don't know how to set ENABLE for the action
-        //
-        putValue(AbstractTableAndActionsComponent.PROPERTY_IS_ENABLED_FUNCTION,
-          (Function<List<T>, Boolean>) input -> {
-            return true;
-        });
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      Platform.runLater(new Runnable() {
-        @Override
-        public void run() {
-
-          javafx.scene.control.Dialog dialog = new javafx.scene.control.Dialog();
-          dialog.setTitle("Calendar");
-
-          DialogPane dialogPane = dialog.getDialogPane();
-
-          MultiDatePicker multiDatePicker = new MultiDatePicker();
-          multiDatePicker.setValue(LocalDate.now());
-
-          dialogPane.setContent(multiDatePicker.getPopupContent());
-          dialogPane.getButtonTypes().add(ButtonType.APPLY);
-
-          Optional result = dialog.showAndWait();
-          
-          addDatesToTable(multiDatePicker.getSelectedDates());
-        }
-
-        private void addDatesToTable(List<LocalDate> selectedDates) {
-
-          // TableModelImpl returns wrong row count (+1)
-          //
-          int rowCount = myTableModel.getRowCount() - 1;
-
-          for (int i=0; i<selectedDates.size(); i++) {
-              LocalDate localDate = selectedDates.get(i);
-              Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-              myTableModel.setValueAt(CalendarFactory.createGanttCalendar(date), rowCount + i,0);
-          }
-        }
-      }); // runLater
-    }
-  };
 }
