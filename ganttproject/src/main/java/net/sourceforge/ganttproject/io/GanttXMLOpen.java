@@ -144,7 +144,7 @@ public class GanttXMLOpen implements GPParser {
             }
           }
         });
-      XmlSerializerKt.walkTasksDepthFirst(xmlProject).stream()
+      XmlSerializerKt.collectTasksDepthFirst(xmlProject).stream()
         .filter(it -> it.getNotes() != null)
         .forEach(it -> {
           Task t = myTaskManager.getTask(it.getId());

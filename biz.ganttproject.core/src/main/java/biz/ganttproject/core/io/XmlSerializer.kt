@@ -187,7 +187,7 @@ data class XmlTasks(
     @get:JacksonXmlProperty(isAttribute = true) var duration: Int = 0,
 
     @get:JacksonXmlProperty(isAttribute = true, localName = "complete")
-    var completion: Int? = null,
+    var completion: Int = 0,
 
     @get:JacksonXmlProperty(isAttribute = true, localName = "thirdDate")
     var earliestStartDate: String? = null,
@@ -343,7 +343,7 @@ fun XmlProject.toXml(): String = xmlMapper.writeValueAsString(this)
 
 fun parseXmlProject(xml: String): XmlProject = xmlMapper.readValue(xml, XmlProject::class.java)
 
-fun XmlProject.walkTasksDepthFirst(): List<XmlTasks.XmlTask> {
+fun XmlProject.collectTasksDepthFirst(): List<XmlTasks.XmlTask> {
   val result = mutableListOf<XmlTasks.XmlTask>()
   var queue = this.tasks.tasks?.toMutableList() ?: mutableListOf()
   while (queue.isNotEmpty()) {
@@ -355,6 +355,20 @@ fun XmlProject.walkTasksDepthFirst(): List<XmlTasks.XmlTask> {
     }
   }
   return result
+}
+
+fun XmlProject.walkTasksDepthFirst(visitor: (XmlTasks.XmlTask?, XmlTasks.XmlTask)->Boolean) {
+  if (!this.tasks.tasks.isNullOrEmpty()) {
+    doWalkTasksDepthFirst(null, this.tasks.tasks!!, visitor)
+  }
+}
+
+private fun doWalkTasksDepthFirst(root: XmlTasks.XmlTask?, children: List<XmlTasks.XmlTask>, visitor: (XmlTasks.XmlTask?, XmlTasks.XmlTask)->Boolean) {
+  children.forEach {
+    if (visitor(root, it) && !it.tasks.isNullOrEmpty()) {
+      doWalkTasksDepthFirst(it, it.tasks!!, visitor)
+    }
+  }
 }
 private val xmlMapper = XmlMapper().also {
   it.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true)

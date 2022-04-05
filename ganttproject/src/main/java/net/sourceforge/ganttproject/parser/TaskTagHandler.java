@@ -19,18 +19,20 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.parser;
 
 import biz.ganttproject.core.chart.render.ShapePaint;
+import biz.ganttproject.core.io.XmlProject;
+import biz.ganttproject.core.io.XmlSerializerKt;
+import biz.ganttproject.core.io.XmlTasks;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import com.google.common.base.Charsets;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
-import org.xml.sax.Attributes;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.net.URLDecoder;
 
 public class TaskTagHandler extends AbstractTagHandler implements ParsingListener {
@@ -46,129 +48,76 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
   }
 
   @Override
-  protected boolean onStartElement(Attributes attrs) {
-    loadTask(attrs);
-    return true;
+  public void process(XmlProject xmlProject) {
+    XmlSerializerKt.walkTasksDepthFirst(xmlProject, (parent, child) -> {
+      loadTask(parent, child);
+      return true;
+    });
   }
 
-  @Override
-  public void endElement(String namespaceURI, String sName, String qName) {
-    if (isMyTag(qName) && isTagStarted()) {
-      myContext.popTask();
-      if (myContext.isStackEmpty()) {
-        setTagStarted(false);
-      }
-    }
-  }
+  private void loadTask(@Nullable XmlTasks.XmlTask parent, @NotNull XmlTasks.XmlTask child) {
+    var builder = getManager().newTaskBuilder().withId(child.getId());
+    builder = builder.withName(child.getName());
 
-  private void loadTask(Attributes attrs) {
-    String taskIdAsString = attrs.getValue("id");
-    int taskId;
-    try {
-      taskId = Integer.parseInt(taskIdAsString);
-    } catch (NumberFormatException e) {
-      throw new RuntimeException(
-          "Failed to parse the value '" + taskIdAsString + "' of attribute 'id' of tag <task>", e);
-    }
-    TaskBuilder builder = getManager().newTaskBuilder().withId(taskId);
-
-    String taskName = attrs.getValue("name");
-    if (taskName != null) {
-      builder = builder.withName(taskName);
-    }
-
-    String start = attrs.getValue("start");
-    if (start != null) {
+    String start = child.getStartDate();
+    if (!start.isBlank()) {
       builder = builder.withStartDate(GanttCalendar.parseXMLDate(start).getTime());
     }
+    builder = builder.withDuration(getManager().createLength(child.getDuration()));
 
-    String duration = attrs.getValue("duration");
-    if (duration != null) {
-      try {
-        int length = Integer.parseInt(duration);
-        builder = builder.withDuration(getManager().createLength(length));
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            "Failed to parse the value '" + duration + "' of attribute 'duration' of tag <task>", e);
-      }
-    }
 
     if (!myContext.isStackEmpty()) {
       builder = builder.withParent(myContext.peekTask());
     }
-    String isExpanded = attrs.getValue("expand");
-    if (isExpanded != null) {
-      builder = builder.withExpansionState(Boolean.parseBoolean(isExpanded));
-    }
+    builder = builder.withExpansionState(child.isExpanded());
 
-    String isLegacyMilestone = attrs.getValue("meeting");
-    if (Boolean.parseBoolean(isLegacyMilestone)) {
+    if (child.isMilestone()) {
       builder = builder.withLegacyMilestone();
     }
     Task task = builder.build();
 
-    myTreeFacade.setExpanded(task, Boolean.parseBoolean(isExpanded));
-    String project = attrs.getValue("project");
-    if (project != null) {
-      task.setProjectTask(true);
+    myTreeFacade.setExpanded(task, child.isExpanded());
+    task.setProjectTask(child.isProjectTask());
+    task.setCompletionPercentage(child.getCompletion());
+
+    task.setPriority(Task.Priority.fromPersistentValue(child.getPriority()));
+    if (child.getColor() != null) {
+      task.setColor(ColorValueParser.parseString(child.getColor()));
     }
 
-    String complete = attrs.getValue("complete");
-    if (complete != null) {
+//
+//    String fixedStart = attrs.getValue("fixed-start");
+//    if ("true".equals(fixedStart)) {
+//      myContext.addTaskWithLegacyFixedStart(task);
+//    }
+
+    String earliestStart = child.getEarliestStartDate();
+
+    if (earliestStart != null) {
+      task.setThirdDate(GanttCalendar.parseXMLDate(earliestStart));
+    }
+//    String thirdConstraint = attrs.getValue("thirdDate-constraint");
+//    if (thirdConstraint != null) {
+//      try {
+//        task.setThirdDateConstraint(Integer.parseInt(thirdConstraint));
+//      } catch (NumberFormatException e) {
+//        throw new RuntimeException("Failed to parse the value '" + thirdConstraint
+//            + "' of attribute 'thirdDate-constraint' of tag <task>", e);
+//      }
+//    }
+
+    if (child.getWebLink() != null) {
       try {
-        task.setCompletionPercentage(Integer.parseInt(complete));
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            "Failed to parse the value '" + complete + "' of attribute 'complete' of tag <task>", e);
-      }
-    }
-
-    String priority = attrs.getValue("priority");
-    if (priority != null) {
-      task.setPriority(Task.Priority.fromPersistentValue(priority));
-    }
-
-    String color = attrs.getValue("color");
-    if (color != null) {
-      task.setColor(ColorValueParser.parseString(color));
-    }
-
-    String fixedStart = attrs.getValue("fixed-start");
-    if ("true".equals(fixedStart)) {
-      myContext.addTaskWithLegacyFixedStart(task);
-    }
-
-    String third = attrs.getValue("thirdDate");
-    if (third != null) {
-      task.setThirdDate(GanttCalendar.parseXMLDate(third));
-    }
-    String thirdConstraint = attrs.getValue("thirdDate-constraint");
-    if (thirdConstraint != null) {
-      try {
-        task.setThirdDateConstraint(Integer.parseInt(thirdConstraint));
-      } catch (NumberFormatException e) {
-        throw new RuntimeException("Failed to parse the value '" + thirdConstraint
-            + "' of attribute 'thirdDate-constraint' of tag <task>", e);
-      }
-    }
-
-    String webLink_enc = attrs.getValue("webLink");
-    String webLink = webLink_enc;
-    if (webLink_enc != null)
-      try {
-        webLink = URLDecoder.decode(webLink_enc, Charsets.UTF_8.name());
+        task.setWebLink(URLDecoder.decode(child.getWebLink(), Charsets.UTF_8.name()));
       } catch (UnsupportedEncodingException e) {
         if (!GPLogger.log(e)) {
           e.printStackTrace(System.err);
         }
       }
-    if (webLink != null) {
-      task.setWebLink(webLink);
     }
 
-    String shape = attrs.getValue("shape");
-    if (shape != null) {
-      java.util.StringTokenizer st1 = new java.util.StringTokenizer(shape, ",");
+    if (child.getShape() != null) {
+      java.util.StringTokenizer st1 = new java.util.StringTokenizer(child.getShape(), ",");
       int[] array = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
       String token = "";
       int count = 0;
@@ -180,11 +129,11 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
       task.setShape(new ShapePaint(4, 4, array, Color.white, task.getColor()));
     }
 
-    String costValue = attrs.getValue("cost-manual-value");
-    String costCalculated = attrs.getValue("cost-calculated");
-    if (costCalculated != null) {
-      task.getCost().setCalculated(Boolean.valueOf(costCalculated));
-      task.getCost().setValue(new BigDecimal(costValue));
+    var costValue = child.getCostManualValue();
+    var isCostCalculated = child.isCostCalculated();
+    if (isCostCalculated != null) {
+      task.getCost().setCalculated(isCostCalculated);
+      task.getCost().setValue(costValue);
     } else {
       task.getCost().setCalculated(true);
     }
