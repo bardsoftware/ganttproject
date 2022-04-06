@@ -79,6 +79,9 @@ jooq {
                     target {
                         packageName = 'biz.ganttproject.storage.db'
                     }
+                    generate {
+                        javaTimeTypes = false
+                    }
                 }
             }
         }

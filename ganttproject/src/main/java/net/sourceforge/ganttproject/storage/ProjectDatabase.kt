@@ -19,7 +19,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import kotlin.jvm.Throws
 
 open class ProjectDatabaseException(message: String): Exception(message)
@@ -33,6 +35,14 @@ interface ProjectDatabase {
   /** Insert the task. */
   @Throws(ProjectDatabaseException::class)
   fun insertTask(task: Task)
+
+  /** Insert the task dependency. */
+  @Throws(ProjectDatabaseException::class)
+  fun insertTaskDependency(taskDependency: TaskDependency)
+
+  /** Insert the custom property. */
+  @Throws(ProjectDatabaseException::class)
+  fun insertCustomProperty(task: Task, customProperty: CustomPropertyDefinition)
 
   /** Close connections and release the resources. */
   @Throws(ProjectDatabaseException::class)

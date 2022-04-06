@@ -19,20 +19,28 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.storage.db.Tables.*
+import com.google.common.base.Charsets
+import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.dependency.TaskDependency
+import net.sourceforge.ganttproject.util.ColorConvertion
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
-import org.jooq.impl.DSL.primaryKey
+import org.jooq.impl.DSL.*
 import org.jooq.impl.SQLDataType.*
+import org.w3c.util.DateParser
+import java.math.BigDecimal
+import java.net.URLEncoder
 import java.sql.SQLException
+import java.util.*
 import javax.sql.DataSource
-import kotlin.jvm.Throws
 
-class SqlProjectDatabaseImpl(private val dataSource: DataSource): ProjectDatabase {
+class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDatabase {
   companion object Factory {
     fun createInMemoryDatabase(): ProjectDatabase {
       val dataSource = JdbcDataSource()
@@ -69,18 +77,112 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource): ProjectDatabas
       .column(TASK.ID, INTEGER)
       .column(TASK.NAME, VARCHAR.notNull())
       .column(TASK.COLOR, VARCHAR.null_())
+      .column(TASK.SHAPE, VARCHAR.null_())
+      .column(TASK.IS_MILESTONE, BOOLEAN.notNull())
+      .column(TASK.IS_PROJECT_TASK, BOOLEAN.notNull())
+      .column(TASK.START_DATE, TIMESTAMP.notNull())
+      .column(TASK.DURATION, INTEGER.notNull())
+      .column(TASK.COMPLETION, INTEGER.null_())
+      .column(TASK.EARLIEST_START_DATE, TIMESTAMP.null_())
+      .column(TASK.THIRD_DATE_CONSTRAINT, INTEGER.null_())
+      .column(TASK.PRIORITY, VARCHAR.null_())
+      .column(TASK.WEB_LINK, VARCHAR.null_())
+      .column(TASK.COST_MANUAL_VALUE, VARCHAR.null_())
+      .column(TASK.IS_COST_CALCULATED, BOOLEAN.null_())
+      .column(TASK.NOTES, VARCHAR.null_())
       .constraints(primaryKey(TASK.ID))
+      .execute()
+
+    dsl.createTable(TASKDEPENDENCY)
+      .column(TASKDEPENDENCY.DEPENDEE_ID, INTEGER.notNull())
+      .column(TASKDEPENDENCY.DEPENDANT_ID, INTEGER.notNull())
+      .column(TASKDEPENDENCY.TYPE, VARCHAR.notNull())
+      .column(TASKDEPENDENCY.LAG, INTEGER.notNull())
+      .column(TASKDEPENDENCY.HARDNESS, VARCHAR.notNull())
+      .constraints(
+        primaryKey(TASKDEPENDENCY.DEPENDEE_ID, TASKDEPENDENCY.DEPENDANT_ID),
+        foreignKey(TASKDEPENDENCY.DEPENDEE_ID).references(TASK, TASK.ID),
+        foreignKey(TASKDEPENDENCY.DEPENDANT_ID).references(TASK, TASK.ID),
+        check(TASKDEPENDENCY.DEPENDEE_ID.notEqual(TASKDEPENDENCY.DEPENDANT_ID))
+      )
+      .execute()
+
+    dsl
+      .createTable(CUSTOMPROPERTY)
+      .column(CUSTOMPROPERTY.PROPERTY_ID, VARCHAR.notNull())
+      .column(CUSTOMPROPERTY.TASK_ID, INTEGER.notNull())
+      .column(CUSTOMPROPERTY.PROPERTY_VALUE, VARCHAR.null_())
+      .constraints(
+        primaryKey(CUSTOMPROPERTY.TASK_ID, CUSTOMPROPERTY.PROPERTY_ID),
+        foreignKey(CUSTOMPROPERTY.TASK_ID).references(TASK, TASK.ID)
+      )
       .execute()
   }
 
   @Throws(ProjectDatabaseException::class)
   override fun insertTask(task: Task): Unit = withDSL({ "Failed to insert task ${task.taskID}" }) { dsl ->
+    val priority = task.priority.let { pr -> if (pr != Task.DEFAULT_PRIORITY) pr.persistentValue else null }
+    val webLink = task.webLink.let { link ->
+      if (!link.isNullOrBlank() && link != "http://") URLEncoder.encode(link, Charsets.UTF_8.name()) else null
+    }
+    var costManualValue: String? = null
+    var isCostCalculated: Boolean? = null
+    if (!(task.cost.isCalculated && task.cost.manualValue == BigDecimal.ZERO)) {
+      costManualValue = task.cost.manualValue.toPlainString()
+      isCostCalculated = task.cost.isCalculated
+    }
+    val notes = task.notes?.let { notes -> notes.replace("\\r\\n", "\\n").ifBlank { null } }
     dsl
       .insertInto(TASK)
       .set(TASK.ID, task.taskID)
       .set(TASK.NAME, task.name)
-      .set(TASK.COLOR, task.color.toString())
+      .set(TASK.COLOR, task.color?.let { color -> ColorConvertion.getColor(color) })
+      .set(TASK.SHAPE, task.shape?.array)
+      .set(TASK.IS_MILESTONE, task.isMilestone)
+      .set(TASK.IS_PROJECT_TASK, task.isProjectTask)
+      .set(TASK.START_DATE, java.sql.Timestamp(task.start.timeInMillis))
+      .set(TASK.DURATION, task.duration.length)
+      .set(TASK.COMPLETION, task.completionPercentage)
+      .set(TASK.EARLIEST_START_DATE, task.third?.let { calendar -> java.sql.Timestamp(calendar.timeInMillis)  })
+      .set(TASK.THIRD_DATE_CONSTRAINT, task.third?.let { task.thirdDateConstraint })
+      .set(TASK.PRIORITY, priority)
+      .set(TASK.WEB_LINK, webLink)
+      .set(TASK.COST_MANUAL_VALUE, costManualValue)
+      .set(TASK.IS_COST_CALCULATED, isCostCalculated)
+      .set(TASK.NOTES, notes)
       .execute()
+  }
+
+  @Throws(ProjectDatabaseException::class)
+  override fun insertTaskDependency(taskDependency: TaskDependency): Unit = withDSL(
+    { "Failed to insert task dependency ${taskDependency.dependee.taskID} -> ${taskDependency.dependant.taskID}" }) { dsl ->
+    dsl
+      .insertInto(TASKDEPENDENCY)
+      .set(TASKDEPENDENCY.DEPENDEE_ID, taskDependency.dependee.taskID)
+      .set(TASKDEPENDENCY.DEPENDANT_ID, taskDependency.dependant.taskID)
+      .set(TASKDEPENDENCY.TYPE, taskDependency.constraint.type.persistentValue)
+      .set(TASKDEPENDENCY.LAG, taskDependency.difference)
+      .set(TASKDEPENDENCY.HARDNESS, taskDependency.hardness.identifier)
+      .execute()
+  }
+
+
+  @Throws(ProjectDatabaseException::class)
+  override fun insertCustomProperty(task: Task, customProperty: CustomPropertyDefinition): Unit = withDSL(
+    { "Failed to insert custom property ${customProperty.id} for task ${task.taskID}" }) { dsl ->
+    val customValues = task.customValues
+    if (customValues.hasOwnValue(customProperty)) {
+      var value = customValues.getValue(customProperty)
+      if (GregorianCalendar::class.java.isAssignableFrom(customProperty.type) && value != null) {
+        value = DateParser.getIsoDate((value as GanttCalendar).time)
+      }
+      dsl
+        .insertInto(CUSTOMPROPERTY)
+        .set(CUSTOMPROPERTY.PROPERTY_ID, customProperty.id)
+        .set(CUSTOMPROPERTY.TASK_ID, task.taskID)
+        .set(CUSTOMPROPERTY.PROPERTY_VALUE, value?.toString())
+        .execute()
+    }
   }
 
   @Throws(ProjectDatabaseException::class)
