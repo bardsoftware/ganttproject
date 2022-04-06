@@ -36,108 +36,23 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 public class TaskTagHandler extends AbstractTagHandler implements ParsingListener {
-  private final ParsingContext myContext;
   private final TaskManager myManager;
   private final TreeCollapseView<Task> myTreeFacade;
 
   public TaskTagHandler(TaskManager mgr, ParsingContext context, TreeCollapseView<Task> treeFacade) {
     super("task");
     myManager = mgr;
-    myContext = context;
     myTreeFacade = treeFacade;
   }
 
   @Override
   public void process(XmlProject xmlProject) {
+    var taskLoader = new TaskLoader(getManager(), myTreeFacade);
     XmlSerializerKt.walkTasksDepthFirst(xmlProject, (parent, child) -> {
-      loadTask(parent, child);
+      taskLoader.loadTask(parent, child);
       return true;
     });
-  }
-
-  private void loadTask(@Nullable XmlTasks.XmlTask parent, @NotNull XmlTasks.XmlTask child) {
-    var builder = getManager().newTaskBuilder().withId(child.getId());
-    builder = builder.withName(child.getName());
-
-    String start = child.getStartDate();
-    if (!start.isBlank()) {
-      builder = builder.withStartDate(GanttCalendar.parseXMLDate(start).getTime());
-    }
-    builder = builder.withDuration(getManager().createLength(child.getDuration()));
-
-
-    if (!myContext.isStackEmpty()) {
-      builder = builder.withParent(myContext.peekTask());
-    }
-    builder = builder.withExpansionState(child.isExpanded());
-
-    if (child.isMilestone()) {
-      builder = builder.withLegacyMilestone();
-    }
-    Task task = builder.build();
-
-    myTreeFacade.setExpanded(task, child.isExpanded());
-    task.setProjectTask(child.isProjectTask());
-    task.setCompletionPercentage(child.getCompletion());
-
-    task.setPriority(Task.Priority.fromPersistentValue(child.getPriority()));
-    if (child.getColor() != null) {
-      task.setColor(ColorValueParser.parseString(child.getColor()));
-    }
-
-//
-//    String fixedStart = attrs.getValue("fixed-start");
-//    if ("true".equals(fixedStart)) {
-//      myContext.addTaskWithLegacyFixedStart(task);
-//    }
-
-    String earliestStart = child.getEarliestStartDate();
-
-    if (earliestStart != null) {
-      task.setThirdDate(GanttCalendar.parseXMLDate(earliestStart));
-    }
-//    String thirdConstraint = attrs.getValue("thirdDate-constraint");
-//    if (thirdConstraint != null) {
-//      try {
-//        task.setThirdDateConstraint(Integer.parseInt(thirdConstraint));
-//      } catch (NumberFormatException e) {
-//        throw new RuntimeException("Failed to parse the value '" + thirdConstraint
-//            + "' of attribute 'thirdDate-constraint' of tag <task>", e);
-//      }
-//    }
-
-    if (child.getWebLink() != null) {
-      try {
-        task.setWebLink(URLDecoder.decode(child.getWebLink(), Charsets.UTF_8.name()));
-      } catch (UnsupportedEncodingException e) {
-        if (!GPLogger.log(e)) {
-          e.printStackTrace(System.err);
-        }
-      }
-    }
-
-    if (child.getShape() != null) {
-      java.util.StringTokenizer st1 = new java.util.StringTokenizer(child.getShape(), ",");
-      int[] array = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-      String token = "";
-      int count = 0;
-      while (st1.hasMoreTokens()) {
-        token = st1.nextToken();
-        array[count] = Integer.parseInt(token);
-        count++;
-      }
-      task.setShape(new ShapePaint(4, 4, array, Color.white, task.getColor()));
-    }
-
-    var costValue = child.getCostManualValue();
-    var isCostCalculated = child.isCostCalculated();
-    if (isCostCalculated != null) {
-      task.getCost().setCalculated(isCostCalculated);
-      task.getCost().setValue(costValue);
-    } else {
-      task.getCost().setCalculated(true);
-    }
-    myContext.pushTask(task);
+    TaskSerializerKt.loadDependencyGraph(taskLoader.getDependencies(), myManager, taskLoader.getLegacyFixedStartTasks());
   }
 
   private TaskManager getManager() {

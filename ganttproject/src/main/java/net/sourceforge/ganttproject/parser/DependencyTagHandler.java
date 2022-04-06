@@ -33,138 +33,84 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstr
 
 import org.xml.sax.Attributes;
 
-public class DependencyTagHandler extends AbstractTagHandler implements ParsingListener {
-  private final TaskManager myTaskManager;
-
-  private final UIFacade myUIFacade;
-
-  public DependencyTagHandler(ParsingContext context, TaskManager taskManager, UIFacade uiFacade) {
-    super("depend");
-    myContext = context;
-    myTaskManager = taskManager;
-    myUIFacade = uiFacade;
-  }
-
-  @Override
-  protected boolean onStartElement(Attributes attrs) {
-    loadDependency(attrs);
-    return true;
-  }
-
-  @Override
-  public void parsingStarted() {
-  }
-
-  @Override
-  public void parsingFinished() {
-    for (int i = 0; i < getDependencies().size(); i++) {
-      GanttDependStructure ds = getDependencies().get(i);
-      Task dependee = myTaskManager.getTask(ds.taskID);
-      Task dependant = myTaskManager.getTask(ds.successorTaskID);
-      if (dependee == null || dependant == null) {
-        continue;
-      }
-
-      try {
-        TaskDependency dep = myTaskManager.getDependencyCollection().createDependency(dependant, dependee,
-            new FinishStartConstraintImpl());
-        dep.setConstraint(myTaskManager.createConstraint(ds.dependType));
-        dep.setDifference(ds.difference);
-        if (myContext.getTasksWithLegacyFixedStart().contains(dependant)) {
-          dep.setHardness(TaskDependency.Hardness.RUBBER);
-        } else {
-          dep.setHardness(ds.myHardness);
-        }
-      } catch (TaskDependencyException e) {
-        GPLogger.log(e);
-      }
-    }
-  }
-
-  protected void loadDependency(Attributes attrs) {
-    if (attrs != null) {
-      GanttDependStructure gds = new GanttDependStructure();
-      gds.setTaskID(getDependencyAddressee());
-      gds.setDependTaskID(getDependencyAddresser(attrs));
-      String dependencyTypeAsString = attrs.getValue("type");
-      String differenceAsString = attrs.getValue("difference");
-      String hardnessAsString = attrs.getValue("hardness");
-      if (dependencyTypeAsString != null) {
-        try {
-          gds.setDependType(ConstraintType.fromPersistentValue(dependencyTypeAsString));
-        } catch (NumberFormatException e) {
-        }
-      }
-      if (differenceAsString != null) {
-        try {
-          int difference = Integer.parseInt(differenceAsString);
-          gds.setDifference(difference);
-        } catch (NumberFormatException e) {
-        }
-      }
-      if (hardnessAsString != null) {
-        TaskDependency.Hardness hardness = TaskDependency.Hardness.parse(hardnessAsString);
-        gds.setHardness(hardness);
-      }
-      getDependencies().add(gds);
-    }
-  }
-
-  private int getDependencyAddressee() {
-    return getContext().peekTask().getTaskID();
-  }
-
-  private int getDependencyAddresser(Attributes attrs) {
-    try {
-      return Integer.parseInt(attrs.getValue("id"));
-    } catch (NumberFormatException e) {
-      throw new RuntimeException("Failed to parse 'depend' tag. Attribute 'id' seems to be invalid: "
-          + attrs.getValue("id"), e);
-    }
-  }
-
-  private List<GanttDependStructure> getDependencies() {
-    return myDependencies;
-  }
-
-  private ParsingContext getContext() {
-    return myContext;
-  }
-
-  private List<GanttDependStructure> myDependencies = new ArrayList<GanttDependStructure>();
-
-  private ParsingContext myContext;
-
-  private class GanttDependStructure {
-    public int taskID, successorTaskID;
-
-    public int difference = 0;
-
-    public ConstraintType dependType = ConstraintType.finishstart;
-
-    private Hardness myHardness = TaskDependency.Hardness.STRONG;
-
-    public void setHardness(Hardness hardness) {
-      myHardness = hardness;
-    }
-
-    public GanttDependStructure() {
-    }
-
-    public void setTaskID(int taskID) {
-      this.taskID = taskID;
-    }
-
-    public void setDifference(int difference) {
-      this.difference = difference;
-    }
-
-    public void setDependTaskID(int successorTaskID) {
-      this.successorTaskID = successorTaskID;
-    }
-
-    public void setDependType(ConstraintType dependType) {
-      this.dependType = dependType;
-    }
-  }
-}
+//public class DependencyTagHandler extends AbstractTagHandler implements ParsingListener {
+//  private final TaskManager myTaskManager;
+//
+//  //private final UIFacade myUIFacade;
+//
+//  public DependencyTagHandler(ParsingContext context, TaskManager taskManager, UIFacade uiFacade) {
+//    super("depend");
+//    //myContext = context;
+//    myTaskManager = taskManager;
+//    //myUIFacade = uiFacade;
+//  }
+//
+//  @Override
+//  protected boolean onStartElement(Attributes attrs) {
+//    loadDependency(attrs);
+//    return true;
+//  }
+//
+//  @Override
+//  public void parsingStarted() {
+//  }
+//
+//  @Override
+//  public void parsingFinished() {
+//  }
+//
+//  protected void loadDependency(Attributes attrs) {
+//    if (attrs != null) {
+//      GanttDependStructure gds = new GanttDependStructure();
+//      gds.setTaskID(getDependencyAddressee());
+//      gds.setDependTaskID(getDependencyAddresser(attrs));
+//      String dependencyTypeAsString = attrs.getValue("type");
+//      String differenceAsString = attrs.getValue("difference");
+//      String hardnessAsString = attrs.getValue("hardness");
+//      if (dependencyTypeAsString != null) {
+//        try {
+//          gds.setDependType(ConstraintType.fromPersistentValue(dependencyTypeAsString));
+//        } catch (NumberFormatException e) {
+//        }
+//      }
+//      if (differenceAsString != null) {
+//        try {
+//          int difference = Integer.parseInt(differenceAsString);
+//          gds.setDifference(difference);
+//        } catch (NumberFormatException e) {
+//        }
+//      }
+//      if (hardnessAsString != null) {
+//        TaskDependency.Hardness hardness = TaskDependency.Hardness.parse(hardnessAsString);
+//        gds.setHardness(hardness);
+//      }
+//      getDependencies().add(gds);
+//    }
+//  }
+//
+//  private int getDependencyAddressee() {
+//    return getContext().peekTask().getTaskID();
+//  }
+//
+//  private int getDependencyAddresser(Attributes attrs) {
+//    try {
+//      return Integer.parseInt(attrs.getValue("id"));
+//    } catch (NumberFormatException e) {
+//      throw new RuntimeException("Failed to parse 'depend' tag. Attribute 'id' seems to be invalid: "
+//          + attrs.getValue("id"), e);
+//    }
+//  }
+//
+//  private List<GanttDependStructure> getDependencies() {
+//    return myDependencies;
+//  }
+//
+//  //private ParsingContext getContext() {
+//    return myContext;
+//  }
+//
+//  private List<GanttDependStructure> myDependencies = new ArrayList<GanttDependStructure>();
+//
+//  //private ParsingContext myContext;
+//
+//}

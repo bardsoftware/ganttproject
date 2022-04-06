@@ -31,9 +31,9 @@ import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.AbstractTagHandler;
 import net.sourceforge.ganttproject.parser.AllocationTagHandler;
-import net.sourceforge.ganttproject.parser.CustomPropertiesTagHandler;
+//import net.sourceforge.ganttproject.parser.CustomPropertiesTagHandler;
 import net.sourceforge.ganttproject.parser.DefaultWeekTagHandler;
-import net.sourceforge.ganttproject.parser.DependencyTagHandler;
+//import net.sourceforge.ganttproject.parser.DependencyTagHandler;
 import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.HolidayTagHandler;
@@ -298,7 +298,7 @@ public class ProxyDocument implements Document {
       TaskManager taskManager = getTaskManager();
       ResourceTagHandler resourceHandler = new ResourceTagHandler(hrManager, roleManager,
           myProject.getResourceCustomPropertyManager());
-      DependencyTagHandler dependencyHandler = new DependencyTagHandler(opener.getContext(), taskManager, getUIFacade());
+  //    DependencyTagHandler dependencyHandler = new DependencyTagHandler(opener.getContext(), taskManager, getUIFacade());
       AllocationTagHandler allocationHandler = new AllocationTagHandler(hrManager, getTaskManager(), getRoleManager());
       VacationTagHandler vacationHandler = new VacationTagHandler(hrManager);
       PreviousStateTasksTagHandler previousStateHandler = new PreviousStateTasksTagHandler(myProject.getBaselines());
@@ -309,9 +309,9 @@ public class ProxyDocument implements Document {
 
       TaskPropertiesTagHandler taskPropHandler = new TaskPropertiesTagHandler(myProject.getTaskCustomColumnManager());
       opener.addTagHandler(taskPropHandler);
-      CustomPropertiesTagHandler customPropHandler = new CustomPropertiesTagHandler(opener.getContext(),
-          getTaskManager());
-      opener.addTagHandler(customPropHandler);
+//      CustomPropertiesTagHandler customPropHandler = new CustomPropertiesTagHandler(opener.getContext(),
+//          getTaskManager());
+//      opener.addTagHandler(customPropHandler);
 
 
       TaskDisplayColumnsTagHandler pilsenTaskDisplayHandler = TaskDisplayColumnsTagHandler.createPilsenHandler();
@@ -332,13 +332,13 @@ public class ProxyDocument implements Document {
       opener.addTagHandler(taskHandler);
       opener.addParsingListener(taskHandler);
 
-      opener.addParsingListener(customPropHandler);
+//      opener.addParsingListener(customPropHandler);
 
       opener.addTagHandler(opener.getDefaultTagHandler());
       //opener.addTagHandler(opener.getTimelineTagHandler());
       //opener.addParsingListener((ParsingListener)opener.getTimelineTagHandler());
       opener.addTagHandler(resourceHandler);
-      opener.addTagHandler(dependencyHandler);
+//      opener.addTagHandler(dependencyHandler);
       opener.addTagHandler(allocationHandler);
       opener.addParsingListener(allocationHandler);
       opener.addTagHandler(vacationHandler);
@@ -347,7 +347,7 @@ public class ProxyDocument implements Document {
       opener.addTagHandler(weekHandler);
       opener.addTagHandler(onlyShowWeekendsHandler);
       opener.addTagHandler(new OptionTagHandler<ListOption<Color>>(GPColorChooser.getRecentColorsOption()));
-      opener.addParsingListener(dependencyHandler);
+//      opener.addParsingListener(dependencyHandler);
       opener.addParsingListener(resourceHandler);
 
 
