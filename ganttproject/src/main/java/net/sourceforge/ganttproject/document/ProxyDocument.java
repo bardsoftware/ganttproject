@@ -340,7 +340,7 @@ public class ProxyDocument implements Document {
       opener.addTagHandler(resourceHandler);
 //      opener.addTagHandler(dependencyHandler);
       opener.addTagHandler(allocationHandler);
-      opener.addParsingListener(allocationHandler);
+      //opener.addParsingListener(allocationHandler);
       opener.addTagHandler(vacationHandler);
       opener.addTagHandler(previousStateHandler);
       opener.addTagHandler(rolesHandler);

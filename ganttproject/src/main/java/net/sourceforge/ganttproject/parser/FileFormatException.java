@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.parser;
 
-public class FileFormatException extends Exception {
+public class FileFormatException extends RuntimeException {
   public FileFormatException() {
   }
 

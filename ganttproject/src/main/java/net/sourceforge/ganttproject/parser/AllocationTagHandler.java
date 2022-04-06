@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import biz.ganttproject.core.io.XmlAllocation;
+import biz.ganttproject.core.io.XmlProject;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -39,7 +41,7 @@ import org.xml.sax.Attributes;
 /**
  * @author bard
  */
-public class AllocationTagHandler extends AbstractTagHandler implements  ParsingListener {
+public class AllocationTagHandler extends AbstractTagHandler {
   private HumanResourceManager myResourceManager;
 
   private TaskManager myTaskManager;
@@ -55,48 +57,43 @@ public class AllocationTagHandler extends AbstractTagHandler implements  Parsing
     myRoleManager = roleMgr;
   }
 
-
   @Override
-  protected boolean onStartElement(Attributes attrs) {
-    try {
-      loadAllocation(attrs);
-      return true;
-    } catch (FileFormatException e) {
-      GPLogger.log(e);
-      return false;
-    }
+  public void process(XmlProject xmlProject) {
+    xmlProject.getAllocations().forEach(allocation -> loadAllocation(allocation));
+    processRoleBindings();
   }
 
-  private void loadAllocation(Attributes attrs) throws FileFormatException {
-    int taskId = 0;
-    int resourceId = 0;
-    float load = 100;
-    boolean coordinator = false;
+//  @Override
+//  protected boolean onStartElement(Attributes attrs) {
+//    try {
+//      loadAllocation(attrs);
+//      return true;
+//    } catch (FileFormatException e) {
+//      GPLogger.log(e);
+//      return false;
+//    }
+//  }
 
-    String taskIdAsString = attrs.getValue("task-id");
-    String resourceIdAsString = attrs.getValue("resource-id");
-    String loadAsString = attrs.getValue("load");
-    String coordinatorAsString = attrs.getValue("responsible");
-    String rolePersistendIDString = attrs.getValue("function");
+  private void loadAllocation(XmlAllocation xmlAllocation) throws FileFormatException {
+//    int taskId = 0;
+//    int resourceId = 0;
+//    float load = 100;
+//    boolean coordinator = false;
 
-    if (taskIdAsString == null || resourceIdAsString == null) {
-      throw new FileFormatException("Failed to load <allocation> tag: task or resource identifier is missing");
-    }
+//    String taskIdAsString = attrs.getValue("task-id");
+//    String resourceIdAsString = attrs.getValue("resource-id");
+//    String loadAsString = attrs.getValue("load");
+//    String coordinatorAsString = attrs.getValue("responsible");
+//    String rolePersistendIDString = attrs.getValue("function");
 
-    try {
-      taskId = Integer.parseInt(taskIdAsString);
-      resourceId = Integer.parseInt(resourceIdAsString);
+//    if (taskIdAsString == null || resourceIdAsString == null) {
+//      throw new FileFormatException("Failed to load <allocation> tag: task or resource identifier is missing");
+//    }
 
-      if (loadAsString != null) {
-        load = Float.parseFloat(loadAsString);
-      }
-      if (coordinatorAsString != null) {
-        coordinator = Boolean.valueOf(coordinatorAsString).booleanValue();
-      }
-
-    } catch (NumberFormatException e) {
-      throw new FileFormatException("Failed to load <allocation> tag: one of attribute values is invalid", e);
-    }
+    var taskId = xmlAllocation.getTaskId();
+    var resourceId = xmlAllocation.getResourceId();
+    var load = xmlAllocation.getLoad();
+    var coordinator = xmlAllocation.isCoordinator();
 
     HumanResource human = getResourceManager().getById(resourceId);
     if (human == null) {
@@ -115,8 +112,8 @@ public class AllocationTagHandler extends AbstractTagHandler implements  Parsing
     ResourceAssignment assignment = task.getAssignmentCollection().addAssignment(human);
 
     try {
-      if (rolePersistendIDString != null)
-        myLateAssigmnent2roleBinding.put(assignment, rolePersistendIDString);
+      if (xmlAllocation.getRole() != null)
+        myLateAssigmnent2roleBinding.put(assignment, xmlAllocation.getRole());
     } catch (NumberFormatException e) {
       System.out.println("ERROR in parsing XML File function id is not numeric: " + e.toString());
     }
@@ -155,12 +152,7 @@ public class AllocationTagHandler extends AbstractTagHandler implements  Parsing
     return result;
   }
 
-  @Override
-  public void parsingStarted() {
-  }
-
-  @Override
-  public void parsingFinished() {
+  public void processRoleBindings() {
     for (Iterator<Entry<ResourceAssignment, String>> lateBindingEntries = myLateAssigmnent2roleBinding.entrySet().iterator(); lateBindingEntries.hasNext();) {
       Map.Entry<ResourceAssignment, String> nextEntry = lateBindingEntries.next();
       String persistentID = nextEntry.getValue();
