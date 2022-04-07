@@ -19,7 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
-import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 
@@ -49,10 +48,6 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
 
   override fun insertTaskDependency(taskDependency: TaskDependency) {
     getDatabase().insertTaskDependency(taskDependency)
-  }
-
-  override fun insertCustomProperty(task: Task, customProperty: CustomPropertyDefinition) {
-    getDatabase().insertCustomProperty(task, customProperty)
   }
 
   override fun shutdown() {

@@ -19,10 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
-import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.storage.db.Tables.*
 import com.google.common.base.Charsets
-import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
@@ -33,11 +31,9 @@ import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.*
 import org.jooq.impl.SQLDataType.*
-import org.w3c.util.DateParser
 import java.math.BigDecimal
 import java.net.URLEncoder
 import java.sql.SQLException
-import java.util.*
 import javax.sql.DataSource
 
 class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDatabase {
@@ -106,17 +102,6 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
         check(TASKDEPENDENCY.DEPENDEE_ID.notEqual(TASKDEPENDENCY.DEPENDANT_ID))
       )
       .execute()
-
-    dsl
-      .createTable(CUSTOMPROPERTY)
-      .column(CUSTOMPROPERTY.PROPERTY_ID, VARCHAR.notNull())
-      .column(CUSTOMPROPERTY.TASK_ID, INTEGER.notNull())
-      .column(CUSTOMPROPERTY.PROPERTY_VALUE, VARCHAR.null_())
-      .constraints(
-        primaryKey(CUSTOMPROPERTY.TASK_ID, CUSTOMPROPERTY.PROPERTY_ID),
-        foreignKey(CUSTOMPROPERTY.TASK_ID).references(TASK, TASK.ID)
-      )
-      .execute()
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -164,25 +149,6 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       .set(TASKDEPENDENCY.LAG, taskDependency.difference)
       .set(TASKDEPENDENCY.HARDNESS, taskDependency.hardness.identifier)
       .execute()
-  }
-
-
-  @Throws(ProjectDatabaseException::class)
-  override fun insertCustomProperty(task: Task, customProperty: CustomPropertyDefinition): Unit = withDSL(
-    { "Failed to insert custom property ${customProperty.id} for task ${task.taskID}" }) { dsl ->
-    val customValues = task.customValues
-    if (customValues.hasOwnValue(customProperty)) {
-      var value = customValues.getValue(customProperty)
-      if (GregorianCalendar::class.java.isAssignableFrom(customProperty.type) && value != null) {
-        value = DateParser.getIsoDate((value as GanttCalendar).time)
-      }
-      dsl
-        .insertInto(CUSTOMPROPERTY)
-        .set(CUSTOMPROPERTY.PROPERTY_ID, customProperty.id)
-        .set(CUSTOMPROPERTY.TASK_ID, task.taskID)
-        .set(CUSTOMPROPERTY.PROPERTY_VALUE, value?.toString())
-        .execute()
-    }
   }
 
   @Throws(ProjectDatabaseException::class)

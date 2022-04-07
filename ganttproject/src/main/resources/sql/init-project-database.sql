@@ -29,12 +29,3 @@ create table if not exists TaskDependency (
     foreign key (dependant_id) references Task(id),
     check (dependee_id <> dependant_id)
 );
-
-create table if not exists CustomProperty (
-    property_id     varchar     not null,
-    task_id         integer     not null,
-    property_value  varchar     null,
-
-    primary key (task_id, property_id),
-    foreign key (task_id) references Task(id)
-);
