@@ -1,8 +1,21 @@
 /*
- * Copyright (c) 2020 GanttProject Cloud OU.
- *
- * Author: Dmitry Kazakov (qudeed@gmail.com)
- */
+Copyright 2020 BarD Software s.r.o, GanttProject Cloud OU, Dmitry Kazakov
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.core.io
 
 import com.fasterxml.jackson.annotation.*
@@ -168,7 +181,7 @@ data class XmlTasks(
 
   @JsonPropertyOrder(
     "id", "name", "color", "shape", "meeting", "project", "start", "duration", "complete", "thirdDate", "thirdDate-constraint",
-    "priority", "webLink", "expand", "cost-manual-value", "cost-calculated", "task", "notes", "depend"
+    "priority", "webLink", "expand", "cost-manual-value", "cost-calculated", "task", "notes", "depend", "fixed-start"
   )
   data class XmlTask(
     @get:JacksonXmlProperty(isAttribute = true) var id: Int = 0,
@@ -223,7 +236,8 @@ data class XmlTasks(
     @get:JacksonXmlElementWrapper(useWrapping = false)
     @get:JsonInclude(JsonInclude.Include.NON_NULL)
     var tasks: List<XmlTask>? = null,
-//    @get:JacksonXmlProperty(isAttribute = true, localName = "fixed-start") var fixedStart: String? = null,
+
+    @get:JacksonXmlProperty(isAttribute = true, localName = "fixed-start") var legacyFixedStart: String? = null,
 //    @get:JacksonXmlProperty(isAttribute = true) var project: Boolean? = null,
   ) {
     data class XmlDependency(

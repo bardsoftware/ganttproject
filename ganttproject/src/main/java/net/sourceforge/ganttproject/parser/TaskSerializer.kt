@@ -1,3 +1,21 @@
+/*
+Copyright 2022 BarD Software s.r.o, GanttProject Cloud OU, Dmitry Barashev
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package net.sourceforge.ganttproject.parser
 
 import biz.ganttproject.core.chart.render.ShapePaint
@@ -11,7 +29,6 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.task.CustomColumnsException
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
-import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl
@@ -28,8 +45,7 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
   private val mapXmlGantt = mutableMapOf<XmlTask, Task>()
 
   fun loadTask(parent: XmlTask?, child: XmlTask) {
-    var builder: TaskBuilder = taskManager.newTaskBuilder().withId(child.id)
-    builder = builder.withName(child.name)
+    var builder = taskManager.newTaskBuilder().withId(child.id).withName(child.name)
     val start = child.startDate
     if (start.isNotBlank()) {
       builder = builder.withStartDate(GanttCalendar.parseXMLDate(start).time)
@@ -58,24 +74,19 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
       task.color = ColorValueParser.parseString(child.color)
     }
 
-//
-//    String fixedStart = attrs.getValue("fixed-start");
-//    if ("true".equals(fixedStart)) {
-//      myContext.addTaskWithLegacyFixedStart(task);
-//    }
+    // We used to have "fixed-start" attribute in the earlier versions of GanttProject.
+    // It's meaning was "do not pull this task backwards if possible". It was replaced with rubber constraint type.
+    child.legacyFixedStart?.let {
+      if (it == "true") {
+        legacyFixedStartTasks.add(task)
+      }
+    }
+
     val earliestStart = child.earliestStartDate
     if (earliestStart != null) {
       task.setThirdDate(GanttCalendar.parseXMLDate(earliestStart))
     }
-    //    String thirdConstraint = attrs.getValue("thirdDate-constraint");
-//    if (thirdConstraint != null) {
-//      try {
-//        task.setThirdDateConstraint(Integer.parseInt(thirdConstraint));
-//      } catch (NumberFormatException e) {
-//        throw new RuntimeException("Failed to parse the value '" + thirdConstraint
-//            + "' of attribute 'thirdDate-constraint' of tag <task>", e);
-//      }
-//    }
+
     child.webLink?.let { it ->
       try {
         task.webLink = URLDecoder.decode(it, Charsets.UTF_8.name())
@@ -86,7 +97,7 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
     child.shape?.let { it ->
       val st1 = StringTokenizer(it, ",")
       val array = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-      var token = ""
+      var token: String
       var count = 0
       while (st1.hasMoreTokens()) {
         token = st1.nextToken()
@@ -103,7 +114,6 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
     } else {
       task.cost.isCalculated = true
     }
-    // myContext.pushTask(task);
 
     loadDependencies(child)
     loadCustomProperties(task, child)
@@ -143,9 +153,6 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
             } catch (e: InvalidDateException) {
               LOG.error("Can't parse date {} from XML custom property {}", valueStr, xmlCustomProperty)
               null
-//              if (!GPLogger.log(e)) {
-//                e.printStackTrace(System.err)
-//              }
             }
           else -> null
         }
@@ -160,7 +167,6 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
   }
 }
 
-//private ParsingContext myContext;
 data class GanttDependStructure(
   var taskID: Int = 0,
   var successorTaskID: Int = 0,

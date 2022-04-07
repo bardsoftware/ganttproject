@@ -18,14 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.parser;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import biz.ganttproject.core.io.XmlAllocation;
 import biz.ganttproject.core.io.XmlProject;
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
@@ -36,19 +30,22 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
-import org.xml.sax.Attributes;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @author bard
  */
 public class AllocationTagHandler extends AbstractTagHandler {
-  private HumanResourceManager myResourceManager;
+  private final HumanResourceManager myResourceManager;
 
-  private TaskManager myTaskManager;
+  private final TaskManager myTaskManager;
 
-  private RoleManager myRoleManager;
+  private final RoleManager myRoleManager;
 
-  private final HashMap<ResourceAssignment, String> myLateAssigmnent2roleBinding = new HashMap<ResourceAssignment, String>();
+  private final HashMap<ResourceAssignment, String> myLateAssigmnent2roleBinding = new HashMap<>();
 
   public AllocationTagHandler(HumanResourceManager resourceMgr, TaskManager taskMgr, RoleManager roleMgr) {
     super("allocation");
@@ -59,37 +56,11 @@ public class AllocationTagHandler extends AbstractTagHandler {
 
   @Override
   public void process(XmlProject xmlProject) {
-    xmlProject.getAllocations().forEach(allocation -> loadAllocation(allocation));
+    xmlProject.getAllocations().forEach(this::loadAllocation);
     processRoleBindings();
   }
 
-//  @Override
-//  protected boolean onStartElement(Attributes attrs) {
-//    try {
-//      loadAllocation(attrs);
-//      return true;
-//    } catch (FileFormatException e) {
-//      GPLogger.log(e);
-//      return false;
-//    }
-//  }
-
   private void loadAllocation(XmlAllocation xmlAllocation) throws FileFormatException {
-//    int taskId = 0;
-//    int resourceId = 0;
-//    float load = 100;
-//    boolean coordinator = false;
-
-//    String taskIdAsString = attrs.getValue("task-id");
-//    String resourceIdAsString = attrs.getValue("resource-id");
-//    String loadAsString = attrs.getValue("load");
-//    String coordinatorAsString = attrs.getValue("responsible");
-//    String rolePersistendIDString = attrs.getValue("function");
-
-//    if (taskIdAsString == null || resourceIdAsString == null) {
-//      throw new FileFormatException("Failed to load <allocation> tag: task or resource identifier is missing");
-//    }
-
     var taskId = xmlAllocation.getTaskId();
     var resourceId = xmlAllocation.getResourceId();
     var load = xmlAllocation.getLoad();
@@ -104,18 +75,14 @@ public class AllocationTagHandler extends AbstractTagHandler {
     if (task == null) {
       throw new FileFormatException("Task with id=" + taskId + " not found");
     }
-    // TaskMutator mutator = task.createMutator();
-    // ResourceAssignment assignment = mutator.addResource(human);
-    // assignment.setLoad(load);
-    // mutator.commit();
-
     ResourceAssignment assignment = task.getAssignmentCollection().addAssignment(human);
 
     try {
-      if (xmlAllocation.getRole() != null)
+      if (xmlAllocation.getRole() != null) {
         myLateAssigmnent2roleBinding.put(assignment, xmlAllocation.getRole());
+      }
     } catch (NumberFormatException e) {
-      System.out.println("ERROR in parsing XML File function id is not numeric: " + e.toString());
+      System.out.println("ERROR in parsing XML File function id is not numeric: " + e);
     }
 
     assignment.setLoad(load);
@@ -148,11 +115,10 @@ public class AllocationTagHandler extends AbstractTagHandler {
     } else {
       roleSet = myRoleManager.getRoleSet(rolesetName);
     }
-    Role result = roleSet.findRole(roleID);
-    return result;
+    return roleSet.findRole(roleID);
   }
 
-  public void processRoleBindings() {
+  private void processRoleBindings() {
     for (Iterator<Entry<ResourceAssignment, String>> lateBindingEntries = myLateAssigmnent2roleBinding.entrySet().iterator(); lateBindingEntries.hasNext();) {
       Map.Entry<ResourceAssignment, String> nextEntry = lateBindingEntries.next();
       String persistentID = nextEntry.getValue();
