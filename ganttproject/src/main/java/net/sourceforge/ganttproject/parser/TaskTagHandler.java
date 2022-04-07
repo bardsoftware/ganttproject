@@ -18,31 +18,23 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.parser;
 
-import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.io.XmlProject;
 import biz.ganttproject.core.io.XmlSerializerKt;
-import biz.ganttproject.core.io.XmlTasks;
-import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.lib.fx.TreeCollapseView;
-import com.google.common.base.Charsets;
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.sourceforge.ganttproject.task.TaskView;
 
-import java.awt.*;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-
-public class TaskTagHandler extends AbstractTagHandler implements ParsingListener {
+public class TaskTagHandler extends AbstractTagHandler {
   private final TaskManager myManager;
   private final TreeCollapseView<Task> myTreeFacade;
+  private final TaskView myTaskView;
 
-  public TaskTagHandler(TaskManager mgr, ParsingContext context, TreeCollapseView<Task> treeFacade) {
+  public TaskTagHandler(TaskManager mgr, TreeCollapseView<Task> treeFacade, TaskView taskView) {
     super("task");
     myManager = mgr;
     myTreeFacade = treeFacade;
+    myTaskView = taskView;
   }
 
   @Override
@@ -53,17 +45,10 @@ public class TaskTagHandler extends AbstractTagHandler implements ParsingListene
       return true;
     });
     TaskSerializerKt.loadDependencyGraph(taskLoader.getDependencies(), myManager, taskLoader.getLegacyFixedStartTasks());
+    TaskSerializerKt.loadTimelineTasks(xmlProject, myManager, myTaskView);
   }
 
   private TaskManager getManager() {
     return myManager;
-  }
-
-  @Override
-  public void parsingStarted() {
-  }
-
-  @Override
-  public void parsingFinished() {
   }
 }

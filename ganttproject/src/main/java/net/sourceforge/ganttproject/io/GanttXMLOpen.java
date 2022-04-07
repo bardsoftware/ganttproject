@@ -19,19 +19,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.io;
 
 import biz.ganttproject.core.io.XmlProject;
-import biz.ganttproject.core.io.XmlSerializerKt;
-import biz.ganttproject.core.io.XmlView;
 import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.PrjInfos;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.parser.*;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import org.xml.sax.Attributes;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Allows to load a gantt file from xml format, using SAX parser
@@ -130,28 +126,6 @@ public class GanttXMLOpen implements GPParser {
       myUIFacade.setGanttDividerLocation(xmlProject.getGanttDividerLocation());
       myUIFacade.setResourceDividerLocation(xmlProject.getResourceDividerLocation());
       myTaskManager.setZeroMilestones(xmlProject.getTasks().getEmptyMilestones());
-
-      xmlProject.getViews().stream()
-        .filter(it -> "gantt-chart".equals(it.getId()))
-        .map(XmlView::getTimeline).findFirst()
-        .ifPresent(timelineString -> {
-          myUIFacade.getCurrentTaskView().getTimelineTasks().clear();
-          var ids = Arrays.stream(timelineString.split(",")).mapToInt(it -> Integer.parseInt(it.trim())).toArray();
-          for (Integer id : ids) {
-            Task t = myTaskManager.getTask(id);
-            if (t != null) {
-              myUIFacade.getCurrentTaskView().getTimelineTasks().add(t);
-            }
-          }
-        });
-      XmlSerializerKt.collectTasksDepthFirst(xmlProject).stream()
-        .filter(it -> it.getNotes() != null)
-        .forEach(it -> {
-          Task t = myTaskManager.getTask(it.getId());
-          if (t != null) {
-            t.setNotes(it.getNotes());
-          }
-        });
     }
   }
 }

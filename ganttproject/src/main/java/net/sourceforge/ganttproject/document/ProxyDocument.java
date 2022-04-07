@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject.document;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.ListOption;
 import biz.ganttproject.core.table.ColumnList;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
@@ -31,22 +30,18 @@ import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.AbstractTagHandler;
 import net.sourceforge.ganttproject.parser.AllocationTagHandler;
-//import net.sourceforge.ganttproject.parser.CustomPropertiesTagHandler;
 import net.sourceforge.ganttproject.parser.DefaultWeekTagHandler;
-//import net.sourceforge.ganttproject.parser.DependencyTagHandler;
 import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.HolidayTagHandler;
 import net.sourceforge.ganttproject.parser.OptionTagHandler;
 import net.sourceforge.ganttproject.parser.ParserFactory;
-import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
 import net.sourceforge.ganttproject.parser.ResourceTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
 import net.sourceforge.ganttproject.parser.TaskDisplayColumnsTagHandler;
 import net.sourceforge.ganttproject.parser.TaskPropertiesTagHandler;
 import net.sourceforge.ganttproject.parser.TaskTagHandler;
-import net.sourceforge.ganttproject.parser.VacationTagHandler;
 import net.sourceforge.ganttproject.parser.ViewTagHandler;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -55,7 +50,6 @@ import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import org.eclipse.core.runtime.IStatus;
 import org.xml.sax.Attributes;
 
-import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -300,10 +294,10 @@ public class ProxyDocument implements Document {
           myProject.getResourceCustomPropertyManager());
   //    DependencyTagHandler dependencyHandler = new DependencyTagHandler(opener.getContext(), taskManager, getUIFacade());
       AllocationTagHandler allocationHandler = new AllocationTagHandler(hrManager, getTaskManager(), getRoleManager());
-      VacationTagHandler vacationHandler = new VacationTagHandler(hrManager);
+  //    VacationTagHandler vacationHandler = new VacationTagHandler(hrManager);
       PreviousStateTasksTagHandler previousStateHandler = new PreviousStateTasksTagHandler(myProject.getBaselines());
       RoleTagHandler rolesHandler = new RoleTagHandler(roleManager);
-      TaskTagHandler taskHandler = new TaskTagHandler(taskManager, opener.getContext(), myUIFacade.getTaskCollapseView());
+      TaskTagHandler taskHandler = new TaskTagHandler(taskManager, myUIFacade.getTaskCollapseView(), myUIFacade.getCurrentTaskView());
       DefaultWeekTagHandler weekHandler = new DefaultWeekTagHandler(getActiveCalendar());
       OnlyShowWeekendsTagHandler onlyShowWeekendsHandler = new OnlyShowWeekendsTagHandler(getActiveCalendar());
 
@@ -329,26 +323,26 @@ public class ProxyDocument implements Document {
       opener.addParsingListener(TaskDisplayColumnsTagHandler.createResourceDisplayColumnsWrapper(myResourceVisibleFields, resourceFieldsHandler));
       opener.addTagHandler(new ViewTagHandler("resource-table", getUIFacade(), resourceFieldsHandler));
 
+      opener.addTagHandler(resourceHandler);
       opener.addTagHandler(taskHandler);
-      opener.addParsingListener(taskHandler);
+      //opener.addParsingListener(taskHandler);
 
 //      opener.addParsingListener(customPropHandler);
 
       opener.addTagHandler(opener.getDefaultTagHandler());
       //opener.addTagHandler(opener.getTimelineTagHandler());
       //opener.addParsingListener((ParsingListener)opener.getTimelineTagHandler());
-      opener.addTagHandler(resourceHandler);
 //      opener.addTagHandler(dependencyHandler);
       opener.addTagHandler(allocationHandler);
       //opener.addParsingListener(allocationHandler);
-      opener.addTagHandler(vacationHandler);
+//      opener.addTagHandler(vacationHandler);
       opener.addTagHandler(previousStateHandler);
       opener.addTagHandler(rolesHandler);
       opener.addTagHandler(weekHandler);
       opener.addTagHandler(onlyShowWeekendsHandler);
-      opener.addTagHandler(new OptionTagHandler<ListOption<Color>>(GPColorChooser.getRecentColorsOption()));
+      opener.addTagHandler(new OptionTagHandler<>(GPColorChooser.getRecentColorsOption()));
 //      opener.addParsingListener(dependencyHandler);
-      opener.addParsingListener(resourceHandler);
+      //opener.addParsingListener(resourceHandler);
 
 
       HolidayTagHandler holidayHandler = new HolidayTagHandler(myProject.getActiveCalendar());

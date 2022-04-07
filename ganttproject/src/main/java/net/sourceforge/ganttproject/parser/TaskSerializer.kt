@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.parser
 
 import biz.ganttproject.core.chart.render.ShapePaint
+import biz.ganttproject.core.io.XmlProject
 import biz.ganttproject.core.io.XmlTasks.XmlTask
 import biz.ganttproject.core.model.task.ConstraintType
 import biz.ganttproject.core.time.CalendarFactory
@@ -29,6 +30,7 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.task.CustomColumnsException
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
+import net.sourceforge.ganttproject.task.TaskView
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl
@@ -66,6 +68,7 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
     }
     val task = builder.build()
 
+    mapXmlGantt[child] = task
     treeCollapseView.setExpanded(task, child.isExpanded)
     task.isProjectTask = child.isProjectTask
     task.completionPercentage = child.completion
@@ -113,6 +116,9 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
       task.cost.value = costValue
     } else {
       task.cost.isCalculated = true
+    }
+    child.notes?.let {
+      task.notes = it
     }
 
     loadDependencies(child)
@@ -194,4 +200,17 @@ fun loadDependencyGraph(deps: List<GanttDependStructure>, taskManager: TaskManag
   }
 }
 
+fun loadTimelineTasks(xmlProject: XmlProject, taskManager: TaskManager, taskView: TaskView) {
+  xmlProject.views.filter { "gantt-chart" == it.id }
+    .map { it.timeline }
+    .firstOrNull()
+    ?.let { timelineString ->
+      taskView.timelineTasks.clear()
+      timelineString.split(",").map { Integer.parseInt(it.trim()) }.forEach { id ->
+        taskManager.getTask(id)?.let { taskView.timelineTasks.add(it) }
+      }
+    }
+}
+
 private val LOG = GPLogger.create("Project.IO.Load.Task")
+

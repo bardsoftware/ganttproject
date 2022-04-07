@@ -29,34 +29,34 @@ import biz.ganttproject.core.time.GanttCalendar;
 /**
  * @author nbohn
  */
-public class VacationTagHandler extends AbstractTagHandler {
-  private HumanResourceManager myResourceManager;
-
-  public VacationTagHandler(HumanResourceManager resourceManager) {
-    super("vacation");
-    myResourceManager = resourceManager;
-  }
-
-  private void loadResource(Attributes atts) {
-    try {
-      // <vacation start="2005-04-14" end="2005-04-14" resourceid="0"/>
-      // GanttCalendar.parseXMLDate(attrs.getValue(i)).getTime()
-
-      String startAsString = atts.getValue("start");
-      String endAsString = atts.getValue("end");
-      String resourceIdAsString = atts.getValue("resourceid");
-      HumanResource hr;
-      hr = myResourceManager.getById(Integer.parseInt(resourceIdAsString));
-      hr.addDaysOff(new GanttDaysOff(GanttCalendar.parseXMLDate(startAsString), GanttCalendar.parseXMLDate(endAsString)));
-    } catch (NumberFormatException e) {
-      System.out.println("ERROR in parsing XML File year is not numeric: " + e.toString());
-      return;
-    }
-  }
-
-  @Override
-  protected boolean onStartElement(Attributes attrs) {
-    loadResource(attrs);
-    return true;
-  }
-}
+//public class VacationTagHandler extends AbstractTagHandler {
+//  private HumanResourceManager myResourceManager;
+//
+//  public VacationTagHandler(HumanResourceManager resourceManager) {
+//    super("vacation");
+//    myResourceManager = resourceManager;
+//  }
+//
+//  private void loadResource(Attributes atts) {
+//    try {
+//      // <vacation start="2005-04-14" end="2005-04-14" resourceid="0"/>
+//      // GanttCalendar.parseXMLDate(attrs.getValue(i)).getTime()
+//
+//      String startAsString = atts.getValue("start");
+//      String endAsString = atts.getValue("end");
+//      String resourceIdAsString = atts.getValue("resourceid");
+//      HumanResource hr;
+//      hr = myResourceManager.getById(Integer.parseInt(resourceIdAsString));
+//      hr.addDaysOff(new GanttDaysOff(GanttCalendar.parseXMLDate(startAsString), GanttCalendar.parseXMLDate(endAsString)));
+//    } catch (NumberFormatException e) {
+//      System.out.println("ERROR in parsing XML File year is not numeric: " + e.toString());
+//      return;
+//    }
+//  }
+//
+//  @Override
+//  protected boolean onStartElement(Attributes attrs) {
+//    loadResource(attrs);
+//    return true;
+//  }
+//}

@@ -277,7 +277,7 @@ data class XmlResources(
   data class XmlResource(
     @get:JacksonXmlProperty(isAttribute = true) var id: Int = 0,
     @get:JacksonXmlProperty(isAttribute = true) var name: String = "",
-    @get:JacksonXmlProperty(isAttribute = true) var role: String = "",
+    @get:JacksonXmlProperty(isAttribute = true, localName = "function") var role: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var email: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var phone: String = "",
 
