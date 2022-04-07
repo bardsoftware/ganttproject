@@ -40,6 +40,7 @@ public class TaskTagHandler extends AbstractTagHandler {
   @Override
   public void process(XmlProject xmlProject) {
     var taskLoader = new TaskLoader(getManager(), myTreeFacade);
+    taskLoader.loadTaskCustomPropertyDefinitions(xmlProject);
     XmlSerializerKt.walkTasksDepthFirst(xmlProject, (parent, child) -> {
       taskLoader.loadTask(parent, child);
       return true;

@@ -40,7 +40,6 @@ import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
 import net.sourceforge.ganttproject.parser.ResourceTagHandler;
 import net.sourceforge.ganttproject.parser.RoleTagHandler;
 import net.sourceforge.ganttproject.parser.TaskDisplayColumnsTagHandler;
-import net.sourceforge.ganttproject.parser.TaskPropertiesTagHandler;
 import net.sourceforge.ganttproject.parser.TaskTagHandler;
 import net.sourceforge.ganttproject.parser.ViewTagHandler;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
@@ -301,8 +300,8 @@ public class ProxyDocument implements Document {
       DefaultWeekTagHandler weekHandler = new DefaultWeekTagHandler(getActiveCalendar());
       OnlyShowWeekendsTagHandler onlyShowWeekendsHandler = new OnlyShowWeekendsTagHandler(getActiveCalendar());
 
-      TaskPropertiesTagHandler taskPropHandler = new TaskPropertiesTagHandler(myProject.getTaskCustomColumnManager());
-      opener.addTagHandler(taskPropHandler);
+      //TaskPropertiesTagHandler taskPropHandler = new TaskPropertiesTagHandler(myProject.getTaskCustomColumnManager());
+      //opener.addTagHandler(taskPropHandler);
 //      CustomPropertiesTagHandler customPropHandler = new CustomPropertiesTagHandler(opener.getContext(),
 //          getTaskManager());
 //      opener.addTagHandler(customPropHandler);

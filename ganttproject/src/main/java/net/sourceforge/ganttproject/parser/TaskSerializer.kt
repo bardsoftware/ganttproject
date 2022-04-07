@@ -46,6 +46,13 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
   val dependencies = mutableListOf<GanttDependStructure>()
   private val mapXmlGantt = mutableMapOf<XmlTask, Task>()
 
+  fun loadTaskCustomPropertyDefinitions(xmlProject: XmlProject) {
+    xmlProject.tasks.taskproperties?.filter { it.type == "custom" }?.forEach { xmlTaskProperty ->
+      taskManager.customPropertyManager.createDefinition(
+        xmlTaskProperty.id, xmlTaskProperty.valuetype, xmlTaskProperty.name, xmlTaskProperty.defaultvalue)
+    }
+  }
+
   fun loadTask(parent: XmlTask?, child: XmlTask) {
     var builder = taskManager.newTaskBuilder().withId(child.id).withName(child.name)
     val start = child.startDate
