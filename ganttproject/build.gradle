@@ -72,7 +72,7 @@ jooq {
                         properties {
                             property {
                                 key = 'scripts'
-                                value = 'src/main/resources/sql/init-project-database.sql'
+                                value = 'src/main/resources/resources/sql/init-project-database.sql'
                             }
                         }
                     }

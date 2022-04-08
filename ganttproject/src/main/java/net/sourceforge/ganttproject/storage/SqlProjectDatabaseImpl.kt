@@ -28,8 +28,6 @@ import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
-import org.jooq.impl.DSL.*
-import org.jooq.impl.SQLDataType.*
 import java.math.BigDecimal
 import java.net.URLEncoder
 import java.sql.SQLException
@@ -68,41 +66,24 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   }
 
   @Throws(ProjectDatabaseException::class)
-  override fun init(): Unit = withDSL({ "Failed to initialize the database" }) { dsl ->
-    dsl
-      .createTable(TASK)
-      .column(TASK.ID, INTEGER)
-      .column(TASK.NAME, VARCHAR.notNull())
-      .column(TASK.COLOR, VARCHAR.null_())
-      .column(TASK.SHAPE, VARCHAR.null_())
-      .column(TASK.IS_MILESTONE, BOOLEAN.notNull())
-      .column(TASK.IS_PROJECT_TASK, BOOLEAN.notNull())
-      .column(TASK.START_DATE, TIMESTAMP.notNull())
-      .column(TASK.DURATION, INTEGER.notNull())
-      .column(TASK.COMPLETION, INTEGER.null_())
-      .column(TASK.EARLIEST_START_DATE, TIMESTAMP.null_())
-      .column(TASK.THIRD_DATE_CONSTRAINT, INTEGER.null_())
-      .column(TASK.PRIORITY, VARCHAR.null_())
-      .column(TASK.WEB_LINK, VARCHAR.null_())
-      .column(TASK.COST_MANUAL_VALUE, VARCHAR.null_())
-      .column(TASK.IS_COST_CALCULATED, BOOLEAN.null_())
-      .column(TASK.NOTES, VARCHAR.null_())
-      .constraints(primaryKey(TASK.ID))
-      .execute()
+  override fun init() {
+    val scriptStream = javaClass.getResourceAsStream(DB_INIT_SCRIPT_PATH)
+    if (scriptStream == null) {
+      val message = "Init script not found"
+      LOG.error(message)
+      throw ProjectDatabaseException(message)
+    }
+    try {
+      val queries = String(scriptStream.readAllBytes(), Charsets.UTF_8)
 
-    dsl.createTable(TASKDEPENDENCY)
-      .column(TASKDEPENDENCY.DEPENDEE_ID, INTEGER.notNull())
-      .column(TASKDEPENDENCY.DEPENDANT_ID, INTEGER.notNull())
-      .column(TASKDEPENDENCY.TYPE, VARCHAR.notNull())
-      .column(TASKDEPENDENCY.LAG, INTEGER.notNull())
-      .column(TASKDEPENDENCY.HARDNESS, VARCHAR.notNull())
-      .constraints(
-        primaryKey(TASKDEPENDENCY.DEPENDEE_ID, TASKDEPENDENCY.DEPENDANT_ID),
-        foreignKey(TASKDEPENDENCY.DEPENDEE_ID).references(TASK, TASK.ID),
-        foreignKey(TASKDEPENDENCY.DEPENDANT_ID).references(TASK, TASK.ID),
-        check(TASKDEPENDENCY.DEPENDEE_ID.notEqual(TASKDEPENDENCY.DEPENDANT_ID))
-      )
-      .execute()
+      dataSource.connection.use { connection ->
+        connection.createStatement().execute(queries)
+      }
+    } catch (e: Exception) {
+      val message = "Failed to init the database {}"
+      LOG.error(message, e)
+      throw ProjectDatabaseException(message)
+    }
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -168,3 +149,4 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
 private val LOG = GPLogger.create("SqlProjectDatabaseImpl")
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
+private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"

@@ -130,21 +130,6 @@ class ProjectDatabaseTest {
   }
 
   @Test
-  fun `test init after init throws`() {
-    projectDatabase.init()
-    assertThrows<ProjectDatabaseException> {
-      projectDatabase.init()
-    }
-  }
-
-  @Test
-  fun `test init after shutdown legal`() {
-    projectDatabase.init()
-    projectDatabase.shutdown()
-    projectDatabase.init()
-  }
-
-  @Test
   fun `test init after shutdown empty`() {
     projectDatabase.init()
 
