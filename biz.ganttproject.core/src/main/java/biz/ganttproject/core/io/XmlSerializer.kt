@@ -93,8 +93,8 @@ data class XmlView(
   data class XmlField(
     @get:JacksonXmlProperty(isAttribute = true) var id: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var name: String = "",
-    @get:JacksonXmlProperty(isAttribute = true) var width: Int = 0,
-    @get:JacksonXmlProperty(isAttribute = true) var order: Int = 0
+    @get:JacksonXmlProperty(isAttribute = true) var width: Int = -1,
+    @get:JacksonXmlProperty(isAttribute = true) var order: Int = -1
   )
 
   data class XmlOption(

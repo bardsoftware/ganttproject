@@ -20,21 +20,24 @@ package net.sourceforge.ganttproject.parser;
 
 import biz.ganttproject.core.io.XmlProject;
 import biz.ganttproject.core.io.XmlSerializerKt;
+import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.lib.fx.TreeCollapseView;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskView;
 
 public class TaskTagHandler extends AbstractTagHandler {
   private final TaskManager myManager;
   private final TreeCollapseView<Task> myTreeFacade;
-  private final TaskView myTaskView;
+  private final UIFacade myUiFacade;
+  private final ColumnList myTableColumns;
 
-  public TaskTagHandler(TaskManager mgr, TreeCollapseView<Task> treeFacade, TaskView taskView) {
+  public TaskTagHandler(TaskManager mgr, TreeCollapseView<Task> treeFacade, UIFacade uiFacade, ColumnList tableColumns) {
     super("task");
     myManager = mgr;
     myTreeFacade = treeFacade;
-    myTaskView = taskView;
+    myUiFacade = uiFacade;
+    myTableColumns = tableColumns;
   }
 
   @Override
@@ -46,7 +49,7 @@ public class TaskTagHandler extends AbstractTagHandler {
       return true;
     });
     TaskSerializerKt.loadDependencyGraph(taskLoader.getDependencies(), myManager, taskLoader.getLegacyFixedStartTasks());
-    TaskSerializerKt.loadTimelineTasks(xmlProject, myManager, myTaskView);
+    TaskSerializerKt.loadGanttView(xmlProject, myManager, myUiFacade.getCurrentTaskView(), myUiFacade.getZoomManager(), myTableColumns);
   }
 
   private TaskManager getManager() {

@@ -296,7 +296,7 @@ public class ProxyDocument implements Document {
   //    VacationTagHandler vacationHandler = new VacationTagHandler(hrManager);
       PreviousStateTasksTagHandler previousStateHandler = new PreviousStateTasksTagHandler(myProject.getBaselines());
       RoleTagHandler rolesHandler = new RoleTagHandler(roleManager);
-      TaskTagHandler taskHandler = new TaskTagHandler(taskManager, myUIFacade.getTaskCollapseView(), myUIFacade.getCurrentTaskView());
+      TaskTagHandler taskHandler = new TaskTagHandler(taskManager, myUIFacade.getTaskCollapseView(), myUIFacade, myTaskVisibleFields);
       DefaultWeekTagHandler weekHandler = new DefaultWeekTagHandler(getActiveCalendar());
       OnlyShowWeekendsTagHandler onlyShowWeekendsHandler = new OnlyShowWeekendsTagHandler(getActiveCalendar());
 
@@ -307,13 +307,13 @@ public class ProxyDocument implements Document {
 //      opener.addTagHandler(customPropHandler);
 
 
-      TaskDisplayColumnsTagHandler pilsenTaskDisplayHandler = TaskDisplayColumnsTagHandler.createPilsenHandler();
-      TaskDisplayColumnsTagHandler legacyTaskDisplayHandler = TaskDisplayColumnsTagHandler.createLegacyHandler();
-
-      opener.addTagHandler(pilsenTaskDisplayHandler);
-      opener.addTagHandler(legacyTaskDisplayHandler);
-      opener.addParsingListener(TaskDisplayColumnsTagHandler.createTaskDisplayColumnsWrapper(myTaskVisibleFields, pilsenTaskDisplayHandler, legacyTaskDisplayHandler));
-      opener.addTagHandler(new ViewTagHandler("gantt-chart", getUIFacade(), pilsenTaskDisplayHandler));
+//      TaskDisplayColumnsTagHandler pilsenTaskDisplayHandler = TaskDisplayColumnsTagHandler.createPilsenHandler();
+//      TaskDisplayColumnsTagHandler legacyTaskDisplayHandler = TaskDisplayColumnsTagHandler.createLegacyHandler();
+//
+//      opener.addTagHandler(pilsenTaskDisplayHandler);
+//      opener.addTagHandler(legacyTaskDisplayHandler);
+//      opener.addParsingListener(TaskDisplayColumnsTagHandler.createTaskDisplayColumnsWrapper(myTaskVisibleFields, pilsenTaskDisplayHandler, legacyTaskDisplayHandler));
+//      opener.addTagHandler(new ViewTagHandler("gantt-chart", getUIFacade(), pilsenTaskDisplayHandler));
       opener.addTagHandler(new OptionTagHandler<BooleanOption>(myProject.getTaskFilterManager().getFilterCompletedTasksOption()));
 
       TaskDisplayColumnsTagHandler resourceFieldsHandler = new TaskDisplayColumnsTagHandler(
