@@ -20,7 +20,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.storage.db.Tables.*
-import com.google.common.base.Charsets
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
@@ -34,7 +33,9 @@ import org.jooq.impl.SQLDataType.*
 import java.math.BigDecimal
 import java.net.URLEncoder
 import java.sql.SQLException
+import java.sql.Timestamp
 import javax.sql.DataSource
+import kotlin.text.Charsets
 
 class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDatabase {
   companion object Factory {
@@ -125,10 +126,10 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       .set(TASK.SHAPE, task.shape?.array)
       .set(TASK.IS_MILESTONE, task.isMilestone)
       .set(TASK.IS_PROJECT_TASK, task.isProjectTask)
-      .set(TASK.START_DATE, java.sql.Timestamp(task.start.timeInMillis))
+      .set(TASK.START_DATE, Timestamp(task.start.timeInMillis))
       .set(TASK.DURATION, task.duration.length)
       .set(TASK.COMPLETION, task.completionPercentage)
-      .set(TASK.EARLIEST_START_DATE, task.third?.let { calendar -> java.sql.Timestamp(calendar.timeInMillis)  })
+      .set(TASK.EARLIEST_START_DATE, task.third?.let { calendar -> Timestamp(calendar.timeInMillis)  })
       .set(TASK.THIRD_DATE_CONSTRAINT, task.third?.let { task.thirdDateConstraint })
       .set(TASK.PRIORITY, priority)
       .set(TASK.WEB_LINK, webLink)
