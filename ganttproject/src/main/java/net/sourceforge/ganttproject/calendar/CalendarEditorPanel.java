@@ -33,10 +33,7 @@ import com.google.common.base.*;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.DialogPane;
-import javafx.application.Platform;
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -45,12 +42,11 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.taskproperties.CommonPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
-import org.apache.poi.ss.formula.functions.T;
+import org.apache.commons.lang3.time.DateUtils;
 
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -61,7 +57,6 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Implements a calendar editor component which consists of a table with calendar events (three columns: date, title, type)
@@ -304,9 +299,8 @@ public class CalendarEditorPanel {
     AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<>(table) {
       @Override
       protected void onAddEvent() {
-        LocalizedString title = InternationalizationKt.getRootLocalizer().create("add");
+        LocalizedString title = InternationalizationKt.getRootLocalizer().create("calendar.editor.datePickerDialog.title");
         DialogKt.dialog(title, controller -> {
-
           MultiDatePicker multiDatePicker = new MultiDatePicker();
           multiDatePicker.setValue(LocalDate.now());
 
@@ -315,12 +309,11 @@ public class CalendarEditorPanel {
           controller.setupButton(ButtonType.APPLY, button -> {
             button.setText(InternationalizationKt.getRootLocalizer().formatText("add"));
             button.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
-              List < LocalDate > selectedDates = multiDatePicker.getSelectedDates();
-              int rowCount = tableModel.getRowCount() - 1;
-              for (int i = 0; i < selectedDates.size(); i++) {
-                LocalDate localDate = selectedDates.get(i);
+              for (LocalDate localDate : multiDatePicker.getSelectedDates()) {
                 Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-                tableModel.setValueAt(CalendarFactory.createGanttCalendar(date), rowCount + i, 0);
+                if (!tableModel.contains(date)) {
+                  tableModel.setValueAt(CalendarFactory.createGanttCalendar(date), tableModel.getRowCount() - 1, 0);
+                }
               }
               controller.hide();
             });
@@ -361,6 +354,7 @@ public class CalendarEditorPanel {
   }
 
   private static class TableModelImpl extends AbstractTableModel {
+
     private enum Column {
       DATES(CalendarEvent.class, null), SUMMARY(String.class, ""), TYPE(String.class, ""), COLOR(Color.class, Color.GRAY);
 
@@ -500,6 +494,15 @@ public class CalendarEditorPanel {
         fireTableRowsUpdated(row, row + 1);
         myOnChangeCallback.run();
       }
+    }
+
+    public boolean contains(Date date) {
+      for (CalendarEvent event : myEvents) {
+        if(DateUtils.isSameDay(event.myDate,date)) {
+          return true;
+        }
+      }
+      return false;
     }
   }
 }

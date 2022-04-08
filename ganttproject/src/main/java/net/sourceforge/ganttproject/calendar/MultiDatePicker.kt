@@ -1,105 +1,104 @@
-package net.sourceforge.ganttproject.calendar;
+/*
+Copyright 2022 BarD Software s.r.o, Alexander Popov
 
-import com.sun.javafx.scene.control.DatePickerContent;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableSet;
-import javafx.event.EventHandler;
-import javafx.scene.Node;
-import javafx.scene.control.DateCell;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.skin.DatePickerSkin;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
+This file is part of GanttProject, an open-source project management tool.
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.TreeSet;
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-public class MultiDatePicker extends DatePicker {
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private ArrayList<LocalDate> selectedDates = new ArrayList();
-    private LocalDate lastSelectedDate = null;
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
-  public MultiDatePicker() {
-        super();
-        setSkin(new DatePickerSkin(this));
-        onRangeSelectionMode();
 
-  }
+package net.sourceforge.ganttproject.calendar
 
-    public MultiDatePicker onRangeSelectionMode() {
+import com.sun.javafx.scene.control.DatePickerContent
+import javafx.event.EventHandler
+import javafx.scene.Node
+import javafx.scene.control.DateCell
+import javafx.scene.control.DatePicker
+import javafx.scene.control.skin.DatePickerSkin
+import javafx.scene.input.MouseButton
+import javafx.scene.input.MouseEvent
+import javafx.util.Callback
+import java.time.LocalDate
 
-        EventHandler<MouseEvent> mouseClickedEventHandler = (MouseEvent clickEvent) -> {
-            if (clickEvent.getButton() == MouseButton.PRIMARY) {
 
+class MultiDatePicker : DatePicker() {
+    private val selectedDates: ArrayList<LocalDate?> = ArrayList()
+    private var lastSelectedDate: LocalDate? = null
+
+    init {
+        skin = DatePickerSkin(this)
+        onRangeSelectionMode()
+    }
+
+    fun onRangeSelectionMode(): MultiDatePicker {
+        val mouseClickedEventHandler = EventHandler { clickEvent: MouseEvent ->
+            if (clickEvent.button == MouseButton.PRIMARY) {
                 if (lastSelectedDate == null) {
-                    this.selectedDates.add(this.getValue());
+                    selectedDates.add(value)
                 } else {
-                    this.selectedDates.clear();
-
-                    LocalDate startDate;
-                    LocalDate endDate;
-
-                    if (this.getValue().isAfter(lastSelectedDate)) {
-                        startDate = lastSelectedDate;
-                        endDate = this.getValue();
+                    selectedDates.clear()
+                    var startDate: LocalDate
+                    val endDate: LocalDate
+                    if (value.isAfter(lastSelectedDate)) {
+                        startDate = lastSelectedDate as LocalDate
+                        endDate = value
                     } else {
-                        startDate = this.getValue();
-                        endDate = lastSelectedDate;
+                        startDate = value
+                        endDate = lastSelectedDate as LocalDate
                     }
-
                     do {
-                        selectedDates.add(startDate);
-                        startDate = startDate.plusDays(1);
-                    } while (!startDate.isAfter(endDate));
+                        selectedDates.add(startDate)
+                        startDate = startDate.plusDays(1)
+                    } while (!startDate.isAfter(endDate))
                 }
-
-                this.lastSelectedDate = this.getValue();
+                lastSelectedDate = value
             }
-
-            DatePickerContent datePickerContent = (DatePickerContent)getPopupContent();
-            datePickerContent.updateDayCells();
-
-            clickEvent.consume();
-        };
-
-        this.setDayCellFactory((DatePicker param) -> new DateCell() {
-            @Override
-            public void updateItem(LocalDate item, boolean empty) {
-                super.updateItem(item, empty);
-                //...
-                if (item != null && !empty) {
+            val datePickerContent = popupContent as DatePickerContent
+            datePickerContent.updateDayCells()
+            clickEvent.consume()
+        }
+        dayCellFactory = Callback { param: DatePicker? ->
+            object : DateCell() {
+                override fun updateItem(item: LocalDate, empty: Boolean) {
+                    super.updateItem(item, empty)
                     //...
-                    addEventHandler(MouseEvent.MOUSE_CLICKED, mouseClickedEventHandler);
-                } else {
-                    //...
-                    removeEventHandler(MouseEvent.MOUSE_CLICKED, mouseClickedEventHandler);
-                }
-
-                if (!selectedDates.isEmpty() && selectedDates.contains(item)) {
-                    if (Objects.equals(item, selectedDates.toArray()[0]) || Objects.equals(item, selectedDates.toArray()[selectedDates.size() - 1])) {
-                        setStyle("-fx-background-color: rgba(3, 169, 1, 0.7);");
+                    if (item != null && !empty) {
+                        //...
+                        addEventHandler(MouseEvent.MOUSE_CLICKED, mouseClickedEventHandler)
                     } else {
-                        setStyle("-fx-background-color: rgba(3, 169, 244, 0.7);");
+                        //...
+                        removeEventHandler(MouseEvent.MOUSE_CLICKED, mouseClickedEventHandler)
                     }
-                } else {
-                    setStyle(null);
+                    style = if (!selectedDates.isEmpty() && selectedDates.contains(item)) {
+                        if (item == selectedDates.toTypedArray()[0] || item == selectedDates.toTypedArray()[selectedDates.size - 1]) {
+                            "-fx-background-color: rgba(3, 169, 1, 0.7);"
+                        } else {
+                            "-fx-background-color: rgba(3, 169, 244, 0.7);"
+                        }
+                    } else {
+                        null
+                    }
                 }
             }
-        });
-        return this;
+        }
+        return this
     }
 
+    val popupContent: Node
+        get() = (skin as DatePickerSkin).popupContent
 
-    public Node getPopupContent() {
-        return ((DatePickerSkin)this.getSkin()).getPopupContent();
-    }
-
-    public List<LocalDate> getSelectedDates() {
-        return this.selectedDates;
+    fun getSelectedDates(): List<LocalDate?> {
+        return selectedDates
     }
 }
