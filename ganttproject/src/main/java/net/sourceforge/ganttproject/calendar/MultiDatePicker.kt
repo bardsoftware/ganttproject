@@ -33,64 +33,64 @@ import java.time.LocalDate
 
 
 class MultiDatePicker : DatePicker() {
-    private val selectedDatesList = mutableListOf<LocalDate>()
-    private var lastSelectedDate: LocalDate? = null
+  private val selectedDatesList = mutableListOf<LocalDate>()
+  private var lastSelectedDate: LocalDate? = null
 
   val selectedDates: List<LocalDate> get() = selectedDatesList.toList()
   val popupContent: Node
     get() = (skin as DatePickerSkin).popupContent
 
   init {
-        skin = DatePickerSkin(this)
-        val mouseClickedEventHandler = EventHandler { clickEvent: MouseEvent ->
-            if (clickEvent.button == MouseButton.PRIMARY) {
-              lastSelectedDate?.let {
-                    selectedDatesList.clear()
-                    var startDate: LocalDate
-                    val endDate: LocalDate
-                    if (value.isAfter(it)) {
-                        startDate = it
-                        endDate = value
-                    } else {
-                        startDate = value
-                        endDate = it
-                    }
-                    do {
-                        selectedDatesList.add(startDate)
-                        startDate = startDate.plusDays(1)
-                    } while (!startDate.isAfter(endDate))
-                } ?: run {
-                  selectedDatesList.add(value)
-                }
-                lastSelectedDate = value
-            }
-            val datePickerContent = popupContent as DatePickerContent
-            datePickerContent.updateDayCells()
-            clickEvent.consume()
+    skin = DatePickerSkin(this)
+    val mouseClickedEventHandler = EventHandler { clickEvent: MouseEvent ->
+      if (clickEvent.button == MouseButton.PRIMARY) {
+        lastSelectedDate?.let {
+          selectedDatesList.clear()
+          var startDate: LocalDate
+          val endDate: LocalDate
+          if (value.isAfter(it)) {
+            startDate = it
+            endDate = value
+          } else {
+            startDate = value
+            endDate = it
+          }
+          do {
+            selectedDatesList.add(startDate)
+            startDate = startDate.plusDays(1)
+          } while (!startDate.isAfter(endDate))
+        } ?: run {
+          selectedDatesList.add(value)
         }
-        dayCellFactory = Callback {
-          object : DateCell() {
-                override fun updateItem(item: LocalDate?, empty: Boolean) {
-                    super.updateItem(item, empty)
-                    //...
-                    if (item != null && !empty) {
-                        //...
-                        addEventHandler(MouseEvent.MOUSE_CLICKED, mouseClickedEventHandler)
-                    } else {
-                        //...
-                        removeEventHandler(MouseEvent.MOUSE_CLICKED, mouseClickedEventHandler)
-                    }
-                    style = if (selectedDatesList.isNotEmpty() && selectedDatesList.contains(item)) {
-                        if (item == selectedDatesList.toTypedArray()[0] || item == selectedDatesList.toTypedArray()[selectedDatesList.size - 1]) {
-                            "-fx-background-color: rgba(3, 169, 1, 0.7);"
-                        } else {
-                            "-fx-background-color: rgba(3, 169, 244, 0.7);"
-                        }
-                    } else {
-                        null
-                    }
-                }
-            }
-        }
+        lastSelectedDate = value
+      }
+      val datePickerContent = popupContent as DatePickerContent
+      datePickerContent.updateDayCells()
+      clickEvent.consume()
     }
+    dayCellFactory = Callback {
+      object : DateCell() {
+        override fun updateItem(item: LocalDate?, empty: Boolean) {
+          super.updateItem(item, empty)
+          //...
+          if (item != null && !empty) {
+            //...
+            addEventHandler(MouseEvent.MOUSE_CLICKED, mouseClickedEventHandler)
+          } else {
+            //...
+            removeEventHandler(MouseEvent.MOUSE_CLICKED, mouseClickedEventHandler)
+          }
+          style = if (selectedDatesList.isNotEmpty() && selectedDatesList.contains(item)) {
+            if (item == selectedDatesList.toTypedArray()[0] || item == selectedDatesList.toTypedArray()[selectedDatesList.size - 1]) {
+              "-fx-background-color: rgba(3, 169, 1, 0.7);"
+            } else {
+              "-fx-background-color: rgba(3, 169, 244, 0.7);"
+            }
+          } else {
+            null
+          }
+        }
+      }
+    }
+  }
 }
