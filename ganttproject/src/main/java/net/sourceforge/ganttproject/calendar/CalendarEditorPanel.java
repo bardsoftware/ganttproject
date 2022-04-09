@@ -301,12 +301,16 @@ public class CalendarEditorPanel {
       protected void onAddEvent() {
         LocalizedString title = InternationalizationKt.getRootLocalizer().create("calendar.editor.datePickerDialog.title");
         DialogKt.dialog(title, controller -> {
+          controller.addStyleSheet("/biz/ganttproject/app/Dialog.css");
+          controller.addStyleSheet("/biz/ganttproject/lib/MultiDatePicker.css");
+          controller.addStyleClass("dlg");
           MultiDatePicker multiDatePicker = new MultiDatePicker();
           multiDatePicker.setValue(LocalDate.now());
 
           controller.setContent(multiDatePicker.getPopupContent());
 
           controller.setupButton(ButtonType.APPLY, button -> {
+            button.getStyleClass().add("btn-attention");
             button.setText(InternationalizationKt.getRootLocalizer().formatText("add"));
             button.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
               for (LocalDate localDate : multiDatePicker.getSelectedDates()) {
