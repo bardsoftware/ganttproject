@@ -33,34 +33,34 @@ import java.time.LocalDate
 
 
 class MultiDatePicker : DatePicker() {
-    private val selectedDates: ArrayList<LocalDate?> = ArrayList()
+    private val selectedDatesList = mutableListOf<LocalDate>()
     private var lastSelectedDate: LocalDate? = null
 
-    init {
-        skin = DatePickerSkin(this)
-        onRangeSelectionMode()
-    }
+  val selectedDates: List<LocalDate> get() = selectedDatesList.toList()
+  val popupContent: Node
+    get() = (skin as DatePickerSkin).popupContent
 
-    fun onRangeSelectionMode(): MultiDatePicker {
+  init {
+        skin = DatePickerSkin(this)
         val mouseClickedEventHandler = EventHandler { clickEvent: MouseEvent ->
             if (clickEvent.button == MouseButton.PRIMARY) {
-                if (lastSelectedDate == null) {
-                    selectedDates.add(value)
-                } else {
-                    selectedDates.clear()
+              lastSelectedDate?.let {
+                    selectedDatesList.clear()
                     var startDate: LocalDate
                     val endDate: LocalDate
-                    if (value.isAfter(lastSelectedDate)) {
-                        startDate = lastSelectedDate as LocalDate
+                    if (value.isAfter(it)) {
+                        startDate = it
                         endDate = value
                     } else {
                         startDate = value
-                        endDate = lastSelectedDate as LocalDate
+                        endDate = it
                     }
                     do {
-                        selectedDates.add(startDate)
+                        selectedDatesList.add(startDate)
                         startDate = startDate.plusDays(1)
                     } while (!startDate.isAfter(endDate))
+                } ?: run {
+                  selectedDatesList.add(value)
                 }
                 lastSelectedDate = value
             }
@@ -68,9 +68,9 @@ class MultiDatePicker : DatePicker() {
             datePickerContent.updateDayCells()
             clickEvent.consume()
         }
-        dayCellFactory = Callback { param: DatePicker? ->
-            object : DateCell() {
-                override fun updateItem(item: LocalDate, empty: Boolean) {
+        dayCellFactory = Callback {
+          object : DateCell() {
+                override fun updateItem(item: LocalDate?, empty: Boolean) {
                     super.updateItem(item, empty)
                     //...
                     if (item != null && !empty) {
@@ -80,8 +80,8 @@ class MultiDatePicker : DatePicker() {
                         //...
                         removeEventHandler(MouseEvent.MOUSE_CLICKED, mouseClickedEventHandler)
                     }
-                    style = if (!selectedDates.isEmpty() && selectedDates.contains(item)) {
-                        if (item == selectedDates.toTypedArray()[0] || item == selectedDates.toTypedArray()[selectedDates.size - 1]) {
+                    style = if (selectedDatesList.isNotEmpty() && selectedDatesList.contains(item)) {
+                        if (item == selectedDatesList.toTypedArray()[0] || item == selectedDatesList.toTypedArray()[selectedDatesList.size - 1]) {
                             "-fx-background-color: rgba(3, 169, 1, 0.7);"
                         } else {
                             "-fx-background-color: rgba(3, 169, 244, 0.7);"
@@ -92,13 +92,5 @@ class MultiDatePicker : DatePicker() {
                 }
             }
         }
-        return this
-    }
-
-    val popupContent: Node
-        get() = (skin as DatePickerSkin).popupContent
-
-    fun getSelectedDates(): List<LocalDate?> {
-        return selectedDates
     }
 }
