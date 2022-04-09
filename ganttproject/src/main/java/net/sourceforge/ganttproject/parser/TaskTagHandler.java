@@ -20,8 +20,10 @@ package net.sourceforge.ganttproject.parser;
 
 import biz.ganttproject.core.io.XmlProject;
 import biz.ganttproject.core.io.XmlSerializerKt;
+import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.lib.fx.TreeCollapseView;
+import com.google.common.collect.ImmutableList;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -31,13 +33,16 @@ public class TaskTagHandler extends AbstractTagHandler {
   private final TreeCollapseView<Task> myTreeFacade;
   private final UIFacade myUiFacade;
   private final ColumnList myTableColumns;
+  private final BooleanOption myFilterCompletedTasksOption;
 
-  public TaskTagHandler(TaskManager mgr, TreeCollapseView<Task> treeFacade, UIFacade uiFacade, ColumnList tableColumns) {
+  public TaskTagHandler(TaskManager mgr, TreeCollapseView<Task> treeFacade, UIFacade uiFacade, ColumnList tableColumns,
+                        BooleanOption filterCompletedTasksOption) {
     super("task");
     myManager = mgr;
     myTreeFacade = treeFacade;
     myUiFacade = uiFacade;
     myTableColumns = tableColumns;
+    myFilterCompletedTasksOption = filterCompletedTasksOption;
   }
 
   @Override
@@ -49,7 +54,7 @@ public class TaskTagHandler extends AbstractTagHandler {
       return true;
     });
     TaskSerializerKt.loadDependencyGraph(taskLoader.getDependencies(), myManager, taskLoader.getLegacyFixedStartTasks());
-    TaskSerializerKt.loadGanttView(xmlProject, myManager, myUiFacade.getCurrentTaskView(), myUiFacade.getZoomManager(), myTableColumns);
+    TaskSerializerKt.loadGanttView(xmlProject, myManager, myUiFacade.getCurrentTaskView(), myUiFacade.getZoomManager(), myTableColumns, ImmutableList.of(myFilterCompletedTasksOption));
   }
 
   private TaskManager getManager() {

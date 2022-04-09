@@ -19,7 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.parser;
 
 import biz.ganttproject.core.io.XmlProject;
+import biz.ganttproject.core.table.ColumnList;
 import net.sourceforge.ganttproject.CustomPropertyManager;
+import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import org.xml.sax.Attributes;
@@ -29,13 +31,18 @@ public class ResourceTagHandler extends AbstractTagHandler {
   private final CustomPropertyManager myCustomPropertyManager;
   private final HumanResourceManager myResourceManager;
   private final RoleManager myRoleManager;
+  private final ZoomManager myZoomManager;
+  private final ColumnList myResourceColumns;
 
   public ResourceTagHandler(HumanResourceManager resourceManager, RoleManager roleManager,
-                            CustomPropertyManager resourceCustomPropertyManager) {
+                            CustomPropertyManager resourceCustomPropertyManager, ZoomManager zoomManager,
+                            ColumnList resourceColumns) {
     super(null);
     myResourceManager = resourceManager;
     myCustomPropertyManager = resourceCustomPropertyManager;
     myRoleManager = roleManager;
+    myZoomManager = zoomManager;
+    myResourceColumns = resourceColumns;
   }
 
   @Override
@@ -44,6 +51,8 @@ public class ResourceTagHandler extends AbstractTagHandler {
 
   @Override
   public void process(XmlProject xmlProject) {
-    new ResourceLoader(myResourceManager, myRoleManager, myCustomPropertyManager).loadResources(xmlProject);
+    var resourceLoader = new ResourceLoader(myResourceManager, myRoleManager, myCustomPropertyManager);
+    resourceLoader.loadResources(xmlProject);
+    ResourceLoaderKt.loadResourceView(xmlProject, myZoomManager, myResourceColumns);
   }
 }

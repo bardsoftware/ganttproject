@@ -22,9 +22,8 @@ import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.io.XmlProject
 import biz.ganttproject.core.io.XmlTasks.XmlTask
 import biz.ganttproject.core.model.task.ConstraintType
-import biz.ganttproject.core.model.task.TaskDefaultColumn
+import biz.ganttproject.core.option.GPOption
 import biz.ganttproject.core.table.ColumnList
-import biz.ganttproject.core.table.ColumnList.ColumnStub
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.lib.fx.TreeCollapseView
@@ -211,8 +210,8 @@ fun loadDependencyGraph(deps: List<GanttDependStructure>, taskManager: TaskManag
   }
 }
 
-fun loadGanttView(xmlProject: XmlProject, taskManager: TaskManager, taskView: TaskView, zoomManager: ZoomManager, taskColumns: ColumnList) {
-  val xmlView = xmlProject.views.filter { "gantt-chart" == it.id }.firstOrNull() ?: return
+fun loadGanttView(xmlProject: XmlProject, taskManager: TaskManager, taskView: TaskView, zoomManager: ZoomManager, taskColumns: ColumnList, options: List<GPOption<*>>) {
+  val xmlView = xmlProject.views.firstOrNull { "gantt-chart" == it.id } ?: return
   // Load timeline tasks
   xmlView.timeline.let { timelineString ->
       taskView.timelineTasks.clear()
@@ -220,26 +219,12 @@ fun loadGanttView(xmlProject: XmlProject, taskManager: TaskManager, taskView: Ta
         taskManager.getTask(id)?.let { taskView.timelineTasks.add(it) }
       }
     }
-  // Load zooming state
-  xmlView.zoomingState?.let {
-    zoomManager.setZoomState(it)
+  xmlView.options?.forEach { xmlOption ->
+    options.firstOrNull { it.id == xmlOption.id }?.loadPersistentValue(
+      xmlOption.text ?: xmlOption.value
+    )
   }
-  // Load displayed columns
-  xmlView.fields?.map { xmlField ->
-    val id: String = xmlField.id
-    val defaultColumn = TaskDefaultColumn.find(id)
-    val name = if (defaultColumn == null) id else defaultColumn.getName()
-    val order = xmlField.order
-    val width = xmlField.width
-    ColumnStub(id, name, true, order, width)
-  }?.let { stubs ->
-    // Set orders for the columns which had no orders defined
-    val countPositiveOrders = stubs.count { it.order >= 0 }
-    stubs.filter { it.order == -1 }.forEachIndexed { idx, stub -> stub.order = idx + countPositiveOrders }
-    taskColumns.importData(ColumnList.Immutable.fromList(stubs + TaskDefaultColumn.getColumnStubs().filter { defaultColumn ->
-      stubs.firstOrNull { it.id == defaultColumn.id } == null
-    }), false)
-  }
+  loadView(xmlView, zoomManager, taskColumns)
 }
 
 private val LOG = GPLogger.create("Project.IO.Load.Task")

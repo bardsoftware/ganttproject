@@ -289,14 +289,13 @@ public class ProxyDocument implements Document {
       HumanResourceManager hrManager = getHumanResourceManager();
       RoleManager roleManager = getRoleManager();
       TaskManager taskManager = getTaskManager();
-      ResourceTagHandler resourceHandler = new ResourceTagHandler(hrManager, roleManager,
-          myProject.getResourceCustomPropertyManager());
+      ResourceTagHandler resourceHandler = new ResourceTagHandler(hrManager, roleManager, myProject.getResourceCustomPropertyManager(), myUIFacade.getZoomManager(), myResourceVisibleFields);
   //    DependencyTagHandler dependencyHandler = new DependencyTagHandler(opener.getContext(), taskManager, getUIFacade());
       AllocationTagHandler allocationHandler = new AllocationTagHandler(hrManager, getTaskManager(), getRoleManager());
   //    VacationTagHandler vacationHandler = new VacationTagHandler(hrManager);
       PreviousStateTasksTagHandler previousStateHandler = new PreviousStateTasksTagHandler(myProject.getBaselines());
       RoleTagHandler rolesHandler = new RoleTagHandler(roleManager);
-      TaskTagHandler taskHandler = new TaskTagHandler(taskManager, myUIFacade.getTaskCollapseView(), myUIFacade, myTaskVisibleFields);
+      TaskTagHandler taskHandler = new TaskTagHandler(taskManager, myUIFacade.getTaskCollapseView(), myUIFacade, myTaskVisibleFields, myProject.getTaskFilterManager().getFilterCompletedTasksOption());
       DefaultWeekTagHandler weekHandler = new DefaultWeekTagHandler(getActiveCalendar());
       OnlyShowWeekendsTagHandler onlyShowWeekendsHandler = new OnlyShowWeekendsTagHandler(getActiveCalendar());
 
@@ -314,13 +313,13 @@ public class ProxyDocument implements Document {
 //      opener.addTagHandler(legacyTaskDisplayHandler);
 //      opener.addParsingListener(TaskDisplayColumnsTagHandler.createTaskDisplayColumnsWrapper(myTaskVisibleFields, pilsenTaskDisplayHandler, legacyTaskDisplayHandler));
 //      opener.addTagHandler(new ViewTagHandler("gantt-chart", getUIFacade(), pilsenTaskDisplayHandler));
-      opener.addTagHandler(new OptionTagHandler<BooleanOption>(myProject.getTaskFilterManager().getFilterCompletedTasksOption()));
+//      opener.addTagHandler(new OptionTagHandler<BooleanOption>(myProject.getTaskFilterManager().getFilterCompletedTasksOption()));
 
-      TaskDisplayColumnsTagHandler resourceFieldsHandler = new TaskDisplayColumnsTagHandler(
-          "field", "id", "order", "width", "visible");
-      opener.addTagHandler(resourceFieldsHandler);
-      opener.addParsingListener(TaskDisplayColumnsTagHandler.createResourceDisplayColumnsWrapper(myResourceVisibleFields, resourceFieldsHandler));
-      opener.addTagHandler(new ViewTagHandler("resource-table", getUIFacade(), resourceFieldsHandler));
+//      TaskDisplayColumnsTagHandler resourceFieldsHandler = new TaskDisplayColumnsTagHandler(
+//          "field", "id", "order", "width", "visible");
+//      opener.addTagHandler(resourceFieldsHandler);
+//      opener.addParsingListener(TaskDisplayColumnsTagHandler.createResourceDisplayColumnsWrapper(myResourceVisibleFields, resourceFieldsHandler));
+//      opener.addTagHandler(new ViewTagHandler("resource-table", getUIFacade(), resourceFieldsHandler));
 
       opener.addTagHandler(resourceHandler);
       opener.addTagHandler(taskHandler);

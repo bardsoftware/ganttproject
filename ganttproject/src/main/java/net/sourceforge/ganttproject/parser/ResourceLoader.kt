@@ -20,8 +20,10 @@ package net.sourceforge.ganttproject.parser
 
 import biz.ganttproject.core.calendar.GanttDaysOff
 import biz.ganttproject.core.io.XmlProject
+import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.time.GanttCalendar
 import net.sourceforge.ganttproject.CustomPropertyManager
+import net.sourceforge.ganttproject.gui.zoom.ZoomManager
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.roles.Role
 import net.sourceforge.ganttproject.roles.RoleManager
@@ -98,4 +100,9 @@ fun RoleManager.findRole(id: String): Role? {
     roleSet = this.getRoleSet(rolesetName)
   }
   return roleSet.findRole(roleID)
+}
+
+fun loadResourceView(xmlProject: XmlProject, zoomManager: ZoomManager, resourceColumns: ColumnList) {
+  val xmlView = xmlProject.views.filter { "resource-table" == it.id }.firstOrNull() ?: return
+  loadView(xmlView, zoomManager, resourceColumns)
 }
