@@ -117,7 +117,7 @@ data class XmlCalendars(
   @get:JsonInclude(JsonInclude.Include.NON_NULL)
   var events: List<XmlCalendarEvent>? = null,
 ) {
-  @JsonPropertyOrder("day-type", "default-week", "only-show-weekends", "overriden-day-types", "days")
+  @JsonPropertyOrder("day-type", "default-week", "only-show-weekends")
   data class XmlDayTypes(
     @get:JacksonXmlElementWrapper(useWrapping = false)
     @get:JacksonXmlProperty(localName = "day-type")
@@ -127,22 +127,23 @@ data class XmlCalendars(
     var defaultWeek: XmlDefaultWeek = XmlDefaultWeek(),
     @get:JacksonXmlProperty(localName = "only-show-weekends")
     var onlyShowWeekends: XmlOnlyShowWeekends = XmlOnlyShowWeekends(),
-    @get:JacksonXmlProperty(localName = "overriden-day-types")
-    var overridenDayTypes: String? = null, // TODO: what is that tag?
-    var days: String? = null // TODO: what is that tag?
+//    @get:JacksonXmlProperty(localName = "overriden-day-types")
+//    var overridenDayTypes: String? = null, // TODO: what is that tag?
+//    var days: String? = null // TODO: what is that tag?
   ) {
     data class XmlDayType(@get:JacksonXmlProperty(isAttribute = true) var id: String = "")
 
+    @JsonPropertyOrder("id", "name", "sun", "mon", "tue", "wed", "thu", "fri", "sat")
     data class XmlDefaultWeek(
       @get:JacksonXmlProperty(isAttribute = true) var id: String = "1",
       @get:JacksonXmlProperty(isAttribute = true) var name: String = "default",
-      @get:JacksonXmlProperty(isAttribute = true) var sun: String = "",
-      @get:JacksonXmlProperty(isAttribute = true) var mon: String = "",
-      @get:JacksonXmlProperty(isAttribute = true) var tue: String = "",
-      @get:JacksonXmlProperty(isAttribute = true) var wed: String = "",
-      @get:JacksonXmlProperty(isAttribute = true) var thu: String = "",
-      @get:JacksonXmlProperty(isAttribute = true) var fri: String = "",
-      @get:JacksonXmlProperty(isAttribute = true) var sat: String = ""
+      @get:JacksonXmlProperty(isAttribute = true) var sun: Int = 0,
+      @get:JacksonXmlProperty(isAttribute = true) var mon: Int = 0,
+      @get:JacksonXmlProperty(isAttribute = true) var tue: Int = 0,
+      @get:JacksonXmlProperty(isAttribute = true) var wed: Int = 0,
+      @get:JacksonXmlProperty(isAttribute = true) var thu: Int = 0,
+      @get:JacksonXmlProperty(isAttribute = true) var fri: Int = 0,
+      @get:JacksonXmlProperty(isAttribute = true) var sat: Int = 0
     )
 
     data class XmlOnlyShowWeekends(@get:JacksonXmlProperty(isAttribute = true) var value: Boolean = false)

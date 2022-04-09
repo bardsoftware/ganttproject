@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.parser;
 import biz.ganttproject.core.io.XmlProject;
 import biz.ganttproject.core.io.XmlSerializerKt;
 import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.option.ListOption;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import com.google.common.collect.ImmutableList;
@@ -28,21 +29,25 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
+import java.awt.*;
+
 public class TaskTagHandler extends AbstractTagHandler {
   private final TaskManager myManager;
   private final TreeCollapseView<Task> myTreeFacade;
   private final UIFacade myUiFacade;
   private final ColumnList myTableColumns;
   private final BooleanOption myFilterCompletedTasksOption;
+  private final ListOption<Color> myRecentColorsOption;
 
   public TaskTagHandler(TaskManager mgr, TreeCollapseView<Task> treeFacade, UIFacade uiFacade, ColumnList tableColumns,
-                        BooleanOption filterCompletedTasksOption) {
+                        BooleanOption filterCompletedTasksOption, ListOption<Color> recentColorsOption) {
     super("task");
     myManager = mgr;
     myTreeFacade = treeFacade;
     myUiFacade = uiFacade;
     myTableColumns = tableColumns;
     myFilterCompletedTasksOption = filterCompletedTasksOption;
+    myRecentColorsOption = recentColorsOption;
   }
 
   @Override
@@ -54,7 +59,9 @@ public class TaskTagHandler extends AbstractTagHandler {
       return true;
     });
     TaskSerializerKt.loadDependencyGraph(taskLoader.getDependencies(), myManager, taskLoader.getLegacyFixedStartTasks());
-    TaskSerializerKt.loadGanttView(xmlProject, myManager, myUiFacade.getCurrentTaskView(), myUiFacade.getZoomManager(), myTableColumns, ImmutableList.of(myFilterCompletedTasksOption));
+    TaskSerializerKt.loadGanttView(xmlProject,
+      myManager, myUiFacade.getCurrentTaskView(), myUiFacade.getZoomManager(), myTableColumns,
+      ImmutableList.of(myFilterCompletedTasksOption, myRecentColorsOption));
   }
 
   private TaskManager getManager() {

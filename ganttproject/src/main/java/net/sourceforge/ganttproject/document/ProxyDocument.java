@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.document;
 
 import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.option.BooleanOption;
+import biz.ganttproject.core.io.XmlProject;
 import biz.ganttproject.core.table.ColumnList;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
@@ -28,20 +28,7 @@ import net.sourceforge.ganttproject.gui.GPColorChooser;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.parser.AbstractTagHandler;
-import net.sourceforge.ganttproject.parser.AllocationTagHandler;
-import net.sourceforge.ganttproject.parser.DefaultWeekTagHandler;
-import net.sourceforge.ganttproject.parser.FileFormatException;
-import net.sourceforge.ganttproject.parser.GPParser;
-import net.sourceforge.ganttproject.parser.HolidayTagHandler;
-import net.sourceforge.ganttproject.parser.OptionTagHandler;
-import net.sourceforge.ganttproject.parser.ParserFactory;
-import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
-import net.sourceforge.ganttproject.parser.ResourceTagHandler;
-import net.sourceforge.ganttproject.parser.RoleTagHandler;
-import net.sourceforge.ganttproject.parser.TaskDisplayColumnsTagHandler;
-import net.sourceforge.ganttproject.parser.TaskTagHandler;
-import net.sourceforge.ganttproject.parser.ViewTagHandler;
+import net.sourceforge.ganttproject.parser.*;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.task.TaskManager;
@@ -293,11 +280,15 @@ public class ProxyDocument implements Document {
   //    DependencyTagHandler dependencyHandler = new DependencyTagHandler(opener.getContext(), taskManager, getUIFacade());
       AllocationTagHandler allocationHandler = new AllocationTagHandler(hrManager, getTaskManager(), getRoleManager());
   //    VacationTagHandler vacationHandler = new VacationTagHandler(hrManager);
-      PreviousStateTasksTagHandler previousStateHandler = new PreviousStateTasksTagHandler(myProject.getBaselines());
-      RoleTagHandler rolesHandler = new RoleTagHandler(roleManager);
-      TaskTagHandler taskHandler = new TaskTagHandler(taskManager, myUIFacade.getTaskCollapseView(), myUIFacade, myTaskVisibleFields, myProject.getTaskFilterManager().getFilterCompletedTasksOption());
-      DefaultWeekTagHandler weekHandler = new DefaultWeekTagHandler(getActiveCalendar());
-      OnlyShowWeekendsTagHandler onlyShowWeekendsHandler = new OnlyShowWeekendsTagHandler(getActiveCalendar());
+      //PreviousStateTasksTagHandler previousStateHandler = new PreviousStateTasksTagHandler(myProject.getBaselines());
+      //RoleTagHandler rolesHandler = new RoleTagHandler(roleManager);
+      TaskTagHandler taskHandler = new TaskTagHandler(taskManager,
+        myUIFacade.getTaskCollapseView(), myUIFacade, myTaskVisibleFields,
+        myProject.getTaskFilterManager().getFilterCompletedTasksOption(),
+        GPColorChooser.getRecentColorsOption()
+      );
+      //DefaultWeekTagHandler weekHandler = new DefaultWeekTagHandler(getActiveCalendar());
+//      OnlyShowWeekendsTagHandler onlyShowWeekendsHandler = new OnlyShowWeekendsTagHandler(getActiveCalendar());
 
       //TaskPropertiesTagHandler taskPropHandler = new TaskPropertiesTagHandler(myProject.getTaskCustomColumnManager());
       //opener.addTagHandler(taskPropHandler);
@@ -321,6 +312,14 @@ public class ProxyDocument implements Document {
 //      opener.addParsingListener(TaskDisplayColumnsTagHandler.createResourceDisplayColumnsWrapper(myResourceVisibleFields, resourceFieldsHandler));
 //      opener.addTagHandler(new ViewTagHandler("resource-table", getUIFacade(), resourceFieldsHandler));
 
+      opener.addTagHandler(new AbstractTagHandler("qqq") {
+        @Override
+        public void process(XmlProject xmlProject) {
+          new RoleSerializer(roleManager).loadRoles(xmlProject);
+          new CalendarSerializer(myProject.getActiveCalendar()).loadCalendar(xmlProject);
+          new BaselineSerializer().loadBaselines(xmlProject, myProject.getBaselines());
+        }
+      });
       opener.addTagHandler(resourceHandler);
       opener.addTagHandler(taskHandler);
       //opener.addParsingListener(taskHandler);
@@ -334,24 +333,24 @@ public class ProxyDocument implements Document {
       opener.addTagHandler(allocationHandler);
       //opener.addParsingListener(allocationHandler);
 //      opener.addTagHandler(vacationHandler);
-      opener.addTagHandler(previousStateHandler);
-      opener.addTagHandler(rolesHandler);
-      opener.addTagHandler(weekHandler);
-      opener.addTagHandler(onlyShowWeekendsHandler);
-      opener.addTagHandler(new OptionTagHandler<>(GPColorChooser.getRecentColorsOption()));
+//      opener.addTagHandler(previousStateHandler);
+      //opener.addTagHandler(rolesHandler);
+//      opener.addTagHandler(weekHandler);
+//      opener.addTagHandler(onlyShowWeekendsHandler);
+      //opener.addTagHandler(new OptionTagHandler<>(GPColorChooser.getRecentColorsOption()));
 //      opener.addParsingListener(dependencyHandler);
       //opener.addParsingListener(resourceHandler);
 
 
-      HolidayTagHandler holidayHandler = new HolidayTagHandler(myProject.getActiveCalendar());
-      opener.addTagHandler(new AbstractTagHandler("calendars") {
-        @Override
-        protected boolean onStartElement(Attributes attrs) {
-          myProject.getActiveCalendar().setBaseCalendarID(attrs.getValue("base-id"));
-          return true;
-        }
-      });
-      opener.addTagHandler(holidayHandler);
+      //HolidayTagHandler holidayHandler = new HolidayTagHandler(myProject.getActiveCalendar());
+//      opener.addTagHandler(new AbstractTagHandler("calendars") {
+//        @Override
+//        protected boolean onStartElement(Attributes attrs) {
+//          myProject.getActiveCalendar().setBaseCalendarID(attrs.getValue("base-id"));
+//          return true;
+//        }
+//      });
+      //opener.addTagHandler(holidayHandler);
 
       PortfolioTagHandler portfolioHandler = new PortfolioTagHandler();
       opener.addTagHandler(portfolioHandler);
@@ -469,19 +468,19 @@ public class ProxyDocument implements Document {
     }
   }
 
-  private static class OnlyShowWeekendsTagHandler extends AbstractTagHandler {
-
-    private final GPCalendarCalc calendar;
-
-    public OnlyShowWeekendsTagHandler(GPCalendarCalc calendar) {
-      super("only-show-weekends");
-      this.calendar = calendar;
-    }
-
-    @Override
-    protected boolean onStartElement(Attributes attrs) {
-      calendar.setOnlyShowWeekends(Boolean.parseBoolean(attrs.getValue("value")));
-      return true;
-    }
-  }
+//  private static class OnlyShowWeekendsTagHandler extends AbstractTagHandler {
+//
+//    private final GPCalendarCalc calendar;
+//
+//    public OnlyShowWeekendsTagHandler(GPCalendarCalc calendar) {
+//      super("only-show-weekends");
+//      this.calendar = calendar;
+//    }
+//
+//    @Override
+//    protected boolean onStartElement(Attributes attrs) {
+//      calendar.setOnlyShowWeekends(Boolean.parseBoolean(attrs.getValue("value")));
+//      return true;
+//    }
+//  }
 }
