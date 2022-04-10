@@ -67,18 +67,11 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   @Throws(ProjectDatabaseException::class)
   override fun init() {
-    val scriptStream = javaClass.getResourceAsStream(DB_INIT_SCRIPT_PATH)
-    if (scriptStream == null) {
-      val message = "Init script not found"
-      LOG.error(message)
-      throw ProjectDatabaseException(message)
-    }
+    val scriptStream = javaClass.getResourceAsStream(DB_INIT_SCRIPT_PATH) ?: throw ProjectDatabaseException("Init script not found")
     try {
       val queries = String(scriptStream.readAllBytes(), Charsets.UTF_8)
 
-      dataSource.connection.use { connection ->
-        connection.createStatement().execute(queries)
-      }
+      dataSource.connection.use { it.createStatement().execute(queries) }
     } catch (e: Exception) {
       val message = "Failed to init the database {}"
       LOG.error(message, e)
@@ -86,6 +79,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
+  // TODO: share task serialization code with TaskSaver.
   @Throws(ProjectDatabaseException::class)
   override fun insertTask(task: Task): Unit = withDSL({ "Failed to insert task ${task.taskID}" }) { dsl ->
     val priority = task.priority.let { pr -> if (pr != Task.DEFAULT_PRIORITY) pr.persistentValue else null }
