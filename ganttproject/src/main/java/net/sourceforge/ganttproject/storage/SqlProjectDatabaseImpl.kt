@@ -111,7 +111,6 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       .set(TASK.DURATION, task.duration.length)
       .set(TASK.COMPLETION, task.completionPercentage)
       .set(TASK.EARLIEST_START_DATE, task.third?.let { calendar -> Timestamp(calendar.timeInMillis)  })
-      .set(TASK.THIRD_DATE_CONSTRAINT, task.third?.let { task.thirdDateConstraint })
       .set(TASK.PRIORITY, priority)
       .set(TASK.WEB_LINK, webLink)
       .set(TASK.COST_MANUAL_VALUE, costManualValue)

@@ -86,7 +86,6 @@ class ProjectDatabaseTest {
     task.duration = taskManager.createLength(10)
     task.completionPercentage = 20
     task.setThirdDate(CalendarFactory.createGanttCalendar(2022, 4, 3))
-    task.thirdDateConstraint = 666
     task.priority = Task.Priority.HIGH
     task.webLink = "love-testing.com"
     task.cost.value = BigDecimal.valueOf(666.7)
@@ -110,7 +109,6 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].duration, 10)
     assertEquals(tasks[0].completion, 20)
     assertEquals(tasks[0].earliestStartDate.time, task.third.timeInMillis)
-    assertEquals(tasks[0].thirdDateConstraint, 666)
     assertEquals(tasks[0].priority, Task.Priority.HIGH.persistentValue)
     assertEquals(tasks[0].webLink, "love-testing.com")
     assertEquals(tasks[0].costManualValue, "666.7")
