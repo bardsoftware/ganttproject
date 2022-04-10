@@ -73,9 +73,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
       dataSource.connection.use { it.createStatement().execute(queries) }
     } catch (e: Exception) {
-      val message = "Failed to init the database {}"
-      LOG.error(message, e)
-      throw ProjectDatabaseException(message)
+      throw ProjectDatabaseException("Failed to init the database", e)
     }
   }
 
