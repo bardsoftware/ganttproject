@@ -54,14 +54,11 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
           val dsl = DSL.using(connection, SQLDialect.H2)
           return body(dsl)
         } catch (e: Exception) {
-          LOG.error("$errorMessage {}", e)
-          throw ProjectDatabaseException(errorMessage())
+          throw ProjectDatabaseException(errorMessage(), e)
         }
       }
     } catch (e: SQLException) {
-      val message = "Failed to connect to the database {}"
-      LOG.error(message, e)
-      throw ProjectDatabaseException(message)
+      throw ProjectDatabaseException("Failed to connect to the database", e)
     }
   }
 
@@ -131,13 +128,10 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
         connection.createStatement().execute("shutdown")
       }
     } catch (e: Exception) {
-      val message = "Failed to shutdown the database {}"
-      LOG.error(message, e)
-      throw ProjectDatabaseException(message)
+      throw ProjectDatabaseException("Failed to shutdown the database", e)
     }
   }
 }
 
-private val LOG = GPLogger.create("SqlProjectDatabaseImpl")
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"
