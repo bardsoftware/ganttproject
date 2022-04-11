@@ -1,8 +1,13 @@
 @import "../app/buttons";
 @import "../app/theme";
 
-.date-picker-popup {
-  //.left-button, .right-button, .left-arrow, .right-arrow {
-  //  @include btn-regular();
-  //}
+// .date-picker-popup {
+//   .left-button, .right-button, .left-arrow, .right-arrow {
+//     @include btn-regular();
+//   }
+// }
+
+* {
+	-fx-edge-selected-cell-color: #4fc14d; // rgba(3, 169, 1, 0.7)
+	-fx-selected-cell-color: #4fc1f7; // rgba(3, 169, 244, 0.7)
 }
