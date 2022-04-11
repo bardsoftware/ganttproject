@@ -72,19 +72,16 @@ class MultiDatePicker : DatePicker() {
       object : DateCell() {
         override fun updateItem(item: LocalDate?, empty: Boolean) {
           super.updateItem(item, empty)
-          //...
           if (item != null && !empty) {
-            //...
             addEventHandler(MouseEvent.MOUSE_CLICKED, mouseClickedEventHandler)
           } else {
-            //...
             removeEventHandler(MouseEvent.MOUSE_CLICKED, mouseClickedEventHandler)
           }
           style = if (selectedDatesList.isNotEmpty() && selectedDatesList.contains(item)) {
-            if (item == selectedDatesList.toTypedArray()[0] || item == selectedDatesList.toTypedArray()[selectedDatesList.size - 1]) {
-              "-fx-background-color: rgba(3, 169, 1, 0.7);"
+            if (item == selectedDatesList.first() || item == selectedDatesList.last()) {
+              "-fx-background-color: -fx-edge-selected-cell-color"
             } else {
-              "-fx-background-color: rgba(3, 169, 244, 0.7);"
+              "-fx-background-color: -fx-selected-cell-color"
             }
           } else {
             null
