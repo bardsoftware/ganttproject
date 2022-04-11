@@ -312,7 +312,7 @@ public class CalendarEditorPanel {
           controller.setupButton(ButtonType.APPLY, button -> {
             button.getStyleClass().add("btn-attention");
             button.setText(InternationalizationKt.getRootLocalizer().formatText("add"));
-            button.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            button.setOnAction(event -> {
               for (LocalDate localDate : multiDatePicker.getSelectedDates()) {
                 Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
                 if (!tableModel.contains(date)) {
@@ -502,7 +502,7 @@ public class CalendarEditorPanel {
 
     public boolean contains(Date date) {
       for (CalendarEvent event : myEvents) {
-        if(DateUtils.isSameDay(event.myDate,date)) {
+        if (DateUtils.isSameDay(event.myDate, date)) {
           return true;
         }
       }
