@@ -20,7 +20,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.storage.db.Tables.*
-import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.util.ColorConvertion

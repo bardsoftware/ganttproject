@@ -23,8 +23,9 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import kotlin.jvm.Throws
 
-open class ProjectDatabaseException(message: String): Exception(message) {
-  constructor(message: String, cause: Exception): this("$message. Caused by ${cause.message}")
+open class ProjectDatabaseException: Exception {
+  constructor(message: String): super(message)
+  constructor(message: String, cause: Throwable): super(message, cause)
 }
 
 /** Storage for holding the current state of a Gantt project. */
