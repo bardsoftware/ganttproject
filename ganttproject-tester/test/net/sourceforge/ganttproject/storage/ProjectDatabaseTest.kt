@@ -111,7 +111,7 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].earliestStartDate.time, task.third.timeInMillis)
     assertEquals(tasks[0].priority, Task.Priority.HIGH.persistentValue)
     assertEquals(tasks[0].webLink, "love-testing.com")
-    assertEquals(tasks[0].costManualValue, "666.7")
+    assertEquals(tasks[0].costManualValue.toDouble(), 666.7)
     assertEquals(tasks[0].isCostCalculated, true)
     assertEquals(tasks[0].notes, "abacaba")
   }

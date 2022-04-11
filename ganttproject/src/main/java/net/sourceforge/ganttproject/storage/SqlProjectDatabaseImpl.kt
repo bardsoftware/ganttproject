@@ -80,10 +80,10 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     val webLink = task.webLink.let { link ->
       if (!link.isNullOrBlank() && link != "http://") URLEncoder.encode(link, Charsets.UTF_8.name()) else null
     }
-    var costManualValue: String? = null
+    var costManualValue: BigDecimal? = null
     var isCostCalculated: Boolean? = null
     if (!(task.cost.isCalculated && task.cost.manualValue == BigDecimal.ZERO)) {
-      costManualValue = task.cost.manualValue.toPlainString()
+      costManualValue = task.cost.manualValue
       isCostCalculated = task.cost.isCalculated
     }
     val notes = task.notes?.let { notes -> notes.replace("\\r\\n", "\\n").ifBlank { null } }
