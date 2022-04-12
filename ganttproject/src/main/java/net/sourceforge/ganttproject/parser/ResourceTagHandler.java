@@ -24,10 +24,9 @@ import net.sourceforge.ganttproject.CustomPropertyManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import org.xml.sax.Attributes;
 
 /** Class to parse the attribute of resources handler */
-public class ResourceTagHandler extends AbstractTagHandler {
+public class ResourceTagHandler {
   private final CustomPropertyManager myCustomPropertyManager;
   private final HumanResourceManager myResourceManager;
   private final RoleManager myRoleManager;
@@ -37,7 +36,6 @@ public class ResourceTagHandler extends AbstractTagHandler {
   public ResourceTagHandler(HumanResourceManager resourceManager, RoleManager roleManager,
                             CustomPropertyManager resourceCustomPropertyManager, ZoomManager zoomManager,
                             ColumnList resourceColumns) {
-    super(null);
     myResourceManager = resourceManager;
     myCustomPropertyManager = resourceCustomPropertyManager;
     myRoleManager = roleManager;
@@ -45,11 +43,6 @@ public class ResourceTagHandler extends AbstractTagHandler {
     myResourceColumns = resourceColumns;
   }
 
-  @Override
-  public void startElement(String namespaceURI, String sName, String qName, Attributes attrs) {
-  }
-
-  @Override
   public void process(XmlProject xmlProject) {
     var resourceLoader = new ResourceLoader(myResourceManager, myRoleManager, myCustomPropertyManager);
     resourceLoader.loadResources(xmlProject);

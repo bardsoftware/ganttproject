@@ -31,7 +31,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 import java.awt.*;
 
-public class TaskTagHandler extends AbstractTagHandler {
+public class TaskTagHandler  {
   private final TaskManager myManager;
   private final TreeCollapseView<Task> myTreeFacade;
   private final UIFacade myUiFacade;
@@ -41,7 +41,6 @@ public class TaskTagHandler extends AbstractTagHandler {
 
   public TaskTagHandler(TaskManager mgr, TreeCollapseView<Task> treeFacade, UIFacade uiFacade, ColumnList tableColumns,
                         BooleanOption filterCompletedTasksOption, ListOption<Color> recentColorsOption) {
-    super("task");
     myManager = mgr;
     myTreeFacade = treeFacade;
     myUiFacade = uiFacade;
@@ -50,7 +49,6 @@ public class TaskTagHandler extends AbstractTagHandler {
     myRecentColorsOption = recentColorsOption;
   }
 
-  @Override
   public void process(XmlProject xmlProject) {
     var taskLoader = new TaskLoader(getManager(), myTreeFacade);
     taskLoader.loadTaskCustomPropertyDefinitions(xmlProject);
