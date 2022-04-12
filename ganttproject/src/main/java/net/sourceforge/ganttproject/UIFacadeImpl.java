@@ -237,7 +237,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 //    myFontSizeOption = new DefaultIntegerOption("ui.appFontSize");
 //    myFontSizeOption.setHasUi(false);
 
-    GPOption[] options = new GPOption[]{myLafOption, myAppFontOption, myChartFontOption, myDpiOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
+    GPOption[] options = new GPOption[]{myLafOption, myAppFontOption, myChartFontOption, myRowPaddingOption, myDpiOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
         dateSampleOption};
     myOptions = new GPOptionGroup("ui", options);
     I18N i18n = new OptionsPageBuilder.I18N();
