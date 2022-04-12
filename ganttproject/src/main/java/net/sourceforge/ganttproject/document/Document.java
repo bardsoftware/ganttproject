@@ -141,8 +141,6 @@ public interface Document {
 
   public URI getURI();
 
-  Portfolio getPortfolio();
-
   boolean isLocal();
 
   /**

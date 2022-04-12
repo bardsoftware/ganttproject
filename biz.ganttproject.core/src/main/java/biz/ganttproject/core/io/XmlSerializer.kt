@@ -1,8 +1,21 @@
 /*
- * Copyright (c) 2020 GanttProject Cloud OU.
- *
- * Author: Dmitry Kazakov (qudeed@gmail.com)
- */
+Copyright 2020 BarD Software s.r.o, GanttProject Cloud OU, Dmitry Kazakov
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.core.io
 
 import com.fasterxml.jackson.annotation.*
@@ -25,8 +38,8 @@ data class XmlProject (
   @get:JacksonXmlProperty(isAttribute = true, localName = "webLink") var webLink: String = "",
   @get:JacksonXmlProperty(isAttribute = true, localName = "view-date") var viewDate: String = "",
   @get:JacksonXmlProperty(isAttribute = true, localName = "view-index") var viewIndex: Int = 0,
-  @get:JacksonXmlProperty(isAttribute = true, localName = "gantt-divider-location") var ganttDividerLocation: Int = 0,
-  @get:JacksonXmlProperty(isAttribute = true, localName = "resource-divider-location") var resourceDividerLocation: Int = 0,
+  @get:JacksonXmlProperty(isAttribute = true, localName = "gantt-divider-location") var ganttDividerLocation: Int = 300,
+  @get:JacksonXmlProperty(isAttribute = true, localName = "resource-divider-location") var resourceDividerLocation: Int = 300,
   @get:JacksonXmlProperty(isAttribute = true) var version: String = "",
   @get:JacksonXmlProperty(isAttribute = true) var locale: String = "",
 
@@ -71,7 +84,7 @@ data class XmlView(
   var fields: List<XmlField>? = null,
   @get:JsonInclude(JsonInclude.Include.NON_NULL)
   @get:JacksonXmlCData
-  var timeline: String? = null,
+  var timeline: String = "",
   @get:JacksonXmlElementWrapper(useWrapping = false)
   @get:JacksonXmlProperty(localName = "option")
   @get:JsonInclude(JsonInclude.Include.NON_NULL)
@@ -80,8 +93,8 @@ data class XmlView(
   data class XmlField(
     @get:JacksonXmlProperty(isAttribute = true) var id: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var name: String = "",
-    @get:JacksonXmlProperty(isAttribute = true) var width: Int = 0,
-    @get:JacksonXmlProperty(isAttribute = true) var order: Int = 0
+    @get:JacksonXmlProperty(isAttribute = true) var width: Int = -1,
+    @get:JacksonXmlProperty(isAttribute = true) var order: Int = -1
   )
 
   data class XmlOption(
@@ -104,7 +117,7 @@ data class XmlCalendars(
   @get:JsonInclude(JsonInclude.Include.NON_NULL)
   var events: List<XmlCalendarEvent>? = null,
 ) {
-  @JsonPropertyOrder("day-type", "default-week", "only-show-weekends", "overriden-day-types", "days")
+  @JsonPropertyOrder("day-type", "default-week", "only-show-weekends")
   data class XmlDayTypes(
     @get:JacksonXmlElementWrapper(useWrapping = false)
     @get:JacksonXmlProperty(localName = "day-type")
@@ -114,22 +127,23 @@ data class XmlCalendars(
     var defaultWeek: XmlDefaultWeek = XmlDefaultWeek(),
     @get:JacksonXmlProperty(localName = "only-show-weekends")
     var onlyShowWeekends: XmlOnlyShowWeekends = XmlOnlyShowWeekends(),
-    @get:JacksonXmlProperty(localName = "overriden-day-types")
-    var overridenDayTypes: String? = null, // TODO: what is that tag?
-    var days: String? = null // TODO: what is that tag?
+//    @get:JacksonXmlProperty(localName = "overriden-day-types")
+//    var overridenDayTypes: String? = null, // TODO: what is that tag?
+//    var days: String? = null // TODO: what is that tag?
   ) {
     data class XmlDayType(@get:JacksonXmlProperty(isAttribute = true) var id: String = "")
 
+    @JsonPropertyOrder("id", "name", "sun", "mon", "tue", "wed", "thu", "fri", "sat")
     data class XmlDefaultWeek(
       @get:JacksonXmlProperty(isAttribute = true) var id: String = "1",
       @get:JacksonXmlProperty(isAttribute = true) var name: String = "default",
-      @get:JacksonXmlProperty(isAttribute = true) var sun: String = "",
-      @get:JacksonXmlProperty(isAttribute = true) var mon: String = "",
-      @get:JacksonXmlProperty(isAttribute = true) var tue: String = "",
-      @get:JacksonXmlProperty(isAttribute = true) var wed: String = "",
-      @get:JacksonXmlProperty(isAttribute = true) var thu: String = "",
-      @get:JacksonXmlProperty(isAttribute = true) var fri: String = "",
-      @get:JacksonXmlProperty(isAttribute = true) var sat: String = ""
+      @get:JacksonXmlProperty(isAttribute = true) var sun: Int = 0,
+      @get:JacksonXmlProperty(isAttribute = true) var mon: Int = 0,
+      @get:JacksonXmlProperty(isAttribute = true) var tue: Int = 0,
+      @get:JacksonXmlProperty(isAttribute = true) var wed: Int = 0,
+      @get:JacksonXmlProperty(isAttribute = true) var thu: Int = 0,
+      @get:JacksonXmlProperty(isAttribute = true) var fri: Int = 0,
+      @get:JacksonXmlProperty(isAttribute = true) var sat: Int = 0
     )
 
     data class XmlOnlyShowWeekends(@get:JacksonXmlProperty(isAttribute = true) var value: Boolean = false)
@@ -168,7 +182,7 @@ data class XmlTasks(
 
   @JsonPropertyOrder(
     "id", "name", "color", "shape", "meeting", "project", "start", "duration", "complete", "thirdDate", "thirdDate-constraint",
-    "priority", "webLink", "expand", "cost-manual-value", "cost-calculated", "task", "notes", "depend"
+    "priority", "webLink", "expand", "cost-manual-value", "cost-calculated", "task", "notes", "depend", "fixed-start"
   )
   data class XmlTask(
     @get:JacksonXmlProperty(isAttribute = true) var id: Int = 0,
@@ -187,7 +201,7 @@ data class XmlTasks(
     @get:JacksonXmlProperty(isAttribute = true) var duration: Int = 0,
 
     @get:JacksonXmlProperty(isAttribute = true, localName = "complete")
-    var completion: Int? = null,
+    var completion: Int = 0,
 
     @get:JacksonXmlProperty(isAttribute = true, localName = "thirdDate")
     var earliestStartDate: String? = null,
@@ -223,7 +237,8 @@ data class XmlTasks(
     @get:JacksonXmlElementWrapper(useWrapping = false)
     @get:JsonInclude(JsonInclude.Include.NON_NULL)
     var tasks: List<XmlTask>? = null,
-//    @get:JacksonXmlProperty(isAttribute = true, localName = "fixed-start") var fixedStart: String? = null,
+
+    @get:JacksonXmlProperty(isAttribute = true, localName = "fixed-start") var legacyFixedStart: String? = null,
 //    @get:JacksonXmlProperty(isAttribute = true) var project: Boolean? = null,
   ) {
     data class XmlDependency(
@@ -263,7 +278,7 @@ data class XmlResources(
   data class XmlResource(
     @get:JacksonXmlProperty(isAttribute = true) var id: Int = 0,
     @get:JacksonXmlProperty(isAttribute = true) var name: String = "",
-    @get:JacksonXmlProperty(isAttribute = true) var role: String = "",
+    @get:JacksonXmlProperty(isAttribute = true, localName = "function") var role: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var email: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var phone: String = "",
 
@@ -343,6 +358,33 @@ fun XmlProject.toXml(): String = xmlMapper.writeValueAsString(this)
 
 fun parseXmlProject(xml: String): XmlProject = xmlMapper.readValue(xml, XmlProject::class.java)
 
+fun XmlProject.collectTasksDepthFirst(): List<XmlTasks.XmlTask> {
+  val result = mutableListOf<XmlTasks.XmlTask>()
+  var queue = this.tasks.tasks?.toMutableList() ?: mutableListOf()
+  while (queue.isNotEmpty()) {
+    queue.removeFirst().also {
+      result.add(it)
+      it.tasks?.toMutableList()?.also {
+        queue = (it + queue).toMutableList()
+      }
+    }
+  }
+  return result
+}
+
+fun XmlProject.walkTasksDepthFirst(visitor: (XmlTasks.XmlTask?, XmlTasks.XmlTask)->Boolean) {
+  if (!this.tasks.tasks.isNullOrEmpty()) {
+    doWalkTasksDepthFirst(null, this.tasks.tasks!!, visitor)
+  }
+}
+
+private fun doWalkTasksDepthFirst(root: XmlTasks.XmlTask?, children: List<XmlTasks.XmlTask>, visitor: (XmlTasks.XmlTask?, XmlTasks.XmlTask)->Boolean) {
+  children.forEach {
+    if (visitor(root, it) && !it.tasks.isNullOrEmpty()) {
+      doWalkTasksDepthFirst(it, it.tasks!!, visitor)
+    }
+  }
+}
 private val xmlMapper = XmlMapper().also {
   it.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true)
   it.enable(SerializationFeature.INDENT_OUTPUT)

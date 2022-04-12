@@ -1,16 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?><project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="404" resource-divider-location="322" version="3.2.3200" locale="en">
-    <description/>
+<?xml version="1.0" encoding="UTF-8"?><project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">
     <view zooming-state="default:8" id="gantt-chart">
-        <field id="tpd3" name="Name" width="200" order="0"/>
-        <field id="tpd4" name="Begin date" width="75" order="1"/>
-        <field id="tpd5" name="End date" width="75" order="2"/>
-        <field id="tpd12" name="Cost" width="38" order="3"/>
-        <option id="taskLabelUp" value=""/>
-        <option id="taskLabelLeft" value="name"/>
+        <field id="tpd3" name="Name" width="184" order="0"/>
+        <field id="tpd4" name="Begin date" width="69" order="1"/>
+        <field id="tpd5" name="End date" width="69" order="2"/>
+        <field id="tpd12" name="Cost" width="36" order="3"/>
         <option id="filter.completedTasks" value="false"/>
-        <timeline>
-            <![CDATA[49]]>
-        </timeline>
+        <timeline><![CDATA[49]]></timeline>
+        <option id="color.recent"><![CDATA[#ff0066]]></option>
     </view>
     <view id="resource-table">
         <field id="0" name="Name" width="160" order="0"/>
@@ -46,7 +42,7 @@
                 <depend id="10" type="2" difference="0" hardness="Strong"/>
                 <depend id="12" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="10" name="Prepare construction documents" color="#99ccff" meeting="false" start="2022-02-24" duration="15" complete="75" expand="true">
+            <task id="10" name="Prepare construction documents" color="#ff0066" meeting="false" start="2022-02-24" duration="15" complete="75" thirdDate="2022-02-24" thirdDate-constraint="0" expand="true">
                 <depend id="17" type="2" difference="0" hardness="Strong"/>
             </task>
             <task id="17" name="Agreement on architectural plan " color="#000000" meeting="true" start="2022-03-17" duration="0" complete="0" expand="true">
@@ -61,9 +57,9 @@
             </task>
             <task id="13" name="Furniture selection" color="#99ccff" meeting="false" start="2022-03-03" duration="5" complete="0" expand="true"/>
             <task id="14" name="Equipment planning" color="#99ccff" meeting="false" start="2022-03-03" duration="5" complete="0" expand="true">
-                <notes>
-                    <![CDATA[Embedded devices, kitchen, washing machine, dryer etc]]>
-                </notes>
+                <notes><![CDATA[
+                    Embedded devices, kitchen, washing machine, dryer etc
+                ]]></notes>
             </task>
         </task>
         <task id="7" name="Construction phase" color="#99ccff" meeting="false" start="2022-03-17" duration="75" complete="0" expand="true">
@@ -98,25 +94,26 @@
         <task id="49" name="GanttProject 3.2" color="#ff3333" meeting="true" start="2022-02-10" duration="0" complete="0" thirdDate="2018-02-06" thirdDate-constraint="0" expand="true">
             <depend id="0" type="2" difference="0" hardness="Rubber"/>
         </task>
+        <task id="50" name="task_50" meeting="false" start="2022-01-03" duration="1" complete="0" expand="true"/>
     </tasks>
     <resources>
-        <resource id="1" name="Jack House" function="Default:1" contacts="jack.house@myselfllc.net" phone="0044 077345456"/>
-        <resource id="0" name="John Black" function="4" contacts="john.black@myselfllc.net" phone="+44 0794353567">
+        <resource id="1" name="Jack House" function="Default:1" contacts="" phone="0044 077345456"/>
+        <resource id="0" name="John Black" function="4" contacts="" phone="+44 0794353567">
             <rate name="standard" value="40"/>
         </resource>
-        <resource id="2" name="Michelangelo" function="0" contacts="mickelangelo@heaven.net" phone="078 9059056">
+        <resource id="2" name="Michelangelo" function="0" contacts="" phone="078 9059056">
             <rate name="standard" value="1000"/>
         </resource>
-        <resource id="3" name="Tom White" function="1" contacts="tom.white@myselfllc.net" phone="07978978978">
+        <resource id="3" name="Tom White" function="1" contacts="" phone="07978978978">
             <rate name="standard" value="50"/>
         </resource>
-        <resource id="4" name="Peter Green" function="1" contacts="peter.green@myselfllc.net" phone="0797897856">
+        <resource id="4" name="Peter Green" function="1" contacts="" phone="0797897856">
             <rate name="standard" value="50"/>
         </resource>
-        <resource id="5" name="George Brown" function="1" contacts="george.brown@myselfllc.net" phone="07967766447">
+        <resource id="5" name="George Brown" function="1" contacts="" phone="07967766447">
             <rate name="standard" value="50"/>
         </resource>
-        <resource id="6" name="John Silver" function="2" contacts="john.silver@myselfllc.net" phone="07778967889">
+        <resource id="6" name="John Silver" function="2" contacts="" phone="07778967889">
             <rate name="standard" value="100"/>
         </resource>
     </resources>

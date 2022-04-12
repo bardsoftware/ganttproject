@@ -256,10 +256,10 @@ internal class ProjectOpenStrategy(
     } finally {
       myAlgs.scheduler.setDiagnostic(null)
     }
-    if (document.portfolio != null) {
-      val defaultDocument = document.portfolio.defaultDocument
-      project.open(defaultDocument)
-    }
+//    if (document.portfolio != null) {
+//      val defaultDocument = document.portfolio.defaultDocument
+//      project.open(defaultDocument)
+//    }
     myOldDuration = project.taskManager.projectLength
     return Step1()
   }

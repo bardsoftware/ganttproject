@@ -119,11 +119,6 @@ public class ReadOnlyProxyDocument implements Document {
   }
 
   @Override
-  public Portfolio getPortfolio() {
-    return null;
-  }
-
-  @Override
   public boolean isLocal() {
     return myDelegate.isLocal();
   }
