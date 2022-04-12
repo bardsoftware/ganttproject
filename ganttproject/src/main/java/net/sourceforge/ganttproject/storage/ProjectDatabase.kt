@@ -20,9 +20,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.storage
 
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import kotlin.jvm.Throws
 
-open class ProjectDatabaseException(message: String): Exception(message)
+open class ProjectDatabaseException: Exception {
+  constructor(message: String): super(message)
+  constructor(message: String, cause: Throwable): super(message, cause)
+}
 
 /** Storage for holding the current state of a Gantt project. */
 interface ProjectDatabase {
@@ -33,6 +37,10 @@ interface ProjectDatabase {
   /** Insert the task. */
   @Throws(ProjectDatabaseException::class)
   fun insertTask(task: Task)
+
+  /** Insert the task dependency. */
+  @Throws(ProjectDatabaseException::class)
+  fun insertTaskDependency(taskDependency: TaskDependency)
 
   /** Close connections and release the resources. */
   @Throws(ProjectDatabaseException::class)

@@ -20,6 +20,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.storage
 
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.dependency.TaskDependency
 
 /**
  * ProjectDatabase implementation with lazy initialization. After each shutdown, a new database is created.
@@ -43,6 +44,10 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
 
   override fun insertTask(task: Task) {
     getDatabase().insertTask(task)
+  }
+
+  override fun insertTaskDependency(taskDependency: TaskDependency) {
+    getDatabase().insertTaskDependency(taskDependency)
   }
 
   override fun shutdown() {
