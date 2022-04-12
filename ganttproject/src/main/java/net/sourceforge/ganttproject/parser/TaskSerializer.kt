@@ -215,7 +215,7 @@ fun loadGanttView(xmlProject: XmlProject, taskManager: TaskManager, taskView: Ta
   // Load timeline tasks
   xmlView.timeline.let { timelineString ->
       taskView.timelineTasks.clear()
-      timelineString.split(",").map { it.trim().toIntOrNull() }.filterNotNull().forEach { id ->
+      timelineString.split(",").mapNotNull { it.trim().toIntOrNull() }.forEach { id ->
         taskManager.getTask(id)?.let { taskView.timelineTasks.add(it) }
       }
     }
