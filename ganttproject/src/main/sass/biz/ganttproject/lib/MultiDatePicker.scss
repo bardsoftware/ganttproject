@@ -7,11 +7,12 @@
    //  @include btn-regular();
    //}
    .edge-of-range {
-     -fx-background-color: $gp-medium-gray
+     -fx-background-color: $gp-medium-gray;
+     -fx-text-fill: whitesmoke;
    }
 
    .item-of-range {
-     -fx-background-color: $gp-light-gray
+     -fx-background-color: $gp-light-gray;
    }
  }
 
