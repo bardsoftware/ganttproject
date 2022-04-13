@@ -19,17 +19,29 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import biz.ganttproject.core.chart.render.ShapePaint
+import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.db.Tables.*
 import net.sourceforge.ganttproject.io.externalizedColor
 import net.sourceforge.ganttproject.io.externalizedNotes
 import net.sourceforge.ganttproject.io.externalizedWebLink
 import net.sourceforge.ganttproject.task.*
+import biz.ganttproject.storage.db.tables.records.TaskRecord
+import net.sourceforge.ganttproject.storage.ProjectDatabase.*
+import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskInfo
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
+import org.jooq.UpdateSetMoreStep
+import org.jooq.UpdateSetStep
 import org.jooq.impl.DSL
+import java.awt.Color
 import java.math.BigDecimal
+import java.net.URLEncoder
+import java.sql.Connection
 import java.sql.SQLException
 import java.sql.Timestamp
 import javax.sql.DataSource
@@ -73,6 +85,8 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       throw ProjectDatabaseException("Failed to init the database", e)
     }
   }
+
+  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task) { dataSource.connection }
 
   @Throws(ProjectDatabaseException::class)
   override fun insertTask(task: Task): Unit = withDSL({ "Failed to insert task ${task.taskID}" }) { dsl ->
@@ -124,6 +138,95 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     } catch (e: Exception) {
       throw ProjectDatabaseException("Failed to shutdown the database", e)
     }
+  }
+}
+
+
+class SqlTaskUpdateBuilder(private val task: Task,
+                           private val connectionFactory: () -> Connection): TaskUpdateBuilder {
+  private var lastSetStep: UpdateSetMoreStep<TaskRecord>? = null
+
+  private fun nextStep(step: (lastStep: UpdateSetStep<TaskRecord>) -> UpdateSetMoreStep<TaskRecord>) {
+    lastSetStep = step(lastSetStep ?: DSL.using(SQLDialect.H2).update(TASK))
+  }
+
+  @Throws(ProjectDatabaseException::class)
+  override fun execute() {
+    try {
+      lastSetStep?.let { updateQuery ->
+        try {
+          DSL.using(connectionFactory(), SQLDialect.H2).execute(updateQuery.where(TASK.ID.eq(task.taskID)))
+        } catch (e: Exception) {
+          throw ProjectDatabaseException("Failed to execute update", e)
+        }
+      }
+    } finally {
+      lastSetStep = null
+    }
+  }
+
+  override fun setName(name: String?) = nextStep { it.set(TASK.NAME, name) }
+
+  override fun setMilestone(isMilestone: Boolean) = nextStep { it.set(TASK.IS_MILESTONE, isMilestone) }
+
+  override fun setPriority(priority: Task.Priority?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setStart(start: GanttCalendar?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setEnd(end: GanttCalendar?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setDuration(length: TimeDuration?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun shift(shift: TimeDuration?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setCompletionPercentage(percentage: Int) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setShape(shape: ShapePaint?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setColor(color: Color?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setWebLink(webLink: String?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setNotes(notes: String?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun addNotes(notes: String?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setExpand(expand: Boolean) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setCritical(critical: Boolean) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setTaskInfo(taskInfo: TaskInfo?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setProjectTask(projectTask: Boolean) {
+    TODO("Not yet implemented")
   }
 }
 

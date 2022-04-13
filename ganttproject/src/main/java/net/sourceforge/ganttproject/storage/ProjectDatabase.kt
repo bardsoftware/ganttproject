@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import net.sourceforge.ganttproject.task.MutableTask
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import kotlin.jvm.Throws
@@ -30,9 +31,22 @@ open class ProjectDatabaseException: Exception {
 
 /** Storage for holding the current state of a Gantt project. */
 interface ProjectDatabase {
+  /** Build and execute an update query. */
+  interface TaskUpdateBuilder: MutableTask {
+    /** Perform task update. */
+    @Throws(ProjectDatabaseException::class)
+    fun execute()
+
+    interface Factory {
+      fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder
+    }
+  }
+
   /** Initialize the database. */
   @Throws(ProjectDatabaseException::class)
   fun init()
+
+  fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder
 
   /** Insert the task. */
   @Throws(ProjectDatabaseException::class)

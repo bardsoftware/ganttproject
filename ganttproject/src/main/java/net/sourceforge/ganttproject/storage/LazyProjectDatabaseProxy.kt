@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import net.sourceforge.ganttproject.storage.ProjectDatabase.*
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 
@@ -40,6 +41,10 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
 
   override fun init() {
     // Lazy initialization.
+  }
+
+  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder {
+    return getDatabase().createTaskUpdateBuilder(task)
   }
 
   override fun insertTask(task: Task) {
