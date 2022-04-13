@@ -77,15 +77,17 @@ class MultiDatePicker : DatePicker() {
           } else {
             removeEventHandler(MouseEvent.MOUSE_CLICKED, mouseClickedEventHandler)
           }
-          style = if (selectedDatesList.isNotEmpty() && selectedDatesList.contains(item)) {
+          styleClass.add(if (selectedDatesList.isNotEmpty() && selectedDatesList.contains(item)) {
             if (item == selectedDatesList.first() || item == selectedDatesList.last()) {
-              "-fx-background-color: -fx-edge-selected-cell-color"
+              "edge-of-range"
+              // "-fx-background-color: -fx-edge-selected-cell-color"
             } else {
-              "-fx-background-color: -fx-selected-cell-color"
+               //"-fx-background-color: -fx-selected-cell-color"
+              "item-of-range"
             }
           } else {
             null
-          }
+          })
         }
       }
     }
