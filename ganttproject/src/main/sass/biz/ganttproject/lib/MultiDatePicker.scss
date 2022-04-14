@@ -1,0 +1,18 @@
+@import "../app/buttons";
+@import "../app/theme";
+
+
+.date-picker-popup {
+   //.left-button, .right-button, .left-arrow, .right-arrow {
+   //  @include btn-regular();
+   //}
+   .edge-of-range {
+     -fx-background-color: $gp-medium-gray;
+     -fx-text-fill: whitesmoke;
+   }
+
+   .item-of-range {
+     -fx-background-color: $gp-light-gray;
+   }
+ }
+

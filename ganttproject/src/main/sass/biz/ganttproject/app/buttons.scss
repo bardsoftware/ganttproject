@@ -36,7 +36,7 @@
   -fx-border-width: 0;
 }
 
-.btn-regular {
+@mixin btn-regular() {
   @include btn-normal();
   &:hover {
     @include btn-hovered();
@@ -48,6 +48,10 @@
   &:disabled {
     -fx-opacity: .4;
   }
+}
+
+.btn-regular {
+    @include btn-regular();
 }
 
 .btn-regular .secondary {

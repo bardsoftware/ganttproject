@@ -19,6 +19,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.calendar;
 
+import biz.ganttproject.app.DialogKt;
+import biz.ganttproject.app.InternationalizationKt;
+import biz.ganttproject.app.LocalizedString;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.option.DefaultColorOption;
@@ -29,6 +32,7 @@ import biz.ganttproject.core.time.CalendarFactory;
 import com.google.common.base.*;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import javafx.scene.control.ButtonType;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -38,6 +42,7 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.taskproperties.CommonPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
+import org.apache.commons.lang3.time.DateUtils;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -47,6 +52,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -73,6 +80,8 @@ public class CalendarEditorPanel {
   private final Runnable myOnChangeCallback;
   private final Runnable myOnCreate;
   private final UIFacade myUiFacade;
+
+
 
   private static Predicate<CalendarEvent> recurring(final boolean isRecurring) {
     return event -> event.isRecurring == isRecurring;
@@ -195,7 +204,6 @@ public class CalendarEditorPanel {
       myFocusMover = focusSetter;
     }
 
-
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, final int row, int column) {
       TableCellRenderer renderer = table.getCellRenderer(row, column);
@@ -291,12 +299,32 @@ public class CalendarEditorPanel {
     AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<>(table) {
       @Override
       protected void onAddEvent() {
-        int lastRow = tableModel.getRowCount() - 1;
-        Rectangle cellRect = table.getCellRect(lastRow, 0, true);
-        table.scrollRectToVisible(cellRect);
-        table.getSelectionModel().setSelectionInterval(lastRow, lastRow);
-        table.editCellAt(lastRow, 0);
-        table.getEditorComponent().requestFocus();
+        LocalizedString title = InternationalizationKt.getRootLocalizer().create("calendar.editor.datePickerDialog.title");
+        DialogKt.dialog(title, controller -> {
+          controller.addStyleSheet("/biz/ganttproject/app/Dialog.css");
+          controller.addStyleSheet("/biz/ganttproject/lib/MultiDatePicker.css");
+          controller.addStyleClass("dlg");
+          MultiDatePicker multiDatePicker = new MultiDatePicker();
+          multiDatePicker.setValue(LocalDate.now());
+
+          controller.setContent(multiDatePicker.getPopupContent());
+
+          controller.setupButton(ButtonType.APPLY, button -> {
+            button.getStyleClass().add("btn-attention");
+            button.setText(InternationalizationKt.getRootLocalizer().formatText("add"));
+            button.setOnAction(event -> {
+              for (LocalDate localDate : multiDatePicker.getSelectedDates()) {
+                Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                if (!tableModel.contains(date)) {
+                  tableModel.setValueAt(CalendarFactory.createGanttCalendar(date), tableModel.getRowCount() - 1, 0);
+                }
+              }
+              controller.hide();
+            });
+            return null;
+          });
+          return null;
+        });
       }
 
       @Override
@@ -316,6 +344,7 @@ public class CalendarEditorPanel {
         return tableModel.getValue(row);
       }
     };
+
     Function<List<CalendarEvent>, Boolean> isDeleteEnabled = events -> events.size() != 1 || events.get(0) != null;
     tableAndActions.getDeleteItemAction().putValue(AbstractTableAndActionsComponent.PROPERTY_IS_ENABLED_FUNCTION, isDeleteEnabled);
     return tableAndActions;
@@ -329,6 +358,7 @@ public class CalendarEditorPanel {
   }
 
   private static class TableModelImpl extends AbstractTableModel {
+
     private enum Column {
       DATES(CalendarEvent.class, null), SUMMARY(String.class, ""), TYPE(String.class, ""), COLOR(Color.class, Color.GRAY);
 
@@ -468,6 +498,15 @@ public class CalendarEditorPanel {
         fireTableRowsUpdated(row, row + 1);
         myOnChangeCallback.run();
       }
+    }
+
+    public boolean contains(Date date) {
+      for (CalendarEvent event : myEvents) {
+        if (DateUtils.isSameDay(event.myDate, date)) {
+          return true;
+        }
+      }
+      return false;
     }
   }
 }
