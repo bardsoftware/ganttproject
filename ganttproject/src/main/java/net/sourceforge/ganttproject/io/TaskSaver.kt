@@ -25,6 +25,7 @@ import net.sourceforge.ganttproject.CustomPropertyManager
 import net.sourceforge.ganttproject.GanttTask
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.task.*
+import net.sourceforge.ganttproject.util.ColorConvertion
 import org.w3c.util.DateParser
 import org.xml.sax.SAXException
 import org.xml.sax.helpers.AttributesImpl
@@ -32,6 +33,7 @@ import org.xml.sax.helpers.AttributesImpl
 import javax.xml.transform.sax.TransformerHandler
 import java.io.IOException
 import java.math.BigDecimal
+import java.net.URLEncoder
 import java.util.*
 import kotlin.jvm.Throws
 
@@ -173,3 +175,16 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
     return PropertyTypeEncoder.encodeFieldType(fieldType)
   }
 }
+
+fun Task.externalizedWebLink(): String? {
+  if (!webLink.isNullOrBlank() && webLink != "http://") {
+    return URLEncoder.encode(webLink, Charsets.UTF_8.name())
+  }
+  return null
+}
+
+// XML CDATA section adds extra line separator on Windows.
+// See https://bugs.openjdk.java.net/browse/JDK-8133452.
+fun Task.externalizedNotes(): String? = notes?.replace("\\r\\n", "\\n")?.ifBlank { null }
+
+fun TaskImpl.externalizedColor(): String? = if (colorDefined()) ColorConvertion.getColor(color) else null

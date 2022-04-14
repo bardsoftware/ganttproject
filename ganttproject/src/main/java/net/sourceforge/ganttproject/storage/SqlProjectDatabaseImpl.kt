@@ -20,6 +20,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.storage.db.Tables.*
+import net.sourceforge.ganttproject.io.externalizedColor
+import net.sourceforge.ganttproject.io.externalizedNotes
+import net.sourceforge.ganttproject.io.externalizedWebLink
 import net.sourceforge.ganttproject.task.*
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import org.h2.jdbcx.JdbcDataSource
