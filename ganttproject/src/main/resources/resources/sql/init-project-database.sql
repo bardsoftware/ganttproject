@@ -9,7 +9,7 @@ create table if not exists Task (
     duration                integer                 not null,
     completion              integer                     null,
     earliest_start_date     timestamp(0)                null,
-    priority                varchar                     null,
+    priority                varchar                 not null,
     web_link                varchar                     null,
     cost_manual_value       numeric(100000, 2)          null,
     is_cost_calculated      boolean                     null,

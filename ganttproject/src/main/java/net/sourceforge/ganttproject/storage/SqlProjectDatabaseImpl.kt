@@ -83,7 +83,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       .set(TASK.DURATION, task.externalizedDurationLength())
       .set(TASK.COMPLETION, task.completionPercentage)
       .set(TASK.EARLIEST_START_DATE, task.externalizedEarliestStartDate())
-      .set(TASK.PRIORITY, task.externalizedPriority())
+      .set(TASK.PRIORITY, task.priority)
       .set(TASK.WEB_LINK, task.externalizedWebLink())
       .set(TASK.COST_MANUAL_VALUE, task.externalizedCostManualValue())
       .set(TASK.IS_COST_CALCULATED, task.externalizedIsCostCalculated())
