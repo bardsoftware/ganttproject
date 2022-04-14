@@ -22,6 +22,7 @@ import biz.ganttproject.customproperty.PropertyTypeEncoder
 import biz.ganttproject.lib.fx.TreeCollapseView
 import biz.ganttproject.core.time.GanttCalendar
 import net.sourceforge.ganttproject.CustomPropertyManager
+import net.sourceforge.ganttproject.GanttTask
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.task.*
 import org.w3c.util.DateParser
@@ -30,6 +31,7 @@ import org.xml.sax.helpers.AttributesImpl
 
 import javax.xml.transform.sax.TransformerHandler
 import java.io.IOException
+import java.math.BigDecimal
 import java.util.*
 import kotlin.jvm.Throws
 
@@ -37,7 +39,9 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
   @Throws(SAXException::class, IOException::class)
   fun save(project: IGanttProject, handler: TransformerHandler) {
     val attrs = AttributesImpl()
-    addAttribute("empty-milestones", project.taskManager.isZeroMilestones, attrs)
+    if (project.taskManager.isZeroMilestones != null) {
+      addAttribute("empty-milestones", project.taskManager.isZeroMilestones, attrs)
+    }
     startElement("tasks", attrs, handler)
 
     startElement("taskproperties", handler)
@@ -45,12 +49,12 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
     endElement("taskproperties", handler)
     val rootTask = project.taskManager.taskHierarchy.rootTask
     val tasks = project.taskManager.taskHierarchy.getNestedTasks(rootTask)
-    tasks.forEach { writeTask(handler, it, project.taskCustomColumnManager) }
+    tasks.forEach { writeTask(handler, it as GanttTask, project.taskCustomColumnManager) }
     endElement("tasks", handler)
   }
 
   @Throws(SAXException::class, IOException::class)
-  private fun writeTask(handler: TransformerHandler, task: Task, customPropertyManager: CustomPropertyManager) {
+  private fun writeTask(handler: TransformerHandler, task: GanttTask, customPropertyManager: CustomPropertyManager) {
     if (task.taskID == -1) {
       throw IllegalArgumentException("Is it a fake root task? Task=$task")
     }
@@ -58,25 +62,29 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
     addAttribute("id", task.taskID, attrs)
     addAttribute("name", task.name, attrs)
     addAttribute("color", task.externalizedColor(), attrs)
-    addAttribute("shape", task.externalizedShape(), attrs)
-    addAttribute("meeting", task.externalizedIsMilestone(), attrs)
+    if (task.shapeDefined()) {
+      addAttribute("shape", task.shape.array, attrs)
+    }
+    addAttribute("meeting", task.isLegacyMilestone, attrs)
     if (task.isProjectTask) {
       addAttribute("project", true, attrs)
     }
     addAttribute("start", task.start.toXMLString(), attrs)
-    addAttribute("duration", task.externalizedDurationLength(), attrs)
+    addAttribute("duration", task.length, attrs)
     addAttribute("complete", task.completionPercentage, attrs)
     if (task.third != null) {
       addAttribute("thirdDate", task.third.toXMLString(), attrs)
       addAttribute("thirdDate-constraint", task.thirdDateConstraint, attrs)
     }
-    addAttribute("priority", task.externalizedPriority(), attrs)
+    if (task.priority != Task.DEFAULT_PRIORITY) {
+      addAttribute("priority", task.priority.persistentValue, attrs)
+    }
     addAttribute("webLink", task.externalizedWebLink(), attrs)
     addAttribute("expand", taskCollapseView.isExpanded(task), attrs)
-
-    addAttribute("cost-manual-value", task.externalizedCostManualValue()?.toPlainString(), attrs)
-    addAttribute("cost-calculated", task.externalizedIsCostCalculated(), attrs)
-
+    if (!(task.cost.isCalculated && task.cost.manualValue == BigDecimal.ZERO)) {
+      addAttribute("cost-manual-value", task.cost.manualValue.toPlainString(), attrs)
+      addAttribute("cost-calculated", task.cost.isCalculated, attrs)
+    }
     startElement("task", attrs, handler)
     cdataElement("notes", task.externalizedNotes(), attrs, handler)
 
@@ -106,7 +114,7 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
     // Write the child of the task
     if (task.manager.taskHierarchy.hasNestedTasks(task)) {
       val nestedTasks = task.manager.taskHierarchy.getNestedTasks(task)
-      nestedTasks.forEach { writeTask(handler, it, customPropertyManager) }
+      nestedTasks.forEach { writeTask(handler, it as GanttTask, customPropertyManager) }
     }
     // end of task section
     endElement("task", handler)

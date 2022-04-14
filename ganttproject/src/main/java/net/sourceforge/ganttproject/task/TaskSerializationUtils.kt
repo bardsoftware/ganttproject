@@ -19,13 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.task
 
-import net.sourceforge.ganttproject.GanttTask
 import net.sourceforge.ganttproject.util.ColorConvertion
-import java.math.BigDecimal
 import java.net.URLEncoder
 import java.sql.Timestamp
 
-fun Task.externalizedPriority(): String? = if (priority != Task.DEFAULT_PRIORITY) priority.persistentValue else null
 
 fun Task.externalizedWebLink(): String? {
   if (!webLink.isNullOrBlank() && webLink != "http://") {
@@ -34,47 +31,12 @@ fun Task.externalizedWebLink(): String? {
   return null
 }
 
-fun Task.externalizedCostManualValue(): BigDecimal? {
-  if (!(cost.isCalculated && cost.manualValue == BigDecimal.ZERO)) {
-    return cost.manualValue
-  }
-  return null
-}
-
-fun Task.externalizedIsCostCalculated(): Boolean? {
-  if (!(cost.isCalculated && cost.manualValue == BigDecimal.ZERO)) {
-    return cost.isCalculated
-  }
-  return null
-}
-
 // XML CDATA section adds extra line separator on Windows.
 // See https://bugs.openjdk.java.net/browse/JDK-8133452.
 fun Task.externalizedNotes(): String? = notes?.replace("\\r\\n", "\\n")?.ifBlank { null }
 
-fun Task.externalizedShape(): String? {
-  if (this is GanttTask && shapeDefined() || this !is GanttTask) {
-     return shape?.array
-  }
-  return null
-}
-
-fun Task.externalizedColor(): String? {
-  if (this is GanttTask && colorDefined() || this !is GanttTask && color != null) {
-    return ColorConvertion.getColor(color)
-  }
-  return null
-}
-
-fun Task.externalizedIsMilestone(): Boolean {
-  if (this is GanttTask) {
-    return isLegacyMilestone
-  }
-  return isMilestone
-}
+fun TaskImpl.externalizedColor(): String? = if (colorDefined()) ColorConvertion.getColor(color) else null
 
 fun Task.externalizedStartDate(): Timestamp = Timestamp(start.timeInMillis)
 
 fun Task.externalizedEarliestStartDate(): Timestamp? = third?.let { calendar -> Timestamp(calendar.timeInMillis)  }
-
-fun Task.externalizedDurationLength(): Int = duration.length

@@ -26,6 +26,7 @@ import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
+import java.math.BigDecimal
 import java.sql.SQLException
 import javax.sql.DataSource
 import kotlin.text.Charsets
@@ -71,22 +72,28 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   @Throws(ProjectDatabaseException::class)
   override fun insertTask(task: Task): Unit = withDSL({ "Failed to insert task ${task.taskID}" }) { dsl ->
+    var costManualValue: BigDecimal? = null
+    var isCostCalculated: Boolean? = null
+    if (!(task.cost.isCalculated && task.cost.manualValue == BigDecimal.ZERO)) {
+      costManualValue = task.cost.manualValue
+      isCostCalculated = task.cost.isCalculated
+    }
     dsl
       .insertInto(TASK)
       .set(TASK.ID, task.taskID)
       .set(TASK.NAME, task.name)
-      .set(TASK.COLOR, task.externalizedColor())
-      .set(TASK.SHAPE, task.externalizedShape())
-      .set(TASK.IS_MILESTONE, task.externalizedIsMilestone())
+      .set(TASK.COLOR, (task as TaskImpl).externalizedColor())
+      .set(TASK.SHAPE, task.shape?.array)
+      .set(TASK.IS_MILESTONE, (task as TaskImpl).isLegacyMilestone)
       .set(TASK.IS_PROJECT_TASK, task.isProjectTask)
       .set(TASK.START_DATE, task.externalizedStartDate())
-      .set(TASK.DURATION, task.externalizedDurationLength())
+      .set(TASK.DURATION, task.duration.length)
       .set(TASK.COMPLETION, task.completionPercentage)
       .set(TASK.EARLIEST_START_DATE, task.externalizedEarliestStartDate())
-      .set(TASK.PRIORITY, task.priority)
+      .set(TASK.PRIORITY, task.priority.persistentValue)
       .set(TASK.WEB_LINK, task.externalizedWebLink())
-      .set(TASK.COST_MANUAL_VALUE, task.externalizedCostManualValue())
-      .set(TASK.IS_COST_CALCULATED, task.externalizedIsCostCalculated())
+      .set(TASK.COST_MANUAL_VALUE, costManualValue)
+      .set(TASK.IS_COST_CALCULATED, isCostCalculated)
       .set(TASK.NOTES, task.externalizedNotes())
       .execute()
   }
