@@ -113,15 +113,15 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
       emptyElement("depend", attrs, handler)
     }
 
-    val ccv = task.customValues
-    customPropertyManager.definitions.forEach { def ->
-      val idc = def.id
-      if (ccv.hasOwnValue(def)) {
-        var value = ccv.getValue(def)
-        if (GregorianCalendar::class.java.isAssignableFrom(def.type) && value != null) {
+    val customValues = task.customValues
+    customPropertyManager.definitions.forEach { propertyDef ->
+      val propertyId = propertyDef.id
+      if (customValues.hasOwnValue(propertyDef)) {
+        var value = customValues.getValue(propertyDef)
+        if (GregorianCalendar::class.java.isAssignableFrom(propertyDef.type) && value != null) {
           value = DateParser.getIsoDate((value as GanttCalendar).time)
         }
-        addAttribute("taskproperty-id", idc, attrs)
+        addAttribute("taskproperty-id", propertyId, attrs)
         addAttribute("value", value?.toString(), attrs)
         emptyElement("customproperty", attrs, handler)
       }
@@ -156,9 +156,7 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
     if (defaultValue != null) {
       addAttribute("defaultvalue", defaultValue, attrs)
     }
-    attributes.entries.forEach { (key, value) ->
-      addAttribute(key, value, attrs)
-    }
+    attributes.entries.forEach { (key, value) -> addAttribute(key, value, attrs) }
     emptyElement("taskproperty", attrs, handler)
   }
 
@@ -175,21 +173,21 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
     writeTaskProperty(handler, "tpd7", "completion", "default", "int")
     writeTaskProperty(handler, "tpd8", "coordinator", "default", "text")
     writeTaskProperty(handler, "tpd9", "predecessorsr", "default", "text")
-    customPropertyManager.definitions.forEach { cc ->
-      var defVal = cc.defaultValue
-      val cla = cc.type
-      val valueType = encodeFieldType(cla) ?: return@forEach
-      if ("date" == valueType && defVal != null) {
-        defVal = when (defVal) {
-          is GanttCalendar -> DateParser.getIsoDate(defVal.time)
-          is Date -> DateParser.getIsoDate(defVal)
+    customPropertyManager.definitions.forEach { propertyDef ->
+      var defaultValue = propertyDef.defaultValue
+      val definitionType = propertyDef.type
+      val valueType = encodeFieldType(definitionType) ?: return@forEach
+      if ("date" == valueType && defaultValue != null) {
+        defaultValue = when (defaultValue) {
+          is GanttCalendar -> DateParser.getIsoDate(defaultValue.time)
+          is Date -> DateParser.getIsoDate(defaultValue)
           else -> throw IllegalStateException(
-            "Default value is expected to be either GanttCalendar or Date instance, while it is ${defVal::class.java}")
+            "Default value is expected to be either GanttCalendar or Date instance, while it is ${defaultValue::class.java}")
         }
       }
-      val idcStr = cc.id
-      writeTaskProperty(handler, idcStr, cc.name, "custom", valueType,
-        defVal?.toString(), cc.attributes
+      val propertyId = propertyDef.id
+      writeTaskProperty(handler, propertyId, propertyDef.name, "custom", valueType,
+        defaultValue?.toString(), propertyDef.attributes
       )
     }
   }
