@@ -50,7 +50,7 @@ allprojects {
 
 subprojects {
     group 'biz.ganttproject'
-    version = new Date().format("yy.MM.dd")
+    version = project.findProperty("version") ?: new Date().format("yy.MM.dd") + "-SNAPSHOT"
 }
 
 
@@ -60,6 +60,14 @@ def addPublishing(project) {
             maven {
                 name "ganttproject-maven-repository-internal"
                 url "gcs://ganttproject-maven-repository/internal"
+            }
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/bardsoftware/ganttproject")
+                credentials {
+                    username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+                    password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+                }
             }
         }
     }
