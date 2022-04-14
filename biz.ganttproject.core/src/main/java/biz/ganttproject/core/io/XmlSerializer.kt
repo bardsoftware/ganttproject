@@ -279,7 +279,7 @@ data class XmlResources(
     @get:JacksonXmlProperty(isAttribute = true) var id: Int = 0,
     @get:JacksonXmlProperty(isAttribute = true) var name: String = "",
     @get:JacksonXmlProperty(isAttribute = true, localName = "function") var role: String = "",
-    @get:JacksonXmlProperty(isAttribute = true) var email: String = "",
+    @get:JacksonXmlProperty(isAttribute = true, localName = "contacts") var email: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var phone: String = "",
 
     @get:JsonInclude(JsonInclude.Include.NON_NULL) var rate: XmlRate? = null,
