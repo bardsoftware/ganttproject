@@ -66,7 +66,9 @@ public class SaverBase {
   }
 
   protected void addAttribute(String name, Boolean value, AttributesImpl attrs) {
-    addAttribute(name, value.toString(), attrs);
+    if (value != null) {
+      addAttribute(name, value.toString(), attrs);
+    }
   }
 
   protected void emptyElement(String name, AttributesImpl attrs, TransformerHandler handler) throws SAXException {

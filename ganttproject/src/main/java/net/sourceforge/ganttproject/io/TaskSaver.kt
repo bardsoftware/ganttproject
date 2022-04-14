@@ -21,20 +21,15 @@ package net.sourceforge.ganttproject.io
 import biz.ganttproject.customproperty.PropertyTypeEncoder
 import biz.ganttproject.lib.fx.TreeCollapseView
 import biz.ganttproject.core.time.GanttCalendar
-import com.google.common.base.Charsets
 import net.sourceforge.ganttproject.CustomPropertyManager
-import net.sourceforge.ganttproject.GanttTask
 import net.sourceforge.ganttproject.IGanttProject
-import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.util.ColorConvertion
+import net.sourceforge.ganttproject.task.*
 import org.w3c.util.DateParser
 import org.xml.sax.SAXException
 import org.xml.sax.helpers.AttributesImpl
 
 import javax.xml.transform.sax.TransformerHandler
 import java.io.IOException
-import java.math.BigDecimal
-import java.net.URLEncoder
 import java.util.*
 import kotlin.jvm.Throws
 
@@ -42,9 +37,7 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
   @Throws(SAXException::class, IOException::class)
   fun save(project: IGanttProject, handler: TransformerHandler) {
     val attrs = AttributesImpl()
-    if (project.taskManager.isZeroMilestones != null) {
-      addAttribute("empty-milestones", project.taskManager.isZeroMilestones, attrs)
-    }
+    addAttribute("empty-milestones", project.taskManager.isZeroMilestones, attrs)
     startElement("tasks", attrs, handler)
 
     startElement("taskproperties", handler)
@@ -52,57 +45,41 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
     endElement("taskproperties", handler)
     val rootTask = project.taskManager.taskHierarchy.rootTask
     val tasks = project.taskManager.taskHierarchy.getNestedTasks(rootTask)
-    tasks.forEach { task ->
-      writeTask(handler,  task as GanttTask, project.taskCustomColumnManager)
-    }
+    tasks.forEach { writeTask(handler, it, project.taskCustomColumnManager) }
     endElement("tasks", handler)
   }
 
   @Throws(SAXException::class, IOException::class)
-  private fun writeTask(handler: TransformerHandler, task: GanttTask, customPropertyManager: CustomPropertyManager) {
+  private fun writeTask(handler: TransformerHandler, task: Task, customPropertyManager: CustomPropertyManager) {
     if (task.taskID == -1) {
       throw IllegalArgumentException("Is it a fake root task? Task=$task")
     }
     val attrs = AttributesImpl()
     addAttribute("id", task.taskID, attrs)
     addAttribute("name", task.name, attrs)
-    if (task.colorDefined()) {
-      addAttribute("color", ColorConvertion.getColor(task.color), attrs)
-    }
-    if (task.shapeDefined()) {
-      addAttribute("shape", task.shape.array, attrs)
-    }
-    addAttribute("meeting", task.isLegacyMilestone, attrs)
+    addAttribute("color", task.externalizedColor(), attrs)
+    addAttribute("shape", task.externalizedShape(), attrs)
+    addAttribute("meeting", task.externalizedIsMilestone(), attrs)
     if (task.isProjectTask) {
       addAttribute("project", true, attrs)
     }
     addAttribute("start", task.start.toXMLString(), attrs)
-    addAttribute("duration", task.length, attrs)
+    addAttribute("duration", task.externalizedDurationLength(), attrs)
     addAttribute("complete", task.completionPercentage, attrs)
     if (task.third != null) {
       addAttribute("thirdDate", task.third.toXMLString(), attrs)
       addAttribute("thirdDate-constraint", task.thirdDateConstraint, attrs)
     }
-    if (task.priority != Task.DEFAULT_PRIORITY) {
-      addAttribute("priority", task.priority.persistentValue, attrs)
-    }
-    val sWebLink = task.webLink
-    if (sWebLink != null && !sWebLink.equals("") && !sWebLink.equals("http://")) {
-      addAttribute("webLink", URLEncoder.encode(sWebLink, Charsets.UTF_8.name()), attrs)
-    }
+    addAttribute("priority", task.externalizedPriority(), attrs)
+    addAttribute("webLink", task.externalizedWebLink(), attrs)
     addAttribute("expand", taskCollapseView.isExpanded(task), attrs)
 
-    if (!(task.cost.isCalculated && task.cost.manualValue.equals(BigDecimal.ZERO))) {
-      addAttribute("cost-manual-value", task.cost.manualValue.toPlainString(), attrs)
-      addAttribute("cost-calculated", task.cost.isCalculated, attrs)
-    }
-    startElement("task", attrs, handler)
+    addAttribute("cost-manual-value", task.externalizedCostManualValue()?.toPlainString(), attrs)
+    addAttribute("cost-calculated", task.externalizedIsCostCalculated(), attrs)
 
-    if (task.notes != null && task.notes.isNotEmpty()) {
-      // See https://bugs.openjdk.java.net/browse/JDK-8133452
-      val taskNotes = task.notes.replace("\\r\\n", "\\n")
-      cdataElement("notes", taskNotes, attrs, handler)
-    }
+    startElement("task", attrs, handler)
+    cdataElement("notes", task.externalizedNotes(), attrs, handler)
+
     // use successors to write depends information
     val depsAsDependee = task.dependenciesAsDependee.toArray()
     depsAsDependee.forEach { next ->
@@ -126,15 +103,11 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
         emptyElement("customproperty", attrs, handler)
       }
     }
-
     // Write the child of the task
     if (task.manager.taskHierarchy.hasNestedTasks(task)) {
       val nestedTasks = task.manager.taskHierarchy.getNestedTasks(task)
-      nestedTasks.forEach { nestedTask ->
-        writeTask(handler, nestedTask as GanttTask, customPropertyManager)
-      }
+      nestedTasks.forEach { writeTask(handler, it, customPropertyManager) }
     }
-
     // end of task section
     endElement("task", handler)
   }
@@ -153,9 +126,7 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
     addAttribute("name", name, attrs)
     addAttribute("type", type, attrs)
     addAttribute("valuetype", valueType, attrs)
-    if (defaultValue != null) {
-      addAttribute("defaultvalue", defaultValue, attrs)
-    }
+    addAttribute("defaultvalue", defaultValue, attrs)
     attributes.entries.forEach { (key, value) -> addAttribute(key, value, attrs) }
     emptyElement("taskproperty", attrs, handler)
   }
@@ -185,10 +156,8 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
             "Default value is expected to be either GanttCalendar or Date instance, while it is ${defaultValue::class.java}")
         }
       }
-      val propertyId = propertyDef.id
-      writeTaskProperty(handler, propertyId, propertyDef.name, "custom", valueType,
-        defaultValue?.toString(), propertyDef.attributes
-      )
+      writeTaskProperty(handler, propertyDef.id, propertyDef.name, "custom", valueType, defaultValue?.toString(),
+        propertyDef.attributes)
     }
   }
 

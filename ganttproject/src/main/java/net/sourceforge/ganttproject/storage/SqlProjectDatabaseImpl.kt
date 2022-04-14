@@ -20,17 +20,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.storage.db.Tables.*
-import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.*
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
-import net.sourceforge.ganttproject.util.ColorConvertion
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
-import java.math.BigDecimal
-import java.net.URLEncoder
 import java.sql.SQLException
-import java.sql.Timestamp
 import javax.sql.DataSource
 import kotlin.text.Charsets
 
@@ -73,37 +69,25 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
-  // TODO: share task serialization code with TaskSaver.
   @Throws(ProjectDatabaseException::class)
   override fun insertTask(task: Task): Unit = withDSL({ "Failed to insert task ${task.taskID}" }) { dsl ->
-    val priority = task.priority.let { pr -> if (pr != Task.DEFAULT_PRIORITY) pr.persistentValue else null }
-    val webLink = task.webLink.let { link ->
-      if (!link.isNullOrBlank() && link != "http://") URLEncoder.encode(link, Charsets.UTF_8.name()) else null
-    }
-    var costManualValue: BigDecimal? = null
-    var isCostCalculated: Boolean? = null
-    if (!(task.cost.isCalculated && task.cost.manualValue == BigDecimal.ZERO)) {
-      costManualValue = task.cost.manualValue
-      isCostCalculated = task.cost.isCalculated
-    }
-    val notes = task.notes?.let { notes -> notes.replace("\\r\\n", "\\n").ifBlank { null } }
     dsl
       .insertInto(TASK)
       .set(TASK.ID, task.taskID)
       .set(TASK.NAME, task.name)
-      .set(TASK.COLOR, task.color?.let { color -> ColorConvertion.getColor(color) })
-      .set(TASK.SHAPE, task.shape?.array)
-      .set(TASK.IS_MILESTONE, task.isMilestone)
+      .set(TASK.COLOR, task.externalizedColor())
+      .set(TASK.SHAPE, task.externalizedShape())
+      .set(TASK.IS_MILESTONE, task.externalizedIsMilestone())
       .set(TASK.IS_PROJECT_TASK, task.isProjectTask)
-      .set(TASK.START_DATE, Timestamp(task.start.timeInMillis))
-      .set(TASK.DURATION, task.duration.length)
+      .set(TASK.START_DATE, task.externalizedStartDate())
+      .set(TASK.DURATION, task.externalizedDurationLength())
       .set(TASK.COMPLETION, task.completionPercentage)
-      .set(TASK.EARLIEST_START_DATE, task.third?.let { calendar -> Timestamp(calendar.timeInMillis)  })
-      .set(TASK.PRIORITY, priority)
-      .set(TASK.WEB_LINK, webLink)
-      .set(TASK.COST_MANUAL_VALUE, costManualValue)
-      .set(TASK.IS_COST_CALCULATED, isCostCalculated)
-      .set(TASK.NOTES, notes)
+      .set(TASK.EARLIEST_START_DATE, task.externalizedEarliestStartDate())
+      .set(TASK.PRIORITY, task.externalizedPriority())
+      .set(TASK.WEB_LINK, task.externalizedWebLink())
+      .set(TASK.COST_MANUAL_VALUE, task.externalizedCostManualValue())
+      .set(TASK.IS_COST_CALCULATED, task.externalizedIsCostCalculated())
+      .set(TASK.NOTES, task.externalizedNotes())
       .execute()
   }
 
