@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.task
 
 import net.sourceforge.ganttproject.util.ColorConvertion
 import java.net.URLEncoder
-import java.sql.Timestamp
 
 
 fun Task.externalizedWebLink(): String? {
@@ -36,7 +35,3 @@ fun Task.externalizedWebLink(): String? {
 fun Task.externalizedNotes(): String? = notes?.replace("\\r\\n", "\\n")?.ifBlank { null }
 
 fun TaskImpl.externalizedColor(): String? = if (colorDefined()) ColorConvertion.getColor(color) else null
-
-fun Task.externalizedStartDate(): Timestamp = Timestamp(start.timeInMillis)
-
-fun Task.externalizedEarliestStartDate(): Timestamp? = third?.let { calendar -> Timestamp(calendar.timeInMillis)  }

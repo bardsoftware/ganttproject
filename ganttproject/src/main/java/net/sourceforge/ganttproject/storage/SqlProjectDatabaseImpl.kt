@@ -28,6 +28,7 @@ import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 import java.math.BigDecimal
 import java.sql.SQLException
+import java.sql.Timestamp
 import javax.sql.DataSource
 import kotlin.text.Charsets
 
@@ -122,6 +123,10 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 }
+
+private fun Task.externalizedStartDate(): Timestamp = Timestamp(start.timeInMillis)
+
+private fun Task.externalizedEarliestStartDate(): Timestamp? = third?.let { calendar -> Timestamp(calendar.timeInMillis)  }
 
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"
