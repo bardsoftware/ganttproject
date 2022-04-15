@@ -215,14 +215,6 @@ class ProjectDatabaseTest {
 
     projectDatabase.insertTask(task)
 
-
-    val tasks1 = DSL.using(dataSource, SQLDialect.H2)
-      .selectFrom(TASK)
-      .fetch()
-    assertEquals(tasks1.size, 1)
-    assertEquals(tasks1[0].id, 1)
-    assertEquals(tasks1[0].name, "Name1")
-
     val mutator = task.createMutator()
     mutator.setName("Name2")
     mutator.commit()
