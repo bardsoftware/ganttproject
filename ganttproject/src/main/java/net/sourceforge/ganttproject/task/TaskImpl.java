@@ -34,6 +34,8 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder;
+import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.CostAlgorithmImpl;
@@ -225,7 +227,7 @@ public class TaskImpl implements Task {
     if (myMutator != null) {
       return myMutator;
     }
-    myMutator = new MutatorImpl();
+    myMutator = new MutatorImpl(getManager().createTaskUpdateBuilder(this));
     return myMutator;
   }
 
@@ -234,7 +236,7 @@ public class TaskImpl implements Task {
     if (myMutator != null) {
       throw new MutatorException("Two mutators have been requested for task=" + getName());
     }
-    myMutator = new MutatorImpl() {
+    myMutator = new MutatorImpl(getManager().createTaskUpdateBuilder(this)) {
       @Override
       public void setStart(GanttCalendar start) {
         super.setStart(start);
@@ -630,7 +632,14 @@ public class TaskImpl implements Task {
 
     private int myIsolationLevel;
 
+    private final TaskUpdateBuilder taskUpdateBuilder;
+
     public final Exception myException = new Exception();
+
+    public MutatorImpl(TaskUpdateBuilder taskUpdateBuilder) {
+      this.taskUpdateBuilder = taskUpdateBuilder;
+    }
+
     @Override
     public void commit() {
       try {

@@ -40,8 +40,6 @@ import org.jooq.UpdateSetStep
 import org.jooq.impl.DSL
 import java.awt.Color
 import java.math.BigDecimal
-import java.net.URLEncoder
-import java.sql.Connection
 import java.sql.SQLException
 import java.sql.Timestamp
 import javax.sql.DataSource
@@ -86,7 +84,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
-  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task) { dataSource.connection }
+  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task, dataSource)
 
   @Throws(ProjectDatabaseException::class)
   override fun insertTask(task: Task): Unit = withDSL({ "Failed to insert task ${task.taskID}" }) { dsl ->
@@ -143,7 +141,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
 
 class SqlTaskUpdateBuilder(private val task: Task,
-                           private val connectionFactory: () -> Connection): TaskUpdateBuilder {
+                           private val dataSource: DataSource): TaskUpdateBuilder {
   private var lastSetStep: UpdateSetMoreStep<TaskRecord>? = null
 
   private fun nextStep(step: (lastStep: UpdateSetStep<TaskRecord>) -> UpdateSetMoreStep<TaskRecord>) {
@@ -155,7 +153,10 @@ class SqlTaskUpdateBuilder(private val task: Task,
     try {
       lastSetStep?.let { updateQuery ->
         try {
-          DSL.using(connectionFactory(), SQLDialect.H2).execute(updateQuery.where(TASK.ID.eq(task.taskID)))
+          DSL.using(dataSource, SQLDialect.H2).execute(
+            updateQuery
+              .where(TASK.ID.eq(task.taskID))
+          )
         } catch (e: Exception) {
           throw ProjectDatabaseException("Failed to execute update", e)
         }

@@ -58,6 +58,9 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.storage.LazyProjectDatabaseProxy;
+import net.sourceforge.ganttproject.storage.ProjectDatabase;
+import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl;
 import net.sourceforge.ganttproject.task.*;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 import net.sourceforge.ganttproject.undo.UndoManagerImpl;
@@ -121,6 +124,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   protected final Supplier<TaskTable> myTaskTableSupplier;
 
   protected final TaskFilterManager myTaskFilterManager;
+  protected final ProjectDatabase myProjectDatabase;
 
   @Override
   public @NotNull Map<Task, Task> importProject(
@@ -187,8 +191,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected GanttProjectBase() {
     super("GanttProject");
+    myProjectDatabase = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase);
     myTaskManagerConfig = new TaskManagerConfigImpl();
-    myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig);
+    myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig,
+      myProjectDatabase::createTaskUpdateBuilder);
     myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager);
     statusBar = new GanttStatusBar(this);
     myTabPane = new GanttTabbedPane();

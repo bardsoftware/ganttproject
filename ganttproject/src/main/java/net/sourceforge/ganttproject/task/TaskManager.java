@@ -31,6 +31,7 @@ import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.storage.ProjectDatabase;
 import net.sourceforge.ganttproject.task.Task.Priority;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.DependencyGraph;
@@ -43,6 +44,8 @@ import java.awt.*;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
+
+import static net.sourceforge.ganttproject.storage.ProjectDatabase.*;
 
 /**
  * @author bard
@@ -200,7 +203,12 @@ public interface TaskManager {
   public class Access {
     public static TaskManager newInstance(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory,
         TaskManagerConfig config) {
-      return new TaskManagerImpl(containmentFacadeFactory, config);
+      return new TaskManagerImpl(containmentFacadeFactory, config, null);
+    }
+
+    public static TaskManager newInstance(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory,
+                                          TaskManagerConfig config, TaskUpdateBuilder.Factory taskUpdateBuilderFactory) {
+      return new TaskManagerImpl(containmentFacadeFactory, config, taskUpdateBuilderFactory);
     }
   }
 
@@ -251,4 +259,6 @@ public interface TaskManager {
   ProjectEventListener getProjectListener();
 
   GPCalendarListener getCalendarListener();
+
+  TaskUpdateBuilder createTaskUpdateBuilder(Task task);
 }
