@@ -24,6 +24,7 @@ import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.storage.db.Tables.TASKDEPENDENCY
 import biz.ganttproject.storage.db.tables.Task.*
 import net.sourceforge.ganttproject.TestSetupHelper
+import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
@@ -52,7 +53,14 @@ class ProjectDatabaseTest {
     ds.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
     dataSource = ds
     projectDatabase = SqlProjectDatabaseImpl(dataSource)
-    taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+    val taskManagerBuilder = TestSetupHelper.newTaskManagerBuilder()
+    taskManagerBuilder.setTaskUpdateBuilderFactory(
+      object: TaskUpdateBuilder.Factory {
+      override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder {
+       return projectDatabase.createTaskUpdateBuilder(task)
+      }
+    })
+    taskManager = taskManagerBuilder.build()
   }
 
   @AfterEach
@@ -197,5 +205,33 @@ class ProjectDatabaseTest {
     assertEquals(deps[0].type, FinishStartConstraintImpl().type.persistentValue)
     assertEquals(deps[0].lag, 10)
     assertEquals(deps[0].hardness, TaskDependency.Hardness.STRONG.identifier)
+  }
+
+  @Test
+  fun `test update task`() {
+    projectDatabase.init()
+    val task = taskManager.createTask(1)
+    task.name = "Name1"
+
+    projectDatabase.insertTask(task)
+
+
+    val tasks1 = DSL.using(dataSource, SQLDialect.H2)
+      .selectFrom(TASK)
+      .fetch()
+    assertEquals(tasks1.size, 1)
+    assertEquals(tasks1[0].id, 1)
+    assertEquals(tasks1[0].name, "Name1")
+
+    val mutator = task.createMutator()
+    mutator.setName("Name2")
+    mutator.commit()
+
+    val tasks = DSL.using(dataSource, SQLDialect.H2)
+      .selectFrom(TASK)
+      .fetch()
+    assertEquals(tasks.size, 1)
+    assertEquals(tasks[0].id, 1)
+    assertEquals(tasks[0].name, "Name2")
   }
 }

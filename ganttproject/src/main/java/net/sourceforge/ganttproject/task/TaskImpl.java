@@ -672,6 +672,13 @@ public class TaskImpl implements Task {
         myCommands.clear();
         myPropertiesEventSender.fireEvent();
         myProgressEventSender.fireEvent();
+        if (taskUpdateBuilder != null) {
+          try {
+            taskUpdateBuilder.execute();
+          } catch (ProjectDatabaseException e) {
+            GPLogger.log(e);
+          }
+        }
       } finally {
         TaskImpl.this.myMutator = null;
       }
@@ -722,6 +729,9 @@ public class TaskImpl implements Task {
           myFieldChange.myEventSender = myPropertiesEventSender;
           myFieldChange.setValue(name);
           TaskImpl.this.setName(name);
+          if (taskUpdateBuilder != null) {
+            taskUpdateBuilder.setName(name);
+          }
         }
       });
     }
