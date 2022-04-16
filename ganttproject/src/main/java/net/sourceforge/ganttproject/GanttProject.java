@@ -64,10 +64,6 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.storage.LazyProjectDatabaseProxy;
-import net.sourceforge.ganttproject.storage.ProjectDatabase;
-import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
-import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -162,15 +158,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject-logo-512.png"));
     setIconImage(icon.getImage());
 
-    try {
-      ProjectDatabase projectDatabase = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase);
-      projectDatabase.init();
-      ProjectStateHolderEventListener stateListener = new ProjectStateHolderEventListener(projectDatabase);
-      addProjectEventListener(stateListener);
-      getTaskManager().addTaskListener(stateListener);
-    } catch (ProjectDatabaseException e) {
-      gpLogger.error(Arrays.toString(e.getStackTrace()), new Object[]{}, ImmutableMap.of(), e);
-    }
+    ProjectStateHolderEventListener stateListener = new ProjectStateHolderEventListener(myProjectDatabase);
+    addProjectEventListener(stateListener);
+    getTaskManager().addTaskListener(stateListener);
 
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
         myTaskTableChartConnector,

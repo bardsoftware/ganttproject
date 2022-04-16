@@ -27,6 +27,7 @@ import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder;
 import net.sourceforge.ganttproject.task.algorithm.*;
 import net.sourceforge.ganttproject.task.dependency.*;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
@@ -149,10 +150,17 @@ public class TaskManagerImpl implements TaskManager {
 
   private final CustomColumnsManager myCustomColumnsManager;
 
+  private final TaskUpdateBuilder.Factory myTaskUpdateBuilderFactory;
   private Boolean isZeroMilestones = true;
 
   public TaskManagerImpl(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory, TaskManagerConfig config) {
+    this(containmentFacadeFactory, config, null);
+  }
+
+  public TaskManagerImpl(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory, TaskManagerConfig config,
+                         TaskUpdateBuilder.Factory taskUpdateBuilderFactory) {
     myFacadeFactory = containmentFacadeFactory == null ? new FacadeFactoryImpl() : containmentFacadeFactory;
+    myTaskUpdateBuilderFactory = taskUpdateBuilderFactory;
     myCustomPropertyListener = new CustomPropertyListenerImpl(this);
     myCustomColumnsManager = new CustomColumnsManager();
     myCustomColumnsManager.addListener(getCustomPropertyListener());
@@ -652,6 +660,15 @@ public class TaskManagerImpl implements TaskManager {
       myScheduler.run();
     };
   }
+
+  @Override
+  public TaskUpdateBuilder createTaskUpdateBuilder(Task task) {
+    if (myTaskUpdateBuilderFactory != null) {
+      return myTaskUpdateBuilderFactory.createTaskUpdateBuilder(task);
+    }
+    return null;
+  }
+
   public void fireTaskProgressChanged(Task changedTask) {
     if (areEventsEnabled) {
       getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();
@@ -774,7 +791,7 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public TaskManager emptyClone() {
-    TaskManagerImpl result = new TaskManagerImpl(null, myConfig);
+    TaskManagerImpl result = new TaskManagerImpl(null, myConfig, null);
     result.myDependencyHardnessOption.setValue(this.myDependencyHardnessOption.getValue());
     return result;
   }
