@@ -37,7 +37,7 @@ interface ProjectDatabase {
     @Throws(ProjectDatabaseException::class)
     fun execute()
 
-    interface Factory {
+    fun interface Factory {
       fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder
     }
   }

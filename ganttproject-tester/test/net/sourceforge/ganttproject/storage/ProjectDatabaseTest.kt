@@ -54,12 +54,7 @@ class ProjectDatabaseTest {
     dataSource = ds
     projectDatabase = SqlProjectDatabaseImpl(dataSource)
     val taskManagerBuilder = TestSetupHelper.newTaskManagerBuilder()
-    taskManagerBuilder.setTaskUpdateBuilderFactory(
-      object: TaskUpdateBuilder.Factory {
-      override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder {
-       return projectDatabase.createTaskUpdateBuilder(task)
-      }
-    })
+    taskManagerBuilder.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }
     taskManager = taskManagerBuilder.build()
   }
 
