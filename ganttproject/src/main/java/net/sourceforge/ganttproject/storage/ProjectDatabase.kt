@@ -66,4 +66,8 @@ interface ProjectDatabase {
   /** Close connections and release the resources. */
   @Throws(ProjectDatabaseException::class)
   fun shutdown()
+
+  /** Fetch transaction logs starting with the specified id. */
+  @Throws(ProjectDatabaseException::class)
+  fun fetchLogRecords(startId: Int = 0, limit: Int): List<LogRecord>
 }

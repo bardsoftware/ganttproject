@@ -139,6 +139,17 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       throw ProjectDatabaseException("Failed to shutdown the database", e)
     }
   }
+
+  @Throws(ProjectDatabaseException::class)
+  override fun fetchLogRecords(startId: Int, limit: Int): List<LogRecord> = withDSL({ "Failed to fetch log records" }) { dsl ->
+    dsl
+      .selectFrom(LOGRECORD)
+      .where(LOGRECORD.ID.ge(startId))
+      .orderBy(LOGRECORD.ID.asc())
+      .limit(limit)
+      .fetch()
+      .map { LogRecord(it.id, it.record) }
+  }
 }
 
 
