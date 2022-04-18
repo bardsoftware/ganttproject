@@ -40,7 +40,7 @@ import junit.framework.TestCase;
  * @author dbarashev (Dmitry Barashev)
  */
 public class WeekendCalendarImplTest extends TestCase {
-  static {
+  protected void setUp() {
     new CalendarFactory() {
       {
         setLocaleApi(new LocaleApi() {
@@ -56,7 +56,9 @@ public class WeekendCalendarImplTest extends TestCase {
       }
     };
   }
-  private static List<CalendarEvent> TEST_EVENTS = ImmutableList.of(
+
+  private static List<CalendarEvent> createTestEvents() {
+    return ImmutableList.of(
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 0, 1).getTime(), true, CalendarEvent.Type.HOLIDAY, "Jan 1", null),
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 1, 14).getTime(), false, CalendarEvent.Type.NEUTRAL, "Feb 14", null),
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime(), true, CalendarEvent.Type.HOLIDAY, "Mar 8", null),
@@ -64,7 +66,9 @@ public class WeekendCalendarImplTest extends TestCase {
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 9).getTime(), false, CalendarEvent.Type.HOLIDAY, "Mar 9, 2014", null),
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), true, CalendarEvent.Type.WORKING_DAY, "Apr 12", null),
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), false, CalendarEvent.Type.HOLIDAY, "Apr 12, 2014", null)
-  );
+    );
+  }
+  private static List<CalendarEvent> TEST_EVENTS = createTestEvents();
   private static List<CalendarEvent> TEST_EVENTS_RECURRING_FIRST = ImmutableList.of(
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 0, 1).getTime(), true, CalendarEvent.Type.HOLIDAY, "Jan 1", null),
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime(), true, CalendarEvent.Type.HOLIDAY, "Mar 8", null),
@@ -93,7 +97,7 @@ public class WeekendCalendarImplTest extends TestCase {
 
   public void testRecurringHoliday() {
     WeekendCalendarImpl calendar = new WeekendCalendarImpl();
-    calendar.setPublicHolidays(TEST_EVENTS);
+    calendar.setPublicHolidays(createTestEvents());
     assertEquals(DayMask.HOLIDAY, calendar.getDayMask(CalendarFactory.createGanttCalendar(2013, 0, 1).getTime()) & DayMask.HOLIDAY);
     assertEquals(DayMask.HOLIDAY, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 0, 1).getTime()) & DayMask.HOLIDAY);
     assertEquals(DayMask.HOLIDAY, calendar.getDayMask(CalendarFactory.createGanttCalendar(2015, 0, 1).getTime()) & DayMask.HOLIDAY);
@@ -104,7 +108,7 @@ public class WeekendCalendarImplTest extends TestCase {
     WeekendCalendarImpl calendar = new WeekendCalendarImpl();
     calendar.setWeekDayType(Calendar.SATURDAY, DayType.WORKING);
     calendar.setWeekDayType(Calendar.SUNDAY, DayType.WORKING);
-    calendar.setPublicHolidays(TEST_EVENTS);
+    calendar.setPublicHolidays(createTestEvents());
     assertEquals(DayMask.WORKING, calendar.getDayMask(CalendarFactory.createGanttCalendar(2013, 3, 12).getTime()) & DayMask.WORKING);
     assertEquals(DayMask.HOLIDAY, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime()) & DayMask.HOLIDAY);
     assertEquals(DayMask.WORKING, calendar.getDayMask(CalendarFactory.createGanttCalendar(2015, 3, 12).getTime()) & DayMask.WORKING);
@@ -114,7 +118,7 @@ public class WeekendCalendarImplTest extends TestCase {
     WeekendCalendarImpl calendar = new WeekendCalendarImpl();
     calendar.setWeekDayType(Calendar.SATURDAY, DayType.WORKING);
     calendar.setWeekDayType(Calendar.SUNDAY, DayType.WORKING);
-    calendar.setPublicHolidays(TEST_EVENTS);
+    calendar.setPublicHolidays(createTestEvents());
     assertEquals(DayMask.HOLIDAY, calendar.getDayMask(CalendarFactory.createGanttCalendar(2013, 2, 8).getTime()) & DayMask.HOLIDAY);
     assertEquals(DayMask.WORKING, calendar.getDayMask(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime()) & DayMask.WORKING);
     assertEquals(DayMask.HOLIDAY, calendar.getDayMask(CalendarFactory.createGanttCalendar(2015, 2, 8).getTime()) & DayMask.HOLIDAY);
