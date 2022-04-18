@@ -4,8 +4,8 @@
  */
 package net.sourceforge.ganttproject.task;
 
-import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.app.Barrier;
+import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
@@ -305,7 +305,7 @@ public class TaskManagerImpl implements TaskManager {
   private TaskImpl createRootTask() {
     Calendar c = CalendarFactory.newCalendar();
     Date today = c.getTime();
-    TaskImpl root = new GanttTask(null, CalendarFactory.createGanttCalendar(today), 1, this, -1);
+    TaskImpl root = new GanttTask(null, CalendarFactory.createGanttCalendar(today), 1, this, -1, "");
     root.setStart(CalendarFactory.createGanttCalendar(today));
     root.setDuration(createLength(getConfig().getTimeUnitStack().getDefaultTimeUnit(), 1));
     root.setExpand(true);
@@ -355,7 +355,6 @@ public class TaskManagerImpl implements TaskManager {
     return new TaskBuilder() {
       @Override
       public Task build() {
-
         if (myPrototype != null) {
           myId = myPrototype.getTaskID();
         }
@@ -363,7 +362,11 @@ public class TaskManagerImpl implements TaskManager {
           myId = getAndIncrementId();
         }
 
-        TaskImpl task = new GanttTask("", CalendarFactory.createGanttCalendar(), 1, TaskManagerImpl.this, myId);
+        var startDate = myStartDate != null
+          ? CalendarFactory.createGanttCalendar(myStartDate)
+          : (myPrototype == null ? null : myPrototype.getStart());
+        var taskUid = UUID.randomUUID().toString().replace("-", "");
+        TaskImpl task = new GanttTask("", startDate == null ? CalendarFactory.createGanttCalendar() : startDate, 1, TaskManagerImpl.this, myId, taskUid);
         TaskManagerImplKt.setupNewTask(this, task, TaskManagerImpl.this);
         registerTask(task);
 

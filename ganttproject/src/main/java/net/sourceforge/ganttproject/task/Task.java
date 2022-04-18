@@ -24,6 +24,7 @@ import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.math.BigDecimal;
@@ -112,7 +113,17 @@ public interface Task extends MutableTask, IdentifiableRow {
   TaskMutator createMutatorFixingDuration();
 
   // main properties
+
+  /**
+   * Task ID is just a number taken from the increasing sequence.
+   * It is unique provided that there are no concurrent modifications of the project data or merges with other projects.
+   */
   int getTaskID();
+
+  /**
+   * UID is a [practically] unique identifier which is used to distinguish between the tasks created by different users.
+   */
+  @NotNull String getUid();
 
   String getName();
 
