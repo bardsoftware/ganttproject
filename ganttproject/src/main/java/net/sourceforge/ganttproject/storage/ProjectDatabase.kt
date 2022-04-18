@@ -23,6 +23,7 @@ import net.sourceforge.ganttproject.task.MutableTask
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import kotlin.jvm.Throws
+import kotlinx.serialization.*
 
 open class ProjectDatabaseException: Exception {
   constructor(message: String): super(message)
@@ -41,6 +42,12 @@ interface ProjectDatabase {
       fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder
     }
   }
+
+  @Serializable
+  data class LogRecord(
+    private val id: Int,
+    private val record: String
+  )
 
   /** Initialize the database. */
   @Throws(ProjectDatabaseException::class)
