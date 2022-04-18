@@ -1,6 +1,9 @@
+import org.gradle.api.publish.maven.MavenPublication
+
 plugins {
     id 'application'
     id "org.jetbrains.kotlin.jvm" version "1.6.20"
+    id "maven-publish"
 }
 
 // Define the main class for the application
@@ -46,3 +49,26 @@ test {
 
 group = 'cloud.ganttproject'   // Generated output GroupId
 version = '22-SNAPSHOT' // Version in generated output
+
+publishing {
+    repositories {
+        maven {
+            name "ganttproject-maven-repository-internal"
+            url "gcs://ganttproject-maven-repository/internal"
+        }
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/bardsoftware/ganttproject")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        libcolloboque(MavenPublication) {
+            artifactId = 'colloboque'
+            from components.java
+        }
+    }
+}
