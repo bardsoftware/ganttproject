@@ -20,20 +20,21 @@ dependencies {
     testImplementation project(':biz.ganttproject.core')
     testImplementation project(':ganttproject')
     testImplementation project(':biz.ganttproject.impex.msproject2')
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testImplementation "org.jooq:jooq:3.16.+"
     testImplementation group: 'com.h2database', name: 'h2', version: '2.1.+'
 
     testImplementation fileTree(dir: project.projectDir.absolutePath + "/resources")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.8.2'
 }
 
 sourceSets {
     test {
         java {
-            srcDirs = ['test']
+            srcDir 'test'
         }
         resources {
             srcDir 'resources'
@@ -43,12 +44,11 @@ sourceSets {
 
 test {
     useJUnitPlatform()
-    include '**'
     testLogging {
         exceptionFormat = 'full'
     }
     beforeTest { descriptor ->
-        logger.lifecycle("Running test: " + descriptor)
+        logger.lifecycle("Running: $descriptor")
     }
     jvmArgs += ["-Dorg.jooq.no-logo=true"]
 }

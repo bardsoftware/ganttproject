@@ -49,6 +49,7 @@ import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
 import net.sourceforge.ganttproject.util.collect.Pair;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.io.File;
@@ -73,6 +74,7 @@ import java.util.Objects;
  * @author bard
  */
 public class TaskImpl implements Task {
+  private final String myUid;
   private final int myID;
 
   private final TaskManagerImpl myManager;
@@ -144,9 +146,10 @@ public class TaskImpl implements Task {
   private static final TimeDuration EMPTY_DURATION = new TimeDurationImpl(GPTimeUnitStack.DAY, 0);
   private boolean isDeleted;
 
-  protected TaskImpl(TaskManagerImpl taskManager, int taskID) {
+  protected TaskImpl(@NotNull TaskManagerImpl taskManager, int taskID, @NotNull String taskUid) {
     myManager = taskManager;
     myID = taskID;
+    myUid = taskUid;
 
     myAssignments = new ResourceAssignmentCollectionImpl(this, () -> myManager.getConfig().getResourceManager());
     myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection(), TaskDependencySlice.COMPLETE_SLICE_FXN);
@@ -161,11 +164,12 @@ public class TaskImpl implements Task {
     customValues = new CustomColumnsValues(myManager.getCustomPropertyManager());
   }
 
-  protected TaskImpl(TaskManagerImpl manager, TaskImpl copy, boolean isUnplugged, int taskId) {
+  protected TaskImpl(@NotNull TaskManagerImpl manager, @NotNull TaskImpl copy, boolean isUnplugged, int taskId, @NotNull String taskUid) {
     this.isUnplugged = isUnplugged;
     myManager = manager;
     // Use a new (unique) ID for the cloned task
     myID = taskId;
+    myUid = taskUid;
 
     if (!isUnplugged) {
       myTaskHierarchyItem = myManager.getHierarchyManager().createItem(this);
@@ -202,7 +206,7 @@ public class TaskImpl implements Task {
 
   @Override
   public Task unpluggedClone() {
-    TaskImpl result = new TaskImpl(myManager, this, true, this.myID) {
+    TaskImpl result = new TaskImpl(myManager, this, true, this.myID, this.myUid) {
       @Override
       public boolean isSupertask() {
         return false;
@@ -250,6 +254,11 @@ public class TaskImpl implements Task {
   @Override
   public int getTaskID() {
     return myID;
+  }
+
+  @Override
+  public String getUid() {
+    return myUid;
   }
 
   @Override

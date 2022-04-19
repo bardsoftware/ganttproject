@@ -22,6 +22,7 @@ import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskManagerImpl;
 import net.sourceforge.ganttproject.task.TaskMutator;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 
@@ -43,24 +44,11 @@ public class GanttTask extends TaskImpl implements Serializable {
    *          contains the id to be used for the new task, or -1 to generate a
    *          unique one.
    */
-  public GanttTask(String name, GanttCalendar start, long length, TaskManagerImpl taskManager, int taskID) {
-    super(taskManager, taskID);
+  public GanttTask(String name, GanttCalendar start, long length, TaskManagerImpl taskManager, int taskID, @NotNull String taskUid) {
+    super(taskManager, taskID, taskUid);
     setName(name);
     setStart(start);
     setDuration(taskManager.createLength(length));
-    enableEvents(true);
-  }
-
-  /**
-   * Will make a copy of the given GanttTask
-   *
-   * @param copy
-   *          task to copy
-   * @param myId
-   */
-  public GanttTask(TaskManagerImpl manager, TaskImpl copy, Integer taskId) {
-    super(manager, copy, false, taskId);
-
     enableEvents(true);
   }
 

@@ -19,16 +19,11 @@
 
 package net.sourceforge.ganttproject.task
 
-import biz.ganttproject.core.time.CalendarFactory
-
-fun TaskManager.TaskBuilder.setupNewTask(task: TaskImpl, manager: TaskManagerImpl) {
+internal fun TaskManager.TaskBuilder.setupNewTask(task: TaskImpl, manager: TaskManagerImpl) {
   val name = myName ?: run {
     myPrototype?.name ?: manager.taskNamePrefixOption.value.toString() + "_" + task.taskID
   }
   task.name = name
-
-  val startDate = myStartDate?.let { CalendarFactory.createGanttCalendar(it) } ?: myPrototype?.start
-  startDate?.let { task.start = it }
 
   val duration = myDuration ?: myPrototype?.duration ?: run {
     if (myEndDate == null) {
