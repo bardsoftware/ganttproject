@@ -186,6 +186,7 @@ data class XmlTasks(
   )
   data class XmlTask(
     @get:JacksonXmlProperty(isAttribute = true) var id: Int = 0,
+    @get:JacksonXmlProperty(isAttribute = true) var uid: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var name: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var color: String? = null,
     @get:JacksonXmlProperty(isAttribute = true) var shape: String? = null,

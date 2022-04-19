@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BarD Software s.r.o.
+Copyright 2022 BarD Software s.r.o
 
 This file is part of GanttProject, an open-source project management tool.
 
@@ -16,22 +16,26 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package net.sourceforge.ganttproject.test.task
+package net.sourceforge.ganttproject.parser
 
+import biz.ganttproject.core.io.XmlTasks
+import biz.ganttproject.lib.fx.SimpleTreeCollapseView
 import net.sourceforge.ganttproject.TestSetupHelper
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 
-class TaskIdTestCase {
+class TestTaskLoader {
   @Test
-  fun `UID is different when ID is the same`() {
-    val taskManager1 = TestSetupHelper.newTaskManagerBuilder().build()
-    val taskManager2 = TestSetupHelper.newTaskManagerBuilder().build()
-    val task1 = taskManager1.newTaskBuilder().build()
-    val task2 = taskManager2.newTaskBuilder().build()
-    assertEquals(task1.taskID, task2.taskID)
-    assertNotEquals(task1.uid, task2.uid)
+  fun `empty UID is ignored, non-empty is preserved`() {
+    val xmlTask1 = XmlTasks.XmlTask(id = 1, uid = "", name = "Task1", startDate = "2022-04-19")
+    val xmlTask2 = XmlTasks.XmlTask(id = 2, uid = "c4f3b4b3", name = "Task2", startDate = "2022-04-19")
+
+    val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+    val taskLoader = TaskLoader(taskManager, SimpleTreeCollapseView())
+    val task1 = taskLoader.loadTask(null, xmlTask1)
+    val task2 = taskLoader.loadTask(null, xmlTask2)
+    assert(task1.uid.isNotBlank())
+    assertEquals("c4f3b4b3", task2.uid)
   }
 
 }

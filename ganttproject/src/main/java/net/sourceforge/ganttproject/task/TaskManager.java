@@ -57,6 +57,7 @@ public interface TaskManager {
   }
   abstract class TaskBuilder {
     String myName;
+    String myUid;
     Integer myId;
     Date myStartDate;
     TimeDuration myDuration;
@@ -96,6 +97,11 @@ public interface TaskManager {
 
     public TaskBuilder withExpansionState(boolean isExpanded) {
       this.isExpanded = isExpanded;
+      return this;
+    }
+
+    public TaskBuilder withUid(String uid) {
+      myUid = uid;
       return this;
     }
 
