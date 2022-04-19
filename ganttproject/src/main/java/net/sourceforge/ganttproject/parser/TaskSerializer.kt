@@ -56,7 +56,7 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
     }
   }
 
-  fun loadTask(parent: XmlTask?, child: XmlTask) {
+  fun loadTask(parent: XmlTask?, child: XmlTask): Task {
     var builder = taskManager.newTaskBuilder().withId(child.id).withName(child.name)
     if (child.uid.isNotBlank()) {
       builder = builder.withUid(child.uid)
@@ -79,63 +79,63 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
     if (child.isMilestone) {
       builder = builder.withLegacyMilestone()
     }
-    val task = builder.build()
-
-    mapXmlGantt[child] = task
-    treeCollapseView.setExpanded(task, child.isExpanded)
-    task.isProjectTask = child.isProjectTask
-    task.completionPercentage = child.completion
-    task.priority = Task.Priority.fromPersistentValue(child.priority)
-    if (child.color != null) {
-      task.color = ColorValueParser.parseString(child.color)
-    }
-
-    // We used to have "fixed-start" attribute in the earlier versions of GanttProject.
-    // It's meaning was "do not pull this task backwards if possible". It was replaced with rubber constraint type.
-    child.legacyFixedStart?.let {
-      if (it == "true") {
-        legacyFixedStartTasks.add(task)
+    return builder.build().also { task ->
+      mapXmlGantt[child] = task
+      treeCollapseView.setExpanded(task, child.isExpanded)
+      task.isProjectTask = child.isProjectTask
+      task.completionPercentage = child.completion
+      task.priority = Task.Priority.fromPersistentValue(child.priority)
+      if (child.color != null) {
+        task.color = ColorValueParser.parseString(child.color)
       }
-    }
 
-    val earliestStart = child.earliestStartDate
-    if (earliestStart != null) {
-      task.setThirdDate(GanttCalendar.parseXMLDate(earliestStart))
-    }
-
-    child.webLink?.let { it ->
-      try {
-        task.webLink = URLDecoder.decode(it, Charsets.UTF_8.name())
-      } catch (e: UnsupportedEncodingException) {
-        LOG.error("Can't decode URL value={} from XML task={}", it, child)
+      // We used to have "fixed-start" attribute in the earlier versions of GanttProject.
+      // It's meaning was "do not pull this task backwards if possible". It was replaced with rubber constraint type.
+      child.legacyFixedStart?.let {
+        if (it == "true") {
+          legacyFixedStartTasks.add(task)
+        }
       }
-    }
-    child.shape?.let { it ->
-      val st1 = StringTokenizer(it, ",")
-      val array = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-      var token: String
-      var count = 0
-      while (st1.hasMoreTokens()) {
-        token = st1.nextToken()
-        array[count] = token.toInt()
-        count++
-      }
-      task.shape = ShapePaint(4, 4, array, Color.white, task.color)
-    }
-    val costValue = child.costManualValue
-    val isCostCalculated = child.isCostCalculated
-    if (isCostCalculated != null) {
-      task.cost.isCalculated = isCostCalculated
-      task.cost.value = costValue
-    } else {
-      task.cost.isCalculated = true
-    }
-    child.notes?.let {
-      task.notes = it
-    }
 
-    loadDependencies(child)
-    loadCustomProperties(task, child)
+      val earliestStart = child.earliestStartDate
+      if (earliestStart != null) {
+        task.setThirdDate(GanttCalendar.parseXMLDate(earliestStart))
+      }
+
+      child.webLink?.let { it ->
+        try {
+          task.webLink = URLDecoder.decode(it, Charsets.UTF_8.name())
+        } catch (e: UnsupportedEncodingException) {
+          LOG.error("Can't decode URL value={} from XML task={}", it, child)
+        }
+      }
+      child.shape?.let { it ->
+        val st1 = StringTokenizer(it, ",")
+        val array = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        var token: String
+        var count = 0
+        while (st1.hasMoreTokens()) {
+          token = st1.nextToken()
+          array[count] = token.toInt()
+          count++
+        }
+        task.shape = ShapePaint(4, 4, array, Color.white, task.color)
+      }
+      val costValue = child.costManualValue
+      val isCostCalculated = child.isCostCalculated
+      if (isCostCalculated != null) {
+        task.cost.isCalculated = isCostCalculated
+        task.cost.value = costValue
+      } else {
+        task.cost.isCalculated = true
+      }
+      child.notes?.let {
+        task.notes = it
+      }
+
+      loadDependencies(child)
+      loadCustomProperties(task, child)
+    }
   }
 
   private fun loadDependencies(xmlTask: XmlTask) {
