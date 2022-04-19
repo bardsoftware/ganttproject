@@ -24,7 +24,6 @@ import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.storage.db.Tables.TASKDEPENDENCY
 import biz.ganttproject.storage.db.tables.Task.*
 import net.sourceforge.ganttproject.TestSetupHelper
-import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
@@ -40,6 +39,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.awt.Color
 import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 
 class ProjectDatabaseTest {
@@ -108,10 +109,10 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].shape, shape.array)
     assertEquals(tasks[0].isMilestone, false)
     assertEquals(tasks[0].isProjectTask, true)
-    assertEquals(tasks[0].startDate.time, task.start.timeInMillis)
+    assertEquals(tasks[0].startDate.toIsoNoHours(), task.start.toXMLString())
     assertEquals(tasks[0].duration, 10)
     assertEquals(tasks[0].completion, 20)
-    assertEquals(tasks[0].earliestStartDate.time, task.third.timeInMillis)
+    assertEquals(tasks[0].earliestStartDate.toIsoNoHours(), task.third.toXMLString())
     assertEquals(tasks[0].priority, Task.Priority.HIGH.persistentValue)
     assertEquals(tasks[0].webLink, "love-testing.com")
     assertEquals(tasks[0].costManualValue.toDouble(), 666.7)
@@ -222,3 +223,5 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].name, "Name2")
   }
 }
+
+private fun LocalDate.toIsoNoHours() = this.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
