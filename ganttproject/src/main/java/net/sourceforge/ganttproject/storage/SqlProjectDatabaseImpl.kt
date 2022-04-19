@@ -23,14 +23,12 @@ import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.db.Tables.*
+import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.io.externalizedColor
 import net.sourceforge.ganttproject.io.externalizedNotes
 import net.sourceforge.ganttproject.io.externalizedWebLink
-import net.sourceforge.ganttproject.task.*
-import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.storage.ProjectDatabase.*
-import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskInfo
+import net.sourceforge.ganttproject.task.*
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
@@ -38,12 +36,12 @@ import org.jooq.SQLDialect
 import org.jooq.UpdateSetMoreStep
 import org.jooq.UpdateSetStep
 import org.jooq.impl.DSL
+import org.w3c.util.DateParser
 import java.awt.Color
 import java.math.BigDecimal
+import java.sql.Date
 import java.sql.SQLException
-import java.sql.Timestamp
 import javax.sql.DataSource
-import kotlin.text.Charsets
 
 class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDatabase {
   companion object Factory {
@@ -231,9 +229,9 @@ class SqlTaskUpdateBuilder(private val task: Task,
   }
 }
 
-private fun Task.externalizedStartDate(): Timestamp = Timestamp(start.timeInMillis)
+private fun Task.externalizedStartDate(): Date = Date.valueOf(DateParser.getIsoDateNoHours(start.time))
 
-private fun Task.externalizedEarliestStartDate(): Timestamp? = third?.let { calendar -> Timestamp(calendar.timeInMillis)  }
+private fun Task.externalizedEarliestStartDate(): Date? = third?.let { Date.valueOf(DateParser.getIsoDateNoHours(it.time))  }
 
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"
