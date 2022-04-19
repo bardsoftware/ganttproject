@@ -62,6 +62,7 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
     }
     val attrs = AttributesImpl()
     addAttribute("id", task.taskID, attrs)
+    addAttribute("uid", task.uid, attrs)
     addAttribute("name", task.name, attrs)
     addAttribute("color", task.externalizedColor(), attrs)
     if (task.shapeDefined()) {

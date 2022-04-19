@@ -171,7 +171,7 @@ public class ClipboardTaskProcessor {
         .withParent(newContainer)
         .withPrevSibling(prevSibling);
     if (clipboardContents.isCut()) {
-      builder = builder.withId(task.getTaskID()).withName(task.getName());
+      builder = builder.withUid(task.getUid()).withId(task.getTaskID()).withName(task.getName());
     } else {
       String newName = (myTaskCopyNameOption == null)
           ? task.getName()

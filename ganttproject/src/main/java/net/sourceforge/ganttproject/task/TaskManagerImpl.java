@@ -15,6 +15,7 @@ import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
 import biz.ganttproject.core.model.task.ConstraintType;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.time.*;
+import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -365,7 +366,7 @@ public class TaskManagerImpl implements TaskManager {
         var startDate = myStartDate != null
           ? CalendarFactory.createGanttCalendar(myStartDate)
           : (myPrototype == null ? null : myPrototype.getStart());
-        var taskUid = UUID.randomUUID().toString().replace("-", "");
+        var taskUid = Strings.isNullOrEmpty(myUid) ? UUID.randomUUID().toString().replace("-", "") : myUid;
         TaskImpl task = new GanttTask("", startDate == null ? CalendarFactory.createGanttCalendar() : startDate, 1, TaskManagerImpl.this, myId, taskUid);
         TaskManagerImplKt.setupNewTask(this, task, TaskManagerImpl.this);
         registerTask(task);

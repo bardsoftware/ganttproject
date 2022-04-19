@@ -58,6 +58,9 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
 
   fun loadTask(parent: XmlTask?, child: XmlTask) {
     var builder = taskManager.newTaskBuilder().withId(child.id).withName(child.name)
+    if (child.uid.isNotBlank()) {
+      builder = builder.withUid(child.uid)
+    }
     val start = child.startDate
     if (start.isNotBlank()) {
       builder = builder.withStartDate(GanttCalendar.parseXMLDate(start).time)

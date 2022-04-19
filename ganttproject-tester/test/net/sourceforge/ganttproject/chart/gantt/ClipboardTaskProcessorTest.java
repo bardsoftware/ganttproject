@@ -30,6 +30,7 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
 
@@ -265,5 +266,40 @@ public class ClipboardTaskProcessorTest extends TestCase {
     clipboardProcessor.setTaskCopyNameOption(taskManager.getTaskCopyNamePrefixOption());
     pastedTask = clipboardProcessor.pasteAsSibling(taskManager.getRootTask(), contents).get(0);
     assertEquals(task.getName() + "_new", pastedTask.getName());
+  }
+
+  public void testUidInClipboardOperations() {
+    // Create task2 and task1
+    TaskManager taskManager = TestSetupHelper.newTaskManagerBuilder().build();
+    Task task1 = taskManager.newTaskBuilder().build();
+    Task task2 = taskManager.newTaskBuilder().build();
+
+    // Move task2 under task1 and check if uid is kept
+    var uid1 = task1.getUid();
+    var uid2 = task2.getUid();
+    taskManager.getTaskHierarchy().move(task2, task1);
+    assertEquals(uid2, task2.getUid());
+
+    // Now create a target task and run a clipboard cut and paste operation.
+    Task target = taskManager.newTaskBuilder().build();
+    {
+      ClipboardContents contents = new ClipboardContents(taskManager);
+      contents.addTasks(ImmutableList.of(task2));
+      contents.cut();
+      ClipboardTaskProcessor clipboardProcessor = new ClipboardTaskProcessor(taskManager);
+      List<Task> pasted = clipboardProcessor.pasteAsChild(target, contents);
+      assertEquals(1, pasted.size());
+      assertEquals("Task which was cut and pasted is expected to keep the UID", uid2, pasted.get(0).getUid());
+    }
+    {
+      ClipboardContents contents = new ClipboardContents(taskManager);
+      contents.addTasks(ImmutableList.of(task1));
+      contents.copy();
+      ClipboardTaskProcessor clipboardProcessor = new ClipboardTaskProcessor(taskManager);
+      List<Task> pasted = clipboardProcessor.pasteAsChild(target, contents);
+      assertEquals(1, pasted.size());
+      // Copy is expected to create a new uid.
+      Assertions.assertNotEquals(uid1, pasted.get(0).getUid(), "Task which was copied and pasted is expected to change the UID");
+    }
   }
 }
