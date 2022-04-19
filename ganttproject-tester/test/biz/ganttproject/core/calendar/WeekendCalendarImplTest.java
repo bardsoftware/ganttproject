@@ -18,28 +18,27 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.calendar;
 
+import biz.ganttproject.core.calendar.GPCalendar.DayMask;
+import biz.ganttproject.core.calendar.GPCalendar.DayType;
+import biz.ganttproject.core.time.CalendarFactory;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import junit.framework.TestCase;
+
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-
-import biz.ganttproject.core.calendar.GPCalendar.DayMask;
-import biz.ganttproject.core.calendar.GPCalendar.DayType;
-import biz.ganttproject.core.time.CalendarFactory;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
-import junit.framework.TestCase;
+import java.util.function.Function;
 
 /**
- * Tests for {@link WeekendsCalendarImpl} class.
+ * Tests the implementation of a calendar with weekends and holidays.
  *
  * @author dbarashev (Dmitry Barashev)
  */
 public class WeekendCalendarImplTest extends TestCase {
+  @Override
   protected void setUp() {
     new CalendarFactory() {
       {
@@ -68,8 +67,9 @@ public class WeekendCalendarImplTest extends TestCase {
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), false, CalendarEvent.Type.HOLIDAY, "Apr 12, 2014", null)
     );
   }
-  private static List<CalendarEvent> TEST_EVENTS = createTestEvents();
-  private static List<CalendarEvent> TEST_EVENTS_RECURRING_FIRST = ImmutableList.of(
+
+  private static List<CalendarEvent> createTestEventsRecurringFirst() {
+    return ImmutableList.of(
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 0, 1).getTime(), true, CalendarEvent.Type.HOLIDAY, "Jan 1", null),
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime(), true, CalendarEvent.Type.HOLIDAY, "Mar 8", null),
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), true, CalendarEvent.Type.WORKING_DAY, "Apr 12", null),
@@ -77,22 +77,18 @@ public class WeekendCalendarImplTest extends TestCase {
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 8).getTime(), false, CalendarEvent.Type.WORKING_DAY, "Mar 8, 2014", null),
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 2, 9).getTime(), false, CalendarEvent.Type.HOLIDAY, "Mar 9, 2014", null),
       CalendarEvent.newEvent(CalendarFactory.createGanttCalendar(2014, 3, 12).getTime(), false, CalendarEvent.Type.HOLIDAY, "Apr 12, 2014", null)
-  );
+    );
+  }
 
 
-  private static Function<CalendarEvent, String> GET_TITLE = new Function<CalendarEvent, String>() {
-    @Override
-    public String apply(CalendarEvent e) {
-      return e.getTitle();
-    }
-  };
+  private static final Function<CalendarEvent, String> GET_TITLE = CalendarEvent::getTitle;
 
   public void testSetEvents() {
     WeekendCalendarImpl calendar = new WeekendCalendarImpl();
-    calendar.setPublicHolidays(TEST_EVENTS);
-    assertEquals(TEST_EVENTS_RECURRING_FIRST, calendar.getPublicHolidays());
+    calendar.setPublicHolidays(createTestEvents());
+    assertEquals(createTestEventsRecurringFirst(), calendar.getPublicHolidays());
     assertEquals(ImmutableList.of("Jan 1", "Mar 8", "Apr 12", "Feb 14", "Mar 8, 2014", "Mar 9, 2014", "Apr 12, 2014"),
-        Lists.newArrayList(Collections2.transform(calendar.getPublicHolidays(), GET_TITLE)));
+        Lists.newArrayList(Collections2.transform(calendar.getPublicHolidays(), GET_TITLE::apply)));
   }
 
   public void testRecurringHoliday() {
