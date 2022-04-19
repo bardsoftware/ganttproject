@@ -103,10 +103,10 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
         .set(TASK.SHAPE, task.shape?.array)
         .set(TASK.IS_MILESTONE, (task as TaskImpl).isLegacyMilestone)
         .set(TASK.IS_PROJECT_TASK, task.isProjectTask)
-        .set(TASK.START_DATE, task.start.externalizeDate())
+        .set(TASK.START_DATE, task.start.toLocalDate())
         .set(TASK.DURATION, task.duration.length)
         .set(TASK.COMPLETION, task.completionPercentage)
-        .set(TASK.EARLIEST_START_DATE, task.third?.externalizeDate())
+        .set(TASK.EARLIEST_START_DATE, task.third?.toLocalDate())
         .set(TASK.PRIORITY, task.priority.persistentValue)
         .set(TASK.WEB_LINK, task.externalizedWebLink())
         .set(TASK.COST_MANUAL_VALUE, costManualValue)
@@ -232,8 +232,6 @@ class SqlTaskUpdateBuilder(private val task: Task,
     TODO("Not yet implemented")
   }
 }
-
-private fun GanttCalendar.externalizeDate(): LocalDate = LocalDate.parse(DateParser.getIsoDateNoHours(time))
 
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"

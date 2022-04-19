@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.core.time;
 
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -92,6 +93,10 @@ public class GanttCalendar extends java.util.GregorianCalendar {
   @Override
   public String toString() {
     return myLocaleApi.getShortDateFormat().format(getTime());
+  }
+
+  public LocalDate toLocalDate() {
+    return LocalDate.parse(DateParser.getIsoDateNoHours(getTime()));
   }
 
   public int getYear() {
