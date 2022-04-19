@@ -79,10 +79,6 @@ jooq {
                     target {
                         packageName = 'biz.ganttproject.storage.db'
                     }
-                    generate {
-                        // Use classes from java.sql.* package for representing date and time.
-                        javaTimeTypes = false
-                    }
                 }
             }
         }

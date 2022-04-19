@@ -23,27 +23,26 @@ import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.db.Tables.*
+import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.io.externalizedColor
 import net.sourceforge.ganttproject.io.externalizedNotes
 import net.sourceforge.ganttproject.io.externalizedWebLink
-import net.sourceforge.ganttproject.task.*
-import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.storage.ProjectDatabase.*
-import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskInfo
+import net.sourceforge.ganttproject.task.*
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.UpdateSetMoreStep
 import org.jooq.UpdateSetStep
+import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
+import org.w3c.util.DateParser
 import java.awt.Color
 import java.math.BigDecimal
 import java.sql.SQLException
-import java.sql.Timestamp
+import java.time.LocalDate
 import javax.sql.DataSource
-import kotlin.text.Charsets
 
 class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDatabase {
   companion object Factory {
@@ -94,24 +93,27 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       costManualValue = task.cost.manualValue
       isCostCalculated = task.cost.isCalculated
     }
-    dsl
-      .insertInto(TASK)
-      .set(TASK.ID, task.taskID)
-      .set(TASK.NAME, task.name)
-      .set(TASK.COLOR, (task as TaskImpl).externalizedColor())
-      .set(TASK.SHAPE, task.shape?.array)
-      .set(TASK.IS_MILESTONE, (task as TaskImpl).isLegacyMilestone)
-      .set(TASK.IS_PROJECT_TASK, task.isProjectTask)
-      .set(TASK.START_DATE, task.externalizedStartDate())
-      .set(TASK.DURATION, task.duration.length)
-      .set(TASK.COMPLETION, task.completionPercentage)
-      .set(TASK.EARLIEST_START_DATE, task.externalizedEarliestStartDate())
-      .set(TASK.PRIORITY, task.priority.persistentValue)
-      .set(TASK.WEB_LINK, task.externalizedWebLink())
-      .set(TASK.COST_MANUAL_VALUE, costManualValue)
-      .set(TASK.IS_COST_CALCULATED, isCostCalculated)
-      .set(TASK.NOTES, task.externalizedNotes())
-      .execute()
+    // Presumably, helps to avoid LocalDate conversions which cause storing a wrong date in db.
+    dsl.execute(
+      dsl
+        .insertInto(TASK)
+        .set(TASK.ID, task.taskID)
+        .set(TASK.NAME, task.name)
+        .set(TASK.COLOR, (task as TaskImpl).externalizedColor())
+        .set(TASK.SHAPE, task.shape?.array)
+        .set(TASK.IS_MILESTONE, (task as TaskImpl).isLegacyMilestone)
+        .set(TASK.IS_PROJECT_TASK, task.isProjectTask)
+        .set(TASK.START_DATE, task.start.toLocalDate())
+        .set(TASK.DURATION, task.duration.length)
+        .set(TASK.COMPLETION, task.completionPercentage)
+        .set(TASK.EARLIEST_START_DATE, task.third?.toLocalDate())
+        .set(TASK.PRIORITY, task.priority.persistentValue)
+        .set(TASK.WEB_LINK, task.externalizedWebLink())
+        .set(TASK.COST_MANUAL_VALUE, costManualValue)
+        .set(TASK.IS_COST_CALCULATED, isCostCalculated)
+        .set(TASK.NOTES, task.externalizedNotes())
+        .getSQL(ParamType.INLINED)
+    )
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -230,10 +232,6 @@ class SqlTaskUpdateBuilder(private val task: Task,
     TODO("Not yet implemented")
   }
 }
-
-private fun Task.externalizedStartDate(): Timestamp = Timestamp(start.timeInMillis)
-
-private fun Task.externalizedEarliestStartDate(): Timestamp? = third?.let { calendar -> Timestamp(calendar.timeInMillis)  }
 
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"
