@@ -77,12 +77,13 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     errorMessage: () -> String,
     buildQuery: (dsl: DSLContext) -> String
   ): Unit = withDSL(errorMessage) { dsl ->
-    dsl.transaction { ctx ->
-      val query = buildQuery(DSL.using(ctx))
-      DSL.using(ctx).execute(query)
-      DSL.using(ctx)
+    dsl.transaction { config ->
+      val context = DSL.using(config)
+      val query = buildQuery(context)
+      context.execute(query)
+      context
         .insertInto(LOGRECORD)
-        .set(LOGRECORD.RECORD, query)
+        .set(LOGRECORD.SQL_STATEMENT, query)
         .execute()
     }
   }
@@ -160,8 +161,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       .where(LOGRECORD.ID.ge(startId))
       .orderBy(LOGRECORD.ID.asc())
       .limit(limit)
-      .fetch()
-      .map { LogRecord(it.id, it.record) }
+      .map { LogRecord(it.id, it.sqlStatement) }
   }
 
   /** Execute update query and save its xlog. */

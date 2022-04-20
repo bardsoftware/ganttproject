@@ -30,6 +30,12 @@ open class ProjectDatabaseException: Exception {
   constructor(message: String, cause: Throwable): super(message, cause)
 }
 
+@Serializable
+data class LogRecord(
+  val id: Int,
+  val sqlStatement: String
+)
+
 /** Storage for holding the current state of a Gantt project. */
 interface ProjectDatabase {
   /** Build and execute an update query. */
@@ -42,12 +48,6 @@ interface ProjectDatabase {
       fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder
     }
   }
-
-  @Serializable
-  data class LogRecord(
-    private val id: Int,
-    private val record: String
-  )
 
   /** Initialize the database. */
   @Throws(ProjectDatabaseException::class)

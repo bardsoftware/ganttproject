@@ -119,7 +119,7 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].isCostCalculated, true)
     assertEquals(tasks[0].notes, "abacaba")
 
-    val logs = dsl.selectFrom(LOGRECORD).fetch()
+    val logs = projectDatabase.fetchLogRecords(limit = 10)
     assertEquals(logs.size, 1)
 
     // Verify that executing the log record produces the same task.
@@ -127,7 +127,7 @@ class ProjectDatabaseTest {
     projectDatabase.shutdown()
     projectDatabase.init()
 
-    dsl.execute(logs[0].record)
+    dsl.execute(logs[0].sqlStatement)
     assertEquals(tasks[0], dsl.selectFrom(TASK).fetch()[0])
   }
 
@@ -227,10 +227,10 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].id, 1)
     assertEquals(tasks[0].name, "Name2")
 
-    val logs = dsl.selectFrom(LOGRECORD).orderBy(LOGRECORD.ID.asc()).fetch()
+    val logs = projectDatabase.fetchLogRecords(limit = 10)
     assertEquals(logs.size, 2)
-    assert(logs[0].record.contains("insert", ignoreCase = true))
-    assert(logs[1].record.contains("update", ignoreCase = true))
+    assert(logs[0].sqlStatement.contains("insert", ignoreCase = true))
+    assert(logs[1].sqlStatement.contains("update", ignoreCase = true))
   }
 }
 
