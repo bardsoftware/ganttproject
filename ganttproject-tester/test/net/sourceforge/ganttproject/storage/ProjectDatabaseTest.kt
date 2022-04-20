@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.CalendarFactory
+import biz.ganttproject.storage.db.Tables.LOGRECORD
 import biz.ganttproject.storage.db.Tables.TASKDEPENDENCY
 import biz.ganttproject.storage.db.tables.Task.*
 import net.sourceforge.ganttproject.TestSetupHelper
@@ -30,6 +31,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl
 import net.sourceforge.ganttproject.util.ColorConvertion
 import org.h2.jdbcx.JdbcDataSource
+import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.AfterEach
@@ -47,16 +49,18 @@ class ProjectDatabaseTest {
   private lateinit var dataSource: DataSource
   private lateinit var projectDatabase: ProjectDatabase
   private lateinit var taskManager: TaskManager
+  private lateinit var dsl: DSLContext
 
   @BeforeEach
   private fun init() {
-    val ds = JdbcDataSource()
-    ds.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
-    dataSource = ds
+    dataSource = JdbcDataSource().also {
+      it.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
+    }
     projectDatabase = SqlProjectDatabaseImpl(dataSource)
     val taskManagerBuilder = TestSetupHelper.newTaskManagerBuilder()
     taskManagerBuilder.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }
     taskManager = taskManagerBuilder.build()
+    dsl = DSL.using(dataSource, SQLDialect.H2)
   }
 
   @AfterEach
@@ -69,9 +73,7 @@ class ProjectDatabaseTest {
   @Test
   fun `test init creates tables`() {
     projectDatabase.init()
-    val tasks = DSL.using(dataSource, SQLDialect.H2)
-      .selectFrom(TASK)
-      .fetch()
+    val tasks = dsl.selectFrom(TASK).fetch()
     assert(tasks.isEmpty())
   }
 
@@ -98,9 +100,7 @@ class ProjectDatabaseTest {
 
     projectDatabase.insertTask(task)
 
-    val tasks = DSL.using(dataSource, SQLDialect.H2)
-      .selectFrom(TASK)
-      .fetch()
+    val tasks = dsl.selectFrom(TASK).fetch()
     assertEquals(tasks.size, 1)
 
     assertEquals(tasks[0].id, 2)
@@ -118,6 +118,17 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].costManualValue.toDouble(), 666.7)
     assertEquals(tasks[0].isCostCalculated, true)
     assertEquals(tasks[0].notes, "abacaba")
+
+    val logs = projectDatabase.fetchLogRecords(limit = 10)
+    assertEquals(logs.size, 1)
+
+    // Verify that executing the log record produces the same task.
+    // Importantly, it checks that dates are converted identically.
+    projectDatabase.shutdown()
+    projectDatabase.init()
+
+    dsl.execute(logs[0].sqlStatement)
+    assertEquals(tasks[0], dsl.selectFrom(TASK).fetch()[0])
   }
 
   @Test
@@ -141,9 +152,7 @@ class ProjectDatabaseTest {
     projectDatabase.shutdown()
 
     projectDatabase.init()
-    val tasks = DSL.using(dataSource, SQLDialect.H2)
-      .selectFrom(TASK)
-      .fetch()
+    val tasks = dsl.selectFrom(TASK).fetch()
     assert(tasks.isEmpty())
   }
 
@@ -191,9 +200,7 @@ class ProjectDatabaseTest {
     projectDatabase.insertTask(dependee)
     projectDatabase.insertTaskDependency(dependency)
 
-    val deps = DSL.using(dataSource, SQLDialect.H2)
-      .selectFrom(TASKDEPENDENCY)
-      .fetch()
+    val deps = dsl.selectFrom(TASKDEPENDENCY).fetch()
     assertEquals(deps.size, 1)
 
     assertEquals(deps[0].dependantId, 1)
@@ -215,12 +222,15 @@ class ProjectDatabaseTest {
     mutator.setName("Name2")
     mutator.commit()
 
-    val tasks = DSL.using(dataSource, SQLDialect.H2)
-      .selectFrom(TASK)
-      .fetch()
+    val tasks = dsl.selectFrom(TASK).fetch()
     assertEquals(tasks.size, 1)
     assertEquals(tasks[0].id, 1)
     assertEquals(tasks[0].name, "Name2")
+
+    val logs = projectDatabase.fetchLogRecords(limit = 10)
+    assertEquals(logs.size, 2)
+    assert(logs[0].sqlStatement.contains("insert", ignoreCase = true))
+    assert(logs[1].sqlStatement.contains("update", ignoreCase = true))
   }
 }
 

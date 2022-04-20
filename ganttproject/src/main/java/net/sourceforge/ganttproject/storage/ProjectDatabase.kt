@@ -23,11 +23,18 @@ import net.sourceforge.ganttproject.task.MutableTask
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import kotlin.jvm.Throws
+import kotlinx.serialization.*
 
 open class ProjectDatabaseException: Exception {
   constructor(message: String): super(message)
   constructor(message: String, cause: Throwable): super(message, cause)
 }
+
+@Serializable
+data class LogRecord(
+  val id: Int,
+  val sqlStatement: String
+)
 
 /** Storage for holding the current state of a Gantt project. */
 interface ProjectDatabase {
@@ -59,4 +66,8 @@ interface ProjectDatabase {
   /** Close connections and release the resources. */
   @Throws(ProjectDatabaseException::class)
   fun shutdown()
+
+  /** Fetch transaction logs starting with the specified id. */
+  @Throws(ProjectDatabaseException::class)
+  fun fetchLogRecords(startId: Int = 0, limit: Int): List<LogRecord>
 }

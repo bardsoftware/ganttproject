@@ -23,12 +23,14 @@ import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.db.Tables.*
-import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.io.externalizedColor
 import net.sourceforge.ganttproject.io.externalizedNotes
 import net.sourceforge.ganttproject.io.externalizedWebLink
-import net.sourceforge.ganttproject.storage.ProjectDatabase.*
 import net.sourceforge.ganttproject.task.*
+import biz.ganttproject.storage.db.tables.records.TaskRecord
+import net.sourceforge.ganttproject.storage.ProjectDatabase.*
+import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskInfo
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
@@ -37,12 +39,11 @@ import org.jooq.UpdateSetMoreStep
 import org.jooq.UpdateSetStep
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
-import org.w3c.util.DateParser
 import java.awt.Color
 import java.math.BigDecimal
 import java.sql.SQLException
-import java.time.LocalDate
 import javax.sql.DataSource
+import kotlin.text.Charsets
 
 class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDatabase {
   companion object Factory {
@@ -71,6 +72,22 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
+  /** Execute query and save its xlog. */
+  private fun withLog(
+    errorMessage: () -> String,
+    buildQuery: (dsl: DSLContext) -> String
+  ): Unit = withDSL(errorMessage) { dsl ->
+    dsl.transaction { config ->
+      val context = DSL.using(config)
+      val query = buildQuery(context)
+      context.execute(query)
+      context
+        .insertInto(LOGRECORD)
+        .set(LOGRECORD.SQL_STATEMENT, query)
+        .execute()
+    }
+  }
+
   @Throws(ProjectDatabaseException::class)
   override fun init() {
     val scriptStream = javaClass.getResourceAsStream(DB_INIT_SCRIPT_PATH) ?: throw ProjectDatabaseException("Init script not found")
@@ -83,41 +100,38 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
-  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task, dataSource)
+  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task, this::executeUpdate)
 
   @Throws(ProjectDatabaseException::class)
-  override fun insertTask(task: Task): Unit = withDSL({ "Failed to insert task ${task.taskID}" }) { dsl ->
+  override fun insertTask(task: Task): Unit = withLog({ "Failed to insert task ${task.taskID}" }) { dsl ->
     var costManualValue: BigDecimal? = null
     var isCostCalculated: Boolean? = null
     if (!(task.cost.isCalculated && task.cost.manualValue == BigDecimal.ZERO)) {
       costManualValue = task.cost.manualValue
       isCostCalculated = task.cost.isCalculated
     }
-    // Presumably, helps to avoid LocalDate conversions which cause storing a wrong date in db.
-    dsl.execute(
-      dsl
-        .insertInto(TASK)
-        .set(TASK.ID, task.taskID)
-        .set(TASK.NAME, task.name)
-        .set(TASK.COLOR, (task as TaskImpl).externalizedColor())
-        .set(TASK.SHAPE, task.shape?.array)
-        .set(TASK.IS_MILESTONE, (task as TaskImpl).isLegacyMilestone)
-        .set(TASK.IS_PROJECT_TASK, task.isProjectTask)
-        .set(TASK.START_DATE, task.start.toLocalDate())
-        .set(TASK.DURATION, task.duration.length)
-        .set(TASK.COMPLETION, task.completionPercentage)
-        .set(TASK.EARLIEST_START_DATE, task.third?.toLocalDate())
-        .set(TASK.PRIORITY, task.priority.persistentValue)
-        .set(TASK.WEB_LINK, task.externalizedWebLink())
-        .set(TASK.COST_MANUAL_VALUE, costManualValue)
-        .set(TASK.IS_COST_CALCULATED, isCostCalculated)
-        .set(TASK.NOTES, task.externalizedNotes())
-        .getSQL(ParamType.INLINED)
-    )
+    dsl
+      .insertInto(TASK)
+      .set(TASK.ID, task.taskID)
+      .set(TASK.NAME, task.name)
+      .set(TASK.COLOR, (task as TaskImpl).externalizedColor())
+      .set(TASK.SHAPE, task.shape?.array)
+      .set(TASK.IS_MILESTONE, (task as TaskImpl).isLegacyMilestone)
+      .set(TASK.IS_PROJECT_TASK, task.isProjectTask)
+      .set(TASK.START_DATE, task.start.toLocalDate())
+      .set(TASK.DURATION, task.duration.length)
+      .set(TASK.COMPLETION, task.completionPercentage)
+      .set(TASK.EARLIEST_START_DATE, task.third?.toLocalDate())
+      .set(TASK.PRIORITY, task.priority.persistentValue)
+      .set(TASK.WEB_LINK, task.externalizedWebLink())
+      .set(TASK.COST_MANUAL_VALUE, costManualValue)
+      .set(TASK.IS_COST_CALCULATED, isCostCalculated)
+      .set(TASK.NOTES, task.externalizedNotes())
+      .getSQL(ParamType.INLINED)
   }
 
   @Throws(ProjectDatabaseException::class)
-  override fun insertTaskDependency(taskDependency: TaskDependency): Unit = withDSL(
+  override fun insertTaskDependency(taskDependency: TaskDependency): Unit = withLog(
     { "Failed to insert task dependency ${taskDependency.dependee.taskID} -> ${taskDependency.dependant.taskID}" }) { dsl ->
     dsl
       .insertInto(TASKDEPENDENCY)
@@ -126,7 +140,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       .set(TASKDEPENDENCY.TYPE, taskDependency.constraint.type.persistentValue)
       .set(TASKDEPENDENCY.LAG, taskDependency.difference)
       .set(TASKDEPENDENCY.HARDNESS, taskDependency.hardness.identifier)
-      .execute()
+      .getSQL(ParamType.INLINED)
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -139,11 +153,25 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       throw ProjectDatabaseException("Failed to shutdown the database", e)
     }
   }
+
+  @Throws(ProjectDatabaseException::class)
+  override fun fetchLogRecords(startId: Int, limit: Int): List<LogRecord> = withDSL({ "Failed to fetch log records" }) { dsl ->
+    dsl
+      .selectFrom(LOGRECORD)
+      .where(LOGRECORD.ID.ge(startId))
+      .orderBy(LOGRECORD.ID.asc())
+      .limit(limit)
+      .map { LogRecord(it.id, it.sqlStatement) }
+  }
+
+  /** Execute update query and save its xlog. */
+  @Throws(ProjectDatabaseException::class)
+  internal fun executeUpdate(query: String) = withLog({ "Failed to execute update" }) { query }
 }
 
 
 class SqlTaskUpdateBuilder(private val task: Task,
-                           private val dataSource: DataSource): TaskUpdateBuilder {
+                           private val executeQuery: (String) -> Unit): TaskUpdateBuilder {
   private var lastSetStep: UpdateSetMoreStep<TaskRecord>? = null
 
   private fun nextStep(step: (lastStep: UpdateSetStep<TaskRecord>) -> UpdateSetMoreStep<TaskRecord>) {
@@ -154,14 +182,7 @@ class SqlTaskUpdateBuilder(private val task: Task,
   override fun execute() {
     try {
       lastSetStep?.let { updateQuery ->
-        try {
-          DSL.using(dataSource, SQLDialect.H2).execute(
-            updateQuery
-              .where(TASK.ID.eq(task.taskID))
-          )
-        } catch (e: Exception) {
-          throw ProjectDatabaseException("Failed to execute update", e)
-        }
+        executeQuery(updateQuery.where(TASK.ID.eq(task.taskID)).getSQL(ParamType.INLINED))
       }
     } finally {
       lastSetStep = null
