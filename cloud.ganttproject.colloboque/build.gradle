@@ -2,7 +2,7 @@ import org.gradle.api.publish.maven.MavenPublication
 
 plugins {
     id 'application'
-    id "org.jetbrains.kotlin.jvm" version "1.6.20"
+    id "org.jetbrains.kotlin.jvm" version "1.6.21"
     id "maven-publish"
 }
 
@@ -27,6 +27,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
     implementation "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1'
     implementation 'org.slf4j:slf4j-api:1.7.36'
     implementation 'com.github.ajalt.clikt:clikt:3.4.1'
     implementation 'org.nanohttpd:nanohttpd:2.3.1'

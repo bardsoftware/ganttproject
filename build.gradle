@@ -50,7 +50,7 @@ allprojects {
 
 subprojects {
     group 'biz.ganttproject'
-    version = project.findProperty("version") ?: new Date().format("yy.MM.dd") + "-SNAPSHOT"
+    version = new Date().format("yy.MM.dd") + "-SNAPSHOT"
 }
 
 
