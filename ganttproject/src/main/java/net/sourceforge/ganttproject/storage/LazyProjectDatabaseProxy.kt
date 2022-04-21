@@ -61,4 +61,8 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
       resetDatabase()
     }
   }
+
+  override fun fetchLogRecords(startId: Int, limit: Int): List<LogRecord> {
+    return getDatabase().fetchLogRecords(startId, limit)
+  }
 }

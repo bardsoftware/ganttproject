@@ -30,3 +30,10 @@ create table if not exists TaskDependency (
     foreign key (dependant_id) references Task(id),
     check (dependee_id <> dependant_id)
 );
+
+create table if not exists LogRecord (
+  id                identity    not null,
+  sql_statement     varchar     not null,
+
+  primary key (id)
+);
