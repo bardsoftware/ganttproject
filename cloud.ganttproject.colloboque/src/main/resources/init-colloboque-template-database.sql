@@ -212,7 +212,7 @@ ALTER FUNCTION clone_schema(text, text, boolean) OWNER TO postgres;
 CREATE SCHEMA project_model_metadata;
 SET search_path TO project_model_metadata;
 CREATE TYPE TaskIntPropertyName AS ENUM ('completion', 'priority');
-CREATE TYPE TaskTextPropertyName AS ENUM ('color', 'shape', 'web_link', 'notes');
+CREATE TYPE TaskTextPropertyName AS ENUM ('priority', 'color', 'shape', 'web_link', 'notes');
 
 
 ----------------------------------------------------------------------------------------------------------------
@@ -231,7 +231,7 @@ CREATE TABLE TaskName(
 CREATE TABLE TaskDates(
     uid           TEXT PRIMARY KEY REFERENCES TaskName,
     start_date    DATE NOT NULL,
-    duration_days INT NOT NULL,
+    duration_days INT NOT NULL DEFAULT 1,
     earliest_start_date DATE
 );
 
@@ -254,6 +254,18 @@ CREATE TABLE TaskTextProperties(
     PRIMARY KEY(uid, prop_name)
 );
 
+CREATE TABLE TaskCostProperties(
+    uid TEXT REFERENCES TaskName PRIMARY KEY,
+    is_cost_calculated BOOLEAN,
+    cost_manual_value NUMERIC
+);
+
+CREATE TABLE TaskClassProperties(
+    uid TEXT REFERENCES TaskName PRIMARY KEY,
+    is_milestone BOOLEAN NOT NULL DEFAULT false,
+    is_project_task BOOLEAN NOT NULL DEFAULT false
+);
+
 -- Updatable view which collects all task properties in a single row. Inserts and updates are processed
 -- with INSTEAD OF triggers.
 CREATE VIEW Task AS
@@ -263,7 +275,12 @@ SELECT uid,
        start_date,
        duration_days AS duration,
        earliest_start_date,
+       is_cost_calculated,
+       cost_manual_value,
+       is_milestone,
+       is_project_task,
        MAX(TIP.prop_value) FILTER (WHERE TIP.prop_name = 'completion') AS completion,
+       MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'priority') AS priority,
        MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'color') AS color,
        MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'shape') AS shape,
        MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'web_link') AS web_link,
@@ -272,7 +289,9 @@ from      TaskName
 JOIN      TaskDates USING(uid)
 LEFT JOIN TaskIntProperties TIP USING(uid)
 LEFT JOIN TaskTextProperties TTP USING(uid)
-GROUP BY uid, TaskDates.uid;
+LEFT JOIN TaskCostProperties TCP USING(uid)
+LEFT JOIN TaskClassProperties TCLP USING(uid)
+GROUP BY uid, TaskDates.uid, TCP.uid, TCLP.uid;
 
 CREATE OR REPLACE PROCEDURE update_int_task_property(task_uid TEXT, prop_name_ project_model_metadata.TaskIntPropertyName, prop_value_ INT)
 LANGUAGE SQL AS $$
@@ -288,23 +307,37 @@ $$;
 
 CREATE OR REPLACE FUNCTION update_task_row() RETURNS TRIGGER AS $$
 BEGIN
-    RAISE NOTICE 'NEW.uid=% num=% name=%', NEW.uid, NEW.num, New.name;
 INSERT INTO TaskName(uid, num, name) VALUES (NEW.uid, NEW.num, NEW.name)
 ON CONFLICT(uid) DO UPDATE
-    SET num=COALESCE(NEW.num, OLD.num),
-        name=COALESCE(NEW.name, OLD.name);
+    SET num=NEW.num,
+        name=NEW.name;
 
 INSERT INTO TaskDates(uid, start_date, duration_days, earliest_start_date)
 VALUES(NEW.uid, NEW.start_date, NEW.duration, NEW.earliest_start_date)
 ON CONFLICT(uid) DO UPDATE
-    SET start_date = COALESCE(NEW.start_date, OLD.start_date),
-        duration_days = COALESCE(NEW.duration, OLD.duration),
-        earliest_start_date=COALESCE(NEW.earliest_start_date, OLD.earliest_start_date);
+SET start_date = NEW.start_date,
+    duration_days = NEW.duration,
+    earliest_start_date=NEW.earliest_start_date;
+
+INSERT INTO TaskCostProperties(uid, is_cost_calculated, cost_manual_value)
+VALUES(NEW.uid, NEW.is_cost_calculated, NEW.cost_manual_value)
+ON CONFLICT(uid) DO UPDATE
+SET is_cost_calculated = NEW.is_cost_calculated,
+    cost_manual_value = NEW.cost_manual_value;
+
+INSERT INTO TaskClassProperties(uid, is_milestone, is_project_task)
+VALUES(NEW.uid, COALESCE(NEW.is_milestone, false), COALESCE(NEW.is_project_task, false))
+ON CONFLICT(uid) DO UPDATE
+    SET is_milestone = COALESCE(NEW.is_milestone, false),
+        is_project_task = COALESCE(NEW.is_project_task, false);
 
 IF NEW.completion IS NOT NULL THEN
   CALL update_int_task_property(NEW.uid, 'completion', NEW.completion);
 END IF;
 
+IF NEW.priority IS NOT NULL THEN
+    CALL update_text_task_property(NEW.uid, 'priority', NEW.priority);
+END IF;
 IF NEW.color IS NOT NULL THEN
     CALL update_text_task_property(NEW.uid, 'color', NEW.color);
 END IF;
