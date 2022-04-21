@@ -23,6 +23,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import fi.iki.elonen.NanoHTTPD
+import fi.iki.elonen.NanoHTTPD.Response.Status
 import kotlinx.coroutines.channels.Channel
 import org.slf4j.LoggerFactory
 
@@ -39,7 +40,7 @@ class DevServerMain : CliktCommand() {
     LoggerFactory.getLogger("Startup").info("Starting dev Colloboque server on port $port")
 
     val initInputChannel = Channel<InitRecord>()
-    val updateInputChannel = Channel<ClientXlog>()
+    val updateInputChannel = Channel<InputXlog>()
     val dataSourceFactory = PostgresDataSourceFactory(pgHost, pgPort, pgSuperUser, pgSuperAuth)
     val colloboqueServer = ColloboqueServer(dataSourceFactory::createDataSource, initInputChannel, updateInputChannel)
     ColloboqueHttpServer(port, colloboqueServer).start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
@@ -47,4 +48,16 @@ class DevServerMain : CliktCommand() {
 }
 
 class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueServer) : NanoHTTPD("localhost", port) {
+  override fun serve(session: IHTTPSession): Response =
+    when (session.uri) {
+      "/init" -> {
+        session.parameters["projectRefid"]?.firstOrNull()?.let {
+          colloboqueServer.init(it)
+          newFixedLengthResponse("Ok")
+        } ?: newFixedLengthResponse(Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "projectRefid is missing")
+      }
+      "/" -> newFixedLengthResponse("Hello")
+      else -> newFixedLengthResponse(Status.NOT_FOUND, MIME_PLAINTEXT, "Not Found")
+    }
+
 }

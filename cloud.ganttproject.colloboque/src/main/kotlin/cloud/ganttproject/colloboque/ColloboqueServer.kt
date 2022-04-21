@@ -24,6 +24,16 @@ import javax.sql.DataSource
 class ColloboqueServer(
   private val dataSourceFactory: (projectRefid: String) -> DataSource,
   private val initInputChannel: Channel<InitRecord>,
-  private val updateInputChannel: Channel<ClientXlog>) {
+  private val updateInputChannel: Channel<InputXlog>) {
+
+  fun init(projectRefid: String) {
+    dataSourceFactory(projectRefid).connection.use {
+      it.createStatement().executeQuery("SELECT uid FROM Task").use { rs ->
+        while (rs.next()) {
+          println(rs.getString(1))
+        }
+      }
+    }
+  }
 
 }

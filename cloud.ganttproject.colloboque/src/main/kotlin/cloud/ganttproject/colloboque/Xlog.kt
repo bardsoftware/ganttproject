@@ -18,18 +18,34 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package cloud.ganttproject.colloboque
 
+/**
+ * Data for the initialization of the Colloboque database.
+ */
 data class InitRecord(
   val userId: String,
   val projectRefid: String,
-  val payload: String
+  val projectXml: String
 )
+
+/**
+ * Xlog transaction which consists of 1+ SQL statements.
+ */
 data class XlogRecord(
-  val baseTxnId: String,
   val sqlStatements: List<String>
 )
 
-data class ClientXlog(
+/**
+ * Xlog from the specified client, which contains changes to the specified project
+ * and consists of 1+ transaction.
+ *
+ * The base transaction ID is the identifier of the database state which the client was last synced with, as
+ * reported by the server. It is assumed that the first transaction from the list is applied to the state identified
+ * by baseTxnId, and i-th transaction from the list is applied to the state produced by (i-1)th transaction from the
+ * list.
+ */
+data class InputXlog(
+  val baseTxnId: String,
   val userId: String,
   val projectRefid: String,
-  val xlogRecords: List<XlogRecord>
+  val transactions: List<XlogRecord>
 )

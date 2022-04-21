@@ -26,10 +26,11 @@ import javax.sql.DataSource
 class PostgresDataSourceFactory(
   private val pgHost: String, private val pgPort: Int, private val pgSuperUser: String, private val pgSuperAuth: String
 ) {
+  // TODO: allow for using one database per project
   private val superConfig = HikariConfig().apply {
     username = pgSuperUser
     password = pgSuperAuth
-    jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/colloboque"
+    jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/dev_all_projects"
   }
   private val superDataSource = HikariDataSource(superConfig)
 
@@ -37,13 +38,28 @@ class PostgresDataSourceFactory(
     superDataSource.connection.use {
       it.createStatement().executeQuery("SELECT version()").use { rs ->
         if (rs.next()) {
-          LoggerFactory.getLogger("Startup").info("Connected to the master database. {}", rs.getString(1))
+          LoggerFactory.getLogger("Startup").info("Connected to the database. {}", rs.getString(1))
         }
       }
     }
   }
 
   fun createDataSource(projectRefid: String): DataSource {
-    TODO("Write your code here")
+    // TODO: escape projectRefid
+    val schema = "project_$projectRefid"
+    superDataSource.connection.use {
+      it.prepareCall("SELECT clone_schema(?, ?, ?)").use { stmt ->
+        stmt.setString(1, "project_template")
+        stmt.setString(2, schema)
+        stmt.setBoolean(3, false)
+        stmt.execute()
+      }
+    }
+    return HikariDataSource(HikariConfig().apply {
+      username = pgSuperUser
+      password = pgSuperAuth
+      jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/dev_all_projects"
+      this.schema = schema
+    })
   }
 }
