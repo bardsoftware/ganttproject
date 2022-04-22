@@ -66,6 +66,7 @@ BEGIN
 
     EXECUTE 'CREATE SCHEMA ' || quote_ident(dest_schema) ;
 
+    RAISE NOTICE 'Creating sequences...';
     -- Create sequences
     -- TODO: Find a way to make this sequence's owner is the correct table.
     FOR object IN
@@ -102,8 +103,21 @@ BEGIN
             EXECUTE 'SELECT setval( ''' || buffer || ''', ' || sq_start_value || ', ' || sq_is_called || ');' ;
         END IF;
     END LOOP;
+    RAISE NOTICE '... done';
+
+    -- Create enums
+--     RAISE NOTICE 'Creating enums...';
+--     FOR object IN
+--     SELECT 'CREATE TYPE ' || quote_ident(dest_schema) || '.' || typname || ' AS ENUM (''' ||  string_agg(enumlabel, ''',''' ORDER BY enumsortorder) || ''')'
+--     FROM pg_type JOIN pg_enum ON pg_type.oid=enumtypid
+--     GROUP BY typname
+--     LOOP
+--         execute object;
+--     END LOOP;
+--     RAISE NOTICE '... done';
 
     -- Create tables
+    RAISE NOTICE 'Creating tables...';
     FOR object IN
     SELECT TABLE_NAME::text
     FROM information_schema.tables
@@ -112,6 +126,7 @@ BEGIN
 
     LOOP
         buffer := dest_schema || '.' || quote_ident(object);
+        RAISE NOTICE '... %', buffer;
         EXECUTE 'CREATE TABLE ' || buffer || ' (LIKE ' || quote_ident(source_schema) || '.' || quote_ident(object) || ' INCLUDING ALL)';
 
         IF include_recs THEN
@@ -130,10 +145,11 @@ BEGIN
             EXECUTE 'ALTER TABLE ' || buffer || ' ALTER COLUMN ' || column_ || ' SET DEFAULT ' || default_;
         END LOOP;
     END LOOP;
+    RAISE NOTICE '... done';
 
     --  add FK constraint
     FOR qry IN
-    SELECT 'ALTER TABLE ' || quote_ident(dest_schema) || '.' || quote_ident(rn.relname) || ' ADD CONSTRAINT ' || quote_ident(ct.conname) || ' ' || pg_get_constraintdef(ct.oid) || ';'
+    SELECT 'ALTER TABLE ' || quote_ident(dest_schema) || '.' || quote_ident(rn.relname) || ' ADD CONSTRAINT ' || quote_ident(ct.conname) || ' ' || replace(pg_get_constraintdef(ct.oid), source_schema, dest_schema) || ';'
     FROM pg_constraint ct
              JOIN pg_class rn ON rn.oid = ct.conrelid
     WHERE connamespace = src_oid
@@ -159,7 +175,7 @@ BEGIN
         WHERE table_schema = quote_ident(source_schema)
           AND table_name = quote_ident(object);
 
-        EXECUTE 'CREATE OR REPLACE VIEW ' || buffer || ' AS ' || v_def || ';' ;
+        EXECUTE 'CREATE OR REPLACE VIEW ' || buffer || ' AS ' || replace(v_def, source_schema, dest_schema) || ';' ;
 
     END LOOP;
 
@@ -182,7 +198,7 @@ BEGIN
     WHERE event_object_schema=source_schema and event_object_table=object
     GROUP BY trigger_name, action_timing, action_orientation, action_statement
     LOOP
-       EXECUTE 'CREATE TRIGGER ' || trigger_name_ || ' ' || trigger_timing_ || ' ' || trigger_events_ || ' ON ' || buffer || ' FOR EACH ' || trigger_orientation_ || ' ' || trigger_action_;
+       EXECUTE 'CREATE TRIGGER ' || trigger_name_ || ' ' || trigger_timing_ || ' ' || trigger_events_ || ' ON ' || buffer || ' FOR EACH ' || trigger_orientation_ || ' ' || replace(trigger_action_, source_schema, dest_schema);
     END LOOP;
 
   RETURN;
@@ -193,8 +209,15 @@ LANGUAGE plpgsql VOLATILE COST 100;
 
 ALTER FUNCTION clone_schema(text, text, boolean) OWNER TO postgres;
 
+CREATE SCHEMA project_model_metadata;
+SET search_path TO project_model_metadata;
+CREATE TYPE TaskIntPropertyName AS ENUM ('completion', 'priority');
+CREATE TYPE TaskTextPropertyName AS ENUM ('priority', 'color', 'shape', 'web_link', 'notes');
+
+
 ----------------------------------------------------------------------------------------------------------------
 -- This template schema is cloned for every "branch" of the project.
+
 CREATE SCHEMA project_template;
 SET search_path TO project_template;
 
@@ -208,40 +231,127 @@ CREATE TABLE TaskName(
 CREATE TABLE TaskDates(
     uid           TEXT PRIMARY KEY REFERENCES TaskName,
     start_date    DATE NOT NULL,
-    duration_days INT NOT NULL
+    duration_days INT NOT NULL DEFAULT 1,
+    earliest_start_date DATE
 );
 
 -- Other task properties can be changed independently, so they are stored in rows, one row corresponds to one
 -- instance of the task property value
 
-CREATE TYPE IntPropertyName AS ENUM ('completion', 'priority');
-
 -- Integer valued properties
 CREATE TABLE TaskIntProperties(
     uid        TEXT REFERENCES TaskName,
-    prop_name  IntPropertyName,
-    prop_value INT
+    prop_name  project_model_metadata.TaskIntPropertyName,
+    prop_value INT,
+    PRIMARY KEY(uid, prop_name)
+);
+
+-- Text valued properties
+CREATE TABLE TaskTextProperties(
+    uid TEXT REFERENCES TaskName,
+    prop_name project_model_metadata.TaskTextPropertyName,
+    prop_value TEXT,
+    PRIMARY KEY(uid, prop_name)
+);
+
+CREATE TABLE TaskCostProperties(
+    uid TEXT REFERENCES TaskName PRIMARY KEY,
+    is_cost_calculated BOOLEAN,
+    cost_manual_value NUMERIC
+);
+
+CREATE TABLE TaskClassProperties(
+    uid TEXT REFERENCES TaskName PRIMARY KEY,
+    is_milestone BOOLEAN NOT NULL DEFAULT false,
+    is_project_task BOOLEAN NOT NULL DEFAULT false
 );
 
 -- Updatable view which collects all task properties in a single row. Inserts and updates are processed
 -- with INSTEAD OF triggers.
 CREATE VIEW Task AS
-SELECT uid, num, name, start_date, duration_days AS duration,
-       MAX(prop_value) FILTER(WHERE prop_name = 'completion') AS completion
-from TaskName JOIN TaskDates USING(uid)
-         LEFT JOIN TaskIntProperties USING(uid)
-GROUP BY uid, TaskDates.uid;
+SELECT uid,
+       num,
+       name,
+       start_date,
+       duration_days AS duration,
+       earliest_start_date,
+       is_cost_calculated,
+       cost_manual_value,
+       is_milestone,
+       is_project_task,
+       MAX(TIP.prop_value) FILTER (WHERE TIP.prop_name = 'completion') AS completion,
+       MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'priority') AS priority,
+       MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'color') AS color,
+       MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'shape') AS shape,
+       MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'web_link') AS web_link,
+       MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'notes') AS notes
+from      TaskName
+JOIN      TaskDates USING(uid)
+LEFT JOIN TaskIntProperties TIP USING(uid)
+LEFT JOIN TaskTextProperties TTP USING(uid)
+LEFT JOIN TaskCostProperties TCP USING(uid)
+LEFT JOIN TaskClassProperties TCLP USING(uid)
+GROUP BY uid, TaskDates.uid, TCP.uid, TCLP.uid;
+
+CREATE OR REPLACE PROCEDURE update_int_task_property(task_uid TEXT, prop_name_ project_model_metadata.TaskIntPropertyName, prop_value_ INT)
+LANGUAGE SQL AS $$
+    INSERT INTO project_template.TaskIntProperties(uid, prop_name, prop_value) VALUES(task_uid, prop_name_, prop_value_)
+    ON CONFLICT(uid, prop_name) DO UPDATE SET prop_value=prop_value_;
+$$;
+
+CREATE OR REPLACE PROCEDURE update_text_task_property(task_uid TEXT, prop_name_ project_model_metadata.TaskTextPropertyName, prop_value_ TEXT)
+LANGUAGE SQL AS $$
+    INSERT INTO project_template.TaskTextProperties(uid, prop_name, prop_value) VALUES(task_uid, prop_name_, prop_value_)
+    ON CONFLICT(uid, prop_name) DO UPDATE SET prop_value=prop_value_;
+$$;
 
 CREATE OR REPLACE FUNCTION update_task_row() RETURNS TRIGGER AS $$
 BEGIN
-INSERT INTO TaskName(uid, num, name)
-SELECT NEW.uid, NEW.num, NEW.name
-ON CONFLICT(uid) DO UPDATE SET num=NEW.num, name=NEW.name;
+    INSERT INTO TaskName(uid, num, name) VALUES (NEW.uid, NEW.num, NEW.name)
+    ON CONFLICT(uid) DO UPDATE
+    SET num=NEW.num,
+        name=NEW.name;
 
-INSERT INTO TaskDates(uid, start_date, duration_days)
-SELECT NEW.uid, NEW.start_date, NEW.duration
-ON CONFLICT(uid) DO UPDATE SET start_date=NEW.start_date, duration_days=NEW.duration;
-RETURN NEW;
+    INSERT INTO TaskDates(uid, start_date, duration_days, earliest_start_date)
+    VALUES(NEW.uid, NEW.start_date, NEW.duration, NEW.earliest_start_date)
+    ON CONFLICT(uid) DO UPDATE
+    SET start_date = NEW.start_date,
+        duration_days = NEW.duration,
+        earliest_start_date=NEW.earliest_start_date;
+
+    INSERT INTO TaskCostProperties(uid, is_cost_calculated, cost_manual_value)
+    VALUES(NEW.uid, NEW.is_cost_calculated, NEW.cost_manual_value)
+    ON CONFLICT(uid) DO UPDATE
+    SET is_cost_calculated = NEW.is_cost_calculated,
+        cost_manual_value = NEW.cost_manual_value;
+
+    INSERT INTO TaskClassProperties(uid, is_milestone, is_project_task)
+    VALUES(NEW.uid, COALESCE(NEW.is_milestone, false), COALESCE(NEW.is_project_task, false))
+    ON CONFLICT(uid) DO UPDATE
+        SET is_milestone = COALESCE(NEW.is_milestone, false),
+            is_project_task = COALESCE(NEW.is_project_task, false);
+
+    IF NEW.completion IS NOT NULL THEN
+      CALL update_int_task_property(NEW.uid, 'completion', NEW.completion);
+    END IF;
+
+    IF NEW.priority IS NOT NULL THEN
+        CALL update_text_task_property(NEW.uid, 'priority', NEW.priority);
+    END IF;
+    IF NEW.color IS NOT NULL THEN
+        CALL update_text_task_property(NEW.uid, 'color', NEW.color);
+    END IF;
+    IF NEW.shape IS NOT NULL THEN
+        CALL update_text_task_property(NEW.uid, 'shape', NEW.shape);
+    END IF;
+    IF NEW.web_link IS NOT NULL THEN
+        CALL update_text_task_property(NEW.uid, 'web_link', NEW.web_link);
+    END IF;
+    IF NEW.notes IS NOT NULL THEN
+        CALL update_text_task_property(NEW.uid, 'notes', NEW.notes);
+    END IF;
+
+    RETURN NEW;
 END;
 
 $$ LANGUAGE plpgsql;
