@@ -307,51 +307,51 @@ $$;
 
 CREATE OR REPLACE FUNCTION update_task_row() RETURNS TRIGGER AS $$
 BEGIN
-INSERT INTO TaskName(uid, num, name) VALUES (NEW.uid, NEW.num, NEW.name)
-ON CONFLICT(uid) DO UPDATE
+    INSERT INTO TaskName(uid, num, name) VALUES (NEW.uid, NEW.num, NEW.name)
+    ON CONFLICT(uid) DO UPDATE
     SET num=NEW.num,
         name=NEW.name;
 
-INSERT INTO TaskDates(uid, start_date, duration_days, earliest_start_date)
-VALUES(NEW.uid, NEW.start_date, NEW.duration, NEW.earliest_start_date)
-ON CONFLICT(uid) DO UPDATE
-SET start_date = NEW.start_date,
-    duration_days = NEW.duration,
-    earliest_start_date=NEW.earliest_start_date;
+    INSERT INTO TaskDates(uid, start_date, duration_days, earliest_start_date)
+    VALUES(NEW.uid, NEW.start_date, NEW.duration, NEW.earliest_start_date)
+    ON CONFLICT(uid) DO UPDATE
+    SET start_date = NEW.start_date,
+        duration_days = NEW.duration,
+        earliest_start_date=NEW.earliest_start_date;
 
-INSERT INTO TaskCostProperties(uid, is_cost_calculated, cost_manual_value)
-VALUES(NEW.uid, NEW.is_cost_calculated, NEW.cost_manual_value)
-ON CONFLICT(uid) DO UPDATE
-SET is_cost_calculated = NEW.is_cost_calculated,
-    cost_manual_value = NEW.cost_manual_value;
+    INSERT INTO TaskCostProperties(uid, is_cost_calculated, cost_manual_value)
+    VALUES(NEW.uid, NEW.is_cost_calculated, NEW.cost_manual_value)
+    ON CONFLICT(uid) DO UPDATE
+    SET is_cost_calculated = NEW.is_cost_calculated,
+        cost_manual_value = NEW.cost_manual_value;
 
-INSERT INTO TaskClassProperties(uid, is_milestone, is_project_task)
-VALUES(NEW.uid, COALESCE(NEW.is_milestone, false), COALESCE(NEW.is_project_task, false))
-ON CONFLICT(uid) DO UPDATE
-    SET is_milestone = COALESCE(NEW.is_milestone, false),
-        is_project_task = COALESCE(NEW.is_project_task, false);
+    INSERT INTO TaskClassProperties(uid, is_milestone, is_project_task)
+    VALUES(NEW.uid, COALESCE(NEW.is_milestone, false), COALESCE(NEW.is_project_task, false))
+    ON CONFLICT(uid) DO UPDATE
+        SET is_milestone = COALESCE(NEW.is_milestone, false),
+            is_project_task = COALESCE(NEW.is_project_task, false);
 
-IF NEW.completion IS NOT NULL THEN
-  CALL update_int_task_property(NEW.uid, 'completion', NEW.completion);
-END IF;
+    IF NEW.completion IS NOT NULL THEN
+      CALL update_int_task_property(NEW.uid, 'completion', NEW.completion);
+    END IF;
 
-IF NEW.priority IS NOT NULL THEN
-    CALL update_text_task_property(NEW.uid, 'priority', NEW.priority);
-END IF;
-IF NEW.color IS NOT NULL THEN
-    CALL update_text_task_property(NEW.uid, 'color', NEW.color);
-END IF;
-IF NEW.shape IS NOT NULL THEN
-    CALL update_text_task_property(NEW.uid, 'shape', NEW.shape);
-END IF;
-IF NEW.web_link IS NOT NULL THEN
-    CALL update_text_task_property(NEW.uid, 'web_link', NEW.web_link);
-END IF;
-IF NEW.notes IS NOT NULL THEN
-    CALL update_text_task_property(NEW.uid, 'notes', NEW.notes);
-END IF;
+    IF NEW.priority IS NOT NULL THEN
+        CALL update_text_task_property(NEW.uid, 'priority', NEW.priority);
+    END IF;
+    IF NEW.color IS NOT NULL THEN
+        CALL update_text_task_property(NEW.uid, 'color', NEW.color);
+    END IF;
+    IF NEW.shape IS NOT NULL THEN
+        CALL update_text_task_property(NEW.uid, 'shape', NEW.shape);
+    END IF;
+    IF NEW.web_link IS NOT NULL THEN
+        CALL update_text_task_property(NEW.uid, 'web_link', NEW.web_link);
+    END IF;
+    IF NEW.notes IS NOT NULL THEN
+        CALL update_text_task_property(NEW.uid, 'notes', NEW.notes);
+    END IF;
 
-RETURN NEW;
+    RETURN NEW;
 END;
 
 $$ LANGUAGE plpgsql;
