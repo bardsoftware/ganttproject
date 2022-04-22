@@ -1,5 +1,6 @@
 create table if not exists Task (
-    id                      integer                 not null,
+    uid                     varchar                 not null,
+    num                     integer                 not null,
     name                    varchar                 not null,
     color                   varchar                     null,
     shape                   varchar                     null,
@@ -15,20 +16,20 @@ create table if not exists Task (
     is_cost_calculated      boolean                     null,
     notes                   varchar                     null,
 
-    primary key (id)
+    primary key (uid)
 );
 
 create table if not exists TaskDependency (
-    dependee_id     integer     not null,
-    dependant_id    integer     not null,
+    dependee_uid    varchar     not null,
+    dependant_uid   varchar     not null,
     type            varchar     not null,
     lag             integer     not null,
     hardness        varchar     not null,
 
-    primary key (dependee_id, dependant_id),
-    foreign key (dependee_id)  references Task(id),
-    foreign key (dependant_id) references Task(id),
-    check (dependee_id <> dependant_id)
+    primary key (dependee_uid, dependant_uid),
+    foreign key (dependee_uid)  references Task(uid),
+    foreign key (dependant_uid) references Task(uid),
+    check (dependee_uid <> dependant_uid)
 );
 
 create table if not exists LogRecord (

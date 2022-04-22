@@ -81,7 +81,7 @@ class ProjectDatabaseTest {
   fun `test insert task`() {
     projectDatabase.init()
 
-    val task = taskManager.createTask(2)
+    val task = taskManager.newTaskBuilder().withId(2).withUid("someuid").build()
     val shape = ShapePaint(4, 4, IntArray(16) { 0 }, Color.white, Color.CYAN)
     task.name = "Task2 name"
     task.color = Color.CYAN
@@ -103,7 +103,8 @@ class ProjectDatabaseTest {
     val tasks = dsl.selectFrom(TASK).fetch()
     assertEquals(tasks.size, 1)
 
-    assertEquals(tasks[0].id, 2)
+    assertEquals(tasks[0].uid, "someuid")
+    assertEquals(tasks[0].num, 2)
     assertEquals(tasks[0].name, "Task2 name")
     assertEquals(tasks[0].color, ColorConvertion.getColor(Color.CYAN))
     assertEquals(tasks[0].shape, shape.array)
@@ -132,13 +133,14 @@ class ProjectDatabaseTest {
   }
 
   @Test
-  fun `test insert task same id throws`() {
-    val task = taskManager.createTask(2)
+  fun `test insert task same uid throws`() {
+    val task1 = taskManager.newTaskBuilder().withId(1).withUid("uid").build()
+    val task2 = taskManager.newTaskBuilder().withId(2).withUid("uid").build()
 
     projectDatabase.init()
-    projectDatabase.insertTask(task)
+    projectDatabase.insertTask(task1)
     assertThrows<ProjectDatabaseException> {
-      projectDatabase.insertTask(task)
+      projectDatabase.insertTask(task2)
     }
   }
 
@@ -184,8 +186,8 @@ class ProjectDatabaseTest {
 
   @Test
   fun `test insert task dependency`() {
-    val dependant = taskManager.createTask(1)
-    val dependee = taskManager.createTask(2)
+    val dependant = taskManager.newTaskBuilder().withUid("dependant_uid").withId(1).build()
+    val dependee = taskManager.newTaskBuilder().withUid("dependee_uid").withId(2).build()
 
     val dependency = taskManager.dependencyCollection.createDependency(
       dependant,
@@ -203,8 +205,8 @@ class ProjectDatabaseTest {
     val deps = dsl.selectFrom(TASKDEPENDENCY).fetch()
     assertEquals(deps.size, 1)
 
-    assertEquals(deps[0].dependantId, 1)
-    assertEquals(deps[0].dependeeId, 2)
+    assertEquals(deps[0].dependantUid, "dependant_uid")
+    assertEquals(deps[0].dependeeUid, "dependee_uid")
     assertEquals(deps[0].type, FinishStartConstraintImpl().type.persistentValue)
     assertEquals(deps[0].lag, 10)
     assertEquals(deps[0].hardness, TaskDependency.Hardness.STRONG.identifier)
@@ -213,9 +215,12 @@ class ProjectDatabaseTest {
   @Test
   fun `test update task`() {
     projectDatabase.init()
-    val task = taskManager.createTask(1)
-    task.name = "Name1"
-
+    val task = taskManager
+      .newTaskBuilder()
+      .withUid("someuid")
+      .withId(1)
+      .withName("Name1")
+      .build()
     projectDatabase.insertTask(task)
 
     val mutator = task.createMutator()
@@ -224,7 +229,8 @@ class ProjectDatabaseTest {
 
     val tasks = dsl.selectFrom(TASK).fetch()
     assertEquals(tasks.size, 1)
-    assertEquals(tasks[0].id, 1)
+    assertEquals(tasks[0].uid, "someuid")
+    assertEquals(tasks[0].num, 1)
     assertEquals(tasks[0].name, "Name2")
 
     val logs = projectDatabase.fetchLogRecords(limit = 10)

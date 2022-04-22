@@ -103,7 +103,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task, this::executeUpdate)
 
   @Throws(ProjectDatabaseException::class)
-  override fun insertTask(task: Task): Unit = withLog({ "Failed to insert task ${task.taskID}" }) { dsl ->
+  override fun insertTask(task: Task): Unit = withLog({ "Failed to insert task ${task.logId()}" }) { dsl ->
     var costManualValue: BigDecimal? = null
     var isCostCalculated: Boolean? = null
     if (!(task.cost.isCalculated && task.cost.manualValue == BigDecimal.ZERO)) {
@@ -112,7 +112,8 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
     dsl
       .insertInto(TASK)
-      .set(TASK.ID, task.taskID)
+      .set(TASK.UID, task.uid)
+      .set(TASK.NUM, task.taskID)
       .set(TASK.NAME, task.name)
       .set(TASK.COLOR, (task as TaskImpl).externalizedColor())
       .set(TASK.SHAPE, task.shape?.array)
@@ -132,11 +133,11 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   @Throws(ProjectDatabaseException::class)
   override fun insertTaskDependency(taskDependency: TaskDependency): Unit = withLog(
-    { "Failed to insert task dependency ${taskDependency.dependee.taskID} -> ${taskDependency.dependant.taskID}" }) { dsl ->
+    { "Failed to insert task dependency ${taskDependency.dependee.logId()} -> ${taskDependency.dependant.logId()}" }) { dsl ->
     dsl
       .insertInto(TASKDEPENDENCY)
-      .set(TASKDEPENDENCY.DEPENDEE_ID, taskDependency.dependee.taskID)
-      .set(TASKDEPENDENCY.DEPENDANT_ID, taskDependency.dependant.taskID)
+      .set(TASKDEPENDENCY.DEPENDEE_UID, taskDependency.dependee.uid)
+      .set(TASKDEPENDENCY.DEPENDANT_UID, taskDependency.dependant.uid)
       .set(TASKDEPENDENCY.TYPE, taskDependency.constraint.type.persistentValue)
       .set(TASKDEPENDENCY.LAG, taskDependency.difference)
       .set(TASKDEPENDENCY.HARDNESS, taskDependency.hardness.identifier)
@@ -182,7 +183,7 @@ class SqlTaskUpdateBuilder(private val task: Task,
   override fun execute() {
     try {
       lastSetStep?.let { updateQuery ->
-        executeQuery(updateQuery.where(TASK.ID.eq(task.taskID)).getSQL(ParamType.INLINED))
+        executeQuery(updateQuery.where(TASK.UID.eq(task.uid)).getSQL(ParamType.INLINED))
       }
     } finally {
       lastSetStep = null
@@ -253,6 +254,8 @@ class SqlTaskUpdateBuilder(private val task: Task,
     TODO("Not yet implemented")
   }
 }
+
+private fun Task.logId(): String = "${uid}:${taskID}"
 
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"
