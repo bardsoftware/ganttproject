@@ -104,7 +104,7 @@ class ProjectDatabaseTest {
     assertEquals(tasks.size, 1)
 
     assertEquals(tasks[0].uid, "someuid")
-    assertEquals(tasks[0].id, 2)
+    assertEquals(tasks[0].num, 2)
     assertEquals(tasks[0].name, "Task2 name")
     assertEquals(tasks[0].color, ColorConvertion.getColor(Color.CYAN))
     assertEquals(tasks[0].shape, shape.array)
@@ -230,7 +230,7 @@ class ProjectDatabaseTest {
     val tasks = dsl.selectFrom(TASK).fetch()
     assertEquals(tasks.size, 1)
     assertEquals(tasks[0].uid, "someuid")
-    assertEquals(tasks[0].id, 1)
+    assertEquals(tasks[0].num, 1)
     assertEquals(tasks[0].name, "Name2")
 
     val logs = projectDatabase.fetchLogRecords(limit = 10)

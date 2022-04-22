@@ -113,7 +113,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     dsl
       .insertInto(TASK)
       .set(TASK.UID, task.uid)
-      .set(TASK.ID, task.taskID)
+      .set(TASK.NUM, task.taskID)
       .set(TASK.NAME, task.name)
       .set(TASK.COLOR, (task as TaskImpl).externalizedColor())
       .set(TASK.SHAPE, task.shape?.array)

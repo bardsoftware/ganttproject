@@ -1,6 +1,6 @@
 create table if not exists Task (
     uid                     varchar                 not null,
-    id                      integer                 not null,
+    num                     integer                 not null,
     name                    varchar                 not null,
     color                   varchar                     null,
     shape                   varchar                     null,
