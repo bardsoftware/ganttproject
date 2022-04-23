@@ -267,9 +267,16 @@ class WebSocketClient {
   private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
   private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
   private val contentChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
+  private val xlogReceivedListeners = mutableListOf<(ObjectNode) -> Unit>()
   private var listeningDocument: GPCloudDocument? = null
 
-  private fun getWebSocketUrl(): String = if (isColloboqueLocalTest()) "ws://localhost:9001" else GPCLOUD_WEBSOCKET_URL
+  private fun getWebSocketUrl(): String {
+    return if (isColloboqueLocalTest()) {
+      "ws://localhost:${System.getProperty("colloboquePort", "9001")}"
+    } else {
+      GPCLOUD_WEBSOCKET_URL
+    }
+  }
 
   fun start() {
     LOG.debug("WebSocket started")
@@ -297,6 +304,7 @@ class WebSocketClient {
       when (it) {
         "ProjectLockStatusChange" -> fireLockStatusChange(payload)
         "ProjectChange", "ProjectRevert" -> fireContentsChange(payload)
+        "XlogReceived" -> fireXlogReceived(payload)
         else -> fireStructureChange(payload)
       }
     }
@@ -339,6 +347,11 @@ class WebSocketClient {
     this.contentChangeListeners.forEach { it(payload) }
   }
 
+  private fun fireXlogReceived(payload: ObjectNode) {
+    LOG.debug("Xlog received {}", payload)
+    xlogReceivedListeners.forEach { it(payload) }
+  }
+
   fun onStructureChange(listener: (Any) -> Unit) {
     this.structureChangeListeners.add(listener)
   }
@@ -355,6 +368,11 @@ class WebSocketClient {
     return {
       this.contentChangeListeners.remove(listener)
     }
+  }
+
+  fun onXlogReceived(listener: (ObjectNode) -> Unit): () -> Unit {
+    xlogReceivedListeners.add(listener)
+    return { xlogReceivedListeners.remove(listener) }
   }
 
   private fun sendHeartbeat() {

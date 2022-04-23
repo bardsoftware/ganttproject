@@ -27,6 +27,7 @@ import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
 import biz.ganttproject.storage.cloud.GPCloudStatusBar;
 import com.beust.jcommander.Parameter;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -77,6 +78,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.getWebSocket;
@@ -142,6 +144,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private FXSearchUi mySearchUi;
 
+  /** ID of the last xlog received by the Colloboque server. */
+  private final AtomicInteger myLastReceivedXlogId = new AtomicInteger(0);
+
   public GanttProject(boolean isOnlyViewer) {
     LoggerApi<Logger> startupLogger = GPLogger.create("Window.Startup");
     startupLogger.debug("Creating main frame...");
@@ -168,6 +173,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getTaskManager().addTaskListener(stateListener);
     if (isColloboqueLocalTest()) {
       getWebSocket().register(null);
+      getWebSocket().onXlogReceived(this::fireXlogReceived);
       getTaskManager().addTaskListener(new TaskListenerAdapter(this::sendProjectStateLogs));
     }
 
@@ -892,10 +898,18 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private Unit sendProjectStateLogs() {
     gpLogger.debug("Sending project state logs");
     try {
-      getWebSocket().sendLogs(myProjectDatabase.fetchLogRecords(0, 10));
+      var logs = myProjectDatabase.fetchLogRecords(myLastReceivedXlogId.get() + 1, 10);
+      if (!logs.isEmpty()) {
+        getWebSocket().sendLogs(logs);
+      }
     } catch (ProjectDatabaseException e) {
       gpLogger.error("Failed to send logs {}", new Object[]{}, ImmutableMap.of(),  e);
     }
+    return Unit.INSTANCE;
+  }
+
+  private Unit fireXlogReceived(ObjectNode payload) {
+    myLastReceivedXlogId.getAndAccumulate(payload.get("id").asInt(-1), Math::max);
     return Unit.INSTANCE;
   }
 }
