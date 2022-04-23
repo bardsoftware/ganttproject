@@ -22,7 +22,6 @@ import biz.ganttproject.LoggerApi;
 import biz.ganttproject.app.FXSearchUi;
 import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
-import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
@@ -34,6 +33,7 @@ import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.action.*;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
@@ -64,7 +64,9 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
+import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -76,6 +78,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.getWebSocket;
+import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.isColloboqueLocalTest;
 
 /**
  * Main frame of the project
@@ -161,6 +166,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ProjectStateHolderEventListener stateListener = new ProjectStateHolderEventListener(myProjectDatabase);
     addProjectEventListener(stateListener);
     getTaskManager().addTaskListener(stateListener);
+    if (isColloboqueLocalTest()) {
+      getWebSocket().register(null);
+      getTaskManager().addTaskListener(new TaskListenerAdapter(this::sendProjectStateLogs));
+    }
 
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
         myTaskTableChartConnector,
@@ -880,4 +889,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     super.repaint();
   }
 
+  private Unit sendProjectStateLogs() {
+    gpLogger.debug("Sending project state logs");
+    try {
+      getWebSocket().sendLogs(myProjectDatabase.fetchLogRecords(0, 10));
+    } catch (ProjectDatabaseException e) {
+      gpLogger.error("Failed to send logs {}", new Object[]{}, ImmutableMap.of(),  e);
+    }
+    return Unit.INSTANCE;
+  }
 }
