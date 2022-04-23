@@ -26,11 +26,27 @@ import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
 import fi.iki.elonen.NanoWSD
 import kotlinx.coroutines.channels.Channel
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import org.slf4j.LoggerFactory
 import java.io.IOException
 
 fun main(args: Array<String>) = DevServerMain().main(args)
+
+@Serializable
+data class ServerResponse(
+  val id: Int,
+  val type: String
+)
+
+@Serializable
+data class LogRecord(
+  val id: Int,
+  val sqlStatement: String
+)
 
 class DevServerMain : CliktCommand() {
   private val port by option("--port").int().default(9000)
@@ -47,8 +63,8 @@ class DevServerMain : CliktCommand() {
     val updateInputChannel = Channel<InputXlog>()
     val dataSourceFactory = PostgresDataSourceFactory(pgHost, pgPort, pgSuperUser, pgSuperAuth)
     val colloboqueServer = ColloboqueServer(dataSourceFactory::createDataSource, initInputChannel, updateInputChannel)
-    ColloboqueHttpServer(port, colloboqueServer).start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
-    ColloboqueWebSocketServer(wsPort, colloboqueServer).start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
+    ColloboqueHttpServer(port, colloboqueServer).start(0, false)
+    ColloboqueWebSocketServer(wsPort, colloboqueServer).start(0, false)
   }
 }
 
@@ -83,7 +99,14 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
     override fun onMessage(message: WebSocketFrame?) {
       try {
         LOG.debug("Message received ${message?.textPayload}")
-        send(message?.textPayload)
+        println(message?.textPayload)
+        try {
+          val logs = Json.decodeFromString<List<LogRecord>>(message?.textPayload ?: "")
+          send(Json.encodeToString(ServerResponse(logs.last().id, "XlogReceived")))
+        } catch (e: Exception) {
+          println("Failed to parse, the message: ${message?.textPayload}")
+          send(message?.textPayload)
+        }
       } catch (e: IOException) {
         LOG.error("Failed to send response {}", e)
       }
