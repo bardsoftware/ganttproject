@@ -895,6 +895,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     super.repaint();
   }
 
+  // TODO: Accumulate changes instead of sending it every time.
   private Unit sendProjectStateLogs() {
     gpLogger.debug("Sending project state logs");
     try {

@@ -270,12 +270,16 @@ class WebSocketClient {
   private val xlogReceivedListeners = mutableListOf<(ObjectNode) -> Unit>()
   private var listeningDocument: GPCloudDocument? = null
 
-  private fun getWebSocketUrl(): String {
-    return if (isColloboqueLocalTest()) {
-      "ws://localhost:${System.getProperty("colloboquePort", "9001")}"
-    } else {
-      GPCLOUD_WEBSOCKET_URL
-    }
+  private fun getWebSocketUrl() = if (isColloboqueLocalTest()) {
+    "ws://localhost:${System.getProperty("colloboquePort", "9001")}"
+  } else {
+    GPCLOUD_WEBSOCKET_URL
+  }
+
+  private fun getConnectionSpecs() = if (isColloboqueLocalTest()) {
+    listOf(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT)
+  } else {
+    listOf(ConnectionSpec.COMPATIBLE_TLS)
   }
 
   fun start() {
@@ -286,7 +290,7 @@ class WebSocketClient {
     val wsListener = WebSocketListenerImpl(GPCloudOptions.websocketAuthToken, this::onAuthDone, this::onMessage, this::onClose)
     this.wsListener = wsListener
     this.websocket = OkHttpClient.Builder()
-      .connectionSpecs(listOf(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
+      .connectionSpecs(getConnectionSpecs())
       .build().newWebSocket(req, wsListener)
   }
 
