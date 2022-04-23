@@ -18,7 +18,20 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package cloud.ganttproject.colloboque
 
+import biz.ganttproject.core.io.XmlTasks
+import biz.ganttproject.core.io.parseXmlProject
+import biz.ganttproject.core.io.walkTasksDepthFirst
+import biz.ganttproject.core.time.CalendarFactory
+import biz.ganttproject.lib.fx.SimpleTreeCollapseView
 import kotlinx.coroutines.channels.Channel
+import net.sourceforge.ganttproject.GanttProjectImpl
+import net.sourceforge.ganttproject.parser.TaskLoader
+import net.sourceforge.ganttproject.storage.buildInsertTaskQuery
+import org.jooq.DSLContext
+import org.jooq.SQLDialect
+import org.jooq.impl.DSL
+import java.text.DateFormat
+import java.util.*
 import javax.sql.DataSource
 
 class ColloboqueServer(
@@ -27,13 +40,54 @@ class ColloboqueServer(
   private val updateInputChannel: Channel<InputXlog>) {
 
   fun init(projectRefid: String) {
-    dataSourceFactory(projectRefid).connection.use {
-      it.createStatement().executeQuery("SELECT uid FROM Task").use { rs ->
-        while (rs.next()) {
-          println(rs.getString(1))
+    dataSourceFactory(projectRefid).let { ds ->
+      ds.connection.use {
+        it.createStatement().executeQuery("SELECT uid FROM Task").use { rs ->
+          while (rs.next()) {
+            println(rs.getString(1))
+          }
+        }
+        DSL.using(it, SQLDialect.POSTGRES).let { dsl ->
+          loadProject("""
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">
+    <tasks empty-milestones="true">
+        <task id="0" uid="qwerty" name="Task1" color="#99ccff" meeting="false" start="2022-02-10" duration="25" complete="85" expand="true"/>
+    </tasks>
+</project>
+          """.trimIndent(), dsl)
         }
       }
     }
+  }
+}
+
+
+private fun loadProject(xmlInput: String, dsl: DSLContext) {
+  object : CalendarFactory() {
+    init {
+      setLocaleApi(object : LocaleApi {
+        override fun getLocale(): Locale {
+          return Locale.US
+        }
+
+        override fun getShortDateFormat(): DateFormat {
+          return DateFormat.getDateInstance(DateFormat.SHORT, Locale.US)
+        }
+      })
+    }
+  }
+  val bufferProject = GanttProjectImpl()
+  val taskLoader = TaskLoader(bufferProject.taskManager, SimpleTreeCollapseView())
+  parseXmlProject(xmlInput).let { xmlProject ->
+    taskLoader.loadTaskCustomPropertyDefinitions(xmlProject)
+    xmlProject.walkTasksDepthFirst { parent: XmlTasks.XmlTask?, child: XmlTasks.XmlTask ->
+      taskLoader.loadTask(parent, child)
+      true
+    }
+  }
+  bufferProject.taskManager.tasks.forEach { task ->
+    buildInsertTaskQuery(dsl, task).execute()
   }
 
 }

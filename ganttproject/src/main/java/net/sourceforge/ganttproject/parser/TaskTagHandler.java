@@ -34,19 +34,10 @@ import java.awt.*;
 public class TaskTagHandler  {
   private final TaskManager myManager;
   private final TreeCollapseView<Task> myTreeFacade;
-  private final UIFacade myUiFacade;
-  private final ColumnList myTableColumns;
-  private final BooleanOption myFilterCompletedTasksOption;
-  private final ListOption<Color> myRecentColorsOption;
 
-  public TaskTagHandler(TaskManager mgr, TreeCollapseView<Task> treeFacade, UIFacade uiFacade, ColumnList tableColumns,
-                        BooleanOption filterCompletedTasksOption, ListOption<Color> recentColorsOption) {
+  public TaskTagHandler(TaskManager mgr, TreeCollapseView<Task> treeFacade) {
     myManager = mgr;
     myTreeFacade = treeFacade;
-    myUiFacade = uiFacade;
-    myTableColumns = tableColumns;
-    myFilterCompletedTasksOption = filterCompletedTasksOption;
-    myRecentColorsOption = recentColorsOption;
   }
 
   public void process(XmlProject xmlProject) {
@@ -57,9 +48,6 @@ public class TaskTagHandler  {
       return true;
     });
     TaskSerializerKt.loadDependencyGraph(taskLoader.getDependencies(), myManager, taskLoader.getLegacyFixedStartTasks());
-    TaskSerializerKt.loadGanttView(xmlProject,
-      myManager, myUiFacade.getCurrentTaskView(), myUiFacade.getZoomManager(), myTableColumns,
-      ImmutableList.of(myFilterCompletedTasksOption, myRecentColorsOption));
   }
 
   private TaskManager getManager() {
