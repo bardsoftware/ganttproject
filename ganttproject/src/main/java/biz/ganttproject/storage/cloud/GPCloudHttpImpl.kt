@@ -37,10 +37,12 @@ import javafx.concurrent.Task
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.storage.LogRecord
+import net.sourceforge.ganttproject.storage.InputXlog
+import net.sourceforge.ganttproject.storage.ServerCommitResponse
 import okhttp3.*
 import org.apache.commons.codec.binary.Base64InputStream
 import org.apache.http.HttpHost
@@ -267,7 +269,7 @@ class WebSocketClient {
   private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
   private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
   private val contentChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
-  private val xlogReceivedListeners = mutableListOf<(ObjectNode) -> Unit>()
+  private val xlogCommitResponseListeners = mutableListOf<(ServerCommitResponse) -> Unit>()
   private var listeningDocument: GPCloudDocument? = null
 
   private fun getWebSocketUrl() = if (isColloboqueLocalTest()) {
@@ -277,7 +279,7 @@ class WebSocketClient {
   }
 
   private fun getConnectionSpecs() = if (isColloboqueLocalTest()) {
-    listOf(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT)
+    listOf(ConnectionSpec.CLEARTEXT)
   } else {
     listOf(ConnectionSpec.COMPATIBLE_TLS)
   }
@@ -308,7 +310,7 @@ class WebSocketClient {
       when (it) {
         "ProjectLockStatusChange" -> fireLockStatusChange(payload)
         "ProjectChange", "ProjectRevert" -> fireContentsChange(payload)
-        "XlogReceived" -> fireXlogReceived(payload)
+        "ServerCommitResponse" -> fireCommitResponseReceived(payload)
         else -> fireStructureChange(payload)
       }
     }
@@ -351,9 +353,14 @@ class WebSocketClient {
     this.contentChangeListeners.forEach { it(payload) }
   }
 
-  private fun fireXlogReceived(payload: ObjectNode) {
-    LOG.debug("Xlog received {}", payload)
-    xlogReceivedListeners.forEach { it(payload) }
+  private fun fireCommitResponseReceived(payload: ObjectNode) {
+    LOG.debug("Commit response received {}", payload)
+    try {
+      val serverResponse = Json.decodeFromString<ServerCommitResponse>(payload.toString())
+      xlogCommitResponseListeners.forEach { it(serverResponse) }
+    } catch (e: Exception) {
+      LOG.debug("Failed to parse ServerCommitResponse $payload")
+    }
   }
 
   fun onStructureChange(listener: (Any) -> Unit) {
@@ -374,9 +381,9 @@ class WebSocketClient {
     }
   }
 
-  fun onXlogReceived(listener: (ObjectNode) -> Unit): () -> Unit {
-    xlogReceivedListeners.add(listener)
-    return { xlogReceivedListeners.remove(listener) }
+  fun onCommitResponseReceived(listener: (ServerCommitResponse) -> Unit): () -> Unit {
+    xlogCommitResponseListeners.add(listener)
+    return { xlogCommitResponseListeners.remove(listener) }
   }
 
   private fun sendHeartbeat() {
@@ -393,7 +400,7 @@ class WebSocketClient {
     }
   }
 
-  fun sendLogs(logs: List<LogRecord>) {
+  fun sendLogs(logs: InputXlog) {
     this.websocket?.send(Json.encodeToString(logs))
   }
 }
