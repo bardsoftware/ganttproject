@@ -80,8 +80,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -148,15 +146,36 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private FXSearchUi mySearchUi;
 
-  /**
-   * Number of transactions committed by the Colloboque server.
-   */
-  private int myCommittedTxnNum = 0;
-  /**
-   * ID of the last transaction committed by the Colloboque server.
-   */
-  private String myLastCommittedTxnId = "";
-  private final Lock myXlogSendingLock = new ReentrantLock();
+  private static class TxnCommitInfo {
+    /** Base transaction ID received from the server. */
+    protected String baseTxnId = "";
+    /** Local ID of the last transaction committed by the server. */
+    protected int baseTxnLocalId = 0;
+
+    TxnCommitInfo() {}
+    TxnCommitInfo(String baseTxnId, int baseTxnLocalId) {
+      this.baseTxnId = baseTxnId;
+      this.baseTxnLocalId = baseTxnLocalId;
+    }
+  }
+
+  private static class TxnCommitInfoSync extends TxnCommitInfo {
+    synchronized Boolean compareAndSetBaseTxn(String expectedTxnId, String newTxnId) {
+      if (baseTxnId.equals(expectedTxnId)) {
+        baseTxnId = newTxnId;
+        baseTxnLocalId++;
+        return true;
+      }
+      return false;
+    }
+
+    synchronized TxnCommitInfo getCommitInfo() {
+      return new TxnCommitInfo(baseTxnId, baseTxnLocalId);
+    }
+  }
+
+  private final TxnCommitInfoSync myTxnCommitInfoSync = new TxnCommitInfoSync();
+
 
   public GanttProject(boolean isOnlyViewer) {
     LoggerApi<Logger> startupLogger = GPLogger.create("Window.Startup");
@@ -186,6 +205,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       getWebSocket().register(null);
       getWebSocket().onCommitResponseReceived(this::fireXlogReceived);
       var taskListenerAdapter = new TaskListenerAdapter();
+      // TODO: add listeners sensibly.
       taskListenerAdapter.setTaskAddedHandler(event -> this.sendProjectStateLogs());
       getTaskManager().addTaskListener(taskListenerAdapter);
     }
@@ -912,14 +932,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private Unit sendProjectStateLogs() {
     gpLogger.debug("Sending project state logs");
     try {
-      myXlogSendingLock.lock();
-      var firstLogId = myCommittedTxnNum;
-      var baseTxnId = myLastCommittedTxnId;
-      myXlogSendingLock.unlock();
-      var logs = myProjectDatabase.fetchLogRecords(firstLogId, 10);
+      var txnCommitInfo = myTxnCommitInfoSync.getCommitInfo();
+      var logs = myProjectDatabase.fetchLogRecords(txnCommitInfo.baseTxnLocalId + 1, 1);
       if (!logs.isEmpty()) {
         getWebSocket().sendLogs(new InputXlog(
-          baseTxnId,
+          txnCommitInfo.baseTxnId,
           "userId",
           "projectRefid",
           logs.stream()
@@ -934,12 +951,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   private Unit fireXlogReceived(ServerCommitResponse response) {
-    myXlogSendingLock.lock();
-    if (myLastCommittedTxnId.equals(response.getBaseTxnId())) {
-      myLastCommittedTxnId = response.getCommittedTxnId();
-      myCommittedTxnNum += response.getCommittedTxnNum();
-    }
-    myXlogSendingLock.unlock();
+    myTxnCommitInfoSync.compareAndSetBaseTxn(response.getBaseTxnId(), response.getNewBaseTxnId());
     return Unit.INSTANCE;
   }
 }

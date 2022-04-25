@@ -103,7 +103,6 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
         val response = ServerCommitResponse(
           inputXlog.baseTxnId,
           nextTxnId,
-          inputXlog.transactions.size,
           inputXlog.projectRefid,
           "ServerCommitResponse"
         )

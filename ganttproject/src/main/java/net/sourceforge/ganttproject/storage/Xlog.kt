@@ -58,8 +58,7 @@ data class InputXlog(
  * Response from the server, which contains the result of applying changes sent by the client.
  *
  * @param baseTxnId the transaction to which the changes were applied.
- * @param committedTxnId the resulting transaction.
- * @param committedTxnNum the number of committed transactions.
+ * @param newBaseTxnId the resulting transaction.
  *
  * TODO: Get rid of type. It's used for routing in `WebSocketClient::onMessage`.
  * TODO: Provide transaction conflicts handling.
@@ -67,8 +66,7 @@ data class InputXlog(
 @Serializable
 data class ServerCommitResponse(
   val baseTxnId: String,
-  val committedTxnId: String,
-  val committedTxnNum: Int,
+  val newBaseTxnId: String,
   val projectRefid: String,
   val type: String
 )
