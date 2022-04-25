@@ -52,7 +52,7 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
     when (session.uri) {
       "/init" -> {
         session.parameters["projectRefid"]?.firstOrNull()?.let {
-          colloboqueServer.init(it)
+          colloboqueServer.init(it, session.parameters["debug_create_project"]?.firstOrNull()?.toBoolean() ?: false)
           newFixedLengthResponse("Ok")
         } ?: newFixedLengthResponse(Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "projectRefid is missing")
       }

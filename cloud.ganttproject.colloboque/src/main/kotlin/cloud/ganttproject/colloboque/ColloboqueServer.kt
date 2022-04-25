@@ -29,6 +29,7 @@ import net.sourceforge.ganttproject.parser.TaskLoader
 import net.sourceforge.ganttproject.storage.buildInsertTaskQuery
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
+import org.jooq.conf.RenderNameCase
 import org.jooq.impl.DSL
 import java.text.DateFormat
 import java.util.*
@@ -39,7 +40,7 @@ class ColloboqueServer(
   private val initInputChannel: Channel<InitRecord>,
   private val updateInputChannel: Channel<InputXlog>) {
 
-  fun init(projectRefid: String) {
+  fun init(projectRefid: String, debugCreateProject: Boolean) {
     dataSourceFactory(projectRefid).let { ds ->
       ds.connection.use {
         it.createStatement().executeQuery("SELECT uid FROM Task").use { rs ->
@@ -47,8 +48,13 @@ class ColloboqueServer(
             println(rs.getString(1))
           }
         }
-        DSL.using(it, SQLDialect.POSTGRES).let { dsl ->
-          loadProject("""
+        if (debugCreateProject) {
+          DSL.using(it, SQLDialect.POSTGRES)
+            .configuration()
+            .deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
+            .dsl().let { dsl ->
+
+              loadProject("""
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">
     <tasks empty-milestones="true">
@@ -56,6 +62,7 @@ class ColloboqueServer(
     </tasks>
 </project>
           """.trimIndent(), dsl)
+            }
         }
       }
     }

@@ -9,4 +9,5 @@
     </root>
     <logger name="com.zaxxer.hikari.pool.HikariPool" level="INFO"/>
     <logger name="Startup" level="INFO"/>
+    <logger name="ColloboqueWebServer" level="DEBUG"/>
 </configuration>
