@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.document;
 import biz.ganttproject.core.io.XmlProject;
 import biz.ganttproject.core.table.ColumnList;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.GPColorChooser;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -203,11 +204,7 @@ public class ProxyDocument implements Document {
     TaskManager taskManager = getTaskManager();
     ResourceTagHandler resourceHandler = new ResourceTagHandler(hrManager, roleManager, myProject.getResourceCustomPropertyManager(), myUIFacade.getZoomManager(), myResourceVisibleFields);
     AllocationTagHandler allocationHandler = new AllocationTagHandler(hrManager, getTaskManager(), getRoleManager());
-    TaskTagHandler taskHandler = new TaskTagHandler(taskManager,
-      myUIFacade.getTaskCollapseView(), myUIFacade, myTaskVisibleFields,
-      myProject.getTaskFilterManager().getFilterCompletedTasksOption(),
-      GPColorChooser.getRecentColorsOption()
-    );
+    TaskTagHandler taskHandler = new TaskTagHandler(taskManager, myUIFacade.getTaskCollapseView());
 
     opener.addTagHandler(new AbstractTagHandler("qqq") {
       @Override
@@ -215,8 +212,13 @@ public class ProxyDocument implements Document {
         new RoleSerializer(roleManager).loadRoles(xmlProject);
         new CalendarSerializer(myProject.getActiveCalendar()).loadCalendar(xmlProject);
         new BaselineSerializer().loadBaselines(xmlProject, myProject.getBaselines());
+
         resourceHandler.process(xmlProject);
         taskHandler.process(xmlProject);
+        TaskSerializerKt.loadGanttView(xmlProject,
+          taskManager, myUIFacade.getCurrentTaskView(), myUIFacade.getZoomManager(), myTaskVisibleFields,
+          ImmutableList.of(myProject.getTaskFilterManager().getFilterCompletedTasksOption(),
+            GPColorChooser.getRecentColorsOption()));
         opener.getDefaultTagHandler().process(xmlProject);
         allocationHandler.process(xmlProject);
       }

@@ -23,10 +23,6 @@ import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.db.Tables.*
-import net.sourceforge.ganttproject.io.externalizedColor
-import net.sourceforge.ganttproject.io.externalizedNotes
-import net.sourceforge.ganttproject.io.externalizedWebLink
-import net.sourceforge.ganttproject.task.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.storage.ProjectDatabase.*
 import net.sourceforge.ganttproject.task.Task
@@ -40,7 +36,6 @@ import org.jooq.UpdateSetStep
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import java.awt.Color
-import java.math.BigDecimal
 import java.sql.SQLException
 import javax.sql.DataSource
 import kotlin.text.Charsets
@@ -104,31 +99,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   @Throws(ProjectDatabaseException::class)
   override fun insertTask(task: Task): Unit = withLog({ "Failed to insert task ${task.logId()}" }) { dsl ->
-    var costManualValue: BigDecimal? = null
-    var isCostCalculated: Boolean? = null
-    if (!(task.cost.isCalculated && task.cost.manualValue == BigDecimal.ZERO)) {
-      costManualValue = task.cost.manualValue
-      isCostCalculated = task.cost.isCalculated
-    }
-    dsl
-      .insertInto(TASK)
-      .set(TASK.UID, task.uid)
-      .set(TASK.NUM, task.taskID)
-      .set(TASK.NAME, task.name)
-      .set(TASK.COLOR, (task as TaskImpl).externalizedColor())
-      .set(TASK.SHAPE, task.shape?.array)
-      .set(TASK.IS_MILESTONE, (task as TaskImpl).isLegacyMilestone)
-      .set(TASK.IS_PROJECT_TASK, task.isProjectTask)
-      .set(TASK.START_DATE, task.start.toLocalDate())
-      .set(TASK.DURATION, task.duration.length)
-      .set(TASK.COMPLETION, task.completionPercentage)
-      .set(TASK.EARLIEST_START_DATE, task.third?.toLocalDate())
-      .set(TASK.PRIORITY, task.priority.persistentValue)
-      .set(TASK.WEB_LINK, task.externalizedWebLink())
-      .set(TASK.COST_MANUAL_VALUE, costManualValue)
-      .set(TASK.IS_COST_CALCULATED, isCostCalculated)
-      .set(TASK.NOTES, task.externalizedNotes())
-      .getSQL(ParamType.INLINED)
+    buildInsertTaskQuery(dsl, task).getSQL(ParamType.INLINED)
   }
 
   @Throws(ProjectDatabaseException::class)
