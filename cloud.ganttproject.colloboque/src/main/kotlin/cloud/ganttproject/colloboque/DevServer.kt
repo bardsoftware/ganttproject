@@ -26,9 +26,16 @@ import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
 import fi.iki.elonen.NanoWSD
 import kotlinx.coroutines.channels.Channel
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import org.slf4j.LoggerFactory
 import java.io.IOException
+import net.sourceforge.ganttproject.storage.InitRecord
+import net.sourceforge.ganttproject.storage.InputXlog
+import net.sourceforge.ganttproject.storage.ServerCommitResponse
+import java.time.LocalDateTime
 
 fun main(args: Array<String>) = DevServerMain().main(args)
 
@@ -47,8 +54,8 @@ class DevServerMain : CliktCommand() {
     val updateInputChannel = Channel<InputXlog>()
     val dataSourceFactory = PostgresDataSourceFactory(pgHost, pgPort, pgSuperUser, pgSuperAuth)
     val colloboqueServer = ColloboqueServer(dataSourceFactory::createDataSource, initInputChannel, updateInputChannel)
-    ColloboqueHttpServer(port, colloboqueServer).start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
-    ColloboqueWebSocketServer(wsPort, colloboqueServer).start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
+    ColloboqueHttpServer(port, colloboqueServer).start(0, false)
+    ColloboqueWebSocketServer(wsPort, colloboqueServer).start(0, false)
   }
 }
 
@@ -66,12 +73,20 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
     }
 }
 
-class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: ColloboqueServer) : NanoWSD("localhost", port) {
+class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: ColloboqueServer) :
+  NanoWSD("localhost", port) {
   override fun openWebSocket(handshake: IHTTPSession?): WebSocket {
     return WebSocketImpl(handshake)
   }
 
-  private class WebSocketImpl(handshake: IHTTPSession?): WebSocket(handshake) {
+  private class WebSocketImpl(handshake: IHTTPSession?) : WebSocket(handshake) {
+    private fun parseInputXlog(message: String): InputXlog? = try {
+      Json.decodeFromString<InputXlog>(message)
+    } catch (e: Exception) {
+      LOG.error("Failed to parse $message")
+      null
+    }
+
     override fun onOpen() {
       LOG.debug("WebSocket opened")
     }
@@ -83,9 +98,18 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
     override fun onMessage(message: WebSocketFrame?) {
       try {
         LOG.debug("Message received ${message?.textPayload}")
-        send(message?.textPayload)
-      } catch (e: IOException) {
-        LOG.error("Failed to send response {}", e)
+        val inputXlog = parseInputXlog(message?.textPayload ?: "") ?: return
+        val nextTxnId = LocalDateTime.now().toString()
+        val response = ServerCommitResponse(
+          inputXlog.baseTxnId,
+          nextTxnId,
+          inputXlog.transactions.size,
+          inputXlog.projectRefid,
+          "ServerCommitResponse"
+        )
+        send(Json.encodeToString(response))
+      } catch (e: Exception) {
+        LOG.error("Failed to send response", e)
       }
     }
 

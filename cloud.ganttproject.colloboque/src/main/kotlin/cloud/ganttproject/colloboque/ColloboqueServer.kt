@@ -20,6 +20,8 @@ package cloud.ganttproject.colloboque
 
 import kotlinx.coroutines.channels.Channel
 import javax.sql.DataSource
+import net.sourceforge.ganttproject.storage.InitRecord
+import net.sourceforge.ganttproject.storage.InputXlog
 
 class ColloboqueServer(
   private val dataSourceFactory: (projectRefid: String) -> DataSource,
