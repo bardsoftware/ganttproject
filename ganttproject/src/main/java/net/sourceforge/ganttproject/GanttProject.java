@@ -70,6 +70,7 @@ import net.sourceforge.ganttproject.storage.ServerCommitResponse;
 import net.sourceforge.ganttproject.storage.XlogRecord;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -80,6 +81,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -146,35 +148,35 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private FXSearchUi mySearchUi;
 
+  /**
+   * Holds the transaction ID specified by the server (String) and the local ID (Integer) of the last local transaction
+   * committed by the server.
+   * The local ID corresponds to the txn ID stored in the database.
+   */
   private static class TxnCommitInfo {
-    /** Base transaction ID received from the server. */
-    protected String baseTxnId = "";
-    /** Local ID of the last transaction committed by the server. */
-    protected int baseTxnLocalId = 0;
+    private final AtomicReference<ImmutablePair<String, Integer>> myTxnId;
 
-    TxnCommitInfo() {}
-    TxnCommitInfo(String baseTxnId, int baseTxnLocalId) {
-      this.baseTxnId = baseTxnId;
-      this.baseTxnLocalId = baseTxnLocalId;
+    TxnCommitInfo(String serverId, Integer localId) {
+      myTxnId = new AtomicReference<>(new ImmutablePair<>(serverId, localId));
+    }
+
+    /** If `oldTxnId` is currently being hold, sets the txn ID to `newTxnId` and moves the local ID ahead by `committedNum`. */
+    synchronized void update(String oldTxnId, String newTxnId, int committedNum) {
+      myTxnId.updateAndGet(oldValue -> {
+        if (oldValue.left.equals(oldTxnId)) {
+          return new ImmutablePair<>(newTxnId, oldValue.right + committedNum);
+        } else {
+          return oldValue;
+        }
+      });
+    }
+
+    synchronized ImmutablePair<String, Integer> get() {
+      return myTxnId.get();
     }
   }
 
-  private static class TxnCommitInfoSync extends TxnCommitInfo {
-    synchronized Boolean compareAndSetBaseTxn(String expectedTxnId, String newTxnId) {
-      if (baseTxnId.equals(expectedTxnId)) {
-        baseTxnId = newTxnId;
-        baseTxnLocalId++;
-        return true;
-      }
-      return false;
-    }
-
-    synchronized TxnCommitInfo getCommitInfo() {
-      return new TxnCommitInfo(baseTxnId, baseTxnLocalId);
-    }
-  }
-
-  private final TxnCommitInfoSync myTxnCommitInfoSync = new TxnCommitInfoSync();
+  private final TxnCommitInfo myBaseTxnCommitInfo = new TxnCommitInfo("", 0);
 
 
   public GanttProject(boolean isOnlyViewer) {
@@ -932,11 +934,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private Unit sendProjectStateLogs() {
     gpLogger.debug("Sending project state logs");
     try {
-      var txnCommitInfo = myTxnCommitInfoSync.getCommitInfo();
-      var logs = myProjectDatabase.fetchLogRecords(txnCommitInfo.baseTxnLocalId + 1, 1);
+      var baseTxnCommitInfo = myBaseTxnCommitInfo.get();
+      var logs = myProjectDatabase.fetchLogRecords(baseTxnCommitInfo.right + 1, 1);
       if (!logs.isEmpty()) {
         getWebSocket().sendLogs(new InputXlog(
-          txnCommitInfo.baseTxnId,
+          baseTxnCommitInfo.left,
           "userId",
           "projectRefid",
           logs.stream()
@@ -951,7 +953,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   private Unit fireXlogReceived(ServerCommitResponse response) {
-    myTxnCommitInfoSync.compareAndSetBaseTxn(response.getBaseTxnId(), response.getNewBaseTxnId());
+    myBaseTxnCommitInfo.update(response.getBaseTxnId(), response.getNewBaseTxnId(), 1);
     return Unit.INSTANCE;
   }
 }
