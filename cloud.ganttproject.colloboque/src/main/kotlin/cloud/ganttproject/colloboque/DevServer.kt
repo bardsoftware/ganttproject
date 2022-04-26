@@ -83,7 +83,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
     private fun parseInputXlog(message: String): InputXlog? = try {
       Json.decodeFromString<InputXlog>(message)
     } catch (e: Exception) {
-      LOG.error("Failed to parse $message")
+      LOG.error("Failed to parse {}", message, e)
       null
     }
 
@@ -97,7 +97,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
 
     override fun onMessage(message: WebSocketFrame?) {
       try {
-        LOG.debug("Message received ${message?.textPayload}")
+        LOG.debug("Message received {}", message?.textPayload.orEmpty())
         val inputXlog = parseInputXlog(message?.textPayload ?: "") ?: return
         val nextTxnId = LocalDateTime.now().toString()
         val response = ServerCommitResponse(
@@ -108,14 +108,14 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
         )
         send(Json.encodeToString(response))
       } catch (e: Exception) {
-        LOG.error("Failed to send response", e)
+        LOG.error("Failed to send response {}", e)
       }
     }
 
     override fun onPong(pong: WebSocketFrame?) {}
 
     override fun onException(exception: IOException?) {
-      LOG.error("WebSocket exception $exception")
+      LOG.error("WebSocket exception {}", exception = exception)
     }
   }
 }

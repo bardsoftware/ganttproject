@@ -161,7 +161,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
 
     /** If `oldTxnId` is currently being hold, sets the txn ID to `newTxnId` and moves the local ID ahead by `committedNum`. */
-    synchronized void update(String oldTxnId, String newTxnId, int committedNum) {
+    void update(String oldTxnId, String newTxnId, int committedNum) {
       myTxnId.updateAndGet(oldValue -> {
         if (oldValue.left.equals(oldTxnId)) {
           return new ImmutablePair<>(newTxnId, oldValue.right + committedNum);
@@ -171,7 +171,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       });
     }
 
-    synchronized ImmutablePair<String, Integer> get() {
+    ImmutablePair<String, Integer> get() {
       return myTxnId.get();
     }
   }
