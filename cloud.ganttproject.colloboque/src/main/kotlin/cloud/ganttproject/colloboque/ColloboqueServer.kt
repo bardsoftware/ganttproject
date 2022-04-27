@@ -34,6 +34,8 @@ import org.jooq.impl.DSL
 import java.text.DateFormat
 import java.util.*
 import javax.sql.DataSource
+import net.sourceforge.ganttproject.storage.InitRecord
+import net.sourceforge.ganttproject.storage.InputXlog
 
 class ColloboqueServer(
   private val dataSourceFactory: (projectRefid: String) -> DataSource,

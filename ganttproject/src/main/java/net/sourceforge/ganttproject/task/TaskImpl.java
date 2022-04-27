@@ -736,9 +736,10 @@ public class TaskImpl implements Task {
         @Override
         public void run() {
           myFieldChange.myEventSender = myPropertiesEventSender;
+          myFieldChange.setOldValue(TaskImpl.this.getName());
           myFieldChange.setValue(name);
           TaskImpl.this.setName(name);
-          if (taskUpdateBuilder != null) {
+          if (taskUpdateBuilder != null && myFieldChange.hasChange()) {
             taskUpdateBuilder.setName(name);
           }
         }

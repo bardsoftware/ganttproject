@@ -37,7 +37,12 @@ import javafx.concurrent.Task
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.storage.InputXlog
+import net.sourceforge.ganttproject.storage.ServerCommitResponse
 import okhttp3.*
 import org.apache.commons.codec.binary.Base64InputStream
 import org.apache.http.HttpHost
@@ -49,8 +54,6 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.function.Predicate
-import java.util.logging.Level
-import java.util.logging.Logger
 import kotlin.random.Random
 
 class GPCloudException(val status: Int) : Exception()
@@ -150,7 +153,7 @@ class LoaderTask<T : CloudJsonAsFolderItem>(
       resultStorage.value = jsonNode
       CachedTask<T>(this.path, this.resultStorage).callPublic()
     } catch (ex: IOException) {
-      LOG.error("Failed to contact ${HOST}", ex)
+      LOG.error("Failed to contact {}", HOST, ex)
       throw GPCloudException(HttpStatus.SC_SERVICE_UNAVAILABLE)
     }
 
@@ -221,9 +224,13 @@ private class WebSocketListenerImpl(
   override fun onOpen(webSocket: WebSocket, response: Response) {
     LOG.debug("WebSocket opened")
     this.webSocket = webSocket
-    LOG.debug("Trying sending token ${this.token}")
-    this.webSocket.send("Basic ${this.token}")
-    onAuthCompleted()
+    if (isColloboqueLocalTest()) {
+      // No authentication for Colloboque testing.
+    } else {
+      LOG.debug("Trying sending token {}", this.token)
+      this.webSocket.send("Basic ${this.token}")
+      onAuthCompleted()
+    }
   }
 
   override fun onMessage(webSocket: WebSocket, text: String?) {
@@ -262,18 +269,31 @@ class WebSocketClient {
   private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
   private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
   private val contentChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
+  private val xlogCommitResponseListeners = mutableListOf<(ServerCommitResponse) -> Unit>()
   private var listeningDocument: GPCloudDocument? = null
 
-  fun start() {
+  private fun getWebSocketUrl() = if (isColloboqueLocalTest()) {
+    "ws://localhost:${System.getProperty("colloboquePort", "9001")}"
+  } else {
+    GPCLOUD_WEBSOCKET_URL
+  }
 
+  private fun getConnectionSpecs() = if (isColloboqueLocalTest()) {
+    listOf(ConnectionSpec.CLEARTEXT)
+  } else {
+    listOf(ConnectionSpec.COMPATIBLE_TLS)
+  }
+
+  fun start() {
     LOG.debug("WebSocket started")
-    val req = Request.Builder().url(GPCLOUD_WEBSOCKET_URL).build()
+    val req = Request.Builder().url(getWebSocketUrl()).build()
     this.websocket?.close(1000, "Reset Websocket")
     this.heartbeatFuture?.cancel(true)
-    wsListener = WebSocketListenerImpl(GPCloudOptions.websocketAuthToken, this::onAuthDone, this::onMessage, this::onClose)
+    val wsListener = WebSocketListenerImpl(GPCloudOptions.websocketAuthToken, this::onAuthDone, this::onMessage, this::onClose)
+    this.wsListener = wsListener
     this.websocket = OkHttpClient.Builder()
-      .connectionSpecs(listOf(ConnectionSpec.COMPATIBLE_TLS))
-      .build().newWebSocket(req, this.wsListener)
+      .connectionSpecs(getConnectionSpecs())
+      .build().newWebSocket(req, wsListener)
   }
 
   fun stop() {
@@ -290,6 +310,7 @@ class WebSocketClient {
       when (it) {
         "ProjectLockStatusChange" -> fireLockStatusChange(payload)
         "ProjectChange", "ProjectRevert" -> fireContentsChange(payload)
+        "ServerCommitResponse" -> fireCommitResponseReceived(payload)
         else -> fireStructureChange(payload)
       }
     }
@@ -332,6 +353,16 @@ class WebSocketClient {
     this.contentChangeListeners.forEach { it(payload) }
   }
 
+  private fun fireCommitResponseReceived(payload: ObjectNode) {
+    LOG.debug("Commit response received:\n {}", payload)
+    try {
+      val serverResponse = Json.decodeFromString<ServerCommitResponse>(payload.toString())
+      xlogCommitResponseListeners.forEach { it(serverResponse) }
+    } catch (e: Exception) {
+      LOG.debug("Failed to parse ServerCommitResponse:\n {}", payload)
+    }
+  }
+
   fun onStructureChange(listener: (Any) -> Unit) {
     this.structureChangeListeners.add(listener)
   }
@@ -350,22 +381,27 @@ class WebSocketClient {
     }
   }
 
+  fun onCommitResponseReceived(listener: (ServerCommitResponse) -> Unit): () -> Unit {
+    xlogCommitResponseListeners.add(listener)
+    return { xlogCommitResponseListeners.remove(listener) }
+  }
+
   private fun sendHeartbeat() {
-    this.websocket?.let { websocket ->
-      websocket.send("HB")
+    this.websocket?.send("HB")
+  }
+
+  fun register(document: GPCloudDocument?) {
+    this.listeningDocument?.detachWebsocket(this)
+    this.listeningDocument = document?.also {
+      it.attachWebsocket(this)
+    }
+    if (this.heartbeatFuture?.isCancelled != false) {
+      this.start()
     }
   }
 
-  fun register(document: GPCloudDocument) {
-    this.listeningDocument?.let {
-      it.detachWebsocket(this)
-    }
-    this.listeningDocument = document.also {
-      it.attachWebsocket(this)
-    }
-    if (this.heartbeatFuture?.let { it.isCancelled } != false) {
-      this.start()
-    }
+  fun sendLogs(logs: InputXlog) {
+    this.websocket?.send(Json.encodeToString(logs))
   }
 }
 
@@ -539,6 +575,9 @@ data class ProjectWriteResponse(
     var projectRefid: String = "",
     var lock: Lock? = null
 )
+
+/** Checks whether the app is running in Colloboque testing mode. */
+fun isColloboqueLocalTest(): Boolean = System.getProperty("colloboqueEnv") == "local-test"
 
 private val HOST =
     if (GPCLOUD_HOST == "ganttproject.localhost") HttpHost.create("http://ganttproject.localhost:80")

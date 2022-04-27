@@ -4,6 +4,7 @@ plugins {
     id 'application'
     id "org.jetbrains.kotlin.jvm" version "1.6.21"
     id "maven-publish"
+    id "org.jetbrains.kotlin.plugin.serialization" version "1.6.21"
 }
 
 // Define the main class for the application
@@ -34,6 +35,9 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:1.7.36'
     implementation 'com.github.ajalt.clikt:clikt:3.4.1'
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
+    implementation 'org.nanohttpd:nanohttpd-websocket:2.3.1'
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2'
 
     implementation files("lib/eclipsito.jar")
 

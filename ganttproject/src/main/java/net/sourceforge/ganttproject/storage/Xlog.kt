@@ -16,7 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cloud.ganttproject.colloboque
+package net.sourceforge.ganttproject.storage
+
+import kotlinx.serialization.Serializable
 
 /**
  * Data for the initialization of the Colloboque database.
@@ -30,6 +32,7 @@ data class InitRecord(
 /**
  * Xlog transaction which consists of 1+ SQL statements.
  */
+@Serializable
 data class XlogRecord(
   val sqlStatements: List<String>
 )
@@ -43,9 +46,27 @@ data class XlogRecord(
  * by baseTxnId, and i-th transaction from the list is applied to the state produced by (i-1)th transaction from the
  * list.
  */
+@Serializable
 data class InputXlog(
   val baseTxnId: String,
   val userId: String,
   val projectRefid: String,
   val transactions: List<XlogRecord>
+)
+
+/**
+ * Response from the server, which contains the result of applying changes sent by the client.
+ *
+ * @param baseTxnId the transaction to which the changes were applied.
+ * @param newBaseTxnId the resulting transaction.
+ *
+ * TODO: Get rid of type. It's used for routing in `WebSocketClient::onMessage`.
+ * TODO: Provide transaction conflicts handling.
+ */
+@Serializable
+data class ServerCommitResponse(
+  val baseTxnId: String,
+  val newBaseTxnId: String,
+  val projectRefid: String,
+  val type: String
 )

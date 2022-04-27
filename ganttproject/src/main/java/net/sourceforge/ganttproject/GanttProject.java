@@ -22,7 +22,6 @@ import biz.ganttproject.LoggerApi;
 import biz.ganttproject.app.FXSearchUi;
 import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
-import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
@@ -34,6 +33,7 @@ import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.action.*;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
@@ -64,7 +64,13 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.storage.InputXlog;
+import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
+import net.sourceforge.ganttproject.storage.ServerCommitResponse;
+import net.sourceforge.ganttproject.storage.XlogRecord;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
+import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -75,7 +81,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.getWebSocket;
+import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.isColloboqueLocalTest;
 
 /**
  * Main frame of the project
@@ -137,6 +148,37 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private FXSearchUi mySearchUi;
 
+  /**
+   * Holds the transaction ID specified by the server (String) and the local ID (Integer) of the last local transaction
+   * committed by the server.
+   * The local ID corresponds to the txn ID stored in the database.
+   */
+  private static class TxnCommitInfo {
+    private final AtomicReference<ImmutablePair<String, Integer>> myTxnId;
+
+    TxnCommitInfo(String serverId, Integer localId) {
+      myTxnId = new AtomicReference<>(new ImmutablePair<>(serverId, localId));
+    }
+
+    /** If `oldTxnId` is currently being hold, sets the txn ID to `newTxnId` and moves the local ID ahead by `committedNum`. */
+    void update(String oldTxnId, String newTxnId, int committedNum) {
+      myTxnId.updateAndGet(oldValue -> {
+        if (oldValue.left.equals(oldTxnId)) {
+          return new ImmutablePair<>(newTxnId, oldValue.right + committedNum);
+        } else {
+          return oldValue;
+        }
+      });
+    }
+
+    ImmutablePair<String, Integer> get() {
+      return myTxnId.get();
+    }
+  }
+
+  private final TxnCommitInfo myBaseTxnCommitInfo = new TxnCommitInfo("", 0);
+
+
   public GanttProject(boolean isOnlyViewer) {
     LoggerApi<Logger> startupLogger = GPLogger.create("Window.Startup");
     startupLogger.debug("Creating main frame...");
@@ -161,6 +203,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ProjectStateHolderEventListener stateListener = new ProjectStateHolderEventListener(myProjectDatabase);
     addProjectEventListener(stateListener);
     getTaskManager().addTaskListener(stateListener);
+    if (isColloboqueLocalTest()) {
+      getWebSocket().register(null);
+      getWebSocket().onCommitResponseReceived(this::fireXlogReceived);
+      var taskListenerAdapter = new TaskListenerAdapter();
+      // TODO: add listeners sensibly.
+      taskListenerAdapter.setTaskAddedHandler(event -> this.sendProjectStateLogs());
+      getTaskManager().addTaskListener(taskListenerAdapter);
+    }
 
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
         myTaskTableChartConnector,
@@ -880,4 +930,30 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     super.repaint();
   }
 
+  // TODO: Accumulate changes instead of sending it every time.
+  private Unit sendProjectStateLogs() {
+    gpLogger.debug("Sending project state logs");
+    try {
+      var baseTxnCommitInfo = myBaseTxnCommitInfo.get();
+      var logs = myProjectDatabase.fetchLogRecords(baseTxnCommitInfo.right + 1, 1);
+      if (!logs.isEmpty()) {
+        getWebSocket().sendLogs(new InputXlog(
+          baseTxnCommitInfo.left,
+          "userId",
+          "projectRefid",
+          logs.stream()
+            .map(logRecord -> new XlogRecord(List.of(logRecord.getSqlStatement())))
+            .collect(Collectors.toList())
+        ));
+      }
+    } catch (ProjectDatabaseException e) {
+      gpLogger.error("Failed to send logs", new Object[]{}, ImmutableMap.of(), e);
+    }
+    return Unit.INSTANCE;
+  }
+
+  private Unit fireXlogReceived(ServerCommitResponse response) {
+    myBaseTxnCommitInfo.update(response.getBaseTxnId(), response.getNewBaseTxnId(), 1);
+    return Unit.INSTANCE;
+  }
 }

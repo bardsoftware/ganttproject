@@ -24,26 +24,38 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
+import fi.iki.elonen.NanoWSD
 import kotlinx.coroutines.channels.Channel
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import net.sourceforge.ganttproject.GPLogger
 import org.slf4j.LoggerFactory
+import java.io.IOException
+import net.sourceforge.ganttproject.storage.InitRecord
+import net.sourceforge.ganttproject.storage.InputXlog
+import net.sourceforge.ganttproject.storage.ServerCommitResponse
+import java.time.LocalDateTime
 
 fun main(args: Array<String>) = DevServerMain().main(args)
 
 class DevServerMain : CliktCommand() {
-  val port by option("--port").int().default(9000)
-  val pgHost by option("--pg-host").default("localhost")
-  val pgPort by option("--pg-port").int().default(5432)
-  val pgSuperUser by option("--pg-super-user").default("postgres")
-  val pgSuperAuth by option("--pg-super-auth").default("")
+  private val port by option("--port").int().default(9000)
+  private val wsPort by option("--ws-port").int().default(9001)
+  private val pgHost by option("--pg-host").default("localhost")
+  private val pgPort by option("--pg-port").int().default(5432)
+  private val pgSuperUser by option("--pg-super-user").default("postgres")
+  private val pgSuperAuth by option("--pg-super-auth").default("")
 
   override fun run() {
-    LoggerFactory.getLogger("Startup").info("Starting dev Colloboque server on port $port")
+    LoggerFactory.getLogger("Startup").info("Starting dev Colloboque server on port {}", port)
 
     val initInputChannel = Channel<InitRecord>()
     val updateInputChannel = Channel<InputXlog>()
     val dataSourceFactory = PostgresDataSourceFactory(pgHost, pgPort, pgSuperUser, pgSuperAuth)
     val colloboqueServer = ColloboqueServer(dataSourceFactory::createDataSource, initInputChannel, updateInputChannel)
-    ColloboqueHttpServer(port, colloboqueServer).start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
+    ColloboqueHttpServer(port, colloboqueServer).start(0, false)
+    ColloboqueWebSocketServer(wsPort, colloboqueServer).start(0, false)
   }
 }
 
@@ -59,5 +71,53 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
       "/" -> newFixedLengthResponse("Hello")
       else -> newFixedLengthResponse(Status.NOT_FOUND, MIME_PLAINTEXT, "Not Found")
     }
-
 }
+
+class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: ColloboqueServer) :
+  NanoWSD("localhost", port) {
+  override fun openWebSocket(handshake: IHTTPSession?): WebSocket {
+    return WebSocketImpl(handshake)
+  }
+
+  private class WebSocketImpl(handshake: IHTTPSession?) : WebSocket(handshake) {
+    private fun parseInputXlog(message: String): InputXlog? = try {
+      Json.decodeFromString<InputXlog>(message)
+    } catch (e: Exception) {
+      LOG.error("Failed to parse {}", message, e)
+      null
+    }
+
+    override fun onOpen() {
+      LOG.debug("WebSocket opened")
+    }
+
+    override fun onClose(code: WebSocketFrame.CloseCode?, reason: String?, initiatedByRemote: Boolean) {
+      LOG.debug("WebSocket closed")
+    }
+
+    override fun onMessage(message: WebSocketFrame?) {
+      try {
+        LOG.debug("Message received {}", message?.textPayload.orEmpty())
+        val inputXlog = parseInputXlog(message?.textPayload ?: "") ?: return
+        val nextTxnId = LocalDateTime.now().toString()
+        val response = ServerCommitResponse(
+          inputXlog.baseTxnId,
+          nextTxnId,
+          inputXlog.projectRefid,
+          "ServerCommitResponse"
+        )
+        send(Json.encodeToString(response))
+      } catch (e: Exception) {
+        LOG.error("Failed to send response", e)
+      }
+    }
+
+    override fun onPong(pong: WebSocketFrame?) {}
+
+    override fun onException(exception: IOException) {
+      LOG.error("WebSocket exception", exception)
+    }
+  }
+}
+
+private val LOG = GPLogger.create("ColloboqueWebServer")
