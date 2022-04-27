@@ -30,12 +30,9 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.storage.*
 import org.slf4j.LoggerFactory
 import java.io.IOException
-import net.sourceforge.ganttproject.storage.InitRecord
-import net.sourceforge.ganttproject.storage.InputXlog
-import net.sourceforge.ganttproject.storage.ServerCommitResponse
-import java.time.LocalDateTime
 
 fun main(args: Array<String>) = DevServerMain().main(args)
 
@@ -75,11 +72,12 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
 
 class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: ColloboqueServer) :
   NanoWSD("localhost", port) {
-  override fun openWebSocket(handshake: IHTTPSession?): WebSocket {
-    return WebSocketImpl(handshake)
+  override fun openWebSocket(handshake: IHTTPSession): WebSocket {
+    return WebSocketImpl(handshake, colloboqueServer)
   }
 
-  private class WebSocketImpl(handshake: IHTTPSession?) : WebSocket(handshake) {
+  private class WebSocketImpl(handshake: IHTTPSession,
+                              private val colloboqueServer: ColloboqueServer) : WebSocket(handshake) {
     private fun parseInputXlog(message: String): InputXlog? = try {
       Json.decodeFromString<InputXlog>(message)
     } catch (e: Exception) {
@@ -95,20 +93,39 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
       LOG.debug("WebSocket closed")
     }
 
-    override fun onMessage(message: WebSocketFrame?) {
+    override fun onMessage(message: WebSocketFrame) {
+      LOG.debug("Message received {}", message.textPayload)
       try {
-        LOG.debug("Message received {}", message?.textPayload.orEmpty())
-        val inputXlog = parseInputXlog(message?.textPayload ?: "") ?: return
-        val nextTxnId = LocalDateTime.now().toString()
+        val inputXlog = parseInputXlog(message.textPayload) ?: return
+        if (inputXlog.transactions.size != 1) {
+          // TODO: add multiple transactions support.
+          LOG.error("Only single transaction commit supported")
+          return
+        }
+        var newBaseTxnId: String? = null
+        try {
+          newBaseTxnId =
+            colloboqueServer.commitTxnIfSucc(inputXlog.projectRefid, inputXlog.baseTxnId, inputXlog.transactions[0])
+        } catch (e: Exception) {
+          LOG.error("Failed to commit\n {}", inputXlog, e)
+          val errorResponse = ServerCommitError(
+            inputXlog.baseTxnId,
+            inputXlog.projectRefid,
+            e.message.orEmpty(),
+            SERVER_COMMIT_ERROR_TYPE
+          )
+          send(Json.encodeToString(errorResponse))
+        }
+        newBaseTxnId ?: return
         val response = ServerCommitResponse(
           inputXlog.baseTxnId,
-          nextTxnId,
+          newBaseTxnId,
           inputXlog.projectRefid,
-          "ServerCommitResponse"
+          SERVER_COMMIT_RESPONSE_TYPE
         )
         send(Json.encodeToString(response))
       } catch (e: Exception) {
-        LOG.error("Failed to send response", e)
+        LOG.error("Failed to send response to msg:\n {}", message.textPayload, e)
       }
     }
 

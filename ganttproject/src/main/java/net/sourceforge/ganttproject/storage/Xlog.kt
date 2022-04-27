@@ -70,3 +70,15 @@ data class ServerCommitResponse(
   val projectRefid: String,
   val type: String
 )
+
+/** Response from the server that signals about transaction commit failure. */
+@Serializable
+data class ServerCommitError(
+  val baseTxnId: String,
+  val projectRefid: String,
+  val message: String,
+  val type: String
+)
+
+const val SERVER_COMMIT_RESPONSE_TYPE = "ServerCommitResponse"
+const val SERVER_COMMIT_ERROR_TYPE = "ServerCommitError"

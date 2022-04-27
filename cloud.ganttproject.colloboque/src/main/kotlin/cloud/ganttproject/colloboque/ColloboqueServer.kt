@@ -36,38 +36,95 @@ import java.util.*
 import javax.sql.DataSource
 import net.sourceforge.ganttproject.storage.InitRecord
 import net.sourceforge.ganttproject.storage.InputXlog
+import net.sourceforge.ganttproject.storage.XlogRecord
+import java.time.LocalDateTime
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
+
+private typealias ProjectRefid = String
+
+class ColloboqueServerException: Exception {
+  constructor(message: String): super(message)
+  constructor(message: String, cause: Throwable?): super(message, cause)
+}
 
 class ColloboqueServer(
   private val dataSourceFactory: (projectRefid: String) -> DataSource,
   private val initInputChannel: Channel<InitRecord>,
   private val updateInputChannel: Channel<InputXlog>) {
+  private val refidToDataSource: MutableMap<ProjectRefid, DataSource> = mutableMapOf()
+  private val refidToBaseTxnId: MutableMap<ProjectRefid, ProjectRefid> = mutableMapOf()
+  private val dataSourcesLock = ReentrantReadWriteLock()
 
-  fun init(projectRefid: String, debugCreateProject: Boolean) {
-    dataSourceFactory(projectRefid).let { ds ->
-      ds.connection.use {
-        it.createStatement().executeQuery("SELECT uid FROM Task").use { rs ->
-          while (rs.next()) {
-            println(rs.getString(1))
+  fun init(projectRefid: ProjectRefid, debugCreateProject: Boolean) {
+    try {
+      dataSourceFactory(projectRefid).let { ds ->
+        ds.connection.use {
+          it.createStatement().executeQuery("SELECT uid FROM Task").use { rs ->
+            while (rs.next()) {
+              println(rs.getString(1))
+            }
           }
-        }
-        if (debugCreateProject) {
-          DSL.using(it, SQLDialect.POSTGRES)
-            .configuration()
-            .deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
-            .dsl().let { dsl ->
+          if (debugCreateProject) {
+            DSL.using(it, SQLDialect.POSTGRES)
+              .configuration()
+              .deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
+              .dsl().let { dsl ->
 
-              loadProject("""
+                loadProject(
+                  """
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">
     <tasks empty-milestones="true">
         <task id="0" uid="qwerty" name="Task1" color="#99ccff" meeting="false" start="2022-02-10" duration="25" complete="85" expand="true"/>
     </tasks>
 </project>
-          """.trimIndent(), dsl)
-            }
+          """.trimIndent(), dsl
+                )
+              }
+          }
+          dataSourcesLock.write {
+            refidToDataSource[projectRefid] = ds
+            refidToBaseTxnId[projectRefid] = ""  // TODO: get from the database
+          }
         }
       }
+    } catch (e: Exception) {
+      throw ColloboqueServerException("Failed to init project $projectRefid", e)
     }
+  }
+
+  /** Performs transaction commit if `baseTxnId` corresponds to the value hold by the server. */
+  fun commitTxnIfSucc(projectRefid: ProjectRefid, baseTxnId: String, transaction: XlogRecord): ProjectRefid? = dataSourcesLock.read {
+    if (transaction.sqlStatements.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
+    if (getBaseTxnId(projectRefid) != baseTxnId) return null
+    val dataSource = refidToDataSource[projectRefid]
+      ?: throw ColloboqueServerException("DataSource for project $projectRefid not set")
+    try {
+      var newBaseTxnId: String? = null
+      DSL.using(dataSource, SQLDialect.POSTGRES)
+        .transaction { config ->
+          transaction.sqlStatements.forEach { config.dsl().execute(it) }
+          newBaseTxnId = generateNextTxnId(projectRefid, baseTxnId, transaction)
+          // TODO: update transaction id in the database
+        }
+      dataSourcesLock.write {
+        refidToBaseTxnId[projectRefid] = newBaseTxnId ?: baseTxnId
+        return newBaseTxnId
+      }
+    } catch (e: Exception) {
+      throw ColloboqueServerException("Failed to commit transaction", e)
+    }
+  }
+
+  private fun getBaseTxnId(projectRefid: ProjectRefid): String = dataSourcesLock.read {
+    refidToBaseTxnId[projectRefid] ?: throw ColloboqueServerException("Project $projectRefid not initialized")
+  }
+
+  // TODO
+  private fun generateNextTxnId(projectRefid: ProjectRefid, oldTxnId: String, transaction: XlogRecord): String {
+    return LocalDateTime.now().toString()
   }
 }
 
