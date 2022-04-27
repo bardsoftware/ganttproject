@@ -22,6 +22,10 @@ import java.util.Date;
 
 import biz.ganttproject.core.model.task.ConstraintType;
 import biz.ganttproject.core.time.GanttCalendar;
+import net.sourceforge.ganttproject.task.dependency.constraint.FinishFinishConstraintImpl;
+import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl;
+import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl;
+import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 
 /**
  * Created by IntelliJ IDEA. User: bard Date: 14.02.2004 Time: 2:35:20 To change
@@ -88,4 +92,16 @@ public interface TaskDependencyConstraint extends Cloneable {
   }
 
   Object clone() throws CloneNotSupportedException;
+
+  class Util {
+    public static TaskDependencyConstraint copyConstraint(TaskDependencyConstraint original) {
+      switch(original.getType()) {
+        case finishfinish: return new FinishFinishConstraintImpl();
+        case finishstart: return new FinishStartConstraintImpl();
+        case startfinish: return new StartFinishConstraintImpl();
+        case startstart: return new StartStartConstraintImpl();
+        default: throw new IllegalArgumentException("Unexpected constraint="+original);
+      }
+    }
+  }
 }
