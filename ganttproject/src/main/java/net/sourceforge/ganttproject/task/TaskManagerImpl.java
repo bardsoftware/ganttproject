@@ -815,7 +815,7 @@ public class TaskManagerImpl implements TaskManager {
       try {
         TaskDependency dependency = getDependencyCollection().createDependency(importedDependant, importedDependee,
           new FinishStartConstraintImpl());
-        dependency.setConstraint(dep.getConstraint());
+        dependency.setConstraint(TaskDependencyConstraint.Util.copyConstraint(dep.getConstraint()));
         dependency.setDifference(dep.getDifference());
         dependency.setHardness(dep.getHardness());
       } catch (TaskDependencyException e) {
