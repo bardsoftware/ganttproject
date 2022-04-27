@@ -153,7 +153,7 @@ class LoaderTask<T : CloudJsonAsFolderItem>(
       resultStorage.value = jsonNode
       CachedTask<T>(this.path, this.resultStorage).callPublic()
     } catch (ex: IOException) {
-      LOG.error("Failed to contact ${HOST}", ex)
+      LOG.error("Failed to contact {}", HOST, ex)
       throw GPCloudException(HttpStatus.SC_SERVICE_UNAVAILABLE)
     }
 
@@ -227,7 +227,7 @@ private class WebSocketListenerImpl(
     if (isColloboqueLocalTest()) {
       // No authentication for Colloboque testing.
     } else {
-      LOG.debug("Trying sending token ${this.token}")
+      LOG.debug("Trying sending token {}", this.token)
       this.webSocket.send("Basic ${this.token}")
       onAuthCompleted()
     }
@@ -354,12 +354,12 @@ class WebSocketClient {
   }
 
   private fun fireCommitResponseReceived(payload: ObjectNode) {
-    LOG.debug("Commit response received {}", payload)
+    LOG.debug("Commit response received:\n {}", payload)
     try {
       val serverResponse = Json.decodeFromString<ServerCommitResponse>(payload.toString())
       xlogCommitResponseListeners.forEach { it(serverResponse) }
     } catch (e: Exception) {
-      LOG.debug("Failed to parse ServerCommitResponse $payload")
+      LOG.debug("Failed to parse ServerCommitResponse:\n {}", payload)
     }
   }
 

@@ -947,7 +947,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         ));
       }
     } catch (ProjectDatabaseException e) {
-      gpLogger.error("Failed to send logs {}", new Object[]{}, ImmutableMap.of(), e);
+      gpLogger.error("Failed to send logs", new Object[]{}, ImmutableMap.of(), e);
     }
     return Unit.INSTANCE;
   }

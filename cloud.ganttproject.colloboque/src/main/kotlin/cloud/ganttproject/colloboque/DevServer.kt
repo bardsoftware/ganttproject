@@ -48,7 +48,7 @@ class DevServerMain : CliktCommand() {
   private val pgSuperAuth by option("--pg-super-auth").default("")
 
   override fun run() {
-    LoggerFactory.getLogger("Startup").info("Starting dev Colloboque server on port $port")
+    LoggerFactory.getLogger("Startup").info("Starting dev Colloboque server on port {}", port)
 
     val initInputChannel = Channel<InitRecord>()
     val updateInputChannel = Channel<InputXlog>()
@@ -108,14 +108,14 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
         )
         send(Json.encodeToString(response))
       } catch (e: Exception) {
-        LOG.error("Failed to send response {}", e)
+        LOG.error("Failed to send response", e)
       }
     }
 
     override fun onPong(pong: WebSocketFrame?) {}
 
-    override fun onException(exception: IOException?) {
-      LOG.error("WebSocket exception {}", exception = exception)
+    override fun onException(exception: IOException) {
+      LOG.error("WebSocket exception", exception)
     }
   }
 }
