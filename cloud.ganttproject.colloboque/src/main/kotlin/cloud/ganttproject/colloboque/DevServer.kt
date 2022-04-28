@@ -81,6 +81,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
     init {
       handshake.parameters["projectRefid"]?.firstOrNull()?.also { refid ->
         colloboqueServer.init(refid, false)
+        this.handshakeResponse.addHeader("baseTxnId", colloboqueServer.getBaseTxnId(refid))
       }
     }
     private fun parseInputXlog(message: String): InputXlog? = try {

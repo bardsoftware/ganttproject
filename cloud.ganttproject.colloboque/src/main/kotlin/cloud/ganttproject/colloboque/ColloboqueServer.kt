@@ -86,7 +86,7 @@ class ColloboqueServer(
           }
           dataSourcesLock.write {
             refidToDataSource[projectRefid] = ds
-            refidToBaseTxnId[projectRefid] = ""  // TODO: get from the database
+            refidToBaseTxnId[projectRefid] = "abacaba"  // TODO: get from the database
           }
         }
       }
@@ -118,7 +118,7 @@ class ColloboqueServer(
     }
   }
 
-  private fun getBaseTxnId(projectRefid: ProjectRefid): String = dataSourcesLock.read {
+  fun getBaseTxnId(projectRefid: ProjectRefid): String = dataSourcesLock.read {
     refidToBaseTxnId[projectRefid] ?: throw ColloboqueServerException("Project $projectRefid not initialized")
   }
 
