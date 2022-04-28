@@ -54,7 +54,7 @@ class ProjectDatabaseTest {
   @BeforeEach
   private fun init() {
     dataSource = JdbcDataSource().also {
-      it.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
+      it.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true")
     }
     projectDatabase = SqlProjectDatabaseImpl(dataSource)
     val taskManagerBuilder = TestSetupHelper.newTaskManagerBuilder()

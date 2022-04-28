@@ -77,6 +77,10 @@ jooq {
                                 key = 'scripts'
                                 value = 'src/main/resources/resources/sql/init-project-database.sql'
                             }
+                            property {
+                                key = 'defaultNameCase'
+                                value = 'lower'
+                            }
                         }
                     }
                     target {

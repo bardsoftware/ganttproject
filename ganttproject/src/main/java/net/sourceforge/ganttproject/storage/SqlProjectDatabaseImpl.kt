@@ -228,5 +228,5 @@ class SqlTaskUpdateBuilder(private val task: Task,
 
 private fun Task.logId(): String = "${uid}:${taskID}"
 
-private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
+private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"
