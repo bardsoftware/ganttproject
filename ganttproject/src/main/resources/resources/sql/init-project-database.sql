@@ -34,7 +34,10 @@ create table if not exists TaskDependency (
 
 create table if not exists LogRecord (
   id                identity    not null,
+  txn_id            integer     not null,
   sql_statement     varchar     not null,
 
   primary key (id)
 );
+
+create sequence TxnId start with 1;

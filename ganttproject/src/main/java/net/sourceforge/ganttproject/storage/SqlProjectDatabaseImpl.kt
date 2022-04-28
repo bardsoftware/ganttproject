@@ -22,6 +22,7 @@ package net.sourceforge.ganttproject.storage
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
+import biz.ganttproject.storage.db.Sequences.TXNID
 import biz.ganttproject.storage.db.Tables.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.storage.ProjectDatabase.*
@@ -37,6 +38,7 @@ import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import java.awt.Color
 import java.sql.SQLException
+import java.util.stream.Collectors
 import javax.sql.DataSource
 import kotlin.text.Charsets
 
@@ -76,8 +78,10 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       val context = DSL.using(config)
       val query = buildQuery(context)
       context.execute(query)
+      val nextTxnId = context.nextval(TXNID)
       context
         .insertInto(LOGRECORD)
+        .set(LOGRECORD.TXN_ID, nextTxnId.toInt())
         .set(LOGRECORD.SQL_STATEMENT, query)
         .execute()
     }
@@ -127,13 +131,15 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   }
 
   @Throws(ProjectDatabaseException::class)
-  override fun fetchLogRecords(startId: Int, limit: Int): List<LogRecord> = withDSL({ "Failed to fetch log records" }) { dsl ->
+  override fun fetchTransactions(startTxnId: Int, limit: Int): List<XlogRecord> = withDSL({ "Failed to fetch log records" }) { dsl ->
     dsl
       .selectFrom(LOGRECORD)
-      .where(LOGRECORD.ID.ge(startId))
-      .orderBy(LOGRECORD.ID.asc())
-      .limit(limit)
-      .map { LogRecord(it.id, it.sqlStatement) }
+      .where(LOGRECORD.TXN_ID.ge(startTxnId).and(LOGRECORD.TXN_ID.lt(startTxnId + limit)))
+      .orderBy(LOGRECORD.TXN_ID, LOGRECORD.ID)
+      .fetchGroups(LOGRECORD.TXN_ID, LOGRECORD.SQL_STATEMENT)
+      .toList()
+      .sortedBy { it.first }
+      .map { XlogRecord(it.second) }
   }
 
   /** Execute update query and save its xlog. */

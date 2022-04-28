@@ -67,7 +67,6 @@ import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.storage.InputXlog;
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
 import net.sourceforge.ganttproject.storage.ServerCommitResponse;
-import net.sourceforge.ganttproject.storage.XlogRecord;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -935,15 +934,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     gpLogger.debug("Sending project state logs");
     try {
       var baseTxnCommitInfo = myBaseTxnCommitInfo.get();
-      var logs = myProjectDatabase.fetchLogRecords(baseTxnCommitInfo.right + 1, 1);
-      if (!logs.isEmpty()) {
+      var txns = myProjectDatabase.fetchTransactions(baseTxnCommitInfo.right + 1, 1);
+      if (!txns.isEmpty()) {
         getWebSocket().sendLogs(new InputXlog(
           baseTxnCommitInfo.left,
           "userId",
           "projectRefid",
-          logs.stream()
-            .map(logRecord -> new XlogRecord(List.of(logRecord.getSqlStatement())))
-            .collect(Collectors.toList())
+          txns
         ));
       }
     } catch (ProjectDatabaseException e) {

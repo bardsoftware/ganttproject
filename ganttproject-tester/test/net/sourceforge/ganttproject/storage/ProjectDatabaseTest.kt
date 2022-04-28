@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.CalendarFactory
-import biz.ganttproject.storage.db.Tables.LOGRECORD
 import biz.ganttproject.storage.db.Tables.TASKDEPENDENCY
 import biz.ganttproject.storage.db.tables.Task.*
 import net.sourceforge.ganttproject.TestSetupHelper
@@ -120,15 +119,16 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].isCostCalculated, true)
     assertEquals(tasks[0].notes, "abacaba")
 
-    val logs = projectDatabase.fetchLogRecords(limit = 10)
-    assertEquals(logs.size, 1)
+    val txns = projectDatabase.fetchTransactions(limit = 10)
+    assertEquals(txns.size, 1)
+    assertEquals(txns[0].sqlStatements.size, 1)
 
     // Verify that executing the log record produces the same task.
     // Importantly, it checks that dates are converted identically.
     projectDatabase.shutdown()
     projectDatabase.init()
 
-    dsl.execute(logs[0].sqlStatement)
+    dsl.execute(txns[0].sqlStatements[0])
     assertEquals(tasks[0], dsl.selectFrom(TASK).fetch()[0])
   }
 
@@ -233,10 +233,13 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].num, 1)
     assertEquals(tasks[0].name, "Name2")
 
-    val logs = projectDatabase.fetchLogRecords(limit = 10)
-    assertEquals(logs.size, 2)
-    assert(logs[0].sqlStatement.contains("insert", ignoreCase = true))
-    assert(logs[1].sqlStatement.contains("update", ignoreCase = true))
+    val txns = projectDatabase.fetchTransactions(limit = 10)
+    assertEquals(txns.size, 2)
+    txns.forEach {
+      assertEquals(it.sqlStatements.size, 1)
+    }
+    assert(txns[0].sqlStatements[0].contains("insert", ignoreCase = true))
+    assert(txns[1].sqlStatements[0].contains("update", ignoreCase = true))
   }
 }
 
