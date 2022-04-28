@@ -33,11 +33,8 @@ import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.*
 import java.awt.Color
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -215,16 +212,20 @@ class ProjectDatabaseTest {
   @Test
   fun `test update task`() {
     projectDatabase.init()
+    val startDateBefore = CalendarFactory.createGanttCalendar(2022, 4, 3)
+    val startDateAfter = CalendarFactory.createGanttCalendar(2025, 7, 13)
     val task = taskManager
       .newTaskBuilder()
       .withUid("someuid")
       .withId(1)
       .withName("Name1")
+      .withStartDate(startDateBefore.time)
       .build()
     projectDatabase.insertTask(task)
 
-    val mutator = task.createMutator()
+    val mutator = task.createMutatorFixingDuration()
     mutator.setName("Name2")
+    mutator.setStart(startDateAfter)
     mutator.commit()
 
     val tasks = dsl.selectFrom(TASK).fetch()
@@ -232,6 +233,8 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].uid, "someuid")
     assertEquals(tasks[0].num, 1)
     assertEquals(tasks[0].name, "Name2")
+    assertEquals(tasks[0].startDate.toIsoNoHours(), startDateAfter.toXMLString())
+    assertNotEquals(tasks[0].startDate.toIsoNoHours(), startDateBefore.toXMLString())
 
     val txns = projectDatabase.fetchTransactions(limit = 10)
     assertEquals(txns.size, 2)

@@ -175,9 +175,7 @@ class SqlTaskUpdateBuilder(private val task: Task,
     TODO("Not yet implemented")
   }
 
-  override fun setStart(start: GanttCalendar?) {
-    TODO("Not yet implemented")
-  }
+  override fun setStart(start: GanttCalendar) = nextStep { it.set(TASK.START_DATE, start.toLocalDate()) }
 
   override fun setEnd(end: GanttCalendar?) {
     TODO("Not yet implemented")

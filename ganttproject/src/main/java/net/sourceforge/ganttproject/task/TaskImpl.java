@@ -245,6 +245,9 @@ public class TaskImpl implements Task {
       public void setStart(GanttCalendar start) {
         super.setStart(start);
         TaskImpl.this.myEnd = null;
+        if (taskUpdateBuilder != null) {
+          taskUpdateBuilder.setStart(start);
+        }
       }
     };
     return myMutator;
@@ -641,7 +644,7 @@ public class TaskImpl implements Task {
 
     private int myIsolationLevel;
 
-    private final TaskUpdateBuilder taskUpdateBuilder;
+    protected final TaskUpdateBuilder taskUpdateBuilder;
 
     public final Exception myException = new Exception();
 
@@ -790,6 +793,9 @@ public class TaskImpl implements Task {
       myStartChange.setOldValue(TaskImpl.this.myStart);
       myStartChange.setValue(start);
       myActivities = null;
+      if (taskUpdateBuilder != null && myStartChange.hasChange()) {
+        taskUpdateBuilder.setStart(start);
+      }
     }
 
     @Override
