@@ -78,6 +78,11 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
 
   private class WebSocketImpl(handshake: IHTTPSession,
                               private val colloboqueServer: ColloboqueServer) : WebSocket(handshake) {
+    init {
+      handshake.parameters["projectRefid"]?.firstOrNull()?.also { refid ->
+        colloboqueServer.init(refid, false)
+      }
+    }
     private fun parseInputXlog(message: String): InputXlog? = try {
       Json.decodeFromString<InputXlog>(message)
     } catch (e: Exception) {
@@ -94,7 +99,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
     }
 
     override fun onMessage(message: WebSocketFrame) {
-      LOG.debug("Message received {}", message.textPayload)
+      LOG.debug("Message received\n {}", message.textPayload)
       try {
         val inputXlog = parseInputXlog(message.textPayload) ?: return
         if (inputXlog.transactions.size != 1) {
@@ -123,6 +128,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
           inputXlog.projectRefid,
           SERVER_COMMIT_RESPONSE_TYPE
         )
+        LOG.debug("Sending response {}", response)
         send(Json.encodeToString(response))
       } catch (e: Exception) {
         LOG.error("Failed to send response to msg:\n {}", message.textPayload, e)

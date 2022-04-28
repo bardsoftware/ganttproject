@@ -42,6 +42,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.InputXlog
+import net.sourceforge.ganttproject.storage.SERVER_COMMIT_ERROR_TYPE
+import net.sourceforge.ganttproject.storage.SERVER_COMMIT_RESPONSE_TYPE
 import net.sourceforge.ganttproject.storage.ServerCommitResponse
 import okhttp3.*
 import org.apache.commons.codec.binary.Base64InputStream
@@ -273,7 +275,9 @@ class WebSocketClient {
   private var listeningDocument: GPCloudDocument? = null
 
   private fun getWebSocketUrl() = if (isColloboqueLocalTest()) {
-    "ws://localhost:${System.getProperty("colloboquePort", "9001")}"
+    val port = System.getProperty("colloboquePort", "9001")
+    val projectRefid = listeningDocument?.projectRefid ?: "refid"
+    "ws://localhost:$port?projectRefid=$projectRefid"
   } else {
     GPCLOUD_WEBSOCKET_URL
   }
@@ -310,7 +314,8 @@ class WebSocketClient {
       when (it) {
         "ProjectLockStatusChange" -> fireLockStatusChange(payload)
         "ProjectChange", "ProjectRevert" -> fireContentsChange(payload)
-        "ServerCommitResponse" -> fireCommitResponseReceived(payload)
+        SERVER_COMMIT_RESPONSE_TYPE -> fireCommitResponseReceived(payload)
+        SERVER_COMMIT_ERROR_TYPE -> fireCommitErrorReceived(payload)
         else -> fireStructureChange(payload)
       }
     }
@@ -361,6 +366,11 @@ class WebSocketClient {
     } catch (e: Exception) {
       LOG.debug("Failed to parse ServerCommitResponse:\n {}", payload)
     }
+  }
+
+  // TODO: Propagate info to the client so that they could resolve conflicts.
+  private fun fireCommitErrorReceived(payload: ObjectNode) {
+    LOG.debug("Commit error received:\n {}", payload)
   }
 
   fun onStructureChange(listener: (Any) -> Unit) {
