@@ -26,9 +26,9 @@ import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
 import fi.iki.elonen.NanoWSD
 import kotlinx.coroutines.channels.Channel
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import net.sourceforge.ganttproject.GPLogger
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -36,6 +36,7 @@ import net.sourceforge.ganttproject.storage.InitRecord
 import net.sourceforge.ganttproject.storage.InputXlog
 import net.sourceforge.ganttproject.storage.ServerCommitResponse
 import java.time.LocalDateTime
+import java.util.*
 
 fun main(args: Array<String>) = DevServerMain().main(args)
 
@@ -81,7 +82,11 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
 
   private class WebSocketImpl(handshake: IHTTPSession?) : WebSocket(handshake) {
     private fun parseInputXlog(message: String): InputXlog? = try {
-      Json.decodeFromString<InputXlog>(message)
+      if (message.startsWith("XLOG ")) {
+        Json.decodeFromStream<InputXlog>(
+          Base64.getDecoder().decode(message.substring("XLOG ".length)).inputStream()
+        )
+      } else null
     } catch (e: Exception) {
       LOG.error("Failed to parse {}", message, e)
       null
