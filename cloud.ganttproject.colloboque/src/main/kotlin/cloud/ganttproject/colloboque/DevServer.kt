@@ -25,9 +25,11 @@ import com.github.ajalt.clikt.parameters.types.int
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
 import fi.iki.elonen.NanoWSD
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.*
@@ -49,10 +51,11 @@ class DevServerMain : CliktCommand() {
 
     val initInputChannel = Channel<InitRecord>()
     val updateInputChannel = Channel<InputXlog>()
+    val serverResponseChannel = Channel<String>()
     val dataSourceFactory = PostgresDataSourceFactory(pgHost, pgPort, pgSuperUser, pgSuperAuth)
-    val colloboqueServer = ColloboqueServer(dataSourceFactory::createDataSource, initInputChannel, updateInputChannel)
+    val colloboqueServer = ColloboqueServer(dataSourceFactory::createDataSource, initInputChannel, updateInputChannel, serverResponseChannel)
     ColloboqueHttpServer(port, colloboqueServer).start(0, false)
-    ColloboqueWebSocketServer(wsPort, colloboqueServer).start(0, false)
+    ColloboqueWebSocketServer(wsPort, colloboqueServer, updateInputChannel, serverResponseChannel).start(0, false)
   }
 }
 
@@ -70,18 +73,34 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
     }
 }
 
-class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: ColloboqueServer) :
+class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: ColloboqueServer,
+                                private val updateInputChannel: Channel<InputXlog>,
+                                private val serverResponseChannel: Channel<String>) :
   NanoWSD("localhost", port) {
   override fun openWebSocket(handshake: IHTTPSession): WebSocket {
-    return WebSocketImpl(handshake, colloboqueServer)
+    return WebSocketImpl(handshake, colloboqueServer, updateInputChannel, serverResponseChannel)
   }
 
+  @OptIn(DelicateCoroutinesApi::class)
   private class WebSocketImpl(handshake: IHTTPSession,
-                              private val colloboqueServer: ColloboqueServer) : WebSocket(handshake) {
+                              private val colloboqueServer: ColloboqueServer,
+                              private val updateInputChannel: Channel<InputXlog>,
+                              private val serverResponseChannel: Channel<String>) : WebSocket(handshake) {
     init {
       handshake.parameters["projectRefid"]?.firstOrNull()?.also { refid ->
         colloboqueServer.init(refid, false)
         this.handshakeResponse.addHeader("baseTxnId", colloboqueServer.getBaseTxnId(refid))
+      }
+      GlobalScope.launch {
+        while (true) {
+          val response = serverResponseChannel.receive()
+          LOG.debug("Sending response {}", response)
+          try {
+            send(response)
+          } catch (e: Exception) {
+            LOG.error("Failed to send response {}", response, e)
+          }
+        }
       }
     }
     private fun parseInputXlog(message: String): InputXlog? = try {
@@ -101,38 +120,14 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
 
     override fun onMessage(message: WebSocketFrame) {
       LOG.debug("Message received\n {}", message.textPayload)
-      try {
-        val inputXlog = parseInputXlog(message.textPayload) ?: return
-        if (inputXlog.transactions.size != 1) {
-          // TODO: add multiple transactions support.
-          LOG.error("Only single transaction commit supported")
-          return
-        }
-        var newBaseTxnId: String? = null
-        try {
-          newBaseTxnId =
-            colloboqueServer.commitTxnIfSucc(inputXlog.projectRefid, inputXlog.baseTxnId, inputXlog.transactions[0])
-        } catch (e: Exception) {
-          LOG.error("Failed to commit\n {}", inputXlog, e)
-          val errorResponse = ServerCommitError(
-            inputXlog.baseTxnId,
-            inputXlog.projectRefid,
-            e.message.orEmpty(),
-            SERVER_COMMIT_ERROR_TYPE
-          )
-          send(Json.encodeToString(errorResponse))
-        }
-        newBaseTxnId ?: return
-        val response = ServerCommitResponse(
-          inputXlog.baseTxnId,
-          newBaseTxnId,
-          inputXlog.projectRefid,
-          SERVER_COMMIT_RESPONSE_TYPE
-        )
-        LOG.debug("Sending response {}", response)
-        send(Json.encodeToString(response))
-      } catch (e: Exception) {
-        LOG.error("Failed to send response to msg:\n {}", message.textPayload, e)
+      val inputXlog = parseInputXlog(message.textPayload) ?: return
+      if (inputXlog.transactions.size != 1) {
+        // TODO: add multiple transactions support.
+        LOG.error("Only single transaction commit supported")
+        return
+      }
+      GlobalScope.launch {
+        updateInputChannel.send(inputXlog)
       }
     }
 

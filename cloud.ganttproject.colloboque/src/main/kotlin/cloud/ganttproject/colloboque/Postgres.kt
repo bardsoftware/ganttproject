@@ -33,6 +33,7 @@ class PostgresDataSourceFactory(
     jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/dev_all_projects"
   }
   private val superDataSource = HikariDataSource(superConfig)
+  private val cachedDataSources: MutableMap<ProjectRefid, DataSource> = mutableMapOf()
 
   init {
     superDataSource.connection.use {
@@ -45,6 +46,7 @@ class PostgresDataSourceFactory(
   }
 
   fun createDataSource(projectRefid: String): DataSource {
+    cachedDataSources[projectRefid]?.let { return it }
     // TODO: escape projectRefid
     val schema = "project_$projectRefid"
     superDataSource.connection.use {
@@ -60,6 +62,6 @@ class PostgresDataSourceFactory(
       password = pgSuperAuth
       jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/dev_all_projects"
       this.schema = schema
-    })
+    }).also { cachedDataSources[projectRefid] = it }
   }
 }
