@@ -29,12 +29,14 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.storage.*
+import net.sourceforge.ganttproject.storage.InitRecord
+import net.sourceforge.ganttproject.storage.InputXlog
 import org.slf4j.LoggerFactory
 import java.io.IOException
+import java.util.*
 
 fun main(args: Array<String>) = DevServerMain().main(args)
 
@@ -104,7 +106,11 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
       }
     }
     private fun parseInputXlog(message: String): InputXlog? = try {
-      Json.decodeFromString<InputXlog>(message)
+      if (message.startsWith("XLOG ")) {
+        Json.decodeFromStream<InputXlog>(
+          Base64.getDecoder().decode(message.substring("XLOG ".length)).inputStream()
+        )
+      } else null
     } catch (e: Exception) {
       LOG.error("Failed to parse {}", message, e)
       null

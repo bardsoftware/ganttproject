@@ -51,6 +51,7 @@ import org.apache.http.HttpHost
 import org.apache.http.HttpStatus
 import org.apache.http.client.utils.URIBuilder
 import java.io.IOException
+import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -424,7 +425,7 @@ class WebSocketClient {
   }
 
   fun sendLogs(logs: InputXlog) {
-    this.websocket?.send(Json.encodeToString(logs))
+    this.websocket?.send("XLOG ${Base64.getEncoder().encodeToString(Json.encodeToString(logs).toByteArray())}")
   }
 }
 
