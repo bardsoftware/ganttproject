@@ -34,9 +34,9 @@ open class ProjectDatabaseException: Exception {
 interface ProjectDatabase {
   /** Build and execute an update query. */
   interface TaskUpdateBuilder: MutableTask {
-    /** Perform task update. */
+    /** Commit task update. */
     @Throws(ProjectDatabaseException::class)
-    fun execute()
+    fun commit()
 
     fun interface Factory {
       fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder
@@ -60,6 +60,12 @@ interface ProjectDatabase {
   /** Close connections and release the resources. */
   @Throws(ProjectDatabaseException::class)
   fun shutdown()
+
+  /** Collect queries received after txn start and commit them all at once. */
+  @Throws(ProjectDatabaseException::class)
+  fun startTransaction()
+  @Throws(ProjectDatabaseException::class)
+  fun commitTransaction()
 
   /** Fetch transactions starting with the specified transaction id. */
   @Throws(ProjectDatabaseException::class)

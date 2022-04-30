@@ -686,7 +686,7 @@ public class TaskImpl implements Task {
         myProgressEventSender.fireEvent();
         if (taskUpdateBuilder != null) {
           try {
-            taskUpdateBuilder.execute();
+            taskUpdateBuilder.commit();
           } catch (ProjectDatabaseException e) {
             GPLogger.log(e);
           }

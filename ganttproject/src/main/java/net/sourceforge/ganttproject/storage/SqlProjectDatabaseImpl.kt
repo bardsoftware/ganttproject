@@ -38,7 +38,6 @@ import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import java.awt.Color
 import java.sql.SQLException
-import java.util.stream.Collectors
 import javax.sql.DataSource
 import kotlin.text.Charsets
 
@@ -50,6 +49,14 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       return SqlProjectDatabaseImpl(dataSource)
     }
   }
+
+  private class Query(
+    val errorMessage: () -> String,
+    val queryBuilder: (DSLContext) -> String
+  )
+
+  /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
+  private var currentTxn: MutableList<Query>? = null
 
   private fun <T> withDSL(
     errorMessage: () -> String = { "Failed to execute query" },
@@ -69,22 +76,31 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
-  /** Execute query and save its xlog. */
-  private fun withLog(
-    errorMessage: () -> String,
-    buildQuery: (dsl: DSLContext) -> String
-  ): Unit = withDSL(errorMessage) { dsl ->
+  /** Execute queries and save their logs as a transaction. */
+  private fun executeAndLog(queries: List<Query>): Unit = withDSL({ "Failed to commit transaction" }) { dsl ->
     dsl.transaction { config ->
       val context = DSL.using(config)
-      val query = buildQuery(context)
-      context.execute(query)
       val nextTxnId = context.nextval(TXNID)
-      context
-        .insertInto(LOGRECORD)
-        .set(LOGRECORD.TXN_ID, nextTxnId.toInt())
-        .set(LOGRECORD.SQL_STATEMENT, query)
-        .execute()
+      queries.forEach {
+        try {
+          val query = it.queryBuilder(context)
+          context.execute(query)
+          context
+            .insertInto(LOGRECORD)
+            .set(LOGRECORD.TXN_ID, nextTxnId.toInt())
+            .set(LOGRECORD.SQL_STATEMENT, query)
+            .execute()
+        } catch (e: Exception) {
+          throw ProjectDatabaseException(it.errorMessage(), e)
+        }
+      }
     }
+  }
+
+  /** Add a query to the current txn. Executes immediately if no transaction started. */
+  private fun withLog(errorMessage: () -> String, buildQuery: (dsl: DSLContext) -> String) {
+    val query = Query(errorMessage, buildQuery)
+    currentTxn?.add(query) ?: executeAndLog(listOf(query))
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -99,7 +115,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
-  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task, this::executeUpdate)
+  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task, this::update)
 
   @Throws(ProjectDatabaseException::class)
   override fun insertTask(task: Task): Unit = withLog({ "Failed to insert task ${task.logId()}" }) { dsl ->
@@ -131,6 +147,21 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   }
 
   @Throws(ProjectDatabaseException::class)
+  override fun startTransaction() {
+    if (currentTxn != null) throw ProjectDatabaseException("Previous transaction not committed")
+    currentTxn = mutableListOf()
+  }
+
+  @Throws(ProjectDatabaseException::class)
+  override fun commitTransaction() {
+    try {
+      executeAndLog(currentTxn ?: throw ProjectDatabaseException("No transaction started"))
+    } finally {
+      currentTxn = null
+    }
+  }
+
+  @Throws(ProjectDatabaseException::class)
   override fun fetchTransactions(startTxnId: Int, limit: Int): List<XlogRecord> = withDSL({ "Failed to fetch log records" }) { dsl ->
     dsl
       .selectFrom(LOGRECORD)
@@ -142,14 +173,14 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       .map { XlogRecord(it.second) }
   }
 
-  /** Execute update query and save its xlog. */
+  /** Add update query and save its xlog in the current transaction. */
   @Throws(ProjectDatabaseException::class)
-  internal fun executeUpdate(query: String) = withLog({ "Failed to execute update" }) { query }
+  internal fun update(query: String) = withLog({ "Failed to execute update" }) { query }
 }
 
 
 class SqlTaskUpdateBuilder(private val task: Task,
-                           private val executeQuery: (String) -> Unit): TaskUpdateBuilder {
+                           private val onCommit: (String) -> Unit): TaskUpdateBuilder {
   private var lastSetStep: UpdateSetMoreStep<TaskRecord>? = null
 
   private fun nextStep(step: (lastStep: UpdateSetStep<TaskRecord>) -> UpdateSetMoreStep<TaskRecord>) {
@@ -157,10 +188,10 @@ class SqlTaskUpdateBuilder(private val task: Task,
   }
 
   @Throws(ProjectDatabaseException::class)
-  override fun execute() {
+  override fun commit() {
     try {
       lastSetStep?.let { updateQuery ->
-        executeQuery(updateQuery.where(TASK.UID.eq(task.uid)).getSQL(ParamType.INLINED))
+        onCommit(updateQuery.where(TASK.UID.eq(task.uid)).getSQL(ParamType.INLINED))
       }
     } finally {
       lastSetStep = null
