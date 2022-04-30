@@ -23,10 +23,8 @@ import biz.ganttproject.core.io.parseXmlProject
 import biz.ganttproject.core.io.walkTasksDepthFirst
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
@@ -41,15 +39,15 @@ import java.text.DateFormat
 import java.util.*
 import javax.sql.DataSource
 import java.time.LocalDateTime
+import java.util.concurrent.Executors
 
 internal typealias ProjectRefid = String
 
 class ColloboqueServerException: Exception {
   constructor(message: String): super(message)
-  constructor(message: String, cause: Throwable?): super(message, cause)
+  constructor(message: String, cause: Throwable): super(message, cause)
 }
 
-@OptIn(DelicateCoroutinesApi::class)
 class ColloboqueServer(
   private val dataSourceFactory: (projectRefid: String) -> DataSource,
   private val initInputChannel: Channel<InitRecord>,
@@ -57,8 +55,10 @@ class ColloboqueServer(
   private val serverResponseChannel: Channel<String>) {
   private val refidToBaseTxnId: MutableMap<ProjectRefid, ProjectRefid> = mutableMapOf()
 
+  private val wsCommunicationScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+
   init {
-    GlobalScope.launch {
+    wsCommunicationScope.launch {
       processUpdatesLoop()
     }
   }
@@ -99,8 +99,7 @@ class ColloboqueServer(
   }
 
   private suspend fun processUpdatesLoop() {
-    while (true) {
-      val inputXlog = updateInputChannel.receive()
+    for (inputXlog in updateInputChannel) {
       try {
         val newBaseTxnId = commitTxnIfSucc(inputXlog.projectRefid, inputXlog.baseTxnId, inputXlog.transactions[0])
           ?: continue
@@ -124,8 +123,11 @@ class ColloboqueServer(
     }
   }
 
-  /** Performs transaction commit if `baseTxnId` corresponds to the value hold by the server. */
-  private fun commitTxnIfSucc(projectRefid: ProjectRefid, baseTxnId: String, transaction: XlogRecord): ProjectRefid? {
+  /**
+   * Performs transaction commit if `baseTxnId` corresponds to the value hold by the server.
+   * Returns new baseTxnId on success.
+   */
+  private fun commitTxnIfSucc(projectRefid: ProjectRefid, baseTxnId: String, transaction: XlogRecord): String? {
     if (transaction.sqlStatements.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
     if (getBaseTxnId(projectRefid) != baseTxnId) return null
     try {

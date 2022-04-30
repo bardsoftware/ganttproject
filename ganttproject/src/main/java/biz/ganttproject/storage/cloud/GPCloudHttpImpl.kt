@@ -375,7 +375,7 @@ class WebSocketClient {
 
   // TODO: Propagate info to the client so that they could resolve conflicts.
   private fun fireCommitErrorReceived(payload: ObjectNode) {
-    LOG.debug("Commit error received:\n {}", payload)
+    LOG.error("Commit error received:\n {}", payload)
   }
 
   private fun fireBaseTxnReceived(baseTxnId: String) {

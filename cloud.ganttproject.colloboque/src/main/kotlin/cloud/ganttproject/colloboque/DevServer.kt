@@ -25,10 +25,8 @@ import com.github.ajalt.clikt.parameters.types.int
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
 import fi.iki.elonen.NanoWSD
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import net.sourceforge.ganttproject.GPLogger
@@ -37,6 +35,7 @@ import net.sourceforge.ganttproject.storage.InputXlog
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.Executors
 
 fun main(args: Array<String>) = DevServerMain().main(args)
 
@@ -79,23 +78,20 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
                                 private val updateInputChannel: Channel<InputXlog>,
                                 private val serverResponseChannel: Channel<String>) :
   NanoWSD("localhost", port) {
+  private val wsCommunicationScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+
   override fun openWebSocket(handshake: IHTTPSession): WebSocket {
-    return WebSocketImpl(handshake, colloboqueServer, updateInputChannel, serverResponseChannel)
+    return WebSocketImpl(handshake)
   }
 
-  @OptIn(DelicateCoroutinesApi::class)
-  private class WebSocketImpl(handshake: IHTTPSession,
-                              private val colloboqueServer: ColloboqueServer,
-                              private val updateInputChannel: Channel<InputXlog>,
-                              private val serverResponseChannel: Channel<String>) : WebSocket(handshake) {
+  private inner class WebSocketImpl(handshake: IHTTPSession) : WebSocket(handshake) {
     init {
       handshake.parameters["projectRefid"]?.firstOrNull()?.also { refid ->
         colloboqueServer.init(refid, false)
         this.handshakeResponse.addHeader("baseTxnId", colloboqueServer.getBaseTxnId(refid))
       }
-      GlobalScope.launch {
-        while (true) {
-          val response = serverResponseChannel.receive()
+      wsCommunicationScope.launch {
+        for (response in serverResponseChannel) {
           LOG.debug("Sending response {}", response)
           try {
             send(response)
@@ -132,7 +128,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
         LOG.error("Only single transaction commit supported")
         return
       }
-      GlobalScope.launch {
+      wsCommunicationScope.launch {
         updateInputChannel.send(inputXlog)
       }
     }
