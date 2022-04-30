@@ -25,6 +25,7 @@ import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.db.Sequences.TXNID
 import biz.ganttproject.storage.db.Tables.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ProjectDatabase.*
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskInfo
@@ -52,7 +53,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   private class Query(
     val errorMessage: () -> String,
-    val queryBuilder: (DSLContext) -> String
+    val sqlStatement: String
   )
 
   /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
@@ -83,14 +84,14 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       val nextTxnId = context.nextval(TXNID)
       queries.forEach {
         try {
-          val query = it.queryBuilder(context)
-          context.execute(query)
+          context.execute(it.sqlStatement)
           context
             .insertInto(LOGRECORD)
             .set(LOGRECORD.TXN_ID, nextTxnId.toInt())
-            .set(LOGRECORD.SQL_STATEMENT, query)
+            .set(LOGRECORD.SQL_STATEMENT, it.sqlStatement)
             .execute()
         } catch (e: Exception) {
+          LOG.error("Failed to execute or log txnId={}\n {}", nextTxnId, it.sqlStatement)
           throw ProjectDatabaseException(it.errorMessage(), e)
         }
       }
@@ -99,7 +100,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   /** Add a query to the current txn. Executes immediately if no transaction started. */
   private fun withLog(errorMessage: () -> String, buildQuery: (dsl: DSLContext) -> String) {
-    val query = Query(errorMessage, buildQuery)
+    val query = Query(errorMessage, buildQuery(DSL.using(SQLDialect.POSTGRES)))
     currentTxn?.add(query) ?: executeAndLog(listOf(query))
   }
 
@@ -265,3 +266,5 @@ private fun Task.logId(): String = "${uid}:${taskID}"
 
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"
+
+private val LOG = GPLogger.create("ProjectDatabase")
