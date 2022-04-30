@@ -244,6 +244,42 @@ class ProjectDatabaseTest {
     assert(txns[0].sqlStatements[0].contains("insert", ignoreCase = true))
     assert(txns[1].sqlStatements[0].contains("update", ignoreCase = true))
   }
+
+  @Test
+  fun `test multi-statement transaction`() {
+    projectDatabase.init()
+
+    val task1 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid1")
+      .withId(1)
+      .withName("Name1")
+      .build()
+    val task2 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid2")
+      .withId(2)
+      .withName("Name2")
+      .build()
+
+    projectDatabase.startTransaction()
+    projectDatabase.insertTask(task1)
+    projectDatabase.insertTask(task2)
+    val mutator = task1.createMutator()
+    mutator.setName("Name3")
+    mutator.commit()
+    projectDatabase.commitTransaction()
+
+    val txns = projectDatabase.fetchTransactions(limit = 2)
+    assertEquals(txns.size, 1)
+    assertEquals(txns[0].sqlStatements.size, 3)
+    assert(txns[0].sqlStatements[0].contains("insert", ignoreCase = true))
+    assert(txns[0].sqlStatements[1].contains("insert", ignoreCase = true))
+    assert(txns[0].sqlStatements[2].contains("update", ignoreCase = true))
+    assert(txns[0].sqlStatements[0].contains("Name1"))
+    assert(txns[0].sqlStatements[1].contains("Name2"))
+    assert(txns[0].sqlStatements[2].contains("Name3"))
+  }
 }
 
 private fun LocalDate.toIsoNoHours() = this.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
