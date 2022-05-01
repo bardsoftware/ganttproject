@@ -330,7 +330,11 @@ class TaskTable(
         if (e.oldContainer == null) {
           return
         }
-        Platform.runLater { sync(true) }
+        Platform.runLater {
+          sync(true)
+          // Force selection changed event because some actions depend on the relative location of tasks.
+          selectionManager.fireSelectionChanged()
+        }
       }
 
       override fun taskRemoved(e: TaskHierarchyEvent) {
