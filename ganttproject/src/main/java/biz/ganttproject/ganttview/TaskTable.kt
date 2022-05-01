@@ -373,7 +373,7 @@ class TaskTable(
     }
   }
 
-  private suspend fun commitEditing() {
+  private fun commitEditing() {
     ourNameCellFactory.editingCell?.commitEdit()
     //newTaskActor.inboxChannel.send(EditingCompleted())
   }
@@ -570,8 +570,7 @@ class TaskTable(
           { task, value -> taskTableModel.setValue(value, task, customProperty) }
         )
       }
-      else -> null
-    }?.also {
+    }.also {
       it.isEditable = true
       it.isVisible = column.isVisible
       it.userData = column
