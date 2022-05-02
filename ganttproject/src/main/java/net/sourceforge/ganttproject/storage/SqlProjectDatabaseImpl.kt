@@ -66,7 +66,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     try {
       dataSource.connection.use { connection ->
         try {
-          val dsl = DSL.using(connection, SQLDialect.H2)
+          val dsl = DSL.using(connection, SQL_PROJECT_DATABASE_DIALECT)
           return body(dsl)
         } catch (e: Exception) {
           throw ProjectDatabaseException(errorMessage(), e)
@@ -185,7 +185,7 @@ class SqlTaskUpdateBuilder(private val task: Task,
   private var lastSetStep: UpdateSetMoreStep<TaskRecord>? = null
 
   private fun nextStep(step: (lastStep: UpdateSetStep<TaskRecord>) -> UpdateSetMoreStep<TaskRecord>) {
-    lastSetStep = step(lastSetStep ?: DSL.using(SQLDialect.H2).update(TASK))
+    lastSetStep = step(lastSetStep ?: DSL.using(SQL_PROJECT_DATABASE_DIALECT).update(TASK))
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -264,7 +264,9 @@ class SqlTaskUpdateBuilder(private val task: Task,
 
 private fun Task.logId(): String = "${uid}:${taskID}"
 
-private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state;DB_CLOSE_DELAY=-1"
+val SQL_PROJECT_DATABASE_DIALECT = SQLDialect.POSTGRES
+const val SQL_PROJECT_DATABASE_OPTIONS = ";DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true"
+private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state$SQL_PROJECT_DATABASE_OPTIONS"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"
 
 private val LOG = GPLogger.create("ProjectDatabase")

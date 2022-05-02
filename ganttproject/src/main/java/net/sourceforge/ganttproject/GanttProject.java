@@ -205,6 +205,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     if (isColloboqueLocalTest()) {
       getWebSocket().register(null);
       getWebSocket().onCommitResponseReceived(this::fireXlogReceived);
+      getWebSocket().onBaseTxnIdReceived(this::onBaseTxnIdReceived);
       var taskListenerAdapter = new TaskListenerAdapter();
       // TODO: add listeners sensibly.
       taskListenerAdapter.setTaskAddedHandler(event -> this.sendProjectStateLogs());
@@ -951,6 +952,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private Unit fireXlogReceived(ServerCommitResponse response) {
     myBaseTxnCommitInfo.update(response.getBaseTxnId(), response.getNewBaseTxnId(), 1);
+    return Unit.INSTANCE;
+  }
+
+  private Unit onBaseTxnIdReceived(String baseTxnId) {
+    myBaseTxnCommitInfo.update("", baseTxnId, 0);
     return Unit.INSTANCE;
   }
 }

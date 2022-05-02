@@ -77,6 +77,10 @@ jooq {
                                 key = 'scripts'
                                 value = 'src/main/resources/resources/sql/init-project-database.sql'
                             }
+                            property {
+                                key = 'defaultNameCase'
+                                value = 'lower'
+                            }
                         }
                     }
                     target {
@@ -171,7 +175,7 @@ task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) {
 
 mainClassName = "net.sourceforge.ganttproject.AppKt"
 application {
-    applicationDefaultJvmArgs = project.ext.javaExportOptions + ["-Dorg.jooq.no-logo=true"]
+    applicationDefaultJvmArgs = project.ext.javaExportOptions + ["-Dorg.jooq.no-logo=true"] + (project.hasProperty("devws") ? ["-DcolloboqueEnv=local-test"] : [])
 }
 test {
     useJUnitPlatform()
