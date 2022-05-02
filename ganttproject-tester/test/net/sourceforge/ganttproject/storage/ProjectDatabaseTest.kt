@@ -56,7 +56,7 @@ class ProjectDatabaseTest {
     val taskManagerBuilder = TestSetupHelper.newTaskManagerBuilder()
     taskManagerBuilder.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }
     taskManager = taskManagerBuilder.build()
-    dsl = DSL.using(dataSource, SQL_PROJECT_DATABASE_DIALECT)
+    dsl = DSL.using(dataSource, SQLDialect.H2)
   }
 
   @AfterEach
