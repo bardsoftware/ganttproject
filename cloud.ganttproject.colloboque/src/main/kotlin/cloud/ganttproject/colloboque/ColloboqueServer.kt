@@ -23,28 +23,51 @@ import biz.ganttproject.core.io.parseXmlProject
 import biz.ganttproject.core.io.walkTasksDepthFirst
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.parser.TaskLoader
-import net.sourceforge.ganttproject.storage.buildInsertTaskQuery
+import net.sourceforge.ganttproject.storage.*
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.conf.RenderNameCase
 import org.jooq.impl.DSL
+import java.sql.Connection
 import java.text.DateFormat
 import java.util.*
-import javax.sql.DataSource
-import net.sourceforge.ganttproject.storage.InitRecord
-import net.sourceforge.ganttproject.storage.InputXlog
+import java.time.LocalDateTime
+import java.util.concurrent.Executors
+
+internal typealias ProjectRefid = String
+
+class ColloboqueServerException: Exception {
+  constructor(message: String): super(message)
+  constructor(message: String, cause: Throwable): super(message, cause)
+}
 
 class ColloboqueServer(
-  private val dataSourceFactory: (projectRefid: String) -> DataSource,
+  private val initProject: (projectRefid: String) -> Unit,
+  private val connectionFactory: (projectRefid: String) -> Connection,
   private val initInputChannel: Channel<InitRecord>,
-  private val updateInputChannel: Channel<InputXlog>) {
+  private val updateInputChannel: Channel<InputXlog>,
+  private val serverResponseChannel: Channel<String>) {
+  private val refidToBaseTxnId: MutableMap<ProjectRefid, ProjectRefid> = mutableMapOf()
 
-  fun init(projectRefid: String, debugCreateProject: Boolean) {
-    dataSourceFactory(projectRefid).let { ds ->
-      ds.connection.use {
+  private val wsCommunicationScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+
+  init {
+    wsCommunicationScope.launch {
+      processUpdatesLoop()
+    }
+  }
+
+  fun init(projectRefid: ProjectRefid, debugCreateProject: Boolean) {
+    try {
+      initProject(projectRefid)
+      connectionFactory(projectRefid).use {
         it.createStatement().executeQuery("SELECT uid FROM Task").use { rs ->
           while (rs.next()) {
             println(rs.getString(1))
@@ -56,18 +79,79 @@ class ColloboqueServer(
             .deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
             .dsl().let { dsl ->
 
-              loadProject("""
+              loadProject(
+                """
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">
-    <tasks empty-milestones="true">
-        <task id="0" uid="qwerty" name="Task1" color="#99ccff" meeting="false" start="2022-02-10" duration="25" complete="85" expand="true"/>
-    </tasks>
+  <tasks empty-milestones="true">
+      <task id="0" uid="qwerty" name="Task1" color="#99ccff" meeting="false" start="2022-02-10" duration="25" complete="85" expand="true"/>
+  </tasks>
 </project>
-          """.trimIndent(), dsl)
+        """.trimIndent(), dsl
+              )
             }
         }
+        refidToBaseTxnId[projectRefid] = "abacaba"  // TODO: get from the database
+      }
+    } catch (e: Exception) {
+      throw ColloboqueServerException("Failed to init project $projectRefid", e)
+    }
+  }
+
+  private suspend fun processUpdatesLoop() {
+    for (inputXlog in updateInputChannel) {
+      try {
+        val newBaseTxnId = applyXlog(inputXlog.projectRefid, inputXlog.baseTxnId, inputXlog.transactions[0])
+          ?: continue
+        val response = ServerCommitResponse(
+          inputXlog.baseTxnId,
+          newBaseTxnId,
+          inputXlog.projectRefid,
+          SERVER_COMMIT_RESPONSE_TYPE
+        )
+        serverResponseChannel.send(Json.encodeToString(response))
+      } catch (e: Exception) {
+        LOG.error("Failed to commit\n {}", inputXlog, e)
+        val errorResponse = ServerCommitError(
+          inputXlog.baseTxnId,
+          inputXlog.projectRefid,
+          e.message.orEmpty(),
+          SERVER_COMMIT_ERROR_TYPE
+        )
+        serverResponseChannel.send(Json.encodeToString(errorResponse))
       }
     }
+  }
+
+  /**
+   * Performs transaction commit if `baseTxnId` corresponds to the value hold by the server.
+   * Returns new baseTxnId on success.
+   */
+  private fun applyXlog(projectRefid: ProjectRefid, baseTxnId: String, transaction: XlogRecord): String? {
+    if (transaction.sqlStatements.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
+    if (getBaseTxnId(projectRefid) != baseTxnId) throw ColloboqueServerException("Invalid transaction id $baseTxnId")
+    try {
+      connectionFactory(projectRefid).use { connection ->
+        return DSL
+          .using(connection, SQLDialect.POSTGRES)
+          .transactionResult { config ->
+            val context = config.dsl()
+            transaction.sqlStatements.forEach { context.execute(it) }
+            generateNextTxnId(projectRefid, baseTxnId, transaction)
+            // TODO: update transaction id in the database
+          }.also { refidToBaseTxnId[projectRefid] = it }
+      }
+    } catch (e: Exception) {
+      throw ColloboqueServerException("Failed to commit transaction", e)
+    }
+  }
+
+  fun getBaseTxnId(projectRefid: ProjectRefid) =
+    refidToBaseTxnId[projectRefid] ?: throw ColloboqueServerException("Project $projectRefid not initialized")
+
+  // TODO
+  private fun generateNextTxnId(projectRefid: ProjectRefid, oldTxnId: String, transaction: XlogRecord): String {
+    return LocalDateTime.now().toString()
   }
 }
 
@@ -100,3 +184,5 @@ private fun loadProject(xmlInput: String, dsl: DSLContext) {
   }
 
 }
+
+private val LOG = GPLogger.create("ColloboqueServer")

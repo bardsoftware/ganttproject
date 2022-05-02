@@ -54,13 +54,13 @@ class ProjectDatabaseTest {
   @BeforeEach
   private fun init() {
     dataSource = JdbcDataSource().also {
-      it.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
+      it.setURL("jdbc:h2:mem:test$SQL_PROJECT_DATABASE_OPTIONS")
     }
     projectDatabase = SqlProjectDatabaseImpl(dataSource)
     val taskManagerBuilder = TestSetupHelper.newTaskManagerBuilder()
     taskManagerBuilder.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }
     taskManager = taskManagerBuilder.build()
-    dsl = DSL.using(dataSource, SQLDialect.H2)
+    dsl = DSL.using(dataSource, SQL_PROJECT_DATABASE_DIALECT)
   }
 
   @AfterEach

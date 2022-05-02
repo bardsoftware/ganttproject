@@ -42,6 +42,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.InputXlog
+import net.sourceforge.ganttproject.storage.SERVER_COMMIT_ERROR_TYPE
+import net.sourceforge.ganttproject.storage.SERVER_COMMIT_RESPONSE_TYPE
 import net.sourceforge.ganttproject.storage.ServerCommitResponse
 import okhttp3.*
 import org.apache.commons.codec.binary.Base64InputStream
@@ -218,7 +220,8 @@ private class WebSocketListenerImpl(
     private val token: String,
     private val onAuthCompleted: () -> Unit,
     private val onPayload: (ObjectNode) -> Unit,
-    private val onClose: (CloseReason) -> Unit
+    private val onClose: (CloseReason) -> Unit,
+    private val onBaseTxnReceived: (String) -> Unit
 ) : WebSocketListener() {
   private lateinit var webSocket: WebSocket
 
@@ -227,6 +230,7 @@ private class WebSocketListenerImpl(
     this.webSocket = webSocket
     if (isColloboqueLocalTest()) {
       // No authentication for Colloboque testing.
+      response.header("baseTxnId")?.also(onBaseTxnReceived)
     } else {
       LOG.debug("Trying sending token {}", this.token)
       this.webSocket.send("Basic ${this.token}")
@@ -271,10 +275,13 @@ class WebSocketClient {
   private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
   private val contentChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
   private val xlogCommitResponseListeners = mutableListOf<(ServerCommitResponse) -> Unit>()
+  private val baseTxnIdListeners = mutableListOf<(String) -> Unit>()
   private var listeningDocument: GPCloudDocument? = null
 
   private fun getWebSocketUrl() = if (isColloboqueLocalTest()) {
-    "ws://localhost:${System.getProperty("colloboquePort", "9001")}"
+    val port = System.getProperty("colloboquePort", "9001")
+    val projectRefid = listeningDocument?.projectRefid ?: "refid"
+    "ws://localhost:$port?projectRefid=$projectRefid"
   } else {
     GPCLOUD_WEBSOCKET_URL
   }
@@ -290,7 +297,8 @@ class WebSocketClient {
     val req = Request.Builder().url(getWebSocketUrl()).build()
     this.websocket?.close(1000, "Reset Websocket")
     this.heartbeatFuture?.cancel(true)
-    val wsListener = WebSocketListenerImpl(GPCloudOptions.websocketAuthToken, this::onAuthDone, this::onMessage, this::onClose)
+    val wsListener = WebSocketListenerImpl(GPCloudOptions.websocketAuthToken, this::onAuthDone, this::onMessage,
+      this::onClose, this::fireBaseTxnReceived)
     this.wsListener = wsListener
     this.websocket = OkHttpClient.Builder()
       .connectionSpecs(getConnectionSpecs())
@@ -311,7 +319,8 @@ class WebSocketClient {
       when (it) {
         "ProjectLockStatusChange" -> fireLockStatusChange(payload)
         "ProjectChange", "ProjectRevert" -> fireContentsChange(payload)
-        "ServerCommitResponse" -> fireCommitResponseReceived(payload)
+        SERVER_COMMIT_RESPONSE_TYPE -> fireCommitResponseReceived(payload)
+        SERVER_COMMIT_ERROR_TYPE -> fireCommitErrorReceived(payload)
         else -> fireStructureChange(payload)
       }
     }
@@ -364,6 +373,15 @@ class WebSocketClient {
     }
   }
 
+  // TODO: Propagate info to the client so that they could resolve conflicts.
+  private fun fireCommitErrorReceived(payload: ObjectNode) {
+    LOG.error("Commit error received:\n {}", payload)
+  }
+
+  private fun fireBaseTxnReceived(baseTxnId: String) {
+    baseTxnIdListeners.forEach { it(baseTxnId) }
+  }
+
   fun onStructureChange(listener: (Any) -> Unit) {
     this.structureChangeListeners.add(listener)
   }
@@ -385,6 +403,11 @@ class WebSocketClient {
   fun onCommitResponseReceived(listener: (ServerCommitResponse) -> Unit): () -> Unit {
     xlogCommitResponseListeners.add(listener)
     return { xlogCommitResponseListeners.remove(listener) }
+  }
+
+  fun onBaseTxnIdReceived(listener: (String) -> Unit): () -> Unit {
+    baseTxnIdListeners.add(listener)
+    return { baseTxnIdListeners.remove(listener) }
   }
 
   private fun sendHeartbeat() {

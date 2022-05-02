@@ -25,18 +25,17 @@ import com.github.ajalt.clikt.parameters.types.int
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
 import fi.iki.elonen.NanoWSD
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import net.sourceforge.ganttproject.GPLogger
-import org.slf4j.LoggerFactory
-import java.io.IOException
 import net.sourceforge.ganttproject.storage.InitRecord
 import net.sourceforge.ganttproject.storage.InputXlog
-import net.sourceforge.ganttproject.storage.ServerCommitResponse
-import java.time.LocalDateTime
+import org.slf4j.LoggerFactory
+import java.io.IOException
 import java.util.*
+import java.util.concurrent.Executors
 
 fun main(args: Array<String>) = DevServerMain().main(args)
 
@@ -53,10 +52,12 @@ class DevServerMain : CliktCommand() {
 
     val initInputChannel = Channel<InitRecord>()
     val updateInputChannel = Channel<InputXlog>()
-    val dataSourceFactory = PostgresDataSourceFactory(pgHost, pgPort, pgSuperUser, pgSuperAuth)
-    val colloboqueServer = ColloboqueServer(dataSourceFactory::createDataSource, initInputChannel, updateInputChannel)
+    val serverResponseChannel = Channel<String>()
+    val connectionFactory = PostgresConnectionFactory(pgHost, pgPort, pgSuperUser, pgSuperAuth)
+    val colloboqueServer = ColloboqueServer(connectionFactory::initProject, connectionFactory::createConnection,
+      initInputChannel, updateInputChannel, serverResponseChannel)
     ColloboqueHttpServer(port, colloboqueServer).start(0, false)
-    ColloboqueWebSocketServer(wsPort, colloboqueServer).start(0, false)
+    ColloboqueWebSocketServer(wsPort, colloboqueServer, updateInputChannel, serverResponseChannel).start(0, false)
   }
 }
 
@@ -74,13 +75,34 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
     }
 }
 
-class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: ColloboqueServer) :
+class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: ColloboqueServer,
+                                private val updateInputChannel: Channel<InputXlog>,
+                                private val serverResponseChannel: Channel<String>) :
   NanoWSD("localhost", port) {
-  override fun openWebSocket(handshake: IHTTPSession?): WebSocket {
+  private val wsResponseScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+  private val wsRequestScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+
+  override fun openWebSocket(handshake: IHTTPSession): WebSocket {
     return WebSocketImpl(handshake)
   }
 
-  private class WebSocketImpl(handshake: IHTTPSession?) : WebSocket(handshake) {
+  private inner class WebSocketImpl(handshake: IHTTPSession) : WebSocket(handshake) {
+    init {
+      handshake.parameters["projectRefid"]?.firstOrNull()?.also { refid ->
+        colloboqueServer.init(refid, false)
+        this.handshakeResponse.addHeader("baseTxnId", colloboqueServer.getBaseTxnId(refid))
+      }
+      wsResponseScope.launch {
+        for (response in serverResponseChannel) {
+          LOG.debug("Sending response {}", response)
+          try {
+            send(response)
+          } catch (e: Exception) {
+            LOG.error("Failed to send response {}", response, e)
+          }
+        }
+      }
+    }
     private fun parseInputXlog(message: String): InputXlog? = try {
       if (message.startsWith("XLOG ")) {
         Json.decodeFromStream<InputXlog>(
@@ -100,20 +122,16 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
       LOG.debug("WebSocket closed")
     }
 
-    override fun onMessage(message: WebSocketFrame?) {
-      try {
-        LOG.debug("Message received {}", message?.textPayload.orEmpty())
-        val inputXlog = parseInputXlog(message?.textPayload ?: "") ?: return
-        val nextTxnId = LocalDateTime.now().toString()
-        val response = ServerCommitResponse(
-          inputXlog.baseTxnId,
-          nextTxnId,
-          inputXlog.projectRefid,
-          "ServerCommitResponse"
-        )
-        send(Json.encodeToString(response))
-      } catch (e: Exception) {
-        LOG.error("Failed to send response", e)
+    override fun onMessage(message: WebSocketFrame) {
+      LOG.debug("Message received\n {}", message.textPayload)
+      val inputXlog = parseInputXlog(message.textPayload) ?: return
+      if (inputXlog.transactions.size != 1) {
+        // TODO: add multiple transactions support.
+        LOG.error("Only single transaction commit supported")
+        return
+      }
+      wsRequestScope.launch {
+        updateInputChannel.send(inputXlog)
       }
     }
 
