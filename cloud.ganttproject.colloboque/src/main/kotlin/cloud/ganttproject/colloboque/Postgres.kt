@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package cloud.ganttproject.colloboque
 
+import com.google.common.hash.Hashing
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.slf4j.LoggerFactory
@@ -33,6 +34,13 @@ class PostgresConnectionFactory(
     jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/dev_all_projects"
   }
   private val superDataSource = HikariDataSource(superConfig)
+  // TODO: replace the user
+  private val regularConfig = HikariConfig().apply {
+    username = pgSuperUser
+    password = pgSuperAuth
+    jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/dev_all_projects"
+  }
+  private val regularDataSource = HikariDataSource(regularConfig)
 
   init {
     superDataSource.connection.use {
@@ -46,6 +54,7 @@ class PostgresConnectionFactory(
 
   fun initProject(projectRefid: String) {
     val schema = getSchema(projectRefid)
+    LoggerFactory.getLogger("InitProject").debug("Project {} mapped to schema {}", projectRefid, schema)
     superDataSource.connection.use {
       it.prepareCall("SELECT clone_schema(?, ?, ?)").use { stmt ->
         stmt.setString(1, "project_template")
@@ -57,8 +66,9 @@ class PostgresConnectionFactory(
   }
 
   fun createConnection(projectRefid: String): Connection =
-    superDataSource.connection.also { it.schema = getSchema(projectRefid) }
+    regularDataSource.connection.also { it.schema = getSchema(projectRefid) }
 
   // TODO: escape projectRefid
-  private fun getSchema(projectRefid: String) = "project_$projectRefid"
+  private fun getSchema(projectRefid: String) =
+    "project_${Hashing.murmur3_128().hashBytes(projectRefid.toByteArray(Charsets.UTF_8))}"
 }

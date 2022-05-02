@@ -131,14 +131,16 @@ class ColloboqueServer(
     if (transaction.sqlStatements.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
     if (getBaseTxnId(projectRefid) != baseTxnId) throw ColloboqueServerException("Invalid transaction id $baseTxnId")
     try {
-      return DSL
-        .using(connectionFactory(projectRefid), SQLDialect.POSTGRES)
-        .transactionResult { config ->
-          val context = config.dsl()
-          transaction.sqlStatements.forEach { context.execute(it) }
-          generateNextTxnId(projectRefid, baseTxnId, transaction)
-          // TODO: update transaction id in the database
-        }.also { refidToBaseTxnId[projectRefid] = it }
+      connectionFactory(projectRefid).use { connection ->
+        return DSL
+          .using(connection, SQLDialect.POSTGRES)
+          .transactionResult { config ->
+            val context = config.dsl()
+            transaction.sqlStatements.forEach { context.execute(it) }
+            generateNextTxnId(projectRefid, baseTxnId, transaction)
+            // TODO: update transaction id in the database
+          }.also { refidToBaseTxnId[projectRefid] = it }
+      }
     } catch (e: Exception) {
       throw ColloboqueServerException("Failed to commit transaction", e)
     }
