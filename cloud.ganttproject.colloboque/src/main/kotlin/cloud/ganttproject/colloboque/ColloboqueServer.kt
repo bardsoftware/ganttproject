@@ -101,7 +101,7 @@ class ColloboqueServer(
   private suspend fun processUpdatesLoop() {
     for (inputXlog in updateInputChannel) {
       try {
-        val newBaseTxnId = commitTxnIfSucc(inputXlog.projectRefid, inputXlog.baseTxnId, inputXlog.transactions[0])
+        val newBaseTxnId = applyXlog(inputXlog.projectRefid, inputXlog.baseTxnId, inputXlog.transactions[0])
           ?: continue
         val response = ServerCommitResponse(
           inputXlog.baseTxnId,
@@ -127,7 +127,7 @@ class ColloboqueServer(
    * Performs transaction commit if `baseTxnId` corresponds to the value hold by the server.
    * Returns new baseTxnId on success.
    */
-  private fun commitTxnIfSucc(projectRefid: ProjectRefid, baseTxnId: String, transaction: XlogRecord): String? {
+  private fun applyXlog(projectRefid: ProjectRefid, baseTxnId: String, transaction: XlogRecord): String? {
     if (transaction.sqlStatements.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
     if (getBaseTxnId(projectRefid) != baseTxnId) throw ColloboqueServerException("Invalid transaction id $baseTxnId")
     try {
