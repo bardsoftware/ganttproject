@@ -21,9 +21,9 @@ package cloud.ganttproject.colloboque
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.slf4j.LoggerFactory
-import javax.sql.DataSource
+import java.sql.Connection
 
-class PostgresDataSourceFactory(
+class PostgresConnectionFactory(
   private val pgHost: String, private val pgPort: Int, private val pgSuperUser: String, private val pgSuperAuth: String
 ) {
   // TODO: allow for using one database per project
@@ -33,7 +33,6 @@ class PostgresDataSourceFactory(
     jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/dev_all_projects"
   }
   private val superDataSource = HikariDataSource(superConfig)
-  private val cachedDataSources: MutableMap<ProjectRefid, DataSource> = mutableMapOf()
 
   init {
     superDataSource.connection.use {
@@ -45,10 +44,8 @@ class PostgresDataSourceFactory(
     }
   }
 
-  fun createDataSource(projectRefid: String): DataSource {
-    cachedDataSources[projectRefid]?.let { return it }
-    // TODO: escape projectRefid
-    val schema = "project_$projectRefid"
+  fun initProject(projectRefid: String) {
+    val schema = getSchema(projectRefid)
     superDataSource.connection.use {
       it.prepareCall("SELECT clone_schema(?, ?, ?)").use { stmt ->
         stmt.setString(1, "project_template")
@@ -57,11 +54,11 @@ class PostgresDataSourceFactory(
         stmt.execute()
       }
     }
-    return HikariDataSource(HikariConfig().apply {
-      username = pgSuperUser
-      password = pgSuperAuth
-      jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/dev_all_projects"
-      this.schema = schema
-    }).also { cachedDataSources[projectRefid] = it }
   }
+
+  fun createConnection(projectRefid: String): Connection =
+    superDataSource.connection.also { it.schema = getSchema(projectRefid) }
+
+  // TODO: escape projectRefid
+  private fun getSchema(projectRefid: String) = "project_$projectRefid"
 }

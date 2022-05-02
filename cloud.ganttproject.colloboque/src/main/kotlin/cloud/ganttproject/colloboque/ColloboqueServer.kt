@@ -35,9 +35,9 @@ import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.conf.RenderNameCase
 import org.jooq.impl.DSL
+import java.sql.Connection
 import java.text.DateFormat
 import java.util.*
-import javax.sql.DataSource
 import java.time.LocalDateTime
 import java.util.concurrent.Executors
 
@@ -49,7 +49,8 @@ class ColloboqueServerException: Exception {
 }
 
 class ColloboqueServer(
-  private val dataSourceFactory: (projectRefid: String) -> DataSource,
+  private val initProject: (projectRefid: String) -> Unit,
+  private val connectionFactory: (projectRefid: String) -> Connection,
   private val initInputChannel: Channel<InitRecord>,
   private val updateInputChannel: Channel<InputXlog>,
   private val serverResponseChannel: Channel<String>) {
@@ -65,33 +66,32 @@ class ColloboqueServer(
 
   fun init(projectRefid: ProjectRefid, debugCreateProject: Boolean) {
     try {
-      dataSourceFactory(projectRefid).let { ds ->
-        ds.connection.use {
-          it.createStatement().executeQuery("SELECT uid FROM Task").use { rs ->
-            while (rs.next()) {
-              println(rs.getString(1))
-            }
+      initProject(projectRefid)
+      connectionFactory(projectRefid).use {
+        it.createStatement().executeQuery("SELECT uid FROM Task").use { rs ->
+          while (rs.next()) {
+            println(rs.getString(1))
           }
-          if (debugCreateProject) {
-            DSL.using(it, SQLDialect.POSTGRES)
-              .configuration()
-              .deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
-              .dsl().let { dsl ->
+        }
+        if (debugCreateProject) {
+          DSL.using(it, SQLDialect.POSTGRES)
+            .configuration()
+            .deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
+            .dsl().let { dsl ->
 
-                loadProject(
-                  """
+              loadProject(
+                """
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">
-    <tasks empty-milestones="true">
-        <task id="0" uid="qwerty" name="Task1" color="#99ccff" meeting="false" start="2022-02-10" duration="25" complete="85" expand="true"/>
-    </tasks>
+  <tasks empty-milestones="true">
+      <task id="0" uid="qwerty" name="Task1" color="#99ccff" meeting="false" start="2022-02-10" duration="25" complete="85" expand="true"/>
+  </tasks>
 </project>
-          """.trimIndent(), dsl
-                )
-              }
-          }
-          refidToBaseTxnId[projectRefid] = "abacaba"  // TODO: get from the database
+        """.trimIndent(), dsl
+              )
+            }
         }
+        refidToBaseTxnId[projectRefid] = "abacaba"  // TODO: get from the database
       }
     } catch (e: Exception) {
       throw ColloboqueServerException("Failed to init project $projectRefid", e)
@@ -129,10 +129,10 @@ class ColloboqueServer(
    */
   private fun commitTxnIfSucc(projectRefid: ProjectRefid, baseTxnId: String, transaction: XlogRecord): String? {
     if (transaction.sqlStatements.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
-    if (getBaseTxnId(projectRefid) != baseTxnId) return null
+    if (getBaseTxnId(projectRefid) != baseTxnId) throw ColloboqueServerException("Invalid transaction id $baseTxnId")
     try {
       return DSL
-        .using(dataSourceFactory(projectRefid), SQLDialect.POSTGRES)
+        .using(connectionFactory(projectRefid), SQLDialect.POSTGRES)
         .transactionResult { config ->
           val context = config.dsl()
           transaction.sqlStatements.forEach { context.execute(it) }

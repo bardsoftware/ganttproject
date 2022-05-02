@@ -53,8 +53,9 @@ class DevServerMain : CliktCommand() {
     val initInputChannel = Channel<InitRecord>()
     val updateInputChannel = Channel<InputXlog>()
     val serverResponseChannel = Channel<String>()
-    val dataSourceFactory = PostgresDataSourceFactory(pgHost, pgPort, pgSuperUser, pgSuperAuth)
-    val colloboqueServer = ColloboqueServer(dataSourceFactory::createDataSource, initInputChannel, updateInputChannel, serverResponseChannel)
+    val connectionFactory = PostgresConnectionFactory(pgHost, pgPort, pgSuperUser, pgSuperAuth)
+    val colloboqueServer = ColloboqueServer(connectionFactory::initProject, connectionFactory::createConnection,
+      initInputChannel, updateInputChannel, serverResponseChannel)
     ColloboqueHttpServer(port, colloboqueServer).start(0, false)
     ColloboqueWebSocketServer(wsPort, colloboqueServer, updateInputChannel, serverResponseChannel).start(0, false)
   }
@@ -78,7 +79,8 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
                                 private val updateInputChannel: Channel<InputXlog>,
                                 private val serverResponseChannel: Channel<String>) :
   NanoWSD("localhost", port) {
-  private val wsCommunicationScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+  private val wsResponseScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+  private val wsRequestScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 
   override fun openWebSocket(handshake: IHTTPSession): WebSocket {
     return WebSocketImpl(handshake)
@@ -90,7 +92,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
         colloboqueServer.init(refid, false)
         this.handshakeResponse.addHeader("baseTxnId", colloboqueServer.getBaseTxnId(refid))
       }
-      wsCommunicationScope.launch {
+      wsResponseScope.launch {
         for (response in serverResponseChannel) {
           LOG.debug("Sending response {}", response)
           try {
@@ -128,7 +130,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
         LOG.error("Only single transaction commit supported")
         return
       }
-      wsCommunicationScope.launch {
+      wsRequestScope.launch {
         updateInputChannel.send(inputXlog)
       }
     }
