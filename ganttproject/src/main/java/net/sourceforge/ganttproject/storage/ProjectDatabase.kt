@@ -70,4 +70,10 @@ interface ProjectDatabase {
   /** Fetch transaction logs starting with the specified id. */
   @Throws(ProjectDatabaseException::class)
   fun fetchLogRecords(startId: Int = 0, limit: Int): List<LogRecord>
+
+  /** Run a query with the given `whenExpression` against the Task table.
+   * The query results are converted to Task instances with `lookupById`
+   */
+  @Throws(ProjectDatabaseException::class)
+  fun findTasks(whereExpression: String, lookupById: (Int)->Task?): List<Task>
 }

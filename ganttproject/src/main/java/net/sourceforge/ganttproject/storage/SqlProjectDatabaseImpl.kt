@@ -24,7 +24,7 @@ import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.db.Tables.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
-import net.sourceforge.ganttproject.storage.ProjectDatabase.*
+import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskInfo
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
@@ -38,7 +38,6 @@ import org.jooq.impl.DSL
 import java.awt.Color
 import java.sql.SQLException
 import javax.sql.DataSource
-import kotlin.text.Charsets
 
 class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDatabase {
   companion object Factory {
@@ -134,6 +133,14 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       .orderBy(LOGRECORD.ID.asc())
       .limit(limit)
       .map { LogRecord(it.id, it.sqlStatement) }
+  }
+
+  override fun findTasks(whereExpression: String, lookupById: (Int)->Task?): List<Task> {
+    return withDSL({"Failed to execute query $whereExpression"}) { dsl ->
+      dsl.select(TASK.NUM).from(TASK).where(whereExpression).mapNotNull {
+        lookupById(it.value1())
+      }
+    }
   }
 
   /** Execute update query and save its xlog. */
