@@ -22,7 +22,6 @@ package net.sourceforge.ganttproject.storage
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
-import biz.ganttproject.storage.db.Sequences.TXNID
 import biz.ganttproject.storage.db.Tables.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.GPLogger
@@ -59,6 +58,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
   private var currentTxn: MutableList<Query>? = null
+  private var localTxnId: Int = 1
 
   private fun <T> withDSL(
     errorMessage: () -> String = { "Failed to execute query" },
@@ -78,21 +78,20 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
-  /** Execute queries and save their logs as a transaction. */
-  private fun executeAndLog(queries: List<Query>): Unit = withDSL({ "Failed to commit transaction" }) { dsl ->
+  /** Execute queries and save their logs as a transaction with the specified ID. */
+  private fun executeAndLog(queries: List<Query>, localTxnId: Int): Unit = withDSL({ "Failed to commit transaction" }) { dsl ->
     dsl.transaction { config ->
       val context = DSL.using(config)
-      val nextTxnId = context.nextval(TXNID)
       queries.forEach {
         try {
           context.execute(it.sqlStatementH2)
           context
             .insertInto(LOGRECORD)
-            .set(LOGRECORD.LOCAL_TXN_ID, nextTxnId.toInt())
+            .set(LOGRECORD.LOCAL_TXN_ID, localTxnId)
             .set(LOGRECORD.SQL_STATEMENT, it.sqlStatementPostgres)
             .execute()
         } catch (e: Exception) {
-          LOG.error("Failed to execute or log txnId={}\n {}", nextTxnId, it.sqlStatementH2)
+          LOG.error("Failed to execute or log txnId={}\n {}", localTxnId, it.sqlStatementH2)
           throw ProjectDatabaseException(it.errorMessage(), e)
         }
       }
@@ -102,12 +101,12 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   /** Add a query to the current txn. Executes immediately if no transaction started. */
   private fun withLog(errorMessage: () -> String, buildQuery: (dsl: DSLContext) -> String) {
     val query = Query(errorMessage, buildQuery(DSL.using(SQLDialect.H2)), buildQuery(DSL.using(SQLDialect.POSTGRES)))
-    currentTxn?.add(query) ?: executeAndLog(listOf(query))
+    currentTxn?.add(query) ?: executeAndLog(listOf(query), localTxnId).also { localTxnId++ }
   }
 
-  private fun withLog(h2Query: String, postgresQuery: String, errorMessage: () -> String) {
+  private fun withLog(errorMessage: () -> String, h2Query: String, postgresQuery: String) {
     val query = Query(errorMessage, h2Query, postgresQuery)
-    currentTxn?.add(query) ?: executeAndLog(listOf(query))
+    currentTxn?.add(query) ?: executeAndLog(listOf(query), localTxnId).also { localTxnId++ }
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -162,17 +161,19 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   @Throws(ProjectDatabaseException::class)
   override fun commitTransaction() {
     try {
-      executeAndLog(currentTxn ?: throw ProjectDatabaseException("No transaction started"))
+      executeAndLog(currentTxn ?: throw ProjectDatabaseException("No transaction started"), localTxnId)
+      localTxnId++  // Increment only on success.
     } finally {
       currentTxn = null
     }
   }
 
   @Throws(ProjectDatabaseException::class)
-  override fun fetchTransactions(startTxnId: Int, limit: Int): List<XlogRecord> = withDSL({ "Failed to fetch log records" }) { dsl ->
+  override fun fetchTransactions(startLocalTxnId: Int, limit: Int): List<XlogRecord> = withDSL(
+    { "Failed to fetch log records starting with $startLocalTxnId" }) { dsl ->
     dsl
       .selectFrom(LOGRECORD)
-      .where(LOGRECORD.LOCAL_TXN_ID.ge(startTxnId).and(LOGRECORD.LOCAL_TXN_ID.lt(startTxnId + limit)))
+      .where(LOGRECORD.LOCAL_TXN_ID.ge(startLocalTxnId).and(LOGRECORD.LOCAL_TXN_ID.lt(startLocalTxnId + limit)))
       .orderBy(LOGRECORD.LOCAL_TXN_ID, LOGRECORD.ID)
       .fetchGroups(LOGRECORD.LOCAL_TXN_ID, LOGRECORD.SQL_STATEMENT)
       .values
@@ -181,7 +182,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   /** Add update query and save its xlog in the current transaction. */
   @Throws(ProjectDatabaseException::class)
-  internal fun update(h2Query: String, postgresQuery: String) = withLog(h2Query, postgresQuery) { "Failed to execute update" }
+  internal fun update(h2Query: String, postgresQuery: String) = withLog({ "Failed to execute update" }, h2Query, postgresQuery)
 }
 
 
@@ -197,16 +198,12 @@ class SqlTaskUpdateBuilder(private val task: Task,
 
   @Throws(ProjectDatabaseException::class)
   override fun commit() {
-    try {
-      lastSetStepH2?.let { updateQueryH2 ->
-        onCommit(updateQueryH2.where(TASK.UID.eq(task.uid)).getSQL(ParamType.INLINED),
-          lastSetStepPostgres?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
-            ?: error("No update statement for postgres"))
-      }
-    } finally {
-      lastSetStepH2 = null
-      lastSetStepPostgres = null
-    }
+    if (lastSetStepH2 == null && lastSetStepPostgres == null) return
+    val finalH2 = lastSetStepH2?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
+      ?: error("Update step for H2 is null")
+    val finalPostgres = lastSetStepPostgres?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
+      ?: error("Update step for PostgreSQL is null")
+    onCommit(finalH2, finalPostgres)
   }
 
   override fun setName(name: String?) = nextStep { it.set(TASK.NAME, name) }

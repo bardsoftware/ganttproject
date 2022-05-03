@@ -39,5 +39,3 @@ create table if not exists LogRecord (
 
   primary key (id)
 );
-
-create sequence TxnId start with 1;
