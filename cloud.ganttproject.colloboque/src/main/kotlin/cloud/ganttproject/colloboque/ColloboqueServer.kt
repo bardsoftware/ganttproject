@@ -111,7 +111,7 @@ class ColloboqueServer(
         )
         serverResponseChannel.send(Json.encodeToString(response))
       } catch (e: Exception) {
-        LOG.error("Failed to commit\n {}", inputXlog, e)
+        LOG.error("Failed to commit\n {}", inputXlog, exception = e)
         val errorResponse = ServerCommitError(
           inputXlog.baseTxnId,
           inputXlog.projectRefid,

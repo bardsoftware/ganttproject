@@ -30,19 +30,13 @@ open class ProjectDatabaseException: Exception {
   constructor(message: String, cause: Throwable): super(message, cause)
 }
 
-@Serializable
-data class LogRecord(
-  val id: Int,
-  val sqlStatement: String
-)
-
 /** Storage for holding the current state of a Gantt project. */
 interface ProjectDatabase {
   /** Build and execute an update query. */
   interface TaskUpdateBuilder: MutableTask {
-    /** Perform task update. */
+    /** Commit task update. */
     @Throws(ProjectDatabaseException::class)
-    fun execute()
+    fun commit()
 
     fun interface Factory {
       fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder
@@ -67,7 +61,13 @@ interface ProjectDatabase {
   @Throws(ProjectDatabaseException::class)
   fun shutdown()
 
-  /** Fetch transaction logs starting with the specified id. */
+  /** Collect queries received after txn start and commit them all at once. */
   @Throws(ProjectDatabaseException::class)
-  fun fetchLogRecords(startId: Int = 0, limit: Int): List<LogRecord>
+  fun startTransaction()
+  @Throws(ProjectDatabaseException::class)
+  fun commitTransaction()
+
+  /** Fetch transactions starting with the specified transaction id. */
+  @Throws(ProjectDatabaseException::class)
+  fun fetchTransactions(startTxnId: Int = 0, limit: Int): List<XlogRecord>
 }
