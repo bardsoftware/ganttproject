@@ -280,6 +280,33 @@ class ProjectDatabaseTest {
     assert(txns[0].sqlStatements[1].contains("Name2"))
     assert(txns[0].sqlStatements[2].contains("Name3"))
   }
+
+  @Test
+  fun `test task search`() {
+    projectDatabase.init()
+
+    val task1 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid1")
+      .withId(1)
+      .withName("Name1")
+      .build()
+    val task2 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid2")
+      .withId(2)
+      .withName("Name2")
+      .build()
+
+    projectDatabase.startTransaction()
+    projectDatabase.insertTask(task1)
+    projectDatabase.insertTask(task2)
+    projectDatabase.commitTransaction()
+
+    assertEquals(task1, projectDatabase.findTasks("name = 'Name1'", taskManager::getTask)[0])
+    assertTrue(projectDatabase.findTasks("completion = 100", taskManager::getTask).isEmpty())
+    assertEquals(2, projectDatabase.findTasks("true", taskManager::getTask).size)
+  }
 }
 
 private fun LocalDate.toIsoNoHours() = this.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
