@@ -137,6 +137,8 @@ class TaskTable(
   var requestSwingFocus: () -> Unit = {}
   lateinit var swingComponent: Component
   private val filterCompletedTasksAction = FilterCompletedTasks(filters, taskManager)
+  private val filterDueTodayTasksAction = TaskFilterAction("taskTable.filter.dueTodayTasks",
+    filters, filters.filterDueTodayOption, filters.dueTodayFilter)
 
   private val placeholderShowHidden by lazy {
     Button(RootLocalizer.formatText("taskTable.placeholder.showHiddenTasks")).also {
@@ -763,7 +765,9 @@ class TaskTable(
 
   fun tableMenuActions(builder: MenuBuilder) {
     builder.apply {
-      items(taskActions.manageColumnsAction, this@TaskTable.filterCompletedTasksAction)
+      items(taskActions.manageColumnsAction,
+        this@TaskTable.filterCompletedTasksAction,
+        this@TaskTable.filterDueTodayTasksAction)
     }
   }
 

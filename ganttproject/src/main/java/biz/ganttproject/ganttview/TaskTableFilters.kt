@@ -22,13 +22,25 @@ import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.GPOption
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
+import java.time.LocalDate
 
 typealias TaskFilter = (parent: Task, child: Task?) -> Boolean
 
-class TaskFilterManager(taskManager: TaskManager) {
-  val options: List<GPOption<*>> get() = listOf(filterCompletedTasksOption)
+class TaskFilterManager(val taskManager: TaskManager) {
+
+  val options: List<GPOption<*>> get() = listOf(
+    filterCompletedTasksOption,
+    filterDueTodayOption)
 
   val filterCompletedTasksOption = DefaultBooleanOption("filter.completedTasks", false)
+
+  val filterDueTodayOption = DefaultBooleanOption("filter.dueTodayTasks", false)
+  val dueTodayFilter: TaskFilter  = { _, child ->
+    child?.end?.let {
+      LocalDate.now().isAfter(it.toLocalDate()) || LocalDate.now().isEqual(it.toLocalDate())
+    } ?: false
+  }
+
   var activeFilter: TaskFilter = VOID_FILTER
     set(value) {
       field = value
