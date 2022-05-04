@@ -940,7 +940,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         getWebSocket().sendLogs(new InputXlog(
           baseTxnCommitInfo.left,
           "userId",
-          "projectRefid",
+          "refid",
           txns
         ));
       }
