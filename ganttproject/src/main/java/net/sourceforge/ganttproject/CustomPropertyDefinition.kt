@@ -18,6 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject
 
+import biz.ganttproject.core.option.DefaultStringOption
+import biz.ganttproject.core.option.StringOption
+
 interface CustomPropertyDefinition {
     val propertyClass: CustomPropertyClass
     fun setPropertyClass(propertyClass: CustomPropertyClass)
@@ -28,4 +31,16 @@ interface CustomPropertyDefinition {
     var name: String
     var defaultValueAsString: String?
     val attributes: Map<String, String>
+    var calculationMethod: CalculationMethod?
+}
+
+interface CalculationMethod {
+  fun buildQuery(): String
+  fun queryParts(): List<StringOption>
+}
+
+class CalculateFromSingleRow : CalculationMethod {
+  private val whereExpression = DefaultStringOption("customPropertyCalculation.fromRow")
+  override fun buildQuery(): String = whereExpression.value
+  override fun queryParts(): List<StringOption> = listOf(whereExpression)
 }

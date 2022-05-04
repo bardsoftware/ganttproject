@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.customproperty
 
 import biz.ganttproject.core.time.CalendarFactory
+import net.sourceforge.ganttproject.CalculationMethod
 import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.language.GanttLanguage
@@ -107,6 +108,7 @@ object PropertyTypeEncoder {
         get() = valueAsString
         set(_) = error("Don't set me")
       override val attributes: Map<String, String> = emptyMap()
+      override var calculationMethod: CalculationMethod? = null
     }
   }
 }

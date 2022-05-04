@@ -19,9 +19,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.task;
 
 import biz.ganttproject.customproperty.PropertyTypeEncoder;
+import net.sourceforge.ganttproject.CalculationMethod;
 import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -38,6 +40,7 @@ public class CustomColumn implements CustomPropertyDefinition {
 
   private CustomPropertyClass myPropertyClass;
   private final Map<String, String> myAttributes = new HashMap<>();
+  private CalculationMethod calculationMethod;
 
   CustomColumn(CustomColumnsManager manager, String colName, CustomPropertyClass propertyClass, Object colDefaultValue) {
     name = colName;
@@ -143,5 +146,16 @@ public class CustomColumn implements CustomPropertyDefinition {
     }
     CustomColumn that = (CustomColumn) obj;
     return this.id.equals(that.id);
+  }
+
+  @Nullable
+  @Override
+  public CalculationMethod getCalculationMethod() {
+    return this.calculationMethod;
+  }
+
+  @Override
+  public void setCalculationMethod(@Nullable CalculationMethod value) {
+    this.calculationMethod = value;
   }
 }

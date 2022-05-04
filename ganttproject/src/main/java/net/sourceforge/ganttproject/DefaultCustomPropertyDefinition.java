@@ -19,8 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.customproperty.PropertyTypeEncoder;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -34,6 +33,7 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
   private CustomPropertyClass myPropertyClass;
   private String myTypeAsString;
   private final Map<String, String> myAttributes = new HashMap<>();
+  private CalculationMethod calculationMethod;
 
   public DefaultCustomPropertyDefinition(String name) {
     myName = name;
@@ -133,4 +133,14 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
     return this.myID.equals(that.myID);
   }
 
+  @Nullable
+  @Override
+  public CalculationMethod getCalculationMethod() {
+    return this.calculationMethod;
+  }
+
+  @Override
+  public void setCalculationMethod(@Nullable CalculationMethod value) {
+    this.calculationMethod = value;
+  }
 }
