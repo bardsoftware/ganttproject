@@ -217,7 +217,7 @@ internal fun CustomPropertyDefinition.fromColumnItem(item: ColumnAsListItem) {
   if (item.defaultValue.trim().isNotBlank()) {
     this.defaultValueAsString = item.defaultValue
   }
-  this.propertyClass = item.type.getCustomPropertyClass()
+  this.setPropertyClass(item.type.getCustomPropertyClass())
 }
 
 internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {

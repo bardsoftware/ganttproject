@@ -422,7 +422,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       }
       List<CustomPropertyDefinition> definitions = myCustomPropertyManager.getDefinitions();
       for (int i = 0; i < definitions.size(); i++) {
-        if (definitions.get(i).getID().equals(c.getID())) {
+        if (definitions.get(i).getId().equals(c.getID())) {
           return myDefaultColumnStubs.size() + i;
         }
       }
@@ -455,7 +455,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     void renameColumn(CustomPropertyDefinition definition) {
-      ColumnImpl c = findColumnByID(definition.getID());
+      ColumnImpl c = findColumnByID(definition.getId());
       if (c == null) {
         return;
       }
@@ -463,7 +463,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     void updateType(CustomPropertyDefinition def) {
-      ColumnImpl c = findColumnByID(def.getID());
+      ColumnImpl c = findColumnByID(def.getId());
       if (c == null) {
         return;
       }
@@ -472,7 +472,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     }
 
     void deleteColumn(CustomPropertyDefinition definition) {
-      ColumnImpl c = findColumnByID(definition.getID());
+      ColumnImpl c = findColumnByID(definition.getId());
       if (c == null) {
         return;
       }

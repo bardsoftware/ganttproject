@@ -54,7 +54,7 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
 
   public void setValue(CustomPropertyDefinition def, Object value) throws CustomColumnsException {
     if (value == null) {
-      mapCustomColumnValue.remove(def.getID());
+      mapCustomColumnValue.remove(def.getId());
       return;
     }
     Class<?> c1 = def.getType();
@@ -63,20 +63,20 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
       throw new CustomColumnsException(CustomColumnsException.CLASS_MISMATCH, "Failed to set value=" + value
           + ". value class=" + c2 + ", column class=" + c1);
     }
-    mapCustomColumnValue.put(def.getID(), value);
+    mapCustomColumnValue.put(def.getId(), value);
   }
 
   public Object getValue(CustomPropertyDefinition def) {
-    Object result = mapCustomColumnValue.get(def.getID());
+    Object result = mapCustomColumnValue.get(def.getId());
     return (result == null) ? def.getDefaultValue() : result;
   }
 
   public boolean hasOwnValue(CustomPropertyDefinition def) {
-    return mapCustomColumnValue.containsKey(def.getID());
+    return mapCustomColumnValue.containsKey(def.getId());
   }
 
   public void removeCustomColumn(CustomPropertyDefinition definition) {
-    mapCustomColumnValue.remove(definition.getID());
+    mapCustomColumnValue.remove(definition.getId());
   }
 
   @Override

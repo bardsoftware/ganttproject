@@ -78,7 +78,7 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
   }
 
   @Override
-  public String getID() {
+  public String getId() {
     return myID;
   }
 
@@ -109,17 +109,11 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
     return myTypeAsString;
   }
 
-  @Override
-  public IStatus canSetPropertyClass(CustomPropertyClass propertyClass) {
-    return Status.OK_STATUS;
-  }
-
-  @Override
-  public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
+    @Override
+  public void setPropertyClass(CustomPropertyClass propertyClass) {
     myPropertyClass = propertyClass;
     myTypeAsString = propertyClass.getID();
     setDefaultValueAsString(getDefaultValueAsString());
-    return Status.OK_STATUS;
   }
 
   @Override

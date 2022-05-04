@@ -19,9 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.task;
 
 import biz.ganttproject.customproperty.PropertyTypeEncoder;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
 import net.sourceforge.ganttproject.CustomPropertyClass;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
@@ -47,10 +44,6 @@ public class CustomColumn implements CustomPropertyDefinition {
     myPropertyClass = propertyClass;
     defaultValue = colDefaultValue;
     myManager = manager;
-  }
-
-  public String getId() {
-    return id;
   }
 
   public void setId(String newId) {
@@ -114,8 +107,8 @@ public class CustomColumn implements CustomPropertyDefinition {
   }
 
   @Override
-  public String getID() {
-    return getId();
+  public String getId() {
+    return id;
   }
 
   @Override
@@ -124,12 +117,7 @@ public class CustomColumn implements CustomPropertyDefinition {
   }
 
   @Override
-  public IStatus canSetPropertyClass(CustomPropertyClass propertyClass) {
-    return Status.OK_STATUS;
-  }
-
-  @Override
-  public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
+  public void setPropertyClass(CustomPropertyClass propertyClass) {
     CustomPropertyDefinition oldValue = new DefaultCustomPropertyDefinition(name, id, this);
     myPropertyClass = propertyClass;
     String defaultValue = getDefaultValueAsString();
@@ -138,7 +126,6 @@ public class CustomColumn implements CustomPropertyDefinition {
     }
     setDefaultValueAsString(defaultValue);
     myManager.fireDefinitionChanged(CustomPropertyEvent.EVENT_TYPE_CHANGE, this, oldValue);
-    return Status.OK_STATUS;
   }
 
   @Override

@@ -122,7 +122,7 @@ public class ColumnManagerPanel {
         SwingUtilities.invokeLater(new Runnable() {
           @Override
           public void run() {
-            myVisibleFields.add(def.getID(), -1, -1);
+            myVisibleFields.add(def.getId(), -1, -1);
             getTableComponent().requestFocus();
             setSelectedDefinition(def);
           }
@@ -270,7 +270,7 @@ public class ColumnManagerPanel {
   }
 
   protected boolean isEditable(CustomPropertyDefinition def) {
-    return myManager.getCustomPropertyDefinition(def.getID()) != null;
+    return myManager.getCustomPropertyDefinition(def.getId()) != null;
   }
 
   protected void setDefaultValuePanelEnabled(boolean enabled) {
@@ -467,7 +467,7 @@ public class ColumnManagerPanel {
 
     public void reloadValue(CustomPropertyDefinition def) {
       myDefinitionRO = def;
-      myDefinition = new DefaultCustomPropertyDefinition(def.getName(), def.getID(), def);
+      myDefinition = new DefaultCustomPropertyDefinition(def.getName(), def.getId(), def);
       resetValue(def.getPropertyClass().getDisplayName(), true);
     }
   }

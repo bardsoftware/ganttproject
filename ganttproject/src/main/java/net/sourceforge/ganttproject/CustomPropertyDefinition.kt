@@ -16,37 +16,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject;
+package net.sourceforge.ganttproject
 
-import org.eclipse.core.runtime.IStatus;
-
-import javax.annotation.Nonnull;
-import java.util.Map;
-
-public interface CustomPropertyDefinition {
-  @Nonnull
-  CustomPropertyClass getPropertyClass();
-
-  IStatus canSetPropertyClass(CustomPropertyClass propertyClass);
-
-  IStatus setPropertyClass(CustomPropertyClass propertyClass);
-
-  Class<?> getType();
-
-  String getTypeAsString();
-
-  String getID();
-
-  Object getDefaultValue();
-
-  String getName();
-
-  void setName(String name);
-
-  String getDefaultValueAsString();
-
-  void setDefaultValueAsString(String value);
-
-  @Nonnull
-  Map<String, String> getAttributes();
+interface CustomPropertyDefinition {
+    val propertyClass: CustomPropertyClass
+    fun setPropertyClass(propertyClass: CustomPropertyClass)
+    val type: Class<*>
+    val typeAsString: String
+    val id: String
+    val defaultValue: Any?
+    var name: String
+    var defaultValueAsString: String?
+    val attributes: Map<String, String>
 }
