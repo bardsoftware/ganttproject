@@ -23,7 +23,6 @@ import net.sourceforge.ganttproject.task.MutableTask
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import kotlin.jvm.Throws
-import kotlinx.serialization.*
 
 open class ProjectDatabaseException: Exception {
   constructor(message: String): super(message)
@@ -70,4 +69,10 @@ interface ProjectDatabase {
   /** Fetch transactions starting with the specified transaction id. */
   @Throws(ProjectDatabaseException::class)
   fun fetchTransactions(startTxnId: Int = 0, limit: Int): List<XlogRecord>
+
+  /** Run a query with the given `whereExpression` against the Task table.
+   * The query results are converted to Task instances with `lookupById`
+   */
+  @Throws(ProjectDatabaseException::class)
+  fun findTasks(whereExpression: String, lookupById: (Int)->Task?): List<Task>
 }
