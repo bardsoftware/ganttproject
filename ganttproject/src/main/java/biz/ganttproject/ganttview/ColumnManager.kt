@@ -279,7 +279,10 @@ internal class CustomPropertyEditor(
       it.displayName = RootLocalizer.formatText("option.customPropertyDialog.defaultValue.label")
     }
   )
-  val props = listOf(title, type, defaultValue)
+  private val isCalculated = BeanProperty(editableValue, PropertyDescriptor("calculated", ColumnAsListItem::class.java).also {
+    it.displayName = RootLocalizer.formatText("option.customPropertyDialog.isCalculated.label")
+  })
+  val props = listOf(title, type, defaultValue, isCalculated)
   private val editors = mutableMapOf<String, PropertyEditor<*>>()
 
   init {
@@ -347,6 +350,12 @@ internal data class ColumnAsListItem(
     get() = _defaultValue.value
     set(value) { _defaultValue.value = value }
   fun defaultValueProperty() = _defaultValue
+
+  private val _isCalculated = SimpleBooleanProperty(false)
+  var isCalculated: Boolean
+    get() = _isCalculated.value
+    set(value) { _isCalculated.value = value }
+  fun calculatedProperty() = _isCalculated
 
   init {
     if (column != null) {
