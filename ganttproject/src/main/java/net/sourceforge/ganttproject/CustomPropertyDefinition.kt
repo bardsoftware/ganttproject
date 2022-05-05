@@ -40,7 +40,7 @@ interface CalculationMethod {
 }
 
 class CalculateFromSingleRow : CalculationMethod {
-  private val whereExpression = DefaultStringOption("customPropertyCalculation.fromRow")
-  override fun buildQuery(): String = whereExpression.value
-  override fun queryParts(): List<StringOption> = listOf(whereExpression)
+  val expression = DefaultStringOption("customPropertyCalculation.fromRow")
+  override fun buildQuery(): String = expression.value
+  override fun queryParts(): List<StringOption> = listOf(expression)
 }

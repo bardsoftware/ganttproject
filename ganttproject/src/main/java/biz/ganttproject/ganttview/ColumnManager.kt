@@ -42,6 +42,7 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.util.Callback
+import net.sourceforge.ganttproject.CalculateFromSingleRow
 import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.CustomPropertyManager
@@ -76,7 +77,6 @@ class ColumnManager(
   private val customPropertyEditor = CustomPropertyEditor(
     customColumnsManager, btnDeleteController, listItems,
     errorUi = {
-      println(errorLabel.styleClass)
       if (it == null) {
         errorPane.isVisible = false
         if (!errorPane.styleClass.contains("noerror")) {
@@ -137,7 +137,15 @@ class ColumnManager(
       null,
       isVisible = true, isCustom = true, customColumnsManager
     ).also {
-      it.title = RootLocalizer.formatText("addCustomColumn")
+      val title = RootLocalizer.create("addCustomColumn").also {
+        it.update("")
+      }
+      var count = 1
+      while (listView.items.any { it.title == title.value.trim() }) {
+        title.update(count.toString())
+        count++
+      }
+      it.title = title.value.trim()
     }
     listItems.add(item)
     listView.scrollTo(item)
@@ -166,6 +174,11 @@ class ColumnManager(
         val def = customColumnsManager.createDefinition(columnItem.type.getCustomPropertyClass(), columnItem.title, columnItem.defaultValue)
         if (columnItem.isVisible) {
           mergedColumns.add(ColumnList.ColumnStub(def.id, def.name, true, mergedColumns.size, 50))
+        }
+        if (columnItem.isCalculated) {
+          def.calculationMethod = CalculateFromSingleRow().also {
+            it.expression.value = columnItem.expression
+          }
         }
       }
     }
@@ -255,10 +268,14 @@ internal class CustomPropertyEditor(
         propertySheet.isDisable = false
         btnDeleteController.isDisabled.value = false
         editableValue.defaultValue = selectedItem.defaultValue
+        editableValue.isCalculated = selectedItem.isCalculated
+        editableValue.expression = selectedItem.expression
       } else {
         btnDeleteController.isDisabled.value = true
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.builtin")
         propertySheet.isDisable = true
+        editableValue.isCalculated = false
+        editableValue.expression = ""
       }
     }
     isPropertyChangeIgnored = false
@@ -303,6 +320,8 @@ internal class CustomPropertyEditor(
       selectedItem?.title = editableValue.title
       selectedItem?.type = editableValue.type
       editors["expression"]?.let { it.editor.isDisable = !editableValue.isCalculated }
+      selectedItem?.isCalculated = editableValue.isCalculated
+      selectedItem?.expression = editableValue.expression
       editors["defaultValue"]?.let { editor ->
         try {
           if (editableValue.defaultValue.isNotBlank()) {
@@ -331,7 +350,7 @@ internal class CustomPropertyEditor(
   }
 }
 
-internal data class ColumnAsListItem(
+internal class ColumnAsListItem(
   val column: ColumnList.Column?,
   var isVisible: Boolean,
   val isCustom: Boolean,
@@ -366,22 +385,42 @@ internal data class ColumnAsListItem(
     get() = _expression.value
     set(value) { _expression.value = value }
   fun expressionProperty() = _expression
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+
+    other as ColumnAsListItem
+
+    if (_title != other._title) return false
+
+    return true
+  }
+
+  override fun hashCode(): Int {
+    return _title.hashCode()
+  }
 
   init {
     if (column != null) {
       title = column.name
+      val customColumn = customColumnsManager.definitions.find { it.id == column?.id }
       type = run {
         if (isCustom) {
-          customColumnsManager.definitions.find { it.id == column?.id }?.getPropertyType()
+          customColumn?.getPropertyType()
         } else {
           TaskDefaultColumn.find(column?.id)?.getPropertyType()
         }
       } ?: PropertyType.STRING
       defaultValue =
         if (!isCustom) ""
-        else customColumnsManager.definitions.find { it.id == column.id }?.defaultValueAsString ?: ""
+        else customColumn?.defaultValueAsString ?: ""
+      isCalculated = customColumn?.calculationMethod != null
+      expression = customColumn?.calculationMethod?.queryParts()?.getOrNull(0)?.value ?: ""
+
     }
   }
+
+
 
 }
 
