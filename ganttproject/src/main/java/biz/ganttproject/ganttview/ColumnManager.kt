@@ -282,7 +282,10 @@ internal class CustomPropertyEditor(
   private val isCalculated = BeanProperty(editableValue, PropertyDescriptor("calculated", ColumnAsListItem::class.java).also {
     it.displayName = RootLocalizer.formatText("option.customPropertyDialog.isCalculated.label")
   })
-  val props = listOf(title, type, defaultValue, isCalculated)
+  private val expression = BeanProperty(editableValue, PropertyDescriptor("expression", ColumnAsListItem::class.java).also {
+    it.displayName = RootLocalizer.formatText("option.customPropertyDialog.expression.label")
+  })
+  val props = listOf(title, type, defaultValue, isCalculated, expression)
   private val editors = mutableMapOf<String, PropertyEditor<*>>()
 
   init {
@@ -294,12 +297,12 @@ internal class CustomPropertyEditor(
       }
     }
     props.forEach { it.observableValue.get().addListener { _, _, _ -> onPropertyChange() } }
-
   }
   private fun onPropertyChange() {
     if (!isPropertyChangeIgnored) {
       selectedItem?.title = editableValue.title
       selectedItem?.type = editableValue.type
+      editors["expression"]?.let { it.editor.isDisable = !editableValue.isCalculated }
       editors["defaultValue"]?.let { editor ->
         try {
           if (editableValue.defaultValue.isNotBlank()) {
@@ -324,6 +327,7 @@ internal class CustomPropertyEditor(
 
   fun focus() {
     editors["title"]?.editor?.requestFocus()
+    onPropertyChange()
   }
 }
 
@@ -356,6 +360,12 @@ internal data class ColumnAsListItem(
     get() = _isCalculated.value
     set(value) { _isCalculated.value = value }
   fun calculatedProperty() = _isCalculated
+
+  private val _expression = SimpleStringProperty("")
+  var expression: String
+    get() = _expression.value
+    set(value) { _expression.value = value }
+  fun expressionProperty() = _expression
 
   init {
     if (column != null) {
