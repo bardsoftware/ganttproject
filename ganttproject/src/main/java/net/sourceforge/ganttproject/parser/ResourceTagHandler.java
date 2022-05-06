@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject.parser;
 
 import biz.ganttproject.core.io.XmlProject;
 import biz.ganttproject.core.table.ColumnList;
-import net.sourceforge.ganttproject.CustomPropertyManager;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;

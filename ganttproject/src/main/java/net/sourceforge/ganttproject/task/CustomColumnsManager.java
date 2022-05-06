@@ -18,11 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task;
 
-import biz.ganttproject.customproperty.PropertyTypeEncoder;
-import net.sourceforge.ganttproject.CustomPropertyClass;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyListener;
-import net.sourceforge.ganttproject.CustomPropertyManager;
+import biz.ganttproject.customproperty.*;
 
 import java.util.ArrayList;
 import java.util.List;

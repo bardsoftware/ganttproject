@@ -23,6 +23,9 @@ import biz.ganttproject.app.dialog
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
+import biz.ganttproject.customproperty.CalculateFromSingleRow
+import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
@@ -42,10 +45,7 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.util.Callback
-import net.sourceforge.ganttproject.CalculateFromSingleRow
-import net.sourceforge.ganttproject.CustomPropertyClass
-import net.sourceforge.ganttproject.CustomPropertyDefinition
-import net.sourceforge.ganttproject.CustomPropertyManager
+import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty

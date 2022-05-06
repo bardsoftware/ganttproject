@@ -19,9 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.customproperty
 
 import biz.ganttproject.core.time.CalendarFactory
-import net.sourceforge.ganttproject.CalculationMethod
-import net.sourceforge.ganttproject.CustomPropertyClass
-import net.sourceforge.ganttproject.CustomPropertyDefinition
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.util.StringUtils
 import org.w3c.util.DateParser

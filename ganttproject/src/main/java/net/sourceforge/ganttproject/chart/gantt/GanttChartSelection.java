@@ -18,8 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart.gantt;
 
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.AbstractChartImplementation.ChartSelectionImpl;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.GPTransferable;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;

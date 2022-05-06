@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;

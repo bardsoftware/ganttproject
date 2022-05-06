@@ -10,9 +10,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.ganttproject.CustomPropertyClass;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyManager;
+import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 

@@ -18,12 +18,12 @@
  */
 package biz.ganttproject.impex.csv
 
+import biz.ganttproject.customproperty.CustomPropertyClass
 import com.google.common.base.Charsets
 import com.google.common.base.Joiner
 import com.google.common.base.Supplier
 import com.google.common.collect.ImmutableSet
 import junit.framework.TestCase
-import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.util.collect.Pair
 import org.w3c.util.DateParser

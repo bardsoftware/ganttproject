@@ -30,6 +30,7 @@ import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.DefaultColorOption
 import biz.ganttproject.core.time.TimeUnitStack
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
+import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.ganttview.TaskFilterManager
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager

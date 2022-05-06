@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.gui.options.model;
 
 import java.util.Date;
 
+import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import org.w3c.util.DateParser;
 
 import biz.ganttproject.core.option.DefaultBooleanOption;
@@ -28,9 +30,6 @@ import biz.ganttproject.core.option.DefaultDoubleOption;
 import biz.ganttproject.core.option.DefaultIntegerOption;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.GPOption;
-
-import net.sourceforge.ganttproject.CustomPropertyClass;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
 
 public abstract class CustomPropertyDefaultValueAdapter {
   public static GPOption createDefaultValueOption(final CustomPropertyClass propertyClass,

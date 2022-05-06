@@ -19,11 +19,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.msproject2;
 
 import biz.ganttproject.core.time.GanttCalendar;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.customproperty.PropertyTypeEncoder;
 import net.sf.mpxj.FieldType;
 import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.TaskField;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
 

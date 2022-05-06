@@ -19,11 +19,11 @@
 
 package biz.ganttproject.impex.csv
 
+import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyDefinition
 import com.google.common.base.Charsets
 import com.google.common.collect.Iterators
-import net.sourceforge.ganttproject.CustomPropertyClass
-import net.sourceforge.ganttproject.CustomPropertyDefinition
-import net.sourceforge.ganttproject.CustomPropertyManager
+import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.commons.csv.CSVFormat
@@ -135,11 +135,11 @@ typealias CustomPropertyReceiver = (CustomPropertyDefinition, String?) -> Unit
  * definition and value.
  */
 fun readCustomProperties(
-  headerRecord: SpreadsheetRecord,
-  customFields: Iterable<String>,
-  record: SpreadsheetRecord,
-  customPropertyMgr: CustomPropertyManager,
-  receiver: CustomPropertyReceiver) {
+        headerRecord: SpreadsheetRecord,
+        customFields: Iterable<String>,
+        record: SpreadsheetRecord,
+        customPropertyMgr: CustomPropertyManager,
+        receiver: CustomPropertyReceiver) {
   headerRecord.iterator().withIndex().forEach { header ->
     header.value?.let { fieldName ->
       if (fieldName in customFields) {

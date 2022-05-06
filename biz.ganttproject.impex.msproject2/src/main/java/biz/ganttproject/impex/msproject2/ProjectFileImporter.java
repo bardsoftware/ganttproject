@@ -28,6 +28,8 @@ import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
+import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;

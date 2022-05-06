@@ -27,7 +27,7 @@ import java.util.Map.Entry;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.option.EnumerationOption;
 
-import net.sourceforge.ganttproject.CustomProperty;
+import biz.ganttproject.customproperty.CustomProperty;
 
 public class OverwritingMerger implements HumanResourceMerger {
   private final EnumerationOption myMergeOption;

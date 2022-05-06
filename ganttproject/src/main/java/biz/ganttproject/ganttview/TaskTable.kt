@@ -24,6 +24,7 @@ import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.table.ColumnList.ColumnStub
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
+import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
 import biz.ganttproject.task.ancestors
@@ -54,7 +55,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener

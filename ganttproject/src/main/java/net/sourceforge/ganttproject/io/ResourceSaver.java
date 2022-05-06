@@ -18,9 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
-import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyManager;
+import biz.ganttproject.customproperty.CustomProperty;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import org.xml.sax.SAXException;

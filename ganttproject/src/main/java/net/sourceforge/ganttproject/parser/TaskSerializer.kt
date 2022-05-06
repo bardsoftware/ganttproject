@@ -26,9 +26,9 @@ import biz.ganttproject.core.option.GPOption
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.customproperty.CalculateFromSingleRow
 import biz.ganttproject.lib.fx.TreeCollapseView
 import com.google.common.base.Charsets
-import net.sourceforge.ganttproject.CalculateFromSingleRow
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager
 import net.sourceforge.ganttproject.task.CustomColumnsException

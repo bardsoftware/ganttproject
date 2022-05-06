@@ -20,9 +20,9 @@ package org.ganttproject.impex.htmlpdf;
 
 import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.customproperty.CustomProperty;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.base.Joiner;
-import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;

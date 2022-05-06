@@ -19,12 +19,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.gui.taskproperties;
 
 import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.customproperty.CustomProperty;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.ganttview.ApplyExecutorType;
 import biz.ganttproject.ganttview.ColumnManagerKt;
-import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyHolder;
-import net.sourceforge.ganttproject.CustomPropertyManager;
+import biz.ganttproject.customproperty.CustomPropertyHolder;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;

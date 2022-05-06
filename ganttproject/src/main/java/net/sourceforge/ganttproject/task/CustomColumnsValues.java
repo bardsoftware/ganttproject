@@ -19,11 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.task;
 
 import biz.ganttproject.core.time.GanttCalendar;
-import biz.ganttproject.customproperty.PropertyTypeEncoder;
-import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyHolder;
-import net.sourceforge.ganttproject.CustomPropertyManager;
+import biz.ganttproject.customproperty.*;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import java.util.ArrayList;

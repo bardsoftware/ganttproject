@@ -21,8 +21,8 @@ package net.sourceforge.ganttproject.io
 import biz.ganttproject.customproperty.PropertyTypeEncoder
 import biz.ganttproject.lib.fx.TreeCollapseView
 import biz.ganttproject.core.time.GanttCalendar
-import net.sourceforge.ganttproject.CustomPropertyDefinition
-import net.sourceforge.ganttproject.CustomPropertyManager
+import biz.ganttproject.customproperty.CustomPropertyDefinition
+import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.GanttTask
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.task.*
@@ -164,7 +164,7 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
 
 
   @Throws(SAXException::class)
-  private fun writeTaskProperties(handler: TransformerHandler, customPropertyManager:  CustomPropertyManager) {
+  private fun writeTaskProperties(handler: TransformerHandler, customPropertyManager: CustomPropertyManager) {
     writeTaskDefaultProperty(handler, "tpd0", "type", "icon")
     writeTaskDefaultProperty(handler, "tpd1", "priority", "icon")
     writeTaskDefaultProperty(handler, "tpd2", "info", "icon")
