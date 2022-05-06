@@ -177,7 +177,8 @@ data class XmlTasks(
     @get:JacksonXmlProperty(isAttribute = true) var name: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var type: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var valuetype: String = "",
-    @get:JacksonXmlProperty(isAttribute = true) var defaultvalue: String? = null
+    @get:JacksonXmlProperty(isAttribute = true) var defaultvalue: String? = null,
+    @get:JacksonXmlProperty(isAttribute = true) var expression: String? = null
   )
 
   @JsonPropertyOrder(

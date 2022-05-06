@@ -176,9 +176,7 @@ class ColumnManager(
           mergedColumns.add(ColumnList.ColumnStub(def.id, def.name, true, mergedColumns.size, 50))
         }
         if (columnItem.isCalculated) {
-          def.calculationMethod = CalculateFromSingleRow().also {
-            it.expression.value = columnItem.expression
-          }
+          def.calculationMethod = CalculateFromSingleRow(columnItem.expression)
         }
       }
     }
