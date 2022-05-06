@@ -18,9 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
-import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyManager;
+import biz.ganttproject.customproperty.CustomProperty;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import org.xml.sax.SAXException;
@@ -75,7 +75,7 @@ class ResourceSaver extends SaverBase {
       assert nextDefinition != null : "WTF? null property definition for property=" + i + "(value="
           + nextProperty.getValueAsString() + ")";
       if (nextProperty.getValue() != null && !nextProperty.getValue().equals(nextDefinition.getDefaultValue())) {
-        addAttribute("definition-id", nextDefinition.getID(), attrs);
+        addAttribute("definition-id", nextDefinition.getId(), attrs);
         addAttribute("value", nextProperty.getValueAsString(), attrs);
         emptyElement("custom-property", attrs, handler);
       }
@@ -96,7 +96,7 @@ class ResourceSaver extends SaverBase {
     for (int i = 0; i < definitions.size(); i++) {
       // ResourceColumn nextField = (ResourceColumn) fields.next();
       CustomPropertyDefinition nextDefinition = definitions.get(i);
-      addAttribute("id", nextDefinition.getID(), attrs);
+      addAttribute("id", nextDefinition.getId(), attrs);
       addAttribute("name", nextDefinition.getName(), attrs);
       addAttribute("type", nextDefinition.getTypeAsString(), attrs);
       addAttribute("default-value", nextDefinition.getDefaultValueAsString(), attrs);

@@ -65,7 +65,7 @@ class ProjectCalendarTest: TestCase() {
         CalendarEvent.newEvent(TestSetupHelper.newSaturday().time, false, CalendarEvent.Type.WORKING_DAY, "", Color.BLACK)
     )
     val mpxjProject = ProjectFile()
-    val mpxjCalendar = mpxjProject.defaultCalendar
+    val mpxjCalendar = mpxjProject.calendars.addDefaultBaseCalendar()
     ProjectFileExporter.exportHolidays(calendar, mpxjCalendar)
     assertTrue(mpxjCalendar.isWorkingDate(TestSetupHelper.newSaturday().time))
     assertFalse(mpxjCalendar.isWorkingDate(TestSetupHelper.newMonday().time))

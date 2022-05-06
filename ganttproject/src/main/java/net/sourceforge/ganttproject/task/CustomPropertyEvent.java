@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task;
 
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 
 public class CustomPropertyEvent {
 

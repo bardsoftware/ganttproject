@@ -18,8 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyListener;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
+import biz.ganttproject.customproperty.CustomPropertyListener;
 
 class CustomPropertyListenerImpl implements CustomPropertyListener {
   private final TaskManagerImpl myTaskManager;

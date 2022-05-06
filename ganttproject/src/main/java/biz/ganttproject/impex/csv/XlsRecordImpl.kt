@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv
 
-import net.sourceforge.ganttproject.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyClass
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellType

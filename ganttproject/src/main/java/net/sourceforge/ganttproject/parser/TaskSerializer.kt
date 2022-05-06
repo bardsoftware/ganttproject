@@ -26,6 +26,7 @@ import biz.ganttproject.core.option.GPOption
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.customproperty.CalculateFromSingleRow
 import biz.ganttproject.lib.fx.TreeCollapseView
 import com.google.common.base.Charsets
 import net.sourceforge.ganttproject.GPLogger
@@ -51,8 +52,11 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
 
   fun loadTaskCustomPropertyDefinitions(xmlProject: XmlProject) {
     xmlProject.tasks.taskproperties?.filter { it.type == "custom" }?.forEach { xmlTaskProperty ->
-      taskManager.customPropertyManager.createDefinition(
+      val def = taskManager.customPropertyManager.createDefinition(
         xmlTaskProperty.id, xmlTaskProperty.valuetype, xmlTaskProperty.name, xmlTaskProperty.defaultvalue)
+      xmlTaskProperty.expression?.let {
+        def.calculationMethod = CalculateFromSingleRow(it)
+      }
     }
   }
 

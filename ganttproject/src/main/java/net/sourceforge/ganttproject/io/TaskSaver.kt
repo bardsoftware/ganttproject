@@ -21,7 +21,8 @@ package net.sourceforge.ganttproject.io
 import biz.ganttproject.customproperty.PropertyTypeEncoder
 import biz.ganttproject.lib.fx.TreeCollapseView
 import biz.ganttproject.core.time.GanttCalendar
-import net.sourceforge.ganttproject.CustomPropertyManager
+import biz.ganttproject.customproperty.CustomPropertyDefinition
+import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.GanttTask
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.task.*
@@ -73,7 +74,7 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
       addAttribute("project", true, attrs)
     }
     addAttribute("start", task.start.toXMLString(), attrs)
-    addAttribute("duration", task.length, attrs)
+    addAttribute("duration", task.duration.length, attrs)
     addAttribute("complete", task.completionPercentage, attrs)
     if (task.third != null) {
       addAttribute("thirdDate", task.third.toXMLString(), attrs)
@@ -124,51 +125,58 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
   }
 
   @Throws(SAXException::class)
-  private fun writeTaskProperty(handler: TransformerHandler, id: String, name: String, type: String, valueType: String) {
-    writeTaskProperty(handler, id, name, type, valueType, null, emptyMap())
-  }
-
-
-  @Throws(SAXException::class)
-  private fun writeTaskProperty(handler: TransformerHandler, id:  String, name: String, type: String, valueType: String,
-  defaultValue: String?, attributes: Map<String, String>) {
+  private fun writeTaskDefaultProperty(handler: TransformerHandler, id: String, name: String, valueType: String) {
     val attrs = AttributesImpl()
     addAttribute("id", id, attrs)
     addAttribute("name", name, attrs)
-    addAttribute("type", type, attrs)
+    addAttribute("type", "default", attrs)
     addAttribute("valuetype", valueType, attrs)
-    addAttribute("defaultvalue", defaultValue, attrs)
-    attributes.entries.forEach { (key, value) -> addAttribute(key, value, attrs) }
     emptyElement("taskproperty", attrs, handler)
   }
 
 
   @Throws(SAXException::class)
-  private fun writeTaskProperties(handler: TransformerHandler, customPropertyManager:  CustomPropertyManager) {
-    writeTaskProperty(handler, "tpd0", "type", "default", "icon")
-    writeTaskProperty(handler, "tpd1", "priority", "default", "icon")
-    writeTaskProperty(handler, "tpd2", "info", "default", "icon")
-    writeTaskProperty(handler, "tpd3", "name", "default", "text")
-    writeTaskProperty(handler, "tpd4", "begindate", "default", "date")
-    writeTaskProperty(handler, "tpd5", "enddate", "default", "date")
-    writeTaskProperty(handler, "tpd6", "duration", "default", "int")
-    writeTaskProperty(handler, "tpd7", "completion", "default", "int")
-    writeTaskProperty(handler, "tpd8", "coordinator", "default", "text")
-    writeTaskProperty(handler, "tpd9", "predecessorsr", "default", "text")
-    customPropertyManager.definitions.forEach { propertyDef ->
-      var defaultValue = propertyDef.defaultValue
-      val definitionType = propertyDef.type
-      val valueType = encodeFieldType(definitionType) ?: return@forEach
-      if ("date" == valueType && defaultValue != null) {
-        defaultValue = when (defaultValue) {
-          is GanttCalendar -> DateParser.getIsoDate(defaultValue.time)
-          is Date -> DateParser.getIsoDate(defaultValue)
-          else -> throw IllegalStateException(
-            "Default value is expected to be either GanttCalendar or Date instance, while it is ${defaultValue::class.java}")
-        }
+  private fun writeTaskCustomProperty(handler: TransformerHandler, def: CustomPropertyDefinition) {
+    val attrs = AttributesImpl()
+    var defaultValue = def.defaultValue
+    val definitionType = def.type
+    val valueType = encodeFieldType(definitionType) ?: return
+    if ("date" == valueType && defaultValue != null) {
+      defaultValue = when (defaultValue) {
+        is GanttCalendar -> DateParser.getIsoDate(defaultValue.time)
+        is Date -> DateParser.getIsoDate(defaultValue)
+        else -> throw IllegalStateException(
+          "Default value is expected to be either GanttCalendar or Date instance, while it is ${defaultValue::class.java}")
       }
-      writeTaskProperty(handler, propertyDef.id, propertyDef.name, "custom", valueType, defaultValue?.toString(),
-        propertyDef.attributes)
+    }
+
+    addAttribute("id", def.id, attrs)
+    addAttribute("name", def.name, attrs)
+    addAttribute("type", "custom", attrs)
+    addAttribute("valuetype", valueType, attrs)
+    addAttribute("defaultvalue", defaultValue?.toString(), attrs)
+    def.calculationMethod?.let {
+      addAttribute("expression", it.queryParts().get(0).value, attrs)
+    }
+    def.attributes.entries.forEach { (key, value) -> addAttribute(key, value, attrs) }
+    emptyElement("taskproperty", attrs, handler)
+  }
+
+
+  @Throws(SAXException::class)
+  private fun writeTaskProperties(handler: TransformerHandler, customPropertyManager: CustomPropertyManager) {
+    writeTaskDefaultProperty(handler, "tpd0", "type", "icon")
+    writeTaskDefaultProperty(handler, "tpd1", "priority", "icon")
+    writeTaskDefaultProperty(handler, "tpd2", "info", "icon")
+    writeTaskDefaultProperty(handler, "tpd3", "name", "text")
+    writeTaskDefaultProperty(handler, "tpd4", "begindate", "date")
+    writeTaskDefaultProperty(handler, "tpd5", "enddate", "date")
+    writeTaskDefaultProperty(handler, "tpd6", "duration", "int")
+    writeTaskDefaultProperty(handler, "tpd7", "completion", "int")
+    writeTaskDefaultProperty(handler, "tpd8", "coordinator", "text")
+    writeTaskDefaultProperty(handler, "tpd9", "predecessorsr", "text")
+    customPropertyManager.definitions.forEach { propertyDef ->
+      writeTaskCustomProperty(handler, propertyDef)
     }
   }
 

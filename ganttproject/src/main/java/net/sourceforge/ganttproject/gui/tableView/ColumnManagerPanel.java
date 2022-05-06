@@ -28,13 +28,13 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
+import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import net.sourceforge.ganttproject.CustomPropertyClass;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyManager;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
@@ -122,7 +122,7 @@ public class ColumnManagerPanel {
         SwingUtilities.invokeLater(new Runnable() {
           @Override
           public void run() {
-            myVisibleFields.add(def.getID(), -1, -1);
+            myVisibleFields.add(def.getId(), -1, -1);
             getTableComponent().requestFocus();
             setSelectedDefinition(def);
           }
@@ -270,7 +270,7 @@ public class ColumnManagerPanel {
   }
 
   protected boolean isEditable(CustomPropertyDefinition def) {
-    return myManager.getCustomPropertyDefinition(def.getID()) != null;
+    return myManager.getCustomPropertyDefinition(def.getId()) != null;
   }
 
   protected void setDefaultValuePanelEnabled(boolean enabled) {
@@ -467,7 +467,7 @@ public class ColumnManagerPanel {
 
     public void reloadValue(CustomPropertyDefinition def) {
       myDefinitionRO = def;
-      myDefinition = new DefaultCustomPropertyDefinition(def.getName(), def.getID(), def);
+      myDefinition = new DefaultCustomPropertyDefinition(def.getName(), def.getId(), def);
       resetValue(def.getPropertyClass().getDisplayName(), true);
     }
   }

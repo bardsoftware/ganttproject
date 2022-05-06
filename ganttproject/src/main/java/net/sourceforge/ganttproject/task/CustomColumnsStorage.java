@@ -18,9 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task;
 
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.base.Objects;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyListener;
+import biz.ganttproject.customproperty.CustomPropertyListener;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -72,9 +72,9 @@ public class CustomColumnsStorage {
   }
 
   public void addCustomColumn(CustomColumn col) {
-    assert !mapIdCustomColum.containsKey(col.getID()) : "column with id =" + col.getID()
+    assert !mapIdCustomColum.containsKey(col.getId()) : "column with id =" + col.getId()
         + " already exists. All existing columns:\n" + getCustomColums();
-    mapIdCustomColum.put(col.getID(), col);
+    mapIdCustomColum.put(col.getId(), col);
     CustomPropertyEvent event = new CustomPropertyEvent(CustomPropertyEvent.EVENT_ADD, col);
     fireCustomColumnsChange(event);
   }
@@ -82,7 +82,7 @@ public class CustomColumnsStorage {
   public void removeCustomColumn(CustomPropertyDefinition column) {
     CustomPropertyEvent event = new CustomPropertyEvent(CustomPropertyEvent.EVENT_REMOVE, column);
     fireCustomColumnsChange(event);
-    mapIdCustomColum.remove(column.getID());
+    mapIdCustomColum.remove(column.getId());
   }
 
   public int getCustomColumnCount() {
@@ -144,7 +144,7 @@ public class CustomColumnsStorage {
   }
 
   void fireDefinitionChanged(CustomPropertyDefinition def, String oldName) {
-    CustomPropertyDefinition oldDef = new DefaultCustomPropertyDefinition(oldName, def.getID(), def);
+    CustomPropertyDefinition oldDef = new DefaultCustomPropertyDefinition(oldName, def.getId(), def);
     CustomPropertyEvent e = new CustomPropertyEvent(CustomPropertyEvent.EVENT_NAME_CHANGE, def, oldDef);
     fireCustomColumnsChange(e);
   }

@@ -16,37 +16,26 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject;
+package biz.ganttproject.customproperty;
 
-import org.eclipse.core.runtime.IStatus;
-
-import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Map;
 
-public interface CustomPropertyDefinition {
-  @Nonnull
-  CustomPropertyClass getPropertyClass();
+public interface CustomPropertyManager {
+  List<CustomPropertyDefinition> getDefinitions();
 
-  IStatus canSetPropertyClass(CustomPropertyClass propertyClass);
+  CustomPropertyDefinition createDefinition(String id, String typeAsString, String name, String defaultValueAsString);
 
-  IStatus setPropertyClass(CustomPropertyClass propertyClass);
+  CustomPropertyDefinition createDefinition(String typeAsString, String colName, String defValue);
+  CustomPropertyDefinition createDefinition(CustomPropertyClass propertyClass, String colName, String defValue);
+  CustomPropertyDefinition getCustomPropertyDefinition(String id);
 
-  Class<?> getType();
+  void deleteDefinition(CustomPropertyDefinition def);
 
-  String getTypeAsString();
+  Map<CustomPropertyDefinition, CustomPropertyDefinition> importData(CustomPropertyManager source);
 
-  String getID();
+  void addListener(CustomPropertyListener listener);
 
-  Object getDefaultValue();
+  void reset();
 
-  String getName();
-
-  void setName(String name);
-
-  String getDefaultValueAsString();
-
-  void setDefaultValueAsString(String value);
-
-  @Nonnull
-  Map<String, String> getAttributes();
 }

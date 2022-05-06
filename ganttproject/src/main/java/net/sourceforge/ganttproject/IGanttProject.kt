@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject
 import biz.ganttproject.core.calendar.GPCalendarCalc
 import biz.ganttproject.core.calendar.ImportCalendarOption
 import biz.ganttproject.core.time.TimeUnitStack
+import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.ganttview.TaskFilterManager
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager

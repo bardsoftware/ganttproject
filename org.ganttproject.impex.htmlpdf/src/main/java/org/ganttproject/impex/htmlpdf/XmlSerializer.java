@@ -21,9 +21,9 @@ package org.ganttproject.impex.htmlpdf;
 import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.customproperty.CustomProperty;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.base.Joiner;
-import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.TaskVisitor;
@@ -237,7 +237,7 @@ public class XmlSerializer extends SaverBase {
           for (CustomPropertyDefinition def : taskManager.getCustomPropertyManager().getDefinitions()) {
             Object value = customValues.getValue(def);
             String valueAsString = value == null ? "" : def.getPropertyClass().isNumeric() ? InternationalizationKt.getNumberFormat().format(value) : value.toString();
-            addAttribute("id", def.getID(), attrs);
+            addAttribute("id", def.getId(), attrs);
             if (def.getPropertyClass().isNumeric()) {
               addAttribute("alignment", "right", attrs);
             } else {
@@ -301,7 +301,7 @@ public class XmlSerializer extends SaverBase {
         for (int j = 0; j < customFields.size(); j++) {
           CustomProperty nextProperty = customFields.get(j);
           CustomPropertyDefinition def = nextProperty.getDefinition();
-          addAttribute("id", def.getID(), attrs);
+          addAttribute("id", def.getId(), attrs);
           if (def.getPropertyClass().isNumeric()) {
             addAttribute("alignment", "right", attrs);
           } else {

@@ -25,6 +25,9 @@ import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.customproperty.CustomProperty;
+import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import net.sf.mpxj.DateRange;
 import net.sf.mpxj.Day;
 import net.sf.mpxj.Duration;
@@ -41,10 +44,7 @@ import net.sf.mpxj.Resource;
 import net.sf.mpxj.ResourceType;
 import net.sf.mpxj.TaskMode;
 import net.sf.mpxj.TimeUnit;
-import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.CustomPropertyClass;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
-import net.sourceforge.ganttproject.CustomPropertyHolder;
+import biz.ganttproject.customproperty.CustomPropertyHolder;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -385,7 +385,7 @@ class ProjectFileExporter {
   }
 
   private static void exportCustomProperties(CustomPropertyHolder holder,
-      Map<CustomPropertyDefinition, FieldType> customProperty_fieldType, CustomPropertySetter setter) {
+                                             Map<CustomPropertyDefinition, FieldType> customProperty_fieldType, CustomPropertySetter setter) {
     for (CustomProperty cp : holder.getCustomProperties()) {
       FieldType ft = customProperty_fieldType.get(cp.getDefinition());
       if (ft != null) {

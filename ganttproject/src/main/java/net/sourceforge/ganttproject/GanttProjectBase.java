@@ -27,6 +27,7 @@ import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import biz.ganttproject.ganttview.*;
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
 import biz.ganttproject.lib.fx.TreeCollapseView;

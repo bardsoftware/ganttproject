@@ -18,13 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task;
 
+import biz.ganttproject.customproperty.CalculationMethod;
+import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.customproperty.PropertyTypeEncoder;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-
-import net.sourceforge.ganttproject.CustomPropertyClass;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -41,16 +40,13 @@ public class CustomColumn implements CustomPropertyDefinition {
 
   private CustomPropertyClass myPropertyClass;
   private final Map<String, String> myAttributes = new HashMap<>();
+  private CalculationMethod calculationMethod;
 
   CustomColumn(CustomColumnsManager manager, String colName, CustomPropertyClass propertyClass, Object colDefaultValue) {
     name = colName;
     myPropertyClass = propertyClass;
     defaultValue = colDefaultValue;
     myManager = manager;
-  }
-
-  public String getId() {
-    return id;
   }
 
   public void setId(String newId) {
@@ -114,8 +110,8 @@ public class CustomColumn implements CustomPropertyDefinition {
   }
 
   @Override
-  public String getID() {
-    return getId();
+  public String getId() {
+    return id;
   }
 
   @Override
@@ -124,12 +120,7 @@ public class CustomColumn implements CustomPropertyDefinition {
   }
 
   @Override
-  public IStatus canSetPropertyClass(CustomPropertyClass propertyClass) {
-    return Status.OK_STATUS;
-  }
-
-  @Override
-  public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
+  public void setPropertyClass(CustomPropertyClass propertyClass) {
     CustomPropertyDefinition oldValue = new DefaultCustomPropertyDefinition(name, id, this);
     myPropertyClass = propertyClass;
     String defaultValue = getDefaultValueAsString();
@@ -138,7 +129,6 @@ public class CustomColumn implements CustomPropertyDefinition {
     }
     setDefaultValueAsString(defaultValue);
     myManager.fireDefinitionChanged(CustomPropertyEvent.EVENT_TYPE_CHANGE, this, oldValue);
-    return Status.OK_STATUS;
   }
 
   @Override
@@ -156,5 +146,16 @@ public class CustomColumn implements CustomPropertyDefinition {
     }
     CustomColumn that = (CustomColumn) obj;
     return this.id.equals(that.id);
+  }
+
+  @Nullable
+  @Override
+  public CalculationMethod getCalculationMethod() {
+    return this.calculationMethod;
+  }
+
+  @Override
+  public void setCalculationMethod(@Nullable CalculationMethod value) {
+    this.calculationMethod = value;
   }
 }

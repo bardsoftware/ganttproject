@@ -20,9 +20,9 @@ package org.ganttproject.impex.htmlpdf;
 
 import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.customproperty.CustomProperty;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.base.Joiner;
-import net.sourceforge.ganttproject.CustomProperty;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -69,7 +69,7 @@ public class PropertyFetcher {
     for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
       Object value = customValues.getValue(def);
       String valueAsString = value == null ? "" : def.getPropertyClass().isNumeric() ? InternationalizationKt.getNumberFormat().format(value) : value.toString();
-      id2value.put(def.getID(), valueAsString);
+      id2value.put(def.getId(), valueAsString);
     }
   }
 
@@ -87,7 +87,7 @@ public class PropertyFetcher {
 
     List<CustomProperty> customFields = hr.getCustomProperties();
     for (CustomProperty property : customFields) {
-      id2value.put(property.getDefinition().getID(), property.getValueAsString());
+      id2value.put(property.getDefinition().getId(), property.getValueAsString());
     }
   }
 }

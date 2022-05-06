@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject.gui;
 
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.option.*;
-import net.sourceforge.ganttproject.CustomPropertyManager;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.DateIntervalListEditor.DateInterval;

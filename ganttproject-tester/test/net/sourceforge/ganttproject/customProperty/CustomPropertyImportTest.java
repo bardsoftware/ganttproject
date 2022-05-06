@@ -2,9 +2,9 @@ package net.sourceforge.ganttproject.customProperty;
 
 import java.util.List;
 
+import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import junit.framework.TestCase;
-import net.sourceforge.ganttproject.CustomPropertyClass;
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
 
 public class CustomPropertyImportTest extends TestCase {

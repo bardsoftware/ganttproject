@@ -22,8 +22,8 @@ import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.customproperty.CustomPropertyClass
 import junit.framework.TestCase
-import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.w3c.util.DateParser
 import java.io.ByteArrayInputStream

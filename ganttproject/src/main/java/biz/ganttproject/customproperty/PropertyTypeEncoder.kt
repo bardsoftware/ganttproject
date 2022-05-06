@@ -19,16 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.customproperty
 
 import biz.ganttproject.core.time.CalendarFactory
-import net.sourceforge.ganttproject.CustomPropertyClass
-import net.sourceforge.ganttproject.CustomPropertyDefinition
-import java.lang.NumberFormatException
-import org.w3c.util.InvalidDateException
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.util.StringUtils
-import org.eclipse.core.runtime.IStatus
-import org.eclipse.core.runtime.Status
 import org.w3c.util.DateParser
-import java.lang.UnsupportedOperationException
+import org.w3c.util.InvalidDateException
 import java.util.*
 
 /**
@@ -96,53 +90,22 @@ object PropertyTypeEncoder {
       }
     }
     return object : CustomPropertyDefinition {
-      override fun getDefaultValue(): Any? {
-        return defaultValue
+      override val propertyClass: CustomPropertyClass = propertyClass
+      override fun setPropertyClass(propertyClass: CustomPropertyClass) {
+        error("Don't set me")
       }
-
-      override fun getDefaultValueAsString(): String? {
-        return valueAsString
-      }
-
-      override fun setDefaultValueAsString(value: String) {
-        throw UnsupportedOperationException()
-      }
-
-      override fun getAttributes(): Map<String, String> {
-        return emptyMap()
-      }
-
-      override fun getID(): String? {
-        return null
-      }
-
-      override fun getName(): String? {
-        return null
-      }
-
-      override fun setName(name: String) {
-        throw UnsupportedOperationException()
-      }
-
-      override fun getType(): Class<*> {
-        return propertyClass.javaClass
-      }
-
-      override fun getTypeAsString(): String {
-        return propertyClass.id
-      }
-
-      override fun getPropertyClass(): CustomPropertyClass {
-        return propertyClass
-      }
-
-      override fun canSetPropertyClass(propertyClass: CustomPropertyClass): IStatus {
-        return Status.CANCEL_STATUS
-      }
-
-      override fun setPropertyClass(propertyClass: CustomPropertyClass): IStatus {
-        throw UnsupportedOperationException()
-      }
+      override val type: Class<*> = propertyClass.javaClass
+      override val typeAsString: String = propertyClass.id
+      override val id = ""
+      override val defaultValue = defaultValue
+      override var name: String
+        get() = ""
+        set(_) = error("Don't set me")
+      override var defaultValueAsString
+        get() = valueAsString
+        set(_) = error("Don't set me")
+      override val attributes: Map<String, String> = emptyMap()
+      override var calculationMethod: CalculationMethod? = null
     }
   }
 }
