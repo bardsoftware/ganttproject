@@ -27,7 +27,7 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.task.CustomColumnsValues;
+import biz.ganttproject.customproperty.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskProperties;
 

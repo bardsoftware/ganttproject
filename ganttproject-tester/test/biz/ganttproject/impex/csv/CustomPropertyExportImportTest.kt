@@ -27,7 +27,7 @@ import biz.ganttproject.customproperty.CustomPropertyClass
 import junit.framework.TestCase
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.task.CustomColumnsManager
-import net.sourceforge.ganttproject.task.CustomColumnsValues
+import biz.ganttproject.customproperty.CustomColumnsValues
 import org.apache.commons.csv.CSVFormat
 import org.w3c.util.DateParser
 import java.io.ByteArrayInputStream

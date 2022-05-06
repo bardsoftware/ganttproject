@@ -12,7 +12,7 @@ import com.google.common.base.Supplier
 import com.google.common.collect.Lists
 import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.task.CustomColumnsException
+import biz.ganttproject.customproperty.CustomColumnsException
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskProperties

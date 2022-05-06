@@ -41,7 +41,7 @@ import net.sf.mpxj.mspdi.MSPDIReader;
 import net.sf.mpxj.reader.ProjectReader;
 import net.sourceforge.ganttproject.*;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.task.CustomColumnsException;
+import biz.ganttproject.customproperty.CustomColumnsException;
 import net.sourceforge.ganttproject.task.Task.Priority;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;

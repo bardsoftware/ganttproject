@@ -31,7 +31,7 @@ import biz.ganttproject.lib.fx.TreeCollapseView
 import com.google.common.base.Charsets
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager
-import net.sourceforge.ganttproject.task.CustomColumnsException
+import biz.ganttproject.customproperty.CustomColumnsException
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskView

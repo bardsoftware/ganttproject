@@ -29,6 +29,7 @@ import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import biz.ganttproject.customproperty.CustomColumnsValues;
 import com.google.common.collect.ImmutableList;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;

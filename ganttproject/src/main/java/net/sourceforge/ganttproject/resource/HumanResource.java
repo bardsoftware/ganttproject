@@ -26,8 +26,8 @@ import com.google.common.base.Strings;
 import biz.ganttproject.customproperty.CustomPropertyHolder;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.roles.Role;
-import net.sourceforge.ganttproject.task.CustomColumnsException;
-import net.sourceforge.ganttproject.task.CustomColumnsValues;
+import biz.ganttproject.customproperty.CustomColumnsException;
+import biz.ganttproject.customproperty.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 
