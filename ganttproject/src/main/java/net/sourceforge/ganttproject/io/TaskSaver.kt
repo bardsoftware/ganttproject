@@ -23,6 +23,8 @@ import biz.ganttproject.lib.fx.TreeCollapseView
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.customproperty.CustomPropertyManager
+import biz.ganttproject.customproperty.SimpleSelect
+import com.google.common.xml.XmlEscapers
 import net.sourceforge.ganttproject.GanttTask
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.task.*
@@ -155,11 +157,18 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
     addAttribute("type", "custom", attrs)
     addAttribute("valuetype", valueType, attrs)
     addAttribute("defaultvalue", defaultValue?.toString(), attrs)
-    def.calculationMethod?.let {
-      addAttribute("expression", it.queryParts().get(0).value, attrs)
-    }
     def.attributes.entries.forEach { (key, value) -> addAttribute(key, value, attrs) }
-    emptyElement("taskproperty", attrs, handler)
+    when (val calculationMethod = def.calculationMethod) {
+      null -> emptyElement("taskproperty", attrs, handler)
+      is SimpleSelect -> {
+        startElement("taskproperty", attrs, handler)
+        emptyElement("simple-select", AttributesImpl().also {attrs ->
+          addAttribute("select", XmlEscapers.xmlAttributeEscaper().escape(calculationMethod.selectExpression), attrs)
+          addAttribute("from", calculationMethod.tableName, attrs)
+        }, handler)
+        endElement("taskproperty", handler)
+      }
+    }
   }
 
 

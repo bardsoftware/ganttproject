@@ -1,7 +1,7 @@
 /*
-Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+Copyright 2022 BarD Software s.r.o.
 
-This file is part of GanttProject, an opensource project management tool.
+This file is part of GanttProject, an open-source project management tool.
 
 GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,22 +15,12 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 package biz.ganttproject.customproperty
 
-import biz.ganttproject.core.option.DefaultStringOption
-import biz.ganttproject.core.option.StringOption
+sealed interface CalculationMethod {
+}
 
-interface CustomPropertyDefinition {
-    val propertyClass: CustomPropertyClass
-    fun setPropertyClass(propertyClass: CustomPropertyClass)
-    val type: Class<*>
-    val typeAsString: String
-    val id: String
-    val defaultValue: Any?
-    var name: String
-    var defaultValueAsString: String?
-    val attributes: Map<String, String>
-    var calculationMethod: CalculationMethod?
+class SimpleSelect(val selectExpression: String = "id", val tableName: String) : CalculationMethod {
 }
 

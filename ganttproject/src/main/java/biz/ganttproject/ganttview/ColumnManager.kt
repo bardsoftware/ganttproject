@@ -23,7 +23,7 @@ import biz.ganttproject.app.dialog
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
-import biz.ganttproject.customproperty.CalculateFromSingleRow
+import biz.ganttproject.customproperty.SimpleSelect
 import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.lib.fx.VBoxBuilder
@@ -176,7 +176,7 @@ class ColumnManager(
           mergedColumns.add(ColumnList.ColumnStub(def.id, def.name, true, mergedColumns.size, 50))
         }
         if (columnItem.isCalculated) {
-          def.calculationMethod = CalculateFromSingleRow(columnItem.expression)
+          def.calculationMethod = SimpleSelect(columnItem.expression, "task")
         }
       }
     }
@@ -413,7 +413,11 @@ internal class ColumnAsListItem(
         if (!isCustom) ""
         else customColumn?.defaultValueAsString ?: ""
       isCalculated = customColumn?.calculationMethod != null
-      expression = customColumn?.calculationMethod?.queryParts()?.getOrNull(0)?.value ?: ""
+      expression = customColumn?.calculationMethod?.let {
+        when(it) {
+          is SimpleSelect -> it.selectExpression
+        }
+      } ?: ""
 
     }
   }
