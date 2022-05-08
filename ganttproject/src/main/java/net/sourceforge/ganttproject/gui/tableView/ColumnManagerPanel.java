@@ -28,7 +28,7 @@ import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
-import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyClassEnum;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -117,7 +117,7 @@ public class ColumnManagerPanel {
 
       @Override
       protected CustomPropertyDefinition createValue(CustomPropertyDefinition prototype) {
-        final CustomPropertyDefinition def = myManager.createDefinition(CustomPropertyClass.TEXT.getID(),
+        final CustomPropertyDefinition def = myManager.createDefinition(CustomPropertyClassEnum.TEXT.getID(),
             prototype.getName(), null);
         SwingUtilities.invokeLater(new Runnable() {
           @Override
@@ -396,7 +396,7 @@ public class ColumnManagerPanel {
   /**
    * Option class controlling changes of a custom field type
    */
-  class PropertyClassOption extends DefaultEnumerationOption<CustomPropertyClass> {
+  class PropertyClassOption extends DefaultEnumerationOption<CustomPropertyClassEnum> {
     private CardLayout myCardLayout;
     private JPanel myCardPanel;
     // private Map<CustomPropertyClass, Component> myDefaultValueEditors =
@@ -405,17 +405,17 @@ public class ColumnManagerPanel {
     private CustomPropertyDefinition myDefinitionRO;
 
     public PropertyClassOption() {
-      super("taskProperties.customColumn.type", CustomPropertyClass.values());
+      super("taskProperties.customColumn.type", CustomPropertyClassEnum.values());
     }
 
     @Override
-    protected String objectToString(CustomPropertyClass value) {
+    protected String objectToString(CustomPropertyClassEnum value) {
       return value.getDisplayName();
     }
 
     @Override
     protected void resetValue(String value, boolean resetInitial, Object triggerId) {
-      CustomPropertyClass propertyClass = getCustomPropertyClass(value);
+      CustomPropertyClassEnum propertyClass = getCustomPropertyClass(value);
       myDefinition.setPropertyClass(propertyClass);
       // Component defaultValueEditor =
       // myDefaultValueEditors.get(propertyClass);
@@ -448,9 +448,9 @@ public class ColumnManagerPanel {
       }
     }
 
-    private CustomPropertyClass getCustomPropertyClass(String value) {
-      CustomPropertyClass newPropertyClass = null;
-      for (CustomPropertyClass propertyClass : CustomPropertyClass.values()) {
+    private CustomPropertyClassEnum getCustomPropertyClass(String value) {
+      CustomPropertyClassEnum newPropertyClass = null;
+      for (CustomPropertyClassEnum propertyClass : CustomPropertyClassEnum.values()) {
         if (propertyClass.getDisplayName().equals(value)) {
           newPropertyClass = propertyClass;
           break;

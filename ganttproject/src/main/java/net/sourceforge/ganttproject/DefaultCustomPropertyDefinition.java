@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.customproperty.CalculationMethod;
-import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyClassEnum;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.customproperty.PropertyTypeEncoder;
 import org.jetbrains.annotations.Nullable;
@@ -33,7 +33,7 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
   private final String myID;
   private Object myDefaultValue;
   private String myDefaultValueAsString;
-  private CustomPropertyClass myPropertyClass;
+  private CustomPropertyClassEnum myPropertyClass;
   private String myTypeAsString;
   private final Map<String, String> myAttributes = new HashMap<>();
   private CalculationMethod calculationMethod;
@@ -43,8 +43,8 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
     myID = null;
     myDefaultValue = null;
     myDefaultValueAsString = null;
-    myPropertyClass = CustomPropertyClass.TEXT;
-    myTypeAsString = CustomPropertyClass.TEXT.getID();
+    myPropertyClass = CustomPropertyClassEnum.TEXT;
+    myTypeAsString = CustomPropertyClassEnum.TEXT.getID();
   }
 
   public DefaultCustomPropertyDefinition(String name, String id, CustomPropertyDefinition stub) {
@@ -103,7 +103,7 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
 
   @Nonnull
   @Override
-  public CustomPropertyClass getPropertyClass() {
+  public CustomPropertyClassEnum getPropertyClass() {
     return myPropertyClass;
   }
 
@@ -113,7 +113,7 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
   }
 
     @Override
-  public void setPropertyClass(CustomPropertyClass propertyClass) {
+  public void setPropertyClass(CustomPropertyClassEnum propertyClass) {
     myPropertyClass = propertyClass;
     myTypeAsString = propertyClass.getID();
     setDefaultValueAsString(getDefaultValueAsString());

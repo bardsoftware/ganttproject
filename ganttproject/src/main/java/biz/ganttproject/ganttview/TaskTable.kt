@@ -24,7 +24,7 @@ import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.table.ColumnList.ColumnStub
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
-import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyClassEnum
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
 import biz.ganttproject.task.ancestors
@@ -528,14 +528,14 @@ class TaskTable(
   private fun createCustomColumn(column: ColumnList.Column): TreeTableColumn<Task, *>? {
     val customProperty = taskManager.customPropertyManager.getCustomPropertyDefinition(column.id) ?: return null
     return when (customProperty.propertyClass) {
-      CustomPropertyClass.TEXT -> {
+      CustomPropertyClassEnum.TEXT -> {
         createTextColumn(customProperty.name,
           { taskTableModel.getValue(it, customProperty)?.toString() },
           { task, value -> taskTableModel.setValue(value, task, customProperty) },
           { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
         )
       }
-      CustomPropertyClass.BOOLEAN -> {
+      CustomPropertyClassEnum.BOOLEAN -> {
         TreeTableColumn<Task, Boolean>(customProperty.name).apply {
           setCellValueFactory { features ->
             val task = features.value.value
@@ -548,19 +548,19 @@ class TaskTable(
           cellFactory =  Callback { CheckBoxTreeTableCell() }
         }
       }
-      CustomPropertyClass.INTEGER -> {
+      CustomPropertyClassEnum.INTEGER -> {
         createIntegerColumn(customProperty.name,
           { taskTableModel.getValue(it, customProperty) as Int? },
           { task, value -> taskTableModel.setValue(value, task, customProperty) }
         )
       }
-      CustomPropertyClass.DOUBLE -> {
+      CustomPropertyClassEnum.DOUBLE -> {
         createDoubleColumn(customProperty.name,
           { taskTableModel.getValue(it, customProperty) as Double? },
           { task, value -> taskTableModel.setValue(value, task, customProperty) }
         )
       }
-      CustomPropertyClass.DATE -> {
+      CustomPropertyClassEnum.DATE -> {
         createDateColumn(customProperty.name,
           { taskTableModel.getValue(it, customProperty) as GanttCalendar? },
           { task, value -> taskTableModel.setValue(value, task, customProperty) }

@@ -22,7 +22,7 @@ import biz.ganttproject.app.DefaultLocalizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.time.GanttCalendar
-import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyClassEnum
 import junit.framework.TestCase
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.w3c.util.DateParser
@@ -76,28 +76,28 @@ class XlsTest : TestCase() {
       }
       it.next().let { record ->
         assertEquals("foo", record["A"])
-        assertEquals(CustomPropertyClass.TEXT, record.getType("A"))
+        assertEquals(CustomPropertyClassEnum.TEXT, record.getType("A"))
 
         assertEquals(42, record.getInt("B"))
         assertEquals("42.0", record["B"])
-        assertEquals(CustomPropertyClass.DOUBLE, record.getType("B"))
+        assertEquals(CustomPropertyClassEnum.DOUBLE, record.getType("B"))
 
         assertEquals(3.14, record.getDouble("C"))
         assertEquals("3.14", record["C"])
-        assertEquals(CustomPropertyClass.DOUBLE, record.getType("C"))
+        assertEquals(CustomPropertyClassEnum.DOUBLE, record.getType("C"))
 
         assertEquals(BigDecimal.valueOf(Int.MAX_VALUE.toLong()), record.getBigDecimal("D"))
         assertEquals("${Int.MAX_VALUE.toDouble()}", record["D"])
-        assertEquals(CustomPropertyClass.DOUBLE, record.getType("D"))
+        assertEquals(CustomPropertyClassEnum.DOUBLE, record.getType("D"))
 
         assertEquals(true, record.getBoolean("E"))
         assertEquals("true", record["E"])
-        assertEquals(CustomPropertyClass.BOOLEAN, record.getType("E"))
+        assertEquals(CustomPropertyClassEnum.BOOLEAN, record.getType("E"))
 
         assertEquals(DateParser.parse("2021-04-05"), record.getDate("F"))
         // Text value record["F"] is locale-dependent so we just check that it is not null
         assertNotNull(record["F"])
-        assertEquals(CustomPropertyClass.DATE, record.getType("F"))
+        assertEquals(CustomPropertyClassEnum.DATE, record.getType("F"))
 
         assertEquals(null, record["G"])
         assertEquals(null, record.getInt("G"))

@@ -19,7 +19,7 @@
 
 package biz.ganttproject.impex.csv
 
-import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyClassEnum
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 import com.google.common.base.Charsets
 import com.google.common.collect.Iterators
@@ -70,8 +70,8 @@ class CsvReaderImpl(`is`: InputStream, format: CSVFormat) : SpreadsheetReader {
  * 2017: initially written in Java by Roman Torkhov
  */
 internal class CsvRecordImpl(private val myRecord: CSVRecord) : SpreadsheetRecord {
-  override fun getType(name: String) = if (isMapped(name)) CustomPropertyClass.TEXT else null
-  override fun getType(idx: Int) = if (idx >= 0 && idx < myRecord.size()) CustomPropertyClass.TEXT else null
+  override fun getType(name: String) = if (isMapped(name)) CustomPropertyClassEnum.TEXT else null
+  override fun getType(idx: Int) = if (idx >= 0 && idx < myRecord.size()) CustomPropertyClassEnum.TEXT else null
 
   override fun get(name: String): String? {
     return if (isMapped(name)) myRecord[name] else null
@@ -155,17 +155,17 @@ fun readCustomProperties(
         }
 
         when (def.propertyClass) {
-          CustomPropertyClass.TEXT -> record.get(header.index)?.let { receiver(def, it) }
-          CustomPropertyClass.INTEGER -> record.getInt(header.index)?.let {
+          CustomPropertyClassEnum.TEXT -> record.get(header.index)?.let { receiver(def, it) }
+          CustomPropertyClassEnum.INTEGER -> record.getInt(header.index)?.let {
             receiver(def, it.toString())
           }
-          CustomPropertyClass.DOUBLE -> record.getDouble(header.index)?.let {
+          CustomPropertyClassEnum.DOUBLE -> record.getDouble(header.index)?.let {
             receiver(def, it.toString())
           }
-          CustomPropertyClass.DATE -> record.getDate(header.index)?.let {
+          CustomPropertyClassEnum.DATE -> record.getDate(header.index)?.let {
             receiver(def, GanttLanguage.getInstance().formatShortDate(it))
           }
-          CustomPropertyClass.BOOLEAN -> record.getBoolean(header.index)?.let {
+          CustomPropertyClassEnum.BOOLEAN -> record.getBoolean(header.index)?.let {
             receiver(def, it.toString())
           }
         }

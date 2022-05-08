@@ -24,7 +24,7 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.customproperty.SimpleSelect
-import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyClassEnum
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
@@ -200,19 +200,19 @@ internal enum class PropertyType(private val displayName: String) {
 }
 
 internal fun CustomPropertyDefinition.getPropertyType(): PropertyType = when (this.propertyClass) {
-  CustomPropertyClass.TEXT -> PropertyType.STRING
-  CustomPropertyClass.DATE -> PropertyType.DATE
-  CustomPropertyClass.INTEGER -> PropertyType.INTEGER
-  CustomPropertyClass.DOUBLE -> PropertyType.DECIMAL
-  CustomPropertyClass.BOOLEAN -> PropertyType.BOOLEAN
+  CustomPropertyClassEnum.TEXT -> PropertyType.STRING
+  CustomPropertyClassEnum.DATE -> PropertyType.DATE
+  CustomPropertyClassEnum.INTEGER -> PropertyType.INTEGER
+  CustomPropertyClassEnum.DOUBLE -> PropertyType.DECIMAL
+  CustomPropertyClassEnum.BOOLEAN -> PropertyType.BOOLEAN
 }
 
-internal fun PropertyType.getCustomPropertyClass(): CustomPropertyClass = when (this) {
-  PropertyType.STRING -> CustomPropertyClass.TEXT
-  PropertyType.INTEGER -> CustomPropertyClass.INTEGER
-  PropertyType.DATE -> CustomPropertyClass.DATE
-  PropertyType.BOOLEAN -> CustomPropertyClass.BOOLEAN
-  PropertyType.DECIMAL -> CustomPropertyClass.DOUBLE
+internal fun PropertyType.getCustomPropertyClass(): CustomPropertyClassEnum = when (this) {
+  PropertyType.STRING -> CustomPropertyClassEnum.TEXT
+  PropertyType.INTEGER -> CustomPropertyClassEnum.INTEGER
+  PropertyType.DATE -> CustomPropertyClassEnum.DATE
+  PropertyType.BOOLEAN -> CustomPropertyClassEnum.BOOLEAN
+  PropertyType.DECIMAL -> CustomPropertyClassEnum.DOUBLE
 }
 
 internal fun PropertyType.createValidator(): ValueValidator<*> = when (this) {

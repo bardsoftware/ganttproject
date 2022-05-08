@@ -27,7 +27,7 @@ public interface CustomPropertyManager {
   CustomPropertyDefinition createDefinition(String id, String typeAsString, String name, String defaultValueAsString);
 
   CustomPropertyDefinition createDefinition(String typeAsString, String colName, String defValue);
-  CustomPropertyDefinition createDefinition(CustomPropertyClass propertyClass, String colName, String defValue);
+  CustomPropertyDefinition createDefinition(CustomPropertyClassEnum propertyClass, String colName, String defValue);
   CustomPropertyDefinition getCustomPropertyDefinition(String id);
 
   void deleteDefinition(CustomPropertyDefinition def);

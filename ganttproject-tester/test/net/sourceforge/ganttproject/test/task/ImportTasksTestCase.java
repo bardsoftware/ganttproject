@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyClassEnum;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.task.Task;
@@ -66,7 +66,7 @@ public class ImportTasksTestCase extends TaskTestCase {
         TaskManager importTo = getTaskManager();
         {
             CustomPropertyDefinition def = importTo.getCustomPropertyManager().createDefinition(
-                    "col1", CustomPropertyClass.TEXT.getID(), "foo", "foo");
+                    "col1", CustomPropertyClassEnum.TEXT.getID(), "foo", "foo");
             Task root = importTo.getTaskHierarchy().getRootTask();
             importTo.createTask(1).move(root);
             assertEquals("foo", importTo.getTask(1).getCustomValues().getValue(def));
@@ -74,7 +74,7 @@ public class ImportTasksTestCase extends TaskTestCase {
         TaskManager importFrom = newTaskManager();
         {
             CustomPropertyDefinition def = importFrom.getCustomPropertyManager().createDefinition(
-                    "col1", CustomPropertyClass.TEXT.getID(), "bar", "bar");
+                    "col1", CustomPropertyClassEnum.TEXT.getID(), "bar", "bar");
             Task root = importTo.getTaskHierarchy().getRootTask();
             importFrom.createTask(1).move(root);
             assertEquals("bar", importFrom.getTask(1).getCustomValues().getValue(def));

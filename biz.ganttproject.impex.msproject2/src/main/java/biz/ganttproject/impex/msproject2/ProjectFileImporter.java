@@ -28,7 +28,7 @@ import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
-import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyClassEnum;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -529,16 +529,16 @@ class ProjectFileImporter {
       case STRING:
       case TASK_TYPE:
       case UNITS:
-        return CustomPropertyClass.TEXT.name().toLowerCase();
+        return CustomPropertyClassEnum.TEXT.name().toLowerCase();
       case BOOLEAN:
-        return CustomPropertyClass.BOOLEAN.name().toLowerCase();
+        return CustomPropertyClassEnum.BOOLEAN.name().toLowerCase();
       case DATE:
-        return CustomPropertyClass.DATE.name().toLowerCase();
+        return CustomPropertyClassEnum.DATE.name().toLowerCase();
       case CURRENCY:
       case NUMERIC:
       case PERCENTAGE:
       case RATE:
-        return CustomPropertyClass.DOUBLE.name().toLowerCase();
+        return CustomPropertyClassEnum.DOUBLE.name().toLowerCase();
     }
     return null;
   }

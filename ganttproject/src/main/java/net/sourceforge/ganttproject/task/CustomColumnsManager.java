@@ -69,7 +69,7 @@ public class CustomColumnsManager implements CustomPropertyManager {
   }
 
   @Override
-  public CustomPropertyDefinition createDefinition(CustomPropertyClass propertyClass, String colName, String defValue) {
+  public CustomPropertyDefinition createDefinition(CustomPropertyClassEnum propertyClass, String colName, String defValue) {
     var stub = PropertyTypeEncoder.INSTANCE.create(propertyClass, defValue);
     CustomColumn result = new CustomColumn(this, colName, stub.getPropertyClass(), stub.getDefaultValue());
     result.setId(myStorage.createId());

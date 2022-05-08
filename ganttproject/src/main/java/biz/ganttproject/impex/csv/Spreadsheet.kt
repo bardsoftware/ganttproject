@@ -27,7 +27,7 @@
 package biz.ganttproject.impex.csv
 
 import biz.ganttproject.core.time.GanttCalendar
-import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyClassEnum
 import com.google.common.base.Preconditions
 import java.io.Closeable
 import java.io.IOException
@@ -39,8 +39,8 @@ import java.util.*
  * a spreadsheet.
  */
 interface SpreadsheetRecord {
-  fun getType(name: String): CustomPropertyClass?
-  fun getType(idx: Int): CustomPropertyClass?
+  fun getType(name: String): CustomPropertyClassEnum?
+  fun getType(idx: Int): CustomPropertyClassEnum?
   operator fun get(name: String): String?
   operator fun get(idx: Int): String?
 

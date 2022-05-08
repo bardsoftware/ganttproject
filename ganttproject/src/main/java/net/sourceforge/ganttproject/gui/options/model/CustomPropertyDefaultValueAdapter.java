@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject.gui.options.model;
 
 import java.util.Date;
 
-import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyClassEnum;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import org.w3c.util.DateParser;
 
@@ -32,7 +32,7 @@ import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.GPOption;
 
 public abstract class CustomPropertyDefaultValueAdapter {
-  public static GPOption createDefaultValueOption(final CustomPropertyClass propertyClass,
+  public static GPOption createDefaultValueOption(final CustomPropertyClassEnum propertyClass,
       final CustomPropertyDefinition def) {
     switch (propertyClass) {
     case TEXT:

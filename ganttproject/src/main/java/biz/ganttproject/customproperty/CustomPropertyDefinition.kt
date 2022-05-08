@@ -18,12 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.customproperty
 
-import biz.ganttproject.core.option.DefaultStringOption
-import biz.ganttproject.core.option.StringOption
-
 interface CustomPropertyDefinition {
-    val propertyClass: CustomPropertyClass
-    fun setPropertyClass(propertyClass: CustomPropertyClass)
+    val propertyClass: CustomPropertyClassEnum
+    fun setPropertyClass(propertyClass: CustomPropertyClassEnum)
     val type: Class<*>
     val typeAsString: String
     val id: String

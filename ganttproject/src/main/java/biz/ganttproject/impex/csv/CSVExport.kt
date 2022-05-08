@@ -20,7 +20,7 @@ package biz.ganttproject.impex.csv
 
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.customproperty.CustomProperty
-import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyClassEnum
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 import com.google.common.base.Charsets
 import com.google.common.base.Strings
@@ -108,19 +108,19 @@ fun writeCustomPropertyValues(
       writer.print(null as String?)
     } else {
       when (value.definition.propertyClass) {
-        CustomPropertyClass.TEXT -> {
+        CustomPropertyClassEnum.TEXT -> {
           writer.print(Strings.nullToEmpty(value.valueAsString))
         }
-        CustomPropertyClass.DOUBLE -> {
+        CustomPropertyClassEnum.DOUBLE -> {
           writer.print(value.valueAsString.toDoubleOrNull())
         }
-        CustomPropertyClass.INTEGER -> {
+        CustomPropertyClassEnum.INTEGER -> {
           writer.print(value.valueAsString.toIntOrNull())
         }
-        CustomPropertyClass.DATE -> {
+        CustomPropertyClassEnum.DATE -> {
           writer.print(value.value as GanttCalendar)
         }
-        CustomPropertyClass.BOOLEAN -> {
+        CustomPropertyClassEnum.BOOLEAN -> {
           writer.print(value.valueAsString.toBoolean())
         }
       }

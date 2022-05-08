@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.task;
 
 import biz.ganttproject.customproperty.CalculationMethod;
-import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyClassEnum;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.customproperty.PropertyTypeEncoder;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
@@ -38,11 +38,11 @@ public class CustomColumn implements CustomPropertyDefinition {
 
   private final CustomColumnsManager myManager;
 
-  private CustomPropertyClass myPropertyClass;
+  private CustomPropertyClassEnum myPropertyClass;
   private final Map<String, String> myAttributes = new HashMap<>();
   private CalculationMethod calculationMethod;
 
-  CustomColumn(CustomColumnsManager manager, String colName, CustomPropertyClass propertyClass, Object colDefaultValue) {
+  CustomColumn(CustomColumnsManager manager, String colName, CustomPropertyClassEnum propertyClass, Object colDefaultValue) {
     name = colName;
     myPropertyClass = propertyClass;
     defaultValue = colDefaultValue;
@@ -90,7 +90,7 @@ public class CustomColumn implements CustomPropertyDefinition {
 
   @Nonnull
   @Override
-  public CustomPropertyClass getPropertyClass() {
+  public CustomPropertyClassEnum getPropertyClass() {
     return myPropertyClass;
   }
 
@@ -120,7 +120,7 @@ public class CustomColumn implements CustomPropertyDefinition {
   }
 
   @Override
-  public void setPropertyClass(CustomPropertyClass propertyClass) {
+  public void setPropertyClass(CustomPropertyClassEnum propertyClass) {
     CustomPropertyDefinition oldValue = new DefaultCustomPropertyDefinition(name, id, this);
     myPropertyClass = propertyClass;
     String defaultValue = getDefaultValueAsString();
