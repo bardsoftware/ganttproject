@@ -22,16 +22,23 @@ import net.sourceforge.ganttproject.storage.ProjectDatabase
 
 class CalculatedPropertyUpdater(
   private val projectDatabase: ProjectDatabase,
+  private val tableName: String,
   private val customPropertyManager: CustomPropertyManager,
   private val propertyHolders: ()->List<CustomPropertyHolder>) {
 
   //private var calculatedDefs: List<CustomPropertyDefinition> = emptyList()
 
   fun update() {
-//    customPropertyManager.definitions.filter { it.calculationMethod != null }.map {
-//      when (it.calculationMethod) {
-//        is SimpleSelect -> it.calculationMethod.selectExpression
-//      }
-//    }
+    customPropertyManager.definitions.filter {
+      when (val m = it.calculationMethod) {
+        is SimpleSelect<*> -> m.tableName == tableName
+        else -> false
+      }
+    }.mapNotNull {
+      when (val calculationMethod = it.calculationMethod) {
+        is SimpleSelect<*> -> calculationMethod.selectExpression
+        else -> null
+      }
+    }
   }
 }

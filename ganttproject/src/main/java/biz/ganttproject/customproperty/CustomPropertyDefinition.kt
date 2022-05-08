@@ -31,6 +31,6 @@ interface CustomPropertyDefinition {
     var name: String
     var defaultValueAsString: String?
     val attributes: Map<String, String>
-    var calculationMethod: CalculationMethod?
+    var calculationMethod: CalculationMethod<Any>?
 }
 

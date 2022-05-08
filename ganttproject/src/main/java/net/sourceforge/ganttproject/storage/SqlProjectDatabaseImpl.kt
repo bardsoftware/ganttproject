@@ -32,10 +32,12 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
+import org.jooq.SelectSelectStep
 import org.jooq.UpdateSetMoreStep
 import org.jooq.UpdateSetStep
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
+import org.jooq.impl.DSL.field
 import java.awt.Color
 import java.sql.SQLException
 import javax.sql.DataSource
@@ -184,6 +186,26 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       dsl.select(TASK.NUM).from(TASK).where(whereExpression).mapNotNull {
         lookupById(it.value1())
       }
+    }
+  }
+
+  fun <T> SelectSelectStep<org.jooq.Record>.select(col: ColumnConsumer<T>?): SelectSelectStep<org.jooq.Record> =
+    col?.let { this.select(field(it.first.selectExpression, it.first.resultClass)!!.`as`(col.first.propertyId))} ?: this
+
+  override fun <T1, T2, T3, T4, T5> mapTasks(col1: ColumnConsumer<T1>, col2: ColumnConsumer<T2>?, col3: ColumnConsumer<T3>?, col4: ColumnConsumer<T4>?, col5: ColumnConsumer<T5>?) {
+    withDSL { dsl ->
+      dsl.select(TASK.NUM).select(field(col1.first.selectExpression, col1.first.resultClass).`as`(col1.first.propertyId))
+        .select(col2).select(col3).select(col4).select(col5)
+        .from(TASK)
+        .forEach {row ->
+          val taskNum = row[TASK.NUM]
+          col1.second(taskNum, row[col1.first.propertyId] as? T1)
+          col2?.run { second(taskNum, row[first.propertyId] as? T2) }
+          col3?.run { second(taskNum, row[first.propertyId] as? T3) }
+          col4?.run { second(taskNum, row[first.propertyId] as? T4) }
+          col5?.run { second(taskNum, row[first.propertyId] as? T5) }
+        }
+
     }
   }
 

@@ -75,4 +75,7 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
   }
 
   override fun findTasks(whereExpression: String, lookupById: (Int) -> Task?): List<Task> = getDatabase().findTasks(whereExpression, lookupById)
+    override fun <T1, T2, T3, T4, T5> mapTasks(col1: ColumnConsumer<T1>, col2: ColumnConsumer<T2>?, col3: ColumnConsumer<T3>?, col4: ColumnConsumer<T4>?, col5: ColumnConsumer<T5>?) {
+        getDatabase().mapTasks(col1, col2, col3, col4, col5)
+    }
 }

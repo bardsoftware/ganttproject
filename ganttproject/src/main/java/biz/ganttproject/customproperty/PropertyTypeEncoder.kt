@@ -105,7 +105,7 @@ object PropertyTypeEncoder {
         get() = valueAsString
         set(_) = error("Don't set me")
       override val attributes: Map<String, String> = emptyMap()
-      override var calculationMethod: CalculationMethod? = null
+      override var calculationMethod: CalculationMethod<Any>? = null
     }
   }
 }

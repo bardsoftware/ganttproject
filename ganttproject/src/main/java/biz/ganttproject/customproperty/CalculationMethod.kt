@@ -18,9 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.customproperty
 
-sealed interface CalculationMethod {
+sealed class CalculationMethod<out T>(val propertyId: String, val resultClass: Class<T>) {
 }
 
-class SimpleSelect(val selectExpression: String = "id", val tableName: String) : CalculationMethod {
+class SimpleSelect<T>(propertyId: String,
+                      val selectExpression: String = "id",
+                      resultClass: Class<T>,
+                      val tableName: String) : CalculationMethod<T>(propertyId, resultClass) {
 }
 
