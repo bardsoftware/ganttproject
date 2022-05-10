@@ -23,7 +23,7 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
-import biz.ganttproject.customproperty.CustomPropertyClassEnum
+import biz.ganttproject.customproperty.CustomPropertyClass
 import junit.framework.TestCase
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.task.CustomColumnsManager
@@ -64,10 +64,10 @@ class CustomPropertyExportImportTest : TestCase() {
       writerFactory = {XlsWriterImpl(it)},
       readerFactory = {XlsReaderImpl(it, standardFields)},
       expectedTypes = mapOf(
-        "F1" to CustomPropertyClassEnum.INTEGER,
-        "F2" to CustomPropertyClassEnum.DOUBLE,
-        "F3" to CustomPropertyClassEnum.BOOLEAN,
-        "F4" to CustomPropertyClassEnum.DATE
+        "F1" to CustomPropertyClass.INTEGER,
+        "F2" to CustomPropertyClass.DOUBLE,
+        "F3" to CustomPropertyClass.BOOLEAN,
+        "F4" to CustomPropertyClass.DATE
       ),
       expectedValues = mapOf(
         "F1" to 42,
@@ -85,10 +85,10 @@ class CustomPropertyExportImportTest : TestCase() {
       writerFactory = {CsvWriterImpl(it, CSVFormat.DEFAULT)},
       readerFactory = {CsvReaderImpl(it, CSVFormat.DEFAULT)},
       expectedTypes = mapOf(
-        "F1" to CustomPropertyClassEnum.INTEGER,
-        "F2" to CustomPropertyClassEnum.TEXT,
-        "F3" to CustomPropertyClassEnum.TEXT,
-        "F4" to CustomPropertyClassEnum.TEXT
+        "F1" to CustomPropertyClass.INTEGER,
+        "F2" to CustomPropertyClass.TEXT,
+        "F3" to CustomPropertyClass.TEXT,
+        "F4" to CustomPropertyClass.TEXT
       ),
       expectedValues = mapOf(
         "F1" to 42,
@@ -106,7 +106,7 @@ class CustomPropertyExportImportTest : TestCase() {
   private fun doTestCustomPropertyTypesImport(
     writerFactory: (ByteArrayOutputStream) -> SpreadsheetWriter,
     readerFactory: (ByteArrayInputStream) -> SpreadsheetReader,
-    expectedTypes: Map<String, CustomPropertyClassEnum>,
+    expectedTypes: Map<String, CustomPropertyClass>,
     expectedValues: Map<String, Any>
   ) {
     val standardFields = listOf(

@@ -19,8 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.customproperty
 
 interface CustomPropertyDefinition {
-    val propertyClass: CustomPropertyClassEnum
-    fun setPropertyClass(propertyClass: CustomPropertyClassEnum)
+    val propertyClass: CustomPropertyClass
+    fun setPropertyClass(propertyClass: CustomPropertyClass)
     val type: Class<*>
     val typeAsString: String
     val id: String
@@ -28,6 +28,5 @@ interface CustomPropertyDefinition {
     var name: String
     var defaultValueAsString: String?
     val attributes: Map<String, String>
-    var calculationMethod: CalculationMethod<Any>?
+    var calculationMethod: CalculationMethod?
 }
-

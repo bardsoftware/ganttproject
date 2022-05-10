@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.time.TimeUnitStack;
-import biz.ganttproject.customproperty.CustomPropertyClassEnum;
+import biz.ganttproject.customproperty.CustomPropertyClass;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
@@ -109,7 +109,7 @@ public class GanttCSVOpen {
 
   protected static void createCustomProperties(Collection<String> customFields, CustomPropertyManager customPropertyManager) {
     for (String name : customFields) {
-      customPropertyManager.createDefinition(name, CustomPropertyClassEnum.TEXT.getID(), name, null);
+      customPropertyManager.createDefinition(name, CustomPropertyClass.TEXT.getID(), name, null);
     }
   }
 

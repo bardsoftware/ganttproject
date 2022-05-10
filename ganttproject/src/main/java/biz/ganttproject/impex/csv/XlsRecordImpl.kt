@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.impex.csv
 
-import biz.ganttproject.customproperty.CustomPropertyClassEnum
+import biz.ganttproject.customproperty.CustomPropertyClass
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellType
@@ -45,12 +45,12 @@ internal class XlsRecordImpl(
   override fun getType(idx: Int) = if (idx >= 0 && idx < myValues.size) {
     myValues[idx]?.let {
       when (it.cellType) {
-        CellType.STRING -> CustomPropertyClassEnum.TEXT
+        CellType.STRING -> CustomPropertyClass.TEXT
         CellType.NUMERIC -> {
-          if (DateUtil.isCellDateFormatted(it)) CustomPropertyClassEnum.DATE
-          else CustomPropertyClassEnum.DOUBLE
+          if (DateUtil.isCellDateFormatted(it)) CustomPropertyClass.DATE
+          else CustomPropertyClass.DOUBLE
         }
-        CellType.BOOLEAN -> CustomPropertyClassEnum.BOOLEAN
+        CellType.BOOLEAN -> CustomPropertyClass.BOOLEAN
         else -> null
       }
     }

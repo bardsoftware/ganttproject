@@ -22,7 +22,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import java.util.GregorianCalendar;
 
-public enum CustomPropertyClassEnum {
+public enum CustomPropertyClass {
   TEXT("text", "", String.class),
   INTEGER("integer", "0", Integer.class),
   DOUBLE("double", "0.0", Double.class),
@@ -33,7 +33,7 @@ public enum CustomPropertyClassEnum {
   private final Class myJavaClass;
   private final String myDefaultValue;
 
-  private CustomPropertyClassEnum(String i18ntifier, String defaultValue, Class<?> javaClass) {
+  private CustomPropertyClass(String i18ntifier, String defaultValue, Class<?> javaClass) {
     myI18Ntifier = i18ntifier;
     myDefaultValue = defaultValue;
     myJavaClass = javaClass;
@@ -63,8 +63,8 @@ public enum CustomPropertyClassEnum {
   public boolean isNumeric() {
     return this == INTEGER || this == DOUBLE;
   }
-  public static CustomPropertyClassEnum fromJavaClass(Class<?> javaClass) {
-    for (CustomPropertyClassEnum klass : CustomPropertyClassEnum.values()) {
+  public static CustomPropertyClass fromJavaClass(Class<?> javaClass) {
+    for (CustomPropertyClass klass : CustomPropertyClass.values()) {
       if (klass.getJavaClass().equals(javaClass)) {
         return klass;
       }

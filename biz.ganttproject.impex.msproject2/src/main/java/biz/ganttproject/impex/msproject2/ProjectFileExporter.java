@@ -26,7 +26,7 @@ import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.customproperty.CustomProperty;
-import biz.ganttproject.customproperty.CustomPropertyClassEnum;
+import biz.ganttproject.customproperty.CustomPropertyClass;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import net.sf.mpxj.DateRange;
 import net.sf.mpxj.Day;
@@ -395,7 +395,7 @@ class ProjectFileExporter {
   }
 
   private static Object convertValue(CustomProperty cp) {
-    if (cp.getDefinition().getPropertyClass() == CustomPropertyClassEnum.DATE) {
+    if (cp.getDefinition().getPropertyClass() == CustomPropertyClass.DATE) {
       GanttCalendar value = (GanttCalendar) cp.getValue();
       return value.getTime();
     }

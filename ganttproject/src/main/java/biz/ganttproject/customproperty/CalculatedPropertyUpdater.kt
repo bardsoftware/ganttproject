@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.customproperty
 
+import net.sourceforge.ganttproject.storage.ColumnConsumer
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 
 class CalculatedPropertyUpdater(
@@ -29,16 +30,19 @@ class CalculatedPropertyUpdater(
   //private var calculatedDefs: List<CustomPropertyDefinition> = emptyList()
 
   fun update() {
-    customPropertyManager.definitions.filter {
+    val updaters = customPropertyManager.definitions.filter {
       when (val m = it.calculationMethod) {
-        is SimpleSelect<*> -> m.tableName == tableName
+        is SimpleSelect -> m.tableName == tableName
         else -> false
       }
     }.mapNotNull {
       when (val calculationMethod = it.calculationMethod) {
-        is SimpleSelect<*> -> calculationMethod.selectExpression
+        is SimpleSelect -> ColumnConsumer(calculationMethod) { taskNum, value ->
+          println("Task#$taskNum property ${it.id}=$value")
+        }
         else -> null
       }
     }
+    projectDatabase.mapTasks(*(updaters.toTypedArray()))
   }
 }

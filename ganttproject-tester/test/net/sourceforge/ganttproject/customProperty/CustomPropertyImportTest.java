@@ -2,7 +2,7 @@ package net.sourceforge.ganttproject.customProperty;
 
 import java.util.List;
 
-import biz.ganttproject.customproperty.CustomPropertyClassEnum;
+import biz.ganttproject.customproperty.CustomPropertyClass;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.task.CustomColumnsManager;
@@ -11,12 +11,12 @@ public class CustomPropertyImportTest extends TestCase {
     public void testImportDuplicatedProperties() {
         {
             CustomColumnsManager target = new CustomColumnsManager();
-            target.createDefinition(CustomPropertyClassEnum.TEXT.getID(), "col1", null);
-            target.createDefinition(CustomPropertyClassEnum.TEXT.getID(), "col2", null);
+            target.createDefinition(CustomPropertyClass.TEXT.getID(), "col1", null);
+            target.createDefinition(CustomPropertyClass.TEXT.getID(), "col2", null);
 
             CustomColumnsManager source = new CustomColumnsManager();
-            source.createDefinition(CustomPropertyClassEnum.TEXT.getID(), "col1", null);
-            source.createDefinition(CustomPropertyClassEnum.TEXT.getID(), "col3", null);
+            source.createDefinition(CustomPropertyClass.TEXT.getID(), "col1", null);
+            source.createDefinition(CustomPropertyClass.TEXT.getID(), "col3", null);
 
             target.importData(source);
             List<CustomPropertyDefinition> definitions = target.getDefinitions();
@@ -24,12 +24,12 @@ public class CustomPropertyImportTest extends TestCase {
         }
         {
             CustomColumnsManager target = new CustomColumnsManager();
-            target.createDefinition(CustomPropertyClassEnum.TEXT.getID(), "col1", null);
-            target.createDefinition(CustomPropertyClassEnum.TEXT.getID(), "col2", null);
+            target.createDefinition(CustomPropertyClass.TEXT.getID(), "col1", null);
+            target.createDefinition(CustomPropertyClass.TEXT.getID(), "col2", null);
 
             CustomColumnsManager source = new CustomColumnsManager();
-            source.createDefinition(CustomPropertyClassEnum.DATE.getID(), "col1", null);
-            source.createDefinition(CustomPropertyClassEnum.TEXT.getID(), "col3", null);
+            source.createDefinition(CustomPropertyClass.DATE.getID(), "col1", null);
+            source.createDefinition(CustomPropertyClass.TEXT.getID(), "col3", null);
 
             target.importData(source);
             List<CustomPropertyDefinition> definitions = target.getDefinitions();

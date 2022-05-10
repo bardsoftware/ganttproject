@@ -18,12 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.customproperty
 
-sealed class CalculationMethod<out T>(val propertyId: String, val resultClass: Class<T>) {
+sealed class CalculationMethod(val propertyId: String, val resultClass: Class<*>) {
 }
 
-class SimpleSelect<T>(propertyId: String,
-                      val selectExpression: String = "id",
-                      resultClass: Class<T>,
-                      val tableName: String) : CalculationMethod<T>(propertyId, resultClass) {
+class SimpleSelect(propertyId: String,
+                   val selectExpression: String = "id",
+                   resultClass: Class<*>,
+                   val tableName: String) : CalculationMethod(propertyId, resultClass) {
 }
 

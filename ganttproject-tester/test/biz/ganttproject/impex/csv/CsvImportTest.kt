@@ -18,7 +18,7 @@
  */
 package biz.ganttproject.impex.csv
 
-import biz.ganttproject.customproperty.CustomPropertyClassEnum
+import biz.ganttproject.customproperty.CustomPropertyClass
 import com.google.common.base.Charsets
 import com.google.common.base.Joiner
 import com.google.common.base.Supplier
@@ -269,7 +269,7 @@ class CsvImportTest : TestCase() {
         assertEquals(BigDecimal.valueOf(6.15), record.getBigDecimal("E"))
 
         // Although we can read typed values, they are actually strings in the input
-        header.split(",").forEach { assertEquals(CustomPropertyClassEnum.TEXT, record.getType(it)) }
+        header.split(",").forEach { assertEquals(CustomPropertyClass.TEXT, record.getType(it)) }
         true
       }
       val importer = GanttCSVOpen(pair.second(), pair.first(), recordGroup)

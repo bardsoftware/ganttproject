@@ -189,22 +189,21 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
-  fun <T> SelectSelectStep<org.jooq.Record>.select(col: ColumnConsumer<T>?): SelectSelectStep<org.jooq.Record> =
+  fun <T> SelectSelectStep<org.jooq.Record>.select(col: ColumnConsumer?): SelectSelectStep<org.jooq.Record> =
     col?.let { this.select(field(it.first.selectExpression, it.first.resultClass)!!.`as`(col.first.propertyId))} ?: this
 
-  override fun <T1, T2, T3, T4, T5> mapTasks(col1: ColumnConsumer<T1>, col2: ColumnConsumer<T2>?, col3: ColumnConsumer<T3>?, col4: ColumnConsumer<T4>?, col5: ColumnConsumer<T5>?) {
+  override fun mapTasks(vararg columnConsumer: ColumnConsumer) {
     withDSL { dsl ->
-      dsl.select(TASK.NUM).select(field(col1.first.selectExpression, col1.first.resultClass).`as`(col1.first.propertyId))
-        .select(col2).select(col3).select(col4).select(col5)
-        .from(TASK)
-        .forEach {row ->
-          val taskNum = row[TASK.NUM]
-          col1.second(taskNum, row[col1.first.propertyId] as? T1)
-          col2?.run { second(taskNum, row[first.propertyId] as? T2) }
-          col3?.run { second(taskNum, row[first.propertyId] as? T3) }
-          col4?.run { second(taskNum, row[first.propertyId] as? T4) }
-          col5?.run { second(taskNum, row[first.propertyId] as? T5) }
+      var q: SelectSelectStep<out org.jooq.Record> = dsl.select(TASK.NUM)
+      columnConsumer.forEach {
+        q = q.select(field(it.first.selectExpression, it.first.resultClass).`as`(it.first.propertyId))
+      }
+      q.from(TASK).forEach {row  ->
+        val taskNum = row[TASK.NUM]
+        columnConsumer.forEach {
+          it.second(taskNum, row[it.first.propertyId])
         }
+      }
 
     }
   }

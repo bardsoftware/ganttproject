@@ -49,35 +49,35 @@ object PropertyTypeEncoder {
     typeAsString: String?, valueAsString: String?
   ): CustomPropertyDefinition {
     return when (typeAsString) {
-      "text" -> create(CustomPropertyClassEnum.TEXT, valueAsString)
-      "boolean" -> create(CustomPropertyClassEnum.BOOLEAN, valueAsString)
-      "int" -> create(CustomPropertyClassEnum.INTEGER, valueAsString)
-      "integer" -> create(CustomPropertyClassEnum.INTEGER, valueAsString)
-      "double" -> create(CustomPropertyClassEnum.DOUBLE, valueAsString)
-      "date" -> create(CustomPropertyClassEnum.DATE, valueAsString)
-      else -> create(CustomPropertyClassEnum.TEXT, "")
+      "text" -> create(CustomPropertyClass.TEXT, valueAsString)
+      "boolean" -> create(CustomPropertyClass.BOOLEAN, valueAsString)
+      "int" -> create(CustomPropertyClass.INTEGER, valueAsString)
+      "integer" -> create(CustomPropertyClass.INTEGER, valueAsString)
+      "double" -> create(CustomPropertyClass.DOUBLE, valueAsString)
+      "date" -> create(CustomPropertyClass.DATE, valueAsString)
+      else -> create(CustomPropertyClass.TEXT, "")
     }
   }
 
-  fun create(propertyClass: CustomPropertyClassEnum, valueAsString: String?): CustomPropertyDefinition {
+  fun create(propertyClass: CustomPropertyClass, valueAsString: String?): CustomPropertyDefinition {
     val defaultValue = when (propertyClass) {
-      CustomPropertyClassEnum.TEXT -> valueAsString
-      CustomPropertyClassEnum.BOOLEAN -> if (valueAsString == null) null else java.lang.Boolean.valueOf(valueAsString)
-      CustomPropertyClassEnum.INTEGER -> {
+      CustomPropertyClass.TEXT -> valueAsString
+      CustomPropertyClass.BOOLEAN -> if (valueAsString == null) null else java.lang.Boolean.valueOf(valueAsString)
+      CustomPropertyClass.INTEGER -> {
         try {
           if (valueAsString == null) null else Integer.valueOf(valueAsString)
         } catch (e: NumberFormatException) {
           null
         }
       }
-      CustomPropertyClassEnum.DOUBLE -> {
+      CustomPropertyClass.DOUBLE -> {
         try {
           if (valueAsString == null) null else java.lang.Double.valueOf(valueAsString)
         } catch (e: NumberFormatException) {
           null
         }
       }
-      CustomPropertyClassEnum.DATE -> {
+      CustomPropertyClass.DATE -> {
         if (StringUtils.isEmptyOrNull(valueAsString)) {
           null
         } else {
@@ -90,8 +90,8 @@ object PropertyTypeEncoder {
       }
     }
     return object : CustomPropertyDefinition {
-      override val propertyClass: CustomPropertyClassEnum = propertyClass
-      override fun setPropertyClass(propertyClass: CustomPropertyClassEnum) {
+      override val propertyClass: CustomPropertyClass = propertyClass
+      override fun setPropertyClass(propertyClass: CustomPropertyClass) {
         error("Don't set me")
       }
       override val type: Class<*> = propertyClass.javaClass
@@ -105,7 +105,7 @@ object PropertyTypeEncoder {
         get() = valueAsString
         set(_) = error("Don't set me")
       override val attributes: Map<String, String> = emptyMap()
-      override var calculationMethod: CalculationMethod<Any>? = null
+      override var calculationMethod: CalculationMethod? = null
     }
   }
 }
