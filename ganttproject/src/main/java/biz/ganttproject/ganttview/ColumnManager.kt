@@ -176,7 +176,7 @@ class ColumnManager(
           mergedColumns.add(ColumnList.ColumnStub(def.id, def.name, true, mergedColumns.size, 50))
         }
         if (columnItem.isCalculated) {
-          def.calculationMethod = SimpleSelect(def.id, columnItem.expression, def.propertyClass.javaClass,"task")
+          def.calculationMethod = SimpleSelect(def.id, columnItem.expression, def.propertyClass.javaClass)
         }
       }
     }

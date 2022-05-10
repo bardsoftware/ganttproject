@@ -374,7 +374,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     } catch (IOException e) {
       gpLogger.error(Arrays.toString(e.getStackTrace()), new Object[]{}, ImmutableMap.of(), e);
     }
-    var calculatedPropertyUpdater = new CalculatedPropertyUpdater(myProjectDatabase, "task", getTaskCustomColumnManager(),
+    var calculatedPropertyUpdater = new CalculatedPropertyUpdater(myProjectDatabase, getTaskCustomColumnManager(),
       () -> Arrays.stream(getTaskManager().getTasks()).map(task -> task.getCustomValues()).collect(Collectors.toUnmodifiableList()));
     getUndoManager().addUndoableEditListener(new GPUndoListener() {
       @Override

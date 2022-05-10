@@ -186,7 +186,6 @@ data class XmlTasks(
 
   data class XmlCalculationSimpleSelect(
     @get:JacksonXmlProperty(isAttribute = true) var select: String = "",
-    @get:JacksonXmlProperty(isAttribute = true) var from: String = ""
   )
 
   @JsonPropertyOrder(

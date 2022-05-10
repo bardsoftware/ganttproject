@@ -164,7 +164,6 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
         startElement("taskproperty", attrs, handler)
         emptyElement("simple-select", AttributesImpl().also {attrs ->
           addAttribute("select", XmlEscapers.xmlAttributeEscaper().escape(calculationMethod.selectExpression), attrs)
-          addAttribute("from", calculationMethod.tableName, attrs)
         }, handler)
         endElement("taskproperty", handler)
       }

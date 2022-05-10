@@ -23,7 +23,6 @@ sealed class CalculationMethod(val propertyId: String, val resultClass: Class<*>
 
 class SimpleSelect(propertyId: String,
                    val selectExpression: String = "id",
-                   resultClass: Class<*>,
-                   val tableName: String) : CalculationMethod(propertyId, resultClass) {
+                   resultClass: Class<*>) : CalculationMethod(propertyId, resultClass) {
 }
 
