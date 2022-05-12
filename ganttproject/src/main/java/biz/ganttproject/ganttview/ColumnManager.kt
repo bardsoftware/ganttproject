@@ -223,12 +223,18 @@ internal fun PropertyType.createValidator(): ValueValidator<*> = when (this) {
   }
   else -> voidValidator
 }
+
 internal fun CustomPropertyDefinition.fromColumnItem(item: ColumnAsListItem) {
   this.name = item.title
   if (item.defaultValue.trim().isNotBlank()) {
     this.defaultValueAsString = item.defaultValue
   }
   this.setPropertyClass(item.type.getCustomPropertyClass())
+  if (item.isCalculated) {
+    this.calculationMethod = SimpleSelect(this.id, item.expression, this.propertyClass.javaClass)
+  } else {
+    this.calculationMethod = null
+  }
 }
 
 internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {
