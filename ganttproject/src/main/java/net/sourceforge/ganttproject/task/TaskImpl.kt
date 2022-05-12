@@ -13,13 +13,13 @@ import net.sourceforge.ganttproject.util.collect.Pair
 import java.awt.Color
 import java.util.*
 
-internal interface EventSender {
-  fun enable()
-  fun fireEvent()
+internal open class EventSender {
+  open fun enable() {}
+  open fun fireEvent() {}
 }
 
 
-internal class ProgressEventSender(private val taskManager: TaskManagerImpl, private val taskImpl: TaskImpl) : EventSender {
+internal class ProgressEventSender(private val taskManager: TaskManagerImpl, private val taskImpl: TaskImpl) : EventSender() {
   private var myEnabled = false
   override fun fireEvent() {
     if (myEnabled) {
@@ -34,7 +34,7 @@ internal class ProgressEventSender(private val taskManager: TaskManagerImpl, pri
   }
 }
 
-internal class PropertiesEventSender(private val taskManager: TaskManagerImpl, private val taskImpl: TaskImpl) : EventSender {
+internal class PropertiesEventSender(private val taskManager: TaskManagerImpl, private val taskImpl: TaskImpl) : EventSender() {
   private var myEnabled = false
   override fun fireEvent() {
     if (myEnabled) {
@@ -48,14 +48,13 @@ internal class PropertiesEventSender(private val taskManager: TaskManagerImpl, p
   }
 }
 
-internal class FieldChange {
+internal class FieldChange(private val myEventSender: EventSender) {
   var myFieldValue: Any? = null
-  public var myOldValue: Any? = null
-  var myEventSender: EventSender? = null
+  var myOldValue: Any? = null
   fun setValue(newValue: Any?) {
     myFieldValue = newValue
     if (hasChange()) {
-      myEventSender!!.enable()
+      myEventSender.enable()
     }
   }
 
@@ -71,14 +70,14 @@ internal class FieldChange {
 internal fun createMutatorFixingDuration(myManager: TaskManagerImpl, task: TaskImpl, taskUpdateBuilder: ProjectDatabase.TaskUpdateBuilder?): MutatorImpl {
   return object : MutatorImpl(myManager, task, taskUpdateBuilder) {
     override fun setStart(start: GanttCalendar) {
-      super.setStart(start);
+      super.setStart(start)
       task.myEnd = null
       taskUpdateBuilder?.setStart(start)
     }
   }
 }
 
-open internal class MutatorImpl(
+internal open class MutatorImpl(
   private val myManager: TaskManagerImpl,
   private val taskImpl: TaskImpl,
   protected val taskUpdateBuilder: ProjectDatabase.TaskUpdateBuilder?) : TaskMutator {
@@ -94,26 +93,25 @@ open internal class MutatorImpl(
   private var myShiftChange: Pair<FieldChange, FieldChange>? = null
   private val myCommands: MutableList<Runnable> = ArrayList()
   var myIsolationLevel = 0
-  val myException = Exception()
   override fun commit() {
     try {
       if (myStartChange != null) {
         val start = getStart()
-        taskImpl.setStart(start)
+        taskImpl.start = start
       }
       if (myDurationChange != null) {
         val duration = getDuration()
-        taskImpl.setDuration(duration)
+        taskImpl.duration = duration
         myEndChange = null
       }
       if (myCompletionPercentageChange != null && myCompletionPercentageChange!!.hasChange()) {
         val newValue = completionPercentage
-        taskImpl.setCompletionPercentage(newValue)
+        taskImpl.completionPercentage = newValue
       }
       if (myEndChange != null) {
         val end = end
-        if (end!!.time.compareTo(taskImpl.getStart().getTime()) > 0) {
-          taskImpl.setEnd(end)
+        if (end!!.time > taskImpl.start.time) {
+          taskImpl.end = end
         }
       }
       if (myThirdChange != null) {
@@ -136,25 +134,23 @@ open internal class MutatorImpl(
     } finally {
       taskImpl.myMutator = null
     }
-    if (myStartChange != null && taskImpl.isSupertask()) {
+    if (myStartChange != null && taskImpl.isSupertask) {
       taskImpl.adjustNestedTasks()
     }
     if (myStartChange != null || myEndChange != null || myDurationChange != null || myShiftChange != null || myThirdChange != null && taskImpl.areEventsEnabled()) {
-      val oldStart: GanttCalendar?
-      oldStart = if (myStartChange != null) {
+      val oldStart: GanttCalendar? = if (myStartChange != null) {
         myStartChange!!.myOldValue as GanttCalendar?
       } else if (myShiftChange != null) {
         myShiftChange!!.first().myOldValue as GanttCalendar?
       } else {
-        taskImpl.getStart()
+        taskImpl.start
       }
-      val oldEnd: GanttCalendar?
-      oldEnd = if (myEndChange != null) {
+      val oldEnd: GanttCalendar? = if (myEndChange != null) {
         myEndChange!!.myOldValue as GanttCalendar?
       } else if (myShiftChange != null) {
         myShiftChange!!.second().myOldValue as GanttCalendar?
       } else {
-        taskImpl.getEnd()
+        taskImpl.end
       }
       myManager.fireTaskScheduleChanged(taskImpl, oldStart, oldEnd)
     }
@@ -166,20 +162,19 @@ open internal class MutatorImpl(
     get() {
       if (myActivities == null && myStartChange != null || myDurationChange != null) {
         myActivities = ArrayList()
-        TaskImpl.recalculateActivities(myManager.getConfig().getCalendar(), taskImpl, myActivities,
-          getStart().time, taskImpl.getEnd().getTime())
+        TaskImpl.recalculateActivities(myManager.config.calendar, taskImpl, myActivities,
+          getStart().time, taskImpl.end.time)
       }
       return myActivities
     }
 
   override fun setName(name: String) {
     myCommands.add(object : Runnable {
-      private val myFieldChange = FieldChange()
+      private val myFieldChange = FieldChange(myPropertiesEventSender)
       override fun run() {
-        myFieldChange.myEventSender = myPropertiesEventSender
-        myFieldChange.setOldValue(taskImpl.getName())
+        myFieldChange.setOldValue(taskImpl.name)
         myFieldChange.setValue(name)
-        taskImpl.setName(name)
+        taskImpl.name = name
         if (taskUpdateBuilder != null && myFieldChange.hasChange()) {
           taskUpdateBuilder.setName(name)
         }
@@ -192,22 +187,20 @@ open internal class MutatorImpl(
   }
 
   override fun setMilestone(milestone: Boolean) {
-    myCommands.add(Runnable { taskImpl.setMilestone(milestone) })
+    myCommands.add(Runnable { taskImpl.isMilestone = milestone })
   }
 
   override fun setPriority(priority: Task.Priority) {
-    myCommands.add(Runnable { taskImpl.setPriority(priority) })
+    myCommands.add(Runnable { taskImpl.priority = priority })
   }
 
   override fun setStart(start: GanttCalendar) {
-    assert(start != null)
     val currentStart = getStart()
     if (currentStart != null && start.equals(currentStart)) {
       return
     }
     if (myStartChange == null) {
-      myStartChange = FieldChange()
-      myStartChange!!.myEventSender = myPropertiesEventSender
+      myStartChange = FieldChange(myPropertiesEventSender)
     }
     myStartChange!!.setOldValue(taskImpl.myStart)
     myStartChange!!.setValue(start)
@@ -219,8 +212,7 @@ open internal class MutatorImpl(
 
   override fun setEnd(end: GanttCalendar) {
     if (myEndChange == null) {
-      myEndChange = FieldChange()
-      myEndChange!!.myEventSender = myPropertiesEventSender
+      myEndChange = FieldChange(myPropertiesEventSender)
     }
     myEndChange!!.setOldValue(taskImpl.myEnd)
     myEndChange!!.setValue(end)
@@ -228,10 +220,9 @@ open internal class MutatorImpl(
   }
 
   override fun setThird(third: GanttCalendar, thirdDateConstraint: Int) {
-    myCommands.add(Runnable { taskImpl.setThirdDateConstraint(thirdDateConstraint) })
+    myCommands.add(Runnable { taskImpl.thirdDateConstraint = thirdDateConstraint })
     if (myThirdChange == null) {
-      myThirdChange = FieldChange()
-      myThirdChange!!.myEventSender = myPropertiesEventSender
+      myThirdChange = FieldChange(myPropertiesEventSender)
     }
     myThirdChange!!.setValue(third)
     myActivities = null
@@ -243,9 +234,9 @@ open internal class MutatorImpl(
       return
     }
     if (myDurationChange == null) {
-      myDurationChange = FieldChange()
-      myDurationChange!!.myEventSender = myPropertiesEventSender
-      myDurationChange!!.setValue(length)
+      myDurationChange = FieldChange(myPropertiesEventSender).also {
+        it.setValue(length)
+      }
     } else {
       val currentLength = myDurationChange!!.myFieldValue as TimeDuration?
       if (currentLength!!.length - length.length == 0) {
@@ -260,14 +251,13 @@ open internal class MutatorImpl(
   }
 
   override fun setExpand(expand: Boolean) {
-    myCommands.add(Runnable { taskImpl.setExpand(expand) })
+    myCommands.add(Runnable { taskImpl.expand = expand })
   }
 
   override fun setCompletionPercentage(percentage: Int) {
     if (percentage != completionPercentage) {
       if (myCompletionPercentageChange == null) {
-        myCompletionPercentageChange = FieldChange()
-        myCompletionPercentageChange!!.myEventSender = myProgressEventSender
+        myCompletionPercentageChange = FieldChange(myProgressEventSender)
       }
       myCompletionPercentageChange!!.setOldValue(taskImpl.myCompletionPercentage)
       myCompletionPercentageChange!!.setValue(percentage)
@@ -275,23 +265,23 @@ open internal class MutatorImpl(
   }
 
   override fun setCritical(critical: Boolean) {
-    myCommands.add(Runnable { taskImpl.setCritical(critical) })
+    myCommands.add(Runnable { taskImpl.isCritical = critical })
   }
 
   override fun setShape(shape: ShapePaint) {
-    myCommands.add(Runnable { taskImpl.setShape(shape) })
+    myCommands.add(Runnable { taskImpl.shape = shape })
   }
 
   override fun setColor(color: Color) {
-    myCommands.add(Runnable { taskImpl.setColor(color) })
+    myCommands.add(Runnable { taskImpl.color = color })
   }
 
   override fun setWebLink(webLink: String) {
-    myCommands.add(Runnable { taskImpl.setWebLink(webLink) })
+    myCommands.add(Runnable { taskImpl.webLink = webLink })
   }
 
   override fun setNotes(notes: String) {
-    myCommands.add(Runnable { taskImpl.setNotes(notes) })
+    myCommands.add(Runnable { taskImpl.notes = notes })
   }
 
   override fun addNotes(notes: String) {
@@ -314,9 +304,7 @@ open internal class MutatorImpl(
   }
 
   override fun shift(unitCount: Float) {
-    val result = getPrecomputedShift(unitCount) ?: taskImpl.shift(unitCount).also {
-      cachePrecomputedShift(it, unitCount)
-    }
+    val result = taskImpl.shift(unitCount)
     setStart(result.start)
     setDuration(result.duration)
     setEnd(result.end)
@@ -324,7 +312,7 @@ open internal class MutatorImpl(
 
   override fun shift(shift: TimeDuration) {
     if (myShiftChange == null) {
-      myShiftChange = Pair.create(FieldChange(), FieldChange()).also {
+      myShiftChange = Pair.create(FieldChange(EventSender()), FieldChange(EventSender())).also {
         it.first().setOldValue(taskImpl.myStart)
         it.second().setOldValue(taskImpl.myEnd)
       }
@@ -339,15 +327,6 @@ open internal class MutatorImpl(
 
   override fun setIsolationLevel(level: Int) {
     myIsolationLevel = level
-  }
-
-  private fun cachePrecomputedShift(result: Task?, unitCount: Float) {
-    // TODO Implement cache
-  }
-
-  private fun getPrecomputedShift(unitCount: Float): Task? {
-    // TODO Use cache to grab value
-    return null
   }
 
   override fun setTaskInfo(taskInfo: TaskInfo) {
