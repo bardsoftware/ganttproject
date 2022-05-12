@@ -35,41 +35,20 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder;
-import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
-import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.CostAlgorithmImpl;
-import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependant;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceAsDependee;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencySliceImpl;
+import net.sourceforge.ganttproject.task.dependency.*;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
-import net.sourceforge.ganttproject.util.collect.Pair;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
+import java.net.*;
 import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author bard
@@ -90,17 +69,17 @@ public class TaskImpl implements Task {
 
   private Priority myPriority;
 
-  private GanttCalendar myStart;
+  GanttCalendar myStart;
 
-  private GanttCalendar myEnd;
+  GanttCalendar myEnd;
 
-  private GanttCalendar myThird;
+  GanttCalendar myThird;
 
   private int myThirdDateConstraint;
 
-  private int myCompletionPercentage;
+  int myCompletionPercentage;
 
-  private TimeDuration myLength;
+  TimeDuration myLength;
 
   private final List<TaskActivity> myActivities = new ArrayList<TaskActivity>();
 
@@ -126,7 +105,7 @@ public class TaskImpl implements Task {
 
   private String myNotes;
 
-  private MutatorImpl myMutator;
+  MutatorImpl myMutator;
 
   private final CustomColumnsValues customValues;
 
@@ -232,7 +211,7 @@ public class TaskImpl implements Task {
     if (myMutator != null) {
       return myMutator;
     }
-    myMutator = new MutatorImpl(getManager().createTaskUpdateBuilder(this));
+    myMutator = new MutatorImpl(myManager, this, getManager().createTaskUpdateBuilder(this));
     return myMutator;
   }
 
@@ -241,19 +220,9 @@ public class TaskImpl implements Task {
     if (myMutator != null) {
       throw new MutatorException("Two mutators have been requested for task=" + getName());
     }
-    myMutator = new MutatorImpl(getManager().createTaskUpdateBuilder(this)) {
-      @Override
-      public void setStart(GanttCalendar start) {
-        super.setStart(start);
-        TaskImpl.this.myEnd = null;
-        if (taskUpdateBuilder != null) {
-          taskUpdateBuilder.setStart(start);
-        }
-      }
-    };
+    myMutator = TaskImplKt.createMutatorFixingDuration(myManager, this, getManager().createTaskUpdateBuilder(this));
     return myMutator;
   }
-
   // main properties
   @Override
   public int getTaskID() {
@@ -370,7 +339,7 @@ public class TaskImpl implements Task {
 
   @Override
   public GanttCalendar getStart() {
-    if (myMutator != null && myMutator.myIsolationLevel == TaskMutator.READ_UNCOMMITED) {
+    if (myMutator != null && myMutator.getMyIsolationLevel() == TaskMutator.READ_UNCOMMITED) {
       return myMutator.getStart();
     }
     return myStart;
@@ -379,7 +348,7 @@ public class TaskImpl implements Task {
   @Override
   public GanttCalendar getEnd() {
     GanttCalendar result = null;
-    if (myMutator != null && myMutator.myIsolationLevel == TaskMutator.READ_UNCOMMITED) {
+    if (myMutator != null && myMutator.getMyIsolationLevel() == TaskMutator.READ_UNCOMMITED) {
       result = myMutator.getEnd();
     }
     if (result == null) {
@@ -423,7 +392,7 @@ public class TaskImpl implements Task {
 
   @Override
   public GanttCalendar getThird() {
-    if (myMutator != null && myMutator.myIsolationLevel == TaskMutator.READ_UNCOMMITED) {
+    if (myMutator != null && myMutator.getMyIsolationLevel() == TaskMutator.READ_UNCOMMITED) {
       return myMutator.getThird();
     }
     return myThird;
@@ -451,13 +420,13 @@ public class TaskImpl implements Task {
     if (isMilestone()) {
       return EMPTY_DURATION;
     }
-    return (myMutator != null && myMutator.myIsolationLevel == TaskMutator.READ_UNCOMMITED) ? myMutator.getDuration()
+    return (myMutator != null && myMutator.getMyIsolationLevel() == TaskMutator.READ_UNCOMMITED) ? myMutator.getDuration()
         : myLength;
   }
 
   @Override
   public int getCompletionPercentage() {
-    return (myMutator != null && myMutator.myIsolationLevel == TaskMutator.READ_UNCOMMITED) ? myMutator.getCompletionPercentage()
+    return (myMutator != null && myMutator.getMyIsolationLevel() == TaskMutator.READ_UNCOMMITED) ? myMutator.getCompletionPercentage()
         : myCompletionPercentage;
   }
 
@@ -559,445 +528,7 @@ public class TaskImpl implements Task {
     return myManager;
   }
 
-  private static interface EventSender {
-    void enable();
 
-    void fireEvent();
-  }
-
-  private class ProgressEventSender implements EventSender {
-    private boolean myEnabled;
-
-    @Override
-    public void fireEvent() {
-      if (myEnabled) {
-        myEnabled = false;
-        myManager.fireTaskProgressChanged(TaskImpl.this);
-      }
-      myEnabled = false;
-    }
-
-    @Override
-    public void enable() {
-      myEnabled = true;
-    }
-  }
-
-  private class PropertiesEventSender implements EventSender {
-    private boolean myEnabled;
-
-    @Override
-    public void fireEvent() {
-      if (myEnabled) {
-        myManager.fireTaskPropertiesChanged(TaskImpl.this);
-      }
-      myEnabled = false;
-    }
-
-    @Override
-    public void enable() {
-      myEnabled = true;
-    }
-  }
-
-  private static class FieldChange {
-    Object myFieldValue;
-    Object myOldValue;
-
-    EventSender myEventSender;
-
-    void setValue(Object newValue) {
-      myFieldValue = newValue;
-      if (hasChange()) {
-        myEventSender.enable();
-      }
-    }
-
-    public void setOldValue(Object oldValue) {
-      myOldValue = oldValue;
-    }
-
-    public boolean hasChange() {
-      return !Objects.equals(myOldValue, myFieldValue);
-    }
-  }
-
-  private class MutatorImpl implements TaskMutator {
-    private EventSender myPropertiesEventSender = new PropertiesEventSender();
-
-    private EventSender myProgressEventSender = new ProgressEventSender();
-
-    private FieldChange myCompletionPercentageChange;
-
-    private FieldChange myStartChange;
-
-    private FieldChange myEndChange;
-
-    private FieldChange myThirdChange;
-
-    private FieldChange myDurationChange;
-
-    private List<TaskActivity> myActivities;
-
-    private Pair<FieldChange, FieldChange> myShiftChange;
-
-    private final List<Runnable> myCommands = new ArrayList<Runnable>();
-
-    private int myIsolationLevel;
-
-    protected final TaskUpdateBuilder taskUpdateBuilder;
-
-    public final Exception myException = new Exception();
-
-    public MutatorImpl(TaskUpdateBuilder taskUpdateBuilder) {
-      this.taskUpdateBuilder = taskUpdateBuilder;
-    }
-
-    @Override
-    public void commit() {
-      try {
-        if (myStartChange != null) {
-          GanttCalendar start = getStart();
-          TaskImpl.this.setStart(start);
-        }
-        if (myDurationChange != null) {
-          TimeDuration duration = getDuration();
-          TaskImpl.this.setDuration(duration);
-          myEndChange = null;
-        }
-        if (myCompletionPercentageChange != null && myCompletionPercentageChange.hasChange()) {
-          int newValue = getCompletionPercentage();
-          TaskImpl.this.setCompletionPercentage(newValue);
-        }
-        if (myEndChange != null) {
-          GanttCalendar end = getEnd();
-          if (end.getTime().compareTo(TaskImpl.this.getStart().getTime()) > 0) {
-            TaskImpl.this.setEnd(end);
-          }
-        }
-        if (myThirdChange != null) {
-          GanttCalendar third = getThird();
-          TaskImpl.this.setThirdDate(third);
-        }
-        for (Runnable command : myCommands) {
-          command.run();
-        }
-        myCommands.clear();
-        myPropertiesEventSender.fireEvent();
-        myProgressEventSender.fireEvent();
-        if (taskUpdateBuilder != null) {
-          try {
-            taskUpdateBuilder.commit();
-          } catch (ProjectDatabaseException e) {
-            GPLogger.log(e);
-          }
-        }
-      } finally {
-        TaskImpl.this.myMutator = null;
-      }
-      if (myStartChange != null && TaskImpl.this.isSupertask()) {
-        TaskImpl.this.adjustNestedTasks();
-      }
-      if ((myStartChange != null || myEndChange != null || myDurationChange != null || myShiftChange != null || myThirdChange != null) && areEventsEnabled()) {
-        GanttCalendar oldStart;
-        if (myStartChange != null) {
-          oldStart = (GanttCalendar) myStartChange.myOldValue;
-        } else if (myShiftChange != null) {
-          oldStart = (GanttCalendar) myShiftChange.first().myOldValue;
-        } else {
-          oldStart = TaskImpl.this.getStart();
-        }
-        GanttCalendar oldEnd;
-        if (myEndChange != null) {
-          oldEnd = (GanttCalendar) myEndChange.myOldValue;
-        } else if (myShiftChange != null){
-          oldEnd = (GanttCalendar) myShiftChange.second().myOldValue;
-        } else {
-          oldEnd = TaskImpl.this.getEnd();
-        }
-        myManager.fireTaskScheduleChanged(TaskImpl.this, oldStart, oldEnd);
-      }
-    }
-
-    public GanttCalendar getThird() {
-      return myThirdChange == null ? TaskImpl.this.myThird : (GanttCalendar) myThirdChange.myFieldValue;
-    }
-
-    public List<TaskActivity> getActivities() {
-      if (myActivities == null && (myStartChange != null) || (myDurationChange != null)) {
-        myActivities = new ArrayList<TaskActivity>();
-        TaskImpl.recalculateActivities(myManager.getConfig().getCalendar(), TaskImpl.this, myActivities,
-            getStart().getTime(), TaskImpl.this.getEnd().getTime());
-      }
-      return myActivities;
-    }
-
-    @Override
-    public void setName(final String name) {
-      myCommands.add(new Runnable() {
-        private FieldChange myFieldChange = new FieldChange();
-
-        @Override
-        public void run() {
-          myFieldChange.myEventSender = myPropertiesEventSender;
-          myFieldChange.setOldValue(TaskImpl.this.getName());
-          myFieldChange.setValue(name);
-          TaskImpl.this.setName(name);
-          if (taskUpdateBuilder != null && myFieldChange.hasChange()) {
-            taskUpdateBuilder.setName(name);
-          }
-        }
-      });
-    }
-
-    @Override
-    public void setProjectTask(final boolean projectTask) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setProjectTask(projectTask);
-        }
-      });
-    }
-
-    @Override
-    public void setMilestone(final boolean milestone) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setMilestone(milestone);
-        }
-      });
-    }
-
-    @Override
-    public void setPriority(final Priority priority) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setPriority(priority);
-        }
-      });
-    }
-
-    @Override
-    public void setStart(final GanttCalendar start) {
-      assert start != null;
-      GanttCalendar currentStart = getStart();
-      if (currentStart != null && start.equals(currentStart)) {
-        return;
-      }
-      if (myStartChange == null) {
-        myStartChange = new FieldChange();
-        myStartChange.myEventSender = myPropertiesEventSender;
-      }
-      myStartChange.setOldValue(TaskImpl.this.myStart);
-      myStartChange.setValue(start);
-      myActivities = null;
-      if (taskUpdateBuilder != null && myStartChange.hasChange()) {
-        taskUpdateBuilder.setStart(start);
-      }
-    }
-
-    @Override
-    public void setEnd(final GanttCalendar end) {
-      if (myEndChange == null) {
-        myEndChange = new FieldChange();
-        myEndChange.myEventSender = myPropertiesEventSender;
-      }
-      myEndChange.setOldValue(TaskImpl.this.myEnd);
-      myEndChange.setValue(end);
-      myActivities = null;
-    }
-
-    @Override
-    public void setThird(final GanttCalendar third, final int thirdDateConstraint) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setThirdDateConstraint(thirdDateConstraint);
-        }
-      });
-      if (myThirdChange == null) {
-        myThirdChange = new FieldChange();
-        myThirdChange.myEventSender = myPropertiesEventSender;
-      }
-      myThirdChange.setValue(third);
-      myActivities = null;
-    }
-
-    @Override
-    public void setDuration(final TimeDuration length) {
-      // If duration of task was set to 0 or less do not change it
-      if (length.getLength() <= 0) {
-        return;
-      }
-
-      if (myDurationChange == null) {
-        myDurationChange = new FieldChange();
-        myDurationChange.myEventSender = myPropertiesEventSender;
-        myDurationChange.setValue(length);
-      } else {
-        TimeDuration currentLength = (TimeDuration) myDurationChange.myFieldValue;
-        if (currentLength.getLength() - length.getLength() == 0) {
-          return;
-        }
-      }
-
-      myDurationChange.setValue(length);
-      Date shifted = TaskImpl.this.shiftDate(getStart().getTime(), length);
-      GanttCalendar newEnd = CalendarFactory.createGanttCalendar(shifted);
-      setEnd(newEnd);
-      myActivities = null;
-    }
-
-    @Override
-    public void setExpand(final boolean expand) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setExpand(expand);
-        }
-      });
-    }
-
-    @Override
-    public void setCompletionPercentage(final int percentage) {
-      if (percentage != getCompletionPercentage()) {
-        if (myCompletionPercentageChange == null) {
-          myCompletionPercentageChange = new FieldChange();
-          myCompletionPercentageChange.myEventSender = myProgressEventSender;
-        }
-        myCompletionPercentageChange.setOldValue(TaskImpl.this.myCompletionPercentage);
-        myCompletionPercentageChange.setValue(percentage);
-      }
-    }
-
-    @Override
-    public void setCritical(final boolean critical) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setCritical(critical);
-        }
-      });
-    }
-
-    @Override
-    public void setShape(final ShapePaint shape) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setShape(shape);
-        }
-      });
-    }
-
-    @Override
-    public void setColor(final Color color) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setColor(color);
-        }
-      });
-    }
-
-    @Override
-    public void setWebLink(final String webLink) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setWebLink(webLink);
-        }
-      });
-    }
-
-    @Override
-    public void setNotes(final String notes) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.setNotes(notes);
-        }
-      });
-    }
-
-    @Override
-    public void addNotes(final String notes) {
-      myCommands.add(new Runnable() {
-        @Override
-        public void run() {
-          TaskImpl.this.addNotes(notes);
-        }
-      });
-    }
-
-    @Override
-    public int getCompletionPercentage() {
-      return myCompletionPercentageChange == null ? TaskImpl.this.myCompletionPercentage
-          : ((Integer) myCompletionPercentageChange.myFieldValue).intValue();
-    }
-
-    GanttCalendar getStart() {
-      return myStartChange == null ? TaskImpl.this.myStart : (GanttCalendar) myStartChange.myFieldValue;
-    }
-
-    GanttCalendar getEnd() {
-      return myEndChange == null ? null : (GanttCalendar) myEndChange.myFieldValue;
-    }
-
-    TimeDuration getDuration() {
-      return myDurationChange == null ? TaskImpl.this.myLength : (TimeDuration) myDurationChange.myFieldValue;
-    }
-
-    @Override
-    public void shift(float unitCount) {
-      Task result = getPrecomputedShift(unitCount);
-      if (result == null) {
-        result = TaskImpl.this.shift(unitCount);
-        cachePrecomputedShift(result, unitCount);
-      }
-
-      setStart(result.getStart());
-      setDuration(result.getDuration());
-      setEnd(result.getEnd());
-    }
-
-    @Override
-    public void shift(TimeDuration shift) {
-      if (myShiftChange == null) {
-        myShiftChange = Pair.create(new FieldChange(), new FieldChange());
-        myShiftChange.first().setOldValue(TaskImpl.this.myStart);
-        myShiftChange.second().setOldValue(TaskImpl.this.myEnd);
-      }
-      ShiftTaskTreeAlgorithm shiftAlgorithm = new ShiftTaskTreeAlgorithm(myManager, null);
-      try {
-        shiftAlgorithm.run(TaskImpl.this, shift, ShiftTaskTreeAlgorithm.DEEP);
-      } catch (AlgorithmException e) {
-        GPLogger.log(e);
-      }
-    }
-
-    @Override
-    public void setIsolationLevel(int level) {
-      myIsolationLevel = level;
-    }
-
-    private void cachePrecomputedShift(Task result, float unitCount) {
-      // TODO Implement cache
-    }
-
-    private Task getPrecomputedShift(float unitCount) {
-      // TODO Use cache to grab value
-      return null;
-    }
-
-    @Override
-    public void setTaskInfo(TaskInfo taskInfo) {
-      myTaskInfo = taskInfo;
-    }
-  }
 
   @Override
   public void setName(String name) {
@@ -1031,7 +562,7 @@ public class TaskImpl implements Task {
     adjustNestedTasks();
   }
 
-  private void adjustNestedTasks() {
+  void adjustNestedTasks() {
     assert myManager != null;
     try {
       AlgorithmCollection algorithmCollection = myManager.getAlgorithmCollection();
@@ -1119,7 +650,7 @@ public class TaskImpl implements Task {
     recalculateActivities();
   }
 
-  private Date shiftDate(Date input, TimeDuration duration) {
+  Date shiftDate(Date input, TimeDuration duration) {
     return myManager.getConfig().getCalendar().shiftDate(input, duration);
   }
 
@@ -1169,7 +700,7 @@ public class TaskImpl implements Task {
     myLength = getManager().createLength(myLength.getTimeUnit(), length);
   }
 
-  private static void recalculateActivities(GPCalendarCalc calendar, Task task, List<TaskActivity> output, Date startDate,
+  static void recalculateActivities(GPCalendarCalc calendar, Task task, List<TaskActivity> output, Date startDate,
       Date endDate) {
     TaskActivitiesAlgorithm alg = new TaskActivitiesAlgorithm(calendar);
     alg.recalculateActivities(task, output, startDate, endDate);
@@ -1275,7 +806,7 @@ public class TaskImpl implements Task {
 //      }
   }
 
-  private TaskInfo myTaskInfo;
+  TaskInfo myTaskInfo;
 
   @Override
   public TaskInfo getTaskInfo() {
