@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import biz.ganttproject.customproperty.SimpleSelect
 import net.sourceforge.ganttproject.task.MutableTask
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
@@ -29,6 +30,7 @@ open class ProjectDatabaseException: Exception {
   constructor(message: String, cause: Throwable): super(message, cause)
 }
 
+typealias ColumnConsumer = Pair<SimpleSelect, (Int, Any?)->Unit>
 /** Storage for holding the current state of a Gantt project. */
 interface ProjectDatabase {
   /** Build and execute an update query. */
@@ -75,4 +77,6 @@ interface ProjectDatabase {
    */
   @Throws(ProjectDatabaseException::class)
   fun findTasks(whereExpression: String, lookupById: (Int)->Task?): List<Task>
+
+  fun mapTasks(vararg columnConsumer: ColumnConsumer)
 }

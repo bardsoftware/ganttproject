@@ -19,12 +19,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.gui.taskproperties;
 
 import biz.ganttproject.core.table.ColumnList;
-import biz.ganttproject.customproperty.CustomProperty;
-import biz.ganttproject.customproperty.CustomPropertyDefinition;
+import biz.ganttproject.customproperty.*;
 import biz.ganttproject.ganttview.ApplyExecutorType;
 import biz.ganttproject.ganttview.ColumnManagerKt;
-import biz.ganttproject.customproperty.CustomPropertyHolder;
-import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -158,7 +155,11 @@ public class CustomColumnsPanel {
       if (col != 2) {
         throw new IllegalArgumentException();
       }
-      myHolder.addCustomProperty(myCustomPropertyManager.getDefinitions().get(row), String.valueOf(o));
+      try {
+        myHolder.addCustomProperty(myCustomPropertyManager.getDefinitions().get(row), String.valueOf(o));
+      } catch (CustomColumnsException ex) {
+        throw new RuntimeException(ex);
+      }
       // myHolder.addCustomProperty(def,
       // DateParser.getIsoDate(GanttLanguage.getInstance().parseDate(String.valueOf(o))));
     }

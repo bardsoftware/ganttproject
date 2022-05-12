@@ -23,7 +23,7 @@ import biz.ganttproject.app.dialog
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
-import biz.ganttproject.customproperty.CalculateFromSingleRow
+import biz.ganttproject.customproperty.SimpleSelect
 import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.lib.fx.VBoxBuilder
@@ -176,7 +176,7 @@ class ColumnManager(
           mergedColumns.add(ColumnList.ColumnStub(def.id, def.name, true, mergedColumns.size, 50))
         }
         if (columnItem.isCalculated) {
-          def.calculationMethod = CalculateFromSingleRow(columnItem.expression)
+          def.calculationMethod = SimpleSelect(def.id, columnItem.expression, def.propertyClass.javaClass)
         }
       }
     }
@@ -223,12 +223,18 @@ internal fun PropertyType.createValidator(): ValueValidator<*> = when (this) {
   }
   else -> voidValidator
 }
+
 internal fun CustomPropertyDefinition.fromColumnItem(item: ColumnAsListItem) {
   this.name = item.title
   if (item.defaultValue.trim().isNotBlank()) {
     this.defaultValueAsString = item.defaultValue
   }
   this.setPropertyClass(item.type.getCustomPropertyClass())
+  if (item.isCalculated) {
+    this.calculationMethod = SimpleSelect(this.id, item.expression, this.propertyClass.javaClass)
+  } else {
+    this.calculationMethod = null
+  }
 }
 
 internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {
@@ -413,7 +419,12 @@ internal class ColumnAsListItem(
         if (!isCustom) ""
         else customColumn?.defaultValueAsString ?: ""
       isCalculated = customColumn?.calculationMethod != null
-      expression = customColumn?.calculationMethod?.queryParts()?.getOrNull(0)?.value ?: ""
+      expression = customColumn?.calculationMethod?.let {
+        when (it) {
+          is SimpleSelect -> it.selectExpression
+          else -> ""
+        }
+      } ?: ""
 
     }
   }

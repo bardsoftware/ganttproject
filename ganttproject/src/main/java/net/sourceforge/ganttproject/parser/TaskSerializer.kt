@@ -26,18 +26,19 @@ import biz.ganttproject.core.option.GPOption
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
-import biz.ganttproject.customproperty.CalculateFromSingleRow
+import biz.ganttproject.customproperty.CustomColumnsException
+import biz.ganttproject.customproperty.SimpleSelect
 import biz.ganttproject.lib.fx.TreeCollapseView
 import com.google.common.base.Charsets
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager
-import biz.ganttproject.customproperty.CustomColumnsException
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskView
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl
+import org.apache.commons.lang3.StringEscapeUtils
 import org.w3c.util.DateParser
 import org.w3c.util.InvalidDateException
 import java.awt.Color
@@ -54,8 +55,8 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
     xmlProject.tasks.taskproperties?.filter { it.type == "custom" }?.forEach { xmlTaskProperty ->
       val def = taskManager.customPropertyManager.createDefinition(
         xmlTaskProperty.id, xmlTaskProperty.valuetype, xmlTaskProperty.name, xmlTaskProperty.defaultvalue)
-      xmlTaskProperty.expression?.let {
-        def.calculationMethod = CalculateFromSingleRow(it)
+      xmlTaskProperty.simpleSelect?.let {
+        def.calculationMethod = SimpleSelect(xmlTaskProperty.id, StringEscapeUtils.unescapeXml(it.select), def.propertyClass.javaClass)
       }
     }
   }

@@ -199,14 +199,9 @@ public class HumanResource implements CustomPropertyHolder {
     return myCustomProperties.getValue(def);
   }
 
-  public void setCustomField(CustomPropertyDefinition def, Object value) {
-    try {
-      myCustomProperties.setValue(def, value);
-      fireResourceChanged();
-    } catch (CustomColumnsException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+  @Override public void setValue(CustomPropertyDefinition def, Object value) throws CustomColumnsException {
+    myCustomProperties.setValue(def, value);
+    fireResourceChanged();
   }
 
   public ResourceAssignment createAssignment(ResourceAssignment assignmentToTask) {
@@ -244,10 +239,10 @@ public class HumanResource implements CustomPropertyHolder {
   }
 
   @Override
-  public CustomProperty addCustomProperty(CustomPropertyDefinition definition, String valueAsString) {
+  public CustomProperty addCustomProperty(CustomPropertyDefinition definition, String valueAsString) throws CustomColumnsException {
     final CustomPropertyDefinition stubDefinition = PropertyTypeEncoder.INSTANCE.decodeTypeAndDefaultValue(
         definition.getTypeAsString(), valueAsString);
-    setCustomField(definition, stubDefinition.getDefaultValue());
+    setValue(definition, stubDefinition.getDefaultValue());
     return new CustomPropertyImpl(definition, stubDefinition.getDefaultValue());
   }
 
