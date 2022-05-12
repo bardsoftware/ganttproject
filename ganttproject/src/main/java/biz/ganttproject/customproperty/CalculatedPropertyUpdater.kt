@@ -24,15 +24,14 @@ import net.sourceforge.ganttproject.storage.ProjectDatabase
 class CalculatedPropertyUpdater(
   private val projectDatabase: ProjectDatabase,
   private val customPropertyManager: CustomPropertyManager,
-  private val propertyHolders: ()->List<CustomPropertyHolder>) {
-
-  //private var calculatedDefs: List<CustomPropertyDefinition> = emptyList()
+  private val propertyHolders: ()->Map<Int,CustomPropertyHolder?>) {
 
   fun update() {
-    val updaters = customPropertyManager.definitions.filterNotNull().mapNotNull {
-      when (val calculationMethod = it.calculationMethod) {
+    val id2values = propertyHolders()
+    val updaters = customPropertyManager.definitions.filterNotNull().mapNotNull {def ->
+      when (val calculationMethod = def.calculationMethod) {
         is SimpleSelect -> ColumnConsumer(calculationMethod) { taskNum, value ->
-          println("Task#$taskNum property ${it.id}=$value")
+          id2values[taskNum]?.setValue(def, value)
         }
         else -> null
       }

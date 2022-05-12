@@ -23,6 +23,7 @@ import biz.ganttproject.app.FXSearchUi;
 import biz.ganttproject.app.FXToolbar;
 import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.customproperty.CalculatedPropertyUpdater;
+import biz.ganttproject.customproperty.CustomPropertyHolder;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
@@ -69,6 +70,7 @@ import net.sourceforge.ganttproject.storage.InputXlog;
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
 import net.sourceforge.ganttproject.storage.ServerCommitResponse;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -82,10 +84,10 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.getWebSocket;
 import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.isColloboqueLocalTest;
@@ -375,7 +377,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       gpLogger.error(Arrays.toString(e.getStackTrace()), new Object[]{}, ImmutableMap.of(), e);
     }
     var calculatedPropertyUpdater = new CalculatedPropertyUpdater(myProjectDatabase, getTaskCustomColumnManager(),
-      () -> Arrays.stream(getTaskManager().getTasks()).map(task -> task.getCustomValues()).collect(Collectors.toUnmodifiableList()));
+      () -> {
+        var mapping = new HashMap<Integer, CustomPropertyHolder>();
+        for (Task t : getTaskManager().getTasks()) {
+          mapping.put(t.getTaskID(), t.getCustomValues());
+        }
+        return mapping;
+      });
     getUndoManager().addUndoableEditListener(new GPUndoListener() {
       @Override
       public void undoOrRedoHappened() {
