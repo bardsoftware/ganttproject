@@ -24,5 +24,6 @@ import java.util.List;
 public interface CustomPropertyHolder {
   List<CustomProperty> getCustomProperties();
 
-  CustomProperty addCustomProperty(CustomPropertyDefinition definition, String defaultValueAsString);
+  CustomProperty addCustomProperty(CustomPropertyDefinition definition, String defaultValueAsString) throws CustomColumnsException;
+  void setValue(CustomPropertyDefinition def, Object value) throws CustomColumnsException;
 }

@@ -344,7 +344,11 @@ class ProjectFileImporter {
         def.getAttributes().put(CustomPropertyMapping.MSPROJECT_TYPE, rf.name());
         myResourceCustomPropertyMapping.put(rf, def);
       }
-      nativeResource.setCustomField(def, convertDataValue(rf, r.getCurrentValue(rf)));
+      try {
+        nativeResource.setValue(def, convertDataValue(rf, r.getCurrentValue(rf)));
+      } catch (CustomColumnsException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 

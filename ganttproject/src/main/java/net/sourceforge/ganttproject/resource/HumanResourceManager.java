@@ -19,10 +19,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.resource;
 
 import biz.ganttproject.core.time.GanttCalendar;
+import biz.ganttproject.customproperty.CustomColumnsException;
 import biz.ganttproject.customproperty.CustomProperty;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.collect.Lists;
 import biz.ganttproject.customproperty.CustomPropertyManager;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -263,8 +265,12 @@ public class HumanResourceManager {
 
       for (CustomProperty foreignCP : foreignHR.getCustomProperties()) {
         CustomPropertyDefinition thisDef = that2thisCustomDefs.get(foreignCP.getDefinition());
-        if (foreignCP.getValue() != null) {
-          nativeHR.addCustomProperty(thisDef, foreignCP.getValueAsString());
+        try {
+          if (foreignCP.getValue() != null) {
+            nativeHR.addCustomProperty(thisDef, foreignCP.getValueAsString());
+          }
+        } catch (CustomColumnsException ex) {
+          GPLogger.log(ex);
         }
       }
     }
