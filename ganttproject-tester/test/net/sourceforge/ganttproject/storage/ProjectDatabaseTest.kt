@@ -117,8 +117,8 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].notes, "abacaba")
 
     val txns = projectDatabase.fetchTransactions(limit = 10)
-    assertEquals(txns.size, 1)
-    assertEquals(txns[0].sqlStatements.size, 1)
+    assertEquals(1, txns.size)
+    assertEquals(1, txns[0].sqlStatements.size)
 
     // Verify that executing the log record produces the same task.
     // Importantly, it checks that dates are converted identically.

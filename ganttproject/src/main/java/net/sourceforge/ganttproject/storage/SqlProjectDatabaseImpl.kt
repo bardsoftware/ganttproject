@@ -245,20 +245,16 @@ class SqlTaskUpdateBuilder(private val task: Task,
   override fun setStart(start: GanttCalendar) = nextStep { it.set(TASK.START_DATE, start.toLocalDate()) }
 
   override fun setEnd(end: GanttCalendar?) {
-    TODO("Not yet implemented")
+    // intentionally empty, we do not store the end date
   }
 
-  override fun setDuration(length: TimeDuration?) {
-    TODO("Not yet implemented")
-  }
+  override fun setDuration(length: TimeDuration) = nextStep { it.set(TASK.DURATION, length.length) }
 
   override fun shift(shift: TimeDuration?) {
     TODO("Not yet implemented")
   }
 
-  override fun setCompletionPercentage(percentage: Int) {
-    TODO("Not yet implemented")
-  }
+  override fun setCompletionPercentage(percentage: Int) = nextStep { it.set(TASK.COMPLETION, percentage) }
 
   override fun setShape(shape: ShapePaint?) {
     TODO("Not yet implemented")
