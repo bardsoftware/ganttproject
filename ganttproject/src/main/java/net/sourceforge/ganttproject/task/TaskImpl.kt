@@ -76,8 +76,9 @@ internal fun createMutatorFixingDuration(myManager: TaskManagerImpl, task: TaskI
     override fun setStart(start: GanttCalendar) {
       super.setStart(start)
       task.myEnd = null
-      taskUpdateBuilder?.setStart(start)
     }
+
+
   }
 }
 
