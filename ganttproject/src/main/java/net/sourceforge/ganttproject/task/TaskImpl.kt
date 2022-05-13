@@ -134,14 +134,13 @@ internal open class MutatorImpl(
         taskUpdateBuilder?.setMilestone(it)
       }
       if (hasDateFieldsChange) {
-        taskUpdateBuilder?.let {
-          if (taskImpl.start != this.getStart()) {
-            it.setStart(taskImpl.start)
-            hasActualDatesChange = true
+        hasActualDatesChange = taskImpl.start != myStartChange.oldValue || taskImpl.duration != myDurationChange.oldValue
+        if (hasActualDatesChange && taskUpdateBuilder != null) {
+          if (taskImpl.start != myStartChange.oldValue) {
+            taskUpdateBuilder.setStart(taskImpl.start)
           }
-          if (taskImpl.duration != this.getDuration()) {
-            it.setDuration(taskImpl.duration)
-            hasActualDatesChange = true
+          if (taskImpl.duration != myDurationChange.oldValue) {
+            taskUpdateBuilder.setDuration(taskImpl.duration)
           }
         }
       }
