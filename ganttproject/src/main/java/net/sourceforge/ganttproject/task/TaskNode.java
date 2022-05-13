@@ -132,14 +132,6 @@ public class TaskNode extends DefaultMutableTreeTableNode {
     return task.getCompletionPercentage();
   }
 
-  public void setTaskInfo(TaskInfo info) {
-    task.setTaskInfo(info);
-  }
-
-  public TaskInfo getTaskInfo() {
-    return task.getTaskInfo();
-  }
-
   @Override
   public String toString() {
     return task.getName();

@@ -809,11 +809,6 @@ public class TaskImpl implements Task {
   }
 
   @Override
-  public void setTaskInfo(TaskInfo taskInfo) {
-    myTaskInfo = taskInfo;
-  }
-
-  @Override
   public boolean isProjectTask() {
     return isProjectTask;
   }

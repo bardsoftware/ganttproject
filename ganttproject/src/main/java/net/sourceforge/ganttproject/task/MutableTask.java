@@ -72,7 +72,5 @@ public interface MutableTask {
    */
   void setCritical(boolean critical);
 
-  void setTaskInfo(TaskInfo taskInfo);
-
   void setProjectTask(boolean projectTask);
 }

@@ -27,7 +27,6 @@ import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskInfo
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
@@ -273,14 +272,10 @@ class SqlTaskUpdateBuilder(private val task: Task,
   }
 
   override fun setExpand(expand: Boolean) {
-    TODO("Not yet implemented")
+    // intentionally empty: we do not keep the expansion state in the task properties
   }
 
   override fun setCritical(critical: Boolean) {
-    TODO("Not yet implemented")
-  }
-
-  override fun setTaskInfo(taskInfo: TaskInfo?) {
     TODO("Not yet implemented")
   }
 
