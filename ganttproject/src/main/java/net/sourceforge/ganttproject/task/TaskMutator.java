@@ -32,8 +32,6 @@ public interface TaskMutator extends MutableTask {
 
   void commit();
 
-  void shift(float unitCount);
-
   int getCompletionPercentage();
 
   void setThird(GanttCalendar third, int thirdDateConstraint);

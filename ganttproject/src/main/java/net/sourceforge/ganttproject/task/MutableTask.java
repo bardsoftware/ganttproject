@@ -58,8 +58,6 @@ public interface MutableTask {
 
   void setNotes(String notes);
 
-  void addNotes(String notes);
-
   void setExpand(boolean expand);
 
   /**
@@ -73,8 +71,6 @@ public interface MutableTask {
    *          otherwise.
    */
   void setCritical(boolean critical);
-
-  void setTaskInfo(TaskInfo taskInfo);
 
   void setProjectTask(boolean projectTask);
 }

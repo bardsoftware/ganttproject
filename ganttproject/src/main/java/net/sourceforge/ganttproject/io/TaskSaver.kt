@@ -193,15 +193,16 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
   }
 }
 
-fun Task.externalizedWebLink(): String? {
+fun Task.externalizedWebLink(): String? = externalizeWebLink(this.webLink)
+
+fun externalizeWebLink(webLink: String?) =
   if (!webLink.isNullOrBlank() && webLink != "http://") {
-    return URLEncoder.encode(webLink, Charsets.UTF_8.name())
-  }
-  return null
-}
+    URLEncoder.encode(webLink, Charsets.UTF_8.name())
+  } else null
 
 // XML CDATA section adds extra line separator on Windows.
 // See https://bugs.openjdk.java.net/browse/JDK-8133452.
-fun Task.externalizedNotes(): String? = notes?.replace("\\r\\n", "\\n")?.ifBlank { null }
+fun Task.externalizedNotes(): String? = externalizeNotes(this.notes)
+fun externalizeNotes(notes: String?) = notes?.replace("\\r\\n", "\\n")?.ifBlank { null }
 
 fun TaskImpl.externalizedColor(): String? = if (colorDefined()) ColorConvertion.getColor(color) else null

@@ -27,8 +27,8 @@ import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskInfo
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
+import net.sourceforge.ganttproject.util.ColorConvertion
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
@@ -239,62 +239,44 @@ class SqlTaskUpdateBuilder(private val task: Task,
   override fun setMilestone(isMilestone: Boolean) = nextStep { it.set(TASK.IS_MILESTONE, isMilestone) }
 
   override fun setPriority(priority: Task.Priority?) {
-    TODO("Not yet implemented")
+    if (priority != null) {
+      nextStep { it.set(TASK.PRIORITY, priority.persistentValue) }
+    }
   }
 
   override fun setStart(start: GanttCalendar) = nextStep { it.set(TASK.START_DATE, start.toLocalDate()) }
 
   override fun setEnd(end: GanttCalendar?) {
-    TODO("Not yet implemented")
+    // intentionally empty, we do not store the end date
   }
 
-  override fun setDuration(length: TimeDuration?) {
-    TODO("Not yet implemented")
-  }
+  override fun setDuration(length: TimeDuration) = nextStep { it.set(TASK.DURATION, length.length) }
 
   override fun shift(shift: TimeDuration?) {
     TODO("Not yet implemented")
   }
 
-  override fun setCompletionPercentage(percentage: Int) {
-    TODO("Not yet implemented")
-  }
+  override fun setCompletionPercentage(percentage: Int) = nextStep { it.set(TASK.COMPLETION, percentage) }
 
-  override fun setShape(shape: ShapePaint?) {
-    TODO("Not yet implemented")
-  }
+  override fun setShape(shape: ShapePaint?) = nextStep { it.set(TASK.SHAPE, shape?.array) }
 
-  override fun setColor(color: Color?) {
-    TODO("Not yet implemented")
-  }
+  override fun setColor(color: Color?) = nextStep { it.set(TASK.COLOR, color?.let {ColorConvertion.getColor(it)}) }
 
-  override fun setWebLink(webLink: String?) {
-    TODO("Not yet implemented")
-  }
 
-  override fun setNotes(notes: String?) {
-    TODO("Not yet implemented")
-  }
+  override fun setWebLink(webLink: String?) = nextStep { it.set(TASK.WEB_LINK, webLink) }
 
-  override fun addNotes(notes: String?) {
-    TODO("Not yet implemented")
-  }
+
+  override fun setNotes(notes: String?) = nextStep { it.set(TASK.NOTES, notes) }
 
   override fun setExpand(expand: Boolean) {
-    TODO("Not yet implemented")
+    // intentionally empty: we do not keep the expansion state in the task properties
   }
 
   override fun setCritical(critical: Boolean) {
-    TODO("Not yet implemented")
+    // TODO("Not yet implemented")
   }
 
-  override fun setTaskInfo(taskInfo: TaskInfo?) {
-    TODO("Not yet implemented")
-  }
-
-  override fun setProjectTask(projectTask: Boolean) {
-    TODO("Not yet implemented")
-  }
+  override fun setProjectTask(projectTask: Boolean) = nextStep { it.set(TASK.IS_PROJECT_TASK, projectTask) }
 }
 
 private fun Task.logId(): String = "${uid}:${taskID}"

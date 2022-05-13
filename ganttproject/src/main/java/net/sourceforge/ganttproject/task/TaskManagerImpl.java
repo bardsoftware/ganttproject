@@ -850,7 +850,6 @@ public class TaskManagerImpl implements TaskManager {
 
       nextImported.setShape(task.getShape());
       nextImported.setCompletionPercentage(task.getCompletionPercentage());
-      nextImported.setTaskInfo(task.getTaskInfo());
       nextImported.setExpand(task.getExpand());
       nextImported.setMilestone(task.isMilestone());
       nextImported.getCost().setValue(that.getCost());
@@ -899,15 +898,19 @@ public class TaskManagerImpl implements TaskManager {
       Task[] tasks = myAlgorithmCollection.getCriticalPathAlgorithm().getCriticalTasks();
       resetCriticalPath();
       for (Task task : tasks) {
-        task.setCritical(true);
+        var mutator = task.createMutator();
+        mutator.setCritical(true);
+        mutator.commit();
       }
     }
   }
 
   private void resetCriticalPath() {
     Task[] allTasks = getTasks();
-    for (Task allTask : allTasks) {
-      allTask.setCritical(false);
+    for (Task t : allTasks) {
+      var mutator = t.createMutator();
+      mutator.setCritical(false);
+      mutator.commit();
     }
   }
 

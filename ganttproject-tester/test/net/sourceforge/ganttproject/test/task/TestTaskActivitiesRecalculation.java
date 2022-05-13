@@ -26,6 +26,7 @@ public class TestTaskActivitiesRecalculation extends TaskTestCase {
         {
             TaskMutator mutator = task.createMutator();
             mutator.setDuration(getTaskManager().createLength(2));
+            mutator.commit();
             List<TaskActivity> activities = task.getActivities();
             assertEquals("Unexpected length of activities", 1,
                     activities.size());
