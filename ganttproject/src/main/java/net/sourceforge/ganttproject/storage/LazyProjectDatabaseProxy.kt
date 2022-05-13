@@ -19,9 +19,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.storage.ProjectDatabase.*
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
+import net.sourceforge.ganttproject.task.event.TaskListener
 
 /**
  * ProjectDatabase implementation with lazy initialization. After each shutdown, a new database is created.
@@ -30,7 +32,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency
  */
 class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabase): ProjectDatabase {
   private var lazyProjectDatabase: ProjectDatabase? = null
-
+  private val projectEventListenerImpl by lazy { ProjectEventListenerImpl(this) }
   private fun isInitialized(): Boolean = lazyProjectDatabase != null
 
   private fun getDatabase(): ProjectDatabase {
@@ -79,4 +81,7 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
   override fun mapTasks(vararg columnConsumer: ColumnConsumer) {
     getDatabase().mapTasks(*columnConsumer)
   }
+
+  fun createProjectEventListener(): ProjectEventListener = projectEventListenerImpl
+  fun createTaskEventListener(): TaskListener = projectEventListenerImpl
 }

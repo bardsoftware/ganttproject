@@ -192,11 +192,15 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected GanttProjectBase() {
     super("GanttProject");
-    myProjectDatabase = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase);
+    var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase);
+
+    myProjectDatabase = databaseProxy;
     myTaskManagerConfig = new TaskManagerConfigImpl();
     myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig,
       myProjectDatabase::createTaskUpdateBuilder);
     myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager);
+    addProjectEventListener(databaseProxy.createProjectEventListener());
+    myTaskManager.addTaskListener(databaseProxy.createTaskEventListener());
     statusBar = new GanttStatusBar(this);
     myTabPane = new GanttTabbedPane();
     myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());

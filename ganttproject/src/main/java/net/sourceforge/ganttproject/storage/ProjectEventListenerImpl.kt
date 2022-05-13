@@ -16,11 +16,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
+package net.sourceforge.ganttproject.storage
 
-package net.sourceforge.ganttproject
-
-import net.sourceforge.ganttproject.ProjectEventListener.Stub
-import net.sourceforge.ganttproject.storage.ProjectDatabase
+import biz.ganttproject.app.Barrier
+import biz.ganttproject.app.BarrierEntrance
+import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.task.event.*
 
 /**
@@ -28,7 +30,7 @@ import net.sourceforge.ganttproject.task.event.*
  *
  * @param projectDatabase - database which holds the current project state.
  */
-class ProjectStateHolderEventListener(private val projectDatabase: ProjectDatabase) : TaskListener, Stub() {
+internal class ProjectEventListenerImpl(private val projectDatabase: ProjectDatabase) : TaskListener, ProjectEventListener.Stub() {
 
   private fun withLogger(errorMessage: () -> String, body: () -> Unit) {
     try {
@@ -36,6 +38,10 @@ class ProjectStateHolderEventListener(private val projectDatabase: ProjectDataba
     } catch (e: Exception) {
       LOG.error("${errorMessage()} {}", e)
     }
+  }
+
+  override fun projectOpened(barrierRegistry: BarrierEntrance, barrier: Barrier<IGanttProject>) {
+    barrier.await { it.taskManager.tasks.forEach(projectDatabase::insertTask) }
   }
 
   override fun projectClosed() = withLogger({ "Failed to close project" }) {
