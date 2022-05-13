@@ -23,14 +23,19 @@ import biz.ganttproject.app.BarrierEntrance
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
+import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.*
+import net.sourceforge.ganttproject.undo.GPUndoListener
+import javax.swing.event.UndoableEditEvent
 
 /**
  * Holds the current state of a Gantt project, updating it on events.
  *
  * @param projectDatabase - database which holds the current project state.
  */
-internal class ProjectEventListenerImpl(private val projectDatabase: ProjectDatabase) : TaskListener, ProjectEventListener.Stub() {
+internal class ProjectEventListenerImpl(
+  private val projectDatabase: ProjectDatabase, private val taskManagerSupplier: ()-> TaskManager)
+  : TaskListener, ProjectEventListener.Stub(), GPUndoListener {
 
   private fun withLogger(errorMessage: () -> String, body: () -> Unit) {
     try {
@@ -87,6 +92,17 @@ internal class ProjectEventListenerImpl(private val projectDatabase: ProjectData
 
   override fun taskModelReset() {
     // ...
+  }
+
+  override fun undoableEditHappened(e: UndoableEditEvent?) {
+  }
+
+  override fun undoOrRedoHappened() {
+    projectDatabase.shutdown()
+    taskManagerSupplier().tasks.forEach(projectDatabase::insertTask)
+  }
+
+  override fun undoReset() {
   }
 }
 

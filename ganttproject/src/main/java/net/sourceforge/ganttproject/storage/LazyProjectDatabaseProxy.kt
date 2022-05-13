@@ -22,17 +22,19 @@ package net.sourceforge.ganttproject.storage
 import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.storage.ProjectDatabase.*
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.task.event.TaskListener
+import net.sourceforge.ganttproject.undo.GPUndoListener
 
 /**
  * ProjectDatabase implementation with lazy initialization. After each shutdown, a new database is created.
  *
  * @param databaseFactory - factory for generating a project state database.
  */
-class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabase): ProjectDatabase {
+class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabase, private val taskManager: () -> TaskManager): ProjectDatabase {
   private var lazyProjectDatabase: ProjectDatabase? = null
-  private val projectEventListenerImpl by lazy { ProjectEventListenerImpl(this) }
+  private val projectEventListenerImpl by lazy { ProjectEventListenerImpl(this, taskManager) }
   private fun isInitialized(): Boolean = lazyProjectDatabase != null
 
   private fun getDatabase(): ProjectDatabase {
@@ -84,4 +86,5 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
 
   fun createProjectEventListener(): ProjectEventListener = projectEventListenerImpl
   fun createTaskEventListener(): TaskListener = projectEventListenerImpl
+  fun createUndoListener(): GPUndoListener = projectEventListenerImpl
 }

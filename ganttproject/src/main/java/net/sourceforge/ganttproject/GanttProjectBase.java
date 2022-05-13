@@ -192,7 +192,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected GanttProjectBase() {
     super("GanttProject");
-    var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase);
+    var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager);
 
     myProjectDatabase = databaseProxy;
     myTaskManagerConfig = new TaskManagerConfigImpl();
@@ -242,12 +242,13 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return getUIFacade().getResourceTree().getVisibleFields();
       }
     };
-    myUndoManager = new UndoManagerImpl(this, null, myDocumentManager) {
+    myUndoManager = new UndoManagerImpl(this, null, myDocumentManager, myProjectDatabase) {
       @Override
       protected ParserFactory getParserFactory() {
         return GanttProjectBase.this.getParserFactory();
       }
     };
+    myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
     myViewManager = new ViewManagerImpl(getProject(), myUIFacade, myTabPane, getUndoManager());
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
