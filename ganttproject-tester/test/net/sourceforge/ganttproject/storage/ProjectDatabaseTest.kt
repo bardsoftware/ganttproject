@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import biz.ganttproject.core.chart.render.ShapeConstants
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.storage.db.Tables.TASKDEPENDENCY
@@ -307,6 +308,75 @@ class ProjectDatabaseTest {
     assertTrue(projectDatabase.findTasks("completion = 100", taskManager::getTask).isEmpty())
     assertEquals(2, projectDatabase.findTasks("true", taskManager::getTask).size)
   }
+
+  @Test fun `change task end updates duration`() {
+    projectDatabase.init()
+
+    val task1 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid1")
+      .withId(1)
+      .withName("Name1")
+      .withStartDate(TestSetupHelper.newMonday().time)
+      .build()
+    projectDatabase.startTransaction()
+    task1.createMutator().also {
+      it.setEnd(TestSetupHelper.newWendesday())
+      it.commit()
+    }
+    projectDatabase.commitTransaction()
+    val txns = projectDatabase.fetchTransactions(limit = 2)
+    assertEquals(1, txns.size)
+
+    assertEquals(1, txns[0].sqlStatements.size)
+    val stmt = txns[0].sqlStatements[0]
+    assert(stmt.contains("update", ignoreCase = true)) {"Statement text: $stmt"}
+    assert(stmt.contains("duration", ignoreCase = true)) {"Statement text: $stmt"}
+  }
+
+  @Test fun `change task properties propagates to db`() {
+    projectDatabase.init()
+
+    val task1 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid1")
+      .withId(1)
+      .withName("Name1")
+      .withStartDate(TestSetupHelper.newMonday().time)
+      .build()
+    projectDatabase.startTransaction()
+    task1.createMutator().also {
+      it.completionPercentage = 50
+      it.setColor(Color.RED)
+      it.setNotes("lorem ipsum")
+      it.setWebLink("https://google.com")
+      it.setExpand(true)
+      it.setName("task1")
+      it.setShape(ShapeConstants.BACKSLASH)
+      it.setPriority(Task.Priority.HIGH)
+      it.setProjectTask(true)
+      it.commit()
+    }
+    projectDatabase.commitTransaction()
+    val txns = projectDatabase.fetchTransactions(limit = 2)
+    assertEquals(1, txns.size)
+
+    assertEquals(1, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
+    val stmt = txns[0].sqlStatements[0]
+    assert(stmt.contains("update", ignoreCase = true)) {"Statement text: $stmt"}
+    assert(stmt.matches(""".*where.*"uid".=.'someuid1'.*""".toRegex())) {"Statement text: $stmt"}
+    assert(stmt.matches(""".*"color".=.'#ff0000'.*""".toRegex())) {"Statement text: $stmt"}
+    assert(stmt.matches(""".*"notes".=.'lorem.ipsum'.*""".toRegex())) {"Statement text: $stmt"}
+    assert(stmt.matches(""".*"web_link".=.'https://google.com'.*""".toRegex())) {"Statement text: $stmt"}
+    assert(stmt.matches(""".*"name".=.'task1'.*""".toRegex())) {"Statement text: $stmt"}
+    assert(stmt.matches(""".*"priority".=.'2'.*""".toRegex())) {"Statement text: $stmt"}
+    assert(stmt.matches(""".*"is_project_task".=.true.*""".toRegex())) {"Statement text: $stmt"}
+    assert(stmt.matches(""".*"completion".=.50.*""".toRegex())) {"Statement text: $stmt"}
+    assertFalse(stmt.contains("expand"))
+    assertFalse(stmt.contains("start_date"))
+    assertFalse(stmt.contains("duration"))
+  }
+
 }
 
 private fun LocalDate.toIsoNoHours() = this.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))

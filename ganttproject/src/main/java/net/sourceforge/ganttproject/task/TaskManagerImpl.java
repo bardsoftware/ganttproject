@@ -668,6 +668,9 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public TaskUpdateBuilder createTaskUpdateBuilder(Task task) {
+    if (task == getRootTask()) {
+      return null;
+    }
     if (myTaskUpdateBuilderFactory != null) {
       return myTaskUpdateBuilderFactory.createTaskUpdateBuilder(task);
     }
