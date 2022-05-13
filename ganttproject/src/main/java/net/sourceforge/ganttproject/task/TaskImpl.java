@@ -733,11 +733,6 @@ public class TaskImpl implements Task {
     bExpand = expand;
   }
 
-  @Override
-  public void addNotes(String notes) {
-    myNotes += notes;
-  }
-
   protected void enableEvents(boolean enabled) {
     myEventsEnabled = enabled;
   }

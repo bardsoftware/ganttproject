@@ -272,10 +272,6 @@ class SqlTaskUpdateBuilder(private val task: Task,
     TODO("Not yet implemented")
   }
 
-  override fun addNotes(notes: String?) {
-    TODO("Not yet implemented")
-  }
-
   override fun setExpand(expand: Boolean) {
     TODO("Not yet implemented")
   }
