@@ -27,14 +27,12 @@
 package biz.ganttproject.impex.csv
 
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.customproperty.CustomPropertyClass
 import com.google.common.base.Preconditions
-import net.sourceforge.ganttproject.CustomPropertyClass
-import net.sourceforge.ganttproject.language.GanttLanguage
 import java.io.Closeable
 import java.io.IOException
 import java.math.BigDecimal
 import java.util.*
-import java.util.logging.Level
 
 /**
  * Interface of a record which maps to a row on a sheet in

@@ -18,9 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.customproperty.CalculationMethod;
+import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.customproperty.PropertyTypeEncoder;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -34,6 +36,7 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
   private CustomPropertyClass myPropertyClass;
   private String myTypeAsString;
   private final Map<String, String> myAttributes = new HashMap<>();
+  private CalculationMethod calculationMethod;
 
   public DefaultCustomPropertyDefinition(String name) {
     myName = name;
@@ -78,7 +81,7 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
   }
 
   @Override
-  public String getID() {
+  public String getId() {
     return myID;
   }
 
@@ -109,17 +112,11 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
     return myTypeAsString;
   }
 
-  @Override
-  public IStatus canSetPropertyClass(CustomPropertyClass propertyClass) {
-    return Status.OK_STATUS;
-  }
-
-  @Override
-  public IStatus setPropertyClass(CustomPropertyClass propertyClass) {
+    @Override
+  public void setPropertyClass(CustomPropertyClass propertyClass) {
     myPropertyClass = propertyClass;
     myTypeAsString = propertyClass.getID();
     setDefaultValueAsString(getDefaultValueAsString());
-    return Status.OK_STATUS;
   }
 
   @Override
@@ -139,4 +136,14 @@ public class DefaultCustomPropertyDefinition implements CustomPropertyDefinition
     return this.myID.equals(that.myID);
   }
 
+  @Nullable
+  @Override
+  public CalculationMethod getCalculationMethod() {
+    return this.calculationMethod;
+  }
+
+  @Override
+  public void setCalculationMethod(@Nullable CalculationMethod value) {
+    this.calculationMethod = value;
+  }
 }

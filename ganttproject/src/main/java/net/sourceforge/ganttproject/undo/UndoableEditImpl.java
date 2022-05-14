@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.undo;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
+import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
@@ -43,7 +44,17 @@ class UndoableEditImpl extends AbstractUndoableEdit {
     myManager = manager;
     myPresentationName = localizedName;
     myDocumentBefore = saveFile();
+    try {
+      myManager.getProjectDatabase().startTransaction();
+    } catch (ProjectDatabaseException ex) {
+
+    }
     editImpl.run();
+    try {
+      myManager.getProjectDatabase().commitTransaction();
+    } catch (ProjectDatabaseException ex) {
+
+    }
     myDocumentAfter = saveFile();
   }
 

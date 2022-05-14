@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject.resource;
 
 import java.util.Set;
 
-import net.sourceforge.ganttproject.CustomPropertyDefinition;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;

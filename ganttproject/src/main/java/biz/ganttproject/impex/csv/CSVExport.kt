@@ -19,11 +19,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv
 
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.customproperty.CustomProperty
+import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyDefinition
 import com.google.common.base.Charsets
 import com.google.common.base.Strings
-import net.sourceforge.ganttproject.CustomProperty
-import net.sourceforge.ganttproject.CustomPropertyClass
-import net.sourceforge.ganttproject.CustomPropertyDefinition
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import java.io.IOException
@@ -98,9 +98,9 @@ class CsvWriterImpl @JvmOverloads constructor(
  */
 @Throws(IOException::class)
 fun writeCustomPropertyValues(
-    writer: SpreadsheetWriter,
-    defs: List<CustomPropertyDefinition>,
-    values: List<CustomProperty>) {
+  writer: SpreadsheetWriter,
+  defs: List<CustomPropertyDefinition>,
+  values: List<CustomProperty>) {
   val definedProps = values.map { it.definition.id to it}.toMap()
   for (def in defs) {
     val value = definedProps[def.id]

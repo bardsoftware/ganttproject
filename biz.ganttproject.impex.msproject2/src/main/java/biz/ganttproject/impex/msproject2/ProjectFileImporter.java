@@ -28,6 +28,8 @@ import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
+import biz.ganttproject.customproperty.CustomPropertyClass;
+import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -39,7 +41,7 @@ import net.sf.mpxj.mspdi.MSPDIReader;
 import net.sf.mpxj.reader.ProjectReader;
 import net.sourceforge.ganttproject.*;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.task.CustomColumnsException;
+import biz.ganttproject.customproperty.CustomColumnsException;
 import net.sourceforge.ganttproject.task.Task.Priority;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
@@ -342,7 +344,11 @@ class ProjectFileImporter {
         def.getAttributes().put(CustomPropertyMapping.MSPROJECT_TYPE, rf.name());
         myResourceCustomPropertyMapping.put(rf, def);
       }
-      nativeResource.setCustomField(def, convertDataValue(rf, r.getCurrentValue(rf)));
+      try {
+        nativeResource.setValue(def, convertDataValue(rf, r.getCurrentValue(rf)));
+      } catch (CustomColumnsException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 

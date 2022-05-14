@@ -18,7 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.search;
 
-import net.sourceforge.ganttproject.CustomProperty;
+import biz.ganttproject.customproperty.CustomProperty;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;

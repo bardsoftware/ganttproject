@@ -1,9 +1,9 @@
 /*
-Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+Copyright 2022 BarD Software s.r.o.
 
-This file is part of GanttProject, an opensource project management tool.
+This file is part of GanttProject, an open-source project management tool.
 
-GanttProject is free software: you can redistribute it and/or modify 
+GanttProject is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -15,11 +15,14 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
- */
-package net.sourceforge.ganttproject;
+*/
+package biz.ganttproject.customproperty
 
-import net.sourceforge.ganttproject.task.CustomPropertyEvent;
-
-public interface CustomPropertyListener {
-  public void customPropertyChange(CustomPropertyEvent event);
+sealed class CalculationMethod(val propertyId: String, val resultClass: Class<*>) {
 }
+
+class SimpleSelect(propertyId: String,
+                   val selectExpression: String = "id",
+                   resultClass: Class<*>) : CalculationMethod(propertyId, resultClass) {
+}
+

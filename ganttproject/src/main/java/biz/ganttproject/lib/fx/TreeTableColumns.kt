@@ -23,7 +23,7 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.scene.control.TreeTableColumn
-import net.sourceforge.ganttproject.CustomPropertyManager
+import biz.ganttproject.customproperty.CustomPropertyManager
 
 /**
  * Provides a list of "built-in" columns, that is, those which are not
@@ -47,11 +47,11 @@ data class BuiltinColumns(
  * @author dbarashev@bardsoftware.com
  */
 class ColumnListImpl(
-  private val columnList: MutableList<ColumnList.Column>,
-  private val customPropertyManager: CustomPropertyManager,
-  private val tableColumns: () -> List<TreeTableColumn<*, *>>,
-  private val onColumnChange: () -> Unit = {},
-  private val builtinColumns: BuiltinColumns
+        private val columnList: MutableList<ColumnList.Column>,
+        private val customPropertyManager: CustomPropertyManager,
+        private val tableColumns: () -> List<TreeTableColumn<*, *>>,
+        private val onColumnChange: () -> Unit = {},
+        private val builtinColumns: BuiltinColumns
 ) : ColumnList {
 
   val totalWidth: Double get() = totalWidthProperty.value

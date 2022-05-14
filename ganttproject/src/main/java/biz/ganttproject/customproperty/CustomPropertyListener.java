@@ -16,23 +16,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.task;
+package biz.ganttproject.customproperty;
 
-import biz.ganttproject.core.time.GanttCalendar;
+import net.sourceforge.ganttproject.task.CustomPropertyEvent;
 
-/**
- * @author bard Date: 27.01.2004
- */
-public interface TaskMutator extends MutableTask {
-  int READ_UNCOMMITED = 0;
-
-  int READ_COMMITED = 1;
-
-  void setIsolationLevel(int level);
-
-  void commit();
-
-  int getCompletionPercentage();
-
-  void setThird(GanttCalendar third, int thirdDateConstraint);
+public interface CustomPropertyListener {
+  public void customPropertyChange(CustomPropertyEvent event);
 }

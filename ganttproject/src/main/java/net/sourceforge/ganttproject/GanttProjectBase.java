@@ -27,6 +27,7 @@ import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import biz.ganttproject.ganttview.*;
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
 import biz.ganttproject.lib.fx.TreeCollapseView;
@@ -191,11 +192,15 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected GanttProjectBase() {
     super("GanttProject");
-    myProjectDatabase = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase);
+    var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager);
+
+    myProjectDatabase = databaseProxy;
     myTaskManagerConfig = new TaskManagerConfigImpl();
     myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig,
       myProjectDatabase::createTaskUpdateBuilder);
     myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager);
+    addProjectEventListener(databaseProxy.createProjectEventListener());
+    myTaskManager.addTaskListener(databaseProxy.createTaskEventListener());
     statusBar = new GanttStatusBar(this);
     myTabPane = new GanttTabbedPane();
     myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());
@@ -237,12 +242,13 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return getUIFacade().getResourceTree().getVisibleFields();
       }
     };
-    myUndoManager = new UndoManagerImpl(this, null, myDocumentManager) {
+    myUndoManager = new UndoManagerImpl(this, null, myDocumentManager, myProjectDatabase) {
       @Override
       protected ParserFactory getParserFactory() {
         return GanttProjectBase.this.getParserFactory();
       }
     };
+    myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
     myViewManager = new ViewManagerImpl(getProject(), myUIFacade, myTabPane, getUndoManager());
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);

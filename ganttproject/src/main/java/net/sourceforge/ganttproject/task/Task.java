@@ -22,6 +22,7 @@ import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.customproperty.CustomColumnsValues;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 import org.jetbrains.annotations.NotNull;

@@ -15,6 +15,7 @@ import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
 import biz.ganttproject.core.model.task.ConstraintType;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.time.*;
+import biz.ganttproject.customproperty.*;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
@@ -667,6 +668,9 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public TaskUpdateBuilder createTaskUpdateBuilder(Task task) {
+    if (task == getRootTask()) {
+      return null;
+    }
     if (myTaskUpdateBuilderFactory != null) {
       return myTaskUpdateBuilderFactory.createTaskUpdateBuilder(task);
     }
@@ -849,7 +853,6 @@ public class TaskManagerImpl implements TaskManager {
 
       nextImported.setShape(task.getShape());
       nextImported.setCompletionPercentage(task.getCompletionPercentage());
-      nextImported.setTaskInfo(task.getTaskInfo());
       nextImported.setExpand(task.getExpand());
       nextImported.setMilestone(task.isMilestone());
       nextImported.getCost().setValue(that.getCost());
@@ -898,15 +901,19 @@ public class TaskManagerImpl implements TaskManager {
       Task[] tasks = myAlgorithmCollection.getCriticalPathAlgorithm().getCriticalTasks();
       resetCriticalPath();
       for (Task task : tasks) {
-        task.setCritical(true);
+        var mutator = task.createMutator();
+        mutator.setCritical(true);
+        mutator.commit();
       }
     }
   }
 
   private void resetCriticalPath() {
     Task[] allTasks = getTasks();
-    for (Task allTask : allTasks) {
-      allTask.setCritical(false);
+    for (Task t : allTasks) {
+      var mutator = t.createMutator();
+      mutator.setCritical(false);
+      mutator.commit();
     }
   }
 

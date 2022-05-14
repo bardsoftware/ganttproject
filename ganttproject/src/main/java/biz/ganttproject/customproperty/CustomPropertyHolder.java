@@ -16,12 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject;
+package biz.ganttproject.customproperty;
 
-public interface CustomProperty {
-  CustomPropertyDefinition getDefinition();
 
-  Object getValue();
+import java.util.List;
 
-  String getValueAsString();
+public interface CustomPropertyHolder {
+  List<CustomProperty> getCustomProperties();
+
+  CustomProperty addCustomProperty(CustomPropertyDefinition definition, String defaultValueAsString) throws CustomColumnsException;
+  void setValue(CustomPropertyDefinition def, Object value) throws CustomColumnsException;
 }

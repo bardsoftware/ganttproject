@@ -25,21 +25,22 @@ import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.db.Tables.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.storage.ProjectDatabase.*
+import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskInfo
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
+import net.sourceforge.ganttproject.util.ColorConvertion
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
+import org.jooq.SelectSelectStep
 import org.jooq.UpdateSetMoreStep
 import org.jooq.UpdateSetStep
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
+import org.jooq.impl.DSL.field
 import java.awt.Color
 import java.sql.SQLException
 import javax.sql.DataSource
-import kotlin.text.Charsets
 
 class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDatabase {
   companion object Factory {
@@ -180,6 +181,33 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       .map { XlogRecord(it) }
   }
 
+  override fun findTasks(whereExpression: String, lookupById: (Int)->Task?): List<Task> {
+    return withDSL({"Failed to execute query $whereExpression"}) { dsl ->
+      dsl.select(TASK.NUM).from(TASK).where(whereExpression).mapNotNull {
+        lookupById(it.value1())
+      }
+    }
+  }
+
+  fun <T> SelectSelectStep<org.jooq.Record>.select(col: ColumnConsumer?): SelectSelectStep<org.jooq.Record> =
+    col?.let { this.select(field(it.first.selectExpression, it.first.resultClass)!!.`as`(col.first.propertyId))} ?: this
+
+  override fun mapTasks(vararg columnConsumer: ColumnConsumer) {
+    withDSL { dsl ->
+      var q: SelectSelectStep<out org.jooq.Record> = dsl.select(TASK.NUM)
+      columnConsumer.forEach {
+        q = q.select(field(it.first.selectExpression, it.first.resultClass).`as`(it.first.propertyId))
+      }
+      q.from(TASK).forEach {row  ->
+        val taskNum = row[TASK.NUM]
+        columnConsumer.forEach {
+          it.second(taskNum, row[it.first.propertyId])
+        }
+      }
+
+    }
+  }
+
   /** Add update query and save its xlog in the current transaction. */
   @Throws(ProjectDatabaseException::class)
   internal fun update(h2Query: String, postgresQuery: String) = withLog({ "Failed to execute update" }, h2Query, postgresQuery)
@@ -211,62 +239,44 @@ class SqlTaskUpdateBuilder(private val task: Task,
   override fun setMilestone(isMilestone: Boolean) = nextStep { it.set(TASK.IS_MILESTONE, isMilestone) }
 
   override fun setPriority(priority: Task.Priority?) {
-    TODO("Not yet implemented")
+    if (priority != null) {
+      nextStep { it.set(TASK.PRIORITY, priority.persistentValue) }
+    }
   }
 
   override fun setStart(start: GanttCalendar) = nextStep { it.set(TASK.START_DATE, start.toLocalDate()) }
 
   override fun setEnd(end: GanttCalendar?) {
-    TODO("Not yet implemented")
+    // intentionally empty, we do not store the end date
   }
 
-  override fun setDuration(length: TimeDuration?) {
-    TODO("Not yet implemented")
-  }
+  override fun setDuration(length: TimeDuration) = nextStep { it.set(TASK.DURATION, length.length) }
 
   override fun shift(shift: TimeDuration?) {
     TODO("Not yet implemented")
   }
 
-  override fun setCompletionPercentage(percentage: Int) {
-    TODO("Not yet implemented")
-  }
+  override fun setCompletionPercentage(percentage: Int) = nextStep { it.set(TASK.COMPLETION, percentage) }
 
-  override fun setShape(shape: ShapePaint?) {
-    TODO("Not yet implemented")
-  }
+  override fun setShape(shape: ShapePaint?) = nextStep { it.set(TASK.SHAPE, shape?.array) }
 
-  override fun setColor(color: Color?) {
-    TODO("Not yet implemented")
-  }
+  override fun setColor(color: Color?) = nextStep { it.set(TASK.COLOR, color?.let {ColorConvertion.getColor(it)}) }
 
-  override fun setWebLink(webLink: String?) {
-    TODO("Not yet implemented")
-  }
 
-  override fun setNotes(notes: String?) {
-    TODO("Not yet implemented")
-  }
+  override fun setWebLink(webLink: String?) = nextStep { it.set(TASK.WEB_LINK, webLink) }
 
-  override fun addNotes(notes: String?) {
-    TODO("Not yet implemented")
-  }
+
+  override fun setNotes(notes: String?) = nextStep { it.set(TASK.NOTES, notes) }
 
   override fun setExpand(expand: Boolean) {
-    TODO("Not yet implemented")
+    // intentionally empty: we do not keep the expansion state in the task properties
   }
 
   override fun setCritical(critical: Boolean) {
-    TODO("Not yet implemented")
+    // TODO("Not yet implemented")
   }
 
-  override fun setTaskInfo(taskInfo: TaskInfo?) {
-    TODO("Not yet implemented")
-  }
-
-  override fun setProjectTask(projectTask: Boolean) {
-    TODO("Not yet implemented")
-  }
+  override fun setProjectTask(projectTask: Boolean) = nextStep { it.set(TASK.IS_PROJECT_TASK, projectTask) }
 }
 
 private fun Task.logId(): String = "${uid}:${taskID}"

@@ -28,6 +28,7 @@ import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.customproperty.CustomPropertyListener;
 import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
 import com.google.common.collect.Lists;

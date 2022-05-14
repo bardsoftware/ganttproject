@@ -177,7 +177,15 @@ data class XmlTasks(
     @get:JacksonXmlProperty(isAttribute = true) var name: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var type: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var valuetype: String = "",
-    @get:JacksonXmlProperty(isAttribute = true) var defaultvalue: String? = null
+    @get:JacksonXmlProperty(isAttribute = true) var defaultvalue: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(localName = "simple-select")
+    var simpleSelect: XmlCalculationSimpleSelect? = null
+  )
+
+  data class XmlCalculationSimpleSelect(
+    @get:JacksonXmlProperty(isAttribute = true) var select: String = "",
   )
 
   @JsonPropertyOrder(

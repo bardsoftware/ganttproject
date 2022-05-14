@@ -23,11 +23,11 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.customproperty.CustomPropertyClass
 import junit.framework.TestCase
-import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.task.CustomColumnsManager
-import net.sourceforge.ganttproject.task.CustomColumnsValues
+import biz.ganttproject.customproperty.CustomColumnsValues
 import org.apache.commons.csv.CSVFormat
 import org.w3c.util.DateParser
 import java.io.ByteArrayInputStream
@@ -36,7 +36,6 @@ import java.lang.Exception
 import java.math.BigDecimal
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.time.Instant
 import java.util.*
 
 /**

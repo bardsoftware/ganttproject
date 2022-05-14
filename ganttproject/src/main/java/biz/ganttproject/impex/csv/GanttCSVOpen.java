@@ -19,12 +19,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.core.time.TimeUnitStack;
+import biz.ganttproject.customproperty.CustomPropertyClass;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
-import net.sourceforge.ganttproject.CustomPropertyClass;
-import net.sourceforge.ganttproject.CustomPropertyManager;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;

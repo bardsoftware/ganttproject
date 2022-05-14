@@ -23,6 +23,9 @@ import biz.ganttproject.app.dialog
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
+import biz.ganttproject.customproperty.SimpleSelect
+import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
@@ -42,9 +45,7 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.util.Callback
-import net.sourceforge.ganttproject.CustomPropertyClass
-import net.sourceforge.ganttproject.CustomPropertyDefinition
-import net.sourceforge.ganttproject.CustomPropertyManager
+import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty
@@ -76,7 +77,6 @@ class ColumnManager(
   private val customPropertyEditor = CustomPropertyEditor(
     customColumnsManager, btnDeleteController, listItems,
     errorUi = {
-      println(errorLabel.styleClass)
       if (it == null) {
         errorPane.isVisible = false
         if (!errorPane.styleClass.contains("noerror")) {
@@ -137,7 +137,15 @@ class ColumnManager(
       null,
       isVisible = true, isCustom = true, customColumnsManager
     ).also {
-      it.title = RootLocalizer.formatText("addCustomColumn")
+      val title = RootLocalizer.create("addCustomColumn").also {
+        it.update("")
+      }
+      var count = 1
+      while (listView.items.any { it.title == title.value.trim() }) {
+        title.update(count.toString())
+        count++
+      }
+      it.title = title.value.trim()
     }
     listItems.add(item)
     listView.scrollTo(item)
@@ -166,6 +174,9 @@ class ColumnManager(
         val def = customColumnsManager.createDefinition(columnItem.type.getCustomPropertyClass(), columnItem.title, columnItem.defaultValue)
         if (columnItem.isVisible) {
           mergedColumns.add(ColumnList.ColumnStub(def.id, def.name, true, mergedColumns.size, 50))
+        }
+        if (columnItem.isCalculated) {
+          def.calculationMethod = SimpleSelect(def.id, columnItem.expression, def.propertyClass.javaClass)
         }
       }
     }
@@ -212,12 +223,18 @@ internal fun PropertyType.createValidator(): ValueValidator<*> = when (this) {
   }
   else -> voidValidator
 }
+
 internal fun CustomPropertyDefinition.fromColumnItem(item: ColumnAsListItem) {
   this.name = item.title
   if (item.defaultValue.trim().isNotBlank()) {
     this.defaultValueAsString = item.defaultValue
   }
-  this.propertyClass = item.type.getCustomPropertyClass()
+  this.setPropertyClass(item.type.getCustomPropertyClass())
+  if (item.isCalculated) {
+    this.calculationMethod = SimpleSelect(this.id, item.expression, this.propertyClass.javaClass)
+  } else {
+    this.calculationMethod = null
+  }
 }
 
 internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {
@@ -255,10 +272,14 @@ internal class CustomPropertyEditor(
         propertySheet.isDisable = false
         btnDeleteController.isDisabled.value = false
         editableValue.defaultValue = selectedItem.defaultValue
+        editableValue.isCalculated = selectedItem.isCalculated
+        editableValue.expression = selectedItem.expression
       } else {
         btnDeleteController.isDisabled.value = true
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.builtin")
         propertySheet.isDisable = true
+        editableValue.isCalculated = false
+        editableValue.expression = ""
       }
     }
     isPropertyChangeIgnored = false
@@ -279,7 +300,13 @@ internal class CustomPropertyEditor(
       it.displayName = RootLocalizer.formatText("option.customPropertyDialog.defaultValue.label")
     }
   )
-  val props = listOf(title, type, defaultValue)
+  private val isCalculated = BeanProperty(editableValue, PropertyDescriptor("calculated", ColumnAsListItem::class.java).also {
+    it.displayName = RootLocalizer.formatText("option.customPropertyDialog.isCalculated.label")
+  })
+  private val expression = BeanProperty(editableValue, PropertyDescriptor("expression", ColumnAsListItem::class.java).also {
+    it.displayName = RootLocalizer.formatText("option.customPropertyDialog.expression.label")
+  })
+  val props = listOf(title, type, defaultValue, isCalculated, expression)
   private val editors = mutableMapOf<String, PropertyEditor<*>>()
 
   init {
@@ -291,12 +318,14 @@ internal class CustomPropertyEditor(
       }
     }
     props.forEach { it.observableValue.get().addListener { _, _, _ -> onPropertyChange() } }
-
   }
   private fun onPropertyChange() {
     if (!isPropertyChangeIgnored) {
       selectedItem?.title = editableValue.title
       selectedItem?.type = editableValue.type
+      editors["expression"]?.let { it.editor.isDisable = !editableValue.isCalculated }
+      selectedItem?.isCalculated = editableValue.isCalculated
+      selectedItem?.expression = editableValue.expression
       editors["defaultValue"]?.let { editor ->
         try {
           if (editableValue.defaultValue.isNotBlank()) {
@@ -321,10 +350,11 @@ internal class CustomPropertyEditor(
 
   fun focus() {
     editors["title"]?.editor?.requestFocus()
+    onPropertyChange()
   }
 }
 
-internal data class ColumnAsListItem(
+internal class ColumnAsListItem(
   val column: ColumnList.Column?,
   var isVisible: Boolean,
   val isCustom: Boolean,
@@ -348,21 +378,58 @@ internal data class ColumnAsListItem(
     set(value) { _defaultValue.value = value }
   fun defaultValueProperty() = _defaultValue
 
+  private val _isCalculated = SimpleBooleanProperty(false)
+  var isCalculated: Boolean
+    get() = _isCalculated.value
+    set(value) { _isCalculated.value = value }
+  fun calculatedProperty() = _isCalculated
+
+  private val _expression = SimpleStringProperty("")
+  var expression: String
+    get() = _expression.value
+    set(value) { _expression.value = value }
+  fun expressionProperty() = _expression
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+
+    other as ColumnAsListItem
+
+    if (_title != other._title) return false
+
+    return true
+  }
+
+  override fun hashCode(): Int {
+    return _title.hashCode()
+  }
+
   init {
     if (column != null) {
       title = column.name
+      val customColumn = customColumnsManager.definitions.find { it.id == column?.id }
       type = run {
         if (isCustom) {
-          customColumnsManager.definitions.find { it.id == column?.id }?.getPropertyType()
+          customColumn?.getPropertyType()
         } else {
           TaskDefaultColumn.find(column?.id)?.getPropertyType()
         }
       } ?: PropertyType.STRING
       defaultValue =
         if (!isCustom) ""
-        else customColumnsManager.definitions.find { it.id == column.id }?.defaultValueAsString ?: ""
+        else customColumn?.defaultValueAsString ?: ""
+      isCalculated = customColumn?.calculationMethod != null
+      expression = customColumn?.calculationMethod?.let {
+        when (it) {
+          is SimpleSelect -> it.selectExpression
+          else -> ""
+        }
+      } ?: ""
+
     }
   }
+
+
 
 }
 

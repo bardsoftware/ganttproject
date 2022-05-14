@@ -18,20 +18,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.resource;
 
+import biz.ganttproject.core.calendar.GanttDaysOff;
+import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.customproperty.CustomColumnsException;
+import biz.ganttproject.customproperty.CustomProperty;
+import net.sourceforge.ganttproject.GPLogger;
+
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import biz.ganttproject.core.calendar.GanttDaysOff;
-import biz.ganttproject.core.option.EnumerationOption;
-
-import net.sourceforge.ganttproject.CustomProperty;
-
 public class OverwritingMerger implements HumanResourceMerger {
   private final EnumerationOption myMergeOption;
-  private final Map<String, HumanResource> myCache = new HashMap<String, HumanResource>();
+  private final Map<String, HumanResource> myCache = new HashMap<>();
 
   public OverwritingMerger(EnumerationOption mergeOption) {
     myMergeOption = mergeOption;
@@ -39,8 +39,7 @@ public class OverwritingMerger implements HumanResourceMerger {
 
   @Override
   public void merge(Map<HumanResource, HumanResource> foreign2native) {
-    for (Iterator<Entry<HumanResource, HumanResource>> entries = foreign2native.entrySet().iterator(); entries.hasNext();) {
-      Map.Entry<HumanResource, HumanResource> entry = entries.next();
+    for (Entry<HumanResource, HumanResource> entry : foreign2native.entrySet()) {
       merge(entry.getKey(), entry.getValue());
     }
   }
@@ -48,7 +47,7 @@ public class OverwritingMerger implements HumanResourceMerger {
   private void merge(HumanResource mergeFrom, HumanResource mergeTo) {
     if (mergeFrom.getDaysOff() != null) {
       for (int i = 0; i < mergeFrom.getDaysOff().size(); i++) {
-        mergeTo.addDaysOff(GanttDaysOff.create((GanttDaysOff) mergeFrom.getDaysOff().get(i)));
+        mergeTo.addDaysOff(GanttDaysOff.create(mergeFrom.getDaysOff().get(i)));
       }
     }
     mergeTo.setName(mergeFrom.getName());
@@ -58,9 +57,12 @@ public class OverwritingMerger implements HumanResourceMerger {
     mergeTo.setRole(mergeFrom.getRole());
     mergeTo.setStandardPayRate(mergeFrom.getStandardPayRate());
     List<CustomProperty> customProperties = mergeFrom.getCustomProperties();
-    for (int i = 0; i < customProperties.size(); i++) {
-      CustomProperty nextProperty = customProperties.get(i);
-      mergeTo.addCustomProperty(nextProperty.getDefinition(), nextProperty.getValueAsString());
+    for (CustomProperty nextProperty : customProperties) {
+      try {
+        mergeTo.addCustomProperty(nextProperty.getDefinition(), nextProperty.getValueAsString());
+      } catch (CustomColumnsException ex) {
+        GPLogger.log(ex);
+      }
     }
   }
 
@@ -90,16 +92,14 @@ public class OverwritingMerger implements HumanResourceMerger {
 
   private void buildNameCache(HumanResourceManager nativeMgr) {
     List<HumanResource> resources = nativeMgr.getResources();
-    for (int i = 0; i < resources.size(); i++) {
-      HumanResource hr = resources.get(i);
+    for (HumanResource hr : resources) {
       myCache.put(hr.getName(), hr);
     }
   }
 
   private void buildEmailCache(HumanResourceManager nativeMgr) {
     List<HumanResource> resources = nativeMgr.getResources();
-    for (int i = 0; i < resources.size(); i++) {
-      HumanResource hr = resources.get(i);
+    for (HumanResource hr : resources) {
       myCache.put(hr.getMail(), hr);
     }
   }
