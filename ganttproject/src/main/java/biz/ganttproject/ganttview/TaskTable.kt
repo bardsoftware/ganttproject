@@ -655,7 +655,7 @@ class TaskTable(
       throw NullPointerException("NPE! this=$this")
     }
     val childItem = createTreeItem(child)
-    if (pos == -1) {
+    if (pos == -1 || pos > parentItem.children.size) {
       parentItem.children.add(childItem)
     } else {
       parentItem.children.add(pos, childItem)
