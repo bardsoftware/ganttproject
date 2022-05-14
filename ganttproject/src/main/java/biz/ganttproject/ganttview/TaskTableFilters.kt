@@ -20,34 +20,73 @@ package biz.ganttproject.ganttview
 
 import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.GPOption
+import biz.ganttproject.core.time.CalendarFactory
+import biz.ganttproject.core.time.GanttCalendar
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
-import java.time.LocalDate
+import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
+import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 
 typealias TaskFilter = (parent: Task, child: Task?) -> Boolean
+typealias FilterChangedListener = (filter: TaskFilter?) -> Unit
 
 class TaskFilterManager(val taskManager: TaskManager) {
 
   val options: List<GPOption<*>> get() = listOf(
     filterCompletedTasksOption,
-    filterDueTodayOption)
+    filterDueTodayOption,
+    filterOverdueOption,
+    filterInProgressTodayOption)
 
   val filterCompletedTasksOption = DefaultBooleanOption("filter.completedTasks", false)
+  val completedTasksFilter: TaskFilter = { _, child ->
+    child?.completionPercentage?.let { it < 100 } ?: true
+  }
 
   val filterDueTodayOption = DefaultBooleanOption("filter.dueTodayTasks", false)
   val dueTodayFilter: TaskFilter  = { _, child ->
-    child?.end?.let {
-      LocalDate.now().isAfter(it.toLocalDate()) || LocalDate.now().isEqual(it.toLocalDate())
-    } ?: false
+      child?.let {
+        it.completionPercentage < 100 &&
+        it.end?.compareTo(TODAY)!! == 0 } ?: true
+  }
+
+  val filterOverdueOption = DefaultBooleanOption("filter.overdueTasks", false)
+  val overdueFilter: TaskFilter  = { _, child ->
+    child?.let { it.completionPercentage < 100 &&
+      it.end?.compareTo(TODAY)!! < 0 } ?: true
+  }
+
+  val filterInProgressTodayOption = DefaultBooleanOption("filter.inProgressTodayTasks", false)
+  val inProgressTodayFilter: TaskFilter  = { _, child ->
+    child?.let { it.completionPercentage < 100 &&
+      it.end?.compareTo(TODAY)!! > 0 &&
+      it.start?.compareTo(TODAY)!! < 0 } ?: true
+  }
+
+  init {
+    taskManager.addTaskListener(TaskListenerAdapter().also {
+      it.taskProgressChangedHandler = { e: TaskPropertyEvent ->
+        if (activeFilter != VOID_FILTER) {
+          sync()
+        }
+      }
+    })
   }
 
   var activeFilter: TaskFilter = VOID_FILTER
     set(value) {
       field = value
+      fireFilterChanged(value)
       sync()
     }
+
+  val filterListeners = ArrayList<FilterChangedListener>()
+  private fun fireFilterChanged(value: TaskFilter) {
+    for(listener in filterListeners) listener(value)
+  }
 
   internal var sync: ()->Unit = {}
 }
 
 val VOID_FILTER: TaskFilter = { _, _ -> true }
+val TODAY: GanttCalendar = CalendarFactory.createGanttCalendar(CalendarFactory.newCalendar().time)

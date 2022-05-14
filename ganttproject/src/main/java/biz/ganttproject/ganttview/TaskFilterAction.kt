@@ -1,5 +1,5 @@
 /*
-Copyright 2021 BarD Software s.r.o
+Copyright 2022 BarD Software s.r.o, Alexander Popov
 
 This file is part of GanttProject, an open-source project management tool.
 
@@ -25,33 +25,20 @@ import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 import java.awt.event.ActionEvent
 
 /**
- * @author dbarashev@bardsoftware.com
+ * @author apopov77@gmail.com
  */
-internal class TaskFilterAction(
+class TaskFilterAction(
   actionName: String,
   private val filterManager: TaskFilterManager,
   private val taskFilterOption: DefaultBooleanOption,
   private val taskFilter: TaskFilter
 ) : GPAction(actionName) {
 
-
-  private val taskListener = TaskListenerAdapter().also {
-    it.taskProgressChangedHandler = { e: TaskPropertyEvent ->
-      val isChecked = getValue(SELECTED_KEY)
-      if (isChecked is java.lang.Boolean && isChecked.booleanValue()) {
-        filterManager.sync()
-      }
-    }
-  }
-
   init {
     putValue(SELECTED_KEY, java.lang.Boolean.FALSE)
-    filterManager.taskManager.addTaskListener(this.taskListener)
-    taskFilterOption.addChangeValueListener { evt ->
-      (evt.newValue as? Boolean)?.let {
-        if (evt.newValue != evt.oldValue) {
-          setChecked(it)
-        }
+    filterManager.filterListeners.add { filter ->
+      if (taskFilter != filter) {
+        putValue(SELECTED_KEY, java.lang.Boolean.FALSE)
       }
     }
   }
@@ -70,7 +57,7 @@ internal class TaskFilterAction(
     }
   }
 
-  fun setChecked(value: Boolean) {
+  private fun setChecked(value: Boolean) {
     putValue(SELECTED_KEY, value)
     if (value) {
       filterManager.activeFilter = taskFilter
