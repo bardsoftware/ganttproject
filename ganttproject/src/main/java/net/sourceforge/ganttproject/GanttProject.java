@@ -204,9 +204,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject-logo-512.png"));
     setIconImage(icon.getImage());
 
-    ProjectStateHolderEventListener stateListener = new ProjectStateHolderEventListener(myProjectDatabase);
-    addProjectEventListener(stateListener);
-    getTaskManager().addTaskListener(stateListener);
     if (isColloboqueLocalTest()) {
       getWebSocket().register(null);
       getWebSocket().onCommitResponseReceived(this::fireXlogReceived);

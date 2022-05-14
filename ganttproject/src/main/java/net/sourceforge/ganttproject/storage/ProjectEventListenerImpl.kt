@@ -16,19 +16,26 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
+package net.sourceforge.ganttproject.storage
 
-package net.sourceforge.ganttproject
-
-import net.sourceforge.ganttproject.ProjectEventListener.Stub
-import net.sourceforge.ganttproject.storage.ProjectDatabase
+import biz.ganttproject.app.Barrier
+import biz.ganttproject.app.BarrierEntrance
+import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.ProjectEventListener
+import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.*
+import net.sourceforge.ganttproject.undo.GPUndoListener
+import javax.swing.event.UndoableEditEvent
 
 /**
  * Holds the current state of a Gantt project, updating it on events.
  *
  * @param projectDatabase - database which holds the current project state.
  */
-class ProjectStateHolderEventListener(private val projectDatabase: ProjectDatabase) : TaskListener, Stub() {
+internal class ProjectEventListenerImpl(
+  private val projectDatabase: ProjectDatabase, private val taskManagerSupplier: ()-> TaskManager)
+  : TaskListener, ProjectEventListener.Stub(), GPUndoListener {
 
   private fun withLogger(errorMessage: () -> String, body: () -> Unit) {
     try {
@@ -36,6 +43,10 @@ class ProjectStateHolderEventListener(private val projectDatabase: ProjectDataba
     } catch (e: Exception) {
       LOG.error("${errorMessage()} {}", e)
     }
+  }
+
+  override fun projectOpened(barrierRegistry: BarrierEntrance, barrier: Barrier<IGanttProject>) {
+    barrier.await { it.taskManager.tasks.forEach(projectDatabase::insertTask) }
   }
 
   override fun projectClosed() = withLogger({ "Failed to close project" }) {
@@ -81,6 +92,17 @@ class ProjectStateHolderEventListener(private val projectDatabase: ProjectDataba
 
   override fun taskModelReset() {
     // ...
+  }
+
+  override fun undoableEditHappened(e: UndoableEditEvent?) {
+  }
+
+  override fun undoOrRedoHappened() {
+    projectDatabase.shutdown()
+    taskManagerSupplier().tasks.forEach(projectDatabase::insertTask)
+  }
+
+  override fun undoReset() {
   }
 }
 

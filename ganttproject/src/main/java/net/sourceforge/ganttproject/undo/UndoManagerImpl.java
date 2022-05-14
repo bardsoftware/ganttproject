@@ -24,6 +24,8 @@ import net.sourceforge.ganttproject.document.DocumentManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.parser.ParserFactory;
+import net.sourceforge.ganttproject.storage.ProjectDatabase;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.UndoableEditListener;
@@ -39,24 +41,29 @@ import java.io.IOException;
  * @author bard
  */
 public class UndoManagerImpl implements GPUndoManager {
-  private UndoableEditSupport myUndoEventDispatcher;
+  private final ProjectDatabase myProjectDatabase;
+  private final UndoableEditSupport myUndoEventDispatcher;
 
-  private UndoManager mySwingUndoManager;
+  private final UndoManager mySwingUndoManager;
 
-  private DocumentManager myDocumentManager;
+  private final DocumentManager myDocumentManager;
 
-  private ParserFactory myParserFactory;
+  private final ParserFactory myParserFactory;
 
-  private IGanttProject myProject;
+  private final IGanttProject myProject;
 
   private UndoableEditImpl swingEditImpl;
 
-  public UndoManagerImpl(IGanttProject project, ParserFactory parserFactory, DocumentManager documentManager) {
+  public UndoManagerImpl(@NotNull IGanttProject project,
+                         @NotNull ParserFactory parserFactory,
+                         @NotNull DocumentManager documentManager,
+                         @NotNull ProjectDatabase projectDatabase) {
     myProject = project;
     myParserFactory = parserFactory;
     myDocumentManager = documentManager;
     mySwingUndoManager = new UndoManager();
     myUndoEventDispatcher = new UndoableEditSupport();
+    myProjectDatabase = projectDatabase;
     GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
       public void languageChanged(Event event) {
         UIManager.getDefaults().put("AbstractUndoableEdit.undoText", GanttLanguage.getInstance().getText("undo"));
@@ -96,6 +103,7 @@ public class UndoManagerImpl implements GPUndoManager {
   }
 
 
+  ProjectDatabase getProjectDatabase() { return myProjectDatabase; }
   DocumentManager getDocumentManager() {
     return myDocumentManager;
   }
