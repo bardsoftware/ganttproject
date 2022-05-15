@@ -16,60 +16,51 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.task.algorithm;
+package net.sourceforge.ganttproject.task.algorithm
 
-import java.util.Collections;
-import java.util.List;
+import biz.ganttproject.core.time.TimeDuration
+import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskManagerImpl
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
 
-import biz.ganttproject.core.time.TimeDuration;
-
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManagerImpl;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
-
-public class ShiftTaskTreeAlgorithm {
-  public static final boolean DEEP = true;
-
-  public static final boolean SHALLOW = false;
-
-  private final TaskManagerImpl myTaskManager;
-  private final RecalculateTaskScheduleAlgorithm myRescheduleAlgorithm;
-
-  public ShiftTaskTreeAlgorithm(TaskManagerImpl taskManager, RecalculateTaskScheduleAlgorithm rescheduleAlgorithm) {
-    myTaskManager = taskManager;
-    myRescheduleAlgorithm = rescheduleAlgorithm;
-  }
-
-  public void run(List<Task> tasks, TimeDuration shift, boolean deep) throws AlgorithmException {
-    myTaskManager.setEventsEnabled(false);
-    try {
-      for (Task t : tasks) {
-        shiftTask(t, shift, deep);
-      }
-      try {
-        myTaskManager.getAlgorithmCollection().getScheduler().run();
-      } catch (TaskDependencyException e) {
-        throw new AlgorithmException("Failed to reschedule the following tasks tasks after move:\n" + tasks, e);
-      }
-    } finally {
-      myTaskManager.setEventsEnabled(true);
+class ShiftTaskTreeAlgorithm(private val myTaskManager: TaskManagerImpl, private val myRescheduleAlgorithm: RecalculateTaskScheduleAlgorithm?) {
+    @Throws(AlgorithmException::class)
+    fun run(tasks: List<Task>, shift: TimeDuration, deep: Boolean) {
+        myTaskManager.setEventsEnabled(false)
+        try {
+            for (t in tasks) {
+                shiftTask(t, shift, deep)
+            }
+            try {
+                myTaskManager.algorithmCollection.scheduler.run()
+            } catch (e: TaskDependencyException) {
+                throw AlgorithmException("Failed to reschedule the following tasks tasks after move:\n$tasks", e)
+            }
+        } finally {
+            myTaskManager.setEventsEnabled(true)
+        }
     }
-  }
 
-  public void run(Task rootTask, TimeDuration shift, boolean deep) throws AlgorithmException {
-    run(Collections.singletonList(rootTask), shift, deep);
-  }
+    @Throws(AlgorithmException::class)
+    fun run(rootTask: Task, shift: TimeDuration?, deep: Boolean) {
+        run(listOf(rootTask), shift!!, deep)
+    }
 
-  private void shiftTask(Task rootTask, TimeDuration shift, boolean deep) {
-    if (rootTask != myTaskManager.getRootTask()) {
-      rootTask.shift(shift);
+    private fun shiftTask(rootTask: Task, shift: TimeDuration, deep: Boolean) {
+        if (rootTask !== myTaskManager.rootTask) {
+            rootTask.shift(shift)
+        }
+        if (deep) {
+            val nestedTasks = rootTask.manager.taskHierarchy.getNestedTasks(rootTask)
+            for (i in nestedTasks.indices) {
+                val next = nestedTasks[i]
+                shiftTask(next, shift, true)
+            }
+        }
     }
-    if (deep) {
-      Task[] nestedTasks = rootTask.getManager().getTaskHierarchy().getNestedTasks(rootTask);
-      for (int i = 0; i < nestedTasks.length; i++) {
-        Task next = nestedTasks[i];
-        shiftTask(next, shift, true);
-      }
+
+    companion object {
+        const val DEEP = true
+        const val SHALLOW = false
     }
-  }
 }
