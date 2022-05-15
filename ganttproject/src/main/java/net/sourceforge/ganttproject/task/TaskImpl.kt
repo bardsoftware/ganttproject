@@ -284,7 +284,7 @@ internal open class MutatorImpl(
         FieldChange(EventSender(taskImpl) {}, taskImpl.myStart),
         FieldChange(EventSender(taskImpl) {}, taskImpl.myEnd))
     }
-    val shiftAlgorithm = ShiftTaskTreeAlgorithm(myManager, null)
+    val shiftAlgorithm = ShiftTaskTreeAlgorithm(myManager)
     try {
       shiftAlgorithm.run(taskImpl, shift, ShiftTaskTreeAlgorithm.DEEP)
     } catch (e: AlgorithmException) {

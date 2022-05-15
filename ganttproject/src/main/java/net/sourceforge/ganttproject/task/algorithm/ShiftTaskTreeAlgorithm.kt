@@ -23,44 +23,44 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManagerImpl
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
 
-class ShiftTaskTreeAlgorithm(private val myTaskManager: TaskManagerImpl, private val myRescheduleAlgorithm: RecalculateTaskScheduleAlgorithm?) {
-    @Throws(AlgorithmException::class)
-    fun run(tasks: List<Task>, shift: TimeDuration, deep: Boolean) {
-        myTaskManager.setEventsEnabled(false)
-        try {
-            for (t in tasks) {
-                shiftTask(t, shift, deep)
-            }
-            try {
-                myTaskManager.algorithmCollection.scheduler.run()
-            } catch (e: TaskDependencyException) {
-                throw AlgorithmException("Failed to reschedule the following tasks tasks after move:\n$tasks", e)
-            }
-        } finally {
-            myTaskManager.setEventsEnabled(true)
-        }
+class ShiftTaskTreeAlgorithm(private val taskManager: TaskManagerImpl) {
+  @Throws(AlgorithmException::class)
+  fun run(tasks: List<Task>, shift: TimeDuration, deep: Boolean) {
+    taskManager.setEventsEnabled(false)
+    try {
+      for (t in tasks) {
+        shiftTask(t, shift, deep)
+      }
+      try {
+        taskManager.algorithmCollection.scheduler.run()
+      } catch (e: TaskDependencyException) {
+        throw AlgorithmException("Failed to reschedule the following tasks tasks after move:\n$tasks", e)
+      }
+    } finally {
+      taskManager.setEventsEnabled(true)
     }
+  }
 
-    @Throws(AlgorithmException::class)
-    fun run(rootTask: Task, shift: TimeDuration?, deep: Boolean) {
-        run(listOf(rootTask), shift!!, deep)
-    }
+  @Throws(AlgorithmException::class)
+  fun run(rootTask: Task, shift: TimeDuration?, deep: Boolean) {
+    run(listOf(rootTask), shift!!, deep)
+  }
 
-    private fun shiftTask(rootTask: Task, shift: TimeDuration, deep: Boolean) {
-        if (rootTask !== myTaskManager.rootTask) {
-            rootTask.shift(shift)
-        }
-        if (deep) {
-            val nestedTasks = rootTask.manager.taskHierarchy.getNestedTasks(rootTask)
-            for (i in nestedTasks.indices) {
-                val next = nestedTasks[i]
-                shiftTask(next, shift, true)
-            }
-        }
+  private fun shiftTask(rootTask: Task, shift: TimeDuration, deep: Boolean) {
+    if (rootTask !== taskManager.rootTask) {
+      rootTask.shift(shift)
     }
+    if (deep) {
+      val nestedTasks = rootTask.manager.taskHierarchy.getNestedTasks(rootTask)
+      for (i in nestedTasks.indices) {
+        val next = nestedTasks[i]
+        shiftTask(next, shift, true)
+      }
+    }
+  }
 
-    companion object {
-        const val DEEP = true
-        const val SHALLOW = false
-    }
+  companion object {
+    const val DEEP = true
+    const val SHALLOW = false
+  }
 }
