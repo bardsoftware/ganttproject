@@ -32,13 +32,13 @@ import java.io.IOException;
  * @author bard
  */
 class UndoableEditImpl extends AbstractUndoableEdit {
-  private String myPresentationName;
+  private final String myPresentationName;
 
-  private Document myDocumentBefore;
+  private final Document myDocumentBefore;
 
-  private Document myDocumentAfter;
+  private final Document myDocumentAfter;
 
-  private UndoManagerImpl myManager;
+  private final UndoManagerImpl myManager;
 
   UndoableEditImpl(String localizedName, Runnable editImpl, UndoManagerImpl manager) throws IOException {
     myManager = manager;
@@ -47,13 +47,13 @@ class UndoableEditImpl extends AbstractUndoableEdit {
     try {
       myManager.getProjectDatabase().startTransaction();
     } catch (ProjectDatabaseException ex) {
-
+      GPLogger.log(ex);
     }
     editImpl.run();
     try {
       myManager.getProjectDatabase().commitTransaction();
     } catch (ProjectDatabaseException ex) {
-
+      GPLogger.log(ex);
     }
     myDocumentAfter = saveFile();
   }
@@ -78,9 +78,7 @@ class UndoableEditImpl extends AbstractUndoableEdit {
   public void redo() throws CannotRedoException {
     try {
       restoreDocument(myDocumentAfter);
-    } catch (DocumentException e) {
-      undoRedoExceptionHandler(e);
-    } catch (IOException e) {
+    } catch (DocumentException | IOException e) {
       undoRedoExceptionHandler(e);
     }
   }
@@ -89,9 +87,7 @@ class UndoableEditImpl extends AbstractUndoableEdit {
   public void undo() throws CannotUndoException {
     try {
       restoreDocument(myDocumentBefore);
-    } catch (DocumentException e) {
-      undoRedoExceptionHandler(e);
-    } catch (IOException e) {
+    } catch (DocumentException | IOException e) {
       undoRedoExceptionHandler(e);
     }
   }
