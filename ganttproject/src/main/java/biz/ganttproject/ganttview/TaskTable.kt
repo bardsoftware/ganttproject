@@ -140,7 +140,16 @@ class TaskTable(
   // Task filters -> actions
 
   private val filterCompletedTasksAction = TaskFilterAction("taskTable.filter.completedTasks",
-    filters, filters.filterCompletedTasksOption, filters.completedTasksFilter)
+    filters, filters.filterCompletedTasksOption, filters.completedTasksFilter).also {action ->
+      filters.filterCompletedTasksOption.addChangeValueListener {evt ->
+      (evt.newValue as? Boolean)?.let {
+        if (evt.newValue != evt.oldValue) {
+          action.setChecked(it)
+        }
+      }
+    }
+  }
+
   private val filterDueTodayTasksAction = TaskFilterAction("taskTable.filter.dueTodayTasks",
     filters, filters.filterDueTodayOption, filters.dueTodayFilter)
   private val filterOverdueTasksAction = TaskFilterAction("taskTable.filter.overdueTasks",

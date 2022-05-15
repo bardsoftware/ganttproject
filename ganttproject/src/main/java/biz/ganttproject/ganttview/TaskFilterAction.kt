@@ -57,12 +57,14 @@ class TaskFilterAction(
     }
   }
 
-  private fun setChecked(value: Boolean) {
+  internal fun setChecked(value: Boolean) {
     putValue(SELECTED_KEY, value)
     if (value) {
       filterManager.activeFilter = taskFilter
     } else {
-      filterManager.activeFilter = VOID_FILTER
+      if (filterManager.activeFilter == taskFilter) {
+        filterManager.activeFilter = VOID_FILTER
+      }
     }
   }
 }
