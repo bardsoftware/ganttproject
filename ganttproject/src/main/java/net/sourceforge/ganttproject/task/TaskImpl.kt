@@ -1,5 +1,7 @@
 package net.sourceforge.ganttproject.task
 
+import biz.ganttproject.core.calendar.GPCalendar
+import biz.ganttproject.core.calendar.GPCalendarCalc
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
@@ -82,6 +84,10 @@ internal fun createMutatorFixingDuration(myManager: TaskManagerImpl, task: TaskI
   }
 }
 
+class MutationScope() {
+  private val mutators = mutableListOf<MutableTask>()
+  fun add(mutator: MutableTask) = mutators.add(mutator)
+}
 internal open class MutatorImpl(
   private val myManager: TaskManagerImpl,
   private val taskImpl: TaskImpl,
@@ -289,5 +295,29 @@ internal open class MutatorImpl(
   override fun setIsolationLevel(level: Int) {
     myIsolationLevel = level
   }
-
 }
+
+internal fun TaskImpl.shift(unitCount: Float): Task {
+  val clone: Task = unpluggedClone()
+  if (unitCount != 0f) {
+    var newStart: Date?
+    if (unitCount > 0) {
+      val length: TimeDuration = myManager.createLength(myLength.timeUnit, unitCount)
+      // clone.setDuration(length);
+      newStart = TaskImpl.RESTLESS_CALENDAR.shiftDate(myStart.time, length)
+      if (0 == (manager.calendar.getDayMask(newStart) and GPCalendar.DayMask.WORKING)) {
+        newStart = manager.calendar.findClosest(newStart, myLength.timeUnit, GPCalendarCalc.MoveDirection.FORWARD, GPCalendar.DayType.WORKING)
+      }
+    } else {
+      newStart = TaskImpl.RESTLESS_CALENDAR.shiftDate(clone.start.time,
+        manager.createLength(clone.duration.timeUnit, unitCount.toLong().toFloat()))
+      if (0 == (manager.calendar.getDayMask(newStart) and GPCalendar.DayMask.WORKING)) {
+        newStart = manager.calendar.findClosest(newStart, myLength.timeUnit, GPCalendarCalc.MoveDirection.BACKWARD, GPCalendar.DayType.WORKING)
+      }
+    }
+    clone.start = CalendarFactory.createGanttCalendar(newStart)
+    clone.duration = myLength
+  }
+  return clone
+}
+

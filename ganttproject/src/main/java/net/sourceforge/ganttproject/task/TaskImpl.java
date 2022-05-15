@@ -57,7 +57,7 @@ public class TaskImpl implements Task {
   private final String myUid;
   private final int myID;
 
-  private final TaskManagerImpl myManager;
+  final TaskManagerImpl myManager;
 
   private String myName;
 
@@ -121,7 +121,7 @@ public class TaskImpl implements Task {
 
   public final static int EARLIESTBEGIN = 1;
 
-  private static final GPCalendarCalc RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
+  static final GPCalendarCalc RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
 
   private static final TimeDuration EMPTY_DURATION = new TimeDurationImpl(GPTimeUnitStack.DAY, 0);
   private boolean isDeleted;
@@ -604,7 +604,7 @@ public class TaskImpl implements Task {
   public void shift(TimeDuration shift) {
     float unitCount = shift.getLength(myLength.getTimeUnit());
     if (unitCount != 0f) {
-      Task resultTask = shift(unitCount);
+      Task resultTask = TaskImplKt.shift(this, unitCount);
       GanttCalendar oldStart = myStart;
       GanttCalendar oldEnd = myEnd;
       myStart = resultTask.getStart();
@@ -617,29 +617,6 @@ public class TaskImpl implements Task {
     }
   }
 
-  public Task shift(float unitCount) {
-    Task clone = unpluggedClone();
-    if (unitCount != 0) {
-      Date newStart;
-      if (unitCount > 0) {
-        TimeDuration length = myManager.createLength(myLength.getTimeUnit(), unitCount);
-        // clone.setDuration(length);
-        newStart = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
-        if (0 == (getManager().getCalendar().getDayMask(newStart) & DayMask.WORKING)) {
-          newStart = getManager().getCalendar().findClosest(newStart, myLength.getTimeUnit(), MoveDirection.FORWARD, DayType.WORKING);
-        }
-      } else {
-        newStart = RESTLESS_CALENDAR.shiftDate(clone.getStart().getTime(),
-            getManager().createLength(clone.getDuration().getTimeUnit(), (long) unitCount));
-        if (0 == (getManager().getCalendar().getDayMask(newStart) & DayMask.WORKING)) {
-          newStart = getManager().getCalendar().findClosest(newStart, myLength.getTimeUnit(), MoveDirection.BACKWARD, DayType.WORKING);
-        }
-      }
-      clone.setStart(CalendarFactory.createGanttCalendar(newStart));
-      clone.setDuration(myLength);
-    }
-    return clone;
-  }
 
   @Override
   public void setDuration(TimeDuration length) {
