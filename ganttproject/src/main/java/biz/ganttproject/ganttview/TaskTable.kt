@@ -64,10 +64,7 @@ import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.language.GanttLanguage
-import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
-import net.sourceforge.ganttproject.task.TaskManager
-import net.sourceforge.ganttproject.task.TaskSelectionManager
+import net.sourceforge.ganttproject.task.*
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
@@ -855,18 +852,6 @@ data class TaskTableActionConnector(
   val contextMenuActions: (MenuBuilder) -> Unit,
   val isSorted: ReadOnlyBooleanProperty
 )
-
-private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (Task, Task?, Int) -> Boolean) {
-  getNestedTasks(root).let { children ->
-    children.forEachIndexed { idx, child ->
-      if (visitor(root, child, idx)) {
-        this.depthFirstWalk(child, visitor)
-      }
-    }
-    visitor(root, null, children.size)
-  }
-
-}
 
 fun TreeItem<Task>.depthFirstWalk(visitor: (TreeItem<Task>) -> Boolean) {
   this.children.forEach { if (visitor(it)) it.depthFirstWalk(visitor) }

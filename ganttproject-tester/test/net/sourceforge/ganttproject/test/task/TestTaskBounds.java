@@ -3,6 +3,9 @@ package net.sourceforge.ganttproject.test.task;
 import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.algorithm.AlgorithmBase;
+
+import java.util.Date;
 
 public class TestTaskBounds extends TaskTestCase {
   public void testIssue953() {
@@ -22,6 +25,17 @@ public class TestTaskBounds extends TaskTestCase {
     assertEquals(monday, supertask.getStart());
     assertEquals(monday, supertask.getDisplayEnd());
 
+    getTaskManager().getAlgorithmCollection().getScheduler().setDiagnostic(new AlgorithmBase.Diagnostic() {
+      @Override
+      public void addModifiedTask(Task t, Date newStart, Date newEnd) {
+
+      }
+
+      @Override
+      public void logError(Exception ex) {
+        throw new RuntimeException(ex);
+      }
+    });
     childMilestone1.shift(getTaskManager().createLength("1d"));
     getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(supertask);
     assertEquals(tuesday, supertask.getStart());

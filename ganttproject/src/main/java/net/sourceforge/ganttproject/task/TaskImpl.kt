@@ -1,7 +1,5 @@
 package net.sourceforge.ganttproject.task
 
-import biz.ganttproject.core.calendar.GPCalendar
-import biz.ganttproject.core.calendar.GPCalendarCalc
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
@@ -9,11 +7,8 @@ import biz.ganttproject.core.time.TimeDuration
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException
-import net.sourceforge.ganttproject.task.algorithm.AlgorithmException
-import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm
 import net.sourceforge.ganttproject.util.collect.Pair
 import java.awt.Color
-import java.util.*
 
 internal open class EventSender(private val taskImpl: TaskImpl, private val notify: (TaskImpl)->Unit) {
   private var enabled = false
@@ -84,10 +79,6 @@ internal fun createMutatorFixingDuration(myManager: TaskManagerImpl, task: TaskI
   }
 }
 
-class MutationScope() {
-  private val mutators = mutableListOf<MutableTask>()
-  fun add(mutator: MutableTask) = mutators.add(mutator)
-}
 internal open class MutatorImpl(
   private val myManager: TaskManagerImpl,
   private val taskImpl: TaskImpl,
@@ -115,10 +106,14 @@ internal open class MutatorImpl(
 
   private val hasDateFieldsChange: Boolean get() = myStartChange.hasChange() || myDurationChange.hasChange() || myEndChange.hasChange() || myThirdChange.hasChange() || milestoneChange.hasChange()
   //private var myActivities: List<TaskActivity>? = null
-  private var myShiftChange: Pair<FieldChange<GanttCalendar>, FieldChange<GanttCalendar>>? = null
   private val myCommands: MutableList<Runnable> = ArrayList()
+  private var isCommitted = false
+
   var myIsolationLevel = 0
   override fun commit() {
+    if (isCommitted) {
+      throw IllegalStateException("Mutator for task ${taskImpl.taskID} is commiting twice")
+    }
     var hasActualDatesChange = false
     try {
       myStartChange.ifChanged {
@@ -208,6 +203,7 @@ internal open class MutatorImpl(
       }
     } finally {
       taskImpl.myMutator = null
+      isCommitted = true
     }
     if (taskImpl.isSupertask && hasActualDatesChange) {
       taskImpl.adjustNestedTasks()
@@ -279,45 +275,10 @@ internal open class MutatorImpl(
   fun getDuration() = myDurationChange.newValueOrElse { taskImpl.myLength }
 
   override fun shift(shift: TimeDuration) {
-    if (myShiftChange == null) {
-      myShiftChange = Pair.create(
-        FieldChange(EventSender(taskImpl) {}, taskImpl.myStart),
-        FieldChange(EventSender(taskImpl) {}, taskImpl.myEnd))
-    }
-    val shiftAlgorithm = ShiftTaskTreeAlgorithm(myManager)
-    try {
-      shiftAlgorithm.run(taskImpl, shift, ShiftTaskTreeAlgorithm.DEEP)
-    } catch (e: AlgorithmException) {
-      GPLogger.log(e)
-    }
+    taskImpl.shift(shift)
   }
 
   override fun setIsolationLevel(level: Int) {
     myIsolationLevel = level
   }
 }
-
-internal fun TaskImpl.shift(unitCount: Float): Task {
-  val clone: Task = unpluggedClone()
-  if (unitCount != 0f) {
-    var newStart: Date?
-    if (unitCount > 0) {
-      val length: TimeDuration = myManager.createLength(myLength.timeUnit, unitCount)
-      // clone.setDuration(length);
-      newStart = TaskImpl.RESTLESS_CALENDAR.shiftDate(myStart.time, length)
-      if (0 == (manager.calendar.getDayMask(newStart) and GPCalendar.DayMask.WORKING)) {
-        newStart = manager.calendar.findClosest(newStart, myLength.timeUnit, GPCalendarCalc.MoveDirection.FORWARD, GPCalendar.DayType.WORKING)
-      }
-    } else {
-      newStart = TaskImpl.RESTLESS_CALENDAR.shiftDate(clone.start.time,
-        manager.createLength(clone.duration.timeUnit, unitCount.toLong().toFloat()))
-      if (0 == (manager.calendar.getDayMask(newStart) and GPCalendar.DayMask.WORKING)) {
-        newStart = manager.calendar.findClosest(newStart, myLength.timeUnit, GPCalendarCalc.MoveDirection.BACKWARD, GPCalendar.DayType.WORKING)
-      }
-    }
-    clone.start = CalendarFactory.createGanttCalendar(newStart)
-    clone.duration = myLength
-  }
-  return clone
-}
-

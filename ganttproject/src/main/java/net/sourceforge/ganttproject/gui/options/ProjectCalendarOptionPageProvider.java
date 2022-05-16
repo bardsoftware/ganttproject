@@ -27,6 +27,7 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -195,7 +196,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
     TaskManager taskManager = getProject().getTaskManager();
     ShiftTaskTreeAlgorithm shiftTaskTreeAlgorithm = taskManager.getAlgorithmCollection().getShiftTaskTreeAlgorithm();
     if (myMoveAllTasks.isSelected()) {
-      shiftTaskTreeAlgorithm.run(taskManager.getRootTask(), moveDuration, ShiftTaskTreeAlgorithm.DEEP);
+      shiftTaskTreeAlgorithm.run(Collections.singletonList(taskManager.getRootTask()), moveDuration, ShiftTaskTreeAlgorithm.DEEP);
     } else if (myMoveStartingTasks.isSelected()) {
       List<Task> moveScope = new ArrayList<Task>();
       TaskContainmentHierarchyFacade taskTree = taskManager.getTaskHierarchy();

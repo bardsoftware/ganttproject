@@ -18,18 +18,36 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task.algorithm
 
+import biz.ganttproject.core.calendar.GPCalendar
+import biz.ganttproject.core.calendar.GPCalendarCalc
+import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.TimeDuration
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskImpl.RESTLESS_CALENDAR
 import net.sourceforge.ganttproject.task.TaskManagerImpl
+import net.sourceforge.ganttproject.task.TaskMutator
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
+import net.sourceforge.ganttproject.task.depthFirstWalk
 
 class ShiftTaskTreeAlgorithm(private val taskManager: TaskManagerImpl) {
   @Throws(AlgorithmException::class)
   fun run(tasks: List<Task>, shift: TimeDuration, deep: Boolean) {
     taskManager.setEventsEnabled(false)
     try {
-      for (t in tasks) {
-        shiftTask(t, shift, deep)
+      tasks.forEach { t ->
+        val mutators = mutableListOf<TaskMutator>()
+        taskManager.taskHierarchy.depthFirstWalk(t) { parent, child, _ ->
+          if (child != null) deep else {
+            if (parent != taskManager.rootTask) {
+              val mutator = parent.createMutatorFixingDuration().also {
+                mutators.add(it)
+              }
+              shift(parent, shift, mutator)
+            }
+            true
+          }
+        }
+        mutators.forEach { it.commit() }
       }
       try {
         taskManager.algorithmCollection.scheduler.run()
@@ -41,21 +59,23 @@ class ShiftTaskTreeAlgorithm(private val taskManager: TaskManagerImpl) {
     }
   }
 
-  @Throws(AlgorithmException::class)
-  fun run(rootTask: Task, shift: TimeDuration?, deep: Boolean) {
-    run(listOf(rootTask), shift!!, deep)
-  }
-
-  private fun shiftTask(rootTask: Task, shift: TimeDuration, deep: Boolean) {
-    if (rootTask !== taskManager.rootTask) {
-      rootTask.shift(shift)
-    }
-    if (deep) {
-      val nestedTasks = rootTask.manager.taskHierarchy.getNestedTasks(rootTask)
-      for (i in nestedTasks.indices) {
-        val next = nestedTasks[i]
-        shiftTask(next, shift, true)
+  private fun shift(task: Task, duration: TimeDuration, mutator: TaskMutator) {
+    val unitCount = duration.getLength(task.duration.timeUnit)
+    if (unitCount != 0f) {
+      val newStart = if (unitCount > 0f) {
+        RESTLESS_CALENDAR.shiftDate(task.start.time, taskManager.createLength(task.duration.timeUnit, unitCount)).let {
+          if (0 == (taskManager.calendar.getDayMask(it) and GPCalendar.DayMask.WORKING)) {
+            taskManager.calendar.findClosest(it, task.duration.timeUnit, GPCalendarCalc.MoveDirection.FORWARD, GPCalendar.DayType.WORKING)
+          } else it
+        }
+      } else {
+        RESTLESS_CALENDAR.shiftDate(task.start.time, taskManager.createLength(task.duration.timeUnit, unitCount.toLong().toFloat())).let {
+          if (0 == (taskManager.calendar.getDayMask(it) and GPCalendar.DayMask.WORKING)) {
+            taskManager.calendar.findClosest(it, task.duration.timeUnit, GPCalendarCalc.MoveDirection.BACKWARD, GPCalendar.DayType.WORKING)
+          } else it
+        }
       }
+      mutator.setStart(CalendarFactory.createGanttCalendar(newStart))
     }
   }
 
