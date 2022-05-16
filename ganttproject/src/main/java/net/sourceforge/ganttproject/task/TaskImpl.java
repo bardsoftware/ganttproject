@@ -31,6 +31,8 @@ import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.customproperty.CustomColumnsValues;
 import com.google.common.collect.ImmutableList;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
@@ -107,7 +109,7 @@ public class TaskImpl implements Task {
 
   private String myNotes;
 
-  MutatorImpl myMutator;
+  MutatorBase myMutator;
 
   private final CustomColumnsValues customValues;
 
@@ -202,16 +204,10 @@ public class TaskImpl implements Task {
     return getTaskID();
   }
 
-  class MutatorException extends RuntimeException {
-    public MutatorException(String msg) {
-      super(msg);
-    }
-  }
-
   @Override
   public TaskMutator createMutator() {
     if (myMutator != null) {
-      return myMutator;
+      return myMutator.reentrance();
     }
     myMutator = new MutatorImpl(myManager, this, getManager().createTaskUpdateBuilder(this));
     return myMutator;
@@ -220,7 +216,7 @@ public class TaskImpl implements Task {
   @Override
   public TaskMutator createMutatorFixingDuration() {
     if (myMutator != null) {
-      return myMutator;
+      return myMutator.reentrance();
     }
     myMutator = TaskImplKt.createMutatorFixingDuration(myManager, this, getManager().createTaskUpdateBuilder(this));
     return myMutator;
@@ -604,9 +600,13 @@ public class TaskImpl implements Task {
 
   @Override
   public void shift(TimeDuration shift) {
+    doShift(shift);
+  }
+
+  Function0<Unit> doShift(TimeDuration shift) {
     var shiftAlgorithm = new ShiftTaskTreeAlgorithm(myManager);
     try {
-      shiftAlgorithm.run(Collections.singletonList(this), shift, true);
+      return shiftAlgorithm.run(Collections.singletonList(this), shift, true);
     } catch (AlgorithmException e) {
       throw new RuntimeException(e);
     }

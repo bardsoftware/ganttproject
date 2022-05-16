@@ -391,6 +391,7 @@ class ProjectDatabaseTest {
     projectDatabase.startTransaction()
     task1.createMutatorFixingDuration().also {
       it.shift(taskManager.createLength(GPTimeUnitStack.DAY, 1.0f))
+      it.commit()
     }
     projectDatabase.commitTransaction()
     val txns = projectDatabase.fetchTransactions(limit = 2)
@@ -432,6 +433,7 @@ class ProjectDatabaseTest {
     projectDatabase.startTransaction()
     task1.createMutatorFixingDuration().also {
       it.shift(taskManager.createLength(GPTimeUnitStack.DAY, 1.0f))
+      it.commit()
     }
     projectDatabase.commitTransaction()
     val txns = projectDatabase.fetchTransactions(limit = 2)

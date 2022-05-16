@@ -590,7 +590,7 @@ class TaskTable(
       task2treeItem[treeModel.rootTask] = rootItem
 
       var filteredCount = 0
-      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx ->
+      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx, _ ->
         LOGGER.debug("Sync: parent=$parent child=$child idx=$idx")
         val parentItem = task2treeItem[parent]!!
         if (!this.filters.activeFilter(parent, child)) {

@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2022 Dmitry Barashev, BarD Software s.r.o.
+ *
+ * This file is part of GanttProject, an open-source project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package net.sourceforge.ganttproject.task
 
 import biz.ganttproject.core.chart.render.ShapePaint
@@ -7,7 +25,6 @@ import biz.ganttproject.core.time.TimeDuration
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException
-import net.sourceforge.ganttproject.util.collect.Pair
 import java.awt.Color
 
 internal open class EventSender(private val taskImpl: TaskImpl, private val notify: (TaskImpl)->Unit) {
@@ -79,10 +96,46 @@ internal fun createMutatorFixingDuration(myManager: TaskManagerImpl, task: TaskI
   }
 }
 
+internal abstract class MutatorBase: TaskMutator {
+
+  var myIsolationLevel = 0
+  abstract fun reentrance(): MutatorBase
+  override fun setIsolationLevel(level: Int) {
+    myIsolationLevel = level
+  }
+
+  abstract fun getStart(): GanttCalendar
+  abstract fun getEnd(): GanttCalendar?
+  abstract fun getThird(): GanttCalendar?
+  abstract fun getDuration(): TimeDuration
+  abstract fun getActivities(): List<TaskActivity>?
+}
+
+internal class MutatorReentered(private val delegate: MutatorBase): MutatorBase(), TaskMutator by delegate {
+  override fun reentrance(): MutatorBase = this
+  override fun getStart() = delegate.getStart()
+
+  override fun getEnd() = delegate.getEnd()
+
+  override fun getThird() = delegate.getThird()
+
+  override fun getDuration() = delegate.getDuration()
+
+  override fun getActivities() = delegate.getActivities()
+
+  override fun commit() {
+    // do nothing
+  }
+
+  override fun setIsolationLevel(level: Int) {
+    delegate.setIsolationLevel(level)
+  }
+}
+
 internal open class MutatorImpl(
   private val myManager: TaskManagerImpl,
   private val taskImpl: TaskImpl,
-  private val taskUpdateBuilder: ProjectDatabase.TaskUpdateBuilder?) : TaskMutator {
+  private val taskUpdateBuilder: ProjectDatabase.TaskUpdateBuilder?) : MutatorBase() {
 
   private val myPropertiesEventSender: EventSender = PropertiesEventSender(myManager, taskImpl)
   private val myProgressEventSender: EventSender = ProgressEventSender(myManager, taskImpl)
@@ -106,10 +159,10 @@ internal open class MutatorImpl(
 
   private val hasDateFieldsChange: Boolean get() = myStartChange.hasChange() || myDurationChange.hasChange() || myEndChange.hasChange() || myThirdChange.hasChange() || milestoneChange.hasChange()
   //private var myActivities: List<TaskActivity>? = null
-  private val myCommands: MutableList<Runnable> = ArrayList()
   private var isCommitted = false
+  private var shiftCommitter = {}
 
-  var myIsolationLevel = 0
+
   override fun commit() {
     if (isCommitted) {
       throw IllegalStateException("Mutator for task ${taskImpl.taskID} is commiting twice")
@@ -188,10 +241,7 @@ internal open class MutatorImpl(
         taskUpdateBuilder?.setWebLink(it)
       }
 
-      for (command in myCommands) {
-        command.run()
-      }
-      myCommands.clear()
+      shiftCommitter()
       myPropertiesEventSender.fireEvent()
       myProgressEventSender.fireEvent()
       if (taskUpdateBuilder != null) {
@@ -215,10 +265,9 @@ internal open class MutatorImpl(
     }
   }
 
-  val third: GanttCalendar? get() = myThirdChange.newValueOrElse { taskImpl.myThird }
+  override fun getThird(): GanttCalendar? = myThirdChange.newValueOrElse { taskImpl.myThird }
 
-  val activities: List<TaskActivity>?
-    get() {
+  override fun getActivities(): List<TaskActivity>? {
       return if (myStartChange.hasChange() || myDurationChange.hasChange()) {
         mutableListOf<TaskActivity>().also {
           TaskImpl.recalculateActivities(myManager.config.calendar, taskImpl, it,
@@ -268,17 +317,15 @@ internal open class MutatorImpl(
 
   override fun getCompletionPercentage() = myCompletionPercentageChange.newValueOrElse { taskImpl.myCompletionPercentage }
 
-  fun getStart() = myStartChange.newValueOrElse { taskImpl.myStart }
+  override fun getStart(): GanttCalendar = myStartChange.newValueOrElse { taskImpl.myStart }
 
-  val end: GanttCalendar? = if (myEndChange.hasChange()) myEndChange.myFieldValue else null
+  override fun getEnd(): GanttCalendar? = if (myEndChange.hasChange()) myEndChange.myFieldValue else null
 
-  fun getDuration() = myDurationChange.newValueOrElse { taskImpl.myLength }
+  override fun getDuration(): TimeDuration = myDurationChange.newValueOrElse { taskImpl.myLength }
 
   override fun shift(shift: TimeDuration) {
-    taskImpl.shift(shift)
+    shiftCommitter = taskImpl.doShift(shift)
   }
 
-  override fun setIsolationLevel(level: Int) {
-    myIsolationLevel = level
-  }
+  override fun reentrance(): MutatorBase = MutatorReentered(this)
 }

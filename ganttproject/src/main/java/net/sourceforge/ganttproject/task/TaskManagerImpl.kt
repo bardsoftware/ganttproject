@@ -73,13 +73,13 @@ internal fun TaskManager.TaskBuilder.setupNewTask(task: TaskImpl, manager: TaskM
   }
 }
 
-fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (Task, Task?, Int) -> Boolean) {
+fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, level: Int = 0, visitor: (Task, Task?, Int, Int) -> Boolean) {
   getNestedTasks(root).let { children ->
     children.forEachIndexed { idx, child ->
-      if (visitor(root, child, idx)) {
-        this.depthFirstWalk(child, visitor)
+      if (visitor(root, child, idx, level)) {
+        this.depthFirstWalk(root = child, level = level + 1, visitor = visitor)
       }
     }
-    visitor(root, null, children.size)
+    visitor(root, null, children.size, level)
   }
 }

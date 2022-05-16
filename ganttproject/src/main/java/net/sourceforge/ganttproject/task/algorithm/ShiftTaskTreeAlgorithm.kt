@@ -31,28 +31,33 @@ import net.sourceforge.ganttproject.task.depthFirstWalk
 
 class ShiftTaskTreeAlgorithm(private val taskManager: TaskManagerImpl) {
   @Throws(AlgorithmException::class)
-  fun run(tasks: List<Task>, shift: TimeDuration, deep: Boolean) {
+  fun run(tasks: List<Task>, shift: TimeDuration, deep: Boolean): ()->Unit {
     taskManager.setEventsEnabled(false)
-    try {
+    return try {
+      val mutators = mutableListOf<TaskMutator>()
       tasks.forEach { t ->
-        val mutators = mutableListOf<TaskMutator>()
-        taskManager.taskHierarchy.depthFirstWalk(t) { parent, child, _ ->
+        taskManager.taskHierarchy.depthFirstWalk(t) { parent, child, _, level ->
           if (child != null) deep else {
             if (parent != taskManager.rootTask) {
               val mutator = parent.createMutatorFixingDuration().also {
-                mutators.add(it)
+                // The topmost mutator is supposed to be committed by the caller,
+                // while those which were created during the deep walk shall
+                // be committed here.
+                if (level > 0) mutators.add(it)
               }
               shift(parent, shift, mutator)
             }
             true
           }
         }
-        mutators.forEach { it.commit() }
       }
-      try {
-        taskManager.algorithmCollection.scheduler.run()
-      } catch (e: TaskDependencyException) {
-        throw AlgorithmException("Failed to reschedule the following tasks tasks after move:\n$tasks", e)
+      return {
+        mutators.forEach { it.commit() }
+        try {
+          taskManager.algorithmCollection.scheduler.run()
+        } catch (e: TaskDependencyException) {
+          throw AlgorithmException("Failed to reschedule the following tasks tasks after move:\n$tasks", e)
+        }
       }
     } finally {
       taskManager.setEventsEnabled(true)
