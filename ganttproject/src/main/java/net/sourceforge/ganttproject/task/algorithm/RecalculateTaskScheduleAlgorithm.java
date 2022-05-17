@@ -146,7 +146,6 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
         TaskDependencyConstraint.Collision collision = constraint.getCollision();
         if (collision.isActive()) {
           fulfilConstraints(dependency);
-          dependency.getDependant().applyThirdDateConstraint();
         }
       }
     }

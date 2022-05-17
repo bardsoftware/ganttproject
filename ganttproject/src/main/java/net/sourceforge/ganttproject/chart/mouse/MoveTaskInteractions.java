@@ -89,9 +89,6 @@ public class MoveTaskInteractions extends MouseInteractionBase implements MouseI
     } catch (TaskDependencyException e) {
       myUiFacade.showErrorDialog(e);
     }
-    for (Task t : myTasks) {
-      t.applyThirdDateConstraint();
-    }
     myUiFacade.getActiveChart().reset();
   }
 }

@@ -190,8 +190,6 @@ public interface Task extends MutableTask, IdentifiableRow {
 
   GanttCalendar getThird();
 
-  void applyThirdDateConstraint();
-
   int getThirdDateConstraint();
 
   void setThirdDate(GanttCalendar thirdDate);

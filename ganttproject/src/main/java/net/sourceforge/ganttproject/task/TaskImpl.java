@@ -27,16 +27,12 @@ import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.customproperty.CustomColumnsValues;
 import com.google.common.collect.ImmutableList;
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
-import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.CostAlgorithmImpl;
-import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.*;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
 import org.eclipse.core.runtime.IStatus;
@@ -44,9 +40,12 @@ import org.eclipse.core.runtime.Status;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.*;
 
@@ -81,7 +80,7 @@ public class TaskImpl implements Task {
 
   TimeDuration myLength;
 
-  private final List<TaskActivity> myActivities = new ArrayList<TaskActivity>();
+  private final List<TaskActivity> myActivities = new ArrayList<>();
 
   private boolean bExpand;
 
@@ -186,13 +185,12 @@ public class TaskImpl implements Task {
 
   @Override
   public Task unpluggedClone() {
-    TaskImpl result = new TaskImpl(myManager, this, true, this.myID, this.myUid) {
+    return new TaskImpl(TaskImpl.this.myManager, TaskImpl.this, true, TaskImpl.this.myID, TaskImpl.this.myUid) {
       @Override
       public boolean isSupertask() {
         return false;
       }
     };
-    return result;
   }
 
   @Override
@@ -245,7 +243,7 @@ public class TaskImpl implements Task {
   @Override
   public List<Document> getAttachments() {
     if (getWebLink() != null && !"".equals(getWebLink())) {
-      return Collections.singletonList((Document) new AbstractURLDocument() {
+      return Collections.singletonList(new AbstractURLDocument() {
         @Override
         public boolean canRead() {
           return true;
@@ -262,12 +260,12 @@ public class TaskImpl implements Task {
         }
 
         @Override
-        public InputStream getInputStream() throws IOException {
+        public InputStream getInputStream() {
           return null;
         }
 
         @Override
-        public OutputStream getOutputStream() throws IOException {
+        public OutputStream getOutputStream() {
           return null;
         }
 
@@ -294,12 +292,8 @@ public class TaskImpl implements Task {
               return null;
             }
             URL relative = new URL(context, getWebLink());
-            return new URI(URLEncoder.encode(relative.toString(), "utf-8"));
-          } catch (URISyntaxException e) {
-            // Do nothing
-          } catch (MalformedURLException e) {
-            // Do nothing
-          } catch (UnsupportedEncodingException e) {
+            return new URI(URLEncoder.encode(relative.toString(), StandardCharsets.UTF_8));
+          } catch (URISyntaxException | MalformedURLException e) {
             // Do nothing
           }
           return null;
@@ -316,7 +310,7 @@ public class TaskImpl implements Task {
         }
 
         @Override
-        public void write() throws IOException {
+        public void write() {
         }
       });
     }
@@ -612,19 +606,6 @@ public class TaskImpl implements Task {
     return myManager.getConfig().getCalendar().shiftDate(input, duration);
   }
 
-  private float translateDurationValue(TimeDuration duration) {
-    if (myLength.getTimeUnit().equals(duration.getTimeUnit())) {
-      return duration.getValue();
-    }
-    if (myLength.getTimeUnit().isConstructedFrom(duration.getTimeUnit())) {
-      return duration.getValue() / myLength.getTimeUnit().getAtomCount(duration.getTimeUnit());
-    }
-    if (duration.getTimeUnit().isConstructedFrom(myLength.getTimeUnit())) {
-      return duration.getValue() * duration.getTimeUnit().getAtomCount(myLength.getTimeUnit());
-    }
-    throw new RuntimeException("Can't translate duration=" + duration + " into units=" + myLength.getTimeUnit());
-  }
-
   private void recalculateActivities() {
     if (myLength == null || myManager == null) {
       return;
@@ -736,25 +717,6 @@ public class TaskImpl implements Task {
   public boolean isCritical() {
     return this.critical;
   }
-
-  // TODO: implementation of this method has no correlation with algorithms
-  // recalculating schedules,
-  // doesn't affect subtasks and supertasks. It is necessary to call this
-  // method explicitly from other
-  // parts of code to be sure that constraint fulfills
-  @Override
-  public void applyThirdDateConstraint() {
-//    if (getThird() != null)
-//      switch (getThirdDateConstraint()) {
-//      case EARLIESTBEGIN:
-//        if (getThird().after(getStart())) {
-//          shift(myManager.getTimeUnitStack().createDuration(getDuration().getTimeUnit(), getStart().getTime(), getThird().getTime()));
-//        }
-//        break;
-//      }
-  }
-
-  TaskInfo myTaskInfo;
 
   @Override
   public boolean isProjectTask() {
