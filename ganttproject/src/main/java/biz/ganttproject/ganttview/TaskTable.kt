@@ -565,7 +565,7 @@ class TaskTable(
       }
       else -> null
     }?.also {
-      it.isEditable = true
+      it.isEditable = customProperty.calculationMethod == null
       it.isVisible = column.isVisible
       it.userData = column
       it.prefWidth = column.width.toDouble()

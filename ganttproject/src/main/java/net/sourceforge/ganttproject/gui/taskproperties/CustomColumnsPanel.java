@@ -76,7 +76,7 @@ public class CustomColumnsPanel {
       @Override
       public void actionPerformed(ActionEvent e) {
         ColumnManagerKt.showColumnManager(myTableHeaderFacade,
-            myCustomPropertyManager, ApplyExecutorType.SWING);
+            myCustomPropertyManager, myUiFacade.getUndoManager(), ApplyExecutorType.SWING);
         myModel.fireTableStructureChanged();
       }
     }), BorderLayout.WEST);

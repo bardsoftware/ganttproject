@@ -23,9 +23,10 @@ import biz.ganttproject.app.dialog
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
-import biz.ganttproject.customproperty.SimpleSelect
 import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.customproperty.CustomPropertyDefinition
+import biz.ganttproject.customproperty.CustomPropertyManager
+import biz.ganttproject.customproperty.SimpleSelect
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
@@ -45,8 +46,8 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.util.Callback
-import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.language.GanttLanguage
+import net.sourceforge.ganttproject.undo.GPUndoManager
 import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty
 import org.controlsfx.property.editor.PropertyEditor
@@ -59,7 +60,9 @@ import javax.swing.SwingUtilities
 class ColumnManager(
   // The list of columns shown in the task table
   private val currentTableColumns: ColumnList,
-  private val customColumnsManager: CustomPropertyManager) {
+  private val customColumnsManager: CustomPropertyManager,
+  private val undoManager: GPUndoManager
+  ) {
 
   internal val btnAddController = BtnController(onAction = this::onAddColumn)
   internal val btnDeleteController = BtnController(onAction = this::onDeleteColumn)
@@ -472,7 +475,7 @@ private class CellImpl : ListCell<ColumnAsListItem>() {
 }
 
 enum class ApplyExecutorType { DIRECT, SWING }
-fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomPropertyManager, applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
+fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomPropertyManager, undoManager: GPUndoManager, applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
   dialog { dlg ->
     dlg.addStyleClass("dlg-column-manager")
     dlg.addStyleSheet("/biz/ganttproject/ganttview/ColumnManager.css")
@@ -484,7 +487,7 @@ fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomProper
         }
       }.vbox
     )
-    val columnManager = ColumnManager(columnList, customColumnsManager)
+    val columnManager = ColumnManager(columnList, customColumnsManager, undoManager)
     dlg.setContent(columnManager.content)
     dlg.setupButton(ButtonType.APPLY) { btn ->
       btn.text = RootLocalizer.formatText("apply")
