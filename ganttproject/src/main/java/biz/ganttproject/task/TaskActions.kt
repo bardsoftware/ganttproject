@@ -185,6 +185,7 @@ private class TaskMoveAction(
         }
       }
     })
+    super.disableUndoableEdit()
   }
 
   override fun isEnabled(selection: List<Task>): Boolean {

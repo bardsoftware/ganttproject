@@ -27,12 +27,16 @@ import biz.ganttproject.core.time.TimeDuration;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction.TimelineFacade;
 
 abstract class MouseInteractionBase {
+  enum InteractionState { RUNNING, FINISHING, COMPLETED }
   protected Date myStartDate;
   private final MouseInteraction.TimelineFacade myChartDateGrid;
+
+  private InteractionState myState;
 
   protected MouseInteractionBase(Date startDate, MouseInteraction.TimelineFacade chartDateGrid) {
     myStartDate = startDate;
     myChartDateGrid = chartDateGrid;
+    myState = InteractionState.RUNNING;
   }
 
   protected TimeDuration getLengthDiff(MouseEvent event) {
@@ -61,5 +65,10 @@ abstract class MouseInteractionBase {
 
   protected Date getStartDate() {
     return myStartDate;
+  }
+
+  protected InteractionState getState() { return myState; }
+  protected void setState(InteractionState state) {
+    myState = state;
   }
 }

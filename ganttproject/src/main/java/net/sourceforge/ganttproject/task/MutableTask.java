@@ -41,8 +41,6 @@ public interface MutableTask {
 
   void setDuration(TimeDuration length);
 
-  void shift(TimeDuration shift);
-
   void setCompletionPercentage(int percentage);
 
   // void setStartFixed(boolean isFixed);
