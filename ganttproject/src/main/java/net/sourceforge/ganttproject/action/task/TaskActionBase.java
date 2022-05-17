@@ -39,6 +39,7 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
   private final UIFacade myUIFacade;
   private final TaskSelectionManager mySelectionManager;
   private List<Task> mySelection;
+  private boolean myUndoableEditEnabled = true;
 
   protected TaskActionBase(String name, TaskManager taskManager, TaskSelectionManager selectionManager,
       UIFacade uiFacade) {
@@ -73,28 +74,23 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
         return myTaskHierarchy.compareDocumentOrder(o1, o2);
       }
     });
-    if (isEnabled() && askUserPermission(selection)) {
-      myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
-        @Override
-        public void run() {
+    if (isEnabled()) {
+      if (myUndoableEditEnabled) {
+        myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), () -> {
           try {
             TaskActionBase.this.run(selection);
-          } catch (Exception e) {
-            getUIFacade().showErrorDialog(e);
+          } catch (Exception e1) {
+            getUIFacade().showErrorDialog(e1);
           }
+        });
+      } else {
+        try {
+          TaskActionBase.this.run(selection);
+        } catch (Exception ex) {
+          getUIFacade().showErrorDialog(ex);
         }
-      });
+      }
     }
-  }
-
-  /**
-   * @param selection
-   *          of tasks for which permission is required
-   * @return true if the operation is accepted by the user
-   */
-  protected boolean askUserPermission(List<Task> selection) {
-    // Accept operation by default
-    return true;
   }
 
   @Override
@@ -113,6 +109,10 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
 
   @Override
   public void userInputConsumerChanged(Object newConsumer) {
+  }
+
+  protected void disableUndoableEdit() {
+    myUndoableEditEnabled = false;
   }
 
   protected TaskManager getTaskManager() {

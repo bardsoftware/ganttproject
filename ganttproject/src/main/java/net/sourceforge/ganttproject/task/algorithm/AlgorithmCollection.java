@@ -35,8 +35,6 @@ public class AlgorithmCollection {
 
   private final ChartBoundsAlgorithm myProjectBoundsAlgorithm;
 
-  private final ShiftTaskTreeAlgorithm myShiftTaskTreeAlgorithm;
-
   private final CriticalPathAlgorithm myCriticalPathAlgorithm;
 
   private final AlgorithmBase myScheduler;
@@ -55,7 +53,6 @@ public class AlgorithmCollection {
     myAdjustTaskBoundsAlgorithm = adjustTaskBoundsAlgorithm;
     myCompletionPercentageAlgorithm = completionPercentageAlgorithm;
     myProjectBoundsAlgorithm = projectBoundsAlgorithm;
-    myShiftTaskTreeAlgorithm = new ShiftTaskTreeAlgorithm(taskManager);
     myCriticalPathAlgorithm = criticalPathAlgorithm;
   }
 
@@ -77,10 +74,6 @@ public class AlgorithmCollection {
 
   public ChartBoundsAlgorithm getProjectBoundsAlgorithm() {
     return myProjectBoundsAlgorithm;
-  }
-
-  public ShiftTaskTreeAlgorithm getShiftTaskTreeAlgorithm() {
-    return myShiftTaskTreeAlgorithm;
   }
 
   public CriticalPathAlgorithm getCriticalPathAlgorithm() {

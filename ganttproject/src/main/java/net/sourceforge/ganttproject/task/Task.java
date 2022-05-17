@@ -113,6 +113,8 @@ public interface Task extends MutableTask, IdentifiableRow {
 
   TaskMutator createMutatorFixingDuration();
 
+  ShiftMutator createShiftMutator();
+
   // main properties
 
   /**
@@ -140,8 +142,6 @@ public interface Task extends MutableTask, IdentifiableRow {
   GanttCalendar getEnd();
 
   TimeDuration getDuration();
-
-  TimeDuration translateDuration(TimeDuration duration);
 
   int getCompletionPercentage();
 
@@ -197,8 +197,6 @@ public interface Task extends MutableTask, IdentifiableRow {
   void setThirdDate(GanttCalendar thirdDate);
 
   void setThirdDateConstraint(int dateConstraint);
-
-  TaskInfo getTaskInfo();
 
   boolean isProjectTask();
 

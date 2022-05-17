@@ -45,13 +45,9 @@ class UndoableEditImpl extends AbstractUndoableEdit {
     myPresentationName = localizedName;
     myDocumentBefore = saveFile();
     try {
-      myManager.getProjectDatabase().startTransaction();
-    } catch (ProjectDatabaseException ex) {
-      GPLogger.log(ex);
-    }
-    editImpl.run();
-    try {
-      myManager.getProjectDatabase().commitTransaction();
+      var txn = myManager.getProjectDatabase().startTransaction(localizedName);
+      editImpl.run();
+      txn.commit();
     } catch (ProjectDatabaseException ex) {
       GPLogger.log(ex);
     }

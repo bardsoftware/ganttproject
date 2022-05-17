@@ -36,7 +36,7 @@ public class TestTaskBounds extends TaskTestCase {
         throw new RuntimeException(ex);
       }
     });
-    var mutator = childMilestone1.createMutatorFixingDuration();
+    var mutator = childMilestone1.createShiftMutator();
     mutator.shift(getTaskManager().createLength("1d"));
     mutator.commit();
     getTaskManager().getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().run(supertask);

@@ -218,8 +218,10 @@ class TaskTable(
       taskActions.all().firstOrNull { action ->
         action.triggeredBy(event)
       }?.let { action ->
-        undoManager.undoableEdit(action.name) {
-          action.actionPerformed(null)
+        SwingUtilities.invokeLater {
+          undoManager.undoableEdit(action.name) {
+            action.actionPerformed(null)
+          }
         }
       }
     }

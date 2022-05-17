@@ -19,12 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.task;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
-import biz.ganttproject.core.calendar.GPCalendar.DayMask;
-import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.calendar.GPCalendarCalc.MoveDirection;
 import biz.ganttproject.core.chart.render.ShapePaint;
-import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
@@ -211,6 +207,11 @@ public class TaskImpl implements Task {
     }
     myMutator = new MutatorImpl(myManager, this, getManager().createTaskUpdateBuilder(this));
     return myMutator;
+  }
+
+  @Override
+  public ShiftMutator createShiftMutator() {
+    return new ShiftMutatorImpl(this);
   }
 
   @Override
@@ -558,6 +559,7 @@ public class TaskImpl implements Task {
     myStart = start;
     recalculateActivities();
     adjustNestedTasks();
+    System.out.println("task="+getTaskID()+" start="+myStart+" end="+myEnd+" activities="+getActivities());
   }
 
   void adjustNestedTasks() {
@@ -597,22 +599,6 @@ public class TaskImpl implements Task {
   public void setThirdDateConstraint(int thirdDateConstraint) {
     myThirdDateConstraint = thirdDateConstraint;
   }
-
-  @Override
-  public void shift(TimeDuration shift) {
-    doShift(shift);
-  }
-
-  Function0<Unit> doShift(TimeDuration shift) {
-    var shiftAlgorithm = new ShiftTaskTreeAlgorithm(myManager);
-    try {
-      return shiftAlgorithm.run(Collections.singletonList(this), shift, true);
-    } catch (AlgorithmException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-
   @Override
   public void setDuration(TimeDuration length) {
     assert length.getLength() >= 0 : "An attempt to set length=" + length + " to task=" + this;
@@ -624,11 +610,6 @@ public class TaskImpl implements Task {
 
   Date shiftDate(Date input, TimeDuration duration) {
     return myManager.getConfig().getCalendar().shiftDate(input, duration);
-  }
-
-  @Override
-  public TimeDuration translateDuration(TimeDuration duration) {
-    return myManager.createLength(myLength.getTimeUnit(), translateDurationValue(duration));
   }
 
   private float translateDurationValue(TimeDuration duration) {
@@ -774,11 +755,6 @@ public class TaskImpl implements Task {
   }
 
   TaskInfo myTaskInfo;
-
-  @Override
-  public TaskInfo getTaskInfo() {
-    return myTaskInfo;
-  }
 
   @Override
   public boolean isProjectTask() {

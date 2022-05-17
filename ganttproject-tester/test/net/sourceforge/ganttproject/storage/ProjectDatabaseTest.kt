@@ -264,13 +264,13 @@ class ProjectDatabaseTest {
       .withName("Name2")
       .build()
 
-    projectDatabase.startTransaction()
+    val txn = projectDatabase.startTransaction()
     projectDatabase.insertTask(task1)
     projectDatabase.insertTask(task2)
     val mutator = task1.createMutator()
     mutator.setName("Name3")
     mutator.commit()
-    projectDatabase.commitTransaction()
+    txn.commit()
 
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(txns.size, 1)
@@ -300,10 +300,10 @@ class ProjectDatabaseTest {
       .withName("Name2")
       .build()
 
-    projectDatabase.startTransaction()
+    val txn = projectDatabase.startTransaction()
     projectDatabase.insertTask(task1)
     projectDatabase.insertTask(task2)
-    projectDatabase.commitTransaction()
+    txn.commit()
 
     assertEquals(task1, projectDatabase.findTasks("name = 'Name1'", taskManager::getTask)[0])
     assertTrue(projectDatabase.findTasks("completion = 100", taskManager::getTask).isEmpty())
@@ -320,12 +320,12 @@ class ProjectDatabaseTest {
       .withName("Name1")
       .withStartDate(TestSetupHelper.newMonday().time)
       .build()
-    projectDatabase.startTransaction()
+    val txn = projectDatabase.startTransaction()
     task1.createMutator().also {
       it.setEnd(TestSetupHelper.newWendesday())
       it.commit()
     }
-    projectDatabase.commitTransaction()
+    txn.commit()
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(1, txns.size)
 
@@ -345,7 +345,7 @@ class ProjectDatabaseTest {
       .withName("Name1")
       .withStartDate(TestSetupHelper.newMonday().time)
       .build()
-    projectDatabase.startTransaction()
+    val txn = projectDatabase.startTransaction()
     task1.createMutator().also {
       it.completionPercentage = 50
       it.setColor(Color.RED)
@@ -358,7 +358,7 @@ class ProjectDatabaseTest {
       it.setProjectTask(true)
       it.commit()
     }
-    projectDatabase.commitTransaction()
+    txn.commit()
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(1, txns.size)
 
@@ -388,12 +388,12 @@ class ProjectDatabaseTest {
       .withName("Name1")
       .withStartDate(TestSetupHelper.newMonday().time)
       .build()
-    projectDatabase.startTransaction()
-    task1.createMutatorFixingDuration().also {
+    val txn = projectDatabase.startTransaction()
+    task1.createShiftMutator().also {
       it.shift(taskManager.createLength(GPTimeUnitStack.DAY, 1.0f))
       it.commit()
     }
-    projectDatabase.commitTransaction()
+    txn.commit()
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(1, txns.size)
 
@@ -430,12 +430,12 @@ class ProjectDatabaseTest {
       .withStartDate(TestSetupHelper.newMonday().time)
       .build()
 
-    projectDatabase.startTransaction()
-    task1.createMutatorFixingDuration().also {
+    val txn = projectDatabase.startTransaction()
+    task1.createShiftMutator().also {
       it.shift(taskManager.createLength(GPTimeUnitStack.DAY, 1.0f))
       it.commit()
     }
-    projectDatabase.commitTransaction()
+    txn.commit()
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(1, txns.size)
 

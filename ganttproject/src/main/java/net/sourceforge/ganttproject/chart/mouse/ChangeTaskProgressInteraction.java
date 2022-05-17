@@ -39,11 +39,13 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
 
   private final WorkingUnitCounter myCounter;
 
-  private UIFacade myUiFacade;
+  private final UIFacade myUiFacade;
 
-  private ChangeTaskProgressRuler myChangeScale;
+  private final ChangeTaskProgressRuler myChangeScale;
 
-  private int myStartPixel;
+  private final int myStartPixel;
+
+  private boolean isCompleted;
 
   public ChangeTaskProgressInteraction(MouseEvent e, TaskProgressChartItem taskProgress, TimelineFacade chartDateGrid,
       TaskChartModelFacade taskFacade, UIFacade uiFacade) {
@@ -82,6 +84,10 @@ public class ChangeTaskProgressInteraction extends MouseInteractionBase implemen
 
   @Override
   public void finish() {
+    if (isCompleted) {
+      return;
+    }
+    isCompleted = true;
     myMutator.setIsolationLevel(TaskMutator.READ_COMMITED);
     myUiFacade.getUndoManager().undoableEdit("Task progress changed", new Runnable() {
       @Override

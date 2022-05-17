@@ -170,7 +170,9 @@ public class SchedulerTest extends TaskTestCase {
     assertEquals(TestSetupHelper.newWendesday(), tasks[2].getStart());
 
     // now shifting task2 to Tu
-    tasks[2].shift(getTaskManager().createLength(-1));
+    var mutator = tasks[2].createShiftMutator();
+    mutator.shift(getTaskManager().createLength(-1));
+    mutator.commit();
     scheduler.run();
 
     // task1 should follow task2

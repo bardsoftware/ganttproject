@@ -214,7 +214,7 @@ public abstract class RecalculateTaskScheduleAlgorithm extends AlgorithmBase {
   }
 
   private void modifyTaskStart(Task task, GanttCalendar newStart) {
-    TaskMutator mutator = task.createMutator();
+    var mutator = task.createShiftMutator();
     WorkingUnitCounter counter = new WorkingUnitCounter(task.getManager().getCalendar(), task.getDuration().getTimeUnit());
     TimeDuration shift;
     if (task.getStart().getTime().before(newStart.getTime())) {

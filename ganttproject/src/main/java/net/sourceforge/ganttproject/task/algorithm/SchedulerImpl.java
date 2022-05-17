@@ -207,7 +207,7 @@ public class SchedulerImpl extends AlgorithmBase {
       mutator.setStart(newStartCalendar);
       mutator.commit();
     } else {
-      TaskMutator mutator = task.createMutatorFixingDuration();
+      var mutator = task.createShiftMutator();
       TimeDuration shift = task.getManager().createLength(task.getDuration().getTimeUnit(), task.getStart().getTime(), newStart);
       mutator.shift(shift);
       mutator.commit();

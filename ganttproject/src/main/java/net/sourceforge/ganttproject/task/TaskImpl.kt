@@ -25,6 +25,7 @@ import biz.ganttproject.core.time.TimeDuration
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException
+import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm
 import java.awt.Color
 
 internal open class EventSender(private val taskImpl: TaskImpl, private val notify: (TaskImpl)->Unit) {
@@ -87,6 +88,9 @@ private fun <T> (FieldChange<T>?).ifChanged(consumer: (T)->Unit) {
 
 internal fun createMutatorFixingDuration(myManager: TaskManagerImpl, task: TaskImpl, taskUpdateBuilder: ProjectDatabase.TaskUpdateBuilder?): MutatorImpl {
   return object : MutatorImpl(myManager, task, taskUpdateBuilder) {
+    init {
+      Exception("mutator for task=${task.taskID}").printStackTrace()
+    }
     override fun setStart(start: GanttCalendar) {
       super.setStart(start)
       task.myEnd = null
@@ -96,7 +100,7 @@ internal fun createMutatorFixingDuration(myManager: TaskManagerImpl, task: TaskI
   }
 }
 
-internal abstract class MutatorBase: TaskMutator {
+internal abstract class MutatorBase(internal val taskImpl: TaskImpl): TaskMutator {
 
   var myIsolationLevel = 0
   abstract fun reentrance(): MutatorBase
@@ -111,7 +115,10 @@ internal abstract class MutatorBase: TaskMutator {
   abstract fun getActivities(): List<TaskActivity>?
 }
 
-internal class MutatorReentered(private val delegate: MutatorBase): MutatorBase(), TaskMutator by delegate {
+internal class MutatorReentered(taskImpl: TaskImpl, private val delegate: MutatorBase): MutatorBase(taskImpl), TaskMutator by delegate {
+  init {
+      Exception("Reentrance mutator for task=${delegate.taskImpl}")
+  }
   override fun reentrance(): MutatorBase = this
   override fun getStart() = delegate.getStart()
 
@@ -134,8 +141,8 @@ internal class MutatorReentered(private val delegate: MutatorBase): MutatorBase(
 
 internal open class MutatorImpl(
   private val myManager: TaskManagerImpl,
-  private val taskImpl: TaskImpl,
-  private val taskUpdateBuilder: ProjectDatabase.TaskUpdateBuilder?) : MutatorBase() {
+  taskImpl: TaskImpl,
+  private val taskUpdateBuilder: ProjectDatabase.TaskUpdateBuilder?) : MutatorBase(taskImpl) {
 
   private val myPropertiesEventSender: EventSender = PropertiesEventSender(myManager, taskImpl)
   private val myProgressEventSender: EventSender = ProgressEventSender(myManager, taskImpl)
@@ -160,7 +167,6 @@ internal open class MutatorImpl(
   private val hasDateFieldsChange: Boolean get() = myStartChange.hasChange() || myDurationChange.hasChange() || myEndChange.hasChange() || myThirdChange.hasChange() || milestoneChange.hasChange()
   //private var myActivities: List<TaskActivity>? = null
   private var isCommitted = false
-  private var shiftCommitter = {}
 
 
   override fun commit() {
@@ -241,7 +247,6 @@ internal open class MutatorImpl(
         taskUpdateBuilder?.setWebLink(it)
       }
 
-      shiftCommitter()
       myPropertiesEventSender.fireEvent()
       myProgressEventSender.fireEvent()
       if (taskUpdateBuilder != null) {
@@ -323,9 +328,18 @@ internal open class MutatorImpl(
 
   override fun getDuration(): TimeDuration = myDurationChange.newValueOrElse { taskImpl.myLength }
 
-  override fun shift(shift: TimeDuration) {
-    shiftCommitter = taskImpl.doShift(shift)
+  override fun reentrance(): MutatorBase = MutatorReentered(this.taskImpl, this)
+}
+
+internal class ShiftMutatorImpl(private val taskImpl: TaskImpl): ShiftMutator {
+  override val task: Task = taskImpl
+  private val shiftAlgorithm = ShiftTaskTreeAlgorithm(taskImpl.myManager, listOf(taskImpl), true)
+
+  override fun shift(interval: TimeDuration) {
+    shiftAlgorithm.run(interval)
   }
 
-  override fun reentrance(): MutatorBase = MutatorReentered(this)
+  override fun commit() {
+    shiftAlgorithm.commit()
+  }
 }

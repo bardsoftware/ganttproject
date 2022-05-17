@@ -22,43 +22,45 @@ import biz.ganttproject.core.calendar.GPCalendar
 import biz.ganttproject.core.calendar.GPCalendarCalc
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.TimeDuration
-import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.*
 import net.sourceforge.ganttproject.task.TaskImpl.RESTLESS_CALENDAR
-import net.sourceforge.ganttproject.task.TaskManagerImpl
-import net.sourceforge.ganttproject.task.TaskMutator
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
-import net.sourceforge.ganttproject.task.depthFirstWalk
 
-class ShiftTaskTreeAlgorithm(private val taskManager: TaskManagerImpl) {
-  @Throws(AlgorithmException::class)
-  fun run(tasks: List<Task>, shift: TimeDuration, deep: Boolean): ()->Unit {
-    taskManager.setEventsEnabled(false)
-    return try {
-      val mutators = mutableListOf<TaskMutator>()
-      tasks.forEach { t ->
-        taskManager.taskHierarchy.depthFirstWalk(t) { parent, child, _, level ->
-          if (child != null) deep else {
-            if (parent != taskManager.rootTask) {
-              val mutator = parent.createMutatorFixingDuration().also {
-                // The topmost mutator is supposed to be committed by the caller,
-                // while those which were created during the deep walk shall
-                // be committed here.
-                if (level > 0) mutators.add(it)
-              }
-              shift(parent, shift, mutator)
+class ShiftTaskTreeAlgorithm(private val taskManager: TaskManager, private val tasks: List<Task>, deep: Boolean) {
+  private val task2mutator = mutableMapOf<Task, TaskMutator>()
+
+  init {
+    tasks.forEach { t ->
+      taskManager.taskHierarchy.depthFirstWalk(t) { parent, child, _, level ->
+        if (child != null) deep else {
+          if (parent != taskManager.rootTask) {
+            parent.createMutatorFixingDuration().also {
+              // The topmost mutator is supposed to be committed by the caller,
+              // while those which were created during the deep walk shall
+              // be committed here.
+              task2mutator[parent] = it
             }
-            true
           }
+          true
         }
       }
-      return {
-        mutators.forEach { it.commit() }
-        try {
-          taskManager.algorithmCollection.scheduler.run()
-        } catch (e: TaskDependencyException) {
-          throw AlgorithmException("Failed to reschedule the following tasks tasks after move:\n$tasks", e)
-        }
-      }
+    }
+  }
+
+  fun commit() {
+    task2mutator.values.forEach { it.commit() }
+    try {
+      taskManager.algorithmCollection.scheduler.run()
+    } catch (e: TaskDependencyException) {
+      throw AlgorithmException("Failed to reschedule the following tasks tasks after move:\n$tasks", e)
+    }
+  }
+
+  @Throws(AlgorithmException::class)
+  fun run(shift: TimeDuration) {
+    (taskManager as TaskManagerImpl).setEventsEnabled(false)
+    try {
+      task2mutator.forEach { (task, mutator) -> shift(task, shift, mutator) }
     } finally {
       taskManager.setEventsEnabled(true)
     }
