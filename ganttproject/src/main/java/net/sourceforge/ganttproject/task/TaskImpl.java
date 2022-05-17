@@ -31,12 +31,16 @@ import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.customproperty.CustomColumnsValues;
 import com.google.common.collect.ImmutableList;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
+import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.CostAlgorithmImpl;
+import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
 import net.sourceforge.ganttproject.task.dependency.*;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyItem;
 import org.eclipse.core.runtime.IStatus;
@@ -57,7 +61,7 @@ public class TaskImpl implements Task {
   private final String myUid;
   private final int myID;
 
-  private final TaskManagerImpl myManager;
+  final TaskManagerImpl myManager;
 
   private String myName;
 
@@ -105,7 +109,7 @@ public class TaskImpl implements Task {
 
   private String myNotes;
 
-  MutatorImpl myMutator;
+  MutatorBase myMutator;
 
   private final CustomColumnsValues customValues;
 
@@ -121,7 +125,7 @@ public class TaskImpl implements Task {
 
   public final static int EARLIESTBEGIN = 1;
 
-  private static final GPCalendarCalc RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
+  public static final GPCalendarCalc RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
 
   private static final TimeDuration EMPTY_DURATION = new TimeDurationImpl(GPTimeUnitStack.DAY, 0);
   private boolean isDeleted;
@@ -200,16 +204,10 @@ public class TaskImpl implements Task {
     return getTaskID();
   }
 
-  class MutatorException extends RuntimeException {
-    public MutatorException(String msg) {
-      super(msg);
-    }
-  }
-
   @Override
   public TaskMutator createMutator() {
     if (myMutator != null) {
-      return myMutator;
+      return myMutator.reentrance();
     }
     myMutator = new MutatorImpl(myManager, this, getManager().createTaskUpdateBuilder(this));
     return myMutator;
@@ -218,7 +216,7 @@ public class TaskImpl implements Task {
   @Override
   public TaskMutator createMutatorFixingDuration() {
     if (myMutator != null) {
-      throw new MutatorException("Two mutators have been requested for task=" + getName());
+      return myMutator.reentrance();
     }
     myMutator = TaskImplKt.createMutatorFixingDuration(myManager, this, getManager().createTaskUpdateBuilder(this));
     return myMutator;
@@ -602,44 +600,18 @@ public class TaskImpl implements Task {
 
   @Override
   public void shift(TimeDuration shift) {
-    float unitCount = shift.getLength(myLength.getTimeUnit());
-    if (unitCount != 0f) {
-      Task resultTask = shift(unitCount);
-      GanttCalendar oldStart = myStart;
-      GanttCalendar oldEnd = myEnd;
-      myStart = resultTask.getStart();
-      myLength = resultTask.getDuration();
-      myEnd = resultTask.getEnd();
-      if (areEventsEnabled()) {
-        myManager.fireTaskScheduleChanged(this, oldStart, oldEnd);
-      }
-      recalculateActivities();
+    doShift(shift);
+  }
+
+  Function0<Unit> doShift(TimeDuration shift) {
+    var shiftAlgorithm = new ShiftTaskTreeAlgorithm(myManager);
+    try {
+      return shiftAlgorithm.run(Collections.singletonList(this), shift, true);
+    } catch (AlgorithmException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  public Task shift(float unitCount) {
-    Task clone = unpluggedClone();
-    if (unitCount != 0) {
-      Date newStart;
-      if (unitCount > 0) {
-        TimeDuration length = myManager.createLength(myLength.getTimeUnit(), unitCount);
-        // clone.setDuration(length);
-        newStart = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
-        if (0 == (getManager().getCalendar().getDayMask(newStart) & DayMask.WORKING)) {
-          newStart = getManager().getCalendar().findClosest(newStart, myLength.getTimeUnit(), MoveDirection.FORWARD, DayType.WORKING);
-        }
-      } else {
-        newStart = RESTLESS_CALENDAR.shiftDate(clone.getStart().getTime(),
-            getManager().createLength(clone.getDuration().getTimeUnit(), (long) unitCount));
-        if (0 == (getManager().getCalendar().getDayMask(newStart) & DayMask.WORKING)) {
-          newStart = getManager().getCalendar().findClosest(newStart, myLength.getTimeUnit(), MoveDirection.BACKWARD, DayType.WORKING);
-        }
-      }
-      clone.setStart(CalendarFactory.createGanttCalendar(newStart));
-      clone.setDuration(myLength);
-    }
-    return clone;
-  }
 
   @Override
   public void setDuration(TimeDuration length) {

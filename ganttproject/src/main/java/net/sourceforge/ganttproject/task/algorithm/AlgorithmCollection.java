@@ -55,7 +55,7 @@ public class AlgorithmCollection {
     myAdjustTaskBoundsAlgorithm = adjustTaskBoundsAlgorithm;
     myCompletionPercentageAlgorithm = completionPercentageAlgorithm;
     myProjectBoundsAlgorithm = projectBoundsAlgorithm;
-    myShiftTaskTreeAlgorithm = new ShiftTaskTreeAlgorithm(taskManager, recalculateTaskScheduleAlgorithm);
+    myShiftTaskTreeAlgorithm = new ShiftTaskTreeAlgorithm(taskManager);
     myCriticalPathAlgorithm = criticalPathAlgorithm;
   }
 

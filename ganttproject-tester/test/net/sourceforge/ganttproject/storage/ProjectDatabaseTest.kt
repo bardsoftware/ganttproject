@@ -22,6 +22,7 @@ package net.sourceforge.ganttproject.storage
 import biz.ganttproject.core.chart.render.ShapeConstants
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.CalendarFactory
+import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.storage.db.Tables.TASKDEPENDENCY
 import biz.ganttproject.storage.db.tables.Task.*
 import net.sourceforge.ganttproject.TestSetupHelper
@@ -334,7 +335,7 @@ class ProjectDatabaseTest {
     assert(stmt.contains("duration", ignoreCase = true)) {"Statement text: $stmt"}
   }
 
-  @Test fun `change task properties propagates to db`() {
+  @Test fun `update task properties`() {
     projectDatabase.init()
 
     val task1 = taskManager
@@ -375,6 +376,84 @@ class ProjectDatabaseTest {
     assertFalse(stmt.contains("expand"))
     assertFalse(stmt.contains("start_date"))
     assertFalse(stmt.contains("duration"))
+  }
+
+  @Test fun `shift task`() {
+    projectDatabase.init()
+
+    val task1 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid1")
+      .withId(1)
+      .withName("Name1")
+      .withStartDate(TestSetupHelper.newMonday().time)
+      .build()
+    projectDatabase.startTransaction()
+    task1.createMutatorFixingDuration().also {
+      it.shift(taskManager.createLength(GPTimeUnitStack.DAY, 1.0f))
+      it.commit()
+    }
+    projectDatabase.commitTransaction()
+    val txns = projectDatabase.fetchTransactions(limit = 2)
+    assertEquals(1, txns.size)
+
+    assertEquals(1, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
+    val stmt = txns[0].sqlStatements[0]
+    assert(stmt.contains("update", ignoreCase = true)) {"Statement text: $stmt"}
+    assert(stmt.matches(""".*"start_date".=.date.'${TestSetupHelper.newTuesday().toXMLString()}'.*""".toRegex())) {"Statement text: $stmt"}
+  }
+
+  @Test fun `task tree shifts in a single transaction`() {
+    projectDatabase.init()
+
+    val task1 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid1")
+      .withId(1)
+      .withName("Name1")
+      .withStartDate(TestSetupHelper.newMonday().time)
+      .build()
+    val task2 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid2")
+      .withId(2)
+      .withName("Name2")
+      .withParent(task1)
+      .withStartDate(TestSetupHelper.newMonday().time)
+      .build()
+    val task3 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid3")
+      .withId(3)
+      .withName("Name3")
+      .withParent(task2)
+      .withStartDate(TestSetupHelper.newMonday().time)
+      .build()
+
+    projectDatabase.startTransaction()
+    task1.createMutatorFixingDuration().also {
+      it.shift(taskManager.createLength(GPTimeUnitStack.DAY, 1.0f))
+      it.commit()
+    }
+    projectDatabase.commitTransaction()
+    val txns = projectDatabase.fetchTransactions(limit = 2)
+    assertEquals(1, txns.size)
+
+    assertEquals(3, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
+
+    // Due to the depth-first post-order traversal, the deepmost task updates go first.
+    txns[0].sqlStatements[0].let { stmt ->
+      assert(stmt.contains("update", ignoreCase = true)) {"Statement text: $stmt"}
+      assert(stmt.matches(""".*"start_date".=.date.'${TestSetupHelper.newTuesday().toXMLString()}'.*where.*someuid3.*""".toRegex())) {"Statement text: $stmt"}
+    }
+    txns[0].sqlStatements[1].let { stmt ->
+      assert(stmt.contains("update", ignoreCase = true)) {"Statement text: $stmt"}
+      assert(stmt.matches(""".*"start_date".=.date.'${TestSetupHelper.newTuesday().toXMLString()}'.*where.*someuid2.*""".toRegex())) {"Statement text: $stmt"}
+    }
+    txns[0].sqlStatements[2].let { stmt ->
+      assert(stmt.contains("update", ignoreCase = true)) {"Statement text: $stmt"}
+      assert(stmt.matches(""".*"start_date".=.date.'${TestSetupHelper.newTuesday().toXMLString()}'.*where.*someuid1.*""".toRegex())) {"Statement text: $stmt"}
+    }
   }
 
 }
