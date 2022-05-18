@@ -42,6 +42,7 @@ import net.sf.mpxj.reader.ProjectReader;
 import net.sourceforge.ganttproject.*;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import biz.ganttproject.customproperty.CustomColumnsException;
+import net.sourceforge.ganttproject.task.CostStub;
 import net.sourceforge.ganttproject.task.Task.Priority;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder;
@@ -463,8 +464,7 @@ class ProjectFileImporter {
     }
     GanttTask nativeTask = (GanttTask) taskBuilder.build();
     if (t.getCost() != null) {
-      nativeTask.getCost().setCalculated(false);
-      nativeTask.getCost().setValue(BigDecimal.valueOf(t.getCost().doubleValue()));
+      nativeTask.setCost(new CostStub(BigDecimal.valueOf(t.getCost().doubleValue()), false));
     }
     if (!t.getChildTasks().isEmpty()) {
       for (Task child : t.getChildTasks()) {

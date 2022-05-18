@@ -63,12 +63,10 @@ internal fun TaskManager.TaskBuilder.setupNewTask(task: TaskImpl, manager: TaskM
   completion?.let { task.completionPercentage = it }
 
   myCost?.let {
-    task.cost.isCalculated = false
-    task.cost.value = it
+    task.cost = CostStub(it, false)
   } ?: run {
     myPrototype?.cost?.let {
-      task.cost.isCalculated = it.isCalculated
-      task.cost.value = it.value
+      task.cost = it
     }
   }
 }

@@ -426,9 +426,9 @@ public class GanttTaskPropertiesBean extends JPanel {
             myTaskColorOption.getValue()));
       }
 
+      myAllocationsPanel.commit(mutator);
       mutator.commit();
       myDependenciesPanel.commit();
-      myAllocationsPanel.commit();
       myCustomColumnPanel.commit();
 
       if (!myShowInTimeline.isSelected()) {

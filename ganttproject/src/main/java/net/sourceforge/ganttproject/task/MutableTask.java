@@ -71,4 +71,6 @@ public interface MutableTask {
   void setCritical(boolean critical);
 
   void setProjectTask(boolean projectTask);
+
+  void setCost(Task.Cost cost);
 }

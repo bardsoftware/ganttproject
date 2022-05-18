@@ -747,10 +747,9 @@ public class TaskImpl implements Task {
       return new CostAlgorithmImpl().getCalculatedCost(TaskImpl.this);
     }
 
-    @Override
-    public void setValue(BigDecimal value) {
-      myValue = value;
-    }
+//    public void setValue(BigDecimal value) {
+//      myValue = value;
+//    }
 
     public void setValue(Cost copy) {
       myValue = copy.getValue();
@@ -762,14 +761,15 @@ public class TaskImpl implements Task {
       return isCalculated;
     }
 
-    @Override
-    public void setCalculated(boolean calculated) {
-      isCalculated = calculated;
-    }
   }
 
   @Override
   public Cost getCost() {
     return myCost;
+  }
+
+  @Override
+  public void setCost(Cost cost) {
+    myCost.setValue(cost);
   }
 }

@@ -32,6 +32,7 @@ import biz.ganttproject.lib.fx.TreeCollapseView
 import com.google.common.base.Charsets
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager
+import net.sourceforge.ganttproject.task.CostStub
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskView
@@ -43,6 +44,7 @@ import org.w3c.util.DateParser
 import org.w3c.util.InvalidDateException
 import java.awt.Color
 import java.io.UnsupportedEncodingException
+import java.math.BigDecimal
 import java.net.URLDecoder
 import java.util.*
 
@@ -128,12 +130,7 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
       }
       val costValue = child.costManualValue
       val isCostCalculated = child.isCostCalculated
-      if (isCostCalculated != null) {
-        task.cost.isCalculated = isCostCalculated
-        task.cost.value = costValue
-      } else {
-        task.cost.isCalculated = true
-      }
+      task.cost = CostStub(costValue ?: BigDecimal.ZERO, isCostCalculated ?: false)
       child.notes?.let {
         task.notes = it
       }
