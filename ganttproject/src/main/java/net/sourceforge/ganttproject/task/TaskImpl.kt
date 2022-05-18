@@ -27,6 +27,21 @@ import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException
 import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm
 import java.awt.Color
+import java.math.BigDecimal
+
+class CostStub(private val value: BigDecimal, private val isCalculated: Boolean): Task.Cost {
+  override fun getValue() = value
+
+  override fun getManualValue() = value
+
+  override fun getCalculatedValue() = value
+
+  override fun setValue(copy: Task.Cost) {
+    TODO("Not yet implemented")
+  }
+
+  override fun isCalculated() = this.isCalculated
+}
 
 internal open class EventSender(private val taskImpl: TaskImpl, private val notify: (TaskImpl)->Unit) {
   private var enabled = false
@@ -149,6 +164,7 @@ internal open class MutatorImpl(
 
   private val colorChange: FieldChange<Color?> = FieldChange(myPropertiesEventSender, taskImpl.color)
   private val myCompletionPercentageChange = FieldChange(myProgressEventSender, taskImpl.completionPercentage)
+  private val costChange = FieldChange(myPropertiesEventSender, taskImpl.cost)
   private val criticalFlagChange = FieldChange(myPropertiesEventSender, taskImpl.isCritical)
   private val expansionChange = FieldChange(myPropertiesEventSender, taskImpl.expand)
   private val milestoneChange = FieldChange(myPropertiesEventSender, taskImpl.isMilestone)
@@ -213,6 +229,10 @@ internal open class MutatorImpl(
       myCompletionPercentageChange.ifChanged {completion ->
         taskImpl.completionPercentage = completion
         taskUpdateBuilder?.setCompletionPercentage(completion)
+      }
+      costChange.ifChanged { cost ->
+        taskImpl.cost.setValue(cost)
+        taskUpdateBuilder?.setCost(cost)
       }
       criticalFlagChange.ifChanged {
         taskImpl.isCritical = it
@@ -311,6 +331,8 @@ internal open class MutatorImpl(
   override fun setCompletionPercentage(percentage: Int) { myCompletionPercentageChange.setValue(percentage) }
 
   override fun setCritical(critical: Boolean) { criticalFlagChange.setValue(critical) }
+
+  override fun setCost(cost: Task.Cost) { costChange.setValue(cost) }
 
   override fun setShape(shape: ShapePaint) { shapeChange.setValue(shape) }
 

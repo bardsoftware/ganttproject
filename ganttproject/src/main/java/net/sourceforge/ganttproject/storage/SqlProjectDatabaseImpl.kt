@@ -278,6 +278,10 @@ class SqlTaskUpdateBuilder(private val task: Task,
 
   override fun setColor(color: Color?) = nextStep { it.set(TASK.COLOR, color?.let {ColorConvertion.getColor(it)}) }
 
+  override fun setCost(cost: Task.Cost) {
+    nextStep { it.set(TASK.IS_COST_CALCULATED, cost.isCalculated) }
+    nextStep { it.set(TASK.COST_MANUAL_VALUE, cost.manualValue) }
+  }
 
   override fun setWebLink(webLink: String?) = nextStep { it.set(TASK.WEB_LINK, webLink) }
 

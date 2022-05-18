@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.task.algorithm;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.TestSetupHelper.TaskManagerBuilder;
 import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.task.CostStub;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
@@ -40,15 +41,12 @@ public class CostAlgorithmTest extends TaskTestCase {
     TaskContainmentHierarchyFacade hierarchy = getTaskManager().getTaskHierarchy();
     hierarchy.move(subtask1, supertask);
     hierarchy.move(subtask2, supertask);
-    supertask.getCost().setCalculated(true);
-    subtask1.getCost().setCalculated(false);
-    subtask1.getCost().setValue(BigDecimal.valueOf(5));
-    subtask2.getCost().setCalculated(false);
-    subtask2.getCost().setValue(BigDecimal.valueOf(15));
+    supertask.setCost(new CostStub(BigDecimal.ZERO, true));
+    subtask1.setCost(new CostStub(BigDecimal.valueOf(5), false));
+    subtask2.setCost(new CostStub(BigDecimal.valueOf(15), false));
     assertEquals(BigDecimal.valueOf(20), supertask.getCost().getValue());
 
-    supertask.getCost().setCalculated(false);
-    supertask.getCost().setValue(BigDecimal.valueOf(10));
+    supertask.setCost(new CostStub(BigDecimal.valueOf(10), false));
     assertEquals(BigDecimal.valueOf(10), supertask.getCost().getValue());
   }
 
@@ -68,11 +66,10 @@ public class CostAlgorithmTest extends TaskTestCase {
     t.setDuration(t.getManager().createLength(2));
     t.getAssignmentCollection().addAssignment(joe).setLoad(100f);
     t.getAssignmentCollection().addAssignment(jane).setLoad(50f);
-    t.getCost().setCalculated(true);
+    t.setCost(new CostStub(BigDecimal.ZERO, true));
     assertEquals(BigDecimal.valueOf(20f), t.getCost().getValue());
 
-    t.getCost().setCalculated(false);
-    t.getCost().setValue(BigDecimal.valueOf(10));
+    t.setCost(new CostStub(BigDecimal.valueOf(10), false));
     assertEquals(BigDecimal.valueOf(10), t.getCost().getValue());
   }
 

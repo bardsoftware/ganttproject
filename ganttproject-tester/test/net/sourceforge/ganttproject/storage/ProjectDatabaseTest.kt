@@ -26,6 +26,7 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.storage.db.Tables.TASKDEPENDENCY
 import biz.ganttproject.storage.db.tables.Task.*
 import net.sourceforge.ganttproject.TestSetupHelper
+import net.sourceforge.ganttproject.task.CostStub
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
@@ -92,8 +93,7 @@ class ProjectDatabaseTest {
     task.setThirdDate(CalendarFactory.createGanttCalendar(2022, 4, 3))
     task.priority = Task.Priority.HIGH
     task.webLink = "love-testing.com"
-    task.cost.value = BigDecimal.valueOf(666.7)
-    task.cost.isCalculated = true
+    task.cost = CostStub(BigDecimal.valueOf(666.7), true)
     task.notes = "abacaba"
 
     projectDatabase.insertTask(task)
@@ -349,6 +349,7 @@ class ProjectDatabaseTest {
     task1.createMutator().also {
       it.completionPercentage = 50
       it.setColor(Color.RED)
+      it.setCost(CostStub(BigDecimal.TEN, false))
       it.setNotes("lorem ipsum")
       it.setWebLink("https://google.com")
       it.setExpand(true)
@@ -373,6 +374,8 @@ class ProjectDatabaseTest {
     assert(stmt.matches(""".*"priority".=.'2'.*""".toRegex())) {"Statement text: $stmt"}
     assert(stmt.matches(""".*"is_project_task".=.true.*""".toRegex())) {"Statement text: $stmt"}
     assert(stmt.matches(""".*"completion".=.50.*""".toRegex())) {"Statement text: $stmt"}
+    assert(stmt.matches(""".*"is_cost_calculated".=.false.*""".toRegex())) {"Statement text: $stmt"}
+    assert(stmt.matches(""".*"cost_manual_value".=.10.*""".toRegex())) {"Statement text: $stmt"}
     assertFalse(stmt.contains("expand"))
     assertFalse(stmt.contains("start_date"))
     assertFalse(stmt.contains("duration"))

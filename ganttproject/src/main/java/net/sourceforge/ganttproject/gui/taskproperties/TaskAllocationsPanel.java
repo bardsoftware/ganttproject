@@ -29,7 +29,9 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.BooleanOption
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.task.CostStub;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.task.TaskMutator;
 import org.jdesktop.swingx.JXMultiSplitPane;
 import org.jdesktop.swingx.MultiSplitLayout;
 
@@ -128,16 +130,15 @@ public class TaskAllocationsPanel {
     return result;
   }
 
-  public void commit() {
+  public void commit(TaskMutator mutator) {
     if (myTable.isEditing()) {
       myTable.getCellEditor().stopCellEditing();
     }
     myModel.commit();
-    Task.Cost cost = myTask.getCost();
-    cost.setCalculated(myCostIsCalculated.getValue());
-    if (!cost.isCalculated()) {
-      cost.setValue(BigDecimal.valueOf(myCostValue.getValue()));
-    }
+    var cost = myCostIsCalculated.getValue()
+      ? new CostStub(BigDecimal.ZERO, true)
+      : new CostStub(BigDecimal.valueOf(myCostValue.getValue()), false);
+    mutator.setCost(cost);
     CommonPanel.saveColumnWidths(myTable, ourColumnWidth);
   }
 }
