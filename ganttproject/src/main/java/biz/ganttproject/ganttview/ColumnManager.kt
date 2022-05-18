@@ -493,9 +493,11 @@ fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomProper
       btn.text = RootLocalizer.formatText("apply")
       btn.styleClass.add("btn-attention")
       btn.setOnAction {
-        when (applyExecutor) {
-          ApplyExecutorType.DIRECT -> columnManager.applyChanges()
-          ApplyExecutorType.SWING -> SwingUtilities.invokeLater { columnManager.applyChanges() }
+        undoManager.undoableEdit("Task column changes") {
+          when (applyExecutor) {
+            ApplyExecutorType.DIRECT -> columnManager.applyChanges()
+            ApplyExecutorType.SWING -> SwingUtilities.invokeLater { columnManager.applyChanges() }
+          }
         }
         dlg.hide()
       }
