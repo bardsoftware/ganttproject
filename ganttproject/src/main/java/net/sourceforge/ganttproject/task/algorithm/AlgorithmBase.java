@@ -18,19 +18,30 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task.algorithm;
 
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
 
 import java.util.Date;
 
 public class AlgorithmBase {
 
-  public static interface Diagnostic {
+  public interface Diagnostic {
     void addModifiedTask(Task t, Date newStart, Date newEnd);
     void logError(Exception ex);
   }
+  public static class DiagnosticStub implements Diagnostic {
+    @Override
+    public void addModifiedTask(Task t, Date newStart, Date newEnd) {
+    }
+
+    @Override
+    public void logError(Exception ex) {
+      GPLogger.log(ex);
+    }
+  }
 
   private boolean isEnabled = true;
-  private Diagnostic myDiagnostic;
+  private Diagnostic myDiagnostic = new DiagnosticStub();
 
   public void setEnabled(boolean enabled) {
     isEnabled = enabled;

@@ -30,6 +30,10 @@ open class ProjectDatabaseException: Exception {
   constructor(message: String, cause: Throwable): super(message, cause)
 }
 
+interface ProjectDatabaseTxn {
+  fun commit()
+}
+
 typealias ColumnConsumer = Pair<SimpleSelect, (Int, Any?)->Unit>
 /** Storage for holding the current state of a Gantt project. */
 interface ProjectDatabase {
@@ -64,9 +68,7 @@ interface ProjectDatabase {
 
   /** Collect queries received after txn start and commit them all at once. */
   @Throws(ProjectDatabaseException::class)
-  fun startTransaction()
-  @Throws(ProjectDatabaseException::class)
-  fun commitTransaction()
+  fun startTransaction(title: String = ""): ProjectDatabaseTxn
 
   /** Fetch transactions starting with the specified transaction id. */
   @Throws(ProjectDatabaseException::class)

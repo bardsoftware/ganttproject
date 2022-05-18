@@ -18,36 +18,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.awt.image.ConvolveOp;
-import java.awt.image.Kernel;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-
 import biz.ganttproject.core.option.DefaultDateOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.TimeDuration;
-
+import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
-import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
+import java.text.MessageFormat;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Provides project calendar settings page in the settings dialog.
@@ -60,7 +50,6 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
   private JRadioButton myMoveAllTasks;
   private JRadioButton myMoveStartingTasks;
   private JLabel myMoveDurationLabel;
-  private Box myMoveOptionsPanel;
   private JPanel myMoveStrategyPanelWrapper;
   private Date myProjectStart;
 
@@ -120,7 +109,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
       }
     };
 
-    myMoveOptionsPanel = Box.createVerticalBox();
+    Box myMoveOptionsPanel = Box.createVerticalBox();
     myMoveOptionsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
     Box dateComponent = Box.createHorizontalBox();
@@ -191,21 +180,24 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
     }
   }
 
-  protected void moveProject(TimeDuration moveDuration) throws AlgorithmException {
-    TaskManager taskManager = getProject().getTaskManager();
-    ShiftTaskTreeAlgorithm shiftTaskTreeAlgorithm = taskManager.getAlgorithmCollection().getShiftTaskTreeAlgorithm();
+  private List<Task> buildMoveScope() {
+    var taskManager = getProject().getTaskManager();
+    var result = Lists.<Task>newArrayList();
     if (myMoveAllTasks.isSelected()) {
-      shiftTaskTreeAlgorithm.run(taskManager.getRootTask(), moveDuration, ShiftTaskTreeAlgorithm.DEEP);
+      result.add(taskManager.getRootTask());
     } else if (myMoveStartingTasks.isSelected()) {
-      List<Task> moveScope = new ArrayList<Task>();
       TaskContainmentHierarchyFacade taskTree = taskManager.getTaskHierarchy();
       for (Task t : taskManager.getTasks()) {
         if (t.getStart().getTime().equals(myProjectStart) && !taskTree.hasNestedTasks(t)) {
-          moveScope.add(t);
+          result.add(t);
         }
       }
-      shiftTaskTreeAlgorithm.run(moveScope, moveDuration, ShiftTaskTreeAlgorithm.SHALLOW);
     }
+    return result;
+  }
+  protected void moveProject(TimeDuration moveDuration) throws AlgorithmException {
+    var shiftTaskTreeAlgorithm = new ShiftTaskTreeAlgorithm(getProject().getTaskManager(), buildMoveScope(), !myMoveStartingTasks.isSelected());
+    shiftTaskTreeAlgorithm.run(moveDuration);
   }
 
   @Override

@@ -41,12 +41,12 @@ public interface Task extends MutableTask, IdentifiableRow {
     NOT_YET, INPROGRESS, DEADLINE_MISS
   }
   /** Available task priorities */
-  public enum Priority {
+  enum Priority {
     LOWEST("3"), LOW("0"), NORMAL("1"), HIGH("2"), HIGHEST("4");
 
     private final String myPersistentValue;
 
-    private Priority(String persistentValue) {
+    Priority(String persistentValue) {
       myPersistentValue = persistentValue;
     }
 
@@ -95,16 +95,16 @@ public interface Task extends MutableTask, IdentifiableRow {
   }
 
   /** Default priority (for new tasks) */
-  public static final Priority DEFAULT_PRIORITY = Priority.NORMAL;
+  Priority DEFAULT_PRIORITY = Priority.NORMAL;
 
-  public static interface Cost {
+  interface Cost {
     BigDecimal getValue();
     BigDecimal getManualValue();
     BigDecimal getCalculatedValue();
     void setValue(Cost copy);
-    void setValue(BigDecimal value);
+//    void setValue(BigDecimal value);
     boolean isCalculated();
-    void setCalculated(boolean calculated);
+//    void setCalculated(boolean calculated);
   }
 
   Cost getCost();
@@ -112,6 +112,8 @@ public interface Task extends MutableTask, IdentifiableRow {
   TaskMutator createMutator();
 
   TaskMutator createMutatorFixingDuration();
+
+  ShiftMutator createShiftMutator();
 
   // main properties
 
@@ -140,8 +142,6 @@ public interface Task extends MutableTask, IdentifiableRow {
   GanttCalendar getEnd();
 
   TimeDuration getDuration();
-
-  TimeDuration translateDuration(TimeDuration duration);
 
   int getCompletionPercentage();
 
@@ -190,15 +190,11 @@ public interface Task extends MutableTask, IdentifiableRow {
 
   GanttCalendar getThird();
 
-  void applyThirdDateConstraint();
-
   int getThirdDateConstraint();
 
   void setThirdDate(GanttCalendar thirdDate);
 
   void setThirdDateConstraint(int dateConstraint);
-
-  TaskInfo getTaskInfo();
 
   boolean isProjectTask();
 

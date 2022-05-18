@@ -19,12 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.task;
 
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
-import biz.ganttproject.core.calendar.GPCalendar.DayMask;
-import biz.ganttproject.core.calendar.GPCalendar.DayType;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.calendar.GPCalendarCalc.MoveDirection;
 import biz.ganttproject.core.chart.render.ShapePaint;
-import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
@@ -44,9 +40,12 @@ import org.eclipse.core.runtime.Status;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.*;
 
@@ -57,7 +56,7 @@ public class TaskImpl implements Task {
   private final String myUid;
   private final int myID;
 
-  private final TaskManagerImpl myManager;
+  final TaskManagerImpl myManager;
 
   private String myName;
 
@@ -81,7 +80,7 @@ public class TaskImpl implements Task {
 
   TimeDuration myLength;
 
-  private final List<TaskActivity> myActivities = new ArrayList<TaskActivity>();
+  private final List<TaskActivity> myActivities = new ArrayList<>();
 
   private boolean bExpand;
 
@@ -105,7 +104,7 @@ public class TaskImpl implements Task {
 
   private String myNotes;
 
-  MutatorImpl myMutator;
+  MutatorBase myMutator;
 
   private final CustomColumnsValues customValues;
 
@@ -121,7 +120,7 @@ public class TaskImpl implements Task {
 
   public final static int EARLIESTBEGIN = 1;
 
-  private static final GPCalendarCalc RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
+  public static final GPCalendarCalc RESTLESS_CALENDAR = new AlwaysWorkingTimeCalendarImpl();
 
   private static final TimeDuration EMPTY_DURATION = new TimeDurationImpl(GPTimeUnitStack.DAY, 0);
   private boolean isDeleted;
@@ -186,13 +185,12 @@ public class TaskImpl implements Task {
 
   @Override
   public Task unpluggedClone() {
-    TaskImpl result = new TaskImpl(myManager, this, true, this.myID, this.myUid) {
+    return new TaskImpl(TaskImpl.this.myManager, TaskImpl.this, true, TaskImpl.this.myID, TaskImpl.this.myUid) {
       @Override
       public boolean isSupertask() {
         return false;
       }
     };
-    return result;
   }
 
   @Override
@@ -200,25 +198,24 @@ public class TaskImpl implements Task {
     return getTaskID();
   }
 
-  class MutatorException extends RuntimeException {
-    public MutatorException(String msg) {
-      super(msg);
-    }
-  }
-
   @Override
   public TaskMutator createMutator() {
     if (myMutator != null) {
-      return myMutator;
+      return myMutator.reentrance();
     }
     myMutator = new MutatorImpl(myManager, this, getManager().createTaskUpdateBuilder(this));
     return myMutator;
   }
 
   @Override
+  public ShiftMutator createShiftMutator() {
+    return new ShiftMutatorImpl(this);
+  }
+
+  @Override
   public TaskMutator createMutatorFixingDuration() {
     if (myMutator != null) {
-      throw new MutatorException("Two mutators have been requested for task=" + getName());
+      return myMutator.reentrance();
     }
     myMutator = TaskImplKt.createMutatorFixingDuration(myManager, this, getManager().createTaskUpdateBuilder(this));
     return myMutator;
@@ -246,7 +243,7 @@ public class TaskImpl implements Task {
   @Override
   public List<Document> getAttachments() {
     if (getWebLink() != null && !"".equals(getWebLink())) {
-      return Collections.singletonList((Document) new AbstractURLDocument() {
+      return Collections.singletonList(new AbstractURLDocument() {
         @Override
         public boolean canRead() {
           return true;
@@ -263,12 +260,12 @@ public class TaskImpl implements Task {
         }
 
         @Override
-        public InputStream getInputStream() throws IOException {
+        public InputStream getInputStream() {
           return null;
         }
 
         @Override
-        public OutputStream getOutputStream() throws IOException {
+        public OutputStream getOutputStream() {
           return null;
         }
 
@@ -295,12 +292,8 @@ public class TaskImpl implements Task {
               return null;
             }
             URL relative = new URL(context, getWebLink());
-            return new URI(URLEncoder.encode(relative.toString(), "utf-8"));
-          } catch (URISyntaxException e) {
-            // Do nothing
-          } catch (MalformedURLException e) {
-            // Do nothing
-          } catch (UnsupportedEncodingException e) {
+            return new URI(URLEncoder.encode(relative.toString(), StandardCharsets.UTF_8));
+          } catch (URISyntaxException | MalformedURLException e) {
             // Do nothing
           }
           return null;
@@ -317,7 +310,7 @@ public class TaskImpl implements Task {
         }
 
         @Override
-        public void write() throws IOException {
+        public void write() {
         }
       });
     }
@@ -560,6 +553,7 @@ public class TaskImpl implements Task {
     myStart = start;
     recalculateActivities();
     adjustNestedTasks();
+    System.out.println("task="+getTaskID()+" start="+myStart+" end="+myEnd+" activities="+getActivities());
   }
 
   void adjustNestedTasks() {
@@ -599,48 +593,6 @@ public class TaskImpl implements Task {
   public void setThirdDateConstraint(int thirdDateConstraint) {
     myThirdDateConstraint = thirdDateConstraint;
   }
-
-  @Override
-  public void shift(TimeDuration shift) {
-    float unitCount = shift.getLength(myLength.getTimeUnit());
-    if (unitCount != 0f) {
-      Task resultTask = shift(unitCount);
-      GanttCalendar oldStart = myStart;
-      GanttCalendar oldEnd = myEnd;
-      myStart = resultTask.getStart();
-      myLength = resultTask.getDuration();
-      myEnd = resultTask.getEnd();
-      if (areEventsEnabled()) {
-        myManager.fireTaskScheduleChanged(this, oldStart, oldEnd);
-      }
-      recalculateActivities();
-    }
-  }
-
-  public Task shift(float unitCount) {
-    Task clone = unpluggedClone();
-    if (unitCount != 0) {
-      Date newStart;
-      if (unitCount > 0) {
-        TimeDuration length = myManager.createLength(myLength.getTimeUnit(), unitCount);
-        // clone.setDuration(length);
-        newStart = RESTLESS_CALENDAR.shiftDate(myStart.getTime(), length);
-        if (0 == (getManager().getCalendar().getDayMask(newStart) & DayMask.WORKING)) {
-          newStart = getManager().getCalendar().findClosest(newStart, myLength.getTimeUnit(), MoveDirection.FORWARD, DayType.WORKING);
-        }
-      } else {
-        newStart = RESTLESS_CALENDAR.shiftDate(clone.getStart().getTime(),
-            getManager().createLength(clone.getDuration().getTimeUnit(), (long) unitCount));
-        if (0 == (getManager().getCalendar().getDayMask(newStart) & DayMask.WORKING)) {
-          newStart = getManager().getCalendar().findClosest(newStart, myLength.getTimeUnit(), MoveDirection.BACKWARD, DayType.WORKING);
-        }
-      }
-      clone.setStart(CalendarFactory.createGanttCalendar(newStart));
-      clone.setDuration(myLength);
-    }
-    return clone;
-  }
-
   @Override
   public void setDuration(TimeDuration length) {
     assert length.getLength() >= 0 : "An attempt to set length=" + length + " to task=" + this;
@@ -652,24 +604,6 @@ public class TaskImpl implements Task {
 
   Date shiftDate(Date input, TimeDuration duration) {
     return myManager.getConfig().getCalendar().shiftDate(input, duration);
-  }
-
-  @Override
-  public TimeDuration translateDuration(TimeDuration duration) {
-    return myManager.createLength(myLength.getTimeUnit(), translateDurationValue(duration));
-  }
-
-  private float translateDurationValue(TimeDuration duration) {
-    if (myLength.getTimeUnit().equals(duration.getTimeUnit())) {
-      return duration.getValue();
-    }
-    if (myLength.getTimeUnit().isConstructedFrom(duration.getTimeUnit())) {
-      return duration.getValue() / myLength.getTimeUnit().getAtomCount(duration.getTimeUnit());
-    }
-    if (duration.getTimeUnit().isConstructedFrom(myLength.getTimeUnit())) {
-      return duration.getValue() * duration.getTimeUnit().getAtomCount(myLength.getTimeUnit());
-    }
-    throw new RuntimeException("Can't translate duration=" + duration + " into units=" + myLength.getTimeUnit());
   }
 
   private void recalculateActivities() {
@@ -784,30 +718,6 @@ public class TaskImpl implements Task {
     return this.critical;
   }
 
-  // TODO: implementation of this method has no correlation with algorithms
-  // recalculating schedules,
-  // doesn't affect subtasks and supertasks. It is necessary to call this
-  // method explicitly from other
-  // parts of code to be sure that constraint fulfills
-  @Override
-  public void applyThirdDateConstraint() {
-//    if (getThird() != null)
-//      switch (getThirdDateConstraint()) {
-//      case EARLIESTBEGIN:
-//        if (getThird().after(getStart())) {
-//          shift(myManager.getTimeUnitStack().createDuration(getDuration().getTimeUnit(), getStart().getTime(), getThird().getTime()));
-//        }
-//        break;
-//      }
-  }
-
-  TaskInfo myTaskInfo;
-
-  @Override
-  public TaskInfo getTaskInfo() {
-    return myTaskInfo;
-  }
-
   @Override
   public boolean isProjectTask() {
     return isProjectTask;
@@ -837,10 +747,9 @@ public class TaskImpl implements Task {
       return new CostAlgorithmImpl().getCalculatedCost(TaskImpl.this);
     }
 
-    @Override
-    public void setValue(BigDecimal value) {
-      myValue = value;
-    }
+//    public void setValue(BigDecimal value) {
+//      myValue = value;
+//    }
 
     public void setValue(Cost copy) {
       myValue = copy.getValue();
@@ -852,14 +761,15 @@ public class TaskImpl implements Task {
       return isCalculated;
     }
 
-    @Override
-    public void setCalculated(boolean calculated) {
-      isCalculated = calculated;
-    }
   }
 
   @Override
   public Cost getCost() {
     return myCost;
+  }
+
+  @Override
+  public void setCost(Cost cost) {
+    myCost.setValue(cost);
   }
 }

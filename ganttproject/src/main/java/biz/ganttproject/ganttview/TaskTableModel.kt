@@ -13,6 +13,7 @@ import com.google.common.collect.Lists
 import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.GPLogger
 import biz.ganttproject.customproperty.CustomColumnsException
+import net.sourceforge.ganttproject.task.CostStub
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskProperties
@@ -153,8 +154,10 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
       }
       TaskDefaultColumn.COST -> try {
         val cost = BigDecimal(value.toString())
-        task.cost.isCalculated = false
-        task.cost.value = cost
+        task.createMutator().also {
+          it.setCost(CostStub(cost, false))
+          it.commit()
+        }
       } catch (e: NumberFormatException) {
         throw ValidationException(MessageFormat.format("Can't parse {0} as number", value))
       }

@@ -41,6 +41,7 @@ public class TaskPropertiesAction extends TaskActionBase {
       IconSize size) {
     super("task.properties", project.getTaskManager(), selectionManager, uiFacade, size);
     myProject = project;
+    disableUndoableEdit();
   }
 
   @Override

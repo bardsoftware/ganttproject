@@ -51,14 +51,8 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
-  private class Query(
-    val errorMessage: () -> String,
-    val sqlStatementH2: String,
-    val sqlStatementPostgres: String
-  )
-
   /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
-  private var currentTxn: MutableList<Query>? = null
+  private var currentTxn: TransactionImpl? = null
   private var localTxnId: Int = 1
 
   private fun <T> withDSL(
@@ -80,7 +74,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   }
 
   /** Execute queries and save their logs as a transaction with the specified ID. */
-  private fun executeAndLog(queries: List<Query>, localTxnId: Int): Unit = withDSL({ "Failed to commit transaction" }) { dsl ->
+  internal fun executeAndLog(queries: List<Query>, localTxnId: Int): Unit = withDSL({ "Failed to commit transaction" }) { dsl ->
     dsl.transaction { config ->
       val context = DSL.using(config)
       queries.forEach {
@@ -154,15 +148,17 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   }
 
   @Throws(ProjectDatabaseException::class)
-  override fun startTransaction() {
-    if (currentTxn != null) throw ProjectDatabaseException("Previous transaction not committed")
-    currentTxn = mutableListOf()
+  override fun startTransaction(title: String): ProjectDatabaseTxn {
+    if (currentTxn != null) throw ProjectDatabaseException("Previous transaction not committed: $currentTxn")
+    return TransactionImpl(this, title).also {
+      currentTxn = it
+    }
   }
 
   @Throws(ProjectDatabaseException::class)
-  override fun commitTransaction() {
+  internal fun commitTransaction(txn: TransactionImpl) {
     try {
-      executeAndLog(currentTxn ?: throw ProjectDatabaseException("No transaction started"), localTxnId)
+      executeAndLog(txn.statements, localTxnId)
       localTxnId++  // Increment only on success.
     } finally {
       currentTxn = null
@@ -212,7 +208,31 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   @Throws(ProjectDatabaseException::class)
   internal fun update(h2Query: String, postgresQuery: String) = withLog({ "Failed to execute update" }, h2Query, postgresQuery)
 }
+internal data class Query(
+  val errorMessage: () -> String,
+  val sqlStatementH2: String,
+  val sqlStatementPostgres: String
+)
 
+class TransactionImpl(private val database: SqlProjectDatabaseImpl, private val title: String): ProjectDatabaseTxn {
+  internal val ex = Exception()
+  internal val statements = mutableListOf<Query>()
+
+  override fun commit() {
+    database.commitTransaction(this)
+  }
+
+  internal fun add(query: Query) {
+    statements.add(query)
+  }
+
+  override fun toString(): String {
+    ex.printStackTrace()
+    return "TransactionImpl(title='$title', statements=$statements)\n\n"
+  }
+
+
+}
 
 class SqlTaskUpdateBuilder(private val task: Task,
                            private val onCommit: (String, String) -> Unit): TaskUpdateBuilder {
@@ -252,16 +272,16 @@ class SqlTaskUpdateBuilder(private val task: Task,
 
   override fun setDuration(length: TimeDuration) = nextStep { it.set(TASK.DURATION, length.length) }
 
-  override fun shift(shift: TimeDuration?) {
-    TODO("Not yet implemented")
-  }
-
   override fun setCompletionPercentage(percentage: Int) = nextStep { it.set(TASK.COMPLETION, percentage) }
 
   override fun setShape(shape: ShapePaint?) = nextStep { it.set(TASK.SHAPE, shape?.array) }
 
   override fun setColor(color: Color?) = nextStep { it.set(TASK.COLOR, color?.let {ColorConvertion.getColor(it)}) }
 
+  override fun setCost(cost: Task.Cost) {
+    nextStep { it.set(TASK.IS_COST_CALCULATED, cost.isCalculated) }
+    nextStep { it.set(TASK.COST_MANUAL_VALUE, cost.manualValue) }
+  }
 
   override fun setWebLink(webLink: String?) = nextStep { it.set(TASK.WEB_LINK, webLink) }
 

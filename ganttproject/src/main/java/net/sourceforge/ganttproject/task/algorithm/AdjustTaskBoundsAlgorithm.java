@@ -78,9 +78,11 @@ public abstract class AdjustTaskBoundsAlgorithm extends AlgorithmBase {
         modifiedTasks.add(nestedTask);
       }
       if (nestedTask.getEnd().getTime().after(supertask.getEnd().getTime())) {
-        TaskMutator mutator = nestedTask.createMutatorFixingDuration();
-        mutator.shift(supertask.getManager().createLength(supertask.getDuration().getTimeUnit(),
-            nestedTask.getEnd().getTime(), supertask.getEnd().getTime()));
+        var shift = supertask.getManager().createLength(
+          supertask.getDuration().getTimeUnit(),
+          nestedTask.getEnd().getTime(), supertask.getEnd().getTime());
+        var mutator = nestedTask.createShiftMutator();
+        mutator.shift(shift);
         mutator.commit();
 
         modifiedTasks.add(nestedTask);

@@ -41,7 +41,7 @@ import javax.swing.Action
  * @author dbarashev@bardsoftware.com
  */
 class TaskActions(private val project: IGanttProject,
-                  uiFacade: UIFacade,
+                  private val uiFacade: UIFacade,
                   selectionManager: TaskSelectionManager,
                   private val viewManager: () -> GPViewManager,
                   private val tableConnector: () -> TaskTableActionConnector,
@@ -146,7 +146,7 @@ class TaskActions(private val project: IGanttProject,
 
   val manageColumnsAction: GPAction
     get() = GPAction.create("columns.manage.label") {
-      showColumnManager(tableConnector().columnList(), project.taskCustomColumnManager)
+      showColumnManager(tableConnector().columnList(), project.taskCustomColumnManager, uiFacade.undoManager)
     }
   fun all() = listOf(indentAction, unindentAction, moveDownAction, moveUpAction, linkTasksAction, unlinkTasksAction)
   fun assignments(task: Task, hrManager: HumanResourceManager, undoManager: GPUndoManager): List<GPAction> {
@@ -185,6 +185,7 @@ private class TaskMoveAction(
         }
       }
     })
+    super.disableUndoableEdit()
   }
 
   override fun isEnabled(selection: List<Task>): Boolean {

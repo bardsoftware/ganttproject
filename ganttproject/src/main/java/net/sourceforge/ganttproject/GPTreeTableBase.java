@@ -126,7 +126,7 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     @Override
     public void actionPerformed(ActionEvent e) {
       ColumnManagerKt.showColumnManager(myTableHeaderFacade,
-          myCustomPropertyManager, ApplyExecutorType.SWING);
+          myCustomPropertyManager, getUiFacade().getUndoManager(), ApplyExecutorType.SWING);
 
     }
   };

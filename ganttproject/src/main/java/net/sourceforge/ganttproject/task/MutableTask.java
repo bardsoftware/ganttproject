@@ -41,8 +41,6 @@ public interface MutableTask {
 
   void setDuration(TimeDuration length);
 
-  void shift(TimeDuration shift);
-
   void setCompletionPercentage(int percentage);
 
   // void setStartFixed(boolean isFixed);
@@ -73,4 +71,6 @@ public interface MutableTask {
   void setCritical(boolean critical);
 
   void setProjectTask(boolean projectTask);
+
+  void setCost(Task.Cost cost);
 }

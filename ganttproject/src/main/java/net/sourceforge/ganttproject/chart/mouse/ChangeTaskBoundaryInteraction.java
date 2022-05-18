@@ -31,6 +31,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Date;
 
+import static net.sourceforge.ganttproject.chart.mouse.MouseInteractionBase.InteractionState.*;
+
 public abstract class ChangeTaskBoundaryInteraction extends MouseInteractionBase {
   private TaskInteractionHintRenderer myLastNotes;
 
@@ -61,17 +63,21 @@ public abstract class ChangeTaskBoundaryInteraction extends MouseInteractionBase
   }
 
   public void finish(final TaskMutator mutator) {
-    mutator.setIsolationLevel(TaskMutator.READ_COMMITED);
-    myUiFacade.getUndoManager().undoableEdit("Task boundary changed", new Runnable() {
-      @Override
-      public void run() {
-        doFinish(mutator);
-      }
-    });
+    if (getState() == RUNNING) {
+      setState(FINISHING);
+      mutator.setIsolationLevel(TaskMutator.READ_COMMITED);
+      myUiFacade.getUndoManager().undoableEdit("Task boundary changed", new Runnable() {
+        @Override
+        public void run() {
+          doFinish(mutator);
+        }
+      });
+    }
   }
 
   private void doFinish(TaskMutator mutator) {
     mutator.commit();
+    setState(COMPLETED);
     myLastNotes = null;
     try {
       myTaskScheduleAlgorithm.run();

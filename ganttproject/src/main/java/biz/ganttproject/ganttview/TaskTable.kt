@@ -64,10 +64,7 @@ import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.language.GanttLanguage
-import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
-import net.sourceforge.ganttproject.task.TaskManager
-import net.sourceforge.ganttproject.task.TaskSelectionManager
+import net.sourceforge.ganttproject.task.*
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
@@ -241,8 +238,10 @@ class TaskTable(
       taskActions.all().firstOrNull { action ->
         action.triggeredBy(event)
       }?.let { action ->
-        undoManager.undoableEdit(action.name) {
-          action.actionPerformed(null)
+        SwingUtilities.invokeLater {
+          undoManager.undoableEdit(action.name) {
+            action.actionPerformed(null)
+          }
         }
       }
     }
@@ -588,7 +587,7 @@ class TaskTable(
       }
       else -> null
     }?.also {
-      it.isEditable = true
+      it.isEditable = customProperty.calculationMethod == null
       it.isVisible = column.isVisible
       it.userData = column
       it.prefWidth = column.width.toDouble()
@@ -613,7 +612,7 @@ class TaskTable(
       task2treeItem[treeModel.rootTask] = rootItem
 
       var filteredCount = 0
-      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx ->
+      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx, _ ->
         LOGGER.debug("Sync: parent=$parent child=$child idx=$idx")
         val parentItem = task2treeItem[parent]!!
         if (!this.filters.activeFilter(parent, child)) {
@@ -880,18 +879,6 @@ data class TaskTableActionConnector(
   val contextMenuActions: (MenuBuilder) -> Unit,
   val isSorted: ReadOnlyBooleanProperty
 )
-
-private fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, visitor: (Task, Task?, Int) -> Boolean) {
-  getNestedTasks(root).let { children ->
-    children.forEachIndexed { idx, child ->
-      if (visitor(root, child, idx)) {
-        this.depthFirstWalk(child, visitor)
-      }
-    }
-    visitor(root, null, children.size)
-  }
-
-}
 
 fun TreeItem<Task>.depthFirstWalk(visitor: (TreeItem<Task>) -> Boolean) {
   this.children.forEach { if (visitor(it)) it.depthFirstWalk(visitor) }

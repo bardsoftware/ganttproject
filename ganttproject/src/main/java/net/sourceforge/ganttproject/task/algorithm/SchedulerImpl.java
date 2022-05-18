@@ -201,11 +201,13 @@ public class SchedulerImpl extends AlgorithmBase {
     if (getDiagnostic() != null) {
       getDiagnostic().addModifiedTask(task, newStart, null);
     }
-    TaskMutator mutator = task.createMutator();
+
     if (myTaskHierarchy.get().hasNestedTasks(task)) {
+      TaskMutator mutator = task.createMutator();
       mutator.setStart(newStartCalendar);
       mutator.commit();
     } else {
+      var mutator = task.createShiftMutator();
       TimeDuration shift = task.getManager().createLength(task.getDuration().getTimeUnit(), task.getStart().getTime(), newStart);
       mutator.shift(shift);
       mutator.commit();

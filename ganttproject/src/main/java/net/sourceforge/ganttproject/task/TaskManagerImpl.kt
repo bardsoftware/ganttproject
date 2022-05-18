@@ -63,12 +63,21 @@ internal fun TaskManager.TaskBuilder.setupNewTask(task: TaskImpl, manager: TaskM
   completion?.let { task.completionPercentage = it }
 
   myCost?.let {
-    task.cost.isCalculated = false
-    task.cost.value = it
+    task.cost = CostStub(it, false)
   } ?: run {
     myPrototype?.cost?.let {
-      task.cost.isCalculated = it.isCalculated
-      task.cost.value = it.value
+      task.cost = it
     }
+  }
+}
+
+fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, level: Int = 0, visitor: (Task, Task?, Int, Int) -> Boolean) {
+  getNestedTasks(root).let { children ->
+    children.forEachIndexed { idx, child ->
+      if (visitor(root, child, idx, level)) {
+        this.depthFirstWalk(root = child, level = level + 1, visitor = visitor)
+      }
+    }
+    visitor(root, null, children.size, level)
   }
 }
