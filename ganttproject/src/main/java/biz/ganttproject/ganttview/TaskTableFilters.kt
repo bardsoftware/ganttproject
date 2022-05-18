@@ -21,7 +21,6 @@ package biz.ganttproject.ganttview
 import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.GPOption
 import biz.ganttproject.core.time.CalendarFactory
-import biz.ganttproject.core.time.GanttCalendar
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
@@ -47,28 +46,20 @@ class TaskFilterManager(val taskManager: TaskManager) {
   val dueTodayFilter: TaskFilter  = { _, child ->
 
     child?.let {
-      val today = CalendarFactory.createGanttCalendar(CalendarFactory.newCalendar().time)
-      it.completionPercentage < 100 &&
-        it.end.displayValue.compareTo(today) == 0 } ?: true
-
-  //---    == doesn't work for GanttCalendar here
-  //      it.completionPercentage < 100 &&
-  //        it.end.displayValue == today} ?: true
+      it.completionPercentage < 100 && it.endsToday()
+    } ?: true
   }
 
   val filterOverdueOption = DefaultBooleanOption("filter.overdueTasks", false)
   val overdueFilter: TaskFilter  = { _, child ->
-    child?.let { it.completionPercentage < 100 &&
-        it.end.displayValue < CalendarFactory.createGanttCalendar(CalendarFactory.newCalendar().time)
+    child?.let { it.completionPercentage < 100 && it.endsBeforeToday()
     } ?: true
   }
 
   val filterInProgressTodayOption = DefaultBooleanOption("filter.inProgressTodayTasks", false)
   val inProgressTodayFilter: TaskFilter  = { _, child ->
     child?.let {
-      val today: GanttCalendar = CalendarFactory.createGanttCalendar(CalendarFactory.newCalendar().time)
-      it.completionPercentage < 100 &&
-        it.end.displayValue > today && it.start < today
+      it.completionPercentage < 100 && it.runsToday()
     } ?: true
   }
 
@@ -97,4 +88,8 @@ class TaskFilterManager(val taskManager: TaskManager) {
   internal var sync: ()->Unit = {}
 }
 
+private fun today() = CalendarFactory.createGanttCalendar(CalendarFactory.newCalendar().time)
+private fun Task.endsToday() = this.end.displayValue == today()
+private fun Task.endsBeforeToday() = this.end.displayValue < today()
+private fun Task.runsToday() = today().let { this.end.displayValue >= it && this.start <= it }
 val VOID_FILTER: TaskFilter = { _, _ -> true }
