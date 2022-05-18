@@ -45,22 +45,31 @@ class TaskFilterManager(val taskManager: TaskManager) {
 
   val filterDueTodayOption = DefaultBooleanOption("filter.dueTodayTasks", false)
   val dueTodayFilter: TaskFilter  = { _, child ->
-      child?.let {
-        it.completionPercentage < 100 &&
-        it.end?.compareTo(TODAY)!! == 0 } ?: true
+
+    child?.let {
+      val today = CalendarFactory.createGanttCalendar(CalendarFactory.newCalendar().time)
+      it.completionPercentage < 100 &&
+        it.end.displayValue.compareTo(today) == 0 } ?: true
+
+  //---    == doesn't work for GanttCalendar here
+  //      it.completionPercentage < 100 &&
+  //        it.end.displayValue == today} ?: true
   }
 
   val filterOverdueOption = DefaultBooleanOption("filter.overdueTasks", false)
   val overdueFilter: TaskFilter  = { _, child ->
     child?.let { it.completionPercentage < 100 &&
-      it.end?.compareTo(TODAY)!! < 0 } ?: true
+        it.end.displayValue < CalendarFactory.createGanttCalendar(CalendarFactory.newCalendar().time)
+    } ?: true
   }
 
   val filterInProgressTodayOption = DefaultBooleanOption("filter.inProgressTodayTasks", false)
   val inProgressTodayFilter: TaskFilter  = { _, child ->
-    child?.let { it.completionPercentage < 100 &&
-      it.end?.compareTo(TODAY)!! > 0 &&
-      it.start?.compareTo(TODAY)!! < 0 } ?: true
+    child?.let {
+      val today: GanttCalendar = CalendarFactory.createGanttCalendar(CalendarFactory.newCalendar().time)
+      it.completionPercentage < 100 &&
+        it.end.displayValue > today && it.start < today
+    } ?: true
   }
 
   init {
@@ -80,13 +89,12 @@ class TaskFilterManager(val taskManager: TaskManager) {
       sync()
     }
 
-  val filterListeners = ArrayList<FilterChangedListener>()
+  val filterListeners = mutableListOf<FilterChangedListener>()
   private fun fireFilterChanged(value: TaskFilter) {
-    for(listener in filterListeners) listener(value)
+    filterListeners.forEach { it(value) }
   }
 
   internal var sync: ()->Unit = {}
 }
 
 val VOID_FILTER: TaskFilter = { _, _ -> true }
-val TODAY: GanttCalendar = CalendarFactory.createGanttCalendar(CalendarFactory.newCalendar().time)
