@@ -65,11 +65,8 @@ class TaskFilterManager(val taskManager: TaskManager) {
 
   init {
     taskManager.addTaskListener(TaskListenerAdapter().also {
-      it.taskProgressChangedHandler = { e: TaskPropertyEvent ->
-        if (activeFilter != VOID_FILTER) {
-          sync()
-        }
-      }
+      it.taskProgressChangedHandler = { _ -> if (activeFilter != VOID_FILTER) sync() }
+      it.taskScheduleChangedHandler = { _ -> if (activeFilter != VOID_FILTER) sync() }
     })
   }
 
