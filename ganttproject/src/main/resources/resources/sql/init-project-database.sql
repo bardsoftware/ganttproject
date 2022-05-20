@@ -19,6 +19,13 @@ create table if not exists Task (
     primary key (uid)
 );
 
+create table if not exists TaskCustomColumn(
+    uid varchar not null references Task,
+    column_id varchar not null,
+    column_value varchar,
+    primary key (uid, column_id)
+);
+
 create table if not exists TaskDependency (
     dependee_uid    varchar     not null,
     dependant_uid   varchar     not null,

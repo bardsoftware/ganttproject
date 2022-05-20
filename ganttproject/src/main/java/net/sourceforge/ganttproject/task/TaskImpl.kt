@@ -22,6 +22,7 @@ import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
+import biz.ganttproject.customproperty.CustomPropertyHolder
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException
@@ -131,9 +132,6 @@ internal abstract class MutatorBase(internal val taskImpl: TaskImpl): TaskMutato
 }
 
 internal class MutatorReentered(taskImpl: TaskImpl, private val delegate: MutatorBase): MutatorBase(taskImpl), TaskMutator by delegate {
-  init {
-      Exception("Reentrance mutator for task=${delegate.taskImpl}")
-  }
   override fun reentrance(): MutatorBase = this
   override fun getStart() = delegate.getStart()
 
@@ -166,6 +164,7 @@ internal open class MutatorImpl(
   private val myCompletionPercentageChange = FieldChange(myProgressEventSender, taskImpl.completionPercentage)
   private val costChange = FieldChange(myPropertiesEventSender, taskImpl.cost)
   private val criticalFlagChange = FieldChange(myPropertiesEventSender, taskImpl.isCritical)
+  private val customPropertiesChange = FieldChange<CustomPropertyHolder>(myPropertiesEventSender, taskImpl.customValues)
   private val expansionChange = FieldChange(myPropertiesEventSender, taskImpl.expand)
   private val milestoneChange = FieldChange(myPropertiesEventSender, taskImpl.isMilestone)
   private val myNameChange = FieldChange(myPropertiesEventSender, taskImpl.name)
@@ -237,6 +236,10 @@ internal open class MutatorImpl(
       criticalFlagChange.ifChanged {
         taskImpl.isCritical = it
         taskUpdateBuilder?.setCritical(it)
+      }
+      customPropertiesChange.ifChanged {
+        taskImpl.customValues.importFrom(it)
+        taskUpdateBuilder?.setCustomProperties(it)
       }
       expansionChange.ifChanged {
         taskImpl.expand = it
@@ -338,6 +341,11 @@ internal open class MutatorImpl(
 
   override fun setColor(color: Color) { colorChange.setValue(color) }
 
+  override fun setCustomProperties(customProperties: CustomPropertyHolder) {
+    customPropertiesChange.setValue(customProperties)
+  }
+
+
   override fun setWebLink(webLink: String) { webLinkChange.setValue(webLink) }
 
   override fun setNotes(notes: String) { notesChange.setValue(notes) }
@@ -353,7 +361,7 @@ internal open class MutatorImpl(
   override fun reentrance(): MutatorBase = MutatorReentered(this.taskImpl, this)
 }
 
-internal class ShiftMutatorImpl(private val taskImpl: TaskImpl): ShiftMutator {
+internal class ShiftMutatorImpl(taskImpl: TaskImpl): ShiftMutator {
   override val task: Task = taskImpl
   private val shiftAlgorithm = ShiftTaskTreeAlgorithm(taskImpl.myManager, listOf(taskImpl), true)
 
