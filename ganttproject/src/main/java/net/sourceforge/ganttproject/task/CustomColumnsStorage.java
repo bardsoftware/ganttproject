@@ -41,7 +41,7 @@ import java.util.Map;
 public class CustomColumnsStorage {
   public static GanttLanguage language = GanttLanguage.getInstance();
 
-  private static int nextId;
+  private int nextId;
 
   private final static String ID_PREFIX = "tpc";
   private final List<CustomPropertyListener> myListeners = new ArrayList<CustomPropertyListener>();

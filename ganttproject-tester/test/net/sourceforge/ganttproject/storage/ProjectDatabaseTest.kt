@@ -23,6 +23,8 @@ import biz.ganttproject.core.chart.render.ShapeConstants
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
+import biz.ganttproject.customproperty.CustomColumnsValues
+import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.storage.db.Tables.TASKDEPENDENCY
 import biz.ganttproject.storage.db.tables.Task.*
 import net.sourceforge.ganttproject.TestSetupHelper
@@ -147,8 +149,7 @@ class ProjectDatabaseTest {
   fun `test init after shutdown empty`() {
     projectDatabase.init()
 
-    val task = taskManager.createTask(2)
-    task.name = "Task2 name"
+    val task = taskManager.newTaskBuilder().withId(2).withName("Task2").build()
     projectDatabase.insertTask(task)
     projectDatabase.shutdown()
 
@@ -159,8 +160,8 @@ class ProjectDatabaseTest {
 
   @Test
   fun `test insert task dependency no dependee throws`() {
-    val dependant = taskManager.createTask(1)
-    val dependee = taskManager.createTask(2)
+    val dependant = taskManager.newTaskBuilder().withId(1).withName("Task1").build()
+    val dependee = taskManager.newTaskBuilder().withId(2).withName("Task2").build()
     val dependency = taskManager.dependencyCollection.createDependency(dependant, dependee)
 
     projectDatabase.init()
@@ -172,8 +173,8 @@ class ProjectDatabaseTest {
 
   @Test
   fun `test insert task dependency no dependant throws`() {
-    val dependant = taskManager.createTask(1)
-    val dependee = taskManager.createTask(2)
+    val dependant = taskManager.newTaskBuilder().withId(1).withName("Task1").build()
+    val dependee = taskManager.newTaskBuilder().withId(2).withName("Task2").build()
     val dependency = taskManager.dependencyCollection.createDependency(dependant, dependee)
 
     projectDatabase.init()
@@ -381,6 +382,71 @@ class ProjectDatabaseTest {
     assertFalse(stmt.contains("duration"))
   }
 
+  @Test fun `add custom property`() {
+    projectDatabase.init()
+
+    val task1 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid1")
+      .withId(1)
+      .withName("Name1")
+      .withStartDate(TestSetupHelper.newMonday().time)
+      .build()
+    projectDatabase.insertTask(task1)
+    val def = taskManager.customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo", "'")
+    val txn = projectDatabase.startTransaction()
+    task1.createMutator().let {mutator ->
+      mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager).also {
+        it.addCustomProperty(def, "foovalue")
+      })
+      mutator.commit()
+    }
+    txn.commit()
+    val txns = projectDatabase.fetchTransactions(startTxnId = 2, limit = 2)
+    assertEquals(1, txns.size)
+
+    assertEquals(2, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
+    txns[0].sqlStatements[0].also { stmt ->
+      assert(stmt.matches(""".*delete.from..taskcustomcolumn.*where.*uid..=..someuid1.*and.*not.in.*tpc0.*""".toRegex()))
+      { "Statement text: $stmt" }
+    }
+    txns[0].sqlStatements[1].also { stmt ->
+      assert(stmt.contains("merge", ignoreCase = true)) { "Statement text: $stmt" }
+      assert(stmt.matches(""".*on.*uid..=.'someuid1'.*""".toRegex())) { "Statement text: $stmt" }
+      assert(stmt.matches(""".*"column_value".=.'foovalue'.*""".toRegex())) { "Statement text: $stmt" }
+    }
+  }
+  @Test fun `delete last custom property`() {
+    projectDatabase.init()
+
+    val task1 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid1")
+      .withId(1)
+      .withName("Name1")
+      .withStartDate(TestSetupHelper.newMonday().time)
+      .build()
+    projectDatabase.insertTask(task1)
+    val def = taskManager.customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo", null)
+    task1.customValues.addCustomProperty(def, "foovalue")
+
+    val txn = projectDatabase.startTransaction()
+    task1.createMutator().let {mutator ->
+      mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager))
+      mutator.commit()
+    }
+    txn.commit()
+    val txns = projectDatabase.fetchTransactions(startTxnId = 2, limit = 2)
+    assertEquals(1, txns.size)
+
+    assertEquals(1, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
+    txns[0].sqlStatements[0].also { stmt ->
+      assert(stmt.matches(""".*delete.from..taskcustomcolumn.*where.*uid..=..someuid1.*""".toRegex()))
+      { "Statement text: $stmt" }
+      assertFalse(stmt.matches(""".*and.*not.in.*tpc0.*""".toRegex()))
+    }
+  }
+
   @Test fun `shift task`() {
     projectDatabase.init()
 
@@ -424,7 +490,7 @@ class ProjectDatabaseTest {
       .withParent(task1)
       .withStartDate(TestSetupHelper.newMonday().time)
       .build()
-    val task3 = taskManager
+    taskManager
       .newTaskBuilder()
       .withUid("someuid3")
       .withId(3)

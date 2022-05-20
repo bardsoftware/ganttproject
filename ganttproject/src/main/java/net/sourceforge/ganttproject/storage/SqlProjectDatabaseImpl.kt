@@ -170,6 +170,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   @Throws(ProjectDatabaseException::class)
   override fun fetchTransactions(startLocalTxnId: Int, limit: Int): List<XlogRecord> = withDSL(
     { "Failed to fetch log records starting with $startLocalTxnId" }) { dsl ->
+    //println(dsl.selectFrom(LOGRECORD).toList())
     dsl
       .selectFrom(LOGRECORD)
       .where(LOGRECORD.LOCAL_TXN_ID.ge(startLocalTxnId).and(LOGRECORD.LOCAL_TXN_ID.lt(startLocalTxnId + limit)))
