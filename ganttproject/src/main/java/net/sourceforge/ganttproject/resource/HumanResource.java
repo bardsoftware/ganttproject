@@ -100,7 +100,7 @@ public class HumanResource implements CustomPropertyHolder {
       myDaysOffList.addElement(copyDaysOff.get(i));
     }
     areEventsEnabled = true;
-    myCustomProperties = (CustomColumnsValues) copy.myCustomProperties.clone();
+    myCustomProperties = copy.myCustomProperties.copyOf();
   }
 
   /**

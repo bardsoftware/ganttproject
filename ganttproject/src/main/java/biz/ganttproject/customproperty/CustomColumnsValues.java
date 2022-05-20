@@ -20,6 +20,7 @@ package biz.ganttproject.customproperty;
 
 import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,11 +75,17 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
     mapCustomColumnValue.remove(definition.getId());
   }
 
-  @Override
-  public Object clone() {
+  public CustomColumnsValues copyOf() {
     CustomColumnsValues res = new CustomColumnsValues(myManager);
     res.mapCustomColumnValue.putAll(this.mapCustomColumnValue);
     return res;
+  }
+
+  public void importFrom(@NotNull CustomPropertyHolder value) throws CustomColumnsException {
+    mapCustomColumnValue.clear();
+    for (var prop: value.getCustomProperties()) {
+      setValue(prop.getDefinition(), prop.getValue());
+    }
   }
 
   @Override

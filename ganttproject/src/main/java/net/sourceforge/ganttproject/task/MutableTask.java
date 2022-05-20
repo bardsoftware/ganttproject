@@ -23,6 +23,8 @@ import java.awt.Color;
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.customproperty.CustomColumnsException;
+import biz.ganttproject.customproperty.CustomPropertyHolder;
 
 
 /**
@@ -73,4 +75,6 @@ public interface MutableTask {
   void setProjectTask(boolean projectTask);
 
   void setCost(Task.Cost cost);
+
+  void setCustomProperties(CustomPropertyHolder customProperties) throws CustomColumnsException;
 }

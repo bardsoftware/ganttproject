@@ -295,7 +295,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private void constructCustomColumnPanel() {
     myCustomColumnPanel = new CustomColumnsPanel(myProject.getTaskCustomColumnManager(), myUIfacade,
-        selectedTasks[0].getCustomValues(), myUIfacade.getTaskColumnList());
+        selectedTasks[0].getCustomValues().copyOf(), myUIfacade.getTaskColumnList());
   }
 
   /** Construct the predecessors tabbed pane */
@@ -427,9 +427,9 @@ public class GanttTaskPropertiesBean extends JPanel {
       }
 
       myAllocationsPanel.commit(mutator);
+      myCustomColumnPanel.commit(mutator);
       mutator.commit();
       myDependenciesPanel.commit();
-      myCustomColumnPanel.commit();
 
       if (!myShowInTimeline.isSelected()) {
         myUIfacade.getCurrentTaskView().getTimelineTasks().remove(selectedTasks[i]);
