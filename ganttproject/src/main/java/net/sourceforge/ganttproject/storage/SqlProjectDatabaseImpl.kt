@@ -22,6 +22,7 @@ package net.sourceforge.ganttproject.storage
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
+import biz.ganttproject.customproperty.CustomProperty
 import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.storage.db.Tables.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
@@ -31,11 +32,7 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.util.ColorConvertion
 import org.h2.jdbcx.JdbcDataSource
-import org.jooq.DSLContext
-import org.jooq.SQLDialect
-import org.jooq.SelectSelectStep
-import org.jooq.UpdateSetMoreStep
-import org.jooq.UpdateSetStep
+import org.jooq.*
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.field
@@ -235,28 +232,43 @@ class TransactionImpl(private val database: SqlProjectDatabaseImpl, private val 
 
 }
 
+/**
+ * Creates SQL statements for updating custom property records.
+ */
 internal class SqlTaskCustomPropertiesUpdateBuilder(
   private val task: Task, private val onCommit: (String, String) -> Unit) {
   internal var commit: () -> Unit = {}
   internal fun setCustomProperties(customProperties: CustomPropertyHolder) {
     val h2statements = mutableListOf<String>()
-    h2statements.add(DSL.using(SQLDialect.H2).deleteFrom(TASKCUSTOMCOLUMN)
+    val postgresStatements = mutableListOf<String>()
+
+    h2statements.add(generateDeleteStatement(DSL.using(SQLDialect.H2), customProperties))
+    postgresStatements.add(generateDeleteStatement(DSL.using(SQLDialect.POSTGRES), customProperties))
+
+    h2statements.addAll(generateMergeStatements(customProperties.customProperties) {DSL.using(SQLDialect.H2)})
+    postgresStatements.addAll(generateMergeStatements(customProperties.customProperties) {DSL.using(SQLDialect.POSTGRES)})
+    commit = {
+      h2statements.zip(postgresStatements).forEach { onCommit(it.first, it.second) }
+      println(h2statements)
+      println(postgresStatements)
+    }
+  }
+
+  private fun generateDeleteStatement(dsl: DSLContext, customProperties: CustomPropertyHolder): String =
+    dsl.deleteFrom(TASKCUSTOMCOLUMN)
       .where(TASKCUSTOMCOLUMN.UID.eq(task.uid))
       .and(TASKCUSTOMCOLUMN.COLUMN_ID.notIn(customProperties.customProperties.map { it.definition.id }))
       .getSQL(ParamType.INLINED)
-    )
-    h2statements.addAll(customProperties.customProperties.map {
-      DSL.using(SQLDialect.H2).mergeInto(TASKCUSTOMCOLUMN).using(DSL.selectOne())
+
+  private fun generateMergeStatements(customProperties: List<CustomProperty>, dsl: ()->DSLContext) =
+    customProperties.map {
+      dsl().mergeInto(TASKCUSTOMCOLUMN).using(DSL.selectOne())
         .on(TASKCUSTOMCOLUMN.UID.eq(task.uid)).and(TASKCUSTOMCOLUMN.COLUMN_ID.eq(it.definition.id))
         .whenMatchedThenUpdate().set(TASKCUSTOMCOLUMN.COLUMN_VALUE, it.valueAsString)
         .whenNotMatchedThenInsert(TASKCUSTOMCOLUMN.UID, TASKCUSTOMCOLUMN.COLUMN_ID, TASKCUSTOMCOLUMN.COLUMN_VALUE)
         .values(task.uid, it.definition.id, it.valueAsString)
         .getSQL(ParamType.INLINED)
-    })
-    commit = {
-      h2statements.forEach { onCommit(it, it) }
     }
-  }
 }
 class SqlTaskUpdateBuilder(private val task: Task,
                            private val onCommit: (String, String) -> Unit): TaskUpdateBuilder {
