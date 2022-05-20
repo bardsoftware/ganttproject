@@ -138,9 +138,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   @Throws(ProjectDatabaseException::class)
   override fun shutdown() {
     try {
-      dataSource.connection.use { connection ->
-        connection.createStatement().execute("shutdown")
-      }
+      dataSource.connection.use { it.createStatement().execute("shutdown") }
     } catch (e: Exception) {
       throw ProjectDatabaseException("Failed to shutdown the database", e)
     }
@@ -185,12 +183,12 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
-  fun <T> SelectSelectStep<org.jooq.Record>.select(col: ColumnConsumer?): SelectSelectStep<org.jooq.Record> =
+  fun SelectSelectStep<Record>.select(col: ColumnConsumer?): SelectSelectStep<Record> =
     col?.let { this.select(field(it.first.selectExpression, it.first.resultClass)!!.`as`(col.first.propertyId))} ?: this
 
   override fun mapTasks(vararg columnConsumer: ColumnConsumer) {
     withDSL { dsl ->
-      var q: SelectSelectStep<out org.jooq.Record> = dsl.select(TASK.NUM)
+      var q: SelectSelectStep<out Record> = dsl.select(TASK.NUM)
       columnConsumer.forEach {
         q = q.select(field(it.first.selectExpression, it.first.resultClass).`as`(it.first.propertyId))
       }

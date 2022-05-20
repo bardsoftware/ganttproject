@@ -402,7 +402,7 @@ class ProjectDatabaseTest {
       mutator.commit()
     }
     txn.commit()
-    val txns = projectDatabase.fetchTransactions(startTxnId = 2, limit = 2)
+    val txns = projectDatabase.fetchTransactions(startLocalTxnId = 2, limit = 2)
     assertEquals(1, txns.size)
 
     assertEquals(2, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
@@ -436,7 +436,7 @@ class ProjectDatabaseTest {
       mutator.commit()
     }
     txn.commit()
-    val txns = projectDatabase.fetchTransactions(startTxnId = 2, limit = 2)
+    val txns = projectDatabase.fetchTransactions(startLocalTxnId = 2, limit = 2)
     assertEquals(1, txns.size)
 
     assertEquals(1, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
