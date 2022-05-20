@@ -20,8 +20,6 @@ package biz.ganttproject.ganttview
 
 import biz.ganttproject.core.option.DefaultBooleanOption
 import net.sourceforge.ganttproject.action.GPAction
-import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
-import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 import java.awt.event.ActionEvent
 
 /**
@@ -39,6 +37,16 @@ class TaskFilterAction(
     filterManager.filterListeners.add { filter ->
       if (taskFilter != filter) {
         putValue(SELECTED_KEY, java.lang.Boolean.FALSE)
+      }
+    }
+
+    // An option can be saved and changed when a project will be open
+    // or undo\redo
+    taskFilterOption.addChangeValueListener { evt ->
+      (evt.newValue as? Boolean)?.let {
+        if (evt.newValue != evt.oldValue) {
+          setChecked(it)
+        }
       }
     }
   }
