@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.customproperty.SimpleSelect
 import net.sourceforge.ganttproject.task.MutableTask
 import net.sourceforge.ganttproject.task.Task
@@ -81,4 +82,6 @@ interface ProjectDatabase {
   fun findTasks(whereExpression: String, lookupById: (Int)->Task?): List<Task>
 
   fun mapTasks(vararg columnConsumer: ColumnConsumer)
+
+  fun rebuildTaskViews(defs: List<CustomPropertyDefinition>)
 }

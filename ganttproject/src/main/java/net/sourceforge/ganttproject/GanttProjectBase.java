@@ -201,6 +201,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager);
     addProjectEventListener(databaseProxy.createProjectEventListener());
     myTaskManager.addTaskListener(databaseProxy.createTaskEventListener());
+    myTaskManager.getCustomPropertyManager().addListener(databaseProxy.createTaskCustomPropertyListener());
     statusBar = new GanttStatusBar(this);
     myTabPane = new GanttTabbedPane();
     myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());

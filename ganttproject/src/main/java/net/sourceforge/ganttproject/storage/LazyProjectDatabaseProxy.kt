@@ -19,6 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import biz.ganttproject.customproperty.CustomPropertyDefinition
+import biz.ganttproject.customproperty.CustomPropertyListener
 import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.storage.ProjectDatabase.*
 import net.sourceforge.ganttproject.task.Task
@@ -78,7 +80,12 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
     getDatabase().mapTasks(*columnConsumer)
   }
 
+  override fun rebuildTaskViews(defs: List<CustomPropertyDefinition>) {
+    getDatabase().rebuildTaskViews(defs)
+  }
+
   fun createProjectEventListener(): ProjectEventListener = projectEventListenerImpl
   fun createTaskEventListener(): TaskListener = projectEventListenerImpl
   fun createUndoListener(): GPUndoListener = projectEventListenerImpl
+  fun createTaskCustomPropertyListener(): CustomPropertyListener = projectEventListenerImpl
 }

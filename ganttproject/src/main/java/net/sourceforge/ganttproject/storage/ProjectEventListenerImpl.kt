@@ -20,9 +20,11 @@ package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.app.Barrier
 import biz.ganttproject.app.BarrierEntrance
+import biz.ganttproject.customproperty.CustomPropertyListener
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
+import net.sourceforge.ganttproject.task.CustomPropertyEvent
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.*
 import net.sourceforge.ganttproject.undo.GPUndoListener
@@ -35,7 +37,7 @@ import javax.swing.event.UndoableEditEvent
  */
 internal class ProjectEventListenerImpl(
   private val projectDatabase: ProjectDatabase, private val taskManagerSupplier: ()-> TaskManager)
-  : TaskListener, ProjectEventListener.Stub(), GPUndoListener {
+  : TaskListener, ProjectEventListener.Stub(), GPUndoListener, CustomPropertyListener {
 
   private fun withLogger(errorMessage: () -> String, body: () -> Unit) {
     try {
@@ -103,6 +105,10 @@ internal class ProjectEventListenerImpl(
   }
 
   override fun undoReset() {
+  }
+
+  override fun customPropertyChange(event: CustomPropertyEvent?) {
+    projectDatabase.rebuildTaskViews(taskManagerSupplier().customPropertyManager.definitions)
   }
 }
 

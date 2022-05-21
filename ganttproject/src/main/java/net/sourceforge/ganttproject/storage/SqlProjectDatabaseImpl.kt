@@ -23,6 +23,7 @@ import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.customproperty.CustomProperty
+import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.storage.db.Tables.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
@@ -36,6 +37,7 @@ import org.jooq.*
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.field
+import org.jooq.impl.DSL.max
 import java.awt.Color
 import java.sql.SQLException
 import javax.sql.DataSource
@@ -49,7 +51,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
-  /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
+  /** Transaction which is currently being constructed. */
   private var currentTxn: TransactionImpl? = null
   private var localTxnId: Int = 1
 
@@ -188,17 +190,33 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   override fun mapTasks(vararg columnConsumer: ColumnConsumer) {
     withDSL { dsl ->
-      var q: SelectSelectStep<out Record> = dsl.select(TASK.NUM)
+      var q: SelectSelectStep<out Record> = dsl.select(field("num", java.lang.Integer::class.java))
       columnConsumer.forEach {
         q = q.select(field(it.first.selectExpression, it.first.resultClass).`as`(it.first.propertyId))
       }
-      q.from(TASK).forEach {row  ->
-        val taskNum = row[TASK.NUM]
+      q.from("""TaskView""").forEach {row  ->
+        val taskNum = row.get("num", java.lang.Integer::class.java)
         columnConsumer.forEach {
-          it.second(taskNum, row[it.first.propertyId])
+          it.second(taskNum.toInt(), row[it.first.propertyId])
         }
       }
 
+    }
+  }
+
+  override fun rebuildTaskViews(defs: List<CustomPropertyDefinition>) {
+    withDSL { dsl ->
+      var q: SelectSelectStep<out Record> = dsl.select(TASKCUSTOMCOLUMN.UID.`as`("task_uid"))
+      defs.forEach {
+        q = q.select(max(TASKCUSTOMCOLUMN.COLUMN_VALUE).filterWhere(TASKCUSTOMCOLUMN.COLUMN_ID.eq(it.id)).`as`(it.id))
+      }
+      var q1 = q.from(TASKCUSTOMCOLUMN).groupBy(TASKCUSTOMCOLUMN.UID)
+      dsl.dropViewIfExists("TaskView".lowercase()).execute()
+      dsl.dropViewIfExists("TaskCustomColumnView".lowercase()).execute()
+      dsl.createView("TaskCustomColumnView".lowercase()).`as`(q1).execute()
+      dsl.createView("TaskView".lowercase())
+        .`as`("""SELECT T.*, C.* FROM Task T LEFT JOIN TaskCustomColumnView C ON uid=task_uid""")
+        .execute()
     }
   }
 
@@ -268,6 +286,10 @@ internal class SqlTaskCustomPropertiesUpdateBuilder(
         .getSQL(ParamType.INLINED)
     }
 }
+
+/**
+ * Builds H2 and PostgreSQL statements for updating task tables.
+ */
 class SqlTaskUpdateBuilder(private val task: Task,
                            private val onCommit: (String, String) -> Unit): TaskUpdateBuilder {
   private var lastSetStepH2: UpdateSetMoreStep<TaskRecord>? = null
