@@ -168,7 +168,12 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
 
   fun setValue(value: Any, task: Task, column: CustomPropertyDefinition) {
     try {
-      task.customValues.setValue(column, value)
+      task.createMutator().also {mutator ->
+        mutator.setCustomProperties(task.customValues.copyOf().also {
+          it.setValue(column, value)
+        })
+        mutator.commit()
+      }
     } catch (e: CustomColumnsException) {
       if (!GPLogger.log(e)) {
         e.printStackTrace(System.err)
