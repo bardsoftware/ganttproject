@@ -308,13 +308,13 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
 
   private static ChartOptionGroup createBaselineColorOptions(ChartModelImpl chartModel, final UIConfiguration projectConfig) {
     final ColorOption myTaskAheadOfScheduleColor = new DefaultColorOption("ganttChartStateDiffColors.taskAheadOfScheduleColor", new Color(50, 229, 50));
-    myTaskAheadOfScheduleColor.addPropertyChangeListener(evt -> projectConfig.setEarlierPreviousTaskColor(myTaskAheadOfScheduleColor.getValue()));
+    myTaskAheadOfScheduleColor.addChangeValueListener(evt -> projectConfig.setEarlierPreviousTaskColor(myTaskAheadOfScheduleColor.getValue()));
     //
     final ColorOption myTaskBehindScheduleColor = new DefaultColorOption("ganttChartStateDiffColors.taskBehindScheduleColor", new Color(229, 50, 50));
-    myTaskBehindScheduleColor.addPropertyChangeListener(evt -> projectConfig.setLaterPreviousTaskColor(myTaskBehindScheduleColor.getValue()));
+    myTaskBehindScheduleColor.addChangeValueListener(evt -> projectConfig.setLaterPreviousTaskColor(myTaskBehindScheduleColor.getValue()));
     //
     final ColorOption myTaskOnScheduleColor = new DefaultColorOption("ganttChartStateDiffColors.taskOnScheduleColor", Color.LIGHT_GRAY);
-    myTaskOnScheduleColor.addPropertyChangeListener(evt -> projectConfig.setPreviousTaskColor(myTaskOnScheduleColor.getValue()));
+    myTaskOnScheduleColor.addChangeValueListener(evt -> projectConfig.setPreviousTaskColor(myTaskOnScheduleColor.getValue()));
     //
     return new ChartOptionGroup("ganttChartStateDiffColors", new GPOption[] { myTaskOnScheduleColor,
         myTaskAheadOfScheduleColor, myTaskBehindScheduleColor }, chartModel.getOptionEventDispatcher());
