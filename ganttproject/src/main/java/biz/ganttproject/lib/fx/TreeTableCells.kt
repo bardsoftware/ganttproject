@@ -27,6 +27,8 @@ import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import de.jensd.fx.glyphs.GlyphIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.event.ActionEvent
@@ -36,6 +38,7 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.effect.InnerShadow
 import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.scene.text.Font
@@ -237,22 +240,7 @@ class TextCell<S, T>(
 
   override fun updateItem(cellValue: T?, empty: Boolean) {
     super.updateItem(cellValue, empty)
-    if (treeTableView.focusModel.isFocused(treeTableRow.index, tableColumn)) {
-      if (styleClass.indexOf("focused") < 0) {
-        styleClass.add("focused")
-      }
-    } else {
-      styleClass.removeAll("focused")
-    }
-    styleClass.removeAll("odd")
-    styleClass.removeAll("even")
-    if (!empty) {
-      if (treeTableRow.index % 2 == 0) {
-        styleClass.add("even")
-      } else {
-        styleClass.add("odd")
-      }
-    }
+    updateCellClasses(this, empty)
     doUpdateItem()
   }
 
@@ -349,6 +337,15 @@ fun <S> createDateColumn(name: String, getValue: (S) -> GanttCalendar?, setValue
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue) }
   }
 
+fun <S> createBooleanColumn(name: String, getValue: (S) -> Boolean?, setValue: (S, Boolean) -> Unit) =
+  TreeTableColumn<S, Boolean>(name).apply {
+    setCellValueFactory {
+      SimpleBooleanProperty(getValue(it.value.value) ?: false)
+    }
+    cellFactory =  Callback { CheckBoxTableCell() }
+    onEditCommit = EventHandler {event -> setValue(event.rowValue.value, event.newValue) }
+  }
+
 fun <S> createIntegerColumn(name: String, getValue: (S) -> Int?, setValue: (S, Int) -> Unit) =
   TreeTableColumn<S, Number>(name).apply {
     setCellValueFactory {
@@ -424,3 +421,57 @@ class TextCellFactory<S, T>(
     TextCell(converter).also(cellSetup)
 }
 
+class CheckBoxTableCell<S>() : TreeTableCell<S, Boolean>() {
+  private var isChecked = false
+  set(value) {
+    field = value
+    button.graphic = FontAwesomeIconView(
+      if (value) FontAwesomeIcon.CHECK else FontAwesomeIcon.SQUARE_ALT
+    ).also {
+      it.glyphSize = minCellHeight.value * 0.6
+    }
+  }
+  private val button = Button("", null).also {
+    it.onAction = EventHandler {
+      isChecked = !isChecked
+      commitEdit(isChecked)
+    }
+  }
+
+  init {
+    styleClass.add("gp-check-box-tree-table-cell")
+  }
+
+  override fun updateItem(item: Boolean?, empty: Boolean) {
+    super.updateItem(item, empty)
+    updateCellClasses(this, empty)
+    if (empty) {
+      text = null
+      graphic = null
+    } else {
+      contentDisplay = ContentDisplay.GRAPHIC_ONLY
+      alignment = Pos.CENTER
+      graphic = button
+      isChecked = item ?: false
+    }
+  }
+}
+
+private fun <S> updateCellClasses(cell: TreeTableCell<S, *>, empty: Boolean) {
+  if (cell.treeTableView.focusModel.isFocused(cell.treeTableRow.index, cell.tableColumn)) {
+    if (cell.styleClass.indexOf("focused") < 0) {
+      cell.styleClass.add("focused")
+    }
+  } else {
+    cell.styleClass.removeAll("focused")
+  }
+  cell.styleClass.removeAll("odd")
+  cell.styleClass.removeAll("even")
+  if (!empty) {
+    if (cell.treeTableRow.index % 2 == 0) {
+      cell.styleClass.add("even")
+    } else {
+      cell.styleClass.add("odd")
+    }
+  }
+}

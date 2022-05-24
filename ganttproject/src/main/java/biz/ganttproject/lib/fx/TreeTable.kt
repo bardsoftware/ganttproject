@@ -123,7 +123,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     this.prefWidth = totalWidth
   }
 
-  fun autosizeColumn(tc: TreeTableColumn<T, Any>): Double {
+  private fun autosizeColumn(tc: TreeTableColumn<T, Any>): Double {
     val cellFactory = tc.cellFactory ?: return 0.0
     val cell = cellFactory.call(tc) ?: return 0.0
 
@@ -199,16 +199,16 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
 
     }
 
-    table.addEventFilter(KeyEvent.KEY_PRESSED) {
-      if ((it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)
-        && it.target !is TextField
-        && !it.isAltDown
-        && !it.isShiftDown
-        && !it.isMetaDown
-        && !it.isControlDown) {
+    table.addEventFilter(KeyEvent.KEY_PRESSED) {event ->
+      if ((event.code == KeyCode.LEFT || event.code == KeyCode.RIGHT)
+        && event.target !is TextField
+        && !event.isAltDown
+        && !event.isShiftDown
+        && !event.isMetaDown
+        && !event.isControlDown) {
 
-        it.consume()
-        if (it.code == KeyCode.LEFT) {
+        event.consume()
+        if (event.code == KeyCode.LEFT) {
           table.focusModel.focusLeftCell()
         } else {
           table.focusModel.focusRightCell()

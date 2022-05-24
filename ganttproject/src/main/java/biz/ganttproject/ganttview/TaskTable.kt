@@ -40,15 +40,10 @@ import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Parent
 import javafx.scene.control.*
-import javafx.scene.control.cell.CheckBoxTreeTableCell
-import javafx.scene.input.ClipboardContent
-import javafx.scene.input.DataFormat
-import javafx.scene.input.DragEvent
-import javafx.scene.input.TransferMode
+import javafx.scene.input.*
 import javafx.scene.layout.*
 import javafx.scene.paint.Color.rgb
 import javafx.scene.shape.Circle
-import javafx.util.Callback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
@@ -223,6 +218,27 @@ class TaskTable(
       }?.let { action ->
         undoManager.undoableEdit(action.name) {
           action.actionPerformed(null)
+        }
+      }
+
+      val focusedCell = treeTable.focusModel.focusedCell
+      val column = focusedCell.tableColumn
+      column?.userData?.let {
+        if (column.isEditable && it is ColumnList.Column) {
+          this.taskManager.customPropertyManager.getCustomPropertyDefinition(it.id)?.let { def ->
+            if (def.propertyClass == CustomPropertyClass.BOOLEAN) {
+              if (event.code == KeyCode.SPACE || event.code == KeyCode.ENTER && event.getModifiers() == 0) {
+                val task = focusedCell.treeItem.value
+                // intentionally java.lang.Boolean, because as? Boolean returns null
+                (taskTableModel.getValue(task, def) as? java.lang.Boolean)?.let { value ->
+                  taskTableModel.setValue(value.booleanValue().not(), task, def)
+                  // This trick refreshes the cell in the table.
+                  treeTable.focusModel.focus(-1)
+                  treeTable.focusModel.focus(focusedCell)
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -540,17 +556,10 @@ class TaskTable(
         )
       }
       CustomPropertyClass.BOOLEAN -> {
-        TreeTableColumn<Task, Boolean>(customProperty.name).apply {
-          setCellValueFactory { features ->
-            val task = features.value.value
-            SimpleBooleanProperty((taskTableModel.getValue(task, customProperty) ?: false) as Boolean).also {
-              it.addListener { _, _, newValue ->
-                taskTableModel.setValue(newValue, task, customProperty)
-              }
-            }
-          }
-          cellFactory =  Callback { CheckBoxTreeTableCell() }
-        }
+        createBooleanColumn<Task>(customProperty.name,
+          { taskTableModel.getValue(it, customProperty) as Boolean? },
+          { task, value -> taskTableModel.setValue(value, task, customProperty)}
+        )
       }
       CustomPropertyClass.INTEGER -> {
         createIntegerColumn(customProperty.name,
