@@ -27,8 +27,8 @@ import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.lib.fx.treetable.TreeTableCellSkin
 import de.jensd.fx.glyphs.GlyphIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import de.jensd.fx.glyphs.materialicons.MaterialIcon
+import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.event.ActionEvent
@@ -38,7 +38,6 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.effect.InnerShadow
 import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyEvent
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.scene.text.Font
@@ -425,8 +424,8 @@ class CheckBoxTableCell<S>() : TreeTableCell<S, Boolean>() {
   private var isChecked = false
   set(value) {
     field = value
-    button.graphic = FontAwesomeIconView(
-      if (value) FontAwesomeIcon.CHECK else FontAwesomeIcon.SQUARE_ALT
+    button.graphic = MaterialIconView(
+      if (value) MaterialIcon.CHECK else MaterialIcon.CHECK_BOX_OUTLINE_BLANK
     ).also {
       it.glyphSize = minCellHeight.value * 0.6
     }
