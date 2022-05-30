@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.task.TaskMutator;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -84,11 +85,16 @@ public class CustomColumnsPanel {
     return CommonPanel.createTableAndActions(myTable, buttonPanel);
   }
 
-  public void commit() {
+  public void commit(TaskMutator mutator) {
     if (myTable.isEditing()) {
       myTable.getCellEditor().stopCellEditing();
     }
     CommonPanel.saveColumnWidths(myTable, ourColumnWidth);
+    try {
+      mutator.setCustomProperties(myHolder);
+    } catch (CustomColumnsException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   class CustomColumnTableModel extends DefaultTableModel {

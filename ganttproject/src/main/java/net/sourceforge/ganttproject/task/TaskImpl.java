@@ -25,7 +25,9 @@ import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import biz.ganttproject.customproperty.CustomColumnsException;
 import biz.ganttproject.customproperty.CustomColumnsValues;
+import biz.ganttproject.customproperty.CustomPropertyHolder;
 import com.google.common.collect.ImmutableList;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
@@ -178,7 +180,7 @@ public class TaskImpl implements Task {
     myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this, myManager.getDependencyCollection());
     myDependencySliceAsDependee = new TaskDependencySliceAsDependee(this, myManager.getDependencyCollection());
 
-    customValues = (CustomColumnsValues) copy.getCustomValues().clone();
+    customValues = copy.getCustomValues().copyOf();
 
     recalculateActivities();
   }
@@ -771,5 +773,10 @@ public class TaskImpl implements Task {
   @Override
   public void setCost(Cost cost) {
     myCost.setValue(cost);
+  }
+
+  @Override
+  public void setCustomProperties(CustomPropertyHolder customProperties) throws CustomColumnsException {
+    customValues.importFrom(customProperties);
   }
 }

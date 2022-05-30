@@ -68,8 +68,8 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
 
   override fun startTransaction(title: String) = getDatabase().startTransaction(title)
 
-  override fun fetchTransactions(startTxnId: Int, limit: Int): List<XlogRecord> {
-    return getDatabase().fetchTransactions(startTxnId, limit)
+  override fun fetchTransactions(startLocalTxnId: Int, limit: Int): List<XlogRecord> {
+    return getDatabase().fetchTransactions(startLocalTxnId, limit)
   }
 
   override fun findTasks(whereExpression: String, lookupById: (Int) -> Task?): List<Task> = getDatabase().findTasks(whereExpression, lookupById)

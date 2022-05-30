@@ -22,6 +22,8 @@ package net.sourceforge.ganttproject.storage
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
+import biz.ganttproject.customproperty.CustomProperty
+import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.storage.db.Tables.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.GPLogger
@@ -30,11 +32,7 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.util.ColorConvertion
 import org.h2.jdbcx.JdbcDataSource
-import org.jooq.DSLContext
-import org.jooq.SQLDialect
-import org.jooq.SelectSelectStep
-import org.jooq.UpdateSetMoreStep
-import org.jooq.UpdateSetStep
+import org.jooq.*
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.field
@@ -79,6 +77,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       val context = DSL.using(config)
       queries.forEach {
         try {
+          LOG.debug("SQL: ${it.sqlStatementH2}")
           context.execute(it.sqlStatementH2)
           context
             .insertInto(LOGRECORD)
@@ -139,9 +138,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   @Throws(ProjectDatabaseException::class)
   override fun shutdown() {
     try {
-      dataSource.connection.use { connection ->
-        connection.createStatement().execute("shutdown")
-      }
+      dataSource.connection.use { it.createStatement().execute("shutdown") }
     } catch (e: Exception) {
       throw ProjectDatabaseException("Failed to shutdown the database", e)
     }
@@ -168,6 +165,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   @Throws(ProjectDatabaseException::class)
   override fun fetchTransactions(startLocalTxnId: Int, limit: Int): List<XlogRecord> = withDSL(
     { "Failed to fetch log records starting with $startLocalTxnId" }) { dsl ->
+    //println(dsl.selectFrom(LOGRECORD).toList())
     dsl
       .selectFrom(LOGRECORD)
       .where(LOGRECORD.LOCAL_TXN_ID.ge(startLocalTxnId).and(LOGRECORD.LOCAL_TXN_ID.lt(startLocalTxnId + limit)))
@@ -185,12 +183,12 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
-  fun <T> SelectSelectStep<org.jooq.Record>.select(col: ColumnConsumer?): SelectSelectStep<org.jooq.Record> =
+  fun SelectSelectStep<Record>.select(col: ColumnConsumer?): SelectSelectStep<Record> =
     col?.let { this.select(field(it.first.selectExpression, it.first.resultClass)!!.`as`(col.first.propertyId))} ?: this
 
   override fun mapTasks(vararg columnConsumer: ColumnConsumer) {
     withDSL { dsl ->
-      var q: SelectSelectStep<out org.jooq.Record> = dsl.select(TASK.NUM)
+      var q: SelectSelectStep<out Record> = dsl.select(TASK.NUM)
       columnConsumer.forEach {
         q = q.select(field(it.first.selectExpression, it.first.resultClass).`as`(it.first.propertyId))
       }
@@ -215,7 +213,6 @@ internal data class Query(
 )
 
 class TransactionImpl(private val database: SqlProjectDatabaseImpl, private val title: String): ProjectDatabaseTxn {
-  internal val ex = Exception()
   internal val statements = mutableListOf<Query>()
 
   override fun commit() {
@@ -227,18 +224,56 @@ class TransactionImpl(private val database: SqlProjectDatabaseImpl, private val 
   }
 
   override fun toString(): String {
-    ex.printStackTrace()
     return "TransactionImpl(title='$title', statements=$statements)\n\n"
   }
 
 
 }
 
+/**
+ * Creates SQL statements for updating custom property records.
+ */
+internal class SqlTaskCustomPropertiesUpdateBuilder(
+  private val task: Task, private val onCommit: (String, String) -> Unit) {
+  internal var commit: () -> Unit = {}
+  internal fun setCustomProperties(customProperties: CustomPropertyHolder) {
+    val h2statements = mutableListOf<String>()
+    val postgresStatements = mutableListOf<String>()
+
+    h2statements.add(generateDeleteStatement(DSL.using(SQLDialect.H2), customProperties))
+    postgresStatements.add(generateDeleteStatement(DSL.using(SQLDialect.POSTGRES), customProperties))
+
+    h2statements.addAll(generateMergeStatements(customProperties.customProperties) {DSL.using(SQLDialect.H2)})
+    postgresStatements.addAll(generateMergeStatements(customProperties.customProperties) {DSL.using(SQLDialect.POSTGRES)})
+    commit = {
+      h2statements.zip(postgresStatements).forEach { onCommit(it.first, it.second) }
+      println(h2statements)
+      println(postgresStatements)
+    }
+  }
+
+  private fun generateDeleteStatement(dsl: DSLContext, customProperties: CustomPropertyHolder): String =
+    dsl.deleteFrom(TASKCUSTOMCOLUMN)
+      .where(TASKCUSTOMCOLUMN.UID.eq(task.uid))
+      .and(TASKCUSTOMCOLUMN.COLUMN_ID.notIn(customProperties.customProperties.map { it.definition.id }))
+      .getSQL(ParamType.INLINED)
+
+  private fun generateMergeStatements(customProperties: List<CustomProperty>, dsl: ()->DSLContext) =
+    customProperties.map {
+      dsl().mergeInto(TASKCUSTOMCOLUMN).using(DSL.selectOne())
+        .on(TASKCUSTOMCOLUMN.UID.eq(task.uid)).and(TASKCUSTOMCOLUMN.COLUMN_ID.eq(it.definition.id))
+        .whenMatchedThenUpdate().set(TASKCUSTOMCOLUMN.COLUMN_VALUE, it.valueAsString)
+        .whenNotMatchedThenInsert(TASKCUSTOMCOLUMN.UID, TASKCUSTOMCOLUMN.COLUMN_ID, TASKCUSTOMCOLUMN.COLUMN_VALUE)
+        .values(task.uid, it.definition.id, it.valueAsString)
+        .getSQL(ParamType.INLINED)
+    }
+}
 class SqlTaskUpdateBuilder(private val task: Task,
                            private val onCommit: (String, String) -> Unit): TaskUpdateBuilder {
   private var lastSetStepH2: UpdateSetMoreStep<TaskRecord>? = null
   private var lastSetStepPostgres: UpdateSetMoreStep<TaskRecord>? = null
 
+  private val customPropertiesUpdater = SqlTaskCustomPropertiesUpdateBuilder(task, onCommit)
   private fun nextStep(step: (lastStep: UpdateSetStep<TaskRecord>) -> UpdateSetMoreStep<TaskRecord>) {
     lastSetStepH2 = step(lastSetStepH2 ?: DSL.using(SQLDialect.H2).update(TASK))
     lastSetStepPostgres = step(lastSetStepPostgres ?: DSL.using(SQLDialect.POSTGRES).update(TASK))
@@ -246,12 +281,12 @@ class SqlTaskUpdateBuilder(private val task: Task,
 
   @Throws(ProjectDatabaseException::class)
   override fun commit() {
-    if (lastSetStepH2 == null && lastSetStepPostgres == null) return
     val finalH2 = lastSetStepH2?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
-      ?: error("Update step for H2 is null")
     val finalPostgres = lastSetStepPostgres?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
-      ?: error("Update step for PostgreSQL is null")
-    onCommit(finalH2, finalPostgres)
+    if (finalH2 != null && finalPostgres != null) {
+      onCommit(finalH2, finalPostgres)
+    }
+    customPropertiesUpdater.commit()
   }
 
   override fun setName(name: String?) = nextStep { it.set(TASK.NAME, name) }
@@ -281,6 +316,10 @@ class SqlTaskUpdateBuilder(private val task: Task,
   override fun setCost(cost: Task.Cost) {
     nextStep { it.set(TASK.IS_COST_CALCULATED, cost.isCalculated) }
     nextStep { it.set(TASK.COST_MANUAL_VALUE, cost.manualValue) }
+  }
+
+  override fun setCustomProperties(customProperties: CustomPropertyHolder) {
+    customPropertiesUpdater.setCustomProperties(customProperties)
   }
 
   override fun setWebLink(webLink: String?) = nextStep { it.set(TASK.WEB_LINK, webLink) }
