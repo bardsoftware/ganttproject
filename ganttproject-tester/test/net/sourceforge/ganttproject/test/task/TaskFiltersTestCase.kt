@@ -96,11 +96,11 @@ class TaskFiltersTestCase : TaskTestCase() {
     assert(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
 
     child = createTask()
-    child.start.add(Calendar.DATE, -1)
+    child.start.add(Calendar.DATE, 1)
     assertFalse(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
 
     child = createTask()
-    child.end.add(Calendar.DATE, 1)
+    child.end.add(Calendar.DATE, -1)
     assertFalse(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
   }
 }
