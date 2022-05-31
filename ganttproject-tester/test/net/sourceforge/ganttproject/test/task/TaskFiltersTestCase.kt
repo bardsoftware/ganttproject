@@ -18,12 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.test.task
 
-import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.ganttview.TaskFilterManager
 import net.sourceforge.ganttproject.TestSetupHelper
 import net.sourceforge.ganttproject.task.Task
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 import java.util.*
 
@@ -44,7 +43,7 @@ class TaskFiltersTestCase {
 
   @Test
   fun `Filter due today`() {
-    var child = createTask()
+    val child = createTask()
     // display value will be today
     assert(taskFilterManager.dueTodayFilter(taskManager.rootTask, child))
 
@@ -63,7 +62,7 @@ class TaskFiltersTestCase {
 
   @Test
   fun `Filter overdue today`() {
-    var child = createTask()
+    val child = createTask()
     child.end.add(Calendar.DATE, -1)
     assert(taskFilterManager.overdueFilter(taskManager.rootTask, child))
 
