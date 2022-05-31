@@ -25,14 +25,10 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.*
 
-class TaskFiltersTestCase : TaskTestCase() {
-
-  private val taskFilterManager : TaskFilterManager
-
-  init {
-    setUp()
-    taskFilterManager = TaskFilterManager(taskManager)
-  }
+class TaskFiltersTestCase {
+  private val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+  private val taskFilterManager = TaskFilterManager(taskManager)
+  private fun createTask() = taskManager.createTask()
 
   @Test
   fun `Filter completed tasks`() {
