@@ -19,8 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.test.task
 
 import biz.ganttproject.core.time.CalendarFactory
+import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.ganttview.TaskFilterManager
 import net.sourceforge.ganttproject.TestSetupHelper
+import net.sourceforge.ganttproject.task.Task
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -49,14 +51,13 @@ class TaskFiltersTestCase {
     child.completionPercentage = 100
     assertFalse(taskFilterManager.dueTodayFilter(taskManager.rootTask, child))
 
-    // ??? display value will not be changed if we change date of calendar...
+    child.completionPercentage = 99
+    assert(taskFilterManager.dueTodayFilter(taskManager.rootTask, child))
 
-    child = createTask()
-    child.end.add(Calendar.DATE, 1)
+    child.shiftTask(1)
     assertFalse(taskFilterManager.dueTodayFilter(taskManager.rootTask, child))
 
-    child = createTask()
-    child.end.add(Calendar.DATE, -3)
+    child.shiftTask(-3)
     assertFalse(taskFilterManager.dueTodayFilter(taskManager.rootTask, child))
   }
 
@@ -69,12 +70,13 @@ class TaskFiltersTestCase {
     child.completionPercentage = 100
     assertFalse(taskFilterManager.overdueFilter(taskManager.rootTask, child))
 
-    child = createTask()
-    child.end.add(Calendar.DATE, 1)
+    child.completionPercentage = 99
+    assert(taskFilterManager.overdueFilter(taskManager.rootTask, child))
+
+    child.shiftTask(1)
     assertFalse(taskFilterManager.overdueFilter(taskManager.rootTask, child))
 
-    child = createTask()
-    child.end.add(Calendar.DATE, -3)
+    child.shiftTask(-3)
     assert(taskFilterManager.overdueFilter(taskManager.rootTask, child))
   }
 
@@ -84,7 +86,10 @@ class TaskFiltersTestCase {
     assert(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
 
     child.completionPercentage = 100
-    assertFalse(taskFilterManager.overdueFilter(taskManager.rootTask, child))
+    assertFalse(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
+
+    child.completionPercentage = 99
+    assert(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
 
     child = createTask()
     child.start.add(Calendar.DATE, -1)
@@ -93,10 +98,19 @@ class TaskFiltersTestCase {
 
     child = createTask()
     child.start.add(Calendar.DATE, 1)
+    child.end.add(Calendar.DATE, 2)
     assertFalse(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
 
     child = createTask()
+    child.start.add(Calendar.DATE, -2)
     child.end.add(Calendar.DATE, -1)
     assertFalse(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
+  }
+
+  private fun Task.shiftTask(days: Int) {
+    this.createShiftMutator().also {
+      it.shift(taskManager.createLength(GPTimeUnitStack.DAY, days.toFloat()))
+      it.commit()
+    }
   }
 }
