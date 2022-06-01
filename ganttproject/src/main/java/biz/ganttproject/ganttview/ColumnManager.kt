@@ -324,7 +324,7 @@ internal class CustomPropertyEditor(
   }
 }
 
-internal data class ColumnAsListItem(
+internal class ColumnAsListItem(
   val column: ColumnList.Column?,
   var isVisible: Boolean,
   val isCustom: Boolean,
@@ -348,22 +348,37 @@ internal data class ColumnAsListItem(
     set(value) { _defaultValue.value = value }
   fun defaultValueProperty() = _defaultValue
 
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+
+    other as ColumnAsListItem
+
+    if (_title != other._title) return false
+
+    return true
+  }
+
+  override fun hashCode(): Int {
+    return _title.hashCode()
+  }
+
   init {
     if (column != null) {
       title = column.name
+      val customColumn = customColumnsManager.definitions.find { it.id == column?.id }
       type = run {
         if (isCustom) {
-          customColumnsManager.definitions.find { it.id == column?.id }?.getPropertyType()
+          customColumn?.getPropertyType()
         } else {
           TaskDefaultColumn.find(column?.id)?.getPropertyType()
         }
       } ?: PropertyType.STRING
       defaultValue =
         if (!isCustom) ""
-        else customColumnsManager.definitions.find { it.id == column.id }?.defaultValueAsString ?: ""
+        else customColumn?.defaultValueAsString ?: ""
     }
   }
-
 }
 
 private class CellImpl : ListCell<ColumnAsListItem>() {
