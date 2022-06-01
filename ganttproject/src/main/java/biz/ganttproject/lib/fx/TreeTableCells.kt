@@ -432,8 +432,10 @@ class CheckBoxTableCell<S>() : TreeTableCell<S, Boolean>() {
   }
   private val button = Button("", null).also {
     it.onAction = EventHandler {
-      isChecked = !isChecked
-      commitEdit(isChecked)
+      val newValue = !isChecked
+      this.treeTableView.edit(this.treeTableRow.index, this.tableColumn)
+      commitEdit(newValue)
+      isChecked = newValue
     }
   }
 
