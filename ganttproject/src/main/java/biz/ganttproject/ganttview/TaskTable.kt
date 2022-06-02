@@ -44,6 +44,7 @@ import javafx.scene.input.*
 import javafx.scene.layout.*
 import javafx.scene.paint.Color.rgb
 import javafx.scene.shape.Circle
+import javafx.scene.text.TextAlignment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
@@ -798,25 +799,40 @@ class TaskTable(
         if (TaskDefaultColumn.COLOR.stub.isVisible || TaskDefaultColumn.INFO.stub.isVisible) {
           HBox().also { hbox ->
             hbox.alignment = Pos.CENTER
+            hbox.spacing = 3.0
             Region().also {
               hbox.children.add(it)
               HBox.setHgrow(it, Priority.ALWAYS)
             }
             if (TaskDefaultColumn.INFO.stub.isVisible) {
               task.getProgressStatus().getIcon()?.let { icon ->
+                icon.glyphSize = 0.75 * (minCellHeight.value - cellPadding)
+                icon.textAlignment = TextAlignment.CENTER
                 StackPane(icon).also {
                   it.styleClass.add("badge")
                   hbox.children.add(it)
+                  it.alignment = Pos.CENTER
+                  it.prefWidth = minCellHeight.value - cellPadding + 5.0
+                  it.prefHeight = it.prefWidth
+                  it.minWidth = it.prefWidth
+                  it.styleClass.add(
+                    when (task.getProgressStatus()) {
+                      Task.ProgressStatus.DEADLINE_MISS -> "badge-error"
+                      Task.ProgressStatus.INPROGRESS -> "badge-warning"
+                      else -> ""
+                    }
+                  )
                 }
 
               }
             }
             if (TaskDefaultColumn.COLOR.stub.isVisible) {
-              StackPane(Circle().also {
-                it.fill = rgb(task.color.red, task.color.green, task.color.blue)
-                it.radius = 4.0
-              }).also {
-                it.styleClass.add("badge")
+              StackPane().also {
+                it.styleClass.addAll("badge", "borderless")
+                it.children.add(Circle().also {
+                  it.fill = rgb(task.color.red, task.color.green, task.color.blue)
+                  it.radius = (minCellHeight.value - cellPadding) / 2.0 - 1.0
+                })
                 hbox.children.add(it)
               }
             }

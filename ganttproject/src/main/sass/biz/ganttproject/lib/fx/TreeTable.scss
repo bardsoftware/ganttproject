@@ -49,6 +49,12 @@
                 & .tree-table-cell {
                     -fx-fill: white;
                     -fx-text-fill: white;
+                    .badge {
+                      -fx-border-color: $gp-light-gray;
+                      .glyph-icon {
+                        -fx-fill: black;
+                      }
+                    }
                 }
                 & .glyph-icon {
                     -fx-fill: white;
@@ -80,7 +86,20 @@
         -fx-border-color: transparent;
         -fx-padding: 0 10 0 10;
         .badge {
-            -fx-padding: 0 3 0 0;
+          -fx-background-radius: 50%;
+          -fx-padding: 0;
+          -fx-background-insets: 0;
+          -fx-border-color: $gp-medium-gray;
+          -fx-border-radius: 50%;
+          &.borderless {
+            -fx-border-width: 0;
+          }
+        }
+        .badge-error {
+          -fx-background-color: $gp-error;
+        }
+        .badge-warning {
+          -fx-background-color: $gp-warning;
         }
         &.focused {
             -fx-border-color: $gp-orange;
