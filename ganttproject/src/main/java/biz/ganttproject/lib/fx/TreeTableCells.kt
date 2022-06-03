@@ -185,16 +185,17 @@ class TextCell<S, T>(
       }
       styleClass.remove("validation-error")
     } finally {
-      this.isCancellingOrCommitting = false
       onEditingCompleted()
     }
-    val idx = this.index
+    val rowIdx = this.treeTableRow.index
+    val col = this.tableColumn
     Platform.runLater {
-      doCancelEdit(idx)
+      doCancelEdit(rowIdx, col)
+      this.isCancellingOrCommitting = false
     }
   }
 
-  private fun doCancelEdit(cellIndex: Int) {
+  private fun doCancelEdit(rowIndex: Int, col: TreeTableColumn<S,*>) {
     text = getItemText()
     graphic = savedGraphic
     savedGraphic = null
@@ -202,11 +203,11 @@ class TextCell<S, T>(
       it.isVisible = true
     }
     treeTableView.requestFocus()
-    if (cellIndex != -1) {
+    if (rowIndex != -1) {
       // It seems that the cell is not recreated after cancelling edit (e.g. with Escape) and we get a black
       // rectangle instead of a task name. Moving focus back and forth re-creates the cell.
       treeTableView.focusModel.focus(-1)
-      treeTableView.focusModel.focus(cellIndex)
+      treeTableView.focusModel.focus(rowIndex, col)
     }
   }
 
