@@ -49,7 +49,7 @@
                 & .tree-table-cell {
                     -fx-fill: white;
                     -fx-text-fill: white;
-                    .badge {
+                    .badge.colored {
                       -fx-border-color: $gp-light-gray;
                       .glyph-icon {
                         -fx-fill: black;
@@ -87,12 +87,13 @@
         -fx-padding: 0 10 0 10;
         .badge {
           -fx-background-radius: 50%;
+          -fx-border-width: 0;
           -fx-padding: 0;
           -fx-background-insets: 0;
           -fx-border-color: $gp-medium-gray;
           -fx-border-radius: 50%;
-          &.borderless {
-            -fx-border-width: 0;
+          &.colored {
+            -fx-border-width: 1;
           }
         }
         .badge-error {

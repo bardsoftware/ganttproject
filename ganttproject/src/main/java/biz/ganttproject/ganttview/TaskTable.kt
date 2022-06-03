@@ -815,20 +815,22 @@ class TaskTable(
                   it.prefWidth = minCellHeight.value - cellPadding + 5.0
                   it.prefHeight = it.prefWidth
                   it.minWidth = it.prefWidth
-                  it.styleClass.add(
-                    when (task.getProgressStatus()) {
-                      Task.ProgressStatus.DEADLINE_MISS -> "badge-error"
-                      Task.ProgressStatus.INPROGRESS -> "badge-warning"
-                      else -> ""
-                    }
-                  )
+                  if ("true" == System.getProperty("table.badges.colored", "true")) {
+                    it.styleClass.add("colored")
+                    it.styleClass.add(
+                      when (task.getProgressStatus()) {
+                        Task.ProgressStatus.DEADLINE_MISS -> "badge-error"
+                        Task.ProgressStatus.INPROGRESS -> "badge-warning"
+                        else -> ""
+                      }
+                    )
+                  }
                 }
-
               }
             }
             if (TaskDefaultColumn.COLOR.stub.isVisible) {
               StackPane().also {
-                it.styleClass.addAll("badge", "borderless")
+                it.styleClass.addAll("badge")
                 it.children.add(Circle().also {
                   it.fill = rgb(task.color.red, task.color.green, task.color.blue)
                   it.radius = (minCellHeight.value - cellPadding) / 2.0 - 1.0
