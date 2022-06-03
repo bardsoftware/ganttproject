@@ -41,15 +41,11 @@ import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Parent
 import javafx.scene.control.*
-import javafx.scene.control.cell.CheckBoxTreeTableCell
-import javafx.scene.input.ClipboardContent
-import javafx.scene.input.DataFormat
-import javafx.scene.input.DragEvent
-import javafx.scene.input.TransferMode
+import javafx.scene.input.*
 import javafx.scene.layout.*
 import javafx.scene.paint.Color.rgb
 import javafx.scene.shape.Circle
-import javafx.util.Callback
+import javafx.scene.text.TextAlignment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
@@ -224,6 +220,27 @@ class TaskTable(
           }
         }
       }
+
+      val focusedCell = treeTable.focusModel.focusedCell
+      val column = focusedCell.tableColumn
+      column?.userData?.let {
+        if (column.isEditable && it is ColumnList.Column) {
+          this.taskManager.customPropertyManager.getCustomPropertyDefinition(it.id)?.let { def ->
+            if (def.propertyClass == CustomPropertyClass.BOOLEAN) {
+              if (event.code == KeyCode.SPACE || event.code == KeyCode.ENTER && event.getModifiers() == 0) {
+                val task = focusedCell.treeItem.value
+                // intentionally java.lang.Boolean, because as? Boolean returns null
+                (taskTableModel.getValue(task, def) as? java.lang.Boolean)?.let { value ->
+                  taskTableModel.setValue(value.booleanValue().not(), task, def)
+                  // This trick refreshes the cell in the table.
+                  treeTable.focusModel.focus(-1)
+                  treeTable.focusModel.focus(focusedCell)
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -329,7 +346,11 @@ class TaskTable(
         if (e.oldContainer == null) {
           return
         }
-        Platform.runLater { sync(true) }
+        Platform.runLater {
+          sync(true)
+          // Force selection changed event because some actions depend on the relative location of tasks.
+          selectionManager.fireSelectionChanged()
+        }
       }
 
       override fun taskRemoved(e: TaskHierarchyEvent) {
@@ -368,7 +389,7 @@ class TaskTable(
     }
   }
 
-  private suspend fun commitEditing() {
+  private fun commitEditing() {
     ourNameCellFactory.editingCell?.commitEdit()
     //newTaskActor.inboxChannel.send(EditingCompleted())
   }
@@ -535,17 +556,10 @@ class TaskTable(
         )
       }
       CustomPropertyClass.BOOLEAN -> {
-        TreeTableColumn<Task, Boolean>(customProperty.name).apply {
-          setCellValueFactory { features ->
-            val task = features.value.value
-            SimpleBooleanProperty((taskTableModel.getValue(task, customProperty) ?: false) as Boolean).also {
-              it.addListener { _, _, newValue ->
-                taskTableModel.setValue(newValue, task, customProperty)
-              }
-            }
-          }
-          cellFactory =  Callback { CheckBoxTreeTableCell() }
-        }
+        createBooleanColumn<Task>(customProperty.name,
+          { taskTableModel.getValue(it, customProperty) as Boolean? },
+          { task, value -> taskTableModel.setValue(value, task, customProperty)}
+        )
       }
       CustomPropertyClass.INTEGER -> {
         createIntegerColumn(customProperty.name,
@@ -785,25 +799,42 @@ class TaskTable(
         if (TaskDefaultColumn.COLOR.stub.isVisible || TaskDefaultColumn.INFO.stub.isVisible) {
           HBox().also { hbox ->
             hbox.alignment = Pos.CENTER
+            hbox.spacing = 3.0
             Region().also {
               hbox.children.add(it)
               HBox.setHgrow(it, Priority.ALWAYS)
             }
             if (TaskDefaultColumn.INFO.stub.isVisible) {
               task.getProgressStatus().getIcon()?.let { icon ->
+                icon.glyphSize = 0.75 * (minCellHeight.value - cellPadding)
+                icon.textAlignment = TextAlignment.CENTER
                 StackPane(icon).also {
                   it.styleClass.add("badge")
                   hbox.children.add(it)
+                  it.alignment = Pos.CENTER
+                  it.prefWidth = minCellHeight.value - cellPadding + 5.0
+                  it.prefHeight = it.prefWidth
+                  it.minWidth = it.prefWidth
+                  if ("true" == System.getProperty("table.badges.colored", "true")) {
+                    it.styleClass.add("colored")
+                    it.styleClass.add(
+                      when (task.getProgressStatus()) {
+                        Task.ProgressStatus.DEADLINE_MISS -> "badge-error"
+                        Task.ProgressStatus.INPROGRESS -> "badge-warning"
+                        else -> ""
+                      }
+                    )
+                  }
                 }
-
               }
             }
             if (TaskDefaultColumn.COLOR.stub.isVisible) {
-              StackPane(Circle().also {
-                it.fill = rgb(task.color.red, task.color.green, task.color.blue)
-                it.radius = 4.0
-              }).also {
-                it.styleClass.add("badge")
+              StackPane().also {
+                it.styleClass.addAll("badge")
+                it.children.add(Circle().also {
+                  it.fill = rgb(task.color.red, task.color.green, task.color.blue)
+                  it.radius = (minCellHeight.value - cellPadding) / 2.0 - 1.0
+                })
                 hbox.children.add(it)
               }
             }

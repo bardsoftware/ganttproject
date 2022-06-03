@@ -65,7 +65,7 @@ jpackage --type app-image \
                     --add-opens java.desktop/sun.swing=ALL-UNNAMED
                     -classpath $APPDIR:$APPDIR/eclipsito.jar
                     -Duser.dir=$APPDIR
-                    -DversionDirs="plugins:~/.ganttproject.d/updates"
+                    -DversionDirs=plugins:~/.ganttproject.d/updates
                     -Dapp=net.sourceforge.ganttproject.GanttProject' \
     --arguments '--verbosity 4' \
     --arguments '--version-dirs plugins:~/.ganttproject.d/updates' \

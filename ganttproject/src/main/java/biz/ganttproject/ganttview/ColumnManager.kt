@@ -392,6 +392,7 @@ internal class ColumnAsListItem(
     get() = _expression.value
     set(value) { _expression.value = value }
   fun expressionProperty() = _expression
+
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false
@@ -428,12 +429,8 @@ internal class ColumnAsListItem(
           else -> ""
         }
       } ?: ""
-
     }
   }
-
-
-
 }
 
 private class CellImpl : ListCell<ColumnAsListItem>() {
