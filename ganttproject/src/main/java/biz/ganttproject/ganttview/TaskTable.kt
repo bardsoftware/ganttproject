@@ -133,13 +133,24 @@ class TaskTable(
   val columnListWidthProperty = SimpleObjectProperty<Pair<Double, Double>>()
   var requestSwingFocus: () -> Unit = {}
   lateinit var swingComponent: Component
-  private val filterCompletedTasksAction = FilterCompletedTasks(filters, taskManager)
+
+  // Task filters -> actions
+
+  private val filterCompletedTasksAction = TaskFilterAction("taskTable.filter.completedTasks",
+    filters, filters.filterCompletedTasksOption, filters.completedTasksFilter)
+  private val filterDueTodayTasksAction = TaskFilterAction("taskTable.filter.dueTodayTasks",
+    filters, filters.filterDueTodayOption, filters.dueTodayFilter)
+  private val filterOverdueTasksAction = TaskFilterAction("taskTable.filter.overdueTasks",
+    filters, filters.filterOverdueOption, filters.overdueFilter)
+  private val filterInProgressTodayTasksAction = TaskFilterAction("taskTable.filter.inProgressTodayTasks",
+    filters, filters.filterInProgressTodayOption, filters.inProgressTodayFilter)
+
 
   private val placeholderShowHidden by lazy {
     Button(RootLocalizer.formatText("taskTable.placeholder.showHiddenTasks")).also {
       it.styleClass.add("btn-attention")
       it.onAction = EventHandler {
-        filterCompletedTasksAction.setChecked(false)
+        filters.activeFilter = VOID_FILTER
       }
     }
   }
@@ -643,7 +654,7 @@ class TaskTable(
       throw NullPointerException("NPE! this=$this")
     }
     val childItem = createTreeItem(child)
-    if (pos == -1) {
+    if (pos == -1 || pos > parentItem.children.size) {
       parentItem.children.add(childItem)
     } else {
       parentItem.children.add(pos, childItem)
@@ -762,7 +773,12 @@ class TaskTable(
 
   fun tableMenuActions(builder: MenuBuilder) {
     builder.apply {
-      items(taskActions.manageColumnsAction, this@TaskTable.filterCompletedTasksAction)
+      items(taskActions.manageColumnsAction,
+        this@TaskTable.filterCompletedTasksAction,
+        this@TaskTable.filterDueTodayTasksAction,
+        this@TaskTable.filterOverdueTasksAction,
+        this@TaskTable.filterInProgressTodayTasksAction,
+      )
     }
   }
 
