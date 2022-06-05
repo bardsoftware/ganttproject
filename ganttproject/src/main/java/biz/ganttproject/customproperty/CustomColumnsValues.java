@@ -162,12 +162,12 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
   public boolean equals(Object object) {
     if (this == object) return true;
     if (!(object instanceof CustomColumnsValues)) return false;
-    CustomColumnsValues columnsValues = (CustomColumnsValues) object;
-    return mapCustomColumnValue.equals(columnsValues.mapCustomColumnValue) && myManager.equals(columnsValues.myManager);
+    CustomColumnsValues otherColumnsValues = (CustomColumnsValues) object;
+    return mapCustomColumnValue.equals(otherColumnsValues.mapCustomColumnValue);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(mapCustomColumnValue, myManager);
+    return mapCustomColumnValue.hashCode();
   }
 }
