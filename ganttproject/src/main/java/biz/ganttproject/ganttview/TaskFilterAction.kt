@@ -1,5 +1,5 @@
 /*
-Copyright 2021 BarD Software s.r.o
+Copyright 2022 BarD Software s.r.o, Alexander Popov
 
 This file is part of GanttProject, an open-source project management tool.
 
@@ -18,33 +18,31 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.ganttview
 
+import biz.ganttproject.core.option.DefaultBooleanOption
 import net.sourceforge.ganttproject.action.GPAction
-import net.sourceforge.ganttproject.task.TaskManager
-import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
-import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 import java.awt.event.ActionEvent
 
 /**
- * @author dbarashev@bardsoftware.com
+ * @author apopov77@gmail.com
  */
-internal class FilterCompletedTasks(
+class TaskFilterAction(
+  actionName: String,
   private val filterManager: TaskFilterManager,
-  taskManager: TaskManager
-) : GPAction("taskTable.filter.completedTasks") {
-
-  private val taskListener = TaskListenerAdapter().also {
-    it.taskProgressChangedHandler = { e: TaskPropertyEvent ->
-      val isChecked = getValue(SELECTED_KEY)
-      if (isChecked is java.lang.Boolean && isChecked.booleanValue()) {
-        filterManager.sync()
-      }
-    }
-  }
+  private val taskFilterOption: DefaultBooleanOption,
+  private val taskFilter: TaskFilter
+) : GPAction(actionName) {
 
   init {
     putValue(SELECTED_KEY, java.lang.Boolean.FALSE)
-    taskManager.addTaskListener(this.taskListener)
-    filterManager.filterCompletedTasksOption.addChangeValueListener { evt ->
+    filterManager.filterListeners.add { filter ->
+      if (taskFilter != filter) {
+        putValue(SELECTED_KEY, java.lang.Boolean.FALSE)
+      }
+    }
+
+    // An option can be saved and changed when a project will be open
+    // or undo\redo
+    taskFilterOption.addChangeValueListener { evt ->
       (evt.newValue as? Boolean)?.let {
         if (evt.newValue != evt.oldValue) {
           setChecked(it)
@@ -63,18 +61,18 @@ internal class FilterCompletedTasks(
   override fun putValue(key: String?, newValue: Any?) {
     super.putValue(key, newValue)
     if (SELECTED_KEY == key && newValue is Boolean) {
-      filterManager.filterCompletedTasksOption.value = newValue
+      taskFilterOption.value = newValue
     }
   }
 
-  fun setChecked(value: Boolean) {
+  internal fun setChecked(value: Boolean) {
     putValue(SELECTED_KEY, value)
     if (value) {
-      filterManager.activeFilter = { _, child ->
-        child?.completionPercentage?.let { it < 100 } ?: true
-      }
+      filterManager.activeFilter = taskFilter
     } else {
-      filterManager.activeFilter = VOID_FILTER
+      if (filterManager.activeFilter == taskFilter) {
+        filterManager.activeFilter = VOID_FILTER
+      }
     }
   }
 }

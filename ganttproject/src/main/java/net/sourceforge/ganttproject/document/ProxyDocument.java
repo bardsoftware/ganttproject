@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.document;
 
 import biz.ganttproject.core.io.XmlProject;
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.table.ColumnList;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -39,6 +40,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author bard
@@ -215,10 +218,12 @@ public class ProxyDocument implements Document {
 
         resourceHandler.process(xmlProject);
         taskHandler.process(xmlProject);
+
+        List<GPOption<?>> optionsToSave = new ArrayList(myProject.getTaskFilterManager().getOptions());
+        optionsToSave.add(GPColorChooser.getRecentColorsOption());
         TaskSerializerKt.loadGanttView(xmlProject,
-          taskManager, myUIFacade.getCurrentTaskView(), myUIFacade.getZoomManager(), myTaskVisibleFields,
-          ImmutableList.of(myProject.getTaskFilterManager().getFilterCompletedTasksOption(),
-            GPColorChooser.getRecentColorsOption()));
+          taskManager, myUIFacade.getCurrentTaskView(), myUIFacade.getZoomManager(), myTaskVisibleFields, optionsToSave);
+
         opener.getDefaultTagHandler().process(xmlProject);
         allocationHandler.process(xmlProject);
       }

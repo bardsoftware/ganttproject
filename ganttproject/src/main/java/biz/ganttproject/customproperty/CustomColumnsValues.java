@@ -22,10 +22,7 @@ import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 /**
@@ -159,5 +156,18 @@ public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
       }
     }
     return result;
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    if (this == object) return true;
+    if (!(object instanceof CustomColumnsValues)) return false;
+    CustomColumnsValues otherColumnsValues = (CustomColumnsValues) object;
+    return mapCustomColumnValue.equals(otherColumnsValues.mapCustomColumnValue);
+  }
+
+  @Override
+  public int hashCode() {
+    return mapCustomColumnValue.hashCode();
   }
 }

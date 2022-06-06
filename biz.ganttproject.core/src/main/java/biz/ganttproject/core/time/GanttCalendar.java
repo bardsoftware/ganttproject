@@ -148,7 +148,11 @@ public class GanttCalendar extends java.util.GregorianCalendar {
   }
 
   /** @return true if the calendar date equals to 'when' */
-  public boolean equals(GanttCalendar when) {
+  @Override public boolean equals(Object other) {
+    if (!(other instanceof GanttCalendar)) {
+      return false;
+    }
+    GanttCalendar when = (GanttCalendar) other;
     return getYear() == when.getYear() && getMonth() == when.getMonth() && getDay() == when.getDay();
   }
 
