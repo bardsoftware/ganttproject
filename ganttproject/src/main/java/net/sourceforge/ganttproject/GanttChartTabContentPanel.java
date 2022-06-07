@@ -26,9 +26,13 @@ import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.task.TaskActions;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
+import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.action.BaselineDialogAction;
@@ -100,10 +104,14 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final ContextMenu tableMenu = new ContextMenu();
   @Override
   protected Component createButtonPanel() {
-    var tableMenuButton = ToolbarKt.createButton(new TableMenuAction(), true);
+    Label filterTaskLabel  = new Label();
+    filterTaskLabel.setAlignment(Pos.CENTER_RIGHT);
+    Button tableMenuButton = ToolbarKt.createButton(new TableMenuAction(), true);
+    HBox filterComponent = new HBox(1, filterTaskLabel, tableMenuButton);
+
     Objects.requireNonNull(tableMenuButton).setOnAction(event -> {
       tableMenu.getItems().clear();
-      myTaskTableSupplier.get().tableMenuActions(new MenuBuilderFx(tableMenu));
+      myTaskTableSupplier.get().tableMenuActions(new MenuBuilderFx(tableMenu), filterTaskLabel);
       tableMenu.show(tableMenuButton, Side.BOTTOM, 0.0, 0.0);
       event.consume();
     });
@@ -114,7 +122,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
         .addButton(myTaskActions.getMoveDownAction().asToolbarAction())
         .addButton(myTaskActions.getLinkTasksAction().asToolbarAction())
         .addButton(myTaskActions.getUnlinkTasksAction().asToolbarAction())
-        .addTail(tableMenuButton)
+        .addTail(filterComponent)
         .withClasses("toolbar-common", "toolbar-small")
         .withScene()
         .build()

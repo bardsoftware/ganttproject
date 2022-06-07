@@ -155,6 +155,7 @@ class TaskTable(
   private val initializationCompleted = initializationPromise.register("Task table initialization")
   private val treeTableSelectionListener = TreeSelectionListenerImpl(treeTable.selectionModel.selectedItems, selectionManager, this@TaskTable)
   private var projectModified: () -> Unit = { project.isModified = true }
+  private lateinit var tableMenuLabel: Label;
   init {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
 
@@ -658,8 +659,24 @@ class TaskTable(
         }
       }
       initializationCompleted()
+      updateFilterComponent(filteredCount)
     }
     LOGGER.debug("Sync <<<<<<<<<<<<<<<<<")
+  }
+
+  private fun updateFilterComponent(filteredCount: Int) {
+    if (::tableMenuLabel.isInitialized) {
+      Platform.runLater {
+        if (this.filters.activeFilter != VOID_FILTER) {
+          tableMenuLabel.text = filteredCount.toString() + "/" + taskManager.taskCount
+          tableMenuLabel.style = "-fx-text-fill: gray;"
+          tableMenuLabel.parent.style = "-fx-border-color: lightgray; -fx-border-width: 2; "
+        } else {
+          tableMenuLabel.text = ""
+          tableMenuLabel.parent.style = "-fx-border-width: 0;"
+        }
+      }
+    }
   }
 
   private fun Task.addChildTreeItem(child: Task, pos: Int = -1): TreeItem<Task> {
@@ -785,7 +802,8 @@ class TaskTable(
     }
   }
 
-  fun tableMenuActions(builder: MenuBuilder) {
+
+  fun tableMenuActions(builder: MenuBuilder, label: Label) {
     builder.apply {
       items(taskActions.manageColumnsAction,
         this@TaskTable.filterCompletedTasksAction,
@@ -794,6 +812,7 @@ class TaskTable(
         this@TaskTable.filterInProgressTodayTasksAction,
       )
     }
+    tableMenuLabel = label;
   }
 
   fun initUserKeyboardInput() {

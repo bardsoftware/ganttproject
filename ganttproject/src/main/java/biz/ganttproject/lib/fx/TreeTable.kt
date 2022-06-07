@@ -48,7 +48,7 @@ import kotlin.math.round
 class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   internal val tableMenu = ContextMenu()
   var contextMenuActions: (MenuBuilder) -> Unit = { }
-  var tableMenuActions: (MenuBuilder) -> Unit = {}
+  var tableMenuActions: (MenuBuilder, Label) -> Unit = { _: MenuBuilder, _: Label -> }
   var onProperties: () -> Unit = {}
   var onColumnResize: () -> Unit = {}
   private val resizePolicy = MyColumnResizePolicy<Any>(this, widthProperty())
