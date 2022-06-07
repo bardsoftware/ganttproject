@@ -27,7 +27,6 @@ import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
 import biz.ganttproject.task.ancestors
-import com.google.common.base.Function
 import com.sun.javafx.scene.control.behavior.CellBehaviorBase
 import de.jensd.fx.glyphs.GlyphIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -980,7 +979,7 @@ private val taskNameConverter = MyStringConverter<Task, Task>(
   }
 )
 
-private val getParentTask = Function<Task, Task> { task -> task.manager.taskHierarchy.getContainer(task) }
+private val getParentTask =  { task: Task -> task.manager.taskHierarchy.getContainer(task) }
 
 private val ourRetainRootsAlgorithm = RetainRootsAlgorithm<Task>()
 
