@@ -64,6 +64,7 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskSelectionManager
+import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
@@ -147,6 +148,7 @@ class TaskTable(
   private val initializationCompleted = initializationPromise.register("Task table initialization")
   private val treeTableSelectionListener = TreeSelectionListenerImpl(treeTable.selectionModel.selectedItems, selectionManager, this@TaskTable)
   private var projectModified: () -> Unit = { project.isModified = true }
+  private val dragAndDropSupport = DragAndDropSupport(selectionManager)
   init {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
 
@@ -831,9 +833,9 @@ class TaskTable(
             if (TaskDefaultColumn.COLOR.stub.isVisible) {
               StackPane().also {
                 it.styleClass.addAll("badge")
-                it.children.add(Circle().also {
-                  it.fill = rgb(task.color.red, task.color.green, task.color.blue)
-                  it.radius = (minCellHeight.value - cellPadding) / 2.0 - 1.0
+                it.children.add(Circle().also {circle ->
+                  circle.fill = rgb(task.color.red, task.color.green, task.color.blue)
+                  circle.radius = (minCellHeight.value - cellPadding) / 2.0 - 1.0
                 })
                 hbox.children.add(it)
               }
@@ -903,7 +905,7 @@ fun TreeItem<Task>.depthFirstWalk(visitor: (TreeItem<Task>) -> Boolean) {
 }
 
 
-class DragAndDropSupport {
+class DragAndDropSupport(private val selectionManager: TaskSelectionManager) {
   private lateinit var clipboardContent: ClipboardContents
   private lateinit var clipboardProcessor: ClipboardTaskProcessor
 
@@ -919,8 +921,12 @@ class DragAndDropSupport {
   }
   private fun dragDetected(cell: TextCell<Task, Task>) {
     val task = cell.treeTableRow.treeItem.value
-    clipboardContent = ClipboardContents(task.manager).also {
-      it.addTasks(listOf(task))
+    clipboardContent = ClipboardContents(task.manager).also { clipboard ->
+      clipboard.addTasks(selectionManager.selectedTasks.let {selection ->
+        mutableListOf<Task>().also {
+          ourRetainRootsAlgorithm.run(selection, getParentTask, it)
+        }
+      })
     }
     clipboardProcessor = ClipboardTaskProcessor(task.manager)
     val db = cell.startDragAndDrop(TransferMode.COPY)
@@ -973,7 +979,9 @@ private val taskNameConverter = MyStringConverter<Task, Task>(
   }
 )
 
-private val dragAndDropSupport = DragAndDropSupport()
+private val getParentTask =  { task: Task -> task.manager.taskHierarchy.getContainer(task) }
+
+private val ourRetainRootsAlgorithm = RetainRootsAlgorithm<Task>()
 
 private fun Task.ProgressStatus.getIcon() : GlyphIcon<*>? =
   when (this) {
