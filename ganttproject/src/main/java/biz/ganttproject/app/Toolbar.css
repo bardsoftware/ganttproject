@@ -104,6 +104,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -glyph-size: 32px;
 }
 
+.toolbar-main {
+  -fx-border-insets: 0 5 0 5, 0 5 5 5;
+  -fx-border-color: #ffd700, #0057b7;
+  -fx-border-width: 0 0 5 0, 0 0 5 0;
+}
+
 .toolbar-main GridPane {
     -fx-alignment: center;
 }
