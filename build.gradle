@@ -2,7 +2,7 @@ plugins {
     id "org.jetbrains.kotlin.jvm" version "1.6.10" apply false
 }
 ext.semver = '3.2'
-ext.buildNum = '3242'
+ext.buildNum = '3243'
 ext.distBinDir = file('ganttproject-builder/dist-bin')
 ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins/base")
 
