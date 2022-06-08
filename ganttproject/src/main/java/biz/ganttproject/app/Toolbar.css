@@ -89,7 +89,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 
 .toolbar-main {
-    -fx-padding: 1ex 2em 2ex 2em;
+    -fx-padding: 1ex 0 10 0;
 }
 
 .toolbar-big Button {
@@ -105,7 +105,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .toolbar-main {
-  -fx-border-insets: 0 5 0 5, 0 5 5 5;
+  -fx-border-insets: 0 20 0 20, 0 20 5 20;
   -fx-border-color: #ffd700, #0057b7;
   -fx-border-width: 0 0 5 0, 0 0 5 0;
 }
