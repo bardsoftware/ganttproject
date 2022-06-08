@@ -40,6 +40,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -78,6 +79,8 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
+
+import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.isColloboqueLocalTest;
 
 /**
  * This class is designed to be a GanttProject-after-refactorings. I am going to
@@ -192,7 +195,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected GanttProjectBase() {
     super("GanttProject");
-    var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager);
+    var databaseProxy = new LazyProjectDatabaseProxy(
+      () -> SqlProjectDatabaseImpl.Factory.createInMemoryDatabase(this::onProjectLogUpdate),
+      this::getTaskManager
+    );
 
     myProjectDatabase = databaseProxy;
     myTaskManagerConfig = new TaskManagerConfigImpl();
@@ -258,6 +264,9 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   protected GanttProjectImpl getProjectImpl() {
     return myProjectImpl;
   }
+
+  protected Unit onProjectLogUpdate() { return Unit.INSTANCE; }
+
   @Override
   public void restore(@NotNull Document fromDocument) throws Document.DocumentException, IOException {
     GanttProjectImplKt.restoreProject(this, fromDocument, myProjectImpl.getListeners());

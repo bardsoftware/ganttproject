@@ -86,6 +86,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -208,10 +209,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       getWebSocket().register(null);
       getWebSocket().onCommitResponseReceived(this::fireXlogReceived);
       getWebSocket().onBaseTxnIdReceived(this::onBaseTxnIdReceived);
-      var taskListenerAdapter = new TaskListenerAdapter();
-      // TODO: add listeners sensibly.
-      taskListenerAdapter.setTaskAddedHandler(event -> this.sendProjectStateLogs());
-      getTaskManager().addTaskListener(taskListenerAdapter);
     }
 
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
@@ -956,7 +953,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     super.repaint();
   }
 
-  // TODO: Accumulate changes instead of sending it every time.
+  private final AtomicBoolean isSendingInProgress = new AtomicBoolean();
+
   private Unit sendProjectStateLogs() {
     gpLogger.debug("Sending project state logs");
     try {
@@ -969,20 +967,34 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
           "refid",
           txns
         ));
+        isSendingInProgress.set(true);
       }
     } catch (ProjectDatabaseException e) {
       gpLogger.error("Failed to send logs", new Object[]{}, ImmutableMap.of(), e);
+      isSendingInProgress.set(false);
+    }
+    return Unit.INSTANCE;
+  }
+
+  @Override
+  protected Unit onProjectLogUpdate() {
+    if (isColloboqueLocalTest()) {
+      super.onProjectLogUpdate();
+      if (!isSendingInProgress.get()) sendProjectStateLogs();
     }
     return Unit.INSTANCE;
   }
 
   private Unit fireXlogReceived(ServerCommitResponse response) {
     myBaseTxnCommitInfo.update(response.getBaseTxnId(), response.getNewBaseTxnId(), 1);
+    isSendingInProgress.set(false);
+    sendProjectStateLogs();
     return Unit.INSTANCE;
   }
 
   private Unit onBaseTxnIdReceived(String baseTxnId) {
     myBaseTxnCommitInfo.update("", baseTxnId, 0);
+    sendProjectStateLogs();
     return Unit.INSTANCE;
   }
 }
