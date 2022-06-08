@@ -43,28 +43,25 @@ import java.util.Map;
  * @author dbarashev (Dmitry Barashev)
  */
 public class CustomColumnsPanel {
-  private static Map<Integer, Integer> ourColumnWidth = new HashMap<>();
-  private static GanttLanguage language = GanttLanguage.getInstance();
+  private static final Map<Integer, Integer> ourColumnWidth = new HashMap<>();
+  private static final GanttLanguage language = GanttLanguage.getInstance();
   private static final String[] COLUMN_NAMES = new String[] { CustomColumnsPanel.language.getText("name"),
     CustomColumnsPanel.language.getText("typeClass"), CustomColumnsPanel.language.getText("value") };
 
   private final CustomPropertyManager myCustomPropertyManager;
 
-  private final UIFacade myUiFacade;
-
   private CustomColumnTableModel myModel;
 
   private JTable myTable;
 
-  private CustomPropertyHolder myHolder;
+  private final CustomPropertyHolder myHolder;
 
-  private ColumnList myTableHeaderFacade;
+  private final ColumnList myTableHeaderFacade;
 
   public CustomColumnsPanel(CustomPropertyManager manager, UIFacade uifacade,
       CustomPropertyHolder customPropertyHolder, ColumnList tableHeaderFacade) {
     assert manager != null;
     myCustomPropertyManager = manager;
-    myUiFacade = uifacade;
     myHolder = customPropertyHolder;
     myTableHeaderFacade = tableHeaderFacade;
   }
@@ -144,7 +141,8 @@ public class CustomColumnsPanel {
             return cp.getValueAsString();
           }
         }
-        return def.getDefaultValue() + " (default)";
+        var defValue = def.getDefaultValue();
+        return defValue == null ? "" : defValue;
       default:
         throw new IllegalStateException();
       }
