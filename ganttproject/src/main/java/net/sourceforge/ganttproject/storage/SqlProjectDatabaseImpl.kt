@@ -110,8 +110,8 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
           throw ProjectDatabaseException(it.errorMessage(), e)
         }
       }
-      onLogUpdate()
     }
+    onLogUpdate()
   }
 
   /** Add a query to the current txn. Executes immediately if no transaction started. */
@@ -177,6 +177,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   @Throws(ProjectDatabaseException::class)
   internal fun commitTransaction(txn: TransactionImpl) {
     try {
+      if (txn.statements.isEmpty()) return
       executeAndLog(txn.statements, localTxnId)
       localTxnId++  // Increment only on success.
     } finally {
