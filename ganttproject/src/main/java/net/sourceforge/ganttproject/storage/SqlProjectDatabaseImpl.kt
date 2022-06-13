@@ -93,9 +93,12 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   }
 
   /** Add a query to the current txn. Executes immediately if no transaction started. */
-  private fun withLog(errorMessage: () -> String, buildQuery: (dsl: DSLContext) -> String) {
+  private fun withLog(errorMessage: () -> String,
+                      buildQuery: (dsl: DSLContext) -> String,
+                      buildUndoQuery: (dsl: DSLContext) -> String) {
     val query = Query(errorMessage, buildQuery(DSL.using(SQLDialect.H2)), buildQuery(DSL.using(SQLDialect.POSTGRES)))
-    currentTxn?.add(query) ?: executeAndLog(listOf(query), localTxnId).also { localTxnId++ }
+    val undoQuery = Query({ "Failed to undo" }, buildUndoQuery(DSL.using(SQLDialect.H2)), buildUndoQuery(DSL.using(SQLDialect.POSTGRES)))
+    currentTxn?.add(query, undoQuery) ?: executeAndLog(listOf(query), localTxnId).also { localTxnId++ }
   }
 
   private fun withLog(errorMessage: () -> String, h2Query: String, postgresQuery: String) {
@@ -118,21 +121,41 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task, this::update)
 
   @Throws(ProjectDatabaseException::class)
-  override fun insertTask(task: Task): Unit = withLog({ "Failed to insert task ${task.logId()}" }) { dsl ->
-    buildInsertTaskQuery(dsl, task).getSQL(ParamType.INLINED)
+  override fun insertTask(task: Task) {
+    val errorMsg = { "Failed to insert task ${task.logId()}" }
+    val queryBuilder = { dsl: DSLContext -> buildInsertTaskQuery(dsl, task).getSQL(ParamType.INLINED) }
+    val undoQueryBuilder = { dsl: DSLContext ->
+      dsl
+        .deleteFrom(TASK)
+        .where(TASK.UID.eq(task.uid))
+        .getSQL(ParamType.INLINED)
+    }
+    withLog(errorMsg, queryBuilder, undoQueryBuilder)
   }
 
   @Throws(ProjectDatabaseException::class)
-  override fun insertTaskDependency(taskDependency: TaskDependency): Unit = withLog(
-    { "Failed to insert task dependency ${taskDependency.dependee.logId()} -> ${taskDependency.dependant.logId()}" }) { dsl ->
-    dsl
-      .insertInto(TASKDEPENDENCY)
-      .set(TASKDEPENDENCY.DEPENDEE_UID, taskDependency.dependee.uid)
-      .set(TASKDEPENDENCY.DEPENDANT_UID, taskDependency.dependant.uid)
-      .set(TASKDEPENDENCY.TYPE, taskDependency.constraint.type.persistentValue)
-      .set(TASKDEPENDENCY.LAG, taskDependency.difference)
-      .set(TASKDEPENDENCY.HARDNESS, taskDependency.hardness.identifier)
-      .getSQL(ParamType.INLINED)
+  override fun insertTaskDependency(taskDependency: TaskDependency) {
+    val errorMsg =
+      { "Failed to insert task dependency ${taskDependency.dependee.logId()} -> ${taskDependency.dependant.logId()}" }
+    val queryBuilder = { dsl: DSLContext ->
+      dsl
+        .insertInto(TASKDEPENDENCY)
+        .set(TASKDEPENDENCY.DEPENDEE_UID, taskDependency.dependee.uid)
+        .set(TASKDEPENDENCY.DEPENDANT_UID, taskDependency.dependant.uid)
+        .set(TASKDEPENDENCY.TYPE, taskDependency.constraint.type.persistentValue)
+        .set(TASKDEPENDENCY.LAG, taskDependency.difference)
+        .set(TASKDEPENDENCY.HARDNESS, taskDependency.hardness.identifier)
+        .getSQL(ParamType.INLINED)
+    }
+    val undoQueryBuilder = { dsl: DSLContext ->
+      dsl
+        .deleteFrom(TASKDEPENDENCY)
+        .where(TASKDEPENDENCY.DEPENDANT_UID.eq(taskDependency.dependant.uid)
+          .and(TASKDEPENDENCY.DEPENDEE_UID.eq(taskDependency.dependee.uid)))
+        .getSQL(ParamType.INLINED)
+
+    }
+    withLog(errorMsg, queryBuilder, undoQueryBuilder)
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -153,9 +176,10 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   }
 
   @Throws(ProjectDatabaseException::class)
-  internal fun commitTransaction(txn: TransactionImpl) {
+  internal fun commitTransaction(queries: List<Query>) {
     try {
-      executeAndLog(txn.statements, localTxnId)
+      if (queries.isEmpty()) return
+      executeAndLog(queries, localTxnId)
       localTxnId++  // Increment only on success.
     } finally {
       currentTxn = null
@@ -213,14 +237,30 @@ internal data class Query(
 )
 
 class TransactionImpl(private val database: SqlProjectDatabaseImpl, private val title: String): ProjectDatabaseTxn {
-  internal val statements = mutableListOf<Query>()
+  private val statements = mutableListOf<Query>()
+  private val undoStatements = mutableListOf<Query>()
+
+  private var isCommitted: Boolean = false
 
   override fun commit() {
-    database.commitTransaction(this)
+    database.commitTransaction(statements)
+    isCommitted = true
   }
 
-  internal fun add(query: Query) {
+  override fun undo() {
+    if (!isCommitted) throw ProjectDatabaseException("Cannot undo uncommitted transaction")
+    database.commitTransaction(undoStatements)
+  }
+
+  override fun redo() {
+    if (!isCommitted) throw ProjectDatabaseException("Cannot redo uncommitted transaction")
+    database.commitTransaction(statements)
+  }
+
+  internal fun add(query: Query, undoQuery: Query) {
+    if (isCommitted) throw ProjectDatabaseException("Txn was already committed")
     statements.add(query)
+    undoStatements.add(query)
   }
 
   override fun toString(): String {

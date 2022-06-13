@@ -32,6 +32,8 @@ open class ProjectDatabaseException: Exception {
 
 interface ProjectDatabaseTxn {
   fun commit()
+  fun undo()
+  fun redo()
 }
 
 typealias ColumnConsumer = Pair<SimpleSelect, (Int, Any?)->Unit>
@@ -66,7 +68,10 @@ interface ProjectDatabase {
   @Throws(ProjectDatabaseException::class)
   fun shutdown()
 
-  /** Collect queries received after txn start and commit them all at once. */
+  /**
+   * Collect queries received after txn start and commit them all at once.
+   * Once committed, undo & redo actions are supported by the transaction.
+   */
   @Throws(ProjectDatabaseException::class)
   fun startTransaction(title: String = ""): ProjectDatabaseTxn
 
