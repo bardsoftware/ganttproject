@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.ganttview
 
+import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.core.model.task.TaskDefaultColumn
@@ -419,14 +420,27 @@ private class CellImpl : ListCell<ColumnAsListItem>() {
   }
 }
 
+
 enum class ApplyExecutorType { DIRECT, SWING }
-fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomPropertyManager, applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
+
+fun showResourceColumnManager(columnList: ColumnList, customColumnsManager: CustomPropertyManager, applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
+  val localizer = RootLocalizer.createWithRootKey("resourceTable.columnManager", baseLocalizer = ourLocalizer)
+  showColumnManager(columnList, customColumnsManager, localizer, applyExecutor)
+}
+
+fun showTaskColumnManager(columnList: ColumnList, customColumnsManager: CustomPropertyManager, applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
+  showColumnManager(columnList, customColumnsManager, ourLocalizer, applyExecutor)
+}
+
+private fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomPropertyManager,
+                              localizer: Localizer,
+                              applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
   dialog { dlg ->
     dlg.addStyleClass("dlg-column-manager")
     dlg.addStyleSheet("/biz/ganttproject/ganttview/ColumnManager.css")
     dlg.setHeader(
       VBoxBuilder("header").apply {
-        addTitle(ourLocalizer.create("title")).also { hbox ->
+        addTitle(localizer.create("title")).also { hbox ->
           hbox.alignment = Pos.CENTER_LEFT
           hbox.isFillHeight = true
         }
@@ -435,7 +449,7 @@ fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomProper
     val columnManager = ColumnManager(columnList, customColumnsManager)
     dlg.setContent(columnManager.content)
     dlg.setupButton(ButtonType.APPLY) { btn ->
-      btn.text = RootLocalizer.formatText("apply")
+      btn.text = localizer.formatText("apply")
       btn.styleClass.add("btn-attention")
       btn.setOnAction {
         when (applyExecutor) {
@@ -446,7 +460,7 @@ fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomProper
       }
     }
     dlg.setupButton(ButtonType.CANCEL) { btn ->
-      btn.text = RootLocalizer.formatText("add")
+      btn.text = localizer.formatText("add")
       ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP)
       btn.disableProperty().bind(columnManager.btnAddController.isDisabled)
       btn.setOnAction {
@@ -456,7 +470,7 @@ fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomProper
       btn.styleClass.addAll("btn-attention", "secondary")
     }
     dlg.setupButton(ButtonType.CANCEL) { btn ->
-      btn.text = RootLocalizer.formatText("delete")
+      btn.text = localizer.formatText("delete")
       ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP_2)
       btn.disableProperty().bind(columnManager.btnDeleteController.isDisabled)
       btn.setOnAction {
@@ -468,4 +482,5 @@ fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomProper
   }
 }
 
-private val ourLocalizer = RootLocalizer.createWithRootKey("taskTable.columnManager")
+private val ourLocalizer = RootLocalizer.createWithRootKey(
+  rootKey = "taskTable.columnManager", baseLocalizer = RootLocalizer)

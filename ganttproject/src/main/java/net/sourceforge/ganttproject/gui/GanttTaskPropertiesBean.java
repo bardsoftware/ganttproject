@@ -294,7 +294,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   }
 
   private void constructCustomColumnPanel() {
-    myCustomColumnPanel = new CustomColumnsPanel(myProject.getTaskCustomColumnManager(), myUIfacade,
+    myCustomColumnPanel = new CustomColumnsPanel(myProject.getTaskCustomColumnManager(), CustomColumnsPanel.Type.TASK,
         selectedTasks[0].getCustomValues(), myUIfacade.getTaskColumnList());
   }
 
