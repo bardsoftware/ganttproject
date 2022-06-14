@@ -46,7 +46,7 @@ class ProjectPropertiesAction extends GPAction {
       @Override
       public void run() {
         SettingsDialog2 settingsDialog = new SettingsDialog2(myMainFrame.getProject(), myMainFrame.getUIFacade(),
-            "settings.project.pageOrder");
+            "settings.project.pageOrder", "project.properties.dialog.title");
         settingsDialog.show();
       }
     });
