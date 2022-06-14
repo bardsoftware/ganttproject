@@ -43,6 +43,9 @@ import java.util.Map;
  * @author dbarashev (Dmitry Barashev)
  */
 public class CustomColumnsPanel {
+  private final Type myType;
+
+  public enum Type { TASK, RESOURCE }
   private static final Map<Integer, Integer> ourColumnWidth = new HashMap<>();
   private static final GanttLanguage language = GanttLanguage.getInstance();
   private static final String[] COLUMN_NAMES = new String[] { CustomColumnsPanel.language.getText("name"),
@@ -58,12 +61,13 @@ public class CustomColumnsPanel {
 
   private final ColumnList myTableHeaderFacade;
 
-  public CustomColumnsPanel(CustomPropertyManager manager, UIFacade uifacade,
+  public CustomColumnsPanel(CustomPropertyManager manager, Type type,
       CustomPropertyHolder customPropertyHolder, ColumnList tableHeaderFacade) {
     assert manager != null;
     myCustomPropertyManager = manager;
     myHolder = customPropertyHolder;
     myTableHeaderFacade = tableHeaderFacade;
+    myType = type;
   }
 
   public JComponent getComponent() {
@@ -75,8 +79,15 @@ public class CustomColumnsPanel {
     buttonPanel.add(new JButton(new GPAction("columns.manage.label") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        ColumnManagerKt.showColumnManager(myTableHeaderFacade,
-            myCustomPropertyManager, ApplyExecutorType.SWING);
+        switch (myType) {
+          case TASK:
+            ColumnManagerKt.showTaskColumnManager(myTableHeaderFacade, myCustomPropertyManager, ApplyExecutorType.SWING);
+            break;
+          case RESOURCE:
+            ColumnManagerKt.showResourceColumnManager(myTableHeaderFacade, myCustomPropertyManager, ApplyExecutorType.SWING);
+            break;
+
+        }
         myModel.fireTableStructureChanged();
       }
     }), BorderLayout.WEST);
