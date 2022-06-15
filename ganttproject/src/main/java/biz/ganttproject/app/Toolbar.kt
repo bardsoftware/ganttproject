@@ -75,11 +75,10 @@ private typealias ToolbarVisitor = (toolbar: FXToolbar) -> Unit
 
 fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
   val icon = action.getGlyphIcon() ?: return null
+  val contentDisplay = action.getValue(GPAction.TEXT_DISPLAY) as? ContentDisplay ?: if (onlyIcon) ContentDisplay.GRAPHIC_ONLY else ContentDisplay.RIGHT
   return Button("", icon).apply {
-    if (onlyIcon) {
-      this.contentDisplay = ContentDisplay.GRAPHIC_ONLY
-    } else {
-      this.contentDisplay = ContentDisplay.LEFT
+    this.contentDisplay = contentDisplay
+    if (contentDisplay != ContentDisplay.GRAPHIC_ONLY) {
       this.text = action.name
     }
     this.addEventHandler(ActionEvent.ACTION) {
