@@ -71,7 +71,6 @@ import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
 import net.sourceforge.ganttproject.storage.ServerCommitResponse;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
@@ -86,7 +85,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -953,25 +951,36 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     super.repaint();
   }
 
-  private final AtomicBoolean isSendingInProgress = new AtomicBoolean();
+  private interface TxnSendListener {
+    void onSendCompleted();
+  }
+
+  private final AtomicReference<TxnSendListener> txnSendingListener = new AtomicReference<>();
 
   private Unit sendProjectStateLogs() {
     gpLogger.debug("Sending project state logs");
+    if (txnSendingListener.get() != null) return Unit.INSTANCE;
     try {
       var baseTxnCommitInfo = myBaseTxnCommitInfo.get();
       var txns = myProjectDatabase.fetchTransactions(baseTxnCommitInfo.right + 1, 1);
       if (!txns.isEmpty()) {
-        getWebSocket().sendLogs(new InputXlog(
-          baseTxnCommitInfo.left,
-          "userId",
-          "refid",
-          txns
-        ));
-        isSendingInProgress.set(true);
+        var listener = new TxnSendListener() {
+          @Override
+          public void onSendCompleted() {
+            txnSendingListener.compareAndSet(this, null);
+          }
+        };
+        if (txnSendingListener.compareAndSet(null, listener)) {
+          getWebSocket().sendLogs(new InputXlog(
+            baseTxnCommitInfo.left,
+            "userId",
+            "refid",
+            txns
+          ));
+        }
       }
     } catch (ProjectDatabaseException e) {
       gpLogger.error("Failed to send logs", new Object[]{}, ImmutableMap.of(), e);
-      isSendingInProgress.set(false);
     }
     return Unit.INSTANCE;
   }
@@ -980,20 +989,23 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   protected Unit onProjectLogUpdate() {
     if (isColloboqueLocalTest()) {
       super.onProjectLogUpdate();
-      if (!isSendingInProgress.get()) sendProjectStateLogs();
+      sendProjectStateLogs();
     }
     return Unit.INSTANCE;
   }
 
   private Unit fireXlogReceived(ServerCommitResponse response) {
     myBaseTxnCommitInfo.update(response.getBaseTxnId(), response.getNewBaseTxnId(), 1);
-    isSendingInProgress.set(false);
+    txnSendingListener.get().onSendCompleted();
     sendProjectStateLogs();
     return Unit.INSTANCE;
   }
 
   private Unit onBaseTxnIdReceived(String baseTxnId) {
     myBaseTxnCommitInfo.update("", baseTxnId, 0);
+    var listener = txnSendingListener.get();
+    // Websocket is [re-]started. Previous messages are discarded.
+    if (listener != null) listener.onSendCompleted();
     sendProjectStateLogs();
     return Unit.INSTANCE;
   }
