@@ -80,7 +80,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.isColloboqueLocalTest;
 
 /**
  * This class is designed to be a GanttProject-after-refactorings. I am going to

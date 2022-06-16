@@ -69,6 +69,7 @@ import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.storage.InputXlog;
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
 import net.sourceforge.ganttproject.storage.ServerCommitResponse;
+import net.sourceforge.ganttproject.storage.XlogRecord;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
@@ -81,15 +82,14 @@ import javax.swing.event.UndoableEditEvent;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.getWebSocket;
 import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.isColloboqueLocalTest;
+import static net.sourceforge.ganttproject.storage.XlogKt.EMPTY_LOG_BASE_TXN_ID;
 
 /**
  * Main frame of the project
@@ -166,7 +166,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     /** If `oldTxnId` is currently being hold, sets the txn ID to `newTxnId` and moves the local ID ahead by `committedNum`. */
     void update(String oldTxnId, String newTxnId, int committedNum) {
       myTxnId.updateAndGet(oldValue -> {
-        if (oldValue.left.equals(oldTxnId)) {
+        if (Objects.equals(oldValue.left, oldTxnId)) {
           return new ImmutablePair<>(newTxnId, oldValue.right + committedNum);
         } else {
           return oldValue;
@@ -177,9 +177,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     ImmutablePair<String, Integer> get() {
       return myTxnId.get();
     }
+
+    void reset() {
+      myTxnId.set(new ImmutablePair<>(null, 0));
+    }
   }
 
-  private final TxnCommitInfo myBaseTxnCommitInfo = new TxnCommitInfo("", 0);
+  private final TxnCommitInfo myBaseTxnCommitInfo = new TxnCommitInfo(null, 0);
 
 
   public GanttProject(boolean isOnlyViewer) {
@@ -960,27 +964,35 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private Unit sendProjectStateLogs() {
     gpLogger.debug("Sending project state logs");
     if (txnSendingListener.get() != null) return Unit.INSTANCE;
+    var baseTxnCommitInfo = myBaseTxnCommitInfo.get();
+    if (baseTxnCommitInfo.left == null) {
+      // Connection with the server was not established.
+      return Unit.INSTANCE;
+    }
+    List<XlogRecord> transactions;
     try {
-      var baseTxnCommitInfo = myBaseTxnCommitInfo.get();
-      var txns = myProjectDatabase.fetchTransactions(baseTxnCommitInfo.right + 1, 1);
-      if (!txns.isEmpty()) {
-        var listener = new TxnSendListener() {
-          @Override
-          public void onSendCompleted() {
-            txnSendingListener.compareAndSet(this, null);
-          }
-        };
-        if (txnSendingListener.compareAndSet(null, listener)) {
-          getWebSocket().sendLogs(new InputXlog(
-            baseTxnCommitInfo.left,
-            "userId",
-            "refid",
-            txns
-          ));
-        }
-      }
+      transactions = myProjectDatabase.fetchTransactions(baseTxnCommitInfo.right + 1, 1);
     } catch (ProjectDatabaseException e) {
       gpLogger.error("Failed to send logs", new Object[]{}, ImmutableMap.of(), e);
+      return Unit.INSTANCE;
+    }
+    if (!transactions.isEmpty()) {
+      var listener = new TxnSendListener() {
+        @Override
+        public void onSendCompleted() {
+          txnSendingListener.compareAndSet(this, null);
+        }
+      };
+      if (txnSendingListener.compareAndSet(null, listener)) {
+        getWebSocket().sendLogs(new InputXlog(
+          baseTxnCommitInfo.left,
+          "userId",
+          "refid",
+          transactions
+        ));
+      } else {
+        // Logs were sent by another thread, no action required.
+      }
     }
     return Unit.INSTANCE;
   }
@@ -1001,12 +1013,15 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     return Unit.INSTANCE;
   }
 
+  // TODO: sync logs with the server.
   private Unit onBaseTxnIdReceived(String baseTxnId) {
-    myBaseTxnCommitInfo.update("", baseTxnId, 0);
-    var listener = txnSendingListener.get();
     // Websocket is [re-]started. Previous messages are discarded.
-    if (listener != null) listener.onSendCompleted();
-    sendProjectStateLogs();
+    txnSendingListener.set(null);
+    if (EMPTY_LOG_BASE_TXN_ID.equals(baseTxnId)) {
+      myBaseTxnCommitInfo.reset();
+      myBaseTxnCommitInfo.update(null, baseTxnId, 0);
+      sendProjectStateLogs();
+    }
     return Unit.INSTANCE;
   }
 }
