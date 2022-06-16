@@ -47,11 +47,32 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       dataSource.setURL(H2_IN_MEMORY_URL)
       return SqlProjectDatabaseImpl(dataSource)
     }
+
+    fun createInMemoryDatabase(logUpdateCallback: () -> Unit): ProjectDatabase {
+      val dataSource = JdbcDataSource()
+      dataSource.setURL(H2_IN_MEMORY_URL)
+      val database = SqlProjectDatabaseImpl(dataSource)
+      database.addLogUpdateCallback(logUpdateCallback)
+      return database
+    }
   }
 
   /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
   private var currentTxn: TransactionImpl? = null
   private var localTxnId: Int = 1
+
+  private val logUpdateCallbacks: MutableList<() -> Unit> = mutableListOf()
+
+  /** Log update callbacks are invoked when a new log record is added. */
+  fun addLogUpdateCallback(listener: () -> Unit) = logUpdateCallbacks.add(listener)
+
+  private fun onLogUpdate() = logUpdateCallbacks.forEach {
+    try {
+      it.invoke()
+    } catch (e: Exception) {
+      LOG.error("Failed to execute update callback", e)
+    }
+  }
 
   private fun <T> withDSL(
     errorMessage: () -> String = { "Failed to execute query" },
@@ -90,6 +111,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
         }
       }
     }
+    onLogUpdate()
   }
 
   /** Add a query to the current txn. Executes immediately if no transaction started. */
@@ -155,6 +177,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   @Throws(ProjectDatabaseException::class)
   internal fun commitTransaction(txn: TransactionImpl) {
     try {
+      if (txn.statements.isEmpty()) return
       executeAndLog(txn.statements, localTxnId)
       localTxnId++  // Increment only on success.
     } finally {

@@ -123,8 +123,8 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
     }
 
     override fun onMessage(message: WebSocketFrame) {
-      LOG.debug("Message received\n {}", message.textPayload)
       val inputXlog = parseInputXlog(message.textPayload) ?: return
+      LOG.debug("Xlog received\n {}", inputXlog)
       if (inputXlog.transactions.size != 1) {
         // TODO: add multiple transactions support.
         LOG.error("Only single transaction commit supported")
@@ -138,7 +138,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
     override fun onPong(pong: WebSocketFrame?) {}
 
     override fun onException(exception: IOException) {
-      LOG.error("WebSocket exception", exception)
+      LOG.error("WebSocket exception", exception = exception)
     }
   }
 }

@@ -82,3 +82,6 @@ data class ServerCommitError(
 
 const val SERVER_COMMIT_RESPONSE_TYPE = "ServerCommitResponse"
 const val SERVER_COMMIT_ERROR_TYPE = "ServerCommitError"
+
+/** Base txn ID for the empty log state. */
+const val EMPTY_LOG_BASE_TXN_ID = "abacaba"

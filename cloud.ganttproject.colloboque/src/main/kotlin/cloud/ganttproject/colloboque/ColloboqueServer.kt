@@ -91,7 +91,7 @@ class ColloboqueServer(
               )
             }
         }
-        refidToBaseTxnId[projectRefid] = "abacaba"  // TODO: get from the database
+        refidToBaseTxnId[projectRefid] = EMPTY_LOG_BASE_TXN_ID  // TODO: get from the database
       }
     } catch (e: Exception) {
       throw ColloboqueServerException("Failed to init project $projectRefid", e)
