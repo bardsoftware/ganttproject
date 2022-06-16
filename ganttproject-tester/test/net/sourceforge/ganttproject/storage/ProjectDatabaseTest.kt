@@ -285,6 +285,44 @@ class ProjectDatabaseTest {
   }
 
   @Test
+  fun `test multi-statement transaction undo`() {
+    projectDatabase.init()
+
+    val task1 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid1")
+      .withId(1)
+      .withName("Name1")
+      .build()
+    val task2 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid2")
+      .withId(2)
+      .withName("Name2")
+      .build()
+
+    val txn = projectDatabase.startTransaction()
+    projectDatabase.insertTask(task1)
+    projectDatabase.insertTask(task2)
+    val mutator = task1.createMutator()
+    mutator.setName("Name3")
+    mutator.commit()
+    txn.commit()
+    txn.undo()
+
+    val txns = projectDatabase.fetchTransactions(limit = 10)
+    assertEquals(txns.size, 2)
+    assertEquals(txns[1].sqlStatements.size, 3)
+    assert(txns[1].sqlStatements[0].contains("update", ignoreCase = true))
+    assert(txns[1].sqlStatements[1].contains("delete", ignoreCase = true))
+    assert(txns[1].sqlStatements[2].contains("delete", ignoreCase = true))
+    assert(txns[1].sqlStatements[0].contains("Name1"))
+    assert(txns[1].sqlStatements[0].contains("someuid1"))
+    assert(txns[1].sqlStatements[1].contains("someuid2"))
+    assert(txns[1].sqlStatements[2].contains("someuid1"))
+  }
+
+  @Test
   fun `test task search`() {
     projectDatabase.init()
 

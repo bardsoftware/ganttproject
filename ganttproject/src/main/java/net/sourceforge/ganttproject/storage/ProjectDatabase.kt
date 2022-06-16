@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.customproperty.SimpleSelect
 import net.sourceforge.ganttproject.task.MutableTask
 import net.sourceforge.ganttproject.task.Task
@@ -44,6 +45,9 @@ interface ProjectDatabase {
     /** Commit task update. */
     @Throws(ProjectDatabaseException::class)
     fun commit()
+
+    fun setName(oldName: String?, newName: String?)
+    fun setCustomProperties(oldCustomProperties: CustomPropertyHolder, newCustomProperties: CustomPropertyHolder)
 
     fun interface Factory {
       fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder
