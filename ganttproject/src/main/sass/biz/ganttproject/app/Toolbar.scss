@@ -7,8 +7,8 @@
   Button {
     -fx-alignment: center;
     -fx-background-color: transparent;
-    -fx-border-style: solid;
-    -fx-border-color: none;
+    //-fx-border-style: solid;
+    //-fx-border-color: none;
     -fx-border-width: 0;
     -fx-border-insets: 0;
     -fx-text-fill: $gp-medium-gray;
@@ -68,20 +68,17 @@
       -glyph-size: 18px;
       -fx-padding: 0;
     }
-
-    &:hover {
-      .glyph-icon {
-        -glyph-size: 18px;
-      }
-    }
   }
 }
 
 .toolbar-chart {
+  -fx-padding: 0 10 0 10;
   Button {
-    @include btn-normal(transparent, transparent);
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
     -fx-padding: 2 5 2 5;
     -fx-font-size: 14;
+    -fx-border-width: 0;
 
     .glyph-icon {
       -glyph-size: 22px;
@@ -89,13 +86,8 @@
     }
 
     &:hover {
-      @include btn-hovered(transparent, $gp-light-gray);
-      -fx-padding: 2 5 2 5;
-
-      .glyph-icon {
-        -glyph-size: 22px;
-        -fx-padding: 0;
-      }
+      -fx-background-color: $gp-light-gray;
+      -fx-background-radius: 0 0 5 5;
     }
     &:focused {
       @include btn-hovered(transparent);
@@ -108,6 +100,8 @@
       -fx-alignment: center-right;
       -fx-font-size: 14;
       -fx-text-fill: $gp-medium-gray;
+      -fx-max-height: 24px;
+      -fx-pref-height: 24px;
     }
     @include btn-normal(transparent, transparent);
 
@@ -136,6 +130,7 @@
     }
   }
 }
+
 .toolbar-main {
   -fx-padding: 1ex 0 10 0;
   -fx-border-insets: 0 20 0 20, 0 20 5 20;
