@@ -241,6 +241,7 @@ class TransactionImpl(private val database: SqlProjectDatabaseImpl, private val 
   private var isCommitted: Boolean = false
 
   override fun commit() {
+    if (isCommitted) throw ProjectDatabaseException("Transaction is already committed")
     database.commitTransaction(statements)
     isCommitted = true
   }
@@ -352,8 +353,13 @@ class SqlTaskUpdateBuilder(private val task: Task,
     val finalPostgres = lastSetStepPostgres?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
     val finalUndoH2 = lastUndoSetStepH2?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
     val finalUndoPostgres = lastUndoSetStepPostgres?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
-    if (finalH2 != null && finalPostgres != null && finalUndoH2 != null && finalUndoPostgres != null) {
-      onCommit(listOf(SqlQuery(finalH2, finalPostgres)), listOf(SqlUndoQuery(finalUndoH2, finalUndoPostgres)))
+    if (finalH2 != null && finalPostgres != null) {
+      val undoQueries = if (finalUndoH2 != null && finalUndoPostgres != null) {
+        listOf(SqlUndoQuery(finalUndoH2, finalUndoPostgres))
+      } else {
+        emptyList()
+      }
+      onCommit(listOf(SqlQuery(finalH2, finalPostgres)), undoQueries)
     }
     customPropertiesUpdater.commit()
   }
