@@ -313,13 +313,9 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(limit = 10)
     assertEquals(txns.size, 2)
     assertEquals(txns[1].sqlStatements.size, 3)
-    assert(txns[1].sqlStatements[0].contains("update", ignoreCase = true))
-    assert(txns[1].sqlStatements[1].contains("delete", ignoreCase = true))
-    assert(txns[1].sqlStatements[2].contains("delete", ignoreCase = true))
-    assert(txns[1].sqlStatements[0].contains("Name1"))
-    assert(txns[1].sqlStatements[0].contains("someuid1"))
-    assert(txns[1].sqlStatements[1].contains("someuid2"))
-    assert(txns[1].sqlStatements[2].contains("someuid1"))
+    assert(txns[1].sqlStatements[0].matches("""update..task..set.*name..=..Name1.*where.*uid..=..someuid1.""".toRegex()))
+    assert(txns[1].sqlStatements[1].matches(""".*delete.from..task.*where.*uid..=..someuid2.""".toRegex()))
+    assert(txns[1].sqlStatements[2].matches(""".*delete.from..task.*where.*uid..=..someuid1.""".toRegex()))
   }
 
   @Test
@@ -454,6 +450,60 @@ class ProjectDatabaseTest {
       assert(stmt.matches(""".*"column_value".=.'foovalue'.*""".toRegex())) { "Statement text: $stmt" }
     }
   }
+
+  @Test fun `undo custom property addition`() {
+    projectDatabase.init()
+
+    val task1 = taskManager
+      .newTaskBuilder()
+      .withUid("someuid1")
+      .withId(1)
+      .withName("Name1")
+      .withStartDate(TestSetupHelper.newMonday().time)
+      .build()
+    projectDatabase.insertTask(task1)
+    val def = taskManager.customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo", "default")
+    val txn = projectDatabase.startTransaction()
+    task1.createMutator().let { mutator ->
+      mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager).also {
+        it.addCustomProperty(def, "foovalue")
+      })
+      mutator.commit()
+    }
+    txn.commit()
+    val txn2 = projectDatabase.startTransaction()
+    task1.createMutator().let { mutator ->
+      mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager).also {
+        it.addCustomProperty(def, "foovalue2")
+      })
+      mutator.commit()
+    }
+    txn2.commit()
+
+    txn2.undo()
+    txn.undo()
+
+    val txns = projectDatabase.fetchTransactions(startLocalTxnId = 4, limit = 3)
+    assertEquals(2, txns.size)
+
+    assertEquals(2, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
+    txns[0].sqlStatements[0].also { stmt ->
+      assert(stmt.matches(""".*delete.from..taskcustomcolumn.*where.*uid..=..someuid1.""".toRegex()))
+      { "Statement text: $stmt" }
+    }
+    txns[0].sqlStatements[1].also { stmt ->
+      assert(stmt.contains("merge", ignoreCase = true)) { "Statement text: $stmt" }
+      assert(stmt.matches(""".*on.*uid..=.'someuid1'.*""".toRegex())) { "Statement text: $stmt" }
+      assert(stmt.matches(""".*"column_value".=.'foovalue'.*""".toRegex())) { "Statement text: $stmt" }
+    }
+    assertEquals(1, txns[1].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
+    txns[1].sqlStatements[0].also { stmt ->
+      assert(stmt.matches(""".*delete.from..taskcustomcolumn.*where.*uid..=..someuid1.""".toRegex()))
+      { "Statement text: $stmt" }
+    }
+    // No merge statements as the default value is set.
+  }
+
   @Test fun `delete last custom property`() {
     projectDatabase.init()
 
