@@ -279,12 +279,15 @@ internal class SqlTaskCustomPropertiesUpdateBuilder(
   private val task: Task, private val onCommit: (List<SqlQuery>, List<SqlUndoQuery>) -> Unit) {
   internal var commit: () -> Unit = {}
 
-  private fun generateStatements(customProperties: CustomPropertyHolder): List<SqlQuery> {
+  private fun generateStatements(customProperties: CustomPropertyHolder, isUndoOperation: Boolean): List<SqlQuery> {
     val h2statements = mutableListOf<String>()
     val postgresStatements = mutableListOf<String>()
 
-    h2statements.add(generateDeleteStatement(DSL.using(SQLDialect.H2), customProperties))
-    postgresStatements.add(generateDeleteStatement(DSL.using(SQLDialect.POSTGRES), customProperties))
+    val generateDeleteFn = { dsl: DSLContext ->
+      if (isUndoOperation) generateDeleteStatementAllColumns(dsl) else generateDeleteStatement(dsl, customProperties)
+    }
+    h2statements.add(generateDeleteFn(DSL.using(SQLDialect.H2)))
+    postgresStatements.add(generateDeleteFn(DSL.using(SQLDialect.POSTGRES)))
 
     h2statements.addAll(generateMergeStatements(customProperties.customProperties) {DSL.using(SQLDialect.H2)})
     postgresStatements.addAll(generateMergeStatements(customProperties.customProperties) {DSL.using(SQLDialect.POSTGRES)})
@@ -293,7 +296,10 @@ internal class SqlTaskCustomPropertiesUpdateBuilder(
 
   internal fun setCustomProperties(oldCustomProperties: CustomPropertyHolder, newCustomProperties: CustomPropertyHolder) {
     commit = {
-      onCommit(generateStatements(newCustomProperties), generateStatements(oldCustomProperties))
+      onCommit(
+        generateStatements(newCustomProperties, isUndoOperation = false),
+        generateStatements(oldCustomProperties, isUndoOperation = true)
+      )
     }
   }
 
@@ -301,6 +307,11 @@ internal class SqlTaskCustomPropertiesUpdateBuilder(
     dsl.deleteFrom(TASKCUSTOMCOLUMN)
       .where(TASKCUSTOMCOLUMN.UID.eq(task.uid))
       .and(TASKCUSTOMCOLUMN.COLUMN_ID.notIn(customProperties.customProperties.map { it.definition.id }))
+      .getSQL(ParamType.INLINED)
+
+  private fun generateDeleteStatementAllColumns(dsl: DSLContext): String =
+    dsl.deleteFrom(TASKCUSTOMCOLUMN)
+      .where(TASKCUSTOMCOLUMN.UID.eq(task.uid))
       .getSQL(ParamType.INLINED)
 
   private fun generateMergeStatements(customProperties: List<CustomProperty>, dsl: ()->DSLContext) =
