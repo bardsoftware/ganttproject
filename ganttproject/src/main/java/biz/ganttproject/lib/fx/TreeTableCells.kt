@@ -65,9 +65,11 @@ val applicationFont = SimpleObjectProperty(Font.getDefault())
 val minCellHeight = SimpleDoubleProperty(Font.getDefault().size)
 var cellPadding = 20.0
 fun calculateMinCellHeight(fontSpec: FontSpec) {
-  Font.font(fontSpec.family, fontSpec.size.factor * Font.getDefault().size)?.let { font ->
+  Font.font(fontSpec.family, fontSpec.size.factor * Font.getDefault().size)?.also { font ->
     applicationFont.set(font)
     minCellHeight.value = font.size + cellPadding
+  } ?: run {
+    println("font $fontSpec not found")
   }
 }
 fun initFontProperty(appFontOption: FontOption, rowPaddingOption: DoubleOption) {

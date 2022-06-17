@@ -23,11 +23,13 @@ import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.app.MenuBuilderFx;
 import biz.ganttproject.app.ToolbarKt;
 import biz.ganttproject.ganttview.TaskTable;
+import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.task.TaskActions;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
@@ -72,22 +74,26 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     myGanttChart = ganttChart;
     // FIXME KeyStrokes of these 2 actions are not working...
     myCriticalPathAction = new CalculateCriticalPathAction(project.getTaskManager(), uiConfiguration, workbenchFacade);
+    myCriticalPathAction.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY);
     myBaselineAction = new BaselineDialogAction(project, workbenchFacade);
+    myBaselineAction.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY);
     addChartPanel(createSchedulePanel());
     //addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());
   }
 
   private Component createSchedulePanel() {
-    return new ToolbarBuilder()
-        .withDpiOption(myWorkbenchFacade.getDpiOption())
-        .withLafOption(getUiFacade().getLafOption(), s -> (s.contains("nimbus")) ? 2f : 1f)
-        .withGapFactory(ToolbarBuilder.Gaps.VDASH)
-        .withBackground(myWorkbenchFacade.getGanttChart().getStyle().getSpanningHeaderBackgroundColor())
-        .withHeight(24)
-        .addButton(myCriticalPathAction)
-        .addButton(myBaselineAction)
-        .build()
-        .getToolbar();
+    return new FXToolbarBuilder().addButton(myCriticalPathAction).addButton(myBaselineAction)
+      .withApplicationFont(TreeTableCellsKt.getApplicationFont()).withClasses("toolbar-common", "toolbar-small", "toolbar-chart", "align-right").withScene().build().getComponent();
+//    return new ToolbarBuilder()
+//        .withDpiOption(myWorkbenchFacade.getDpiOption())
+//        .withLafOption(getUiFacade().getLafOption(), s -> (s.contains("nimbus")) ? 2f : 1f)
+//        .withGapFactory(ToolbarBuilder.Gaps.VDASH)
+//        .withBackground(myWorkbenchFacade.getGanttChart().getStyle().getSpanningHeaderBackgroundColor())
+//        .withHeight(24)
+//        .addButton(myCriticalPathAction)
+//        .addButton(myBaselineAction)
+//        .build()
+//        .getToolbar();
   }
 
   JComponent getComponent() {

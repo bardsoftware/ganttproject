@@ -12,7 +12,7 @@
     -fx-border-width: 0;
     -fx-border-insets: 0;
     -fx-text-fill: $gp-medium-gray;
-    -fx-font-size: 14;
+    //-fx-font-size: 14;
 
     .glyph-icon {
       -fx-alignment: center;
@@ -72,12 +72,15 @@
 }
 
 .toolbar-chart {
-  -fx-padding: 0 10 0 10;
+  &.align-right {
+    -fx-alignment: center-right;
+  }
+  -fx-padding: 0 5 0 5;
   Button {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-padding: 2 5 2 5;
-    -fx-font-size: 14;
+    //-fx-font-size: 14;
     -fx-border-width: 0;
 
     .glyph-icon {
@@ -98,7 +101,7 @@
   .combo-box-base  {
     & > .list-cell {
       -fx-alignment: center-right;
-      -fx-font-size: 14;
+      //-fx-font-size: 14;
       -fx-text-fill: $gp-medium-gray;
       -fx-max-height: 24px;
       -fx-pref-height: 24px;

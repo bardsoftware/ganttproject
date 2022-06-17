@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
+import javafx.application.Platform
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
@@ -29,6 +31,7 @@ import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
+import javafx.scene.text.Font
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
@@ -77,8 +80,11 @@ class FXToolbar {
 private typealias ToolbarVisitor = (toolbar: FXToolbar) -> Unit
 
 fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
-  val icon = action.getGlyphIcon() ?: return null
+  val icon = action.getGlyphIcon()
   val contentDisplay = action.getValue(GPAction.TEXT_DISPLAY) as? ContentDisplay ?: if (onlyIcon) ContentDisplay.GRAPHIC_ONLY else ContentDisplay.RIGHT
+  if (icon == null && contentDisplay != ContentDisplay.TEXT_ONLY) {
+    return null
+  }
   return Button("", icon).apply {
     this.contentDisplay = contentDisplay
     this.alignment = Pos.CENTER_LEFT
@@ -99,10 +105,15 @@ fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
   }
 }
 
-private class ButtonVisitor(val action: GPAction) {
+private class ButtonVisitor(val action: GPAction, val appFont: SimpleObjectProperty<Font>?) {
   fun visit(toolbar: FXToolbar) {
-    createButton(action)?.let {
-      toolbar.toolbar.items.add(it)
+    createButton(action)?.let {btn ->
+      appFont?.addListener { _, _, _ ->
+        Platform.runLater {
+          btn.style = "-fx-font-size: ${appFont.value.size}"
+        }
+      }
+      toolbar.toolbar.items.add(btn)
     }
   }
 }
@@ -128,11 +139,17 @@ fun addSeparator(toolbar: FXToolbar) {
  */
 class FXToolbarBuilder {
 
+  private var appFont: SimpleObjectProperty<Font>? = null
   private var classes: Array<out String> = arrayOf()
   private var deleteAction: GPAction? = null
   private var insertAction: GPAction? = null
   private val visitors = mutableListOf<ToolbarVisitor>()
   private var withScene = false
+
+  fun withApplicationFont(font: SimpleObjectProperty<Font>): FXToolbarBuilder {
+    this.appFont = font
+    return this
+  }
 
   fun withClasses(vararg classes: String): FXToolbarBuilder {
     this.classes = classes
@@ -151,7 +168,7 @@ class FXToolbarBuilder {
   }
 
   fun addButton(action: GPAction): FXToolbarBuilder {
-    visitors.add(ButtonVisitor(action)::visit)
+    visitors.add(ButtonVisitor(action, appFont)::visit)
     return this
   }
 
