@@ -234,8 +234,14 @@ internal abstract class ChartTabContentPanel(
   init {
     val navigationPanel = NavigationPanel(project, chart, workbenchFacade)
     val zoomingPanel = ZoomingPanel(workbenchFacade, chart)
-    addChartPanel(zoomingPanel.component)
-    addChartPanel(navigationPanel.component)
+
+    addChartPanel(FXToolbarBuilder().also {
+      zoomingPanel.buildToolbar(it)
+      it.addWhitespace()
+      navigationPanel.buildToolbar(it)
+    }.withClasses("toolbar-common", "toolbar-small", "toolbar-chart").withScene().build().component)
+    //addChartPanel(zoomingPanel.component)
+    //addChartPanel(navigationPanel.component)
     myUiFacade = workbenchFacade
     myChart = Preconditions.checkNotNull(chart)
     myUiFacade.mainFrame.addWindowListener(object : WindowAdapter() {

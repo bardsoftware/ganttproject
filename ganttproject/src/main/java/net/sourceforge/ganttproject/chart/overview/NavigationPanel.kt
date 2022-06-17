@@ -21,25 +21,22 @@ package net.sourceforge.ganttproject.chart.overview
 import biz.ganttproject.app.FXToolbarBuilder
 import biz.ganttproject.core.option.GPOption
 import biz.ganttproject.core.option.IntegerOption
-import javafx.scene.control.Button
 import javafx.scene.control.ContentDisplay
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.scroll.*
 import net.sourceforge.ganttproject.chart.TimelineChart
 import net.sourceforge.ganttproject.gui.UIFacade
-import java.awt.Component
-import javax.swing.AbstractAction
 
-class NavigationPanel(private val myProject: IGanttProject, private val myChart: TimelineChart, uiFacade: UIFacade) {
-    private val myScrollActions: Array<AbstractAction>
+class NavigationPanel(myProject: IGanttProject, myChart: TimelineChart, uiFacade: UIFacade) {
+    private val myScrollActions: List<GPAction>
     private val myScrollBackAction: GPAction
     private val myScrollForwardAction: GPAction
     private val myDpiOption: IntegerOption
     private val myLafOption: GPOption<String>
 
     init {
-        myScrollActions = arrayOf(ScrollToStartAction(myProject, myChart),
+        myScrollActions = listOf(ScrollToStartAction(myProject, myChart),
                 ScrollToTodayAction(myChart), ScrollToEndAction(myProject, myChart),
                 ScrollToSelectionAction(uiFacade, myChart))
         myScrollBackAction = ScrollTimeIntervalAction("scroll.back", -1, myProject.taskManager, myChart.model,
@@ -54,15 +51,16 @@ class NavigationPanel(private val myProject: IGanttProject, private val myChart:
         myLafOption = uiFacade.lafOption
     }
 
-    val component: Component by lazy {
-      FXToolbarBuilder()
-        .addButton(myScrollBackAction)
+    fun buildToolbar(builder: FXToolbarBuilder) =
+      builder.addButton(myScrollBackAction)
+        .addDropdown(myScrollActions)
         .addButton(myScrollForwardAction)
-        .addNode(Button("foo"))
-        .withClasses("toolbar-common", "toolbar-small")
-        .withScene()
-        .build().component
-    }
+
+//    val component: Component by lazy {
+//      FXToolbarBuilder()
+//        .withScene()
+//        .build().component
+//    }
 //    val component: Component
 //        get() = ToolbarBuilder()
 //                .withDpiOption(myDpiOption)

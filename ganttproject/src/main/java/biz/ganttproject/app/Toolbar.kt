@@ -18,8 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
+import javafx.collections.FXCollections
 import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
+import javafx.event.EventHandler
+import javafx.geometry.Pos
 import javafx.geometry.VPos
 import javafx.scene.Node
 import javafx.scene.Scene
@@ -78,8 +81,11 @@ fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
   val contentDisplay = action.getValue(GPAction.TEXT_DISPLAY) as? ContentDisplay ?: if (onlyIcon) ContentDisplay.GRAPHIC_ONLY else ContentDisplay.RIGHT
   return Button("", icon).apply {
     this.contentDisplay = contentDisplay
+    this.alignment = Pos.CENTER_LEFT
     if (contentDisplay != ContentDisplay.GRAPHIC_ONLY) {
       this.text = action.name
+    } else {
+      this.styleClass.add("graphic-only")
     }
     this.addEventHandler(ActionEvent.ACTION) {
       SwingUtilities.invokeLater {
@@ -97,6 +103,18 @@ private class ButtonVisitor(val action: GPAction) {
   fun visit(toolbar: FXToolbar) {
     createButton(action)?.let {
       toolbar.toolbar.items.add(it)
+    }
+  }
+}
+
+private class DropdownVisitor(val actions: List<GPAction>) {
+  fun visit(toolbar: FXToolbar) {
+    ComboBox(FXCollections.observableArrayList(actions.map { it.name }.toList())).let {comboBox ->
+      toolbar.toolbar.items.add(comboBox)
+      comboBox.selectionModel.select(0)
+      comboBox.onAction = EventHandler {
+        actions[comboBox.selectionModel.selectedIndex].actionPerformed(null)
+      }
     }
   }
 }
@@ -131,8 +149,14 @@ class FXToolbarBuilder {
     }
     return this
   }
+
   fun addButton(action: GPAction): FXToolbarBuilder {
     visitors.add(ButtonVisitor(action)::visit)
+    return this
+  }
+
+  fun addDropdown(actions: List<GPAction>): FXToolbarBuilder {
+    visitors.add(DropdownVisitor(actions)::visit)
     return this
   }
 
