@@ -32,8 +32,13 @@ open class ProjectDatabaseException: Exception {
 }
 
 interface ProjectDatabaseTxn {
+  @Throws(ProjectDatabaseException::class)
   fun commit()
+
+  @Throws(ProjectDatabaseException::class)
   fun undo()
+
+  @Throws(ProjectDatabaseException::class)
   fun redo()
 }
 

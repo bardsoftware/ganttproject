@@ -22,6 +22,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
+import net.sourceforge.ganttproject.storage.ProjectDatabaseTxn;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
@@ -40,14 +41,16 @@ class UndoableEditImpl extends AbstractUndoableEdit {
 
   private final UndoManagerImpl myManager;
 
+  private ProjectDatabaseTxn projectDatabaseTxn = null;
+
   UndoableEditImpl(String localizedName, Runnable editImpl, UndoManagerImpl manager) throws IOException {
     myManager = manager;
     myPresentationName = localizedName;
     myDocumentBefore = saveFile();
     try {
-      var txn = myManager.getProjectDatabase().startTransaction(localizedName);
+      projectDatabaseTxn = myManager.getProjectDatabase().startTransaction(localizedName);
       editImpl.run();
-      txn.commit();
+      projectDatabaseTxn.commit();
     } catch (ProjectDatabaseException ex) {
       GPLogger.log(ex);
     }
@@ -74,6 +77,13 @@ class UndoableEditImpl extends AbstractUndoableEdit {
   public void redo() throws CannotRedoException {
     try {
       restoreDocument(myDocumentAfter);
+      if (projectDatabaseTxn != null) {
+        try {
+          projectDatabaseTxn.redo();
+        } catch (ProjectDatabaseException e) {
+          GPLogger.log(e);
+        }
+      }
     } catch (DocumentException | IOException e) {
       undoRedoExceptionHandler(e);
     }
@@ -83,6 +93,13 @@ class UndoableEditImpl extends AbstractUndoableEdit {
   public void undo() throws CannotUndoException {
     try {
       restoreDocument(myDocumentBefore);
+      if (projectDatabaseTxn != null) {
+        try {
+          projectDatabaseTxn.undo();
+        } catch (ProjectDatabaseException e) {
+          GPLogger.log(e);
+        }
+      }
     } catch (DocumentException | IOException e) {
       undoRedoExceptionHandler(e);
     }
