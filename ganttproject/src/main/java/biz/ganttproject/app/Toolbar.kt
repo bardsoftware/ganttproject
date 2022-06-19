@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
-import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.embed.swing.JFXPanel
@@ -32,6 +31,7 @@ import javafx.scene.control.*
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
+import javafx.util.Callback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
@@ -108,23 +108,36 @@ fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
 private class ButtonVisitor(val action: GPAction, val appFont: SimpleObjectProperty<Font>?) {
   fun visit(toolbar: FXToolbar) {
     createButton(action)?.let {btn ->
-      appFont?.addListener { _, _, _ ->
-        Platform.runLater {
-          btn.style = "-fx-font-size: ${appFont.value.size}"
-        }
-      }
+      appFont?.let { btn.fontProperty().bind(it) }
       toolbar.toolbar.items.add(btn)
     }
   }
 }
 
-private class DropdownVisitor(val actions: List<GPAction>) {
+private class DropdownVisitor(val actions: List<GPAction>, val appFont: SimpleObjectProperty<Font>?) {
   fun visit(toolbar: FXToolbar) {
-    ComboBox(FXCollections.observableArrayList(actions.map { it.name }.toList())).let {comboBox ->
+    ComboBox(FXCollections.observableArrayList(actions.map { it.name }.toList())).let { comboBox ->
       toolbar.toolbar.items.add(comboBox)
       comboBox.selectionModel.select(0)
       comboBox.onAction = EventHandler {
         actions[comboBox.selectionModel.selectedIndex].actionPerformed(null)
+      }
+      if (appFont != null) {
+        comboBox.cellFactory = Callback { listView ->
+          object : ListCell<String>() {
+            override fun updateItem(item: String?, empty: Boolean) {
+              super.updateItem(item, empty)
+              if (empty) {
+                graphic = null
+                text = null
+              } else {
+                text = item ?: ""
+                fontProperty().bind(appFont)
+              }
+            }
+          }
+        }
+        comboBox.buttonCell = comboBox.cellFactory.call(null)
       }
     }
   }
@@ -173,7 +186,7 @@ class FXToolbarBuilder {
   }
 
   fun addDropdown(actions: List<GPAction>): FXToolbarBuilder {
-    visitors.add(DropdownVisitor(actions)::visit)
+    visitors.add(DropdownVisitor(actions, appFont)::visit)
     return this
   }
 

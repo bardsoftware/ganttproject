@@ -82,8 +82,8 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   }
 
   private Component createSchedulePanel() {
-    return new FXToolbarBuilder().addButton(myCriticalPathAction).addButton(myBaselineAction)
-      .withApplicationFont(TreeTableCellsKt.getApplicationFont()).withClasses("toolbar-common", "toolbar-small", "toolbar-chart", "align-right").withScene().build().getComponent();
+    return new FXToolbarBuilder().withApplicationFont(TreeTableCellsKt.getApplicationFont()).addButton(myCriticalPathAction).addButton(myBaselineAction)
+      .withClasses("toolbar-common", "toolbar-small", "toolbar-chart", "align-right").withScene().build().getComponent();
 //    return new ToolbarBuilder()
 //        .withDpiOption(myWorkbenchFacade.getDpiOption())
 //        .withLafOption(getUiFacade().getLafOption(), s -> (s.contains("nimbus")) ? 2f : 1f)

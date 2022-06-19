@@ -12,7 +12,7 @@
     -fx-border-width: 0;
     -fx-border-insets: 0;
     -fx-text-fill: $gp-medium-gray;
-    //-fx-font-size: 14;
+    //-fx-font-size: 20;
 
     .glyph-icon {
       -fx-alignment: center;
@@ -77,10 +77,11 @@
   }
   -fx-padding: 0 5 0 5;
   Button {
+    -fx-alignment: center-left;
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-padding: 2 5 2 5;
-    //-fx-font-size: 14;
+    //-fx-font-size: 20;
     -fx-border-width: 0;
 
     .glyph-icon {
