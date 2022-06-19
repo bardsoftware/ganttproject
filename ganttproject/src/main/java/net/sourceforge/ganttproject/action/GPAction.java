@@ -69,6 +69,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
   public static final String TEXT_DISPLAY = "text_display";
   public static final String IS_SUBMENU = "is_submenu";
 
+  public static final String HAS_AUTO_REPEAT = "has_auto_repeat";
   private boolean iconVisible = true;
 
   private final String myName;

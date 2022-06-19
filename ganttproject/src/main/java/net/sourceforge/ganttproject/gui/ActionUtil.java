@@ -18,6 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui;
 
+import javafx.event.EventHandler;
+import javafx.scene.control.Button;
+import net.sourceforge.ganttproject.action.GPAction;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -69,5 +73,34 @@ public class ActionUtil {
       }
     }
     button.addMouseListener(new MouseListenerImpl());
+  }
+
+  public static void setupAutoRepeat(Button button, GPAction action, int intervalMs) {
+    class MouseHandlerImpl {
+      private Timer myTimer;
+      public EventHandler<javafx.scene.input.MouseEvent> createPressedHandler() {
+        return event -> {
+          if (myTimer == null) {
+            myTimer = new Timer(intervalMs, action);
+            myTimer.setInitialDelay(intervalMs);
+            myTimer.setDelay(intervalMs / 2);
+            myTimer.setRepeats(true);
+            myTimer.start();
+          }
+        };
+      }
+
+      public EventHandler<javafx.scene.input.MouseEvent> createReleasedHandler() {
+        return event -> {
+          if (myTimer != null) {
+            myTimer.stop();
+            myTimer = null;
+          }
+        };
+      }
+    }
+    var handler = new MouseHandlerImpl();
+    button.setOnMousePressed(handler.createPressedHandler());
+    button.setOnMouseReleased(handler.createReleasedHandler());
   }
 }

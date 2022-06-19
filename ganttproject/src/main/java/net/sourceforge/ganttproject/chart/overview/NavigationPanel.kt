@@ -42,10 +42,12 @@ class NavigationPanel(myProject: IGanttProject, myChart: TimelineChart, uiFacade
         myScrollBackAction = ScrollTimeIntervalAction("scroll.back", -1, myProject.taskManager, myChart.model,
                 uiFacade.scrollingManager).also {
           it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
+          it.putValue(GPAction.HAS_AUTO_REPEAT, true)
         }
         myScrollForwardAction = ScrollTimeIntervalAction("scroll.forward", 1, myProject.taskManager,
                 myChart.model, uiFacade.scrollingManager).also {
           it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
+          it.putValue(GPAction.HAS_AUTO_REPEAT, true)
         }
         myDpiOption = uiFacade.dpiOption
         myLafOption = uiFacade.lafOption

@@ -37,6 +37,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.gui.ActionUtil
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import javax.swing.SwingUtilities
@@ -85,6 +86,7 @@ fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
   if (icon == null && contentDisplay != ContentDisplay.TEXT_ONLY) {
     return null
   }
+  val hasAutoRepeat = action.getValue(GPAction.HAS_AUTO_REPEAT) as? Boolean ?: false
   return Button("", icon).apply {
     this.contentDisplay = contentDisplay
     this.alignment = Pos.CENTER_LEFT
@@ -101,6 +103,9 @@ fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
     this.isDisable = !action.isEnabled
     action.addPropertyChangeListener {
       this.isDisable = !action.isEnabled
+    }
+    if (hasAutoRepeat) {
+      ActionUtil.setupAutoRepeat(this, action, 200);
     }
   }
 }
