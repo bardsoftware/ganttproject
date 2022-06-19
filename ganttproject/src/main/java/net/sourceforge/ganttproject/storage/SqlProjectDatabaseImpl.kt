@@ -185,7 +185,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   @Throws(ProjectDatabaseException::class)
   override fun fetchTransactions(startLocalTxnId: Int, limit: Int): List<XlogRecord> = withDSL(
     { "Failed to fetch log records starting with $startLocalTxnId" }) { dsl ->
-    //println(dsl.selectFrom(LOGRECORD).toList())
+    println(dsl.selectFrom(LOGRECORD).toList())
     dsl
       .selectFrom(LOGRECORD)
       .where(LOGRECORD.LOCAL_TXN_ID.ge(startLocalTxnId).and(LOGRECORD.LOCAL_TXN_ID.lt(startLocalTxnId + limit)))
@@ -248,7 +248,7 @@ class TransactionImpl(private val database: SqlProjectDatabaseImpl, private val 
 
   override fun undo() {
     if (!isCommitted) throw ProjectDatabaseException("Cannot undo uncommitted transaction")
-    database.commitTransaction(undoStatements)
+    database.commitTransaction(undoStatements.reversed())
   }
 
   override fun redo() {
@@ -259,13 +259,13 @@ class TransactionImpl(private val database: SqlProjectDatabaseImpl, private val 
   internal fun add(query: SqlQuery, undoQuery: SqlQuery) {
     if (isCommitted) throw ProjectDatabaseException("Txn was already committed")
     statements.add(query)
-    undoStatements.add(0, undoQuery)
+    undoStatements.add(undoQuery)
   }
 
   internal fun add(queries: List<SqlQuery>, undoQueries: List<SqlUndoQuery>) {
     if (isCommitted) throw ProjectDatabaseException("Txn was already committed")
     statements.addAll(queries)
-    undoStatements.addAll(0, undoQueries)
+    undoStatements.addAll(undoQueries.reversed())
   }
 
   override fun toString(): String {
