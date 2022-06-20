@@ -20,7 +20,7 @@ package biz.ganttproject.task
 
 import biz.ganttproject.ganttview.NewTaskActor
 import biz.ganttproject.ganttview.TaskTableActionConnector
-import biz.ganttproject.ganttview.showColumnManager
+import biz.ganttproject.ganttview.showTaskColumnManager
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction
@@ -146,7 +146,7 @@ class TaskActions(private val project: IGanttProject,
 
   val manageColumnsAction: GPAction
     get() = GPAction.create("columns.manage.label") {
-      showColumnManager(tableConnector().columnList(), project.taskCustomColumnManager, uiFacade.undoManager)
+      showTaskColumnManager(tableConnector().columnList(), project.taskCustomColumnManager, uiFacade.undoManager)
     }
   fun all() = listOf(indentAction, unindentAction, moveDownAction, moveUpAction, linkTasksAction, unlinkTasksAction)
   fun assignments(task: Task, hrManager: HumanResourceManager, undoManager: GPUndoManager): List<GPAction> {

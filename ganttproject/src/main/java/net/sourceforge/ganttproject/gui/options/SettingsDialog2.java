@@ -40,8 +40,8 @@ public class SettingsDialog2 extends AbstractPagesDialog {
         OptionPageProvider.class);
   }
 
-  public SettingsDialog2(IGanttProject project, UIFacade uifacade, String pageOrderKey) {
-    super("settings.app", uifacade, getPages(pageOrderKey, project, uifacade));
+  public SettingsDialog2(IGanttProject project, UIFacade uifacade, String pageOrderKey, String titleKey) {
+    super(titleKey, uifacade, getPages(pageOrderKey, project, uifacade));
     for (OptionPageProvider p : ourProviders) {
       if (isPageVisible(p.getPageID())) {
         p.init(project, uifacade);

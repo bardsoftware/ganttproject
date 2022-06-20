@@ -411,7 +411,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public void showSettingsDialog(String pageID) {
-    SettingsDialog2 dialog = new SettingsDialog2(myProject, this, "settings.app.pageOrder");
+    SettingsDialog2 dialog = new SettingsDialog2(myProject, this, "settings.app.pageOrder", "settings.app");
     dialog.show(pageID);
   }
 

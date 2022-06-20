@@ -1,3 +1,10 @@
 .root {
     -fx-background-color: transparent ;
+
 }
+
+.heart {
+  /*-fx-border-color: red;*/
+  -fx-padding: 40 0 0 60;
+}
+

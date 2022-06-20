@@ -44,7 +44,7 @@ public class SettingsDialogAction extends GPAction {
     if (calledFromAppleScreenMenu(e)) {
       return;
     }
-    SettingsDialog2 dialog = new SettingsDialog2(myProject, myUiFacade, "settings.app.pageOrder");
+    SettingsDialog2 dialog = new SettingsDialog2(myProject, myUiFacade, "settings.app.pageOrder", "settings.app");
     dialog.show();
   }
 }

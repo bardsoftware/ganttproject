@@ -20,10 +20,12 @@ package biz.ganttproject.app
 
 import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
+import javafx.geometry.Pos
 import javafx.scene.Scene
 import javafx.scene.effect.DropShadow
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
+import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
 import javafx.stage.Screen
 import javafx.stage.Stage
@@ -39,11 +41,22 @@ fun showAsync(): CompletableFuture<Runnable> {
   val result = CompletableFuture<Runnable>()
   Platform.runLater {
     val image = Image(GanttProject::class.java.getResourceAsStream("/icons/splash.png"))
-    val splash1 = ImageView(image)
-    val splashLayout = VBox()
-    splashLayout.children.addAll(splash1)
-    splashLayout.effect = DropShadow()
-    val splashScene = Scene(splashLayout)
+    val mainSplash = VBox().apply {
+      children.addAll(ImageView(image))
+      effect = DropShadow()
+      styleClass.add("main")
+    }
+    val heartSplash = StackPane(ImageView(Image(GanttProject::class.java.getResourceAsStream("/icons/ukraine.png")))).also {
+      it.maxWidth = 128.0
+      it.maxHeight = 128.0
+      it.styleClass.add("heart")
+    }
+
+    val stackPane = StackPane().also {
+      it.children.addAll(mainSplash, heartSplash)
+    }
+    StackPane.setAlignment(heartSplash, Pos.TOP_LEFT)
+    val splashScene = Scene(stackPane)
     splashScene.stylesheets.add("/biz/ganttproject/app/Splash.css")
     splashScene.fill = javafx.scene.paint.Color.TRANSPARENT
     val stage = Stage(StageStyle.TRANSPARENT)

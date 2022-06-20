@@ -27,6 +27,7 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.TaskMutator;
+import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -41,30 +42,33 @@ import java.util.Map;
  * @author dbarashev (Dmitry Barashev)
  */
 public class CustomColumnsPanel {
-  private static Map<Integer, Integer> ourColumnWidth = new HashMap<>();
-  private static GanttLanguage language = GanttLanguage.getInstance();
+  private final Type myType;
+  private final GPUndoManager myUndoManager;
+
+  public enum Type { TASK, RESOURCE }
+  private static final Map<Integer, Integer> ourColumnWidth = new HashMap<>();
+  private static final GanttLanguage language = GanttLanguage.getInstance();
   private static final String[] COLUMN_NAMES = new String[] { CustomColumnsPanel.language.getText("name"),
     CustomColumnsPanel.language.getText("typeClass"), CustomColumnsPanel.language.getText("value") };
 
   private final CustomPropertyManager myCustomPropertyManager;
 
-  private final UIFacade myUiFacade;
-
   private CustomColumnTableModel myModel;
 
   private JTable myTable;
 
-  private CustomPropertyHolder myHolder;
+  private final CustomPropertyHolder myHolder;
 
-  private ColumnList myTableHeaderFacade;
+  private final ColumnList myTableHeaderFacade;
 
-  public CustomColumnsPanel(CustomPropertyManager manager, UIFacade uifacade,
-      CustomPropertyHolder customPropertyHolder, ColumnList tableHeaderFacade) {
+  public CustomColumnsPanel(
+    CustomPropertyManager manager, Type type, GPUndoManager undoManager, CustomPropertyHolder customPropertyHolder, ColumnList tableHeaderFacade) {
     assert manager != null;
     myCustomPropertyManager = manager;
-    myUiFacade = uifacade;
     myHolder = customPropertyHolder;
     myTableHeaderFacade = tableHeaderFacade;
+    myType = type;
+    myUndoManager = undoManager;
   }
 
   public JComponent getComponent() {
@@ -76,8 +80,15 @@ public class CustomColumnsPanel {
     buttonPanel.add(new JButton(new GPAction("columns.manage.label") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        ColumnManagerKt.showColumnManager(myTableHeaderFacade,
-            myCustomPropertyManager, myUiFacade.getUndoManager(), ApplyExecutorType.SWING);
+        switch (myType) {
+          case TASK:
+            ColumnManagerKt.showTaskColumnManager(myTableHeaderFacade, myCustomPropertyManager, myUndoManager, ApplyExecutorType.SWING);
+            break;
+          case RESOURCE:
+            ColumnManagerKt.showResourceColumnManager(myTableHeaderFacade, myCustomPropertyManager, myUndoManager, ApplyExecutorType.SWING);
+            break;
+
+        }
         myModel.fireTableStructureChanged();
       }
     }), BorderLayout.WEST);
@@ -147,7 +158,8 @@ public class CustomColumnsPanel {
             return cp.getValueAsString();
           }
         }
-        return def.getDefaultValue() + " (default)";
+        var defValue = def.getDefaultValue();
+        return defValue == null ? "" : defValue;
       default:
         throw new IllegalStateException();
       }

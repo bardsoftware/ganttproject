@@ -21,8 +21,10 @@ package biz.ganttproject.lib.fx
 //import javafx.scene.control.skin.TreeTableRowSkin
 //import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
 //import biz.ganttproject.lib.fx.treetable.VirtualFlow
+import biz.ganttproject.FXUtil
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.app.MenuBuilderFx
+import biz.ganttproject.walkTree
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
@@ -116,6 +118,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     val totalPrefWidth = tableColumns.filter { it.isVisible }.sumOf { it.prefWidth }
     prefWidth = totalPrefWidth + vbarWidth()
     columns.setAll(tableColumns)
+    skin?.let { (it as GPTreeTableViewSkin<T>).bindHeaderFont()}
   }
 
   fun autosizeColumns() {
@@ -258,6 +261,16 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
       this.virtualFlow.scrollToBottom(firstCell)
       this.table.selectionModel.clearSelection()
       this.table.selectionModel.select(firstCell.treeItem)
+    }
+  }
+
+  fun bindHeaderFont() {
+    FXUtil.runLater {
+      tableHeaderRow.walkTree {
+        if (it is Labeled) {
+          it.fontProperty().bind(applicationFont)
+        }
+      }
     }
   }
 

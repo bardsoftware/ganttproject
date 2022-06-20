@@ -125,9 +125,8 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
   private GPAction myManageColumnsAction = new GPAction("columns.manage.label") {
     @Override
     public void actionPerformed(ActionEvent e) {
-      ColumnManagerKt.showColumnManager(myTableHeaderFacade,
+      ColumnManagerKt.showResourceColumnManager(myTableHeaderFacade,
           myCustomPropertyManager, getUiFacade().getUndoManager(), ApplyExecutorType.SWING);
-
     }
   };
   private GPAction myNewRowAction;

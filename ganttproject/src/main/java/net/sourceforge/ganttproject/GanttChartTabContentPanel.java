@@ -23,11 +23,13 @@ import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.app.MenuBuilderFx;
 import biz.ganttproject.app.ToolbarKt;
 import biz.ganttproject.ganttview.TaskTable;
+import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.task.TaskActions;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
@@ -35,7 +37,6 @@ import net.sourceforge.ganttproject.action.BaselineDialogAction;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -72,22 +73,17 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     myGanttChart = ganttChart;
     // FIXME KeyStrokes of these 2 actions are not working...
     myCriticalPathAction = new CalculateCriticalPathAction(project.getTaskManager(), uiConfiguration, workbenchFacade);
+    myCriticalPathAction.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY);
     myBaselineAction = new BaselineDialogAction(project, workbenchFacade);
+    myBaselineAction.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY);
     addChartPanel(createSchedulePanel());
     //addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());
   }
 
   private Component createSchedulePanel() {
-    return new ToolbarBuilder()
-        .withDpiOption(myWorkbenchFacade.getDpiOption())
-        .withLafOption(getUiFacade().getLafOption(), s -> (s.contains("nimbus")) ? 2f : 1f)
-        .withGapFactory(ToolbarBuilder.Gaps.VDASH)
-        .withBackground(myWorkbenchFacade.getGanttChart().getStyle().getSpanningHeaderBackgroundColor())
-        .withHeight(24)
-        .addButton(myCriticalPathAction)
-        .addButton(myBaselineAction)
-        .build()
-        .getToolbar();
+    return new FXToolbarBuilder().withApplicationFont(TreeTableCellsKt.getApplicationFont()).addButton(myCriticalPathAction).addButton(myBaselineAction)
+      .withClasses("toolbar-common", "toolbar-small", "toolbar-chart", "align-right")
+      .withScene().build().getComponent();
   }
 
   JComponent getComponent() {
@@ -119,19 +115,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
         .withScene()
         .build()
         .getComponent();
-//    ToolbarBuilder builder = new ToolbarBuilder()
-//        .withHeight(24)
-//        .withSquareButtons()
-//        .withDpiOption(myWorkbenchFacade.getDpiOption())
-//        .withLafOption(myWorkbenchFacade.getLafOption(), new Function<String, Float>() {
-//          @Override
-//          public Float apply(@Nullable String s) {
-//            return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
-//          }
-//        });
-//    addToolbarActions(builder);
-//    final GPToolbar toolbar = builder.build();
-//    return toolbar.getToolbar();
   }
 
   static class TableMenuAction extends GPAction {
@@ -174,13 +157,11 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     });
     taskTable.setSwingComponent(jfxPanel);
     taskTable.getColumnListWidthProperty().addListener((observable, oldValue, newValue) ->
-      SwingUtilities.invokeLater(() -> setTableWidth(newValue.component1().doubleValue() + newValue.component2().doubleValue()))
+      SwingUtilities.invokeLater(() -> setTableWidth(newValue.component1() + newValue.component2()))
     );
     taskTable.loadDefaultColumns();
     this.taskTable = taskTable;
     return jfxPanel;
-    //return myTaskTree;
-
   }
 
   // //////////////////////////////////////////////

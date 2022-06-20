@@ -18,10 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.zoom;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+
+import javax.swing.*;
 
 /**
  * Provides zoom realted actions
@@ -38,11 +38,11 @@ public class ZoomActionSet {
     myZoomOut.putValue(Action.SHORT_DESCRIPTION, null);
   }
 
-  public AbstractAction getZoomInAction() {
+  public GPAction getZoomInAction() {
     return myZoomIn;
   }
 
-  public AbstractAction getZoomOutAction() {
+  public GPAction getZoomOutAction() {
     return myZoomOut;
   }
 }
