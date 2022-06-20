@@ -242,8 +242,7 @@ internal abstract class ChartTabContentPanel(
       it.addWhitespace()
       navigationPanel.buildToolbar(it)
     }.withClasses("toolbar-common", "toolbar-small", "toolbar-chart").withScene().build().component)
-    //addChartPanel(zoomingPanel.component)
-    //addChartPanel(navigationPanel.component)
+
     myUiFacade = workbenchFacade
     myChart = Preconditions.checkNotNull(chart)
     myUiFacade.mainFrame.addWindowListener(object : WindowAdapter() {

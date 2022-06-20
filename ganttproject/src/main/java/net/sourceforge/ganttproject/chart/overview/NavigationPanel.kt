@@ -29,31 +29,31 @@ import net.sourceforge.ganttproject.chart.TimelineChart
 import net.sourceforge.ganttproject.gui.UIFacade
 
 class NavigationPanel(myProject: IGanttProject, myChart: TimelineChart, uiFacade: UIFacade) {
-    private val myScrollActions: List<GPAction>
-    private val myScrollBackAction: GPAction
-    private val myScrollForwardAction: GPAction
-    private val myDpiOption: IntegerOption
-    private val myLafOption: GPOption<String>
+  private val myScrollActions: List<GPAction>
+  private val myScrollBackAction: GPAction
+  private val myScrollForwardAction: GPAction
+  private val myDpiOption: IntegerOption
+  private val myLafOption: GPOption<String>
 
-    init {
-        myScrollActions = listOf(ScrollToStartAction(myProject, myChart),
-                ScrollToTodayAction(myChart), ScrollToEndAction(myProject, myChart),
-                ScrollToSelectionAction(uiFacade, myChart))
-        myScrollBackAction = ScrollTimeIntervalAction("scroll.back", -1, myProject.taskManager, myChart.model,
-                uiFacade.scrollingManager).also {
-          it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
-          it.putValue(GPAction.HAS_AUTO_REPEAT, true)
-        }
-        myScrollForwardAction = ScrollTimeIntervalAction("scroll.forward", 1, myProject.taskManager,
-                myChart.model, uiFacade.scrollingManager).also {
-          it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
-          it.putValue(GPAction.HAS_AUTO_REPEAT, true)
-        }
-        myDpiOption = uiFacade.dpiOption
-        myLafOption = uiFacade.lafOption
+  init {
+    myScrollActions = listOf(ScrollToStartAction(myProject, myChart),
+      ScrollToTodayAction(myChart), ScrollToEndAction(myProject, myChart),
+      ScrollToSelectionAction(uiFacade, myChart))
+    myScrollBackAction = ScrollTimeIntervalAction("scroll.back", -1, myProject.taskManager, myChart.model,
+      uiFacade.scrollingManager).also {
+      it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
+      it.putValue(GPAction.HAS_AUTO_REPEAT, true)
     }
+    myScrollForwardAction = ScrollTimeIntervalAction("scroll.forward", 1, myProject.taskManager,
+      myChart.model, uiFacade.scrollingManager).also {
+      it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
+      it.putValue(GPAction.HAS_AUTO_REPEAT, true)
+    }
+    myDpiOption = uiFacade.dpiOption
+    myLafOption = uiFacade.lafOption
+  }
 
-    fun buildToolbar(builder: FXToolbarBuilder) =
-      builder.addDropdown(myScrollActions).addButton(myScrollBackAction).addButton(myScrollForwardAction)
+  fun buildToolbar(builder: FXToolbarBuilder) =
+    builder.addDropdown(myScrollActions).addButton(myScrollBackAction).addButton(myScrollForwardAction)
 
 }
