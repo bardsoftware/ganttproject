@@ -18,19 +18,32 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
+import biz.ganttproject.FXUtil
+import biz.ganttproject.core.option.FontSpec
+import biz.ganttproject.lib.fx.applicationFont
+import biz.ganttproject.lib.fx.applicationFontSpec
+import biz.ganttproject.walkTree
+import javafx.application.Platform
+import javafx.beans.property.SimpleObjectProperty
+import javafx.collections.FXCollections
 import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
+import javafx.event.EventHandler
+import javafx.geometry.Pos
 import javafx.geometry.VPos
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
+import javafx.scene.text.Font
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.gui.ActionUtil
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import javax.swing.SwingUtilities
@@ -74,13 +87,19 @@ class FXToolbar {
 private typealias ToolbarVisitor = (toolbar: FXToolbar) -> Unit
 
 fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
-  val icon = action.getGlyphIcon() ?: return null
+  val icon = action.getGlyphIcon()
+  val contentDisplay = action.getValue(GPAction.TEXT_DISPLAY) as? ContentDisplay ?: if (onlyIcon) ContentDisplay.GRAPHIC_ONLY else ContentDisplay.RIGHT
+  if (icon == null && contentDisplay != ContentDisplay.TEXT_ONLY) {
+    return null
+  }
+  val hasAutoRepeat = action.getValue(GPAction.HAS_AUTO_REPEAT) as? Boolean ?: false
   return Button("", icon).apply {
-    if (onlyIcon) {
-      this.contentDisplay = ContentDisplay.GRAPHIC_ONLY
-    } else {
-      this.contentDisplay = ContentDisplay.LEFT
+    this.contentDisplay = contentDisplay
+    this.alignment = Pos.CENTER_LEFT
+    if (contentDisplay != ContentDisplay.GRAPHIC_ONLY) {
       this.text = action.name
+    } else {
+      this.styleClass.add("graphic-only")
     }
     this.addEventHandler(ActionEvent.ACTION) {
       SwingUtilities.invokeLater {
@@ -91,13 +110,44 @@ fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
     action.addPropertyChangeListener {
       this.isDisable = !action.isEnabled
     }
+    if (hasAutoRepeat) {
+      ActionUtil.setupAutoRepeat(this, action, 200);
+    }
+    applyFontStyle(this)
   }
 }
 
-private class ButtonVisitor(val action: GPAction) {
+private fun applyFontStyle(node: Parent) {
+  Platform.runLater {
+    node.walkTree {
+      node.styleClass.removeIf { it.startsWith("app-font-") }
+      node.styleClass.add("app-font-${(applicationFontSpec.value?.size?.name ?: FontSpec.Size.NORMAL.name).lowercase()}")
+      node.style = """-fx-font-family: "${applicationFont.value.family}" """
+    }
+  }
+}
+
+private class ButtonVisitor(val action: GPAction, val appFont: SimpleObjectProperty<Font>?) {
   fun visit(toolbar: FXToolbar) {
-    createButton(action)?.let {
-      toolbar.toolbar.items.add(it)
+    createButton(action)?.let {btn ->
+      appFont?.let {
+        appFont.addListener { _, _, _ -> applyFontStyle(btn) }
+      }
+      toolbar.toolbar.items.add(btn)
+    }
+  }
+}
+
+private class DropdownVisitor(val actions: List<GPAction>, val appFont: SimpleObjectProperty<Font>?) {
+  fun visit(toolbar: FXToolbar) {
+    ComboBox(FXCollections.observableArrayList(actions.map { it.name }.toList())).let { comboBox ->
+      toolbar.toolbar.items.add(comboBox)
+      comboBox.selectionModel.select(0)
+      comboBox.onAction = EventHandler {
+        actions[comboBox.selectionModel.selectedIndex].actionPerformed(null)
+      }
+      appFont?.addListener { _, _, _ -> applyFontStyle(comboBox) }
+      applyFontStyle(comboBox)
     }
   }
 }
@@ -111,11 +161,17 @@ fun addSeparator(toolbar: FXToolbar) {
  */
 class FXToolbarBuilder {
 
+  private var appFont: SimpleObjectProperty<Font>? = null
   private var classes: Array<out String> = arrayOf()
   private var deleteAction: GPAction? = null
   private var insertAction: GPAction? = null
   private val visitors = mutableListOf<ToolbarVisitor>()
   private var withScene = false
+
+  fun withApplicationFont(font: SimpleObjectProperty<Font>): FXToolbarBuilder {
+    this.appFont = font
+    return this
+  }
 
   fun withClasses(vararg classes: String): FXToolbarBuilder {
     this.classes = classes
@@ -132,8 +188,14 @@ class FXToolbarBuilder {
     }
     return this
   }
+
   fun addButton(action: GPAction): FXToolbarBuilder {
-    visitors.add(ButtonVisitor(action)::visit)
+    visitors.add(ButtonVisitor(action, appFont)::visit)
+    return this
+  }
+
+  fun addDropdown(actions: List<GPAction>): FXToolbarBuilder {
+    visitors.add(DropdownVisitor(actions, appFont)::visit)
     return this
   }
 
@@ -160,7 +222,7 @@ class FXToolbarBuilder {
 
   fun build(): FXToolbar {
     val toolbar = FXToolbar()
-    GlobalScope.launch(Dispatchers.JavaFx) {
+    FXUtil.runLater {
       val scene = if (withScene) {
         Scene(toolbar.toolbar, Color.TRANSPARENT).also {
           it.stylesheets.add("biz/ganttproject/app/Toolbar.css")

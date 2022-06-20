@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject
 import biz.ganttproject.app.FXToolbarBuilder
 import biz.ganttproject.app.getGlyphIcon
 import biz.ganttproject.core.option.ChangeValueListener
+import biz.ganttproject.lib.fx.applicationFont
 import com.google.common.base.Preconditions
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
@@ -234,8 +235,14 @@ internal abstract class ChartTabContentPanel(
   init {
     val navigationPanel = NavigationPanel(project, chart, workbenchFacade)
     val zoomingPanel = ZoomingPanel(workbenchFacade, chart)
-    addChartPanel(zoomingPanel.component)
-    addChartPanel(navigationPanel.component)
+
+    addChartPanel(FXToolbarBuilder().also {
+      it.withApplicationFont(applicationFont)
+      zoomingPanel.buildToolbar(it)
+      it.addWhitespace()
+      navigationPanel.buildToolbar(it)
+    }.withClasses("toolbar-common", "toolbar-small", "toolbar-chart").withScene().build().component)
+
     myUiFacade = workbenchFacade
     myChart = Preconditions.checkNotNull(chart)
     myUiFacade.mainFrame.addWindowListener(object : WindowAdapter() {

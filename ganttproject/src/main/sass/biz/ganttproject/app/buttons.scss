@@ -18,19 +18,19 @@
  */
 @import "theme";
 
-@mixin btn-normal($border: derive($gp-light-gray, -20%)) {
-  -fx-background-color: $border, $gp-light-gray;
+@mixin btn-normal($border: derive($gp-light-gray, -20%), $bg: $gp-light-gray) {
+  -fx-background-color: $border, $bg;
   -fx-background-insets: 0, 1;
   -fx-background-radius: 5;
 }
 
-@mixin btn-hovered($border: derive($gp-light-gray, -20%)) {
-  -fx-background-color: $border, derive($gp-light-gray, 20%);
+@mixin btn-hovered($border: derive($gp-light-gray, -20%), $bg: derive($gp-light-gray, 20%)) {
+  -fx-background-color: $border, $bg;
   -fx-fill: derive($gp-dark-gray, -20%);
 }
 
-@mixin btn-focused() {
-  -fx-background-color: derive($gp-dark-gray, -20%), derive($gp-light-gray, 20%);
+@mixin btn-focused($border: derive($gp-dark-gray, -20%), $bg: derive($gp-light-gray, 20%)) {
+  -fx-background-color: $border, $bg;
   -fx-background-insets: 0, 1;
   -fx-border-color: transparent;
   -fx-border-width: 0;

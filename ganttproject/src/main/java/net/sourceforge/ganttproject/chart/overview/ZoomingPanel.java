@@ -18,10 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.overview;
 
+import biz.ganttproject.app.FXToolbarBuilder;
 import com.google.common.base.Function;
+import javafx.scene.control.ContentDisplay;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -55,5 +59,12 @@ public class ZoomingPanel {
         .addButton(zoomActionSet.getZoomOutAction())
         .build()
         .getToolbar();
+  }
+
+  public void buildToolbar(@NotNull FXToolbarBuilder builder) {
+    ZoomActionSet zoomActionSet = myUIFacade.getZoomActionSet();
+    zoomActionSet.getZoomInAction().putValue(GPAction.TEXT_DISPLAY, ContentDisplay.LEFT);
+    zoomActionSet.getZoomOutAction().putValue(GPAction.TEXT_DISPLAY, ContentDisplay.LEFT);
+    builder.addButton(zoomActionSet.getZoomInAction()).addButton(zoomActionSet.getZoomOutAction());
   }
 }

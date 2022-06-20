@@ -269,9 +269,11 @@ fun Node.printCss() {
   parent?.printCss()
 }
 
-fun Parent.printTree() {
-  println("this=$this class=${styleClass} pseudoclass=${pseudoClassStates}")
-  childrenUnmodifiable.forEach { if (it is Parent) it.printTree() else it.printCss() }
+fun Parent.walkTree(code: (Node)->Unit) {
+  code(this)
+  childrenUnmodifiable.forEach {
+    if (it is Parent) it.walkTree(code) else code(this)
+  }
 }
 
 
