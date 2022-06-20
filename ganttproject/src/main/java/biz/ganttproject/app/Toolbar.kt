@@ -18,6 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
+import biz.ganttproject.core.option.FontSpec
+import biz.ganttproject.lib.fx.applicationFont
+import biz.ganttproject.lib.fx.applicationFontSpec
+import biz.ganttproject.walkTree
+import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.embed.swing.JFXPanel
@@ -26,12 +31,12 @@ import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.geometry.VPos
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
-import javafx.util.Callback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
@@ -107,13 +112,26 @@ fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
     if (hasAutoRepeat) {
       ActionUtil.setupAutoRepeat(this, action, 200);
     }
+    applyFontStyle(this)
+  }
+}
+
+private fun applyFontStyle(node: Parent) {
+  Platform.runLater {
+    node.walkTree {
+      node.styleClass.removeIf { it.startsWith("app-font-") }
+      node.styleClass.add("app-font-${(applicationFontSpec.value?.size?.name ?: FontSpec.Size.NORMAL.name).lowercase()}")
+      node.style = """-fx-font-family: "${applicationFont.value.family}" """
+    }
   }
 }
 
 private class ButtonVisitor(val action: GPAction, val appFont: SimpleObjectProperty<Font>?) {
   fun visit(toolbar: FXToolbar) {
     createButton(action)?.let {btn ->
-      appFont?.let { btn.fontProperty().bind(it) }
+      appFont?.let {
+        appFont.addListener { _, _, newValue -> applyFontStyle(btn) }
+      }
       toolbar.toolbar.items.add(btn)
     }
   }
@@ -127,23 +145,8 @@ private class DropdownVisitor(val actions: List<GPAction>, val appFont: SimpleOb
       comboBox.onAction = EventHandler {
         actions[comboBox.selectionModel.selectedIndex].actionPerformed(null)
       }
-      if (appFont != null) {
-        comboBox.cellFactory = Callback { listView ->
-          object : ListCell<String>() {
-            override fun updateItem(item: String?, empty: Boolean) {
-              super.updateItem(item, empty)
-              if (empty) {
-                graphic = null
-                text = null
-              } else {
-                text = item ?: ""
-                fontProperty().bind(appFont)
-              }
-            }
-          }
-        }
-        comboBox.buttonCell = comboBox.cellFactory.call(null)
-      }
+      appFont?.addListener { _, _, _ -> applyFontStyle(comboBox) }
+      applyFontStyle(comboBox)
     }
   }
 }

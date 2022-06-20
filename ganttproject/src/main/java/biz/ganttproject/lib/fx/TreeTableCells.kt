@@ -62,9 +62,11 @@ fun <S, T> StringConverter<T>.adapt(): MyStringConverter<S, T> =
   )
 
 val applicationFont = SimpleObjectProperty(Font.getDefault())
+val applicationFontSpec = SimpleObjectProperty<FontSpec>(null)
 val minCellHeight = SimpleDoubleProperty(Font.getDefault().size)
 var cellPadding = 20.0
 fun calculateMinCellHeight(fontSpec: FontSpec) {
+  applicationFontSpec.value = fontSpec
   Font.font(fontSpec.family, fontSpec.size.factor * Font.getDefault().size)?.also { font ->
     applicationFont.set(font)
     minCellHeight.value = font.size + cellPadding

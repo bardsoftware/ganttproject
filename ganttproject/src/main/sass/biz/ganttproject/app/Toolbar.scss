@@ -75,6 +75,22 @@
   &.align-right {
     -fx-alignment: center-right;
   }
+  & *.app-font-small {
+    -fx-font-size: 11px;
+  }
+  & *.app-font-normal {
+    -fx-font-size: 13px;
+  }
+  & *.app-font-large {
+    -fx-font-size: 16px;
+  }
+  & *.app-font-larger {
+    -fx-font-size: 20px;
+  }
+  & *.app-font-huge {
+    -fx-font-size: 22px;
+  }
+
   -fx-padding: 0 5 0 5;
   Button {
     -fx-alignment: center-left;
