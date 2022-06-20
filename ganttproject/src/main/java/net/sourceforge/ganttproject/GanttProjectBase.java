@@ -248,7 +248,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
         return GanttProjectBase.this.getParserFactory();
       }
     };
-    myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
+//    myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
     myViewManager = new ViewManagerImpl(getProject(), myUIFacade, myTabPane, getUndoManager());
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);

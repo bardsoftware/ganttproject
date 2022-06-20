@@ -164,7 +164,7 @@ internal open class MutatorImpl(
   private val myCompletionPercentageChange = FieldChange(myProgressEventSender, taskImpl.completionPercentage)
   private val costChange = FieldChange(myPropertiesEventSender, taskImpl.cost)
   private val criticalFlagChange = FieldChange(myPropertiesEventSender, taskImpl.isCritical)
-  private val customPropertiesChange = FieldChange<CustomPropertyHolder>(myPropertiesEventSender, taskImpl.customValues)
+  private val customPropertiesChange = FieldChange<CustomPropertyHolder>(myPropertiesEventSender, taskImpl.customValues.copyOf())
   private val expansionChange = FieldChange(myPropertiesEventSender, taskImpl.expand)
   private val milestoneChange = FieldChange(myPropertiesEventSender, taskImpl.isMilestone)
   private val myNameChange = FieldChange(myPropertiesEventSender, taskImpl.name)
@@ -239,7 +239,7 @@ internal open class MutatorImpl(
       }
       customPropertiesChange.ifChanged {
         taskImpl.customValues.importFrom(it)
-        taskUpdateBuilder?.setCustomProperties(it)
+        taskUpdateBuilder?.setCustomProperties(customPropertiesChange.oldValue, it)
       }
       expansionChange.ifChanged {
         taskImpl.expand = it
@@ -247,7 +247,7 @@ internal open class MutatorImpl(
       }
       myNameChange.ifChanged {
         taskImpl.name = it
-        taskUpdateBuilder?.setName(it)
+        taskUpdateBuilder?.setName(myNameChange.oldValue, it)
       }
       notesChange.ifChanged {
         taskImpl.notes = it

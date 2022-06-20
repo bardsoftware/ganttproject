@@ -46,12 +46,13 @@ internal class ProjectEventListenerImpl(
   }
 
   override fun projectOpened(barrierRegistry: BarrierEntrance, barrier: Barrier<IGanttProject>) {
+    projectDatabase.shutdown()
     barrier.await { it.taskManager.tasks.forEach(projectDatabase::insertTask) }
   }
 
   override fun projectClosed() = withLogger({ "Failed to close project" }) {
-    // ...
-    projectDatabase.shutdown()
+    // TODO: Keep project database on restore.
+    // projectDatabase.shutdown()
   }
 
   override fun taskAdded(event: TaskHierarchyEvent) = withLogger({ "Failed to add task ${event.task.taskID}" }) {
