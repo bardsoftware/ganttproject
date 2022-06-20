@@ -37,7 +37,6 @@ import net.sourceforge.ganttproject.action.BaselineDialogAction;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -83,17 +82,8 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
 
   private Component createSchedulePanel() {
     return new FXToolbarBuilder().withApplicationFont(TreeTableCellsKt.getApplicationFont()).addButton(myCriticalPathAction).addButton(myBaselineAction)
-      .withClasses("toolbar-common", "toolbar-small", "toolbar-chart", "align-right").withScene().build().getComponent();
-//    return new ToolbarBuilder()
-//        .withDpiOption(myWorkbenchFacade.getDpiOption())
-//        .withLafOption(getUiFacade().getLafOption(), s -> (s.contains("nimbus")) ? 2f : 1f)
-//        .withGapFactory(ToolbarBuilder.Gaps.VDASH)
-//        .withBackground(myWorkbenchFacade.getGanttChart().getStyle().getSpanningHeaderBackgroundColor())
-//        .withHeight(24)
-//        .addButton(myCriticalPathAction)
-//        .addButton(myBaselineAction)
-//        .build()
-//        .getToolbar();
+      .withClasses("toolbar-common", "toolbar-small", "toolbar-chart", "align-right")
+      .withScene().build().getComponent();
   }
 
   JComponent getComponent() {
@@ -125,19 +115,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
         .withScene()
         .build()
         .getComponent();
-//    ToolbarBuilder builder = new ToolbarBuilder()
-//        .withHeight(24)
-//        .withSquareButtons()
-//        .withDpiOption(myWorkbenchFacade.getDpiOption())
-//        .withLafOption(myWorkbenchFacade.getLafOption(), new Function<String, Float>() {
-//          @Override
-//          public Float apply(@Nullable String s) {
-//            return (s.indexOf("nimbus") >= 0) ? 2f : 1f;
-//          }
-//        });
-//    addToolbarActions(builder);
-//    final GPToolbar toolbar = builder.build();
-//    return toolbar.getToolbar();
   }
 
   static class TableMenuAction extends GPAction {
@@ -180,13 +157,11 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     });
     taskTable.setSwingComponent(jfxPanel);
     taskTable.getColumnListWidthProperty().addListener((observable, oldValue, newValue) ->
-      SwingUtilities.invokeLater(() -> setTableWidth(newValue.component1().doubleValue() + newValue.component2().doubleValue()))
+      SwingUtilities.invokeLater(() -> setTableWidth(newValue.component1() + newValue.component2()))
     );
     taskTable.loadDefaultColumns();
     this.taskTable = taskTable;
     return jfxPanel;
-    //return myTaskTree;
-
   }
 
   // //////////////////////////////////////////////
