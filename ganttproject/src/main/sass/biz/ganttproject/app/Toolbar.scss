@@ -80,9 +80,10 @@
     -fx-alignment: center-left;
     -fx-background-color: transparent;
     -fx-background-insets: 0;
-    -fx-padding: 2 5 2 5;
+    -fx-padding: 0 5 0 5;
     //-fx-font-size: 20;
     -fx-border-width: 0;
+    -fx-text-alignment: center;
 
     .glyph-icon {
       -glyph-size: 22px;
@@ -90,12 +91,12 @@
     }
 
     &:hover {
-      -fx-background-color: $gp-light-gray;
-      -fx-background-radius: 0 0 5 5;
+      -fx-background-radius: 0 0 3 3;
     }
     &:focused {
       @include btn-hovered(transparent);
       @include btn-focused($gp-light-gray, transparent);
+      -fx-background-radius: 0 0 3 3;
     }
   }
 
@@ -106,6 +107,9 @@
       -fx-text-fill: $gp-medium-gray;
       -fx-max-height: 24px;
       -fx-pref-height: 24px;
+      -fx-padding: 0 5 0 5;
+      -fx-border-width: 0;
+      -fx-background-insets: 0;
     }
     @include btn-normal(transparent, transparent);
 
@@ -114,9 +118,9 @@
     }
 
     &:hover {
-      @include btn-hovered(transparent, $gp-light-gray);
+      @include btn-hovered(transparent, derive($gp-light-gray, -10%));
       .arrow-button {
-        @include btn-hovered(transparent, $gp-light-gray);
+        @include btn-hovered(transparent, derive($gp-light-gray, -10%));
       }
     }
 
@@ -127,11 +131,19 @@
       .arrow-button {
         @include btn-hovered($gp-light-gray, transparent);
       }
+      -fx-background-radius: 0 0 5 5;
     }
 
     &:disabled {
       -fx-opacity: .4;
     }
+    -fx-max-height: 24px;
+    -fx-pref-height: 24px;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-background-radius: 0 0 5 5;
   }
 }
 
