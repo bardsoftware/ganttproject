@@ -137,8 +137,8 @@ public class GanttDialogPerson {
         mainPage);
     tabbedPane.addTab(language.getText("daysOff"), new ImageIcon(getClass().getResource("/icons/holidays_16.gif")),
         constructDaysOffPanel());
-    CustomColumnsPanel customColumnsPanel = new CustomColumnsPanel(myCustomPropertyManager, CustomColumnsPanel.Type.RESOURCE, person,
-        myUIFacade.getResourceTree().getVisibleFields());
+    CustomColumnsPanel customColumnsPanel = new CustomColumnsPanel(myCustomPropertyManager, CustomColumnsPanel.Type.RESOURCE,
+        myUIFacade.getUndoManager(), person, myUIFacade.getResourceTree().getVisibleFields());
     tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(getClass().getResource("/icons/custom.gif")),
         customColumnsPanel.getComponent());
     constructAssignmentsPanel();
