@@ -54,25 +54,6 @@ class NavigationPanel(myProject: IGanttProject, myChart: TimelineChart, uiFacade
     }
 
     fun buildToolbar(builder: FXToolbarBuilder) =
-      builder.addButton(myScrollBackAction)
-        .addDropdown(myScrollActions)
-        .addButton(myScrollForwardAction)
+      builder.addDropdown(myScrollActions).addButton(myScrollBackAction).addButton(myScrollForwardAction)
 
-//    val component: Component by lazy {
-//      FXToolbarBuilder()
-//        .withScene()
-//        .build().component
-//    }
-//    val component: Component
-//        get() = ToolbarBuilder()
-//                .withDpiOption(myDpiOption)
-//                .withLafOption(myLafOption) { s -> if (s!!.indexOf("nimbus") >= 0) 2f else 1f }
-//                .withHeight(24)
-//                .withGapFactory(ToolbarBuilder.Gaps.VDASH)
-//                .withBackground(myChart.style.spanningHeaderBackgroundColor)
-//                .addComboBox(myScrollActions, myScrollActions[1])
-//                .button(myScrollBackAction).withAutoRepeat(200).add()
-//                .button(myScrollForwardAction).withAutoRepeat(200).add()
-//                .build()
-//                .toolbar
 }

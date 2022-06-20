@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.core.option.FontSpec
 import biz.ganttproject.lib.fx.applicationFont
 import biz.ganttproject.lib.fx.applicationFontSpec
@@ -130,7 +131,7 @@ private class ButtonVisitor(val action: GPAction, val appFont: SimpleObjectPrope
   fun visit(toolbar: FXToolbar) {
     createButton(action)?.let {btn ->
       appFont?.let {
-        appFont.addListener { _, _, newValue -> applyFontStyle(btn) }
+        appFont.addListener { _, _, _ -> applyFontStyle(btn) }
       }
       toolbar.toolbar.items.add(btn)
     }
@@ -221,7 +222,7 @@ class FXToolbarBuilder {
 
   fun build(): FXToolbar {
     val toolbar = FXToolbar()
-    GlobalScope.launch(Dispatchers.JavaFx) {
+    FXUtil.runLater {
       val scene = if (withScene) {
         Scene(toolbar.toolbar, Color.TRANSPARENT).also {
           it.stylesheets.add("biz/ganttproject/app/Toolbar.css")
