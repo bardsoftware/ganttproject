@@ -1,3 +1,21 @@
+/*
+Copyright 2022 BarD Software s.r.o
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 @import "theme";
 @import "buttons";
 
@@ -7,12 +25,9 @@
   Button {
     -fx-alignment: center;
     -fx-background-color: transparent;
-    //-fx-border-style: solid;
-    //-fx-border-color: none;
     -fx-border-width: 0;
     -fx-border-insets: 0;
     -fx-text-fill: $gp-medium-gray;
-    //-fx-font-size: 20;
 
     .glyph-icon {
       -fx-alignment: center;
@@ -97,7 +112,6 @@
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-padding: 0 5 0 5;
-    //-fx-font-size: 20;
     -fx-border-width: 0;
     -fx-text-alignment: center;
 
@@ -119,7 +133,6 @@
   .combo-box-base  {
     & > .list-cell {
       -fx-alignment: center-right;
-      //-fx-font-size: 14;
       -fx-text-fill: $gp-medium-gray;
       -fx-max-height: 24px;
       -fx-pref-height: 24px;
