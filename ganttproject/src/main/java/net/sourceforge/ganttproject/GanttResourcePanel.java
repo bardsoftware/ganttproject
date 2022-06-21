@@ -19,9 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import com.google.common.collect.Lists;
-import net.sourceforge.ganttproject.action.ActiveActionProvider;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.action.TaskResourcePropertiesAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
@@ -30,13 +30,7 @@ import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.resource.AssignmentContext;
-import net.sourceforge.ganttproject.resource.AssignmentNode;
-import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.ResourceContext;
-import net.sourceforge.ganttproject.resource.ResourceEvent;
-import net.sourceforge.ganttproject.resource.ResourceNode;
-import net.sourceforge.ganttproject.resource.ResourceView;
+import net.sourceforge.ganttproject.resource.*;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -57,6 +51,8 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   public final GanttProject appli;
 
   private final ResourceActionSet myResourceActionSet;
+  private final GPAction deleteAction;
+
   private final GanttProjectBase.RowHeightAligner myRowHeightAligner;
 
   public ResourceLoadGraphicArea area;
@@ -80,20 +76,12 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     prj.addProjectEventListener(getProjectEventListener());
     myResourceActionSet = new ResourceActionSet(this, this, prj, uiFacade, getTreeTable());
 
-    final GPAction resourceDeleteAction = myResourceActionSet.getResourceDeleteAction();
-    final GPAction assignmentDeleteAction = myResourceActionSet.getAssignmentDelete();
-    GPAction deleteAction = new ArtefactDeleteAction(new ActiveActionProvider() {
-      @Override
-      public AbstractAction getActiveAction() {
-        if (getResourceAssignments().length > 0) {
-          return assignmentDeleteAction;
-        }
-        return resourceDeleteAction;
+    deleteAction = new ArtefactDeleteAction(() -> {
+      if (getResourceAssignments().length > 0) {
+        return myResourceActionSet.getAssignmentDelete();
       }
-    }, new Action[]{resourceDeleteAction, assignmentDeleteAction});
-    setArtefactActions(myResourceActionSet.getResourceNewAction(),
-        myResourceActionSet.getResourcePropertiesAction(),
-        deleteAction);
+      return myResourceActionSet.getResourceDeleteAction();
+    }, new Action[]{myResourceActionSet.getResourceDeleteAction(), myResourceActionSet.getAssignmentDelete()});
     getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(),
         myResourceActionSet.getResourceMoveDownAction(), myResourceActionSet.getResourceNewAction(), deleteAction,
         appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction(),
@@ -289,26 +277,12 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     }
   }
 
-  /**
-   * Return the list of the person
-   */
-  public List<HumanResource> getPeople() {
-    return getTreeModel().getAllResouces();
-  }
-
   public ResourceTreeTable getResourceTreeTable() {
     return getTreeTable();
   }
 
   public ResourceTreeTableModel getResourceTreeTableModel() {
     return getTreeModel();
-  }
-
-  /**
-   * Return the number of people on the list
-   */
-  public int nbPeople() {
-    return getTreeModel().getAllResouces().size();
   }
 
   /**
@@ -421,6 +395,11 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   void setTaskPropertiesAction(GPAction action) {
     myTaskPropertiesAction = action;
     getTreeTable().addActionWithAccelleratorKey(action);
+
+    var propertiesAction = new TaskResourcePropertiesAction(myTaskPropertiesAction, myResourceActionSet.getResourcePropertiesAction(),
+      () -> UIFacade.RESOURCES_INDEX,
+      () -> getTaskSelectionManager().getSelectedTasks());
+    setArtefactActions(myResourceActionSet.getResourceNewAction(), propertiesAction, deleteAction);
   }
 
   private UIFacade getUIFacade() {

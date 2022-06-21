@@ -16,12 +16,27 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.action;
+package net.sourceforge.ganttproject.action
 
-import javax.swing.Action;
+import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.task.Task
+import javax.swing.Action
 
-public class ArtefactPropertiesAction extends ArtefactAction {
-  public ArtefactPropertiesAction(ActiveActionProvider provider, Action[] delegates) {
-    super("artefact.properties", IconSize.NO_ICON, provider, delegates);
-  }
-}
+open class ArtefactPropertiesAction(provider: ActiveActionProvider, delegates: Array<Action>) : ArtefactAction("artefact.properties", IconSize.NO_ICON, provider, delegates)
+
+class TaskResourcePropertiesAction(
+  private val taskProperties: GPAction,
+  private val resourceProperties: GPAction,
+  private val activeTab: ()->Int, private val taskSelection: () -> List<Task>)
+  : ArtefactPropertiesAction(
+  ActiveActionProvider {
+    when (activeTab()) {
+      UIFacade.GANTT_INDEX -> taskProperties
+      UIFacade.RESOURCES_INDEX ->
+        if (taskSelection().isEmpty()) {
+          resourceProperties
+        } else {
+          taskProperties
+        }
+      else -> error("Unknown active tab")
+    }}, arrayOf(taskProperties, resourceProperties))
