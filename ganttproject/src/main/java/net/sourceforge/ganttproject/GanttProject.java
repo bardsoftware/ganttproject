@@ -466,7 +466,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     {
       final GPAction taskPropertiesAction = myTaskActions.getPropertiesAction().asToolbarAction();
       final GPAction resourcePropertiesAction = getResourceTree().getPropertiesAction().asToolbarAction();
-      propertiesAction = new ArtefactPropertiesAction(() -> getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskPropertiesAction : resourcePropertiesAction, new Action[]{taskPropertiesAction, resourcePropertiesAction});
+      propertiesAction = new TaskResourcePropertiesAction(
+        taskPropertiesAction, resourcePropertiesAction,
+        () -> getTabs().getSelectedIndex(),
+        () -> getTaskSelectionManager().getSelectedTasks());
     }
 
     UIUtil.registerActions(getRootPane(), false, newAction, propertiesAction, deleteAction);

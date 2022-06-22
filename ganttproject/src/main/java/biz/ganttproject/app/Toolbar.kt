@@ -38,10 +38,6 @@ import javafx.scene.control.*
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.javafx.JavaFx
-import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.ActionUtil
 import java.awt.event.KeyAdapter
