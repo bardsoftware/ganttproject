@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action;
 
+import biz.ganttproject.app.InternationalizationKt;
+import biz.ganttproject.app.LocalizedString;
 import com.google.common.base.Strings;
 import javafx.event.EventHandler;
 import net.sourceforge.ganttproject.DesktopIntegration;
@@ -74,6 +76,8 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
 
   private final String myName;
 
+  private final LocalizedString myNameObservable;
+
   private KeyStroke myKeyStroke;
 
   private static Properties ourKeyboardProperties;
@@ -94,6 +98,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
   protected GPAction(String name, String iconSize) {
     super(name);
     myName = name;
+    myNameObservable = InternationalizationKt.getRootLocalizer().create(name == null ? "" : name);
     myIconSize = iconSize;
     if (iconSize != null) {
       updateIcon(iconSize);
@@ -194,6 +199,10 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
 
   public String getID() {
     return myName;
+  }
+
+  public LocalizedString getLocalizedNameObservable() {
+    return myNameObservable;
   }
 
   protected static String getI18n(String key) {
