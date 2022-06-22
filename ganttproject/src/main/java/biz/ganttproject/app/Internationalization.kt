@@ -44,7 +44,7 @@ import java.util.*
 class LocalizedString(
     private val key: String,
     private val i18n: Localizer,
-    private val observable: SimpleStringProperty = SimpleStringProperty(),
+    val observable: SimpleStringProperty = SimpleStringProperty(),
     private var args: List<String> = emptyList()) : ObservableValue<String> by observable {
   init {
     observable.value = build()
@@ -63,6 +63,7 @@ class LocalizedString(
   internal fun update() {
     observable.value = build()
   }
+
   private fun build(): String = i18n.formatText(key, *args.toTypedArray())
 }
 

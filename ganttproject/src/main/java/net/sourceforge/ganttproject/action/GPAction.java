@@ -18,10 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action;
 
+import biz.ganttproject.FXUtil;
 import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.app.LocalizedString;
 import com.google.common.base.Strings;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.event.EventHandler;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.DesktopIntegration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
@@ -229,6 +232,11 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
         localizedName = new StringBuffer(localizedName).deleteCharAt(bucksPos).toString();
       }
       putValue(Action.NAME, localizedName);
+      final var localizedName_ = localizedName;
+      FXUtil.INSTANCE.runLater(() -> {
+        myNameObservable.getObservable().setValue(localizedName_);
+        return Unit.INSTANCE;
+      });
       if (bucksPos >= 0) {
         // Activate mnemonic key
         putValue(Action.MNEMONIC_KEY, Integer.valueOf(Character.toUpperCase(localizedName.charAt(bucksPos))));
@@ -247,6 +255,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     if (IconSize.TOOLBAR_SMALL.asString().equals(myIconSize) && getFontawesomeLabel() != null) {
       putValue(Action.SMALL_ICON, null);
       putValue(Action.NAME, getFontawesomeLabel());
+      updateName();
     } else {
       updateName();
     }

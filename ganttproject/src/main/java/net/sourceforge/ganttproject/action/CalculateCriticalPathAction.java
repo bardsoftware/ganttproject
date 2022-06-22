@@ -62,13 +62,12 @@ public class CalculateCriticalPathAction extends GPAction {
     myTaskManager.getAlgorithmCollection().getCriticalPathAlgorithm().setEnabled(on);
   }
 
-  private boolean isOn() {
-    return myUIConfiguration == null ? false : myUIConfiguration.isCriticalPathOn();
+  @Override
+  public String getLocalizedName() {
+    return getI18n(isOn() ? "criticalPath.action.hide" : "criticalPath.action.show");
   }
 
-  @Override
-  public String getID() {
-    // Override ID, so the text will change depending on the state
-    return isOn() ? "criticalPath.action.hide" : "criticalPath.action.show";
+  private boolean isOn() {
+    return myUIConfiguration == null ? false : myUIConfiguration.isCriticalPathOn();
   }
 }
