@@ -93,7 +93,7 @@ fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
     this.contentDisplay = contentDisplay
     this.alignment = Pos.CENTER_LEFT
     if (contentDisplay != ContentDisplay.GRAPHIC_ONLY) {
-      this.text = action.name
+      this.textProperty().bind(action.localizedNameObservable)
     } else {
       this.styleClass.add("graphic-only")
     }
@@ -136,14 +136,24 @@ private class ButtonVisitor(val action: GPAction, val appFont: SimpleObjectPrope
 
 private class DropdownVisitor(val actions: List<GPAction>, val appFont: SimpleObjectProperty<Font>?) {
   fun visit(toolbar: FXToolbar) {
-    ComboBox(FXCollections.observableArrayList(actions.map { it.name }.toList())).let { comboBox ->
-      toolbar.toolbar.items.add(comboBox)
+    if (actions.isEmpty()) {
+      return
+    }
+    ComboBox(FXCollections.observableArrayList(actions.map { it.name }.toList())).also { comboBox ->
       comboBox.selectionModel.select(0)
       comboBox.onAction = EventHandler {
-        actions[comboBox.selectionModel.selectedIndex].actionPerformed(null)
+        if (comboBox.selectionModel.selectedIndex in actions.indices) {
+          actions[comboBox.selectionModel.selectedIndex].actionPerformed(null)
+        }
       }
       appFont?.addListener { _, _, _ -> applyFontStyle(comboBox) }
       applyFontStyle(comboBox)
+      actions[0].localizedNameObservable.addListener { _, _, _ ->  comboBox.items.setAll(actions.map {action ->
+        action.localizedNameObservable.let {
+          it.value
+        }
+      }.toList())}
+      toolbar.toolbar.items.add(comboBox)
     }
   }
 }

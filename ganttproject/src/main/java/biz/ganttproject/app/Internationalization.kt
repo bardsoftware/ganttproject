@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
+import biz.ganttproject.FXUtil
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ObservableValue
 import net.sourceforge.ganttproject.GPLogger
@@ -42,7 +44,7 @@ import java.util.*
 class LocalizedString(
     private val key: String,
     private val i18n: Localizer,
-    private val observable: SimpleStringProperty = SimpleStringProperty(),
+    val observable: SimpleStringProperty = SimpleStringProperty(),
     private var args: List<String> = emptyList()) : ObservableValue<String> by observable {
   init {
     observable.value = build()
@@ -56,6 +58,10 @@ class LocalizedString(
     this.args = args.toList()
     observable.value = build()
     return this
+  }
+
+  internal fun update() {
+    observable.value = build()
   }
 
   private fun build(): String = i18n.formatText(key, *args.toTypedArray())
@@ -123,9 +129,17 @@ open class DefaultLocalizer(
     private val rootKey: String = "",
     private val baseLocalizer: Localizer = DummyLocalizer,
     private val prefixedLocalizer: Localizer? = null,
-    private val currentTranslation: () -> ResourceBundle? = { null }) : Localizer {
+    private val currentTranslation: SimpleObjectProperty<ResourceBundle?>) : Localizer {
   override fun create(key: String): LocalizedString {
-    return LocalizedString(key, this)
+    return LocalizedString(key, this).also {
+      currentTranslation.addListener { _, oldValue, newValue ->
+        FXUtil.runLater {
+          if (oldValue?.locale != newValue?.locale) {
+            it.update()
+          }
+        }
+      }
+    }
   }
 
   override fun formatTextOrNull(key: String, vararg args: Any): String? {
@@ -134,7 +148,7 @@ open class DefaultLocalizer(
       return it
     }
     return try {
-      this.currentTranslation()?.let { tr ->
+      this.currentTranslation.value?.let { tr ->
         if (tr.containsKey(prefixedKey)) {
           MessageFormat.format(tr.getString(prefixedKey), *args)
         } else {
@@ -167,16 +181,16 @@ class MappingLocalizer(val key2lambda: Map<String, (()->String)?>, val unhandled
 /**
  * Localizer which always uses the given resource bundle.
  */
-class SingleTranslationLocalizer(val bundle: ResourceBundle) : DefaultLocalizer(currentTranslation = {bundle})
+class SingleTranslationLocalizer(val bundle: ResourceBundle) : DefaultLocalizer(currentTranslation = SimpleObjectProperty(bundle))
 
-var RootLocalizer : DefaultLocalizer = DefaultLocalizer(currentTranslation = { ourCurrentTranslation })
 
 private var ourLocale: Locale = Locale.getDefault()
-private var ourCurrentTranslation: ResourceBundle? = getResourceBundle(Locale.getDefault(), true)
+private val ourCurrentTranslation: SimpleObjectProperty<ResourceBundle?> = SimpleObjectProperty(getResourceBundle(Locale.getDefault(), true))
+var RootLocalizer : DefaultLocalizer = DefaultLocalizer(currentTranslation = ourCurrentTranslation)
 
 fun setLocale(locale: Locale) {
   ourLocale = locale
-  ourCurrentTranslation = getResourceBundle(locale, true)
+  ourCurrentTranslation.value = getResourceBundle(locale, true)
 }
 
 private fun getResourceBundle(locale: Locale, withFallback: Boolean): ResourceBundle? {
