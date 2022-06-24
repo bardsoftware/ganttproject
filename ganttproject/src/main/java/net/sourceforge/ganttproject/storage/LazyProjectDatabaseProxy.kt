@@ -78,6 +78,10 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
     getDatabase().mapTasks(*columnConsumer)
   }
 
+  override fun validateColumnConsumer(columnConsumer: ColumnConsumer) {
+    getDatabase().validateColumnConsumer(columnConsumer)
+  }
+
   fun createProjectEventListener(): ProjectEventListener = projectEventListenerImpl
   fun createTaskEventListener(): TaskListener = projectEventListenerImpl
   fun createUndoListener(): GPUndoListener = projectEventListenerImpl

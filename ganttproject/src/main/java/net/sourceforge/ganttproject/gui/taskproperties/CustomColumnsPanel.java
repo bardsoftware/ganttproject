@@ -23,9 +23,9 @@ import biz.ganttproject.customproperty.*;
 import biz.ganttproject.ganttview.ApplyExecutorType;
 import biz.ganttproject.ganttview.ColumnManagerKt;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import net.sourceforge.ganttproject.storage.ProjectDatabase;
 import net.sourceforge.ganttproject.task.TaskMutator;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
@@ -44,6 +44,7 @@ import java.util.Map;
 public class CustomColumnsPanel {
   private final Type myType;
   private final GPUndoManager myUndoManager;
+  private final ProjectDatabase myProjectDatabase;
 
   public enum Type { TASK, RESOURCE }
   private static final Map<Integer, Integer> ourColumnWidth = new HashMap<>();
@@ -62,13 +63,14 @@ public class CustomColumnsPanel {
   private final ColumnList myTableHeaderFacade;
 
   public CustomColumnsPanel(
-    CustomPropertyManager manager, Type type, GPUndoManager undoManager, CustomPropertyHolder customPropertyHolder, ColumnList tableHeaderFacade) {
+    CustomPropertyManager manager, ProjectDatabase projectDatabase, Type type, GPUndoManager undoManager, CustomPropertyHolder customPropertyHolder, ColumnList tableHeaderFacade) {
     assert manager != null;
     myCustomPropertyManager = manager;
     myHolder = customPropertyHolder;
     myTableHeaderFacade = tableHeaderFacade;
     myType = type;
     myUndoManager = undoManager;
+    myProjectDatabase = projectDatabase;
   }
 
   public JComponent getComponent() {
@@ -82,10 +84,10 @@ public class CustomColumnsPanel {
       public void actionPerformed(ActionEvent e) {
         switch (myType) {
           case TASK:
-            ColumnManagerKt.showTaskColumnManager(myTableHeaderFacade, myCustomPropertyManager, myUndoManager, ApplyExecutorType.SWING);
+            ColumnManagerKt.showTaskColumnManager(myTableHeaderFacade, myCustomPropertyManager, myUndoManager, myProjectDatabase, ApplyExecutorType.SWING);
             break;
           case RESOURCE:
-            ColumnManagerKt.showResourceColumnManager(myTableHeaderFacade, myCustomPropertyManager, myUndoManager, ApplyExecutorType.SWING);
+            ColumnManagerKt.showResourceColumnManager(myTableHeaderFacade, myCustomPropertyManager, myUndoManager, myProjectDatabase, ApplyExecutorType.SWING);
             break;
 
         }

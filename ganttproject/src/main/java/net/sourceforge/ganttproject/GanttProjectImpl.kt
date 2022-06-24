@@ -45,6 +45,8 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.resource.HumanResourceMerger
 import net.sourceforge.ganttproject.resource.OverwritingMerger
 import net.sourceforge.ganttproject.roles.RoleManager
+import net.sourceforge.ganttproject.storage.LazyProjectDatabaseProxy
+import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.task.*
 import net.sourceforge.ganttproject.task.event.createTaskListenerWithTimerBarrier
 import java.awt.Color
@@ -56,7 +58,12 @@ fun interface ErrorUi {
   fun show(ex: Exception)
 }
 
-open class GanttProjectImpl(taskManager: TaskManagerImpl? = null) : IGanttProject {
+open class GanttProjectImpl(taskManager: TaskManagerImpl? = null,
+                            override val projectDatabase: ProjectDatabase = LazyProjectDatabaseProxy(
+                              {error("Not supposed to be called")},
+                              {error("Not supposed to be called")},
+                            ))
+  : IGanttProject {
   val listeners: MutableList<ProjectEventListener> = mutableListOf()
   override val baselines: MutableList<GanttPreviousState> = ArrayList()
 

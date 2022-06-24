@@ -31,6 +31,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.storage.ProjectDatabase;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 import javax.swing.*;
@@ -41,6 +42,7 @@ import java.awt.event.FocusEvent;
 
 public class GanttDialogPerson {
   private final TaskManager myTaskManager;
+  private final ProjectDatabase myProjectDatabase;
   private boolean change;
 
   private HumanResource person;
@@ -63,10 +65,11 @@ public class GanttDialogPerson {
   private ResourceAssignmentsPanel myAssignmentsPanel;
 
 
-  public GanttDialogPerson(CustomPropertyManager customPropertyManager, TaskManager taskManager, UIFacade uiFacade, HumanResource person) {
+  public GanttDialogPerson(CustomPropertyManager customPropertyManager, TaskManager taskManager, ProjectDatabase projectDatabase, UIFacade uiFacade, HumanResource person) {
     myCustomPropertyManager = customPropertyManager;
     myTaskManager = taskManager;
     myUIFacade = uiFacade;
+    myProjectDatabase = projectDatabase;
     this.person = person;
     Role[] enabledRoles = RoleManager.Access.getInstance().getEnabledRoles();
     String[] roleFieldValues = new String[enabledRoles.length];
@@ -137,7 +140,7 @@ public class GanttDialogPerson {
         mainPage);
     tabbedPane.addTab(language.getText("daysOff"), new ImageIcon(getClass().getResource("/icons/holidays_16.gif")),
         constructDaysOffPanel());
-    CustomColumnsPanel customColumnsPanel = new CustomColumnsPanel(myCustomPropertyManager, CustomColumnsPanel.Type.RESOURCE,
+    CustomColumnsPanel customColumnsPanel = new CustomColumnsPanel(myCustomPropertyManager, myProjectDatabase, CustomColumnsPanel.Type.RESOURCE,
         myUIFacade.getUndoManager(), person, myUIFacade.getResourceTree().getVisibleFields());
     tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(getClass().getResource("/icons/custom.gif")),
         customColumnsPanel.getComponent());
