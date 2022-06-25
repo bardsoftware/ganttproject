@@ -31,6 +31,7 @@ import net.sourceforge.ganttproject.importer.TaskMapping
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.resource.HumanResourceMerger
 import net.sourceforge.ganttproject.roles.RoleManager
+import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.task.TaskManager
 import java.io.IOException
 
@@ -41,6 +42,7 @@ import java.io.IOException
  * @author bard
  */
 interface IGanttProject {
+  val projectDatabase: ProjectDatabase
   var projectName: String
   var description: String
   var organization: String

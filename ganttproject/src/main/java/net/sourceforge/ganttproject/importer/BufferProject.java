@@ -34,7 +34,9 @@ import net.sourceforge.ganttproject.io.GanttXMLSaver;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.roles.RoleManager;
+import net.sourceforge.ganttproject.storage.ProjectDatabase;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.TaskManagerImpl;
 
 /**
  * Buffer project is a target for importing functions, and when it is filled with
@@ -51,11 +53,12 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
   //private final HumanResourceManager myBufferResourceManager;
 
   public BufferProject(IGanttProject targetProject, UIFacade uiFacade) {
-    this(targetProject.getTaskManager(), targetProject.getRoleManager(), targetProject.getActiveCalendar(), uiFacade);
+    this(targetProject.getTaskManager(), targetProject.getProjectDatabase(), targetProject.getRoleManager(), targetProject.getActiveCalendar(), uiFacade);
   }
 
-  public BufferProject(TaskManager targetTaskManager, RoleManager targetRoleManager, GPCalendarCalc targetCalendar, UIFacade uiFacade) {
-    myDocumentManager = new DocumentCreator(this, uiFacade, this) {
+  public BufferProject(TaskManager targetTaskManager, ProjectDatabase targetProjectDatabase, RoleManager targetRoleManager, GPCalendarCalc targetCalendar, UIFacade uiFacade) {
+      super((TaskManagerImpl) targetTaskManager, targetProjectDatabase);
+      myDocumentManager = new DocumentCreator(this, uiFacade, this) {
       @Override
       protected ColumnList getVisibleFields() {
         return myVisibleFields;

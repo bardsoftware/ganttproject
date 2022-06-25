@@ -18,11 +18,27 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.customproperty
 
-sealed class CalculationMethod(val propertyId: String, val resultClass: Class<*>) {
-}
+import biz.ganttproject.core.option.ValidationException
+import net.sourceforge.ganttproject.storage.ColumnConsumer
+import net.sourceforge.ganttproject.storage.ProjectDatabase
+import net.sourceforge.ganttproject.storage.ProjectDatabaseException
+
+sealed class CalculationMethod(val propertyId: String, val resultClass: Class<*>)
 
 class SimpleSelect(propertyId: String,
                    val selectExpression: String = "id",
-                   resultClass: Class<*>) : CalculationMethod(propertyId, resultClass) {
-}
+                   resultClass: Class<*>) : CalculationMethod(propertyId, resultClass)
 
+class CalculationMethodValidator(private val projectDatabase: ProjectDatabase) {
+  fun validate(calculationMethod: CalculationMethod) {
+    when (calculationMethod) {
+      is SimpleSelect -> {
+        try {
+          projectDatabase.validateColumnConsumer(ColumnConsumer(calculationMethod) {_,_->})
+        } catch (ex: ProjectDatabaseException) {
+          throw ValidationException(ex.message)
+        }
+      }
+    }
+  }
+}

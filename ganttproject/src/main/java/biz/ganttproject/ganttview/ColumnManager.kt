@@ -24,10 +24,7 @@ import biz.ganttproject.app.dialog
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
-import biz.ganttproject.customproperty.CustomPropertyClass
-import biz.ganttproject.customproperty.CustomPropertyDefinition
-import biz.ganttproject.customproperty.CustomPropertyManager
-import biz.ganttproject.customproperty.SimpleSelect
+import biz.ganttproject.customproperty.*
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
@@ -48,6 +45,7 @@ import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.util.Callback
 import net.sourceforge.ganttproject.language.GanttLanguage
+import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty
@@ -62,7 +60,8 @@ class ColumnManager(
   // The list of columns shown in the task table
   private val currentTableColumns: ColumnList,
   private val customColumnsManager: CustomPropertyManager,
-  private val undoManager: GPUndoManager
+  private val undoManager: GPUndoManager,
+  private val calculationMethodValidator: CalculationMethodValidator
   ) {
 
   internal val btnAddController = BtnController(onAction = this::onAddColumn)
@@ -79,13 +78,14 @@ class ColumnManager(
   }
 
   private val customPropertyEditor = CustomPropertyEditor(
-    customColumnsManager, btnDeleteController, listItems,
+    customColumnsManager, calculationMethodValidator, btnDeleteController, listItems,
     errorUi = {
       if (it == null) {
         errorPane.isVisible = false
         if (!errorPane.styleClass.contains("noerror")) {
           errorPane.styleClass.add("noerror")
         }
+        errorLabel.text = ""
       }
       else {
         errorLabel.text = it
@@ -253,6 +253,7 @@ internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {
  */
 internal class CustomPropertyEditor(
   customColumnsManager: CustomPropertyManager,
+  private val calculationMethodValidator: CalculationMethodValidator,
   private val btnDeleteController: BtnController,
   private val listItems: ObservableList<ColumnAsListItem>,
   private val errorUi: (String?) -> Unit
@@ -323,32 +324,64 @@ internal class CustomPropertyEditor(
     }
     props.forEach { it.observableValue.get().addListener { _, _, _ -> onPropertyChange() } }
   }
+
+  private fun PropertyEditor<*>.markValid() {
+    this.editor.styleClass.remove("validation-error")
+    this.editor.effect = null
+  }
+
+  private fun PropertyEditor<*>.markInvalid() {
+    if (!this.editor.styleClass.contains("validation-error")) {
+      this.editor.styleClass.add("validation-error")
+      this.editor.effect = InnerShadow(10.0, Color.RED)
+    }
+  }
+
   private fun onPropertyChange() {
     if (!isPropertyChangeIgnored) {
       selectedItem?.title = editableValue.title
       selectedItem?.type = editableValue.type
-      editors["expression"]?.let { it.editor.isDisable = !editableValue.isCalculated }
-      selectedItem?.isCalculated = editableValue.isCalculated
-      selectedItem?.expression = editableValue.expression
+
+      var errorMessage: String? = null
+      editors["expression"]?.let {editor ->
+        try {
+          editor.editor.isDisable = !editableValue.isCalculated
+          if (editableValue.isCalculated && editableValue.expression.isNotBlank()) {
+            calculationMethodValidator.validate(
+              // Incomplete instance just for validation purposes
+              SimpleSelect(
+              "", editableValue.expression, editableValue.type.getCustomPropertyClass().javaClass
+              )
+            )
+          }
+
+          editor.markValid()
+          selectedItem?.isCalculated = editableValue.isCalculated
+          selectedItem?.expression = editableValue.expression
+        } catch (ex: ValidationException) {
+          editor.markInvalid()
+          errorMessage = ex.message ?: ""
+        }
+      }
       editors["defaultValue"]?.let { editor ->
         try {
           if (editableValue.defaultValue.isNotBlank()) {
             editableValue.type.createValidator().parse(editableValue.defaultValue)
           }
 
-          editor.editor.styleClass.remove("validation-error")
-          editor.editor.effect = null
-          errorUi(null)
+          editor.markValid()
           selectedItem?.defaultValue = editableValue.defaultValue
         } catch (ex: ValidationException) {
-          if (!editor.editor.styleClass.contains("validation-error")) {
-            editor.editor.styleClass.add("validation-error")
-            editor.editor.effect = InnerShadow(10.0, Color.RED)
-          }
-          errorUi(ex.message ?: "")
+          editor.markInvalid()
+          errorMessage = ex.message ?: ""
         }
       }
-      listItems[listItems.indexOf(selectedItem)] = selectedItem
+      if (errorMessage != null) {
+        errorUi(errorMessage)
+      } else {
+        errorUi(null)
+        listItems[listItems.indexOf(selectedItem)] = selectedItem
+      }
     }
   }
 
@@ -477,20 +510,23 @@ enum class ApplyExecutorType { DIRECT, SWING }
 
 fun showResourceColumnManager(
     columnList: ColumnList, customColumnsManager: CustomPropertyManager, undoManager: GPUndoManager,
+    projectDatabase: ProjectDatabase,
     applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
   val localizer = RootLocalizer.createWithRootKey("resourceTable.columnManager", baseLocalizer = ourLocalizer)
-  showColumnManager(columnList, customColumnsManager, undoManager, localizer, applyExecutor)
+  showColumnManager(columnList, customColumnsManager, undoManager, localizer, projectDatabase, applyExecutor)
 }
 
 fun showTaskColumnManager(
     columnList: ColumnList, customColumnsManager: CustomPropertyManager, undoManager: GPUndoManager,
+    projectDatabase: ProjectDatabase,
     applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
-  showColumnManager(columnList, customColumnsManager, undoManager, ourLocalizer, applyExecutor)
+  showColumnManager(columnList, customColumnsManager, undoManager, ourLocalizer, projectDatabase, applyExecutor)
 }
 
 private fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomPropertyManager,
                               undoManager: GPUndoManager,
                               localizer: Localizer,
+                              projectDatabase: ProjectDatabase,
                               applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
   dialog { dlg ->
     dlg.addStyleClass("dlg-column-manager")
@@ -503,7 +539,7 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
         }
       }.vbox
     )
-    val columnManager = ColumnManager(columnList, customColumnsManager, undoManager)
+    val columnManager = ColumnManager(columnList, customColumnsManager, undoManager, CalculationMethodValidator(projectDatabase))
     dlg.setContent(columnManager.content)
     dlg.setupButton(ButtonType.APPLY) { btn ->
       btn.text = localizer.formatText("apply")

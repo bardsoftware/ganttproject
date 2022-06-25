@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.action.task.*
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.view.GPViewManager
 import net.sourceforge.ganttproject.resource.HumanResourceManager
+import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
 import net.sourceforge.ganttproject.task.TaskManager
@@ -45,7 +46,8 @@ class TaskActions(private val project: IGanttProject,
                   selectionManager: TaskSelectionManager,
                   private val viewManager: () -> GPViewManager,
                   private val tableConnector: () -> TaskTableActionConnector,
-                  newTaskActor: NewTaskActor<Task>) {
+                  newTaskActor: NewTaskActor<Task>,
+                  private val projectDatabase: ProjectDatabase) {
   val createAction = TaskNewAction(project, uiFacade, newTaskActor)
   val propertiesAction = TaskPropertiesAction(project, selectionManager, uiFacade)
   val deleteAction = TaskDeleteAction(project.taskManager, selectionManager, uiFacade)
@@ -146,7 +148,7 @@ class TaskActions(private val project: IGanttProject,
 
   val manageColumnsAction: GPAction
     get() = GPAction.create("columns.manage.label") {
-      showTaskColumnManager(tableConnector().columnList(), project.taskCustomColumnManager, uiFacade.undoManager)
+      showTaskColumnManager(tableConnector().columnList(), project.taskCustomColumnManager, uiFacade.undoManager, projectDatabase)
     }
   fun all() = listOf(indentAction, unindentAction, moveDownAction, moveUpAction, linkTasksAction, unlinkTasksAction)
   fun assignments(task: Task, hrManager: HumanResourceManager, undoManager: GPUndoManager): List<GPAction> {

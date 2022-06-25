@@ -222,6 +222,14 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
+  override fun validateColumnConsumer(columnConsumer: ColumnConsumer) {
+    withDSL { dsl ->
+      dsl.select(field(columnConsumer.first.selectExpression).cast(columnConsumer.first.resultClass)).from(TASK).limit(1).also {
+        it.execute()
+      }
+    }
+  }
+
   /** Add update query and save its xlog in the current transaction. */
   @Throws(ProjectDatabaseException::class)
   internal fun update(queries: List<SqlQuery>, undoQueries: List<SqlUndoQuery>) = withLog(queries, undoQueries)

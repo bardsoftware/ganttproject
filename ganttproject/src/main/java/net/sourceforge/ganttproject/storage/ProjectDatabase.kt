@@ -94,5 +94,9 @@ interface ProjectDatabase {
   @Throws(ProjectDatabaseException::class)
   fun findTasks(whereExpression: String, lookupById: (Int)->Task?): List<Task>
 
+  @Throws(ProjectDatabaseException::class)
   fun mapTasks(vararg columnConsumer: ColumnConsumer)
+
+  @Throws(ProjectDatabaseException::class)
+  fun validateColumnConsumer(columnConsumer: ColumnConsumer)
 }

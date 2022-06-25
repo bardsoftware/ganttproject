@@ -23,26 +23,18 @@ import net.sourceforge.ganttproject.resource.AssignmentContext
 import net.sourceforge.ganttproject.GanttProject
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.ResourceTreeTable
-import net.sourceforge.ganttproject.action.resource.ResourceNewAction
-import net.sourceforge.ganttproject.action.resource.ResourceDeleteAction
-import net.sourceforge.ganttproject.action.resource.ResourcePropertiesAction
-import net.sourceforge.ganttproject.action.resource.ResourceMoveUpAction
-import net.sourceforge.ganttproject.action.resource.ResourceMoveDownAction
-import net.sourceforge.ganttproject.action.resource.ResourceSendMailAction
-import net.sourceforge.ganttproject.action.resource.AssignmentDeleteAction
 import javax.swing.AbstractAction
-import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.resource.ResourceContext
 import javax.swing.Action
 
 class ResourceActionSet(
   resourceContext: ResourceContext, assignmentContext: AssignmentContext,
-  projectFrame: GanttProject, uiFacade: UIFacade, table: ResourceTreeTable
+  project: GanttProject, uiFacade: UIFacade, table: ResourceTreeTable
 ) {
-  val resourceNewAction = ResourceNewAction(projectFrame.humanResourceManager, projectFrame.roleManager, projectFrame.taskManager, uiFacade)
-  val cloudResourceList = GPCloudResourceListAction(projectFrame.humanResourceManager)
+  val resourceNewAction = ResourceNewAction(project.humanResourceManager, project.projectDatabase, project.roleManager, project.taskManager, uiFacade)
+  val cloudResourceList = GPCloudResourceListAction(project.humanResourceManager)
   val resourceDeleteAction: ResourceDeleteAction
-  val resourcePropertiesAction = ResourcePropertiesAction(projectFrame, resourceContext, uiFacade)
+  val resourcePropertiesAction = ResourcePropertiesAction(project, resourceContext, uiFacade)
   val resourceMoveUpAction: ResourceMoveUpAction
   val resourceMoveDownAction: ResourceMoveDownAction
   val resourceSendMailAction = ResourceSendMailAction(table)
@@ -55,8 +47,8 @@ class ResourceActionSet(
   }
 
   init {
-    val manager = projectFrame.humanResourceManager
-    resourceDeleteAction = ResourceDeleteAction(manager, resourceContext, projectFrame, uiFacade)
+    val manager = project.humanResourceManager
+    resourceDeleteAction = ResourceDeleteAction(manager, resourceContext, project, uiFacade)
     resourceMoveUpAction = ResourceMoveUpAction(table)
     resourceMoveDownAction = ResourceMoveDownAction(table)
     assignmentDelete = AssignmentDeleteAction(assignmentContext, uiFacade)

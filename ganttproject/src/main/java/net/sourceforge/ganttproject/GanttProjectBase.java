@@ -125,6 +125,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   protected final Supplier<TaskTable> myTaskTableSupplier;
 
   protected final TaskFilterManager myTaskFilterManager;
+
   protected final ProjectDatabase myProjectDatabase;
 
   @Override
@@ -190,6 +191,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
   }
 
+  @Override
+  public ProjectDatabase getProjectDatabase() {
+    return myProjectDatabase;
+  }
+
   protected GanttProjectBase() {
     super("GanttProject");
     var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager);
@@ -198,7 +204,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myTaskManagerConfig = new TaskManagerConfigImpl();
     myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig,
       myProjectDatabase::createTaskUpdateBuilder);
-    myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager);
+    myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager, databaseProxy);
     addProjectEventListener(databaseProxy.createProjectEventListener());
     myTaskManager.addTaskListener(databaseProxy.createTaskEventListener());
     statusBar = new GanttStatusBar(this);
@@ -220,7 +226,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
       public TaskTableActionConnector invoke() {
         return myTaskTableSupplier.get().getActionConnector();
       }
-    }, newTaskActor);
+    }, newTaskActor, myProjectDatabase);
     myTaskFilterManager = new TaskFilterManager(getTaskManager());
     myTaskTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(() ->
       new TaskTable(getProject(), getTaskManager(), myTaskTableChartConnector, myTaskCollapseView,
