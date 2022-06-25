@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.Executors
+import java.util.zip.CRC32
 
 fun main(args: Array<String>) = DevServerMain().main(args)
 
@@ -66,11 +67,25 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
     when (session.uri) {
       "/init" -> {
         session.parameters["projectRefid"]?.firstOrNull()?.let {
-          colloboqueServer.init(it, session.parameters["debug_create_project"]?.firstOrNull()?.toBoolean() ?: false)
+          val projectXml =
+            if (session.parameters["debug_create_project"]?.firstOrNull()?.toBoolean() == true) PROJECT_XML_TEMPLATE
+            else null
+          colloboqueServer.init(it, projectXml)
           newFixedLengthResponse("Ok")
         } ?: newFixedLengthResponse(Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "projectRefid is missing")
       }
       "/" -> newFixedLengthResponse("Hello")
+      "/p/read" -> {
+        session.parameters["projectRefid"]?.firstOrNull()?.let {
+          newFixedLengthResponse(PROJECT_XML_TEMPLATE.toBase64()).also {response ->
+            response.addHeader("ETag", "-1")
+            response.addHeader("Digest", CRC32().let {
+              it.update(PROJECT_XML_TEMPLATE.toByteArray())
+              it.value.toString()
+            })
+          }
+        } ?: newFixedLengthResponse(Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "projectRefid is missing")
+      }
       else -> newFixedLengthResponse(Status.NOT_FOUND, MIME_PLAINTEXT, "Not Found")
     }
 }
@@ -89,7 +104,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
   private inner class WebSocketImpl(handshake: IHTTPSession) : WebSocket(handshake) {
     init {
       handshake.parameters["projectRefid"]?.firstOrNull()?.also { refid ->
-        colloboqueServer.init(refid, false)
+        colloboqueServer.init(refid)
         this.handshakeResponse.addHeader("baseTxnId", colloboqueServer.getBaseTxnId(refid))
       }
       wsResponseScope.launch {
@@ -144,3 +159,12 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
 }
 
 private val LOG = GPLogger.create("ColloboqueWebServer")
+private val PROJECT_XML_TEMPLATE = """
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">
+  <tasks empty-milestones="true">
+      <task id="0" uid="qwerty" name="Task1" color="#99ccff" meeting="false" start="2022-02-10" duration="25" complete="85" expand="true"/>
+  </tasks>
+</project>
+        """.trimIndent()
+private fun String.toBase64() = Base64.getEncoder().encodeToString(this.toByteArray())

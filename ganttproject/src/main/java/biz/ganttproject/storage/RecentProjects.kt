@@ -169,23 +169,7 @@ class RecentDocAsFolderItem(
   private val webdavServer: WebDavServerDescriptor?
 
   init {
-    var (url, scheme) = try {
-      URL(urlString).let {it to it.protocol }
-    } catch (ex: MalformedURLException) {
-      if (File(urlString).exists()) {
-        URL("file:$urlString") to "file"
-      } else {
-        val indexColon = urlString.indexOf(':')
-        val indexSlash = urlString.indexOf('/')
-        if (indexColon > 0 && indexSlash == indexColon + 1) {
-          URL("http" + urlString.drop(indexColon)) to urlString.take(indexColon)
-        } else if (indexSlash == 0) {
-          URL("file:$urlString") to "file"
-        } else {
-          throw ex
-        }
-      }
-    }
+    var (url, scheme) = urlString.asDocumentUrl()
 
     if ("http" == scheme || "https" == scheme) {
       webdavServer = webdabServers.list.firstOrNull { urlString.startsWith(it.rootUrl) }

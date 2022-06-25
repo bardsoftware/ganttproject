@@ -64,7 +64,7 @@ class ColloboqueServer(
     }
   }
 
-  fun init(projectRefid: ProjectRefid, debugCreateProject: Boolean) {
+  fun init(projectRefid: ProjectRefid, projectXml: String? = null) {
     try {
       initProject(projectRefid)
       connectionFactory(projectRefid).use {
@@ -73,22 +73,12 @@ class ColloboqueServer(
             println(rs.getString(1))
           }
         }
-        if (debugCreateProject) {
+        if (projectXml != null) {
           DSL.using(it, SQLDialect.POSTGRES)
             .configuration()
             .deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
             .dsl().let { dsl ->
-
-              loadProject(
-                """
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">
-  <tasks empty-milestones="true">
-      <task id="0" uid="qwerty" name="Task1" color="#99ccff" meeting="false" start="2022-02-10" duration="25" complete="85" expand="true"/>
-  </tasks>
-</project>
-        """.trimIndent(), dsl
-              )
+              loadProject(projectXml, dsl)
             }
         }
         refidToBaseTxnId[projectRefid] = "abacaba"  // TODO: get from the database

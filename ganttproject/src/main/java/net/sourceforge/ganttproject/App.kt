@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject
 import biz.ganttproject.LoggerApi
 import biz.ganttproject.app.*
 import biz.ganttproject.platform.DummyUpdater
+import biz.ganttproject.storage.cloud.GPCloudEnv
+import biz.ganttproject.storage.cloud.getCloudEnv
 import com.beust.jcommander.JCommander
 import javafx.application.Platform
 import net.sourceforge.ganttproject.export.CommandLineExportApplication
@@ -40,11 +42,15 @@ import javax.swing.SwingUtilities
 
 
 fun main(args: Array<String>) {
-  AppBuilder(args).withLogging().withWindowVisible().runBeforeUi {
+  var builder = AppBuilder(args).withLogging().withWindowVisible().runBeforeUi {
     RootLocalizer = SingleTranslationLocalizer(ResourceBundle.getBundle("i18n"))
     PluginManager.setCharts(listOf())
     GanttLanguage.getInstance()
-  }.whenAppInitialized {
+  }
+  if (getCloudEnv() == GPCloudEnv.EMULATOR) {
+    builder = builder.withDocument("cloud://asdfg/Test Team/Test Project")
+  }
+  builder.whenAppInitialized {
     it.updater = DummyUpdater
   }.launch()
 }

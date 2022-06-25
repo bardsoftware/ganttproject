@@ -278,13 +278,7 @@ class WebSocketClient {
   private val baseTxnIdListeners = mutableListOf<(String) -> Unit>()
   private var listeningDocument: GPCloudDocument? = null
 
-  private fun getWebSocketUrl() = if (isColloboqueLocalTest()) {
-    val port = System.getProperty("colloboquePort", "9001")
-    val projectRefid = listeningDocument?.projectRefid ?: "refid"
-    "ws://localhost:$port?projectRefid=$projectRefid"
-  } else {
-    GPCLOUD_WEBSOCKET_URL
-  }
+  private fun getWebSocketUrl() = GPCLOUD_WEBSOCKET_URL
 
   private fun getConnectionSpecs() = if (isColloboqueLocalTest()) {
     listOf(ConnectionSpec.CLEARTEXT)
@@ -601,10 +595,19 @@ data class ProjectWriteResponse(
 )
 
 /** Checks whether the app is running in Colloboque testing mode. */
-fun isColloboqueLocalTest(): Boolean = System.getProperty("colloboqueEnv") == "local-test"
+fun isColloboqueLocalTest(): Boolean = getCloudEnv() == GPCloudEnv.EMULATOR
 
-private val HOST =
-    if (GPCLOUD_HOST == "ganttproject.localhost") HttpHost.create("http://ganttproject.localhost:80")
-    else HttpHost.create("https://$GPCLOUD_HOST:443")
-
+enum class GPCloudEnv {
+  EMULATOR, LOCAL, STAGING, PROD
+}
+fun getCloudEnv(): GPCloudEnv = System.getProperty("gpcloud", "emulator").lowercase().let {
+  when {
+    it.startsWith("e") -> GPCloudEnv.EMULATOR
+    it.startsWith("l") -> GPCloudEnv.LOCAL
+    it.startsWith("s") -> GPCloudEnv.STAGING
+    it.startsWith("p") -> GPCloudEnv.PROD
+    else -> error("Unknown GP Cloud environment $it")
+  }
+}
+private val HOST = HttpHost.create(GPCLOUD_ORIGIN)
 private val LOG = GPLogger.create("Cloud.Http")

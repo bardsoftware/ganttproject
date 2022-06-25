@@ -32,6 +32,8 @@ import net.sourceforge.ganttproject.document.ProxyDocument
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.FileNotFoundException
+import java.net.MalformedURLException
+import java.net.URL
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -286,3 +288,22 @@ fun (Document).checkWellFormed() {
     domParser.newDocumentBuilder().parse(it)
   }
 }
+
+fun String.asDocumentUrl(): Pair<URL, String> =
+  try {
+    URL(this).let {it to it.protocol }
+  } catch (ex: MalformedURLException) {
+    if (File(this).exists()) {
+      URL("file:$this") to "file"
+    } else {
+      val indexColon = indexOf(':')
+      val indexSlash = indexOf('/')
+      if (indexColon > 0 && indexSlash == indexColon + 1) {
+        URL("http" + drop(indexColon)) to take(indexColon)
+      } else if (indexSlash == 0) {
+        URL("file:$this") to "file"
+      } else {
+        throw ex
+      }
+    }
+  }

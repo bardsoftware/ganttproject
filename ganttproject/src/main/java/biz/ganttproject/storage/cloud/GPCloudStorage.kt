@@ -36,14 +36,41 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 
 //const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
-const val GPCLOUD_SCHEME = "https"
+val GPCLOUD_SCHEME = when (getCloudEnv()) {
+  GPCloudEnv.EMULATOR, GPCloudEnv.LOCAL -> "http"
+  else -> "https"
+}
 //const val GPCLOUD_HOST = "cloud.ganttproject.biz"
-const val GPCLOUD_HOST = "ganttproject.cloud"
-const val GPCLOUD_ORIGIN = "$GPCLOUD_SCHEME://$GPCLOUD_HOST"
-const val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
-const val GPCLOUD_SIGNIN_URL = "$GPCLOUD_ORIGIN/__/auth/desktop"
-const val GPCLOUD_SIGNUP_URL = "$GPCLOUD_ORIGIN/__/auth/handler"
-const val GPCLOUD_WEBSOCKET_URL = "wss://ws.$GPCLOUD_HOST"
+val GPCLOUD_HOST = when (getCloudEnv())  {
+  GPCloudEnv.EMULATOR -> "localhost"
+  GPCloudEnv.LOCAL -> "ganttproject.localhost"
+  else -> "ganttproject.cloud"
+}
+val GPCLOUD_PORT = when (getCloudEnv()) {
+  GPCloudEnv.EMULATOR -> 9000
+  GPCloudEnv.LOCAL -> 80
+  else -> 443
+}
+val GPCLOUD_ORIGIN = "$GPCLOUD_SCHEME://$GPCLOUD_HOST:$GPCLOUD_PORT"
+val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
+val GPCLOUD_SIGNIN_URL = "$GPCLOUD_ORIGIN/__/auth/desktop"
+val GPCLOUD_SIGNUP_URL = "$GPCLOUD_ORIGIN/__/auth/handler"
+
+val GPCLOUD_WEBSOCKET_SCHEME = when (getCloudEnv()) {
+  GPCloudEnv.EMULATOR, GPCloudEnv.LOCAL -> "ws"
+  else -> "wss"
+}
+val GPCLOUD_WEBSOCKET_HOST = when (getCloudEnv()) {
+  GPCloudEnv.EMULATOR -> "localhost"
+  else -> "ws.$GPCLOUD_HOST"
+}
+val GPCLOUD_WEBSOCKET_PORT = when (getCloudEnv()) {
+  GPCloudEnv.EMULATOR -> 9001
+  GPCloudEnv.LOCAL -> 80
+  else -> 443
+}
+
+val GPCLOUD_WEBSOCKET_URL = "$GPCLOUD_WEBSOCKET_SCHEME://$GPCLOUD_WEBSOCKET_HOST:$GPCLOUD_WEBSOCKET_PORT"
 enum class SceneId { BROWSER, SIGNUP, SIGNIN, OFFLINE, SPINNER, TOKEN_SPINNER, OFFLINE_BROWSER }
 typealias SceneChanger = (Node, SceneId) -> Unit
 

@@ -307,6 +307,10 @@ class GPCloudDocument(val teamRefid: String?,
     return callReadProject(version)
   }
 
+
+  /**
+   * Sends an HTTP request to GP Cloud server to read the project contents.
+   */
   @Throws(ForbiddenException::class, PaymentRequiredException::class, ForbiddenException::class)
   private fun callReadProject(version: Long = -1): FetchResult {
     LOG.debug("Calling /p/read")

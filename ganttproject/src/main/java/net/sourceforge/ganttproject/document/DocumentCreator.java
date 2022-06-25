@@ -11,6 +11,8 @@ import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.storage.DocumentKt;
+import biz.ganttproject.storage.DocumentUri;
+import biz.ganttproject.storage.cloud.GPCloudDocument;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.SystemUtils;
@@ -133,6 +135,17 @@ public class DocumentCreator implements DocumentManager {
       } catch (WebDavException e) {
         GPLogger.log(e);
         return null;
+      }
+    } else if (lowerPath.startsWith("cloud://")) {
+      var patchedUrl = DocumentKt.asDocumentUrl(lowerPath);
+      if (patchedUrl.component2().equals("cloud")) {
+        return new GPCloudDocument(
+          null,
+          DocumentUri.LocalDocument.createPath(patchedUrl.component1().getPath()).getParent().getFileName(),
+          patchedUrl.component1().getHost(),
+          DocumentUri.LocalDocument.createPath(patchedUrl.component1().getPath()).getFileName(),
+          null
+        );
       }
     } else if (lowerPath.startsWith("ftp:")) {
       return new FtpDocument(path, myFtpUserOption, myFtpPasswordOption);
