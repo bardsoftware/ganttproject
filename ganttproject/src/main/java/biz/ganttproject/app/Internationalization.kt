@@ -129,7 +129,7 @@ open class DefaultLocalizer(
     private val rootKey: String = "",
     private val baseLocalizer: Localizer = DummyLocalizer,
     private val prefixedLocalizer: Localizer? = null,
-    private val currentTranslation: SimpleObjectProperty<ResourceBundle?>) : Localizer {
+    private val currentTranslation: SimpleObjectProperty<ResourceBundle?> = SimpleObjectProperty(null)) : Localizer {
   override fun create(key: String): LocalizedString {
     return LocalizedString(key, this).also {
       currentTranslation.addListener { _, oldValue, newValue ->
