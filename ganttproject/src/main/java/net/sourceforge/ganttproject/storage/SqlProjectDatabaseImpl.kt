@@ -51,7 +51,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
   private var currentTxn: TransactionImpl? = null
-  private var localTxnId: Int = 1
+  private var localTxnId: Int = -1
 
   private fun <T> withDSL(
     errorMessage: () -> String = { "Failed to execute query" },
@@ -79,11 +79,13 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
         try {
           LOG.debug("SQL: ${it.sqlStatementH2}")
           context.execute(it.sqlStatementH2)
-          context
-            .insertInto(LOGRECORD)
-            .set(LOGRECORD.LOCAL_TXN_ID, localTxnId)
-            .set(LOGRECORD.SQL_STATEMENT, it.sqlStatementPostgres)
-            .execute()
+          if (isLogStarted) {
+            context
+              .insertInto(LOGRECORD)
+              .set(LOGRECORD.LOCAL_TXN_ID, localTxnId)
+              .set(LOGRECORD.SQL_STATEMENT, it.sqlStatementPostgres)
+              .execute()
+          }
         } catch (e: Exception) {
           val errorMessage = "Failed to execute or log txnId=$localTxnId\n ${it.sqlStatementH2}"
           LOG.error(errorMessage)
@@ -116,6 +118,12 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       throw ProjectDatabaseException("Failed to init the database", e)
     }
   }
+
+  override fun startLog(baseTxnId: String) {
+    localTxnId = 0
+  }
+
+  private val isLogStarted get() = localTxnId >= 0
 
   override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task, this::update)
 

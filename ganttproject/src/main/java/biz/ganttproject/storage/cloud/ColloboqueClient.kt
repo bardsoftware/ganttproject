@@ -21,24 +21,34 @@ package biz.ganttproject.storage.cloud
 import com.google.common.collect.ImmutableMap
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.*
-import net.sourceforge.ganttproject.task.TaskManager
-import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
+import net.sourceforge.ganttproject.undo.GPUndoListener
+import net.sourceforge.ganttproject.undo.GPUndoManager
 import org.apache.commons.lang3.tuple.ImmutablePair
 import java.util.concurrent.atomic.AtomicReference
+import javax.swing.event.UndoableEditEvent
 
-class ColloboqueClient(private val taskManager: TaskManager, private val projectDatabase: ProjectDatabase) {
-  private val myBaseTxnCommitInfo = TxnCommitInfo("", 0)
+class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager: GPUndoManager) {
+  private val myBaseTxnCommitInfo = TxnCommitInfo("", -1)
+  private var projectRefid: String? = null
 
+  init {
+    undoManager.addUndoableEditListener(object: GPUndoListener {
+      override fun undoableEditHappened(e: UndoableEditEvent) {
+        sendProjectStateLogs()
+      }
+
+      override fun undoOrRedoHappened() {}
+      override fun undoReset() {}
+    })
+  }
   fun attach(webSocket: WebSocketClient) {
     webSocket.onCommitResponseReceived { response  -> this.fireXlogReceived(response) }
-    webSocket.onBaseTxnIdReceived { baseTxnId -> this.onBaseTxnIdReceived(baseTxnId) }
   }
 
-  fun start(baseTxnId: String) {
+  fun start(projectRefid: String, baseTxnId: String) {
+    this.projectRefid = projectRefid
     onBaseTxnIdReceived(baseTxnId)
-    val taskListenerAdapter = TaskListenerAdapter()
-    taskListenerAdapter.taskAddedHandler = { this.sendProjectStateLogs() }
-    taskManager.addTaskListener(taskListenerAdapter)
+    this.projectDatabase.startLog(baseTxnId)
   }
 
   private fun fireXlogReceived(response: ServerCommitResponse) {
@@ -59,7 +69,7 @@ class ColloboqueClient(private val taskManager: TaskManager, private val project
         webSocket.sendLogs(InputXlog(
           baseTxnCommitInfo.left,
           "userId",
-          "refid",
+          projectRefid!!,
           txns
         ))
       }

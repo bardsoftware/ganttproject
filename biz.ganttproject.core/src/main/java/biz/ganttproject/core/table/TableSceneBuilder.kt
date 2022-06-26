@@ -120,6 +120,7 @@ class TableSceneBuilder(
               it.setAlignment(col.alignment, Canvas.VAlignment.CENTER)
             }
           }
+          else -> {}
         }
         //canvas.createLine(x + width, y + config.rowHeight/4, x+width, y + config.rowHeight/2)
       }

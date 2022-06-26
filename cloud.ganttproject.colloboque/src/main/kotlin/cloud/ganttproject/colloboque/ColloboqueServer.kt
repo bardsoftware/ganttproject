@@ -42,6 +42,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.Executors
 
 internal typealias ProjectRefid = String
+internal typealias BaseTxnId = String
 
 class ColloboqueServerException: Exception {
   constructor(message: String): super(message)
@@ -64,15 +65,10 @@ class ColloboqueServer(
     }
   }
 
-  fun init(projectRefid: ProjectRefid, projectXml: String? = null) {
+  fun init(projectRefid: ProjectRefid, projectXml: String? = null): BaseTxnId {
     try {
       initProject(projectRefid)
       connectionFactory(projectRefid).use {
-        it.createStatement().executeQuery("SELECT uid FROM Task").use { rs ->
-          while (rs.next()) {
-            println(rs.getString(1))
-          }
-        }
         if (projectXml != null) {
           DSL.using(it, SQLDialect.POSTGRES)
             .configuration()
@@ -81,7 +77,10 @@ class ColloboqueServer(
               loadProject(projectXml, dsl)
             }
         }
-        refidToBaseTxnId[projectRefid] = "abacaba"  // TODO: get from the database
+        // TODO: get from the database
+        return "0".also {
+          refidToBaseTxnId[projectRefid] = it
+        }
       }
     } catch (e: Exception) {
       throw ColloboqueServerException("Failed to init project $projectRefid", e)
@@ -136,8 +135,7 @@ class ColloboqueServer(
     }
   }
 
-  fun getBaseTxnId(projectRefid: ProjectRefid) =
-    refidToBaseTxnId[projectRefid] ?: throw ColloboqueServerException("Project $projectRefid not initialized")
+  fun getBaseTxnId(projectRefid: ProjectRefid) = refidToBaseTxnId[projectRefid]
 
   // TODO
   private fun generateNextTxnId(projectRefid: ProjectRefid, oldTxnId: String, transaction: XlogRecord): String {

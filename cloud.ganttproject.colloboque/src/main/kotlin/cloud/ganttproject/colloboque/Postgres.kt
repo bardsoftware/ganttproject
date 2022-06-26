@@ -21,7 +21,7 @@ package cloud.ganttproject.colloboque
 import com.google.common.hash.Hashing
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import org.slf4j.LoggerFactory
+import net.sourceforge.ganttproject.GPLogger
 import java.sql.Connection
 
 class PostgresConnectionFactory(
@@ -46,7 +46,7 @@ class PostgresConnectionFactory(
     superDataSource.connection.use {
       it.createStatement().executeQuery("SELECT version()").use { rs ->
         if (rs.next()) {
-          LoggerFactory.getLogger("Startup").info("Connected to the database. {}", rs.getString(1))
+          STARTUP_LOG.debug("Connected to the database. {}", rs.getString(1))
         }
       }
     }
@@ -54,7 +54,7 @@ class PostgresConnectionFactory(
 
   fun initProject(projectRefid: String) {
     val schema = getSchema(projectRefid)
-    LoggerFactory.getLogger("InitProject").debug("Project {} mapped to schema {}", projectRefid, schema)
+    LOG.debug("Project {} mapped to schema {}", projectRefid, schema)
     superDataSource.connection.use {
       it.prepareCall("SELECT clone_schema(?, ?, ?)").use { stmt ->
         stmt.setString(1, "project_template")
@@ -72,3 +72,6 @@ class PostgresConnectionFactory(
   private fun getSchema(projectRefid: String) =
     "project_${Hashing.murmur3_128().hashBytes(projectRefid.toByteArray(Charsets.UTF_8))}"
 }
+
+private val STARTUP_LOG = GPLogger.create("Startup")
+private val LOG = GPLogger.create("Postgres")

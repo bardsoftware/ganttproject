@@ -555,7 +555,6 @@ public class TaskImpl implements Task {
     myStart = start;
     recalculateActivities();
     adjustNestedTasks();
-    System.out.println("task="+getTaskID()+" start="+myStart+" end="+myEnd+" activities="+getActivities());
   }
 
   void adjustNestedTasks() {

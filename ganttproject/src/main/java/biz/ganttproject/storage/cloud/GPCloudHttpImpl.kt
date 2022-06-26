@@ -488,7 +488,7 @@ class HttpClientOk(
     val userId: String = "",
     val authToken: () -> String = {""}) : GPCloudHttpClient {
   private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
-      .connectTimeout(5, TimeUnit.SECONDS)
+      .connectTimeout(10, TimeUnit.SECONDS)
       .callTimeout(60, TimeUnit.SECONDS)
       .connectionSpecs(listOf(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT, ConnectionSpec.MODERN_TLS))
       .followRedirects(true)

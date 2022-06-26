@@ -1,14 +1,16 @@
 <configuration>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n%rEx</pattern>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%logger{36} @ %thread] - %msg%n%rEx</pattern>
         </encoder>
     </appender>
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
-    <logger name="com.zaxxer.hikari.pool.HikariPool" level="INFO"/>
-    <logger name="Startup" level="INFO"/>
+    <logger name="com.zaxxer.hikari.pool.HikariPool" level="OFF"/>
+    <logger name="com.zaxxer.hikari.HikariDataSource" level="OFF"/>
+    <logger name="Startup" level="DEBUG"/>
     <logger name="ColloboqueWebServer" level="DEBUG"/>
     <logger name="ColloboqueServer" level="DEBUG"/>
+    <logger name="Postgres" level="DEBUG"/>
 </configuration>

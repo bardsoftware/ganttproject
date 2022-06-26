@@ -44,7 +44,6 @@ import net.sourceforge.ganttproject.document.Document.DocumentException
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
-import net.sourceforge.ganttproject.filter.GanttXMLFileFilter
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.undo.GPUndoManager
@@ -53,7 +52,6 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.Executors
 import java.util.logging.Level
-import javax.swing.JFileChooser
 import javax.swing.SwingUtilities
 
 
@@ -247,7 +245,7 @@ class ProjectUIFacadeImpl(
                 .runUiTasks()
               document.asOnlineDocument()?.let {
                 if (it is GPCloudDocument) {
-                  it.colloboqueClient = ColloboqueClient(project.taskManager, project.projectDatabase)
+                  it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
                   it.onboard(documentManager, webSocket)
                 }
               }

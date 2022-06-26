@@ -197,7 +197,7 @@ class GPCloudDocument(val teamRefid: String?,
     field = value
     if (value != null) {
       fetchResultProperty.get()?.baseColloboqueTxnId?.let {
-        value.start(it)
+        value.start(projectRefid!!, it)
       }
     }
   }
@@ -335,7 +335,7 @@ class GPCloudDocument(val teamRefid: String?,
           val colloboqueBaseTxnId = resp.header("BaseTxnId")
           if (colloboqueBaseTxnId != null) {
             colloboqueClient?.run {
-               start(colloboqueBaseTxnId)
+               start(projectRefid!!, colloboqueBaseTxnId)
             }
           }
           val documentBody = resp.decodedBody
