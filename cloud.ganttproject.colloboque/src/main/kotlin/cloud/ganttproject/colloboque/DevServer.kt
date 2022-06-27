@@ -32,7 +32,6 @@ import kotlinx.serialization.json.decodeFromStream
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.InitRecord
 import net.sourceforge.ganttproject.storage.InputXlog
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.Executors
@@ -49,7 +48,7 @@ class DevServerMain : CliktCommand() {
   private val pgSuperAuth by option("--pg-super-auth").default("")
 
   override fun run() {
-    LoggerFactory.getLogger("Startup").info("Starting dev Colloboque server on port {}", port)
+    STARTUP_LOG.debug("Starting dev Colloboque server on port {}", port)
 
     val initInputChannel = Channel<InitRecord>()
     val updateInputChannel = Channel<InputXlog>()
@@ -77,12 +76,17 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
       "/" -> newFixedLengthResponse("Hello")
       "/p/read" -> {
         session.parameters["projectRefid"]?.firstOrNull()?.let {
+          val baseTxnId = colloboqueServer.getBaseTxnId(it) ?: run {
+            colloboqueServer.init(it, PROJECT_XML_TEMPLATE)
+          }
+
           newFixedLengthResponse(PROJECT_XML_TEMPLATE.toBase64()).also {response ->
             response.addHeader("ETag", "-1")
-            response.addHeader("Digest", CRC32().let {
-              it.update(PROJECT_XML_TEMPLATE.toByteArray())
-              it.value.toString()
+            response.addHeader("Digest", CRC32().let {hash ->
+              hash.update(PROJECT_XML_TEMPLATE.toByteArray())
+              hash.value.toString()
             })
+            response.addHeader("BaseTxnId", baseTxnId)
           }
         } ?: newFixedLengthResponse(Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "projectRefid is missing")
       }
@@ -103,10 +107,10 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
 
   private inner class WebSocketImpl(handshake: IHTTPSession) : WebSocket(handshake) {
     init {
-      handshake.parameters["projectRefid"]?.firstOrNull()?.also { refid ->
-        colloboqueServer.init(refid)
-        this.handshakeResponse.addHeader("baseTxnId", colloboqueServer.getBaseTxnId(refid))
-      }
+//      handshake.parameters["projectRefid"]?.firstOrNull()?.also { refid ->
+//        colloboqueServer.init(refid)
+//        this.handshakeResponse.addHeader("baseTxnId", colloboqueServer.getBaseTxnId(refid))
+//      }
       wsResponseScope.launch {
         for (response in serverResponseChannel) {
           LOG.debug("Sending response {}", response)
@@ -138,8 +142,8 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
     }
 
     override fun onMessage(message: WebSocketFrame) {
-      LOG.debug("Message received\n {}", message.textPayload)
       val inputXlog = parseInputXlog(message.textPayload) ?: return
+      LOG.debug("Message received\n {}", inputXlog)
       if (inputXlog.transactions.size != 1) {
         // TODO: add multiple transactions support.
         LOG.error("Only single transaction commit supported")
@@ -158,6 +162,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
   }
 }
 
+private val STARTUP_LOG = GPLogger.create("Startup")
 private val LOG = GPLogger.create("ColloboqueWebServer")
 private val PROJECT_XML_TEMPLATE = """
 <?xml version="1.0" encoding="UTF-8"?>

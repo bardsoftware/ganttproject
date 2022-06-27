@@ -192,6 +192,16 @@ class GPCloudDocument(val teamRefid: String?,
   }
   private fun makeMirrorOptions() = GPCloudOptions.cloudFiles.getFileOptions(this.projectIdFingerprint)
 
+  var colloboqueClient: ColloboqueClient? = null
+  set(value) {
+    field = value
+    if (value != null) {
+      fetchResultProperty.get()?.baseColloboqueTxnId?.let {
+        value.start(projectRefid!!, it)
+      }
+    }
+  }
+
   init {
     status.set(if (projectJson?.isLocked == true) {
       LockStatus(true, projectJson.lockOwner, projectJson.lockOwnerEmail, projectJson.lockOwnerId)
@@ -322,7 +332,12 @@ class GPCloudDocument(val teamRefid: String?,
         200 -> {
           val etagValue = resp.header("ETag")
           val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
-
+          val colloboqueBaseTxnId = resp.header("BaseTxnId")
+          if (colloboqueBaseTxnId != null) {
+            colloboqueClient?.run {
+               start(projectRefid!!, colloboqueBaseTxnId)
+            }
+          }
           val documentBody = resp.decodedBody
 
           //GlobalScope.launch { println(loadTeamResources(this@GPCloudDocument)) }
@@ -332,6 +347,7 @@ class GPCloudDocument(val teamRefid: String?,
               this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
               digestValue ?: "",
               etagValue?.toLong() ?: -1,
+              colloboqueBaseTxnId,
               documentBody,
               fetchResultProperty::setValue
           )
@@ -357,6 +373,7 @@ class GPCloudDocument(val teamRefid: String?,
                 // As if we just've synced this mirror with the cloud
                 actualChecksum = this.mirrorOptions?.lastOnlineChecksum ?: "",
                 actualVersion = this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
+                baseColloboqueTxnId = null,
                 body = ByteArray(0),
                 updateFxn = fetchResultProperty::setValue
             ).also { it.useMirror = true }
@@ -426,7 +443,7 @@ class GPCloudDocument(val teamRefid: String?,
         200 -> {
           val etagValue = resp.header("ETag")
           val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
-
+          val colloboqueBaseTxnId = resp.header("BaseTxnId")
           val response = OBJECT_MAPPER.readValue(resp.rawBody, ProjectWriteResponse::class.java)
           this.projectRefid = response.projectRefid
           val fetch = FetchResult(
@@ -435,6 +452,7 @@ class GPCloudDocument(val teamRefid: String?,
               this.mirrorOptions?.lastOnlineVersion?.toLong() ?: -1L,
               digestValue ?: "",
               etagValue?.toLong() ?: -1,
+              colloboqueBaseTxnId,
               body,
               fetchResultProperty::setValue
           )
@@ -502,6 +520,9 @@ class GPCloudDocument(val teamRefid: String?,
     })
 
     websocketCleaners.add(webSocket.onContentChange { msg -> GlobalScope.launch(Dispatchers.IO) { onWebSocketContentChange(msg) }})
+    colloboqueClient?.let {
+      it.attach(webSocket)
+    }
   }
 
   fun detachWebsocket(webSocket: WebSocketClient) {
@@ -570,6 +591,7 @@ fun GPCloudDocument.onboard(documentManager: DocumentManager, webSocket: WebSock
   this.offlineDocumentFactory = { path -> documentManager.newDocument(path) }
   this.proxyDocumentFactory = documentManager::getProxyDocument
   webSocket.register(this)
+
   if (GPCloudOptions.defaultOfflineMode.value && !GPCloudOptions.cloudFiles.getFileOptions(this.projectIdFingerprint).onlineOnly.toBoolean()) {
     this.modeValue = OnlineDocumentMode.MIRROR
   }
@@ -577,3 +599,4 @@ fun GPCloudDocument.onboard(documentManager: DocumentManager, webSocket: WebSock
 
 private val ourExecutor = Executors.newSingleThreadExecutor()
 private val LOG = GPLogger.create("Cloud.Document")
+

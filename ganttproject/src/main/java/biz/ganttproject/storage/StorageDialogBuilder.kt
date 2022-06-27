@@ -86,13 +86,6 @@ class StorageDialogBuilder(
             authFlow(onAuth)
           }
           projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish, proxyAuthFlow)
-          if (onFinish.receive()) {
-            document.asOnlineDocument()?.let {
-              if (it is GPCloudDocument) {
-                it.onboard(documentManager, webSocket)
-              }
-            }
-          }
           myDialogUi.close()
         } catch (e: IOException) {
           killProgress()

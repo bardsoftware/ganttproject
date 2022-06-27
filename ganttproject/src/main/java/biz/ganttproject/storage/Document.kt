@@ -194,6 +194,7 @@ data class FetchResult(val onlineDocument: OnlineDocument,
                        val syncVersion: Long,
                        val actualChecksum: String,
                        val actualVersion: Long,
+                       val baseColloboqueTxnId: String?,
                        val body: ByteArray,
                        val updateFxn: (FetchResult) -> Unit = {}) {
   var useMirror: Boolean = false

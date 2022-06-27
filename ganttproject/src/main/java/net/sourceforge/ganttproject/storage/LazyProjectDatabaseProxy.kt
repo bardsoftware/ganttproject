@@ -41,6 +41,10 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
     return lazyProjectDatabase ?: databaseFactory().also { it.init(); lazyProjectDatabase = it }
   }
 
+  override fun startLog(baseTxnId: String) {
+    getDatabase().startLog(baseTxnId)
+  }
+
   private fun resetDatabase() { lazyProjectDatabase = null  }
 
   override fun init() {

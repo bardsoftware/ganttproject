@@ -57,7 +57,9 @@ class ProjectDatabaseTest {
     dataSource = JdbcDataSource().also {
       it.setURL("jdbc:h2:mem:test$SQL_PROJECT_DATABASE_OPTIONS")
     }
-    projectDatabase = SqlProjectDatabaseImpl(dataSource)
+    projectDatabase = SqlProjectDatabaseImpl(dataSource).also {
+      it.startLog("0")
+    }
     val taskManagerBuilder = TestSetupHelper.newTaskManagerBuilder()
     taskManagerBuilder.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }
     taskManager = taskManagerBuilder.build()
@@ -436,7 +438,7 @@ class ProjectDatabaseTest {
       mutator.commit()
     }
     txn.commit()
-    val txns = projectDatabase.fetchTransactions(startLocalTxnId = 2, limit = 2)
+    val txns = projectDatabase.fetchTransactions(startLocalTxnId = 1, limit = 2)
     assertEquals(1, txns.size)
 
     assertEquals(2, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
@@ -483,7 +485,7 @@ class ProjectDatabaseTest {
     txn2.undo()
     txn.undo()
 
-    val txns = projectDatabase.fetchTransactions(startLocalTxnId = 4, limit = 3)
+    val txns = projectDatabase.fetchTransactions(startLocalTxnId = 3, limit = 3)
     assertEquals(2, txns.size)
 
     assertEquals(2, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
@@ -524,7 +526,7 @@ class ProjectDatabaseTest {
       mutator.commit()
     }
     txn.commit()
-    val txns = projectDatabase.fetchTransactions(startLocalTxnId = 2, limit = 2)
+    val txns = projectDatabase.fetchTransactions(startLocalTxnId = 1, limit = 2)
     assertEquals(1, txns.size)
 
     assertEquals(1, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}

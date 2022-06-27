@@ -26,9 +26,7 @@ import biz.ganttproject.app.dialog
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.*
-import biz.ganttproject.storage.cloud.EmptyFlowPage
-import biz.ganttproject.storage.cloud.GPCloudUiFlowBuilder
-import biz.ganttproject.storage.cloud.createFlowPageChanger
+import biz.ganttproject.storage.cloud.*
 import com.google.common.collect.Lists
 import com.sandec.mdfx.MDFXNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -46,7 +44,6 @@ import net.sourceforge.ganttproject.document.Document.DocumentException
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
-import net.sourceforge.ganttproject.filter.GanttXMLFileFilter
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.undo.GPUndoManager
@@ -55,7 +52,6 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.Executors
 import java.util.logging.Level
-import javax.swing.JFileChooser
 import javax.swing.SwingUtilities
 
 
@@ -247,6 +243,12 @@ class ProjectUIFacadeImpl(
                 .checkLegacyMilestones()
                 .checkEarliestStartConstraints()
                 .runUiTasks()
+              document.asOnlineDocument()?.let {
+                if (it is GPCloudDocument) {
+                  it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
+                  it.onboard(documentManager, webSocket)
+                }
+              }
               GlobalScope.launch { onFinish?.send(true) }
             } catch (ex: DocumentException) {
               onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)

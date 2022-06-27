@@ -152,37 +152,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private FXSearchUi mySearchUi;
 
-  /**
-   * Holds the transaction ID specified by the server (String) and the local ID (Integer) of the last local transaction
-   * committed by the server.
-   * The local ID corresponds to the txn ID stored in the database.
-   */
-  private static class TxnCommitInfo {
-    private final AtomicReference<ImmutablePair<String, Integer>> myTxnId;
-
-    TxnCommitInfo(String serverId, Integer localId) {
-      myTxnId = new AtomicReference<>(new ImmutablePair<>(serverId, localId));
-    }
-
-    /** If `oldTxnId` is currently being hold, sets the txn ID to `newTxnId` and moves the local ID ahead by `committedNum`. */
-    void update(String oldTxnId, String newTxnId, int committedNum) {
-      myTxnId.updateAndGet(oldValue -> {
-        if (oldValue.left.equals(oldTxnId)) {
-          return new ImmutablePair<>(newTxnId, oldValue.right + committedNum);
-        } else {
-          return oldValue;
-        }
-      });
-    }
-
-    ImmutablePair<String, Integer> get() {
-      return myTxnId.get();
-    }
-  }
-
-  private final TxnCommitInfo myBaseTxnCommitInfo = new TxnCommitInfo("", 0);
-
-
   public GanttProject(boolean isOnlyViewer) {
     LoggerApi<Logger> startupLogger = GPLogger.create("Window.Startup");
     startupLogger.debug("Creating main frame...");
@@ -203,16 +172,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getActiveCalendar().addListener(getTaskManager().getCalendarListener());
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject-logo-512.png"));
     setIconImage(icon.getImage());
-
-    if (isColloboqueLocalTest()) {
-      getWebSocket().register(null);
-      getWebSocket().onCommitResponseReceived(this::fireXlogReceived);
-      getWebSocket().onBaseTxnIdReceived(this::onBaseTxnIdReceived);
-      var taskListenerAdapter = new TaskListenerAdapter();
-      // TODO: add listeners sensibly.
-      taskListenerAdapter.setTaskAddedHandler(event -> this.sendProjectStateLogs());
-      getTaskManager().addTaskListener(taskListenerAdapter);
-    }
 
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
         myTaskTableChartConnector,
@@ -957,35 +916,5 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       chart.reset();
     }
     super.repaint();
-  }
-
-  // TODO: Accumulate changes instead of sending it every time.
-  private Unit sendProjectStateLogs() {
-    gpLogger.debug("Sending project state logs");
-    try {
-      var baseTxnCommitInfo = myBaseTxnCommitInfo.get();
-      var txns = myProjectDatabase.fetchTransactions(baseTxnCommitInfo.right + 1, 1);
-      if (!txns.isEmpty()) {
-        getWebSocket().sendLogs(new InputXlog(
-          baseTxnCommitInfo.left,
-          "userId",
-          "refid",
-          txns
-        ));
-      }
-    } catch (ProjectDatabaseException e) {
-      gpLogger.error("Failed to send logs", new Object[]{}, ImmutableMap.of(), e);
-    }
-    return Unit.INSTANCE;
-  }
-
-  private Unit fireXlogReceived(ServerCommitResponse response) {
-    myBaseTxnCommitInfo.update(response.getBaseTxnId(), response.getNewBaseTxnId(), 1);
-    return Unit.INSTANCE;
-  }
-
-  private Unit onBaseTxnIdReceived(String baseTxnId) {
-    myBaseTxnCommitInfo.update("", baseTxnId, 0);
-    return Unit.INSTANCE;
   }
 }

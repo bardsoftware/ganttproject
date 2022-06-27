@@ -63,6 +63,9 @@ interface ProjectDatabase {
   @Throws(ProjectDatabaseException::class)
   fun init()
 
+  @Throws(ProjectDatabaseException::class)
+  fun startLog(baseTxnId: String)
+
   fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder
 
   /** Insert the task. */
