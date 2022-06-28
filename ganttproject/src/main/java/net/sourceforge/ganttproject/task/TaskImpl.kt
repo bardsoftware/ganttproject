@@ -207,35 +207,35 @@ internal open class MutatorImpl(
       }
       milestoneChange.ifChanged {
         taskImpl.isMilestone = it
-        taskUpdateBuilder?.setMilestone(it)
+        taskUpdateBuilder?.setMilestone(milestoneChange.oldValue, it)
       }
       if (hasDateFieldsChange) {
         hasActualDatesChange = taskImpl.start != myStartChange.oldValue || taskImpl.duration != myDurationChange.oldValue
         if (hasActualDatesChange && taskUpdateBuilder != null) {
           if (taskImpl.start != myStartChange.oldValue) {
-            taskUpdateBuilder.setStart(taskImpl.start)
+            //taskUpdateBuilder.setStart(myStartChange.oldValue, myS)
           }
           if (taskImpl.duration != myDurationChange.oldValue) {
-            taskUpdateBuilder.setDuration(taskImpl.duration)
+            //taskUpdateBuilder.setDuration(taskImpl.duration)
           }
         }
       }
 
       colorChange.ifChanged {
         taskImpl.color = it
-        taskUpdateBuilder?.setColor(it)
+        taskUpdateBuilder?.setColor(colorChange.oldValue, it)
       }
       myCompletionPercentageChange.ifChanged {completion ->
         taskImpl.completionPercentage = completion
-        taskUpdateBuilder?.setCompletionPercentage(completion)
+        taskUpdateBuilder?.setCompletionPercentage(myCompletionPercentageChange.oldValue, completion)
       }
       costChange.ifChanged { cost ->
         taskImpl.cost.setValue(cost)
-        taskUpdateBuilder?.setCost(cost)
+        taskUpdateBuilder?.setCost(costChange.oldValue, cost)
       }
       criticalFlagChange.ifChanged {
         taskImpl.isCritical = it
-        taskUpdateBuilder?.setCritical(it)
+        taskUpdateBuilder?.setCritical(criticalFlagChange.oldValue, it)
       }
       customPropertiesChange.ifChanged {
         taskImpl.customValues.importFrom(it)
@@ -251,23 +251,23 @@ internal open class MutatorImpl(
       }
       notesChange.ifChanged {
         taskImpl.notes = it
-        taskUpdateBuilder?.setNotes(it)
+        taskUpdateBuilder?.setNotes(notesChange.oldValue, it)
       }
       priorityChange.ifChanged {
         taskImpl.priority = it
-        taskUpdateBuilder?.setPriority(it)
+        taskUpdateBuilder?.setPriority(priorityChange.oldValue, it)
       }
       projectTaskChange.ifChanged {
         taskImpl.isProjectTask = it
-        taskUpdateBuilder?.setProjectTask(it)
+        taskUpdateBuilder?.setProjectTask(projectTaskChange.oldValue, it)
       }
       shapeChange.ifChanged {
         taskImpl.shape = it
-        taskUpdateBuilder?.setShape(it)
+        taskUpdateBuilder?.setShape(shapeChange.oldValue, it)
       }
       webLinkChange.ifChanged {
         taskImpl.webLink = it
-        taskUpdateBuilder?.setWebLink(it)
+        taskUpdateBuilder?.setWebLink(webLinkChange.oldValue, it)
       }
 
       myPropertiesEventSender.fireEvent()
@@ -344,7 +344,6 @@ internal open class MutatorImpl(
   override fun setCustomProperties(customProperties: CustomPropertyHolder) {
     customPropertiesChange.setValue(customProperties)
   }
-
 
   override fun setWebLink(webLink: String) { webLinkChange.setValue(webLink) }
 
