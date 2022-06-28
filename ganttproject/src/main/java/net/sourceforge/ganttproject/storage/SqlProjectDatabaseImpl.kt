@@ -394,17 +394,17 @@ class SqlTaskUpdateBuilder(private val task: Task,
   override fun setPriority(oldValue: Task.Priority?, newValue: Task.Priority?) =
     appendUpdate(TASK.PRIORITY, oldValue?.persistentValue, newValue?.persistentValue)
 
-  fun setStart(start: GanttCalendar) = nextStep { it.set(TASK.START_DATE, start.toLocalDate()) }
+  override fun setStart(oldValue: GanttCalendar, newValue: GanttCalendar) =
+    appendUpdate(TASK.START_DATE, oldValue.toLocalDate(), newValue.toLocalDate())
 
-  fun setEnd(end: GanttCalendar?) {
-    // intentionally empty, we do not store the end date
-  }
+  override fun setDuration(oldValue: TimeDuration, newValue: TimeDuration) =
+    appendUpdate(TASK.DURATION, oldValue.length, newValue.length)
 
-  fun setDuration(length: TimeDuration) = nextStep { it.set(TASK.DURATION, length.length) }
+  override fun setCompletionPercentage(oldValue: Int, newValue: Int) =
+    appendUpdate(TASK.COMPLETION, oldValue, newValue)
 
-  override fun setCompletionPercentage(oldValue: Int, newValue: Int) = appendUpdate(TASK.COMPLETION, oldValue, newValue)
-
-  override fun setShape(oldValue: ShapePaint?, newValue: ShapePaint?) = appendUpdate(TASK.SHAPE, oldValue?.array, newValue?.array)
+  override fun setShape(oldValue: ShapePaint?, newValue: ShapePaint?) =
+    appendUpdate(TASK.SHAPE, oldValue?.array, newValue?.array)
 
   override fun setColor(oldValue: Color?, newValue: Color?) =
     appendUpdate(TASK.COLOR, oldValue?.let(ColorConvertion::getColor), newValue?.let(ColorConvertion::getColor))
@@ -430,7 +430,8 @@ class SqlTaskUpdateBuilder(private val task: Task,
     // TODO("Not yet implemented")
   }
 
-  override fun setProjectTask(oldValue: Boolean, newValue: Boolean) = appendUpdate(TASK.IS_PROJECT_TASK, oldValue, newValue)
+  override fun setProjectTask(oldValue: Boolean, newValue: Boolean) =
+    appendUpdate(TASK.IS_PROJECT_TASK, oldValue, newValue)
 }
 
 private fun Task.logId(): String = "${uid}:${taskID}"

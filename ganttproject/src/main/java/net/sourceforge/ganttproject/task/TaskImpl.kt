@@ -213,10 +213,10 @@ internal open class MutatorImpl(
         hasActualDatesChange = taskImpl.start != myStartChange.oldValue || taskImpl.duration != myDurationChange.oldValue
         if (hasActualDatesChange && taskUpdateBuilder != null) {
           if (taskImpl.start != myStartChange.oldValue) {
-            //taskUpdateBuilder.setStart(myStartChange.oldValue, myS)
+            taskUpdateBuilder.setStart(myStartChange.oldValue, taskImpl.start)
           }
           if (taskImpl.duration != myDurationChange.oldValue) {
-            //taskUpdateBuilder.setDuration(taskImpl.duration)
+            taskUpdateBuilder.setDuration(myDurationChange.oldValue, taskImpl.duration)
           }
         }
       }
