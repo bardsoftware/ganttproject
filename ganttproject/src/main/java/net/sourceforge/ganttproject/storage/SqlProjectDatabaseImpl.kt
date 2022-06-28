@@ -363,6 +363,12 @@ class SqlTaskUpdateBuilder(private val task: Task,
     lastUndoSetStepPostgres = step(lastUndoSetStepPostgres ?: DSL.using(SQLDialect.POSTGRES).update(TASK))
   }
 
+  private fun <T> appendUpdate(field: TableField<TaskRecord, T>, oldValue: T?, newValue: T?) {
+    nextStep { it.set(field, newValue) }
+    nextUndoStep { it.set(field, oldValue) }
+  }
+
+
   @Throws(ProjectDatabaseException::class)
   override fun commit() {
     val finalH2 = lastSetStepH2?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
@@ -380,38 +386,32 @@ class SqlTaskUpdateBuilder(private val task: Task,
     customPropertiesUpdater.commit()
   }
 
-  override fun setName(oldName: String?, newName: String?) {
-    nextStep { it.set(TASK.NAME, newName) }
-    nextUndoStep { it.set(TASK.NAME, oldName) }
-  }
+  override fun setName(oldName: String?, newName: String?) = appendUpdate(TASK.NAME, oldName, newName)
 
-  override fun setName(name: String?) = nextStep { it.set(TASK.NAME, name) }
+  override fun setMilestone(oldValue: Boolean, newValue: Boolean) =
+    appendUpdate(TASK.IS_MILESTONE, oldValue, newValue)
 
-  override fun setMilestone(isMilestone: Boolean) = nextStep { it.set(TASK.IS_MILESTONE, isMilestone) }
+  override fun setPriority(oldValue: Task.Priority?, newValue: Task.Priority?) =
+    appendUpdate(TASK.PRIORITY, oldValue?.persistentValue, newValue?.persistentValue)
 
-  override fun setPriority(priority: Task.Priority?) {
-    if (priority != null) {
-      nextStep { it.set(TASK.PRIORITY, priority.persistentValue) }
-    }
-  }
+  override fun setStart(oldValue: GanttCalendar, newValue: GanttCalendar) =
+    appendUpdate(TASK.START_DATE, oldValue.toLocalDate(), newValue.toLocalDate())
 
-  override fun setStart(start: GanttCalendar) = nextStep { it.set(TASK.START_DATE, start.toLocalDate()) }
+  override fun setDuration(oldValue: TimeDuration, newValue: TimeDuration) =
+    appendUpdate(TASK.DURATION, oldValue.length, newValue.length)
 
-  override fun setEnd(end: GanttCalendar?) {
-    // intentionally empty, we do not store the end date
-  }
+  override fun setCompletionPercentage(oldValue: Int, newValue: Int) =
+    appendUpdate(TASK.COMPLETION, oldValue, newValue)
 
-  override fun setDuration(length: TimeDuration) = nextStep { it.set(TASK.DURATION, length.length) }
+  override fun setShape(oldValue: ShapePaint?, newValue: ShapePaint?) =
+    appendUpdate(TASK.SHAPE, oldValue?.array, newValue?.array)
 
-  override fun setCompletionPercentage(percentage: Int) = nextStep { it.set(TASK.COMPLETION, percentage) }
+  override fun setColor(oldValue: Color?, newValue: Color?) =
+    appendUpdate(TASK.COLOR, oldValue?.let(ColorConvertion::getColor), newValue?.let(ColorConvertion::getColor))
 
-  override fun setShape(shape: ShapePaint?) = nextStep { it.set(TASK.SHAPE, shape?.array) }
-
-  override fun setColor(color: Color?) = nextStep { it.set(TASK.COLOR, color?.let {ColorConvertion.getColor(it)}) }
-
-  override fun setCost(cost: Task.Cost) {
-    nextStep { it.set(TASK.IS_COST_CALCULATED, cost.isCalculated) }
-    nextStep { it.set(TASK.COST_MANUAL_VALUE, cost.manualValue) }
+  override fun setCost(oldValue: Task.Cost, newValue: Task.Cost) {
+    appendUpdate(TASK.IS_COST_CALCULATED, oldValue.isCalculated, newValue.isCalculated)
+    appendUpdate(TASK.COST_MANUAL_VALUE, oldValue.manualValue, newValue.manualValue)
   }
 
   override fun setCustomProperties(
@@ -421,24 +421,17 @@ class SqlTaskUpdateBuilder(private val task: Task,
     customPropertiesUpdater.setCustomProperties(oldCustomProperties, newCustomProperties)
   }
 
-  override fun setCustomProperties(customProperties: CustomPropertyHolder) {
-//    customPropertiesUpdater.setCustomProperties(customProperties)
-  }
-
-  override fun setWebLink(webLink: String?) = nextStep { it.set(TASK.WEB_LINK, webLink) }
+  override fun setWebLink(oldValue: String?, newValue: String?) = appendUpdate(TASK.WEB_LINK, oldValue, newValue)
 
 
-  override fun setNotes(notes: String?) = nextStep { it.set(TASK.NOTES, notes) }
+  override fun setNotes(oldValue: String?, newValue: String?) = appendUpdate(TASK.NOTES, oldValue, newValue)
 
-  override fun setExpand(expand: Boolean) {
-    // intentionally empty: we do not keep the expansion state in the task properties
-  }
-
-  override fun setCritical(critical: Boolean) {
+  override fun setCritical(oldValue: Boolean, newValue: Boolean) {
     // TODO("Not yet implemented")
   }
 
-  override fun setProjectTask(projectTask: Boolean) = nextStep { it.set(TASK.IS_PROJECT_TASK, projectTask) }
+  override fun setProjectTask(oldValue: Boolean, newValue: Boolean) =
+    appendUpdate(TASK.IS_PROJECT_TASK, oldValue, newValue)
 }
 
 private fun Task.logId(): String = "${uid}:${taskID}"

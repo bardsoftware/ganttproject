@@ -19,12 +19,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import biz.ganttproject.core.chart.render.ShapePaint
+import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.customproperty.SimpleSelect
-import net.sourceforge.ganttproject.task.MutableTask
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
-import kotlin.jvm.Throws
+import java.awt.Color
 
 open class ProjectDatabaseException: Exception {
   constructor(message: String): super(message)
@@ -46,13 +48,25 @@ typealias ColumnConsumer = Pair<SimpleSelect, (Int, Any?)->Unit>
 /** Storage for holding the current state of a Gantt project. */
 interface ProjectDatabase {
   /** Build and execute an update query. */
-  interface TaskUpdateBuilder: MutableTask {
+  interface TaskUpdateBuilder {
     /** Commit task update. */
     @Throws(ProjectDatabaseException::class)
     fun commit()
 
-    fun setName(oldName: String?, newName: String?)
+    fun setColor(oldValue: Color?, newValue: Color?)
+    fun setCompletionPercentage(oldValue: Int, newValue: Int)
+    fun setCost(oldValue: Task.Cost, newValue: Task.Cost)
+    fun setCritical(oldValue: Boolean, newValue: Boolean)
     fun setCustomProperties(oldCustomProperties: CustomPropertyHolder, newCustomProperties: CustomPropertyHolder)
+    fun setDuration(oldValue: TimeDuration, newValue: TimeDuration)
+    fun setMilestone(oldValue: Boolean, newValue: Boolean)
+    fun setName(oldName: String?, newName: String?)
+    fun setNotes(oldValue: String?, newValue: String?)
+    fun setPriority(oldValue: Task.Priority?, newValue: Task.Priority?)
+    fun setProjectTask(oldValue: Boolean, newValue: Boolean)
+    fun setShape(oldValue: ShapePaint?, newValue: ShapePaint?)
+    fun setStart(oldValue: GanttCalendar, newValue: GanttCalendar)
+    fun setWebLink(oldValue: String?, newValue: String?)
 
     fun interface Factory {
       fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder
