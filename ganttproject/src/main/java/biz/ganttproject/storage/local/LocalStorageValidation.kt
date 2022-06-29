@@ -46,7 +46,7 @@ fun createLocalStorageValidator(
     } catch (e: StorageMode.FileException) {
       when {
         "document.storage.error.read.notExists" == e.message && !isListEmpty.get() ->
-          return@Validator ValidationResult.fromError(control, RootLocalizer.formatText(e.message, *e.args))
+          return@Validator ValidationResult.fromError(control, RootLocalizer.formatText(e.message!!, *e.args))
         else -> return@Validator ValidationResult.fromError(control, RootLocalizer.formatText(e.message!!, *e.args))
       }
     }

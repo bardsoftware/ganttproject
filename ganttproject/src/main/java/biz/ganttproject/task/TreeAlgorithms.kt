@@ -9,7 +9,7 @@ import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm
 /**
  * @author dbarashev@bardsoftware.com
  */
-private val getParentTask = Function<Task, Task> { task ->
+private val getParentTask = Function<Task, Task?> { task ->
   task?.let { it.manager.taskHierarchy.getContainer(task) }
 }
 private val RETAIN_ROOTS = RetainRootsAlgorithm<Task>()

@@ -325,8 +325,8 @@ class ResourceColumnSpecImpl(
     fun getIndexByName(resourceManager: HumanResourceManager): Map<String, HumanResource>? {
       if (resourceMap == null) {
         resourceMap = Maps.uniqueIndex(resourceManager.resources, object : Function<HumanResource, String> {
-          override fun apply(input: HumanResource?): String? {
-            return input?.name
+          override fun apply(input: HumanResource): String {
+            return input.name
           }
         })
       }
