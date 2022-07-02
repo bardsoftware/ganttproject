@@ -16,14 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package biz.ganttproject.customproperty;
+package biz.ganttproject.customproperty
 
-import biz.ganttproject.core.time.GanttCalendar;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.*;
-import java.util.Map.Entry;
+import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.customproperty.PropertyTypeEncoder.decodeTypeAndDefaultValue
+import net.sourceforge.ganttproject.language.GanttLanguage
 
 /**
  * Keeps a map of custom property ID to value.
@@ -31,143 +28,119 @@ import java.util.Map.Entry;
  * @author bbaranne Mar 2, 2005 -- initial code
  * @auuthor dbarashev (Dmitry Barashev) -- complete rewrite
  */
-public class CustomColumnsValues implements CustomPropertyHolder, Cloneable {
+class CustomColumnsValues(private val myManager: CustomPropertyManager) : CustomPropertyHolder, Cloneable {
   /**
    * CustomColumnName(String) -> Value (Object)
    */
-  private final Map<String, Object> mapCustomColumnValue = new HashMap<String, Object>();
-  private final CustomPropertyManager myManager;
-
-  /**
-   * Creates an instance of CustomColumnsValues.
-   */
-  public CustomColumnsValues(CustomPropertyManager customPropertyManager) {
-    myManager = customPropertyManager;
-  }
-
-  public void setValue(CustomPropertyDefinition def, Object value) throws CustomColumnsException {
+  private val mapCustomColumnValue: MutableMap<String, Any> = HashMap()
+  @Throws(CustomColumnsException::class)
+  override fun setValue(def: CustomPropertyDefinition, value: Any?) {
     if (value == null) {
-      mapCustomColumnValue.remove(def.getId());
-      return;
+      mapCustomColumnValue.remove(def.id)
+      return
     }
-    Class<?> c1 = def.getType();
-    Class<?> c2 = value.getClass();
+    val c1 = def.type
+    val c2: Class<*> = value.javaClass
     if (!c1.isAssignableFrom(c2)) {
-      throw new CustomColumnsException(CustomColumnsException.CLASS_MISMATCH, "Failed to set value=" + value
-          + ". value class=" + c2 + ", column class=" + c1);
+      throw CustomColumnsException(CustomColumnsException.CLASS_MISMATCH, "Failed to set value=" + value
+          + ". value class=" + c2 + ", column class=" + c1)
     }
-    mapCustomColumnValue.put(def.getId(), value);
+    mapCustomColumnValue[def.id] = value
   }
 
-  public Object getValue(CustomPropertyDefinition def) {
-    Object result = mapCustomColumnValue.get(def.getId());
-    return (result == null) ? def.getDefaultValue() : result;
+  fun getValue(def: CustomPropertyDefinition): Any? {
+    val result = mapCustomColumnValue[def.id]
+    return result ?: def.defaultValue
   }
 
-  public boolean hasOwnValue(CustomPropertyDefinition def) {
-    return mapCustomColumnValue.containsKey(def.getId());
+  fun hasOwnValue(def: CustomPropertyDefinition): Boolean {
+    return mapCustomColumnValue.containsKey(def.id)
   }
 
-  public void removeCustomColumn(CustomPropertyDefinition definition) {
-    mapCustomColumnValue.remove(definition.getId());
+  fun removeCustomColumn(definition: CustomPropertyDefinition) {
+    mapCustomColumnValue.remove(definition.id)
   }
 
-  public CustomColumnsValues copyOf() {
-    CustomColumnsValues res = new CustomColumnsValues(myManager);
-    res.mapCustomColumnValue.putAll(this.mapCustomColumnValue);
-    return res;
+  fun copyOf(): CustomColumnsValues {
+    val res = CustomColumnsValues(myManager)
+    res.mapCustomColumnValue.putAll(mapCustomColumnValue)
+    return res
   }
 
-  public void importFrom(@NotNull CustomPropertyHolder value) throws CustomColumnsException {
-    mapCustomColumnValue.clear();
-    for (var prop: value.getCustomProperties()) {
-      setValue(prop.getDefinition(), prop.getValue());
+  @Throws(CustomColumnsException::class)
+  fun importFrom(value: CustomPropertyHolder) {
+    mapCustomColumnValue.clear()
+    for (prop in value.customProperties) {
+      setValue(prop.definition, prop.value)
     }
   }
 
-  @Override
-  public String toString() {
-    return mapCustomColumnValue.toString();
+  override fun toString(): String {
+    return mapCustomColumnValue.toString()
   }
 
-  @Override
-  public List<CustomProperty> getCustomProperties() {
-    List<CustomProperty> result = new ArrayList<CustomProperty>(mapCustomColumnValue.size());
-    for (Entry<String, Object> entry : mapCustomColumnValue.entrySet()) {
-      String id = entry.getKey();
-      Object value = entry.getValue();
-      CustomPropertyDefinition def = getCustomPropertyDefinition(myManager, id);
+  override fun getCustomProperties(): List<CustomProperty> {
+    val result: MutableList<CustomProperty> = ArrayList(mapCustomColumnValue.size)
+    for ((id, value) in mapCustomColumnValue) {
+      val def = getCustomPropertyDefinition(myManager, id)
       if (def != null) {
-        result.add(new CustomPropertyImpl(def, value));
+        result.add(CustomPropertyImpl(def, value))
       }
     }
-    return result;
+    return result
   }
 
-  private static CustomPropertyDefinition getCustomPropertyDefinition(CustomPropertyManager manager, String id) {
-    return manager.getCustomPropertyDefinition(id);
-  }
-
-  @Override
-  public CustomProperty addCustomProperty(CustomPropertyDefinition definition, String valueAsString) {
-    CustomPropertyDefinition defStub = PropertyTypeEncoder.INSTANCE.decodeTypeAndDefaultValue(
-        definition.getTypeAsString(), valueAsString);
+  override fun addCustomProperty(definition: CustomPropertyDefinition, valueAsString: String): CustomProperty {
+    val defStub = decodeTypeAndDefaultValue(
+        definition.typeAsString, valueAsString)
     try {
-      setValue(definition, defStub.getDefaultValue());
-    } catch (CustomColumnsException e) {
+      setValue(definition, defStub.defaultValue!!)
+    } catch (e: CustomColumnsException) {
       // TODO Auto-generated catch block
-      e.printStackTrace();
+      e.printStackTrace()
     }
-    return new CustomPropertyImpl(definition, defStub.getDefaultValue());
+    return CustomPropertyImpl(definition, defStub.defaultValue!!)
   }
 
-  private static class CustomPropertyImpl implements CustomProperty {
-    private CustomPropertyDefinition myDefinition;
-    private Object myValue;
-
-    public CustomPropertyImpl(CustomPropertyDefinition definition, Object value) {
-      myDefinition = definition;
-      myValue = value;
+  private class CustomPropertyImpl(private val myDefinition: CustomPropertyDefinition, private val myValue: Any) : CustomProperty {
+    override fun getDefinition(): CustomPropertyDefinition {
+      return myDefinition
     }
 
-    @Override
-    public CustomPropertyDefinition getDefinition() {
-      return myDefinition;
+    override fun getValue(): Any {
+      return myValue
     }
 
-    @Override
-    public Object getValue() {
-      return myValue;
-    }
-
-    @Override
-    public String getValueAsString() {
-      return CustomColumnsValues.getValueAsString(myValue);
+    override fun getValueAsString(): String {
+      return getValueAsString(myValue)!!
     }
   }
 
-  static String getValueAsString(Object value) {
-    String result = null;
-    if (value != null) {
-      if (value instanceof GanttCalendar) {
-        result = GanttLanguage.getInstance().formatShortDate((GanttCalendar) value);
-      } else {
-        result = String.valueOf(value);
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is CustomColumnsValues) return false
+    return mapCustomColumnValue == other.mapCustomColumnValue
+  }
+
+  override fun hashCode(): Int {
+    return mapCustomColumnValue.hashCode()
+  }
+
+  companion object {
+    private fun getCustomPropertyDefinition(manager: CustomPropertyManager, id: String): CustomPropertyDefinition? {
+      return manager.getCustomPropertyDefinition(id)
+    }
+
+    fun getValueAsString(value: Any?): String? {
+      var result: String? = null
+      if (value != null) {
+        result = if (value is GanttCalendar) {
+          GanttLanguage.getInstance().formatShortDate(value as GanttCalendar?)
+        } else {
+          value.toString()
+        }
       }
+      return result
     }
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object object) {
-    if (this == object) return true;
-    if (!(object instanceof CustomColumnsValues)) return false;
-    CustomColumnsValues otherColumnsValues = (CustomColumnsValues) object;
-    return mapCustomColumnValue.equals(otherColumnsValues.mapCustomColumnValue);
-  }
-
-  @Override
-  public int hashCode() {
-    return mapCustomColumnValue.hashCode();
   }
 }
