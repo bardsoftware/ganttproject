@@ -28,7 +28,9 @@ import net.sourceforge.ganttproject.language.GanttLanguage
  * @author bbaranne Mar 2, 2005 -- initial code
  * @auuthor dbarashev (Dmitry Barashev) -- complete rewrite
  */
-class CustomColumnsValues(private val myManager: CustomPropertyManager) : CustomPropertyHolder, Cloneable {
+class CustomColumnsValues(private val customPropertyManager: CustomPropertyManager,
+                          private val eventDispatcher: (CustomPropertyValueEventStub)->Unit)
+  : CustomPropertyHolder, Cloneable {
   /**
    * CustomColumnName(String) -> Value (Object)
    */
@@ -46,6 +48,7 @@ class CustomColumnsValues(private val myManager: CustomPropertyManager) : Custom
           + ". value class=" + c2 + ", column class=" + c1)
     }
     mapCustomColumnValue[def.id] = value
+    eventDispatcher(CustomPropertyValueEventStub((def)))
   }
 
   fun getValue(def: CustomPropertyDefinition): Any? {
@@ -62,7 +65,7 @@ class CustomColumnsValues(private val myManager: CustomPropertyManager) : Custom
   }
 
   fun copyOf(): CustomColumnsValues {
-    val res = CustomColumnsValues(myManager)
+    val res = CustomColumnsValues(customPropertyManager, eventDispatcher)
     res.mapCustomColumnValue.putAll(mapCustomColumnValue)
     return res
   }
@@ -82,7 +85,7 @@ class CustomColumnsValues(private val myManager: CustomPropertyManager) : Custom
   override fun getCustomProperties(): List<CustomProperty> {
     val result: MutableList<CustomProperty> = ArrayList(mapCustomColumnValue.size)
     for ((id, value) in mapCustomColumnValue) {
-      val def = getCustomPropertyDefinition(myManager, id)
+      val def = getCustomPropertyDefinition(customPropertyManager, id)
       if (def != null) {
         result.add(CustomPropertyImpl(def, value))
       }
@@ -90,7 +93,7 @@ class CustomColumnsValues(private val myManager: CustomPropertyManager) : Custom
     return result
   }
 
-  override fun addCustomProperty(definition: CustomPropertyDefinition, valueAsString: String): CustomProperty {
+  override fun addCustomProperty(definition: CustomPropertyDefinition, valueAsString: String?): CustomProperty {
     val defStub = decodeTypeAndDefaultValue(
         definition.typeAsString, valueAsString)
     try {

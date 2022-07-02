@@ -42,7 +42,7 @@ import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.CustomColumn;
-import net.sourceforge.ganttproject.task.CustomPropertyEvent;
+import biz.ganttproject.customproperty.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskDependencyEvent;
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListener;

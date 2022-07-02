@@ -41,7 +41,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.task.CustomPropertyEvent;
+import biz.ganttproject.customproperty.CustomPropertyEvent;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 

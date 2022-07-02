@@ -16,57 +16,37 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.task;
+package biz.ganttproject.customproperty
 
-import biz.ganttproject.customproperty.CustomPropertyDefinition;
+import net.sourceforge.ganttproject.task.Task
 
-public class CustomPropertyEvent {
+class CustomPropertyEvent {
+  val type: Int
+  var definition: CustomPropertyDefinition
+    private set
+  var oldValue: CustomPropertyDefinition? = null
+    private set
 
-  public static final int EVENT_ADD = 0;
-
-  public static final int EVENT_REMOVE = 1;
-
-  public static final int EVENT_REBUILD = 2;
-
-  public static final int EVENT_NAME_CHANGE = 3;
-
-  public static final int EVENT_TYPE_CHANGE = 4;
-
-  private final int myType;
-
-  private CustomPropertyDefinition myDefinition;
-
-  private CustomPropertyDefinition myOldDef;
-
-  public CustomPropertyEvent(int type, CustomPropertyDefinition definition) {
-    myType = type;
-    myDefinition = definition;
+  constructor(type: Int, definition: CustomPropertyDefinition) {
+    this.type = type
+    this.definition = definition
   }
 
-  public CustomPropertyEvent(int type, CustomPropertyDefinition def, CustomPropertyDefinition oldDef) {
-    myType = type;
-    myDefinition = def;
-    myOldDef = oldDef;
+  constructor(type: Int, def: CustomPropertyDefinition, oldDef: CustomPropertyDefinition?) {
+    this.type = type
+    definition = def
+    oldValue = oldDef
   }
 
-  public CustomPropertyDefinition getDefinition() {
-    return myDefinition;
+  companion object {
+    const val EVENT_ADD = 0
+    const val EVENT_REMOVE = 1
+    const val EVENT_REBUILD = 2
+    const val EVENT_NAME_CHANGE = 3
+    const val EVENT_TYPE_CHANGE = 4
   }
-
-  public CustomPropertyDefinition getOldValue() {
-    return myOldDef;
-  }
-
-  public String getOldName() {
-    return myOldDef.getName();
-  }
-
-  public String getColName() {
-    return myDefinition.getName();
-  }
-
-  public int getType() {
-    return myType;
-  }
-
 }
+
+sealed class CustomPropertyValueEvent(val def: CustomPropertyDefinition)
+class CustomPropertyValueEventStub(def: CustomPropertyDefinition): CustomPropertyValueEvent(def)
+class TaskCustomPropertyValueEvent(def: CustomPropertyDefinition, val task: Task): CustomPropertyValueEvent(def)

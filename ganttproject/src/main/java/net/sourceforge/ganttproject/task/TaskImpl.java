@@ -29,6 +29,7 @@ import biz.ganttproject.customproperty.CustomColumnsException;
 import biz.ganttproject.customproperty.CustomColumnsValues;
 import biz.ganttproject.customproperty.CustomPropertyHolder;
 import com.google.common.collect.ImmutableList;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.MilestoneTaskFakeActivity;
 import net.sourceforge.ganttproject.document.AbstractURLDocument;
@@ -142,7 +143,10 @@ public class TaskImpl implements Task {
     bExpand = true;
     myColor = null;
 
-    customValues = new CustomColumnsValues(myManager.getCustomPropertyManager());
+    customValues = new CustomColumnsValues(myManager.getCustomPropertyManager(), event -> {
+      myManager.fireTaskPropertiesChanged(this);
+      return Unit.INSTANCE;
+    });
   }
 
   protected TaskImpl(@NotNull TaskManagerImpl manager, @NotNull TaskImpl copy, boolean isUnplugged, int taskId, @NotNull String taskUid) {

@@ -18,8 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.customproperty;
 
-import net.sourceforge.ganttproject.task.CustomPropertyEvent;
-
 public interface CustomPropertyListener {
   public void customPropertyChange(CustomPropertyEvent event);
 }
