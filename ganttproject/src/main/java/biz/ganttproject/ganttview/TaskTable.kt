@@ -234,7 +234,9 @@ class TaskTable(
                 val task = focusedCell.treeItem.value
                 // intentionally java.lang.Boolean, because as? Boolean returns null
                 (taskTableModel.getValue(task, def) as? java.lang.Boolean)?.let { value ->
-                  taskTableModel.setValue(value.booleanValue().not(), task, def)
+                  undoManager.undoableEdit("Edit properties of task ${task.name}") {
+                    taskTableModel.setValue(value.booleanValue().not(), task, def)
+                  }
                   // This trick refreshes the cell in the table.
                   treeTable.focusModel.focus(-1)
                   treeTable.focusModel.focus(focusedCell)
@@ -485,7 +487,9 @@ class TaskTable(
         } else {
           createTextColumn(taskDefaultColumn.getName(),
             { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
-            { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) },
+            { task, value -> undoManager.undoableEdit("Edit properties of task ${task.name}") {
+              taskTableModel.setValue(value, task, taskDefaultColumn)
+            }},
             { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
           )
         }
@@ -493,7 +497,9 @@ class TaskTable(
       GregorianCalendar::class.java.isAssignableFrom(taskDefaultColumn.valueClass) -> {
         createDateColumn(taskDefaultColumn.getName(),
           { taskTableModel.getValueAt(it, taskDefaultColumn) as GanttCalendar? },
-          { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
+          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
+            taskTableModel.setValue(value, task, taskDefaultColumn)
+          }}
         )
       }
       taskDefaultColumn.valueClass == java.lang.Integer::class.java -> {
@@ -505,19 +511,25 @@ class TaskTable(
               taskTableModel.getValueAt(it, taskDefaultColumn) as Int
             }
           },
-          { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
+          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
+            taskTableModel.setValue(value, task, taskDefaultColumn)
+          }}
         )
       }
       taskDefaultColumn.valueClass == java.lang.Double::class.java -> {
         createDoubleColumn(taskDefaultColumn.getName(),
           { taskTableModel.getValueAt(it, taskDefaultColumn) as Double },
-          { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
+          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
+            taskTableModel.setValue(value, task, taskDefaultColumn)
+          }}
         )
       }
       taskDefaultColumn.valueClass == java.math.BigDecimal::class.java -> {
         createDecimalColumn(taskDefaultColumn.getName(),
           { taskTableModel.getValueAt(it, taskDefaultColumn) as BigDecimal },
-          { task, value -> taskTableModel.setValue(value, task, taskDefaultColumn) }
+          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
+            taskTableModel.setValue(value, task, taskDefaultColumn)
+          }}
         )
       }
       taskDefaultColumn == TaskDefaultColumn.PRIORITY -> {
@@ -554,32 +566,42 @@ class TaskTable(
       CustomPropertyClass.TEXT -> {
         createTextColumn(customProperty.name,
           { taskTableModel.getValue(it, customProperty)?.toString() },
-          { task, value -> taskTableModel.setValue(value, task, customProperty) },
+          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
+            taskTableModel.setValue(value, task, customProperty)
+          }},
           { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
         )
       }
       CustomPropertyClass.BOOLEAN -> {
         createBooleanColumn<Task>(customProperty.name,
           { taskTableModel.getValue(it, customProperty) as Boolean? },
-          { task, value -> taskTableModel.setValue(value, task, customProperty)}
+          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
+            taskTableModel.setValue(value, task, customProperty)
+          }}
         )
       }
       CustomPropertyClass.INTEGER -> {
         createIntegerColumn(customProperty.name,
           { taskTableModel.getValue(it, customProperty) as Int? },
-          { task, value -> taskTableModel.setValue(value, task, customProperty) }
+          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
+            taskTableModel.setValue(value, task, customProperty)
+          }}
         )
       }
       CustomPropertyClass.DOUBLE -> {
         createDoubleColumn(customProperty.name,
           { taskTableModel.getValue(it, customProperty) as Double? },
-          { task, value -> taskTableModel.setValue(value, task, customProperty) }
+          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
+            taskTableModel.setValue(value, task, customProperty)
+          }}
         )
       }
       CustomPropertyClass.DATE -> {
         createDateColumn(customProperty.name,
           { taskTableModel.getValue(it, customProperty) as GanttCalendar? },
-          { task, value -> taskTableModel.setValue(value, task, customProperty) }
+          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
+            taskTableModel.setValue(value, task, customProperty)
+          }}
         )
       }
     }.also {
