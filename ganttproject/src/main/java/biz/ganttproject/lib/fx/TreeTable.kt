@@ -41,6 +41,7 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Region
 import javafx.util.Callback
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.max
 import kotlin.math.round
 
@@ -176,6 +177,20 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
         skin?.let { (it as GPTreeTableViewSkin<T>).updateScrollValue() }
       }
     }
+  }
+
+  private val refreshCommand = AtomicReference<Runnable?>(null)
+
+  fun coalescingRefresh() {
+    if (refreshCommand.get() == null) {
+      val runnable = Runnable {
+        refresh()
+      }
+      if (refreshCommand.compareAndSet(null, runnable)) {
+        Platform.runLater(runnable)
+      }
+    }
+
   }
 }
 
