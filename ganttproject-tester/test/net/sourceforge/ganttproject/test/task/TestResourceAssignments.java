@@ -12,11 +12,7 @@ import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.task.ResourceAssignmentMutator;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskManagerConfig;
+import net.sourceforge.ganttproject.task.*;
 
 import java.awt.*;
 import java.net.URL;
@@ -150,7 +146,7 @@ public class TestResourceAssignments extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         myHumanResourceManager = new HumanResourceManager(RoleManager.Access
-                .getInstance().getDefaultRole(), null);
+                .getInstance().getDefaultRole(), new CustomColumnsManager());
         getResourceManager().create("test resource#1", 1);
         getResourceManager().create("test resource#2", 2);
         myTaskManager = newTaskManager();

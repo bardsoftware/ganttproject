@@ -432,7 +432,7 @@ class ProjectDatabaseTest {
     val def = taskManager.customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo", "'")
     val txn = projectDatabase.startTransaction()
     task1.createMutator().let {mutator ->
-      mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager).also {
+      mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager, eventDispatcher = {}).also {
         it.addCustomProperty(def, "foovalue")
       })
       mutator.commit()
@@ -467,7 +467,7 @@ class ProjectDatabaseTest {
     val def = taskManager.customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo", "default")
     val txn = projectDatabase.startTransaction()
     task1.createMutator().let { mutator ->
-      mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager).also {
+      mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager, eventDispatcher = {}).also {
         it.addCustomProperty(def, "foovalue")
       })
       mutator.commit()
@@ -475,7 +475,7 @@ class ProjectDatabaseTest {
     txn.commit()
     val txn2 = projectDatabase.startTransaction()
     task1.createMutator().let { mutator ->
-      mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager).also {
+      mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager, eventDispatcher = {}).also {
         it.addCustomProperty(def, "foovalue2")
       })
       mutator.commit()
@@ -522,7 +522,7 @@ class ProjectDatabaseTest {
 
     val txn = projectDatabase.startTransaction()
     task1.createMutator().let {mutator ->
-      mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager))
+      mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager, eventDispatcher = {}))
       mutator.commit()
     }
     txn.commit()

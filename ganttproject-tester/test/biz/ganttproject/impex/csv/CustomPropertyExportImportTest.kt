@@ -151,7 +151,7 @@ class CustomPropertyExportImportTest : TestCase() {
       val customPropertyMgr = CustomColumnsManager().also { mgr ->
         mgr.createDefinition("F1", "int", "F1", "0")
       }
-      val customValues = CustomColumnsValues(customPropertyMgr)
+      val customValues = CustomColumnsValues(customPropertyMgr, eventDispatcher = {})
       it.next().let{ record ->
         readCustomProperties(headerRecord, customFields, record, customPropertyMgr) { def, value ->
           customValues.addCustomProperty(def, value)
