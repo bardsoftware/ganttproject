@@ -90,7 +90,7 @@ class CustomColumnsValues(private val myManager: CustomPropertyManager) : Custom
     return result
   }
 
-  override fun addCustomProperty(definition: CustomPropertyDefinition, valueAsString: String): CustomProperty {
+  override fun addCustomProperty(definition: CustomPropertyDefinition, valueAsString: String?): CustomProperty {
     val defStub = decodeTypeAndDefaultValue(
         definition.typeAsString, valueAsString)
     try {
