@@ -205,7 +205,7 @@ class TaskRecords(
       }
       val parentOutlineNumber = Joiner.on('.').join(components.subList(0, components.size - 1))
       val parentTask = myWbsMap[parentOutlineNumber] ?: continue
-      taskManager.taskHierarchy.move(value, parentTask, 0)
+      taskManager.taskHierarchy.move(value, parentTask)
     }
     if (resourceManager != null) {
       for ((key, value) in myAssignmentMap) {
