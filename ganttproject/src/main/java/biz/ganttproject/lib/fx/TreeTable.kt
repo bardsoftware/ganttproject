@@ -184,7 +184,14 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   fun coalescingRefresh() {
     if (refreshCommand.get() == null) {
       val runnable = Runnable {
-        refresh()
+        // perhaps we can live without refresh call
+        // refresh()
+        val focusedCell = focusModel.focusedCell
+        Platform.runLater {
+          focusModel.focus(-1)
+          focusModel.focus(focusedCell)
+        }
+        refreshCommand.set(null)
       }
       if (refreshCommand.compareAndSet(null, runnable)) {
         Platform.runLater(runnable)
