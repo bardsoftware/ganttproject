@@ -24,6 +24,7 @@ import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.customproperty.PropertyTypeEncoder;
 import com.google.common.base.Strings;
 import biz.ganttproject.customproperty.CustomPropertyHolder;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.roles.Role;
 import biz.ganttproject.customproperty.CustomColumnsException;
@@ -80,7 +81,7 @@ public class HumanResource implements CustomPropertyHolder {
     this.id = id;
     this.name = name;
     myManager = manager;
-    myCustomProperties = new CustomColumnsValues(myManager.getCustomPropertyManager());
+    myCustomProperties = new CustomColumnsValues(myManager.getCustomPropertyManager(), event -> Unit.INSTANCE);
   }
 
   private HumanResource(HumanResource copy) {

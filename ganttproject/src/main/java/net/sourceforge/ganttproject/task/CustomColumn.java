@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.task;
 import biz.ganttproject.customproperty.CalculationMethod;
 import biz.ganttproject.customproperty.CustomPropertyClass;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
+import biz.ganttproject.customproperty.CustomPropertyEvent;
 import biz.ganttproject.customproperty.PropertyTypeEncoder;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 import org.jetbrains.annotations.Nullable;

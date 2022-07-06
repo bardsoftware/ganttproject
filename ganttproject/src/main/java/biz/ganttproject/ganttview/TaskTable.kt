@@ -60,8 +60,11 @@ import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.language.GanttLanguage
-import net.sourceforge.ganttproject.task.*
+import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskManager
+import net.sourceforge.ganttproject.task.TaskSelectionManager
 import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm
+import net.sourceforge.ganttproject.task.depthFirstWalk
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
@@ -333,7 +336,7 @@ class TaskTable(
   private fun initTaskEventHandlers() {
     taskManager.addTaskListener(object : TaskListenerAdapter() {
       override fun taskPropertiesChanged(e: TaskPropertyEvent) {
-        Platform.runLater { treeTable.refresh() }
+        treeTable.coalescingRefresh()
       }
 
       override fun taskAdded(e: TaskHierarchyEvent) {
