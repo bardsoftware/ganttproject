@@ -25,13 +25,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
-import com.google.common.collect.BoundType;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
-import com.google.common.collect.TreeMultimap;
+import com.google.common.collect.*;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
@@ -40,16 +34,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyConstraint;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A graph of dependencies between tasks which is used for scheduling algorithm.
@@ -624,7 +609,7 @@ public class DependencyGraph {
 
   private final Map<Task, Node> myNodeMap = Maps.newHashMap();
 
-  private final Supplier<TaskContainmentHierarchyFacade> myTaskHierarchy;
+  private final java.util.function.Supplier<TaskContainmentHierarchyFacade> myTaskHierarchy;
 
   private final List<Listener> myListeners = Lists.newArrayList();
 
@@ -635,7 +620,7 @@ public class DependencyGraph {
   private GraphData myData = new GraphData(myTxn);
 
   public DependencyGraph(Supplier<TaskContainmentHierarchyFacade> taskHierarchy) {
-    this(taskHierarchy, new Logger() {
+    this(taskHierarchy::get, new Logger() {
       @Override
       public void logDependencyLoop(String title, String message) {
         GPLogger.log(title + "\n" + message);
@@ -643,7 +628,7 @@ public class DependencyGraph {
     });
   }
 
-  public DependencyGraph(Supplier<TaskContainmentHierarchyFacade> taskHierarchy, Logger logger) {
+  public DependencyGraph(java.util.function.Supplier<TaskContainmentHierarchyFacade> taskHierarchy, Logger logger) {
     myTaskHierarchy = taskHierarchy;
     myLogger = logger;
   }
@@ -728,7 +713,7 @@ public class DependencyGraph {
   private void addEdge(DependencyEdge edge) {
     edge.getSrc().addOutgoing(edge);
     edge.getDst().addIncoming(edge);
-    PriorityQueue<Node> queue = new PriorityQueue<DependencyGraph.Node>(11, new Comparator<Node>() {
+    PriorityQueue<Node> queue = new PriorityQueue<Node>(11, new Comparator<Node>() {
       @Override
       public int compare(Node o1, Node o2) {
         return o1.getLevel() - o2.getLevel();

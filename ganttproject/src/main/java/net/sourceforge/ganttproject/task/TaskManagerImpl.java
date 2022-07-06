@@ -4,8 +4,8 @@
  */
 package net.sourceforge.ganttproject.task;
 
-import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.app.Barrier;
+import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.GPCalendarListener;
@@ -15,9 +15,7 @@ import biz.ganttproject.core.chart.scene.gantt.ChartBoundsAlgorithm.Result;
 import biz.ganttproject.core.model.task.ConstraintType;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.time.*;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.*;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
@@ -36,10 +34,12 @@ import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 import net.sourceforge.ganttproject.task.event.*;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -112,9 +112,8 @@ public class TaskManagerImpl implements TaskManager {
 
     public Task[] getTasks() {
       if (isModified) {
-        List<Task> myList = myId2task.values().stream().filter(t -> !t.isDeleted()).collect(Collectors.toList());
-        myList.sort(myComparator);
-        myArray = myList.toArray(new Task[0]);
+        myArray = myId2task.values().stream().filter(t -> !t.isDeleted())
+          .sorted(myComparator).toArray(Task[]::new);
         isModified = false;
       }
       return myArray;
@@ -191,7 +190,7 @@ public class TaskManagerImpl implements TaskManager {
       @Override
       protected Hardness getDefaultHardness() {
         String optionValue = getDependencyHardnessOption().getValue();
-        return optionValue == null ? super.getDefaultHardness() : TaskDependency.Hardness.parse(optionValue);
+        return optionValue == null ? super.getDefaultHardness() : Hardness.parse(optionValue);
       }
 
     };
@@ -228,47 +227,47 @@ public class TaskManagerImpl implements TaskManager {
     myAlgorithmCollection = new AlgorithmCollection(this, alg1, alg2, alg3, alg4, alg5, algCriticalPath, myScheduler);
     addTaskListener(new TaskListenerAdapter() {
       @Override
-      public void dependencyChanged(TaskDependencyEvent e) {
+      public void dependencyChanged(@NotNull TaskDependencyEvent e) {
         if (areEventsEnabled) {
           myScheduler.run();
         }
       }
 
       @Override
-      public void taskScheduleChanged(TaskScheduleEvent e) {
+      public void taskScheduleChanged(@NotNull TaskScheduleEvent e) {
         processCriticalPath(getRootTask());
       }
 
       @Override
-      public void dependencyAdded(TaskDependencyEvent e) {
+      public void dependencyAdded(@NotNull TaskDependencyEvent e) {
         processCriticalPath(getRootTask());
       }
 
       @Override
-      public void dependencyRemoved(TaskDependencyEvent e) {
+      public void dependencyRemoved(@NotNull TaskDependencyEvent e) {
         processCriticalPath(getRootTask());
       }
 
       @Override
-      public void taskAdded(TaskHierarchyEvent e) {
+      public void taskAdded(@NotNull TaskHierarchyEvent e) {
         processCriticalPath(getRootTask());
       }
 
       @Override
-      public void taskRemoved(TaskHierarchyEvent e) {
+      public void taskRemoved(@NotNull TaskHierarchyEvent e) {
         processCriticalPath(getRootTask());
       }
 
       @Override
-      public void taskMoved(TaskHierarchyEvent e) {
+      public void taskMoved(@NotNull TaskHierarchyEvent e) {
         processCriticalPath(getRootTask());
       }
 
       @Override
-      public void taskPropertiesChanged(TaskPropertyEvent e) {}
+      public void taskPropertiesChanged(@NotNull TaskPropertyEvent e) {}
 
       @Override
-      public void taskProgressChanged(TaskPropertyEvent e) {}
+      public void taskProgressChanged(@NotNull TaskPropertyEvent e) {}
 
       @Override
       public void taskModelReset() {}
@@ -405,24 +404,27 @@ public class TaskManagerImpl implements TaskManager {
   }
 
   private static Iterable<BarChartActivity<?>> tasksToActivities(Task[] tasks) {
-    return Iterables.transform(Arrays.asList(tasks), task -> new BarChartActivity<Task>() {
+    return Arrays.stream(tasks).map(task -> new BarChartActivity<Task>() {
       @Override
       public Date getStart() {
         return task.getStart().getTime();
       }
+
       @Override
       public Date getEnd() {
         return task.getEnd().getTime();
       }
+
       @Override
       public TimeDuration getDuration() {
         return task.getDuration();
       }
+
       @Override
       public Task getOwner() {
         return task;
       }
-    });
+    }).collect(Collectors.toList());
   }
 
   @Override
@@ -816,7 +818,7 @@ public class TaskManagerImpl implements TaskManager {
       if (getTask(that.getTaskID()) == null) {
         builder = builder.withId(that.getTaskID());
       }
-      Task nextImported = builder
+      var nextImported = builder
         .withName(that.getName())
         .withStartDate(that.getStart().getTime())
         .withDuration(that.getDuration())
@@ -824,7 +826,8 @@ public class TaskManagerImpl implements TaskManager {
         .withNotes(that.getNotes())
         .withWebLink(that.getWebLink())
         .withPriority(that.getPriority())
-        .withParent(root).build();
+        .withParent(root)
+        .build();
 
       nextImported.setShape(task.getShape());
       nextImported.setCompletionPercentage(task.getCompletionPercentage());

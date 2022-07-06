@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
+import javafx.beans.property.SimpleObjectProperty
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -31,52 +32,53 @@ class InternationalizationTest {
 
   @Test
   fun `test simple localizer`() {
-    val i18n = DefaultLocalizer {
-      newResourceBundle(mapOf(
+    val i18n = DefaultLocalizer (
+      currentTranslation = SimpleObjectProperty(newResourceBundle(mapOf(
           "foo" to "I am Foo",
           "hello" to "Hello, {0}"
-      ))
-    }
+      )))
+    )
     assertEquals("I am Foo", i18n.formatText("foo"))
     assertEquals("Hello, world", i18n.formatText("hello", "world"))
   }
 
   @Test
   fun `test key prefix`() {
-    val rootLocalizer = DefaultLocalizer {
-      newResourceBundle(mapOf(
+    val rootLocalizer = DefaultLocalizer(
+      currentTranslation = SimpleObjectProperty(newResourceBundle(mapOf(
           "foo.hello" to "Hello, {0}"
-      ))
-    }
+      )))
+    )
     val i18n = rootLocalizer.createWithRootKey("foo")
     assertEquals("Hello, world", i18n.formatText("hello", "world"))
   }
 
   @Test
   fun `fallback localizer`() {
-    val fallbackLocalizer = DefaultLocalizer {
-      newResourceBundle(mapOf(
+    val fallbackLocalizer = DefaultLocalizer(
+      currentTranslation = SimpleObjectProperty(newResourceBundle(mapOf(
           "hello" to "Hello, {0}"
-      ))
-    }
-    val i18n = DefaultLocalizer(baseLocalizer = fallbackLocalizer) {
-      newResourceBundle(mapOf(
+      )))
+    )
+
+    val i18n = DefaultLocalizer(baseLocalizer = fallbackLocalizer,
+      currentTranslation = SimpleObjectProperty(newResourceBundle(mapOf(
           "world" to "World!"
-      ))
-    }
+      )))
+    )
     assertEquals("Hello, World!", i18n.formatText("hello", i18n.formatText("world")))
   }
 
   @Test
   fun `prefix and fallback`() {
-    val rootLocalizer = DefaultLocalizer {
-      newResourceBundle(mapOf(
+    val rootLocalizer = DefaultLocalizer(
+      currentTranslation = SimpleObjectProperty(newResourceBundle(mapOf(
           "foo.hello" to "Hello, {0}",
           "world" to "World!",
           "foo.ganttproject" to "GanttProject!",
           "ganttproject" to "You are not expected to see this"
-      ))
-    }
+      )))
+    )
     val i18n = rootLocalizer.createWithRootKey("foo", baseLocalizer = rootLocalizer)
     assertEquals("Hello, World!", i18n.formatText("hello", i18n.formatText("world")))
     assertEquals("Hello, GanttProject!", i18n.formatText("hello", i18n.formatText("ganttproject")))

@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.impex.csv;
 
 import biz.ganttproject.app.DefaultLocalizer;
+import biz.ganttproject.app.DummyLocalizer;
 import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.time.impl.GregorianTimeUnitStack;
@@ -27,6 +28,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Maps;
+import javafx.beans.property.SimpleObjectProperty;
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.CustomPropertyDefinition;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
@@ -108,7 +110,8 @@ public class GPCsvImportTest extends TestCase {
         return GanttLanguage.getInstance().getText(key);
       }
     });
-    InternationalizationKt.setRootLocalizer(new DefaultLocalizer() {
+    InternationalizationKt.setRootLocalizer(new DefaultLocalizer("", DummyLocalizer.INSTANCE, null,
+      new SimpleObjectProperty(null)) {
       @Nullable
       @Override
       public String formatTextOrNull(@NotNull String key, @NotNull Object... args) {
