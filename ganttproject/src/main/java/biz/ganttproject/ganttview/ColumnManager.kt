@@ -96,7 +96,8 @@ class ColumnManager(
   init {
     mergedColumns.addAll(currentTableColumns.exportData())
     // First go columns which are shown in the table now
-    listItems.setAll(mergedColumns.map { col ->
+    // and they are ordered the same way are shown in the table.
+    listItems.setAll(mergedColumns.sortedWith { col1, col2 -> columnsOrder(col1, col2) }.map { col ->
       val isCustom = customColumnsManager.definitions.find { it.id == col.id } != null
       ColumnAsListItem(col, col.isVisible, isCustom, customColumnsManager)
     })
@@ -151,6 +152,7 @@ class ColumnManager(
   }
 
   fun applyChanges() {
+    // First we remove custom columns which were removed from the list.
     mergedColumns.forEach { existing ->
       listItems.find { it.column?.id == existing.id } ?: run {
         customColumnsManager.definitions.find { def -> def.id == existing.id }?.let(customColumnsManager::deleteDefinition)
@@ -159,18 +161,21 @@ class ColumnManager(
 
     listItems.forEach { columnItem ->
       columnItem.column?.let {
+        // Apply changes made in the columns which has existed before.
         it.isVisible = columnItem.isVisible
         if (columnItem.isCustom) {
           customColumnsManager.definitions.find { def -> def.id == it.id }?.fromColumnItem(columnItem)
         }
       } ?: run {
+        // Create custom columns which were added in the dialog
         val def = customColumnsManager.createDefinition(columnItem.type.getCustomPropertyClass(), columnItem.title, columnItem.defaultValue)
         if (columnItem.isVisible) {
           mergedColumns.add(ColumnList.ColumnStub(def.id, def.name, true, mergedColumns.size, 50))
         }
       }
     }
-    mergedColumns.filter { it.isVisible }.forEachIndexed { index, column -> column.order = index }
+    mergedColumns.filter { it.isVisible }.sortedWith{col1, col2 -> columnsOrder(col1, col2) }
+      .forEachIndexed { index, column -> column.order = index }
     currentTableColumns.importData(ColumnList.Immutable.fromList(mergedColumns), false)
   }
 }
@@ -482,5 +487,11 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
   }
 }
 
+private fun columnsOrder(col1: ColumnList.Column, col2: ColumnList.Column): Int =
+  when {
+    col1.isVisible && !col2.isVisible -> -1
+    col2.isVisible && !col1.isVisible -> 1
+    else -> col1.order - col2.order
+  }
 private val ourLocalizer = RootLocalizer.createWithRootKey(
   rootKey = "taskTable.columnManager", baseLocalizer = RootLocalizer)
