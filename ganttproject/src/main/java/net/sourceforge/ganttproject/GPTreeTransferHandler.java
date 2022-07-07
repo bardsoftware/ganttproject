@@ -82,7 +82,7 @@ class GPTreeTransferHandler extends TransferHandler {
     if (selectedPaths == null || selectedPaths.length == 0) {
       return null;
     }
-    ClipboardContents clipboardContents = ((GanttChartSelection)myGanttChart.get().getSelection()).buildClipboardContents();
+    ClipboardContents clipboardContents = ((GanttChartSelection)myGanttChart.get().getSelection()).buildClipboardContents(myTaskManager);
     return new GPTransferable(clipboardContents);
   }
 
