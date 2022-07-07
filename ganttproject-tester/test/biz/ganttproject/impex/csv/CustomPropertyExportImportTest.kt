@@ -23,6 +23,7 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
+import javafx.beans.property.SimpleObjectProperty
 import junit.framework.TestCase
 import net.sourceforge.ganttproject.CustomPropertyClass
 import net.sourceforge.ganttproject.language.GanttLanguage
@@ -46,7 +47,7 @@ class CustomPropertyExportImportTest : TestCase() {
   @Throws(Exception::class)
   override fun setUp() {
     TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
-    RootLocalizer = object : DefaultLocalizer() {
+    RootLocalizer = object : DefaultLocalizer(currentTranslation = SimpleObjectProperty(null)) {
       override fun formatTextOrNull(key: String, vararg args: Any): String? {
         return key
       }
