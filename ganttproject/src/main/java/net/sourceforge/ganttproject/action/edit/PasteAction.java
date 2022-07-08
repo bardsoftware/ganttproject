@@ -23,8 +23,7 @@ import net.sourceforge.ganttproject.GPTransferable;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartSelection;
-import net.sourceforge.ganttproject.chart.gantt.ExternalInternalFlavorMap;
-import net.sourceforge.ganttproject.document.Document;
+import net.sourceforge.ganttproject.chart.gantt.ClipboardContentsKt;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
@@ -38,10 +37,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.util.Arrays;
 
 import static net.sourceforge.ganttproject.importer.BufferProjectImportKt.importBufferProject;
 
@@ -102,18 +98,10 @@ public class PasteAction extends GPAction {
 
   private void pasteExternalDocument(byte[] bytes) {
     try {
-
-      final BufferProject bufferProject = new BufferProject(myProject, myUiFacade);
-      File tmpFile = File.createTempFile("ganttPaste", "");
-      Files.write(tmpFile.toPath(), bytes);
-
-      Document document = bufferProject.getDocumentManager().getDocument(tmpFile.getAbsolutePath());
-      document.read();
-      tmpFile.delete();
-
+      var clipboardProject = ClipboardContentsKt.getProjectFromClipboard(new BufferProject(myProject, myUiFacade));
       HumanResourceMerger.MergeResourcesOption mergeOption = new HumanResourceMerger.MergeResourcesOption();
       mergeOption.setValue(HumanResourceMerger.MergeResourcesOption.NO);
-      importBufferProject(myProject, bufferProject, BufferProjectImportKt.asImportBufferProjectApi(myUiFacade),
+      importBufferProject(myProject, clipboardProject, BufferProjectImportKt.asImportBufferProjectApi(myUiFacade),
           mergeOption, null);
     } catch (Exception e) {
       e.printStackTrace();
