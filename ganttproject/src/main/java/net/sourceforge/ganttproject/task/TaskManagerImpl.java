@@ -17,7 +17,6 @@ import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.time.*;
 import biz.ganttproject.customproperty.*;
 import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.*;
