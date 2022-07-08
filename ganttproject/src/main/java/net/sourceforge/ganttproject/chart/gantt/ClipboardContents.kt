@@ -57,8 +57,8 @@ class ClipboardContents(val taskManager: TaskManager) {
      * Adds tasks to the clipboard contents
      * @param tasks
      */
-    fun addTasks(tasks: List<Task>?) {
-        myTasks.addAll(tasks!!)
+    fun addTasks(tasks: List<Task>) {
+        myTasks.addAll(tasks)
     }
 
     /**

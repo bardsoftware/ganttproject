@@ -32,6 +32,7 @@ import java.awt.datatransfer.Transferable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static biz.ganttproject.task.TreeAlgorithmsKt.retainRoots;
 
@@ -76,7 +77,11 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
       customDefMap.put(def, def);
     }
     exportedTaskManager.importData(myTaskManager, customDefMap);
-    var clipboardContents = buildClipboardContents(exportedTaskManager);
+    // we build a mapping of the currently selected tasks to their copies in the external task model
+    var selectedRoots = retainRoots(mySelectionManager.getSelectedTasks().stream()
+      .map(t -> exportedTaskManager.getTask(t.getTaskID())).collect(Collectors.toList()));
+    var clipboardContents = new ClipboardContents(exportedTaskManager);
+    clipboardContents.addTasks(selectedRoots);
     clipboardContents.copy();
     clipboard.setContents(new GPTransferable(clipboardContents), this);
   }
