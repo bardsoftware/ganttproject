@@ -18,8 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
-import com.google.common.io.ByteStreams;
-import net.sourceforge.ganttproject.GPTransferable;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartSelection;
@@ -32,12 +30,7 @@ import net.sourceforge.ganttproject.importer.BufferProjectImportKt;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.InputStream;
 
 import static net.sourceforge.ganttproject.importer.BufferProjectImportKt.importBufferProject;
 
@@ -79,26 +72,18 @@ public class PasteAction extends GPAction {
       pasteInternalFlavor(selection);
       return;
     }
-    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-    if (clipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR)) {
+    var clipboardProject = ClipboardContentsKt.getProjectFromClipboard(new BufferProject(myProject, myUiFacade));
+    if (clipboardProject != null) {
       try {
-        Object data = clipboard.getData(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR);
-        if (data instanceof InputStream == false) {
-          return;
-        }
-        byte[] bytes = ByteStreams.toByteArray((InputStream) data);
-        myUndoManager.undoableEdit(getLocalizedName(), () -> {
-          pasteExternalDocument(bytes);
-        });
+        myUndoManager.undoableEdit(getLocalizedName(), () -> pasteExternalDocument(clipboardProject));
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
   }
 
-  private void pasteExternalDocument(byte[] bytes) {
+  private void pasteExternalDocument(BufferProject clipboardProject) {
     try {
-      var clipboardProject = ClipboardContentsKt.getProjectFromClipboard(new BufferProject(myProject, myUiFacade));
       HumanResourceMerger.MergeResourcesOption mergeOption = new HumanResourceMerger.MergeResourcesOption();
       mergeOption.setValue(HumanResourceMerger.MergeResourcesOption.NO);
       importBufferProject(myProject, clipboardProject, BufferProjectImportKt.asImportBufferProjectApi(myUiFacade),
@@ -109,12 +94,9 @@ public class PasteAction extends GPAction {
   }
 
   private void pasteInternalFlavor(final ChartSelection selection) {
-    myUndoManager.undoableEdit(getLocalizedName(), new Runnable() {
-      @Override
-      public void run() {
-        myViewmanager.getActiveChart().paste(selection);
-        selection.commitClipboardTransaction();
-      }
+    myUndoManager.undoableEdit(getLocalizedName(), () -> {
+      myViewmanager.getActiveChart().paste(selection);
+      selection.commitClipboardTransaction();
     });
   }
 
@@ -122,12 +104,9 @@ public class PasteAction extends GPAction {
   public PasteAction asToolbarAction() {
     final PasteAction result = new PasteAction(myProject, myUiFacade, myViewmanager, myUndoManager);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
-    this.addPropertyChangeListener(new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        if ("enabled".equals(evt.getPropertyName())) {
-          result.setEnabled((Boolean) evt.getNewValue());
-        }
+    this.addPropertyChangeListener(evt -> {
+      if ("enabled".equals(evt.getPropertyName())) {
+        result.setEnabled((Boolean) evt.getNewValue());
       }
     });
     result.setEnabled(this.isEnabled());
