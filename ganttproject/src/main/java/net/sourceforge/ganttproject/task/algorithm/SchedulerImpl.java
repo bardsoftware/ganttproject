@@ -25,7 +25,6 @@ import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
-import com.google.common.base.Supplier;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
@@ -41,6 +40,7 @@ import net.sourceforge.ganttproject.task.algorithm.DependencyGraph.Node;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 /**
