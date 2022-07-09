@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.export;
 
 import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
@@ -43,6 +44,8 @@ import java.util.Locale;
 
 public class ConsoleUIFacade implements UIFacade {
   private final UIFacade myRealFacade;
+  private final TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
+  private final TaskView myTaskView = new TaskView();
 
   public ConsoleUIFacade(UIFacade realFacade) {
     myRealFacade = realFacade;
@@ -202,7 +205,7 @@ public class ConsoleUIFacade implements UIFacade {
 
   @Override
   public TaskView getCurrentTaskView() {
-    return myRealFacade.getCurrentTaskView();
+    return myTaskView;
   }
 
 //  @Override
@@ -212,7 +215,7 @@ public class ConsoleUIFacade implements UIFacade {
 
   @Override
   public TreeCollapseView<Task> getTaskCollapseView() {
-    return myRealFacade.getTaskCollapseView();
+    return myTaskCollapseView;
   }
 
   @Override

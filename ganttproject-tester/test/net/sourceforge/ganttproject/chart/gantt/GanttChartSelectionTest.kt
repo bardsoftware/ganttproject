@@ -20,7 +20,10 @@ package net.sourceforge.ganttproject.chart.gantt
 
 import junit.framework.TestCase
 import net.sourceforge.ganttproject.GPTransferable
+import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.TestSetupHelper
+import net.sourceforge.ganttproject.export.ConsoleUIFacade
+import net.sourceforge.ganttproject.importer.BufferProject
 import net.sourceforge.ganttproject.task.TaskSelectionManager
 import org.junit.jupiter.api.Test
 import java.awt.GraphicsEnvironment
@@ -44,7 +47,7 @@ class GanttChartSelectionTest: TestCase() {
    */
   @Test fun testStartMoveTransactionAndExternalDocumentFlavor_Issue2050() {
     val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
-    val selectionManager = TaskSelectionManager() { taskManager }
+    val selectionManager = TaskSelectionManager { taskManager }
     val task1 = taskManager.newTaskBuilder().withName("task1").build()
     val task2 = taskManager.newTaskBuilder().withName("task2").build()
     val task3 = taskManager.newTaskBuilder().withName("task3").build()
@@ -55,8 +58,35 @@ class GanttChartSelectionTest: TestCase() {
     if (!GraphicsEnvironment.isHeadless()) {
       val clipboard = Toolkit.getDefaultToolkit().systemClipboard
       assertTrue(clipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR))
-      assertNotNull(clipboard.getData(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR))
+      val clipboardProject = getProjectFromClipboard(BufferProject(GanttProjectImpl(), ConsoleUIFacade(null))) ?: error("Clipboard project is null")
+      assertEquals(1, clipboardProject.taskManager.tasks.size)
     }
     assertEquals(setOf(task1, task2, task3), taskManager.taskHierarchy.tasksInDocumentOrder.toSet())
+  }
+
+  @Test fun testDependenciesInTheClipboardProject() {
+    val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+    val selectionManager = TaskSelectionManager { taskManager }
+    val task1 = taskManager.newTaskBuilder().withName("task1").build()
+    val task2 = taskManager.newTaskBuilder().withName("task2").build()
+    val task3 = taskManager.newTaskBuilder().withName("task3").build()
+
+    taskManager.dependencyCollection.createDependency(task2, task1)
+    taskManager.dependencyCollection.createDependency(task3, task1)
+
+    val ganttChartSelection = GanttChartSelection(taskManager, selectionManager)
+    selectionManager.setSelectedTasks(listOf(task1, task2), this)
+    ganttChartSelection.startMoveClipboardTransaction()
+
+    if (!GraphicsEnvironment.isHeadless()) {
+      val clipboardProject = getProjectFromClipboard(BufferProject(GanttProjectImpl(), ConsoleUIFacade(null)))
+        ?: error("Clipboard project is null")
+      assertEquals(setOf("task1", "task2"), clipboardProject.taskManager.tasks.map { it.name }.toSet())
+      clipboardProject.taskManager.dependencyCollection.dependencies?.let {
+        assertEquals(1, it.size)
+        assertEquals("task1", it[0].dependee.name)
+        assertEquals("task2", it[0].dependant.name)
+      } ?: error("Dependencies are null")
+    }
   }
 }
