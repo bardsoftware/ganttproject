@@ -19,20 +19,25 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart.gantt
 
 import com.google.common.base.Predicate
-import net.sourceforge.ganttproject.task.TaskManager
-import net.sourceforge.ganttproject.resource.HumanResource
-import net.sourceforge.ganttproject.task.dependency.TaskDependency
-import com.google.common.collect.Multimap
 import com.google.common.collect.LinkedHashMultimap
 import com.google.common.collect.Lists
 import com.google.common.collect.Sets
 import com.google.common.hash.Hashing
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
-import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
+import com.google.common.io.ByteStreams
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.GPTransferable
+import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.importer.BufferProject
+import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.task.ResourceAssignment
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskManager
+import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.util.collect.Pair
+import java.awt.Toolkit
+import java.io.File
+import java.io.InputStream
+import java.nio.file.Files
 import java.util.*
 
 /**
@@ -57,8 +62,8 @@ class ClipboardContents(val taskManager: TaskManager) {
      * Adds tasks to the clipboard contents
      * @param tasks
      */
-    fun addTasks(tasks: List<Task>?) {
-        myTasks.addAll(tasks!!)
+    fun addTasks(tasks: List<Task>) {
+        myTasks.addAll(tasks)
     }
 
     /**
@@ -185,4 +190,29 @@ object ExternalInternalFlavorMap {
 
   fun get(externalFlavor: ByteArray): ClipboardContents? = mapping[Hashing.murmur3_128().hashBytes(externalFlavor).toString()]
 
+}
+
+fun getProjectFromClipboard(bufferProject: BufferProject): BufferProject? {
+  val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+  if (clipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR)) {
+    try {
+      val data = clipboard.getData(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR)
+      if (data !is InputStream) {
+        return null
+      }
+      val bytes = ByteStreams.toByteArray(data)
+      val tmpFile = File.createTempFile("ganttPaste", "")
+      Files.write(tmpFile.toPath(), bytes)
+
+      val document: Document = bufferProject.documentManager.getDocument(tmpFile.absolutePath)
+      document.read()
+      tmpFile.delete()
+
+      return bufferProject
+
+    } catch (e: Exception) {
+      e.printStackTrace()
+    }
+  }
+  return null
 }

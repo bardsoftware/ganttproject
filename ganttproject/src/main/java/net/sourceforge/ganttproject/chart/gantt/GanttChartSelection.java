@@ -32,6 +32,7 @@ import java.awt.datatransfer.Transferable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static biz.ganttproject.task.TreeAlgorithmsKt.retainRoots;
 
@@ -59,7 +60,7 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
   @Override
   public void startCopyClipboardTransaction() {
     super.startCopyClipboardTransaction();
-    myClipboardContents = buildClipboardContents();
+    myClipboardContents = buildClipboardContents(myTaskManager);
     myClipboardContents.copy();
     exportTasksIntoSystemClipboard();
   }
@@ -76,22 +77,28 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
       customDefMap.put(def, def);
     }
     exportedTaskManager.importData(myTaskManager, customDefMap);
-    clipboard.setContents(new GPTransferable(new ClipboardContents(exportedTaskManager)), this);
+    // we build a mapping of the currently selected tasks to their copies in the external task model
+    var selectedRoots = retainRoots(mySelectionManager.getSelectedTasks().stream()
+      .map(t -> exportedTaskManager.getTask(t.getTaskID())).collect(Collectors.toList()));
+    var clipboardContents = new ClipboardContents(exportedTaskManager);
+    clipboardContents.addTasks(selectedRoots);
+    clipboardContents.copy();
+    clipboard.setContents(new GPTransferable(clipboardContents), this);
   }
 
   @Override
   public void startMoveClipboardTransaction() {
     super.startMoveClipboardTransaction();
-    myClipboardContents = buildClipboardContents();
+    myClipboardContents = buildClipboardContents(myTaskManager);
     myClipboardContents.cut();
     if (!GraphicsEnvironment.isHeadless()) {
       exportTasksIntoSystemClipboard();
     }
   }
 
-  public ClipboardContents buildClipboardContents() {
+  public ClipboardContents buildClipboardContents(TaskManager taskManager) {
     List<Task> selectedRoots = retainRoots(mySelectionManager.getSelectedTasks());
-    ClipboardContents result = new ClipboardContents(myTaskManager);
+    ClipboardContents result = new ClipboardContents(taskManager);
     result.addTasks(selectedRoots);
     return result;
   }
