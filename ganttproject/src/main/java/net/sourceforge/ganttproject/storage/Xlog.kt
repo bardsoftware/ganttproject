@@ -29,6 +29,40 @@ data class InitRecord(
   val projectXml: String
 )
 
+@Serializable
+sealed class OperationDto() {
+  @Serializable
+  data class InsertOperationDto(
+    val tableName: String,
+    val values: Map<String, String>
+  ): OperationDto()
+
+  @Serializable
+  data class UpdateOperationDto(
+    val tableName: String,
+    val newValues: Map<String, String>
+  ): OperationDto()
+
+  @Serializable
+  data class DeleteOperationDto(
+    val tableName: String,
+    val conditions: List<Triple<String, BinaryPred, String>> // [(fieldName, predicate, value)] eg [('foo', EQ, 'bar')]
+  ): OperationDto()
+
+  @Serializable
+  data class MergeOperationDto(
+    val tableName: String,
+    val mergeOnConditions: List<Triple<String, BinaryPred, String>>, // [(fieldName, predicate, value)] eg [('foo', EQ, 'bar')]
+    val whenMatchedThenUpdate: Map<String, String>,
+    val whenNotMatchedThenInsert: Map<String, String>
+  ): OperationDto()
+}
+
+@Serializable
+enum class BinaryPred {
+  EQ, GT, LT, LE, GE, IN, NOT_IN
+}
+
 /**
  * Xlog transaction which consists of 1+ SQL statements.
  */
