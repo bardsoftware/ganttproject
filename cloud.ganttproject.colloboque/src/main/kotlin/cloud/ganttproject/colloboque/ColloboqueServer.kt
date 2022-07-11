@@ -27,12 +27,12 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.parser.TaskLoader
 import net.sourceforge.ganttproject.storage.*
-import org.jooq.DSLContext
-import org.jooq.SQLDialect
+import org.jooq.*
 import org.jooq.conf.RenderNameCase
 import org.jooq.impl.DSL
 import java.sql.Connection
@@ -134,6 +134,82 @@ class ColloboqueServer(
       throw ColloboqueServerException("Failed to commit transaction", e)
     }
   }
+
+  private fun applyTransactionJSON(projectRefid: ProjectRefid, baseTxnId: String, transactionJson: JsonArray): String? {
+    if (transactionJson.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
+    if (getBaseTxnId(projectRefid) != baseTxnId) throw ColloboqueServerException("Invalid transaction id $baseTxnId")
+
+    try {
+      connectionFactory(projectRefid).use { connection ->
+        return DSL
+          .using(connection, SQLDialect.POSTGRES)
+          .transactionResult { config ->
+            val context = config.dsl()
+            transactionJson.forEach { operationJson ->
+              val operationDto = Json.decodeFromJsonElement(OperationDto.serializer(), operationJson)
+              applyOperation(context, operationDto)
+            }
+            return@transactionResult LocalDateTime.now().toString()
+          }.also { refidToBaseTxnId[projectRefid] = it }
+      }
+    } catch (e: Exception) {
+      throw ColloboqueServerException("Failed to commit transaction", e)
+    }
+  }
+  private fun applyOperation(context: DSLContext, operation: OperationDto): Int {
+    return when (operation) {
+      is OperationDto.InsertOperationDto -> {
+        val table = DSL.table(operation.tableName.lowercase())
+        context
+          .insertInto(table)
+          .set(operation.values)
+          .execute()
+      }
+      is OperationDto.DeleteOperationDto -> {
+        val condition = buildBooleanCondition(operation.conditions)
+        val table = DSL.table(operation.tableName.lowercase())
+        context
+          .deleteFrom(table)
+          .where(condition)
+          .execute()
+      }
+      is OperationDto.UpdateOperationDto -> {
+        val table = DSL.table(operation.tableName.lowercase())
+        context
+          .update(table)
+          .set(operation.newValues)
+          .execute()
+      }
+      is OperationDto.MergeOperationDto -> {
+        val table = DSL.table(operation.tableName.lowercase())
+        val mergeCondition = buildBooleanCondition(operation.mergeOnConditions)
+        context.mergeInto(table).using(DSL.selectOne())
+          .on(mergeCondition)
+          .whenMatchedThenUpdate().set(operation.whenMatchedThenUpdate)
+          .whenNotMatchedThenInsert().set(operation.whenNotMatchedThenInsert)
+          .execute()
+      }
+    }
+  }
+
+  private fun buildBooleanCondition(conditionsList: List<Triple<String, BinaryPred, String>>): Condition {
+    var result: Condition = DSL.trueCondition()
+    for ((column, pred, value) in conditionsList) {
+      val field = DSL.field(column)
+      val condition = when (pred) {
+        BinaryPred.EQ -> field.eq(value)
+        BinaryPred.GT -> field.gt(value)
+        BinaryPred.LT -> field.lt(value)
+        BinaryPred.LE -> field.le(value)
+        BinaryPred.GE -> field.ge(value)
+        BinaryPred.IN -> field.`in`(value)
+        BinaryPred.NOT_IN -> field.notIn(value)
+      }
+      result = result.and(condition)
+    }
+    return result
+  }
+
 
   fun getBaseTxnId(projectRefid: ProjectRefid) = refidToBaseTxnId[projectRefid]
 
