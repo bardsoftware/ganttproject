@@ -76,6 +76,7 @@ import java.util.List.copyOf
 import java.util.function.Consumer
 import javax.swing.SwingUtilities
 import kotlin.math.ceil
+import kotlin.properties.Delegates
 
 
 /**
@@ -100,6 +101,17 @@ class TaskTable(
   val treeTable = GPTreeTableView<Task>(rootItem)
   val taskTableModel = TaskTableModel(taskManager, taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
+
+  lateinit var hiddenTaskCountObserver : (Int) -> Unit
+  private var hiddenTaskCount : Int by Delegates.observable(0) {
+    _, _, newValue -> (
+      if (this.filters.activeFilter != VOID_FILTER) {
+        hiddenTaskCountObserver(newValue)
+      } else {
+        hiddenTaskCountObserver(0)
+      }
+    )
+  }
 
   val control: Parent get() = treeTable
   val actionConnector by lazy {
@@ -208,7 +220,6 @@ class TaskTable(
     initNewTaskActor()
     treeTable.onProperties = this::onProperties
     treeTable.contextMenuActions = this::contextMenuActions
-    treeTable.tableMenuActions = this::tableMenuActions
 
     filters.sync = { this.sync() }
   }
@@ -684,9 +695,14 @@ class TaskTable(
           placeholderEmpty
         }
       }
+      hiddenTaskCount = filteredCount
       initializationCompleted()
     }
     LOGGER.debug("Sync <<<<<<<<<<<<<<<<<")
+  }
+
+  fun setHiddenTaskObserver(observer : (Int) -> Unit) {
+    hiddenTaskCountObserver = observer
   }
 
   private fun Task.addChildTreeItem(child: Task, pos: Int = -1): TreeItem<Task> {
@@ -812,9 +828,9 @@ class TaskTable(
     }
   }
 
-  fun tableMenuActions(builder: MenuBuilder) {
+  fun tableFilterActions(builder: MenuBuilder) {
     builder.apply {
-      items(taskActions.manageColumnsAction,
+      items(
         this@TaskTable.filterCompletedTasksAction,
         this@TaskTable.filterDueTodayTasksAction,
         this@TaskTable.filterOverdueTasksAction,
