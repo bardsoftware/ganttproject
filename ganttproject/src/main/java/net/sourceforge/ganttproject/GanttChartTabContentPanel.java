@@ -66,7 +66,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final Function0<Unit> myInitializationCompleted;
   private JComponent myComponent;
   private TaskTable taskTable;
-  private Label filterTaskLabel;
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
                             JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
@@ -99,15 +98,17 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     return myComponent;
   }
 
-  private final ContextMenu tableMenu = new ContextMenu();
+  private final ContextMenu tableFilterMenu = new ContextMenu();
+  private final Label filterTaskLabel = new Label();
+
   @Override
   protected Component createButtonPanel() {
 
     Button tableFilterButton = ToolbarKt.createButton(new TableButtonAction("taskTable.tableMenuFilter"), true);
     Objects.requireNonNull(tableFilterButton).setOnAction(event -> {
-      tableMenu.getItems().clear();
-      myTaskTableSupplier.get().tableFilterActions(new MenuBuilderFx(tableMenu));
-      tableMenu.show(tableFilterButton, Side.BOTTOM, 0.0, 0.0);
+      tableFilterMenu.getItems().clear();
+      taskTable.getFilterManager().tableFilterActions(new MenuBuilderFx(tableFilterMenu));
+      tableFilterMenu.show(tableFilterButton, Side.BOTTOM, 0.0, 0.0);
       event.consume();
     });
 
@@ -117,9 +118,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
         event.consume();
     });
 
-    filterTaskLabel = new Label();
     HBox filterComponent = new HBox(0, filterTaskLabel, tableFilterButton, tableManageColumnButton);
-
     return new FXToolbarBuilder()
         .addButton(myTaskActions.getUnindentAction().asToolbarAction())
         .addButton(myTaskActions.getIndentAction().asToolbarAction())
@@ -177,23 +176,18 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
       SwingUtilities.invokeLater(() -> setTableWidth(newValue.component1() + newValue.component2()))
     );
     taskTable.loadDefaultColumns();
-    taskTable.setHiddenTaskObserver((Integer integer) -> {
-        updateFilterLabel(integer.intValue());
-        return null;
-      }
-    );
+    taskTable.getFilterManager().getHiddenTaskCount().addListener((obs,  oldValue,  newValue) -> {
+      Platform.runLater(() -> {
+        if (newValue.intValue() != 0) {
+          filterTaskLabel.setText(GanttLanguage.getInstance().formatText("taskTable.toolbar.tasksHidden", newValue.intValue()));
+        } else {
+          filterTaskLabel.setText("");
+        }
+      });
+    });
+
     this.taskTable = taskTable;
     return jfxPanel;
-  }
-
-  private void updateFilterLabel (int hiddenTaskCount) {
-    Platform.runLater(() -> {
-      if (hiddenTaskCount != 0) {
-        filterTaskLabel.setText(hiddenTaskCount+" "+GanttLanguage.getInstance().getText("taskTable.toolbar.tasksHidden"));
-      } else {
-        filterTaskLabel.setText("");
-      }
-    });
   }
 
   // //////////////////////////////////////////////
