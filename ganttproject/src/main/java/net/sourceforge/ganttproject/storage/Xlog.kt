@@ -29,6 +29,49 @@ data class InitRecord(
   val projectXml: String
 )
 
+@Serializable
+sealed class OperationDto() {
+  @Serializable
+  data class InsertOperationDto(
+    val tableName: String,
+    val values: Map<String, String?>
+  ): OperationDto()
+
+  @Serializable
+  data class UpdateOperationDto(
+    val tableName: String,
+    val updateBinaryConditions: MutableList<Triple<String, BinaryPred, String>>,
+    val updateRangeConditions: MutableList<Triple<String, RangePred, List<String>>>,
+    val newValues: MutableMap<String, String>
+  ): OperationDto()
+
+  @Serializable
+  data class DeleteOperationDto(
+    val tableName: String,
+    val deleteBinaryConditions: List<Triple<String, BinaryPred, String>>, // [(fieldName, predicate, value)] eg [('foo', EQ, 'bar')]
+    val deleteRangeConditions: List<Triple<String, RangePred, List<String>>>,
+  ): OperationDto()
+
+  @Serializable
+  data class MergeOperationDto(
+    val tableName: String,
+    val mergeBinaryConditions: List<Triple<String, BinaryPred, String>>, // [(fieldName, predicate, value)] eg [('foo', EQ, 'bar')]
+    val mergeRangeConditions: List<Triple<String, RangePred, List<String>>>,
+    val whenMatchedThenUpdate: Map<String, String>,
+    val whenNotMatchedThenInsert: Map<String, String>
+  ): OperationDto()
+}
+
+@Serializable
+enum class BinaryPred {
+  EQ, GT, LT, LE, GE
+}
+
+@Serializable
+enum class RangePred {
+  IN, NOT_IN
+}
+
 /**
  * Xlog transaction which consists of 1+ SQL statements.
  */
