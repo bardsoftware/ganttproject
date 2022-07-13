@@ -166,25 +166,30 @@ class ColloboqueServer(
           .execute()
       }
       is OperationDto.DeleteOperationDto -> {
-        val condition = buildBooleanCondition(operation.conditions)
+        val binaryCondition = buildBinaryCondition(operation.deleteBinaryConditions)
+        val rangeCondition = buildRangeCondition(operation.deleteRangeConditions)
         val table = DSL.table(operation.tableName.lowercase())
         context
           .deleteFrom(table)
-          .where(condition)
+          .where(binaryCondition).and(rangeCondition)
           .execute()
       }
       is OperationDto.UpdateOperationDto -> {
         val table = DSL.table(operation.tableName.lowercase())
+        val binaryCondition = buildBinaryCondition(operation.updateBinaryConditions)
+        val rangeCondition = buildRangeCondition(operation.updateRangeConditions)
         context
           .update(table)
           .set(operation.newValues)
+          .where(binaryCondition).and(rangeCondition)
           .execute()
       }
       is OperationDto.MergeOperationDto -> {
         val table = DSL.table(operation.tableName.lowercase())
-        val mergeCondition = buildBooleanCondition(operation.mergeOnConditions)
+        val binaryCondition = buildBinaryCondition(operation.mergeBinaryConditions)
+        val rangeCondition = buildRangeCondition(operation.mergeRangeConditions)
         context.mergeInto(table).using(DSL.selectOne())
-          .on(mergeCondition)
+          .on(binaryCondition).and(rangeCondition)
           .whenMatchedThenUpdate().set(operation.whenMatchedThenUpdate)
           .whenNotMatchedThenInsert().set(operation.whenNotMatchedThenInsert)
           .execute()
@@ -192,7 +197,7 @@ class ColloboqueServer(
     }
   }
 
-  private fun buildBooleanCondition(conditionsList: List<Triple<String, BinaryPred, String>>): Condition {
+  private fun buildBinaryCondition(conditionsList: List<Triple<String, BinaryPred, String>>): Condition {
     var result: Condition = DSL.trueCondition()
     for ((column, pred, value) in conditionsList) {
       val field = DSL.field(column)
@@ -202,8 +207,19 @@ class ColloboqueServer(
         BinaryPred.LT -> field.lt(value)
         BinaryPred.LE -> field.le(value)
         BinaryPred.GE -> field.ge(value)
-        BinaryPred.IN -> field.`in`(value)
-        BinaryPred.NOT_IN -> field.notIn(value)
+      }
+      result = result.and(condition)
+    }
+    return result
+  }
+
+  private fun buildRangeCondition(conditionsList: List<Triple<String, RangePred, List<String>>>): Condition {
+    var result: Condition = DSL.trueCondition()
+    for ((column, pred, values) in conditionsList) {
+      val field = DSL.field(column)
+      val condition = when (pred) {
+        RangePred.IN -> field.`in`(values)
+        RangePred.NOT_IN -> field.notIn(values)
       }
       result = result.and(condition)
     }
