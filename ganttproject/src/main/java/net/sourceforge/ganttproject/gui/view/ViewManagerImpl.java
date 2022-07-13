@@ -58,23 +58,19 @@ public class ViewManagerImpl implements GPViewManager {
     myCutAction = new CutAction(this, undoManager);
     myPasteAction = new PasteAction(project, uiFacade, this, undoManager);
 
-    myTabs.addChangeListener(new ChangeListener() {
-
-      @Override
-      public void stateChanged(ChangeEvent e) {
-        GPView selectedView = (GPView) myTabs.getSelectedUserObject();
-        if (mySelectedView == selectedView) {
-          return;
-        }
-        if (mySelectedView != null) {
-          mySelectedView.setActive(false);
-          myViews.get(mySelectedView).setActive(false);
-        }
-        mySelectedView = selectedView;
-        mySelectedView.setActive(true);
-        myViews.get(mySelectedView).setActive(true);
-        updateActions();
+    myTabs.getModel().addChangeListener(e -> {
+      GPView selectedView = (GPView) myTabs.getSelectedUserObject();
+      if (mySelectedView == selectedView) {
+        return;
       }
+      if (mySelectedView != null) {
+        mySelectedView.setActive(false);
+        myViews.get(mySelectedView).setActive(false);
+      }
+      mySelectedView = selectedView;
+      mySelectedView.setActive(true);
+      myViews.get(mySelectedView).setActive(true);
+      updateActions();
     });
   }
 
