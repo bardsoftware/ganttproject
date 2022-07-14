@@ -40,25 +40,25 @@ class TaskFilterManager(val taskManager: TaskManager) {
 
   val filterListeners = mutableListOf<FilterChangedListener>()
 
-  val filterCompletedTasksOption = DefaultBooleanOption("filter.completedTasks", false)
+  private val filterCompletedTasksOption = DefaultBooleanOption("filter.completedTasks", false)
   val completedTasksFilter: TaskFilter = { _, child ->
     child?.completionPercentage?.let { it < 100 } ?: true
   }
 
-  val filterDueTodayOption = DefaultBooleanOption("filter.dueTodayTasks", false)
+  private val filterDueTodayOption = DefaultBooleanOption("filter.dueTodayTasks", false)
   val dueTodayFilter: TaskFilter  = { _, child ->
     child?.let {
       it.completionPercentage < 100 && it.endsToday()
     } ?: true
   }
 
-  val filterOverdueOption = DefaultBooleanOption("filter.overdueTasks", false)
+  private val filterOverdueOption = DefaultBooleanOption("filter.overdueTasks", false)
   val overdueFilter: TaskFilter  = { _, child ->
     child?.let { it.completionPercentage < 100 && it.endsBeforeToday()
     } ?: true
   }
 
-  val filterInProgressTodayOption = DefaultBooleanOption("filter.inProgressTodayTasks", false)
+  private val filterInProgressTodayOption = DefaultBooleanOption("filter.inProgressTodayTasks", false)
   val inProgressTodayFilter: TaskFilter  = { _, child ->
     child?.let {
       it.completionPercentage < 100 && it.runsToday()

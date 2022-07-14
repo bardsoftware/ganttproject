@@ -176,15 +176,13 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
       SwingUtilities.invokeLater(() -> setTableWidth(newValue.component1() + newValue.component2()))
     );
     taskTable.loadDefaultColumns();
-    taskTable.getFilterManager().getHiddenTaskCount().addListener((obs,  oldValue,  newValue) -> {
-      Platform.runLater(() -> {
-        if (newValue.intValue() != 0) {
-          filterTaskLabel.setText(GanttLanguage.getInstance().formatText("taskTable.toolbar.tasksHidden", newValue.intValue()));
-        } else {
-          filterTaskLabel.setText("");
-        }
-      });
-    });
+    taskTable.getFilterManager().getHiddenTaskCount().addListener((obs,  oldValue,  newValue) -> Platform.runLater(() -> {
+      if (newValue.intValue() != 0) {
+        filterTaskLabel.setText(GanttLanguage.getInstance().formatText("taskTable.toolbar.tasksHidden", newValue.intValue()));
+      } else {
+        filterTaskLabel.setText("");
+      }
+    }));
 
     this.taskTable = taskTable;
     return jfxPanel;
