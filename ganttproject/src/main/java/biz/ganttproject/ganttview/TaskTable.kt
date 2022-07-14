@@ -89,7 +89,7 @@ class TaskTable(
   private val selectionManager: TaskSelectionManager,
   private val taskActions: TaskActions,
   private val undoManager: GPUndoManager,
-  private val filters: TaskFilterManager,
+  val filterManager: TaskFilterManager,
   initializationPromise: TwoPhaseBarrierImpl<*>,
   private val newTaskActor: NewTaskActor<Task>
 ) {
@@ -134,23 +134,11 @@ class TaskTable(
   var requestSwingFocus: () -> Unit = {}
   lateinit var swingComponent: Component
 
-  // Task filters -> actions
-
-  private val filterCompletedTasksAction = TaskFilterAction("taskTable.filter.completedTasks",
-    filters, filters.filterCompletedTasksOption, filters.completedTasksFilter)
-  private val filterDueTodayTasksAction = TaskFilterAction("taskTable.filter.dueTodayTasks",
-    filters, filters.filterDueTodayOption, filters.dueTodayFilter)
-  private val filterOverdueTasksAction = TaskFilterAction("taskTable.filter.overdueTasks",
-    filters, filters.filterOverdueOption, filters.overdueFilter)
-  private val filterInProgressTodayTasksAction = TaskFilterAction("taskTable.filter.inProgressTodayTasks",
-    filters, filters.filterInProgressTodayOption, filters.inProgressTodayFilter)
-
-
   private val placeholderShowHidden by lazy {
     Button(RootLocalizer.formatText("taskTable.placeholder.showHiddenTasks")).also {
       it.styleClass.add("btn-attention")
       it.onAction = EventHandler {
-        filters.activeFilter = VOID_FILTER
+        filterManager.activeFilter = VOID_FILTER
       }
     }
   }
@@ -208,9 +196,8 @@ class TaskTable(
     initNewTaskActor()
     treeTable.onProperties = this::onProperties
     treeTable.contextMenuActions = this::contextMenuActions
-    treeTable.tableMenuActions = this::tableMenuActions
 
-    filters.sync = { this.sync() }
+    filterManager.sync = { this.sync() }
   }
 
   fun loadDefaultColumns() = Platform.runLater {
@@ -647,7 +634,7 @@ class TaskTable(
       treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx, _ ->
         LOGGER.debug("Sync: parent=$parent child=$child idx=$idx")
         val parentItem = task2treeItem[parent]!!
-        if (!this.filters.activeFilter(parent, child)) {
+        if (!this.filterManager.activeFilter(parent, child)) {
           parentItem.children.remove(idx, parentItem.children.size)
           filteredCount++
           false
@@ -684,6 +671,7 @@ class TaskTable(
           placeholderEmpty
         }
       }
+      filterManager.hiddenTaskCount.set(filteredCount)
       initializationCompleted()
     }
     LOGGER.debug("Sync <<<<<<<<<<<<<<<<<")
@@ -809,17 +797,6 @@ class TaskTable(
           }
         }
       }
-    }
-  }
-
-  fun tableMenuActions(builder: MenuBuilder) {
-    builder.apply {
-      items(taskActions.manageColumnsAction,
-        this@TaskTable.filterCompletedTasksAction,
-        this@TaskTable.filterDueTodayTasksAction,
-        this@TaskTable.filterOverdueTasksAction,
-        this@TaskTable.filterInProgressTodayTasksAction,
-      )
     }
   }
 

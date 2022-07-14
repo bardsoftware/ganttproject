@@ -18,13 +18,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.ganttview
 
+import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.GPOption
 import biz.ganttproject.core.time.CalendarFactory
+import javafx.beans.property.SimpleIntegerProperty
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
-import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
 
 typealias TaskFilter = (parent: Task, child: Task?) -> Boolean
 typealias FilterChangedListener = (filter: TaskFilter?) -> Unit
@@ -37,31 +38,44 @@ class TaskFilterManager(val taskManager: TaskManager) {
     filterOverdueOption,
     filterInProgressTodayOption)
 
-  val filterCompletedTasksOption = DefaultBooleanOption("filter.completedTasks", false)
+  val filterListeners = mutableListOf<FilterChangedListener>()
+
+  private val filterCompletedTasksOption = DefaultBooleanOption("filter.completedTasks", false)
   val completedTasksFilter: TaskFilter = { _, child ->
     child?.completionPercentage?.let { it < 100 } ?: true
   }
 
-  val filterDueTodayOption = DefaultBooleanOption("filter.dueTodayTasks", false)
+  private val filterDueTodayOption = DefaultBooleanOption("filter.dueTodayTasks", false)
   val dueTodayFilter: TaskFilter  = { _, child ->
-
     child?.let {
       it.completionPercentage < 100 && it.endsToday()
     } ?: true
   }
 
-  val filterOverdueOption = DefaultBooleanOption("filter.overdueTasks", false)
+  private val filterOverdueOption = DefaultBooleanOption("filter.overdueTasks", false)
   val overdueFilter: TaskFilter  = { _, child ->
     child?.let { it.completionPercentage < 100 && it.endsBeforeToday()
     } ?: true
   }
 
-  val filterInProgressTodayOption = DefaultBooleanOption("filter.inProgressTodayTasks", false)
+  private val filterInProgressTodayOption = DefaultBooleanOption("filter.inProgressTodayTasks", false)
   val inProgressTodayFilter: TaskFilter  = { _, child ->
     child?.let {
       it.completionPercentage < 100 && it.runsToday()
     } ?: true
   }
+
+  // Task filters -> actions
+  private val filterCompletedTasksAction = TaskFilterAction("taskTable.filter.completedTasks",
+    this, filterCompletedTasksOption, completedTasksFilter)
+  private val filterDueTodayTasksAction = TaskFilterAction("taskTable.filter.dueTodayTasks",
+    this, filterDueTodayOption, dueTodayFilter)
+  private val filterOverdueTasksAction = TaskFilterAction("taskTable.filter.overdueTasks",
+    this, filterOverdueOption, overdueFilter)
+  private val filterInProgressTodayTasksAction = TaskFilterAction("taskTable.filter.inProgressTodayTasks",
+    this, filterInProgressTodayOption, inProgressTodayFilter)
+
+  val hiddenTaskCount = SimpleIntegerProperty(0)
 
   init {
     taskManager.addTaskListener(TaskListenerAdapter().also {
@@ -77,9 +91,19 @@ class TaskFilterManager(val taskManager: TaskManager) {
       sync()
     }
 
-  val filterListeners = mutableListOf<FilterChangedListener>()
   private fun fireFilterChanged(value: TaskFilter) {
     filterListeners.forEach { it(value) }
+  }
+
+  fun tableFilterActions(builder: MenuBuilder) {
+    builder.apply {
+      items(
+        filterCompletedTasksAction,
+        filterDueTodayTasksAction,
+        filterOverdueTasksAction,
+        filterInProgressTodayTasksAction,
+      )
+    }
   }
 
   internal var sync: ()->Unit = {}

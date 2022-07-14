@@ -252,3 +252,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
   }
 }
 
+.task-filter {
+  Label {
+    -fx-padding: 3 5 0 0;
+    -fx-text-fill: $gp-medium-gray;
+  }
+}
