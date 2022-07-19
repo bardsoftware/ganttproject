@@ -77,7 +77,7 @@ enum class RangePred {
  */
 @Serializable
 data class XlogRecord(
-  val sqlStatements: List<String>
+  val postgresStatements: List<OperationDto>
 )
 
 /**
