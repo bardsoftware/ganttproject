@@ -23,22 +23,24 @@ import biz.ganttproject.core.io.parseXmlProject
 import biz.ganttproject.core.io.walkTasksDepthFirst
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.parser.TaskLoader
 import net.sourceforge.ganttproject.storage.*
-import org.jooq.*
+import org.jooq.DSLContext
+import org.jooq.SQLDialect
 import org.jooq.conf.RenderNameCase
 import org.jooq.impl.DSL
 import java.sql.Connection
 import java.text.DateFormat
-import java.util.*
 import java.time.LocalDateTime
+import java.util.*
 import java.util.concurrent.Executors
 
 internal typealias ProjectRefid = String
@@ -117,7 +119,7 @@ class ColloboqueServer(
    * Returns new baseTxnId on success.
    */
   private fun applyXlog(projectRefid: ProjectRefid, baseTxnId: String, transaction: XlogRecord): String? {
-    if (transaction.sqlStatements.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
+    if (transaction.postgresStatements.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
     if (getBaseTxnId(projectRefid) != baseTxnId) throw ColloboqueServerException("Invalid transaction id $baseTxnId")
     try {
       connectionFactory(projectRefid).use { connection ->
@@ -125,7 +127,7 @@ class ColloboqueServer(
           .using(connection, SQLDialect.POSTGRES)
           .transactionResult { config ->
             val context = config.dsl()
-            transaction.sqlStatements.forEach { context.execute(it) }
+            transaction.postgresStatements.forEach { context.execute(generateSqlStatement(context, it)) }
             generateNextTxnId(projectRefid, baseTxnId, transaction)
             // TODO: update transaction id in the database
           }.also { refidToBaseTxnId[projectRefid] = it }
@@ -133,97 +135,6 @@ class ColloboqueServer(
     } catch (e: Exception) {
       throw ColloboqueServerException("Failed to commit transaction", e)
     }
-  }
-
-  private fun applyTransactionJSON(projectRefid: ProjectRefid, baseTxnId: String, transactionJson: JsonArray): String? {
-    if (transactionJson.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
-    if (getBaseTxnId(projectRefid) != baseTxnId) throw ColloboqueServerException("Invalid transaction id $baseTxnId")
-
-    try {
-      connectionFactory(projectRefid).use { connection ->
-        return DSL
-          .using(connection, SQLDialect.POSTGRES)
-          .transactionResult { config ->
-            val context = config.dsl()
-            transactionJson.forEach { operationJson ->
-              val operationDto = Json.decodeFromJsonElement(OperationDto.serializer(), operationJson)
-              applyOperation(context, operationDto)
-            }
-            return@transactionResult LocalDateTime.now().toString()
-          }.also { refidToBaseTxnId[projectRefid] = it }
-      }
-    } catch (e: Exception) {
-      throw ColloboqueServerException("Failed to commit transaction", e)
-    }
-  }
-  private fun applyOperation(context: DSLContext, operation: OperationDto): Int {
-    return when (operation) {
-      is OperationDto.InsertOperationDto -> {
-        val table = DSL.table(operation.tableName.lowercase())
-        context
-          .insertInto(table)
-          .set(operation.values)
-          .execute()
-      }
-      is OperationDto.DeleteOperationDto -> {
-        val binaryCondition = buildBinaryCondition(operation.deleteBinaryConditions)
-        val rangeCondition = buildRangeCondition(operation.deleteRangeConditions)
-        val table = DSL.table(operation.tableName.lowercase())
-        context
-          .deleteFrom(table)
-          .where(binaryCondition).and(rangeCondition)
-          .execute()
-      }
-      is OperationDto.UpdateOperationDto -> {
-        val table = DSL.table(operation.tableName.lowercase())
-        val binaryCondition = buildBinaryCondition(operation.updateBinaryConditions)
-        val rangeCondition = buildRangeCondition(operation.updateRangeConditions)
-        context
-          .update(table)
-          .set(operation.newValues)
-          .where(binaryCondition).and(rangeCondition)
-          .execute()
-      }
-      is OperationDto.MergeOperationDto -> {
-        val table = DSL.table(operation.tableName.lowercase())
-        val binaryCondition = buildBinaryCondition(operation.mergeBinaryConditions)
-        val rangeCondition = buildRangeCondition(operation.mergeRangeConditions)
-        context.mergeInto(table).using(DSL.selectOne())
-          .on(binaryCondition).and(rangeCondition)
-          .whenMatchedThenUpdate().set(operation.whenMatchedThenUpdate)
-          .whenNotMatchedThenInsert().set(operation.whenNotMatchedThenInsert)
-          .execute()
-      }
-    }
-  }
-
-  private fun buildBinaryCondition(conditionsList: List<Triple<String, BinaryPred, String>>): Condition {
-    var result: Condition = DSL.trueCondition()
-    for ((column, pred, value) in conditionsList) {
-      val field = DSL.field(column)
-      val condition = when (pred) {
-        BinaryPred.EQ -> field.eq(value)
-        BinaryPred.GT -> field.gt(value)
-        BinaryPred.LT -> field.lt(value)
-        BinaryPred.LE -> field.le(value)
-        BinaryPred.GE -> field.ge(value)
-      }
-      result = result.and(condition)
-    }
-    return result
-  }
-
-  private fun buildRangeCondition(conditionsList: List<Triple<String, RangePred, List<String>>>): Condition {
-    var result: Condition = DSL.trueCondition()
-    for ((column, pred, values) in conditionsList) {
-      val field = DSL.field(column)
-      val condition = when (pred) {
-        RangePred.IN -> field.`in`(values)
-        RangePred.NOT_IN -> field.notIn(values)
-      }
-      result = result.and(condition)
-    }
-    return result
   }
 
 
