@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.task.TaskImpl
 import org.jooq.DSLContext
 import org.jooq.Insert
 import java.math.BigDecimal
+import java.time.LocalDate
 
 fun buildInsertTaskQuery(dsl: DSLContext, task: Task): Insert<TaskRecord> {
   var costManualValue: BigDecimal? = null
@@ -55,4 +56,34 @@ fun buildInsertTaskQuery(dsl: DSLContext, task: Task): Insert<TaskRecord> {
     .set(Tables.TASK.IS_COST_CALCULATED, isCostCalculated)
     .set(Tables.TASK.NOTES, task.externalizedNotes())
 
+}
+
+fun buildInsertTaskDto(task: Task): OperationDto.InsertOperationDto {
+  var costManualValue: BigDecimal? = null
+  var isCostCalculated: Boolean? = null
+  if (!(task.cost.isCalculated && task.cost.manualValue == BigDecimal.ZERO)) {
+    costManualValue = task.cost.manualValue
+    isCostCalculated = task.cost.isCalculated
+  }
+  return OperationDto.InsertOperationDto(
+    Tables.TASK.name.lowercase(),
+    mapOf(
+      Tables.TASK.UID.name to task.uid,
+      Tables.TASK.NUM.name to task.taskID.toString(),
+      Tables.TASK.NAME.name to task.name,
+      Tables.TASK.COLOR.name to (task as TaskImpl).externalizedColor(),
+      Tables.TASK.SHAPE.name to task.shape?.array,
+      Tables.TASK.IS_MILESTONE.name to task.isLegacyMilestone.toString(),
+      Tables.TASK.IS_PROJECT_TASK.name to task.isProjectTask.toString(),
+      Tables.TASK.START_DATE.name to task.start.toLocalDate().toString(),
+      Tables.TASK.DURATION.name to task.duration.length.toString(),
+      Tables.TASK.COMPLETION.name to task.completionPercentage.toString(),
+      Tables.TASK.EARLIEST_START_DATE.name to task.third?.toLocalDate().toString(),
+      Tables.TASK.PRIORITY.name to task.priority.persistentValue,
+      Tables.TASK.WEB_LINK.name to task.externalizedWebLink(),
+      Tables.TASK.COST_MANUAL_VALUE.name to costManualValue.toString(),
+      Tables.TASK.IS_COST_CALCULATED.name to isCostCalculated.toString(),
+      Tables.TASK.NOTES.name to task.externalizedNotes(),
+    )
+  )
 }

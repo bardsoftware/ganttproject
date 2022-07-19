@@ -26,6 +26,7 @@ import biz.ganttproject.customproperty.CustomProperty
 import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.storage.db.Tables.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
+import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import net.sourceforge.ganttproject.task.Task
@@ -83,7 +84,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
             context
               .insertInto(LOGRECORD)
               .set(LOGRECORD.LOCAL_TXN_ID, localTxnId)
-              .set(LOGRECORD.SQL_STATEMENT, it.sqlStatementPostgres)
+              .set(LOGRECORD.OPERATION_DTO_JSON, Json.encodeToString(OperationDto.serializer(), it.postgresOperationDto))
               .execute()
           }
         } catch (e: Exception) {
@@ -97,9 +98,11 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   /** Add a query to the current txn. Executes immediately if no transaction started. */
   private fun withLog(buildQuery: (dsl: DSLContext) -> String,
-                      buildUndoQuery: (dsl: DSLContext) -> String) {
-    val query = SqlQuery(buildQuery(DSL.using(SQLDialect.H2)), buildQuery(DSL.using(SQLDialect.POSTGRES)))
-    val undoQuery = SqlQuery(buildUndoQuery(DSL.using(SQLDialect.H2)), buildUndoQuery(DSL.using(SQLDialect.POSTGRES)))
+                      buildUndoQuery: (dsl: DSLContext) -> String,
+                      postgresOperationDto: OperationDto,
+                      postgresUndoOperationDto: OperationDto) {
+    val query = SqlQuery(buildQuery(DSL.using(SQLDialect.H2)), postgresOperationDto)
+    val undoQuery = SqlQuery(buildUndoQuery(DSL.using(SQLDialect.H2)), postgresUndoOperationDto)
     currentTxn?.add(query, undoQuery) ?: executeAndLog(listOf(query), localTxnId).also { localTxnId++ }
   }
 
@@ -136,7 +139,13 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
         .where(TASK.UID.eq(task.uid))
         .getSQL(ParamType.INLINED)
     }
-    withLog(queryBuilder, undoQueryBuilder)
+    val insertDto = buildInsertTaskDto(task)
+    val deleteDto = OperationDto.DeleteOperationDto(
+      TASK.name.lowercase(),
+      listOf(Triple(TASK.UID.name, BinaryPred.EQ, task.uid)),
+      listOf()
+    )
+    withLog(queryBuilder, undoQueryBuilder, insertDto, deleteDto)
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -159,7 +168,25 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
         .getSQL(ParamType.INLINED)
 
     }
-    withLog(queryBuilder, undoQueryBuilder)
+    val insertDto = OperationDto.InsertOperationDto(
+      TASKDEPENDENCY.name.lowercase(),
+      mapOf(
+        TASKDEPENDENCY.DEPENDEE_UID.name to taskDependency.dependee.uid,
+        TASKDEPENDENCY.DEPENDANT_UID.name to taskDependency.dependant.uid,
+        TASKDEPENDENCY.TYPE.name to taskDependency.constraint.type.persistentValue,
+        TASKDEPENDENCY.LAG.name to taskDependency.difference.toString(),
+        TASKDEPENDENCY.HARDNESS.name to taskDependency.hardness.identifier
+      )
+    )
+    val deleteDto = OperationDto.DeleteOperationDto(
+      TASKDEPENDENCY.name.lowercase(),
+      listOf(
+        Triple(TASKDEPENDENCY.DEPENDANT_UID.name, BinaryPred.EQ, taskDependency.dependant.uid),
+        Triple(TASKDEPENDENCY.DEPENDEE_UID.name, BinaryPred.EQ, taskDependency.dependee.uid)
+      ),
+      listOf()
+    )
+    withLog(queryBuilder, undoQueryBuilder, insertDto, deleteDto)
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -193,14 +220,14 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   @Throws(ProjectDatabaseException::class)
   override fun fetchTransactions(startLocalTxnId: Int, limit: Int): List<XlogRecord> = withDSL(
     { "Failed to fetch log records starting with $startLocalTxnId" }) { dsl ->
-    //println(dsl.selectFrom(LOGRECORD).toList())
+    println(dsl.selectFrom(LOGRECORD).toList())
     dsl
       .selectFrom(LOGRECORD)
       .where(LOGRECORD.LOCAL_TXN_ID.ge(startLocalTxnId).and(LOGRECORD.LOCAL_TXN_ID.lt(startLocalTxnId + limit)))
       .orderBy(LOGRECORD.LOCAL_TXN_ID, LOGRECORD.ID)
-      .fetchGroups(LOGRECORD.LOCAL_TXN_ID, LOGRECORD.SQL_STATEMENT)
+      .fetchGroups(LOGRECORD.LOCAL_TXN_ID, LOGRECORD.OPERATION_DTO_JSON)
       .values
-      .map { XlogRecord(it) }
+      .map { XlogRecord(it.map { str -> Json.decodeFromString(OperationDto.serializer(), str) }) }
   }
 
   override fun findTasks(whereExpression: String, lookupById: (Int)->Task?): List<Task> {
@@ -245,7 +272,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
 data class SqlQuery(
   val sqlStatementH2: String,
-  val sqlStatementPostgres: String
+  val postgresOperationDto: OperationDto
 )
 
 typealias SqlUndoQuery = SqlQuery
@@ -298,17 +325,20 @@ internal class SqlTaskCustomPropertiesUpdateBuilder(
 
   private fun generateStatements(customProperties: CustomPropertyHolder, isUndoOperation: Boolean): List<SqlQuery> {
     val h2statements = mutableListOf<String>()
-    val postgresStatements = mutableListOf<String>()
+    val postgresUpdateDtos = mutableListOf<OperationDto>()
 
-    val generateDeleteFn = { dsl: DSLContext ->
-      if (isUndoOperation) generateDeleteStatementAllColumns(dsl) else generateDeleteStatement(dsl, customProperties)
+    val generateDeleteFnForH2 = {
+      if (isUndoOperation) generateDeleteStatementAllColumns(DSL.using(SQLDialect.H2)) else generateDeleteStatement(DSL.using(SQLDialect.H2), customProperties)
     }
-    h2statements.add(generateDeleteFn(DSL.using(SQLDialect.H2)))
-    postgresStatements.add(generateDeleteFn(DSL.using(SQLDialect.POSTGRES)))
+    val generateDeleteFnForPostgres = {
+      if (isUndoOperation) generateDeleteDtoAllColumns() else generateDeleteDto(customProperties)
+    }
+    h2statements.add(generateDeleteFnForH2())
+    postgresUpdateDtos.add(generateDeleteFnForPostgres())
 
     h2statements.addAll(generateMergeStatements(customProperties.customProperties) {DSL.using(SQLDialect.H2)})
-    postgresStatements.addAll(generateMergeStatements(customProperties.customProperties) {DSL.using(SQLDialect.POSTGRES)})
-    return h2statements.zip(postgresStatements).map { SqlQuery(it.first, it.second) }
+    postgresUpdateDtos.addAll(generateMergeDtos(customProperties.customProperties))
+    return h2statements.zip(postgresUpdateDtos).map { SqlQuery(it.first, it.second) }
   }
 
   internal fun setCustomProperties(oldCustomProperties: CustomPropertyHolder, newCustomProperties: CustomPropertyHolder) {
@@ -326,10 +356,30 @@ internal class SqlTaskCustomPropertiesUpdateBuilder(
       .and(TASKCUSTOMCOLUMN.COLUMN_ID.notIn(customProperties.customProperties.map { it.definition.id }))
       .getSQL(ParamType.INLINED)
 
+  private fun generateDeleteDto(customProperties: CustomPropertyHolder): OperationDto.DeleteOperationDto =
+    OperationDto.DeleteOperationDto(
+      TASKCUSTOMCOLUMN.name.lowercase(),
+      listOf(
+        Triple(TASKCUSTOMCOLUMN.UID.name, BinaryPred.EQ, task.uid),
+      ),
+      listOf(
+        Triple(TASKCUSTOMCOLUMN.COLUMN_ID.name, RangePred.NOT_IN, customProperties.customProperties.map { it.definition.id } )
+      )
+    )
+
   private fun generateDeleteStatementAllColumns(dsl: DSLContext): String =
     dsl.deleteFrom(TASKCUSTOMCOLUMN)
       .where(TASKCUSTOMCOLUMN.UID.eq(task.uid))
       .getSQL(ParamType.INLINED)
+
+  private fun generateDeleteDtoAllColumns(): OperationDto.DeleteOperationDto =
+    OperationDto.DeleteOperationDto(
+      TASKCUSTOMCOLUMN.name.lowercase(),
+      listOf(
+        Triple(TASKCUSTOMCOLUMN.UID.name, BinaryPred.EQ, task.uid),
+      ),
+      listOf()
+    )
 
   private fun generateMergeStatements(customProperties: List<CustomProperty>, dsl: ()->DSLContext) =
     customProperties.map {
@@ -340,48 +390,84 @@ internal class SqlTaskCustomPropertiesUpdateBuilder(
         .values(task.uid, it.definition.id, it.valueAsString)
         .getSQL(ParamType.INLINED)
     }
+
+  private fun generateMergeDtos(customProperties: List<CustomProperty>) =
+    customProperties.map {
+      OperationDto.MergeOperationDto(
+        TASKCUSTOMCOLUMN.name.lowercase(),
+        listOf(
+          Triple(TASKCUSTOMCOLUMN.UID.name, BinaryPred.EQ, task.uid),
+          Triple(TASKCUSTOMCOLUMN.COLUMN_ID.name, BinaryPred.EQ, it.definition.id)
+        ),
+        listOf(),
+        mapOf(
+          TASKCUSTOMCOLUMN.COLUMN_VALUE.name to it.valueAsString
+        ),
+        mapOf(
+          TASKCUSTOMCOLUMN.UID.name to task.uid,
+          TASKCUSTOMCOLUMN.COLUMN_ID.name to it.definition.id,
+          TASKCUSTOMCOLUMN.COLUMN_VALUE.name to it.valueAsString
+        )
+      )
+    }
 }
 
 
 class SqlTaskUpdateBuilder(private val task: Task,
                            private val onCommit: (List<SqlQuery>, List<SqlUndoQuery>) -> Unit): TaskUpdateBuilder {
   private var lastSetStepH2: UpdateSetMoreStep<TaskRecord>? = null
-  private var lastSetStepPostgres: UpdateSetMoreStep<TaskRecord>? = null
+  private var updateDtoPostgres: OperationDto.UpdateOperationDto? = null
 
   private var lastUndoSetStepH2: UpdateSetMoreStep<TaskRecord>? = null
-  private var lastUndoSetStepPostgres: UpdateSetMoreStep<TaskRecord>? = null
+  private var undoUpdateDtoPostgres: OperationDto.UpdateOperationDto? = null
 
   private val customPropertiesUpdater = SqlTaskCustomPropertiesUpdateBuilder(task, onCommit)
 
-  private fun nextStep(step: (lastStep: UpdateSetStep<TaskRecord>) -> UpdateSetMoreStep<TaskRecord>) {
-    lastSetStepH2 = step(lastSetStepH2 ?: DSL.using(SQLDialect.H2).update(TASK))
-    lastSetStepPostgres = step(lastSetStepPostgres ?: DSL.using(SQLDialect.POSTGRES).update(TASK))
+  private fun nextStep(stepH2: (lastStep: UpdateSetStep<TaskRecord>) -> UpdateSetMoreStep<TaskRecord>,
+                       stepPostgres: (lastStep: OperationDto.UpdateOperationDto) -> OperationDto.UpdateOperationDto) {
+    lastSetStepH2 = stepH2(lastSetStepH2 ?: DSL.using(SQLDialect.H2).update(TASK))
+    updateDtoPostgres = stepPostgres(updateDtoPostgres ?: OperationDto.UpdateOperationDto(TASK.name, mutableListOf(), mutableListOf(), mutableMapOf()))
   }
 
-  private fun nextUndoStep(step: (lastStep: UpdateSetStep<TaskRecord>) -> UpdateSetMoreStep<TaskRecord>) {
-    lastUndoSetStepH2 = step(lastUndoSetStepH2 ?: DSL.using(SQLDialect.H2).update(TASK))
-    lastUndoSetStepPostgres = step(lastUndoSetStepPostgres ?: DSL.using(SQLDialect.POSTGRES).update(TASK))
+  private fun nextUndoStep(stepH2: (lastStep: UpdateSetStep<TaskRecord>) -> UpdateSetMoreStep<TaskRecord>,
+                           stepPostgres: (lastStep: OperationDto.UpdateOperationDto) -> OperationDto.UpdateOperationDto) {
+    lastUndoSetStepH2 = stepH2(lastUndoSetStepH2 ?: DSL.using(SQLDialect.H2).update(TASK))
+    undoUpdateDtoPostgres = stepPostgres(undoUpdateDtoPostgres ?: OperationDto.UpdateOperationDto(TASK.name, mutableListOf(), mutableListOf(), mutableMapOf()))
   }
 
   private fun <T> appendUpdate(field: TableField<TaskRecord, T>, oldValue: T?, newValue: T?) {
-    nextStep { it.set(field, newValue) }
-    nextUndoStep { it.set(field, oldValue) }
+    nextStep(stepH2 = { it.set(field, newValue) },
+      stepPostgres =  { dto ->
+        dto.newValues[field.name] = newValue.toString()
+        return@nextStep dto
+      }
+    )
+    nextUndoStep(stepH2 = { it.set(field, oldValue) },
+      stepPostgres = { dto ->
+        dto.newValues[field.name] = oldValue.toString()
+        return@nextUndoStep dto
+      }
+    )
   }
 
 
   @Throws(ProjectDatabaseException::class)
   override fun commit() {
     val finalH2 = lastSetStepH2?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
-    val finalPostgres = lastSetStepPostgres?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
+    updateDtoPostgres?.updateBinaryConditions?.add(Triple(TASK.UID.name, BinaryPred.EQ, task.uid))
+    val finalPostgresDto = updateDtoPostgres
+
     val finalUndoH2 = lastUndoSetStepH2?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
-    val finalUndoPostgres = lastUndoSetStepPostgres?.where(TASK.UID.eq(task.uid))?.getSQL(ParamType.INLINED)
-    if (finalH2 != null && finalPostgres != null) {
-      val undoQueries = if (finalUndoH2 != null && finalUndoPostgres != null) {
-        listOf(SqlUndoQuery(finalUndoH2, finalUndoPostgres))
+    undoUpdateDtoPostgres?.updateBinaryConditions?.add(Triple(TASK.UID.name, BinaryPred.EQ, task.uid))
+    val finalUndoPostgresDto = undoUpdateDtoPostgres
+
+    if (finalH2 != null && finalPostgresDto != null) {
+      val undoQueries = if (finalUndoH2 != null && finalUndoPostgresDto != null) {
+        listOf(SqlUndoQuery(finalUndoH2, finalUndoPostgresDto))
       } else {
         emptyList()
       }
-      onCommit(listOf(SqlQuery(finalH2, finalPostgres)), undoQueries)
+      onCommit(listOf(SqlQuery(finalH2, finalPostgresDto)), undoQueries)
     }
     customPropertiesUpdater.commit()
   }
