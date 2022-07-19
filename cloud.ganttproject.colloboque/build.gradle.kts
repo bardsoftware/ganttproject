@@ -46,6 +46,7 @@ dependencies {
     implementation(files("lib/eclipsito.jar"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+    testImplementation("com.h2database:h2:2.1.212")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
 }
 
@@ -55,11 +56,17 @@ tasks.getByName<KotlinCompile>("compileKotlin") {
     }
 }
 
+tasks.register<Copy>("copyDbScript") {
+    from("$rootDir/../ganttproject/src/main/resources/resources/sql/init-project-database.sql")
+    into("src/test/resources/sql")
+}
+
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
     testLogging {
         exceptionFormat = TestExceptionFormat.FULL
     }
+    dependsOn("copyDbScript")
 }
 
 
