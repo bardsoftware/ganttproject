@@ -475,7 +475,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     UIUtil.registerActions(getRootPane(), false, newAction, propertiesAction, deleteAction);
     UIUtil.registerActions(myGanttChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
     UIUtil.registerActions(myResourceChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
-    getTabs().addChangeListener(e -> {
+    getTabs().getModel().addChangeListener(e -> {
       // Tell artefact actions that the active provider changed, so they
       // are able to update their state according to the current delegate
       newAction.actionStateChanged();
