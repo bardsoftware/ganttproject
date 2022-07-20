@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.export;
 
 import biz.ganttproject.core.table.ColumnList;
+import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
@@ -69,7 +70,7 @@ public class ConsoleUIFacade implements UIFacade {
 
   @Override
   public ZoomManager getZoomManager() {
-    return myRealFacade.getZoomManager();
+    return myRealFacade != null ? myRealFacade.getZoomManager() : new ZoomManager(new GPTimeUnitStack());
   }
 
   @Override

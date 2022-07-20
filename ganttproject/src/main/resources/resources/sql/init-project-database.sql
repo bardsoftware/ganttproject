@@ -40,9 +40,9 @@ create table if not exists TaskDependency (
 );
 
 create table if not exists LogRecord (
-  id                identity    not null,
-  local_txn_id      integer     not null,
-  sql_statement     varchar     not null,
+  id                    identity    not null,
+  local_txn_id          integer     not null,
+  operation_dto_json    varchar     not null,
 
   primary key (id)
 );
