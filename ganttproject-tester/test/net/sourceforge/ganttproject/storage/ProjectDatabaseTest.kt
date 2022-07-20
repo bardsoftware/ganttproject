@@ -124,15 +124,16 @@ class ProjectDatabaseTest {
 
     val txns = projectDatabase.fetchTransactions(limit = 10)
     assertEquals(1, txns.size)
-    assertEquals(1, txns[0].sqlStatements.size)
+    assertEquals(1, txns[0].postgresStatements.size)
 
     // Verify that executing the log record produces the same task.
     // Importantly, it checks that dates are converted identically.
     projectDatabase.shutdown()
     projectDatabase.init()
 
-    dsl.execute(txns[0].sqlStatements[0])
-    assertEquals(tasks[0], dsl.selectFrom(TASK).fetch()[0])
+    // This check is in colloboque test suite
+    //dsl.execute(txns[0].postgresStatements[0])
+    //assertEquals(tasks[0], dsl.selectFrom(TASK).fetch()[0])
   }
 
   @Test
@@ -244,10 +245,10 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(limit = 10)
     assertEquals(txns.size, 2)
     txns.forEach {
-      assertEquals(it.sqlStatements.size, 1)
+      assertEquals(it.postgresStatements.size, 1)
     }
-    assert(txns[0].sqlStatements[0].contains("insert", ignoreCase = true))
-    assert(txns[1].sqlStatements[0].contains("update", ignoreCase = true))
+    assert(txns[0].postgresStatements[0] is OperationDto.InsertOperationDto)
+    assert(txns[1].postgresStatements[0] is OperationDto.UpdateOperationDto)
   }
 
   @Test
@@ -277,13 +278,31 @@ class ProjectDatabaseTest {
 
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(txns.size, 1)
-    assertEquals(txns[0].sqlStatements.size, 3)
-    assert(txns[0].sqlStatements[0].contains("insert", ignoreCase = true))
-    assert(txns[0].sqlStatements[1].contains("insert", ignoreCase = true))
-    assert(txns[0].sqlStatements[2].contains("update", ignoreCase = true))
-    assert(txns[0].sqlStatements[0].contains("Name1"))
-    assert(txns[0].sqlStatements[1].contains("Name2"))
-    assert(txns[0].sqlStatements[2].contains("Name3"))
+    assertEquals(txns[0].postgresStatements.size, 3)
+    when (val stmt = txns[0].postgresStatements[0]) {
+      is OperationDto.InsertOperationDto -> {
+        assert(stmt.values.containsValue("Name1"))
+      }
+      else -> {
+        fail("Wrong type of operation! Operation dto: $stmt")
+      }
+    }
+    when (val stmt = txns[0].postgresStatements[1]) {
+      is OperationDto.InsertOperationDto -> {
+        assert(stmt.values.containsValue("Name2"))
+      }
+      else -> {
+        fail("Wrong type of operation! Operation dto: $stmt")
+      }
+    }
+    when (val stmt = txns[0].postgresStatements[2]) {
+      is OperationDto.UpdateOperationDto -> {
+        assert(stmt.newValues.containsValue("Name3"))
+      }
+      else -> {
+        fail("Wrong type of operation! Operation dto: $stmt")
+      }
+    }
   }
 
   @Test
@@ -314,10 +333,37 @@ class ProjectDatabaseTest {
 
     val txns = projectDatabase.fetchTransactions(limit = 10)
     assertEquals(txns.size, 2)
-    assertEquals(txns[1].sqlStatements.size, 3)
-    assert(txns[1].sqlStatements[0].matches("""update..task..set.*name..=..Name1.*where.*uid..=..someuid1.""".toRegex()))
-    assert(txns[1].sqlStatements[1].matches(""".*delete.from..task.*where.*uid..=..someuid2.""".toRegex()))
-    assert(txns[1].sqlStatements[2].matches(""".*delete.from..task.*where.*uid..=..someuid1.""".toRegex()))
+    assertEquals(txns[1].postgresStatements.size, 3)
+
+    when (val stmt = txns[1].postgresStatements[0]) {
+      is OperationDto.UpdateOperationDto -> {
+        assertEquals("task", stmt.tableName)
+        assert(stmt.newValues.containsKey("name") && stmt.newValues["name"].equals("Name1"))
+        assert(stmt.updateBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
+    }
+    when (val stmt = txns[1].postgresStatements[1]) {
+      is OperationDto.DeleteOperationDto -> {
+        assertEquals("task", stmt.tableName)
+        assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid2")))
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
+    }
+    when (val stmt = txns[1].postgresStatements[2]) {
+      is OperationDto.DeleteOperationDto -> {
+        val operation = txns[1].postgresStatements[2] as OperationDto.DeleteOperationDto
+        assertEquals("task", operation.tableName)
+        assert(operation.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
+    }
   }
 
   @Test
@@ -366,10 +412,15 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(1, txns.size)
 
-    assertEquals(1, txns[0].sqlStatements.size)
-    val stmt = txns[0].sqlStatements[0]
-    assert(stmt.contains("update", ignoreCase = true)) {"Statement text: $stmt"}
-    assert(stmt.contains("duration", ignoreCase = true)) {"Statement text: $stmt"}
+    assertEquals(1, txns[0].postgresStatements.size)
+    when (val stmt = txns[0].postgresStatements[0]) {
+      is OperationDto.UpdateOperationDto -> {
+        assert(stmt.newValues.containsKey("duration")) { "Statement dto is: $stmt" }
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
+    }
   }
 
   @Test fun `update task properties`() {
@@ -400,22 +451,27 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(1, txns.size)
 
-    assertEquals(1, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
-    val stmt = txns[0].sqlStatements[0]
-    assert(stmt.contains("update", ignoreCase = true)) {"Statement text: $stmt"}
-    assert(stmt.matches(""".*where.*"uid".=.'someuid1'.*""".toRegex())) {"Statement text: $stmt"}
-    assert(stmt.matches(""".*"color".=.'#ff0000'.*""".toRegex())) {"Statement text: $stmt"}
-    assert(stmt.matches(""".*"notes".=.'lorem.ipsum'.*""".toRegex())) {"Statement text: $stmt"}
-    assert(stmt.matches(""".*"web_link".=.'https://google.com'.*""".toRegex())) {"Statement text: $stmt"}
-    assert(stmt.matches(""".*"name".=.'task1'.*""".toRegex())) {"Statement text: $stmt"}
-    assert(stmt.matches(""".*"priority".=.'2'.*""".toRegex())) {"Statement text: $stmt"}
-    assert(stmt.matches(""".*"is_project_task".=.true.*""".toRegex())) {"Statement text: $stmt"}
-    assert(stmt.matches(""".*"completion".=.50.*""".toRegex())) {"Statement text: $stmt"}
-    assert(stmt.matches(""".*"is_cost_calculated".=.false.*""".toRegex())) {"Statement text: $stmt"}
-    assert(stmt.matches(""".*"cost_manual_value".=.10.*""".toRegex())) {"Statement text: $stmt"}
-    assertFalse(stmt.contains("expand"))
-    assertFalse(stmt.contains("start_date"))
-    assertFalse(stmt.contains("duration"))
+    assertEquals(1, txns[0].postgresStatements.size) { "Recorded statements: ${txns[0].postgresStatements}"}
+    when (val stmt = txns[0].postgresStatements[0]) {
+      is OperationDto.UpdateOperationDto -> {
+        assert(stmt.updateBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+        assert(stmt.newValues.containsKey("color") && stmt.newValues["color"] == "#ff0000")
+        assert(stmt.newValues.containsKey("notes") && stmt.newValues["notes"] == "lorem ipsum")
+        assert(stmt.newValues.containsKey("web_link") && stmt.newValues["web_link"] == "https://google.com")
+        assert(stmt.newValues.containsKey("name") && stmt.newValues["name"] == "task1")
+        assert(stmt.newValues.containsKey("priority") && stmt.newValues["priority"] == "2")
+        assert(stmt.newValues.containsKey("is_project_task") && stmt.newValues["is_project_task"] == "true")
+        assert(stmt.newValues.containsKey("completion") && stmt.newValues["completion"] == "50")
+        assert(stmt.newValues.containsKey("is_cost_calculated") && stmt.newValues["is_cost_calculated"] == "false")
+        assert(stmt.newValues.containsKey("cost_manual_value") && stmt.newValues["cost_manual_value"] == "10")
+        assertFalse(stmt.newValues.containsKey("expand"))
+        assertFalse(stmt.newValues.containsKey("start_date"))
+        assertFalse(stmt.newValues.containsKey("expiration"))
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
+    }
   }
 
   @Test fun `add custom property`() {
@@ -441,15 +497,29 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(startLocalTxnId = 1, limit = 2)
     assertEquals(1, txns.size)
 
-    assertEquals(2, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
-    txns[0].sqlStatements[0].also { stmt ->
-      assert(stmt.matches(""".*delete.from..taskcustomcolumn.*where.*uid..=..someuid1.*and.*not.in.*tpc0.*""".toRegex()))
-      { "Statement text: $stmt" }
+    assertEquals(2, txns[0].postgresStatements.size) { "Recorded statements: ${txns[0].postgresStatements}"}
+    when (val stmt = txns[0].postgresStatements[0]) {
+      is OperationDto.DeleteOperationDto -> {
+        assertEquals("taskcustomcolumn", stmt.tableName)
+        assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1"))) {"Statement dto $stmt"}
+        // TODO -- "not in tpc0" field name?
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
     }
-    txns[0].sqlStatements[1].also { stmt ->
-      assert(stmt.contains("merge", ignoreCase = true)) { "Statement text: $stmt" }
-      assert(stmt.matches(""".*on.*uid..=.'someuid1'.*""".toRegex())) { "Statement text: $stmt" }
-      assert(stmt.matches(""".*"column_value".=.'foovalue'.*""".toRegex())) { "Statement text: $stmt" }
+    when (val stmt = txns[0].postgresStatements[1]) {
+      is OperationDto.MergeOperationDto -> {
+        assert(stmt.mergeBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1"))) {"Statement dto $stmt"}
+        assert(
+          (stmt.whenMatchedThenUpdate.containsKey("column_value") && stmt.whenMatchedThenUpdate["column_value"] == "foovalue")
+            ||
+          (stmt.whenNotMatchedThenInsert.containsKey("column_value") && stmt.whenNotMatchedThenInsert["column_value"] == "foovalue")
+        ) {"Statement dto $stmt"}
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
     }
   }
 
@@ -488,20 +558,38 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(startLocalTxnId = 3, limit = 3)
     assertEquals(2, txns.size)
 
-    assertEquals(2, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
-    txns[0].sqlStatements[0].also { stmt ->
-      assert(stmt.matches(""".*delete.from..taskcustomcolumn.*where.*uid..=..someuid1.""".toRegex()))
-      { "Statement text: $stmt" }
+    assertEquals(2, txns[0].postgresStatements.size) { "Recorded statements: ${txns[0].postgresStatements}"}
+    when (val stmt = txns[0].postgresStatements[0]) {
+      is OperationDto.DeleteOperationDto -> {
+        assertEquals("taskcustomcolumn", stmt.tableName)
+        assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
     }
-    txns[0].sqlStatements[1].also { stmt ->
-      assert(stmt.contains("merge", ignoreCase = true)) { "Statement text: $stmt" }
-      assert(stmt.matches(""".*on.*uid..=.'someuid1'.*""".toRegex())) { "Statement text: $stmt" }
-      assert(stmt.matches(""".*"column_value".=.'foovalue'.*""".toRegex())) { "Statement text: $stmt" }
+    when (val stmt = txns[0].postgresStatements[1]) {
+      is OperationDto.MergeOperationDto -> {
+        assert(stmt.mergeBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1"))) {"Statement dto $stmt"}
+        assert(
+          (stmt.whenMatchedThenUpdate.containsKey("column_value") && stmt.whenMatchedThenUpdate["column_value"] == "foovalue")
+            ||
+            (stmt.whenNotMatchedThenInsert.containsKey("column_value") && stmt.whenNotMatchedThenInsert["column_value"] == "foovalue")
+        ) {"Statement dto $stmt"}
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
     }
-    assertEquals(1, txns[1].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
-    txns[1].sqlStatements[0].also { stmt ->
-      assert(stmt.matches(""".*delete.from..taskcustomcolumn.*where.*uid..=..someuid1.""".toRegex()))
-      { "Statement text: $stmt" }
+    assertEquals(1, txns[1].postgresStatements.size) { "Recorded statements: ${txns[0].postgresStatements}"}
+    when (val stmt = txns[1].postgresStatements[0]) {
+      is OperationDto.DeleteOperationDto -> {
+        assertEquals("taskcustomcolumn", stmt.tableName)
+        assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
     }
     // No merge statements as the default value is set.
   }
@@ -529,11 +617,16 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(startLocalTxnId = 1, limit = 2)
     assertEquals(1, txns.size)
 
-    assertEquals(1, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
-    txns[0].sqlStatements[0].also { stmt ->
-      assert(stmt.matches(""".*delete.from..taskcustomcolumn.*where.*uid..=..someuid1.*""".toRegex()))
-      { "Statement text: $stmt" }
-      assertFalse(stmt.matches(""".*and.*not.in.*tpc0.*""".toRegex()))
+    assertEquals(1, txns[0].postgresStatements.size) { "Recorded statements: ${txns[0].postgresStatements}"}
+    when (val stmt = txns[0].postgresStatements[0]) {
+      is OperationDto.DeleteOperationDto -> {
+        assertEquals("taskcustomcolumn", stmt.tableName)
+        assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+        // TODO: assertFalse(stmt.matches(""".*and.*not.in.*tpc0.*""".toRegex()))
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
     }
   }
 
@@ -556,10 +649,15 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(1, txns.size)
 
-    assertEquals(1, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
-    val stmt = txns[0].sqlStatements[0]
-    assert(stmt.contains("update", ignoreCase = true)) {"Statement text: $stmt"}
-    assert(stmt.matches(""".*"start_date".=.date.'${TestSetupHelper.newTuesday().toXMLString()}'.*""".toRegex())) {"Statement text: $stmt"}
+    assertEquals(1, txns[0].postgresStatements.size) { "Recorded statements: ${txns[0].postgresStatements}"}
+    when (val stmt = txns[0].postgresStatements[0]) {
+      is OperationDto.UpdateOperationDto -> {
+        assert(stmt.newValues.containsKey("start_date") && stmt.newValues["start_date"] == TestSetupHelper.newTuesday().toXMLString())
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
+    }
   }
 
   @Test fun `task tree shifts in a single transaction`() {
@@ -598,23 +696,39 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(1, txns.size)
 
-    assertEquals(3, txns[0].sqlStatements.size) { "Recorded statements: ${txns[0].sqlStatements}"}
+    assertEquals(3, txns[0].postgresStatements.size) { "Recorded statements: ${txns[0].postgresStatements}"}
 
     // Due to the depth-first post-order traversal, the deepmost task updates go first.
-    txns[0].sqlStatements[0].let { stmt ->
-      assert(stmt.contains("update", ignoreCase = true)) {"Statement text: $stmt"}
-      assert(stmt.matches(""".*"start_date".=.date.'${TestSetupHelper.newTuesday().toXMLString()}'.*where.*someuid3.*""".toRegex())) {"Statement text: $stmt"}
+    when (val stmt = txns[0].postgresStatements[0]) {
+      is OperationDto.UpdateOperationDto -> {
+        assert(stmt.newValues.containsKey("start_date") && stmt.newValues["start_date"] == TestSetupHelper.newTuesday().toXMLString()) { "Operation dto: $stmt" }
+        assert(stmt.updateBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid3"))) { "Operation dto: $stmt" }
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
     }
-    txns[0].sqlStatements[1].let { stmt ->
-      assert(stmt.contains("update", ignoreCase = true)) {"Statement text: $stmt"}
-      assert(stmt.matches(""".*"start_date".=.date.'${TestSetupHelper.newTuesday().toXMLString()}'.*where.*someuid2.*""".toRegex())) {"Statement text: $stmt"}
+
+    when (val stmt = txns[0].postgresStatements[1]) {
+      is OperationDto.UpdateOperationDto -> {
+        assert(stmt.newValues.containsKey("start_date") && stmt.newValues["start_date"] == TestSetupHelper.newTuesday().toXMLString()) { "Operation dto: $stmt" }
+        assert(stmt.updateBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid2"))) { "Operation dto: $stmt" }
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
     }
-    txns[0].sqlStatements[2].let { stmt ->
-      assert(stmt.contains("update", ignoreCase = true)) {"Statement text: $stmt"}
-      assert(stmt.matches(""".*"start_date".=.date.'${TestSetupHelper.newTuesday().toXMLString()}'.*where.*someuid1.*""".toRegex())) {"Statement text: $stmt"}
+
+    when (val stmt = txns[0].postgresStatements[2]) {
+      is OperationDto.UpdateOperationDto -> {
+        assert(stmt.newValues.containsKey("start_date") && stmt.newValues["start_date"] == TestSetupHelper.newTuesday().toXMLString()) { "Operation dto: $stmt" }
+        assert(stmt.updateBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+      }
+      else -> {
+        fail("Wrong type of operation. Operation dto: $stmt")
+      }
     }
   }
-
 }
 
 private fun LocalDate.toIsoNoHours() = this.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
