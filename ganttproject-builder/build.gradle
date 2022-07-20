@@ -51,13 +51,13 @@ task distBin(dependsOn: [
                 include "HouseBuildingSample.gan"
                 include "LICENSE"
                 include "logback.xml"
-                include "logging.properties"
             }
         }
         copy {
             into(rootProject.distBinDir)
             from project(":ganttproject").rootDir
             include "lib/core/eclipsito.jar"
+            include "src/main/resources/logging.properties"
         }
         copy {
             into(rootProject.distBinDir)
