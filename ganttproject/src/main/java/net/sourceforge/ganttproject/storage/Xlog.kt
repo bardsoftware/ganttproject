@@ -48,8 +48,8 @@ sealed class OperationDto() {
   @Serializable
   data class DeleteOperationDto(
     val tableName: String,
-    val deleteBinaryConditions: List<Triple<String, BinaryPred, String>>, // [(fieldName, predicate, value)] eg [('foo', EQ, 'bar')]
-    val deleteRangeConditions: List<Triple<String, RangePred, List<String>>>,
+    val deleteBinaryConditions: List<Triple<String, BinaryPred, String>> = listOf(), // [(fieldName, predicate, value)] eg [('foo', EQ, 'bar')]
+    val deleteRangeConditions: List<Triple<String, RangePred, List<String>>> = listOf(),
   ): OperationDto()
 
   @Serializable
