@@ -25,5 +25,7 @@ jobs:
         with:
           java-version: 11.0.15
           java-package: jdk+fx
-      - name: Build with Gradle
+      - name: Build GanttProject
         run: ./gradlew build
+      - name: Build Colloboque
+        run: cd cloud.ganttproject.colloboque && ./gradlew build
