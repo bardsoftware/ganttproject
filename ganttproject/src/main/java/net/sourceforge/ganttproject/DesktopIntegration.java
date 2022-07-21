@@ -5,6 +5,7 @@ import biz.ganttproject.app.AboutKt;
 import biz.ganttproject.desktop.DesktopAdapter;
 import biz.ganttproject.desktop.GanttProjectApi;
 import biz.ganttproject.desktop.QuitResponse;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.action.edit.SettingsDialogAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
@@ -50,14 +51,18 @@ public class DesktopIntegration {
         @Override
         public void openFile(final File file) {
           javax.swing.SwingUtilities.invokeLater(() -> {
-            if (projectUiFacade.ensureProjectSaved(project)) {
-              Document myDocument = project.getDocumentManager().getDocument(file.getAbsolutePath());
-              try {
-                projectUiFacade.openProject(myDocument, project, null, null);
-              } catch (Document.DocumentException | IOException ex) {
-                uiFacade.showErrorDialog(ex);
+            var barrier = projectUiFacade.ensureProjectSaved(project);
+            barrier.await(result -> {
+              if (result) {
+                Document myDocument = project.getDocumentManager().getDocument(file.getAbsolutePath());
+                try {
+                  projectUiFacade.openProject(myDocument, project, null, null);
+                } catch (Document.DocumentException | IOException ex) {
+                  uiFacade.showErrorDialog(ex);
+                }
               }
-            }
+              return Unit.INSTANCE;
+            });
           });
         }
       });

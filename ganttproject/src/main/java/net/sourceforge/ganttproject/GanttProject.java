@@ -34,6 +34,7 @@ import com.google.common.collect.Lists;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.action.*;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
@@ -549,13 +550,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   /**
-   * Save the project as (with a dialog file chooser)
-   */
-  public void saveAsProject() {
-    getProjectUIFacade().saveProjectAs(getProject());
-  }
-
-  /**
    * @return the UIConfiguration.
    */
   @Override
@@ -579,19 +573,22 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       options.setWindowSize(getWidth(), getHeight(), (getExtendedState() & Frame.MAXIMIZED_BOTH) != 0);
       options.setUIConfiguration(myUIConfiguration);
       options.save();
-      if (getProjectUIFacade().ensureProjectSaved(getProject())) {
-        getProject().close();
-        setVisible(false);
-        dispose();
-        doQuitApplication(withSystemExit);
-        return true;
-      } else {
-        setVisible(true);
-        return false;
-      }
+      var barrier = getProjectUIFacade().ensureProjectSaved(getProject());
+      barrier.await(result -> {
+        if (result) {
+          getProject().close();
+          setVisible(false);
+          dispose();
+          doQuitApplication(withSystemExit);
+        } else {
+          setVisible(true);
+        }
+        return Unit.INSTANCE;
+      });
     } finally {
       myQuitEntered = false;
     }
+    return true;
   }
 
   public void setAskForSave(boolean afs) {
