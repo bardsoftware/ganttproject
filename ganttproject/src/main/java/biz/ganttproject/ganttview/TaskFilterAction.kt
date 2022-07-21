@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.ganttview
 
+import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.core.option.DefaultBooleanOption
 import net.sourceforge.ganttproject.action.GPAction
 import java.awt.event.ActionEvent
@@ -75,4 +76,30 @@ class TaskFilterAction(
       }
     }
   }
+}
+
+class TaskFilterActionSet(taskFilterManager: TaskFilterManager) {
+  // Task filters -> actions
+  private val filterCompletedTasksAction = TaskFilterAction("taskTable.filter.completedTasks",
+    taskFilterManager, taskFilterManager.filterCompletedTasksOption, taskFilterManager.completedTasksFilter)
+  private val filterDueTodayTasksAction = TaskFilterAction("taskTable.filter.dueTodayTasks",
+    taskFilterManager, taskFilterManager.filterDueTodayOption, taskFilterManager.dueTodayFilter)
+  private val filterOverdueTasksAction = TaskFilterAction("taskTable.filter.overdueTasks",
+    taskFilterManager, taskFilterManager.filterOverdueOption, taskFilterManager.overdueFilter)
+  private val filterInProgressTodayTasksAction = TaskFilterAction("taskTable.filter.inProgressTodayTasks",
+    taskFilterManager, taskFilterManager.filterInProgressTodayOption, taskFilterManager.inProgressTodayFilter)
+
+
+
+  fun tableFilterActions(builder: MenuBuilder) {
+    builder.apply {
+      items(
+        filterCompletedTasksAction,
+        filterDueTodayTasksAction,
+        filterOverdueTasksAction,
+        filterInProgressTodayTasksAction,
+      )
+    }
+  }
+
 }

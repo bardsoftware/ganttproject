@@ -22,6 +22,7 @@ import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.app.MenuBuilderFx;
 import biz.ganttproject.app.ToolbarKt;
+import biz.ganttproject.ganttview.TaskFilterActionSet;
 import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.task.TaskActions;
@@ -106,8 +107,9 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
 
     Button tableFilterButton = ToolbarKt.createButton(new TableButtonAction("taskTable.tableMenuFilter"), true);
     Objects.requireNonNull(tableFilterButton).setOnAction(event -> {
+      var filterActions = new TaskFilterActionSet(taskTable.getFilterManager());
       tableFilterMenu.getItems().clear();
-      taskTable.getFilterManager().tableFilterActions(new MenuBuilderFx(tableFilterMenu));
+      filterActions.tableFilterActions(new MenuBuilderFx(tableFilterMenu));
       tableFilterMenu.show(tableFilterButton, Side.BOTTOM, 0.0, 0.0);
       event.consume();
     });
