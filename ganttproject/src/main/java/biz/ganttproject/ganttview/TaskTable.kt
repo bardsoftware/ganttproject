@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.ganttview
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.app.*
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
@@ -327,20 +328,22 @@ class TaskTable(
       }
 
       override fun taskAdded(e: TaskHierarchyEvent) {
+        LOGGER.debug("taskAdded: event={}", e)
         if (e.taskSource == TaskManager.EventSource.USER) {
           runBlocking { newTaskActor.inboxChannel.send(TaskReady(e.task)) }
-          CoroutineScope(Dispatchers.JavaFx).launch {
+          FXUtil.runLater {
+            sync()
             treeTable.selectionModel.clearSelection()
             CellBehaviorBase.removeAnchor(treeTable)
-            val treeItem = e.newContainer.addChildTreeItem(e.task, e.indexAtNew)
+            val treeItem = task2treeItem[e.task]!!
             taskTableChartConnector.visibleTasks.clear()
             taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
             treeTable.selectionModel.select(treeItem)
-            newTaskActor.inboxChannel.send(TreeItemReady(treeItem))
+            runBlocking { newTaskActor.inboxChannel.send(TreeItemReady(treeItem)) }
           }
         } else {
           keepSelection {
-            e.newContainer.addChildTreeItem(e.task, e.indexAtNew)
+            e.newContainer!!.addChildTreeItem(e.task, e.indexAtNew)
             taskTableChartConnector.visibleTasks.clear()
             taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
           }
@@ -624,43 +627,47 @@ class TaskTable(
   }
 
   fun sync(keepFocus: Boolean = false) {
-    LOGGER.debug("Sync ===================================")
     keepSelection(keepFocus) {
+      LOGGER.debug("Sync >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
       val treeModel = taskManager.taskHierarchy
       task2treeItem.clear()
       task2treeItem[treeModel.rootTask] = rootItem
 
       var filteredCount = 0
       treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx, _ ->
-        LOGGER.debug("Sync: parent=$parent child=$child idx=$idx")
+        LOGGER.debug(">>> [walk] parent={} child={} idx={}", parent, child, idx)
         val parentItem = task2treeItem[parent]!!
-        if (!this.filterManager.activeFilter(parent, child)) {
+        val result = if (!this.filterManager.activeFilter(parent, child)) {
+          LOGGER.debug("...child={} is filtered out", child)
           parentItem.children.remove(idx, parentItem.children.size)
+          LOGGER.debug("...now parentItem.children={}", parentItem.children)
           filteredCount++
           false
         } else {
           if (child == null) {
             parentItem.children.remove(idx, parentItem.children.size)
           } else {
-            LOGGER.debug("parentItem.children=${parentItem.children}")
+            LOGGER.debug("...parentItem.children={}", parentItem.children)
             if (parentItem.children.size > idx) {
               val childItem = parentItem.children[idx]
-              LOGGER.debug("child@$idx=$childItem")
+              LOGGER.debug("...child@{}={}", idx, child)
               if (childItem.value.taskID == child.taskID) {
                 childItem.value = child
                 task2treeItem[child] = childItem
               } else {
-                LOGGER.debug("replacing child")
+                LOGGER.debug("...replacing child")
                 parentItem.children.removeAt(idx)
                 parent.addChildTreeItem(child, idx)
               }
             } else {
-              LOGGER.debug("adding child")
+              LOGGER.debug("...adding child")
               parent.addChildTreeItem(child)
             }
           }
           true
         }
+        LOGGER.debug("<<< [walk] parent={} child={} idx={}", parent, child, idx)
+        result
       }
       val visibleTasks = getExpandedTasks()
       taskTableChartConnector.visibleTasks.setAll(visibleTasks)
@@ -673,8 +680,8 @@ class TaskTable(
       }
       filterManager.hiddenTaskCount.set(filteredCount)
       initializationCompleted()
+      LOGGER.debug("Sync <<<<<<<<<<<<<<<<<")
     }
-    LOGGER.debug("Sync <<<<<<<<<<<<<<<<<")
   }
 
   private fun Task.addChildTreeItem(child: Task, pos: Int = -1): TreeItem<Task> {
@@ -682,12 +689,17 @@ class TaskTable(
       //println(task2treeItem)
       throw NullPointerException("NPE! this=$this")
     }
+    task2treeItem[child]?.let { return it }
+
     val childItem = createTreeItem(child)
     if (pos == -1 || pos > parentItem.children.size) {
       parentItem.children.add(childItem)
     } else {
       parentItem.children.add(pos, childItem)
     }
+//    LOGGER.debug("addChildTreeItem: child=$child pos=$pos parent=$parentItem")
+//    LOGGER.debug("addChildTreeItem: parentItem.children=${parentItem.children}")
+//    LOGGER.delegate().debug("Stack: ", Exception())
     task2treeItem[child] = childItem
     return childItem
   }
@@ -757,11 +769,7 @@ class TaskTable(
       }
       treeTable.requestFocus()
     }
-    if (Platform.isFxApplicationThread()){
-      body()
-    } else {
-      Platform.runLater { body() }
-    }
+    FXUtil.runLater(body)
   }
 
   private fun onProperties() {

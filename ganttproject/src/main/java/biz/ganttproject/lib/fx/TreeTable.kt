@@ -81,6 +81,8 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
       it.headerHeight.addListener { _, _, _ ->
         headerHeight.value = it.fullHeaderHeight
       }
+      it.bindHeaderFont()
+
     }
   }
 
@@ -118,7 +120,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     val totalPrefWidth = tableColumns.filter { it.isVisible }.sumOf { it.prefWidth }
     prefWidth = totalPrefWidth + vbarWidth()
     columns.setAll(tableColumns)
-    skin?.let { (it as GPTreeTableViewSkin<T>).bindHeaderFont()}
+    (skin as? GPTreeTableViewSkin<*>)?.let { it.applyHeaderFont() }
   }
 
   fun autosizeColumns() {
@@ -285,14 +287,20 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
     }
   }
 
-  fun bindHeaderFont() {
+  fun applyHeaderFont() {
     FXUtil.runLater {
       tableHeaderRow.walkTree {
         if (it is Labeled) {
-          it.fontProperty().bind(applicationFont)
+          it.style = """-fx-font-family: ${applicationFont.value.family}; -fx-font-size: ${applicationFont.value.size } """
         }
       }
     }
+  }
+  fun bindHeaderFont() {
+    applicationFont.addListener { _, _, newValue ->
+      applyHeaderFont()
+    }
+    applyHeaderFont()
   }
 
 }

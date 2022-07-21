@@ -38,5 +38,5 @@ class TaskResourcePropertiesAction(
         } else {
           taskProperties
         }
-      else -> error("Unknown active tab")
+      else -> taskProperties
     }}, arrayOf(taskProperties, resourceProperties))
