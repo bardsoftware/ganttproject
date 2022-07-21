@@ -550,13 +550,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   /**
-   * Save the project as (with a dialog file chooser)
-   */
-  public void saveAsProject() {
-    getProjectUIFacade().saveProjectAs(getProject());
-  }
-
-  /**
    * @return the UIConfiguration.
    */
   @Override
