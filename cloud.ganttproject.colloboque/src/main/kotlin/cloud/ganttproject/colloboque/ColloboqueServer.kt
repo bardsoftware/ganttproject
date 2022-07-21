@@ -119,7 +119,7 @@ class ColloboqueServer(
    * Returns new baseTxnId on success.
    */
   private fun applyXlog(projectRefid: ProjectRefid, baseTxnId: String, transaction: XlogRecord): String? {
-    if (transaction.postgresStatements.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
+    if (transaction.colloboqueOperations.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
     if (getBaseTxnId(projectRefid) != baseTxnId) throw ColloboqueServerException("Invalid transaction id $baseTxnId")
     try {
       connectionFactory(projectRefid).use { connection ->
@@ -127,7 +127,7 @@ class ColloboqueServer(
           .using(connection, SQLDialect.POSTGRES)
           .transactionResult { config ->
             val context = config.dsl()
-            transaction.postgresStatements.forEach { context.execute(generateSqlStatement(context, it)) }
+            transaction.colloboqueOperations.forEach { context.execute(generateSqlStatement(context, it)) }
             generateNextTxnId(projectRefid, baseTxnId, transaction)
             // TODO: update transaction id in the database
           }.also { refidToBaseTxnId[projectRefid] = it }
