@@ -65,8 +65,8 @@ public class DocumentCreator implements DocumentManager {
   private final Logger myLogger = GPLogger.getLogger(DocumentManager.class);
   /** List containing the Most Recent Used documents */
   private final DocumentsMRU myMRU = new DocumentsMRU(50);
-  private final File myDocumentsFolder;
   private final File myUserDir;
+  private final GPOptionGroup myLocalStorageOptions;
 
   public DocumentCreator(IGanttProject project, UIFacade uiFacade, ParserFactory parserFactory) {
     myProject = project;
@@ -78,13 +78,13 @@ public class DocumentCreator implements DocumentManager {
         myWebDavStorage.getLegacyLastWebDAVDocumentOption(),
         myWebDavStorage.getWebDavLockTimeoutOption()
     });
+    myLocalStorageOptions = new GPOptionGroup("localStorage", DocumentKt.getDefaultLocalFolderOption());
     myWebDavOptionGroup = new GPOptionGroup("webdav", new GPOption[] {
         myWebDavStorage.getServersOption(),
         myWebDavStorage.getLastWebDavDocumentOption(),
         myWebDavStorage.getWebDavReleaseLockOption(),
         myWebDavStorage.getProxyOption()
     });
-    myDocumentsFolder = DocumentKt.getDefaultLocalFolder();
     myUserDir = DocumentKt.getUserDir();
   }
 
@@ -166,7 +166,7 @@ public class DocumentCreator implements DocumentManager {
   public Document newUntitledDocument() throws IOException {
     for (int i = 1;; i++) {
       String filename = GanttLanguage.getInstance().formatText("document.storage.untitledDocument", i);
-      File untitledFile = new File(myDocumentsFolder, filename);
+      File untitledFile = new File(DocumentKt.getDefaultLocalFolder(), filename);
       if (untitledFile.exists()) {
         continue;
       }
@@ -176,7 +176,7 @@ public class DocumentCreator implements DocumentManager {
 
   @Override
   public Document newDocument(String path) throws IOException {
-    return createDocument(path, myDocumentsFolder, null, null);
+    return createDocument(path, DocumentKt.getDefaultLocalFolder(), null, null);
   }
 
   @Override
@@ -346,7 +346,7 @@ public class DocumentCreator implements DocumentManager {
 
   @Override
   public GPOptionGroup[] getNetworkOptionGroups() {
-    return new GPOptionGroup[] { myFtpOptions, myOptionGroup, myWebDavOptionGroup };
+    return new GPOptionGroup[] { myFtpOptions, myOptionGroup, myWebDavOptionGroup, myLocalStorageOptions };
   }
 
   @Override

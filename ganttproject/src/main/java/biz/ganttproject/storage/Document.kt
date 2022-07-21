@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import biz.ganttproject.core.option.DefaultFileOption
 import biz.ganttproject.storage.cloud.GPCloudDocument
 import biz.ganttproject.storage.cloud.GPCloudOptions
 import com.fasterxml.jackson.databind.JsonNode
@@ -251,7 +252,14 @@ fun (ByteArray).checksum(): String {
   return Hashing.crc32c().hashBytes(this).toString()
 }
 
+val defaultLocalFolderOption = DefaultFileOption("defaultDirectory")
 fun getDefaultLocalFolder(): File {
+  if (!defaultLocalFolderOption.value.isNullOrBlank()) {
+    val defaultFolder = File(defaultLocalFolderOption.value)
+    if (defaultFolder.exists() && defaultFolder.canWrite()) {
+      return defaultFolder
+    }
+  }
   val userHome = File(System.getProperty("user.home"))
   val documents = File(userHome, "Documents")
   return if (!documents.exists() || !documents.canRead()) {
