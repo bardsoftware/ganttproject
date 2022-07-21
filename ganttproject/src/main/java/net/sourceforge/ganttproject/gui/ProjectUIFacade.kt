@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui
 
+import biz.ganttproject.app.Barrier
 import biz.ganttproject.core.option.GPOptionGroup
 import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.IGanttProject
@@ -29,7 +30,7 @@ typealias AuthenticationFlow = (()->Unit)->Unit
 interface ProjectUIFacade {
   fun saveProject(project: IGanttProject, onFinish: Channel<Boolean>?)
   fun saveProjectAs(project: IGanttProject)
-  fun ensureProjectSaved(project: IGanttProject): Boolean
+  fun ensureProjectSaved(project: IGanttProject): Barrier<Boolean>
 
   @Throws(IOException::class, Document.DocumentException::class)
   fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?, authenticationFlow: AuthenticationFlow? = null)
