@@ -110,7 +110,6 @@ class TextCell<S, T>(
   private val disclosureNode: Node? get() = parent?.lookup(".arrow")
 
   private val textField: TextField = createTextField().also {
-    it.fontProperty().bind(applicationFont)
     it.focusedProperty().addListener { _, oldValue, newValue ->
       // The tree may miss the fact that editing was completed, in particular it happens when user clicks "new task"
       // button while this text field is in the "editing" state. This makes the text field losing the focus, however,
@@ -122,6 +121,7 @@ class TextCell<S, T>(
       }
     }
   }
+
   private var isCancellingOrCommitting = false
   // This hook will transition the newTaskActor from EDITING_STARTED to IDLE state, thus enabling creation of the new
   // tasks. This should always be called from commitEdit/cancelEdit methods and should be called from those branches
@@ -138,7 +138,14 @@ class TextCell<S, T>(
 
   init {
     styleClass.add("gp-tree-table-cell")
-    fontProperty().bind(applicationFont)
+    applicationFont.addListener { _, _, _ -> updateFont() }
+  }
+
+  private fun updateFont() {
+      """-fx-font-family: ${applicationFont.value.family}; -fx-font-size: ${applicationFont.value.size } """.let {
+        textField.style = it
+        this.style = it
+      }
   }
 
   override fun startEdit() {
