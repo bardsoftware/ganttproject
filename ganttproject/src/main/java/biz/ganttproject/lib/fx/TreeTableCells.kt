@@ -139,6 +139,7 @@ class TextCell<S, T>(
   init {
     styleClass.add("gp-tree-table-cell")
     applicationFont.addListener { _, _, _ -> updateFont() }
+    updateFont()
   }
 
   private fun updateFont() {
