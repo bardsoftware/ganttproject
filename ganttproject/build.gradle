@@ -120,7 +120,7 @@ sourceSets {
     main {
         resources {
             srcDirs = ["src/main/java", "src/main/resources"]
-            include "**/*.css", "**/*.properties"
+            include "**/*.css", "**/*.properties", "**/*.sql"
         }
     }
 
@@ -143,6 +143,7 @@ task copyPluginFiles(dependsOn: jar) {
                 include "resources/fonts/**"
                 include "resources/icons/**"
                 include "resources/language/**"
+                include "resources/sql/**"
                 include "resources/xslfo/**"
                 include "resources/xslt/**"
             }

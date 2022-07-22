@@ -21,14 +21,13 @@ package biz.ganttproject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
-import java.util.logging.FileHandler
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 interface LoggerApi<T> {
   fun error(msg: String, vararg params: Any, kv: Map<String, Any> = emptyMap(), exception: Throwable? = null)
-  fun debug(msg: String, vararg params: Any, kv: Map<String, Any> = emptyMap())
+  fun debug(msg: String, vararg params: Any?, kv: Map<String, Any> = emptyMap())
   fun delegate(): T
   fun debug(msg: String) {
     debug(msg, params = arrayOf())
@@ -45,7 +44,7 @@ class LoggerImpl(name: String) : LoggerApi<Logger> {
     MDC.clear()
   }
 
-  override fun debug(msg: String, vararg params: Any, kv: Map<String, Any>) {
+  override fun debug(msg: String, vararg params: Any?, kv: Map<String, Any>) {
     kv.mapValues { it.value.toString() }
         .forEach { if (it.value.isNotBlank()) MDC.put(it.key, it.value) }
     delegate.debug(msg, *params)

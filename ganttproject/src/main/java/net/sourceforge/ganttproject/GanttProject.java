@@ -514,7 +514,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     UIUtil.registerActions(getRootPane(), false, newAction, propertiesAction, deleteAction);
     UIUtil.registerActions(myGanttChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
     UIUtil.registerActions(myResourceChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
-    getTabs().addChangeListener(e -> {
+    getTabs().getModel().addChangeListener(e -> {
       // Tell artefact actions that the active provider changed, so they
       // are able to update their state according to the current delegate
       newAction.actionStateChanged();
@@ -588,13 +588,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   /**
-   * Save the project as (with a dialog file chooser)
-   */
-  public void saveAsProject() {
-    getProjectUIFacade().saveProjectAs(getProject());
-  }
-
-  /**
    * @return the UIConfiguration.
    */
   @Override
@@ -618,19 +611,22 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       options.setWindowSize(getWidth(), getHeight(), (getExtendedState() & Frame.MAXIMIZED_BOTH) != 0);
       options.setUIConfiguration(myUIConfiguration);
       options.save();
-      if (getProjectUIFacade().ensureProjectSaved(getProject())) {
-        getProject().close();
-        setVisible(false);
-        dispose();
-        doQuitApplication(withSystemExit);
-        return true;
-      } else {
-        setVisible(true);
-        return false;
-      }
+      var barrier = getProjectUIFacade().ensureProjectSaved(getProject());
+      barrier.await(result -> {
+        if (result) {
+          getProject().close();
+          setVisible(false);
+          dispose();
+          doQuitApplication(withSystemExit);
+        } else {
+          setVisible(true);
+        }
+        return Unit.INSTANCE;
+      });
     } finally {
       myQuitEntered = false;
     }
+    return true;
   }
 
   public void setAskForSave(boolean afs) {

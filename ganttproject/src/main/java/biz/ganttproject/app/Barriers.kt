@@ -50,9 +50,15 @@ fun interface Barrier<T> {
 }
 
 class SimpleBarrier<T> : Barrier<T> {
+  private var value: T? = null
   private val subscribers = mutableListOf<BarrierExit<T>>()
-  override fun await(code: BarrierExit<T>) { subscribers.add(code) }
-  internal fun resolve(value: T) = subscribers.forEach { it(value) }
+  override fun await(code: BarrierExit<T>) {
+    value?.let { code(it) } ?: subscribers.add(code)
+  }
+  internal fun resolve(value: T) {
+    subscribers.forEach { it(value) }
+    this.value = value
+  }
 }
 
 /**
@@ -126,4 +132,11 @@ class TimerBarrier(intervalMillis: Long) : Barrier<Unit> {
     }
   }
 }
+
+class ResolvedBarrier<T>(private val value: T) : Barrier<T> {
+  override fun await(code: BarrierExit<T>) {
+    code(value)
+  }
+}
+
 private val BARRIER_LOGGER = GPLogger.create("App.Barrier")

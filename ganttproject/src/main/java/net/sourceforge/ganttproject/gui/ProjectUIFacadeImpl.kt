@@ -19,10 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui
 
-import biz.ganttproject.app.OptionElementData
-import biz.ganttproject.app.OptionPaneBuilder
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.dialog
+import biz.ganttproject.app.*
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.*
@@ -47,7 +44,6 @@ import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.undo.GPUndoManager
-import org.eclipse.core.runtime.IStatus
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.Executors
@@ -118,8 +114,12 @@ class ProjectUIFacadeImpl(
   }
 
   override fun saveProjectAs(project: IGanttProject) {
-    StorageDialogAction(project, this, project.documentManager,
-      (project.documentManager.webDavStorageUi as WebDavStorageImpl).serversOption, StorageDialogBuilder.Mode.SAVE, "project.save").actionPerformed(null)
+    StorageDialogAction(
+      project, this, project.documentManager,
+      (project.documentManager.webDavStorageUi as WebDavStorageImpl).serversOption,
+      StorageDialogBuilder.Mode.SAVE,
+      "project.save"
+    ).doRun()
   }
 
   enum class CantWriteChoice {MAKE_COPY, CANCEL, RETRY}
@@ -153,12 +153,12 @@ class ProjectUIFacadeImpl(
       }
     }
   }
-  private fun formatWriteStatusMessage(doc: Document, canWrite: IStatus): String {
-    assert(canWrite.code >= 0 && canWrite.code < Document.ErrorCode.values().size)
-    return RootLocalizer.formatText(
-        key = "document.error.write.${Document.ErrorCode.values()[canWrite.code].name.toLowerCase()}",
-        doc.fileName, canWrite.message)
-  }
+//  private fun formatWriteStatusMessage(doc: Document, canWrite: IStatus): String {
+//    assert(canWrite.code >= 0 && canWrite.code < Document.ErrorCode.values().size)
+//    return RootLocalizer.formatText(
+//        key = "document.error.write.${Document.ErrorCode.values()[canWrite.code].name.toLowerCase()}",
+//        doc.fileName, canWrite.message)
+//  }
 
   private fun afterSaveProject(project: IGanttProject) {
     val document = project.document
@@ -182,29 +182,33 @@ class ProjectUIFacadeImpl(
    * @return true when the project is **not** modified or is allowed to be
    * discarded
    */
-  override fun ensureProjectSaved(project: IGanttProject): Boolean {
+  override fun ensureProjectSaved(project: IGanttProject): Barrier<Boolean> =
     if (project.isModified) {
       val saveChoice = myWorkbenchFacade.showConfirmationDialog(i18n.getText("msg1"),
           i18n.getText("warning"))
-      if (UIFacade.Choice.CANCEL == saveChoice) {
-        return false
-      }
-      if (UIFacade.Choice.YES == saveChoice) {
-        return try {
-          saveProject(project, null)
-          // If all those complex save procedures complete successfully and project gets saved
-          // then its modified state becomes false
-          // Otherwise it remains true which means we have not saved and can't continue
-          !project.isModified
-        } catch (e: Exception) {
-          myWorkbenchFacade.showErrorDialog(e)
-          false
+      when (saveChoice) {
+        UIFacade.Choice.CANCEL, null -> ResolvedBarrier(false)
+        UIFacade.Choice.NO -> ResolvedBarrier(true)
+        UIFacade.Choice.YES, UIFacade.Choice.OK -> {
+          SimpleBarrier<Boolean>().also { barrier ->
+            val onFinish = Channel<Boolean>()
+            CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
+              try {
+                if (onFinish.receive()) {
+                  barrier.resolve(true)
+                }
+              } catch (e: Exception) {
+                myWorkbenchFacade.showErrorDialog(e)
+              }
+            }
+            saveProject(project, onFinish)
+          }
         }
-
       }
+    } else {
+      ResolvedBarrier(true)
     }
-    return true
-  }
+
 
   @Throws(IOException::class, DocumentException::class)
   override fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?,
@@ -249,7 +253,7 @@ class ProjectUIFacadeImpl(
                   it.onboard(documentManager, webSocket)
                 }
               }
-              GlobalScope.launch { onFinish?.send(true) }
+              runBlocking { onFinish?.send(true) }
             } catch (ex: DocumentException) {
               onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
             }
@@ -267,13 +271,14 @@ class ProjectUIFacadeImpl(
   }
 
   override fun createProject(project: IGanttProject) {
-    if (!ensureProjectSaved(project)) {
-      return
+    ensureProjectSaved(project).await { result ->
+      if (result) {
+        beforeClose()
+        project.close()
+        myWorkbenchFacade.setStatusText(i18n.getText("project.new.description"))
+        showNewProjectWizard(project)
+      }
     }
-    beforeClose()
-    project.close()
-    myWorkbenchFacade.setStatusText(i18n.getText("project.new.description"))
-    showNewProjectWizard(project)
   }
 
   private fun showNewProjectWizard(project: IGanttProject) {

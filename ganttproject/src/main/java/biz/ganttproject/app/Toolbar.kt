@@ -118,7 +118,7 @@ private fun applyFontStyle(node: Parent) {
     node.walkTree {
       node.styleClass.removeIf { it.startsWith("app-font-") }
       node.styleClass.add("app-font-${(applicationFontSpec.value?.size?.name ?: FontSpec.Size.NORMAL.name).lowercase()}")
-      node.style = """-fx-font-family: "${applicationFont.value.family}" """
+      node.style = """-fx-font-family: ${applicationFont.value.family} """
     }
   }
 }

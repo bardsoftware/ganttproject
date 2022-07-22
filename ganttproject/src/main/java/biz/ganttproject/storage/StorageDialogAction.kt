@@ -40,13 +40,22 @@ class StorageDialogAction(
     private val actionId: String) : GPAction(actionId) {
 
   override fun actionPerformed(actionEvent: ActionEvent?) {
+    projectUiFacade.ensureProjectSaved(project).await { result ->
+      if (result) {
+        doRun()
+      }
+    }
+  }
+
+  fun doRun() {
     dialog(RootLocalizer.create("myProjects.title")) { dialogBuildApi ->
       val dialogBuilder = StorageDialogBuilder(
-          project, projectUiFacade, documentManager, cloudStorageOptions, dialogBuildApi
+        project, projectUiFacade, documentManager, cloudStorageOptions, dialogBuildApi
       )
       dialogBuilder.build(mode)
     }
   }
+
 
   override fun asToolbarAction(): GPAction {
     return StorageDialogAction(project, projectUiFacade, documentManager, cloudStorageOptions, mode, actionId).also {
