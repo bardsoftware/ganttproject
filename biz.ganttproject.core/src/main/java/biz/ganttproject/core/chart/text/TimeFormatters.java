@@ -88,6 +88,7 @@ public class TimeFormatters {
     DateFormat createDateFormat(String pattern);
     Locale getLocale();
     String i18n(String key);
+    Integer getWeekNumber(Date date);
   }
 
   public void setLocaleApi(LocaleApi localeApi) {

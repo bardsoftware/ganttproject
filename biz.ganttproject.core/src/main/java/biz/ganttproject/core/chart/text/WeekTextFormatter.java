@@ -43,7 +43,7 @@ public class WeekTextFormatter extends CachingTextFormatter implements TimeForma
   }
 
   private TimeUnitText createTopText() {
-    Integer weekNo = myCalendar.get(Calendar.WEEK_OF_YEAR);
+    Integer weekNo = getLocal().getWeekNumber(myCalendar.getTime());
     String shortText = weekNo.toString();
     String middleText = MessageFormat.format("{0} {1}", myWeekText, weekNo);
     String longText = middleText;

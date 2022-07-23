@@ -70,6 +70,8 @@ public class UIConfiguration {
   private Supplier<Integer> myAppFontSize;
   private IntegerOption myDpiOption;
 
+  private BooleanOption myWeekNumberOption = new DefaultBooleanOption("useProjectWeekNumber", false);
+
   public UIConfiguration(Color taskColor, boolean isRedlineOn) {
 //    myChartMainFont = chartMainFont == null ? Fonts.DEFAULT_CHART_FONT : chartMainFont;
     this.isRedlineOn = isRedlineOn;
@@ -178,6 +180,10 @@ public class UIConfiguration {
 
   public AlphaRenderingOption getWeekendAlphaRenderingOption() {
     return myWeekendAlphaRenderingOption;
+  }
+
+  public BooleanOption getWeekNumberOption() {
+    return myWeekNumberOption;
   }
 
   class RedlineOption extends DefaultBooleanOption implements GP1XOptionConverter {

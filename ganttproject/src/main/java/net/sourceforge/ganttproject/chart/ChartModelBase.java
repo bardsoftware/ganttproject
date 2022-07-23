@@ -32,10 +32,7 @@ import biz.ganttproject.core.chart.text.TimeFormatter;
 import biz.ganttproject.core.chart.text.TimeFormatters;
 import biz.ganttproject.core.chart.text.TimeUnitText.Position;
 import biz.ganttproject.core.option.*;
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.TimeUnit;
-import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
-import biz.ganttproject.core.time.TimeUnitStack;
+import biz.ganttproject.core.time.*;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
@@ -49,6 +46,11 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
+import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
+import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
+import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -188,12 +190,15 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   private final GPOptionGroup myTimelineLabelOptions;
 
   private final FontOption myChartFontOption;
+  private final BooleanOption myWeekNumberOption;
 
   public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack, final UIConfiguration projectConfig) {
     myTaskManager = taskManager;
     myProjectConfig = projectConfig;
     myChartUIConfiguration = new ChartUIConfiguration(projectConfig);
     myChartFontOption = projectConfig.getChartFontOption();
+    myWeekNumberOption = projectConfig.getWeekNumberOption();
+
     myPainter = new StyledPainterImpl(myChartUIConfiguration);
     myTimeUnitStack = timeUnitStack;
     final TimeFormatters.LocaleApi localeApi = new TimeFormatters.LocaleApi() {
@@ -213,6 +218,21 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       public String i18n(String key) {
         return GanttLanguage.getInstance().getText(key);
       }
+
+      @Override
+      public Integer getWeekNumber(Date date) {
+        Calendar calendar = CalendarFactory.newCalendar();
+        calendar.setTime(date);
+        Integer weekNum = calendar.get(Calendar.WEEK_OF_YEAR);
+
+        if (!myWeekNumberOption.isChecked()) {
+          return weekNum;
+        }
+
+        calendar.setTime(myTaskManager.getProjectStart());
+        Integer startWeekNum = calendar.get(Calendar.WEEK_OF_YEAR);
+        return weekNum - startWeekNum;
+      }
     };
     final TimeFormatters timeFormatters = new TimeFormatters(localeApi);
     GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
@@ -221,6 +241,33 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
         timeFormatters.setLocaleApi(localeApi);
       }
     });
+
+    // clear formatter caches
+    myWeekNumberOption.addChangeValueListener(evt -> {timeFormatters.setLocaleApi(localeApi);});
+    myTaskManager.addTaskListener(new TaskListenerAdapter() {
+      @Override
+      public void taskScheduleChanged(@NotNull TaskScheduleEvent e) {
+        resetLocaleApi();
+      }
+      @Override
+      public void taskAdded(@NotNull TaskHierarchyEvent e) {
+        resetLocaleApi();
+      }
+      @Override
+      public void taskMoved(@NotNull TaskHierarchyEvent e) {
+        resetLocaleApi();
+      }
+      @Override
+      public void taskRemoved(@NotNull TaskHierarchyEvent e) {
+        resetLocaleApi();
+      }
+      private void resetLocaleApi() {
+        if (myWeekNumberOption.isChecked()) {
+          timeFormatters.setLocaleApi(localeApi);
+        }
+      }
+    });
+
     myChartHeader = new TimelineSceneBuilder(new TimelineSceneBuilder.InputApi() {
       @Override
       public Date getViewportStartDate() {
@@ -260,8 +307,12 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
     });
     myChartGridOptions = new ChartOptionGroup("ganttChartGridDetails",
-        new GPOption[] { projectConfig.getRedlineOption(), projectConfig.getProjectBoundariesOption(), projectConfig.getWeekendAlphaRenderingOption(),
-          myChartUIConfiguration.getChartStylesOption() },
+        new GPOption[] { projectConfig.getRedlineOption(),
+          projectConfig.getProjectBoundariesOption(),
+          projectConfig.getWeekendAlphaRenderingOption(),
+          myChartUIConfiguration.getChartStylesOption(),
+          projectConfig.getWeekNumberOption()
+        },
         getOptionEventDispatcher());
     myChartGrid = new DayGridSceneBuilder(new DayGridSceneBuilder.InputApi() {
       @Override
