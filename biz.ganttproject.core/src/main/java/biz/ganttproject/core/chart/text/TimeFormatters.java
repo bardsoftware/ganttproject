@@ -23,11 +23,11 @@ import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import com.google.common.collect.Iterables;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -88,7 +88,38 @@ public class TimeFormatters {
     DateFormat createDateFormat(String pattern);
     Locale getLocale();
     String i18n(String key);
-    Integer getWeekNumber(Date date);
+    ObservableProperty<Function<Date, Integer>> getWeekNumbering();
+  }
+
+  public static class ObservableProperty<T> {
+    private String myName;
+    private T myValue;
+    private List<PropertyChangeListener> myListeners = new ArrayList();;
+
+    public ObservableProperty (String name, T initValue) {
+      myName = name;
+      myValue = initValue;
+    }
+
+    public T getValue() {
+      return myValue;
+    }
+
+    public void setValue(T value) {
+      T oldValue = myValue;
+      myValue = value;
+      firePropertyChanged(oldValue, value);
+    }
+
+    public void addListener(PropertyChangeListener listener) {
+      myListeners.add(listener);
+    }
+
+    private void firePropertyChanged(T oldValue, T newValue) {
+      for (PropertyChangeListener listener : myListeners) {
+        listener.propertyChange(new PropertyChangeEvent(this, myName, oldValue, newValue));
+      }
+    }
   }
 
   public void setLocaleApi(LocaleApi localeApi) {

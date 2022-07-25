@@ -41,12 +41,16 @@ public abstract class CachingTextFormatter {
     return myTextCache.get(startDate);
   }
 
-  public LocaleApi getLocal () {
+  public LocaleApi getLocale() {
     return myLocale;
   }
 
   public void setLocale(LocaleApi locale) {
     myLocale = locale;
+    clearCache();
+  }
+
+  protected void clearCache() {
     myTextCache.clear();
   }
 

@@ -48,13 +48,17 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
-import net.sourceforge.ganttproject.task.event.TaskPropertyEvent;
 import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.text.DateFormat;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.temporal.WeekFields;
 import java.util.*;
 import java.util.List;
 
@@ -190,7 +194,55 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   private final GPOptionGroup myTimelineLabelOptions;
 
   private final FontOption myChartFontOption;
-  private final BooleanOption myWeekNumberOption;
+
+  private final DefaultEnumerationOption myWeekNumberOption;
+  private TimeFormatters.ObservableProperty<java.util.function.Function<Date, Integer>> myWeekNumProperty;
+
+  private final static Function<Date, Integer> US_WEEK_NUMBERING = date -> {
+    WeekFields weekNumbering = WeekFields.of(Locale.US);
+    LocalDate localDate = date.toInstant().atZone(ZoneOffset.UTC).toLocalDate();
+    return localDate.get(weekNumbering.weekOfWeekBasedYear());
+  };
+
+  private final static Function<Date, Integer> EUROPEAN_WEEK_NUMBERING = date -> {
+    WeekFields weekNumbering = WeekFields.of(Locale.UK);
+    LocalDate localDate = date.toInstant().atZone(ZoneOffset.UTC).toLocalDate();
+    return localDate.get(weekNumbering.weekOfWeekBasedYear());
+  };
+
+  private final static Function<Date, Integer> DEFAULD_WEEK_NUMBERING = date -> {
+    Calendar calendar = CalendarFactory.newCalendar();
+    calendar.setTime(date);
+    return calendar.get(Calendar.WEEK_OF_YEAR);
+  };
+
+  private class RelativeWeekNumberig implements Function<Date, Integer> {
+
+    private Date myStartProjectDate;
+
+    public RelativeWeekNumberig(Date startProjectDate) {
+      myStartProjectDate = startProjectDate;
+    }
+
+    @Override
+    public Integer apply(Date date) {
+      Calendar calendar = CalendarFactory.newCalendar();
+      calendar.setTime(date);
+      Integer weekNum = calendar.get(Calendar.WEEK_OF_YEAR);
+      calendar.setTime(myStartProjectDate);
+      Integer startWeekNum = calendar.get(Calendar.WEEK_OF_YEAR);
+      weekNum = weekNum - startWeekNum;
+      if (weekNum >= 0) {
+        weekNum++;
+      }
+      return weekNum;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object object) {
+      return this.equals(object);
+    }
+  }
 
   public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack, final UIConfiguration projectConfig) {
     myTaskManager = taskManager;
@@ -201,6 +253,9 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
     myPainter = new StyledPainterImpl(myChartUIConfiguration);
     myTimeUnitStack = timeUnitStack;
+
+    myWeekNumProperty = new TimeFormatters.ObservableProperty("weekNumbering", DEFAULD_WEEK_NUMBERING);
+
     final TimeFormatters.LocaleApi localeApi = new TimeFormatters.LocaleApi() {
       @Override
       public Locale getLocale() {
@@ -220,18 +275,8 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
 
       @Override
-      public Integer getWeekNumber(Date date) {
-        Calendar calendar = CalendarFactory.newCalendar();
-        calendar.setTime(date);
-        Integer weekNum = calendar.get(Calendar.WEEK_OF_YEAR);
-
-        if (!myWeekNumberOption.isChecked()) {
-          return weekNum;
-        }
-
-        calendar.setTime(myTaskManager.getProjectStart());
-        Integer startWeekNum = calendar.get(Calendar.WEEK_OF_YEAR);
-        return weekNum - startWeekNum;
+     public TimeFormatters.ObservableProperty<java.util.function.Function<Date, Integer>> getWeekNumbering() {
+        return myWeekNumProperty;
       }
     };
     final TimeFormatters timeFormatters = new TimeFormatters(localeApi);
@@ -242,8 +287,22 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
     });
 
-    // clear formatter caches
-    myWeekNumberOption.addChangeValueListener(evt -> {timeFormatters.setLocaleApi(localeApi);});
+    myWeekNumberOption.addChangeValueListener(evt -> {
+      switch (evt.getNewValue().toString()) {
+        case UIConfiguration.WeekOption.US:
+          myWeekNumProperty.setValue(US_WEEK_NUMBERING);
+          break;
+          case UIConfiguration.WeekOption.EUROPEAN:
+            myWeekNumProperty.setValue(EUROPEAN_WEEK_NUMBERING);
+            break;
+          case UIConfiguration.WeekOption.DEFAULT:
+            myWeekNumProperty.setValue(DEFAULD_WEEK_NUMBERING);
+            break;
+          case UIConfiguration.WeekOption.RELATIVE_TO_PROJECT:
+            myWeekNumProperty.setValue(new RelativeWeekNumberig(myTaskManager.getProjectStart()));
+        }
+    });
+
     myTaskManager.addTaskListener(new TaskListenerAdapter() {
       @Override
       public void taskScheduleChanged(@NotNull TaskScheduleEvent e) {
@@ -262,8 +321,8 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
         resetLocaleApi();
       }
       private void resetLocaleApi() {
-        if (myWeekNumberOption.isChecked()) {
-          timeFormatters.setLocaleApi(localeApi);
+        if (UIConfiguration.WeekOption.RELATIVE_TO_PROJECT.equals(myWeekNumberOption.getSelectedValue())) {
+          myWeekNumProperty.setValue(new RelativeWeekNumberig(myTaskManager.getProjectStart()));
         }
       }
     });

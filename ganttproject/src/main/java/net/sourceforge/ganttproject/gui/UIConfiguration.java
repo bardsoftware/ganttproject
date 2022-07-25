@@ -19,10 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui;
 
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
-import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.DefaultBooleanOption;
-import biz.ganttproject.core.option.FontOption;
-import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.option.*;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -70,7 +67,19 @@ public class UIConfiguration {
   private Supplier<Integer> myAppFontSize;
   private IntegerOption myDpiOption;
 
-  private BooleanOption myWeekNumberOption = new DefaultBooleanOption("useProjectWeekNumber", false);
+
+  public class WeekOption extends DefaultEnumerationOption<String> {
+
+    public final static String DEFAULT = "chart.weekNumbering.default";
+    public final static String EUROPEAN = "chart.weekNumbering.european";
+    public final static String US = "chart.weekNumbering.us";
+    public final static String RELATIVE_TO_PROJECT = "chart.weekNumbering.relative_to_project";
+
+    public WeekOption() {
+      super("chart.weekNumbering", new String[] {DEFAULT, EUROPEAN, US, RELATIVE_TO_PROJECT});
+    }
+  }
+  private final WeekOption myWeekNumberOption = new WeekOption();
 
   public UIConfiguration(Color taskColor, boolean isRedlineOn) {
 //    myChartMainFont = chartMainFont == null ? Fonts.DEFAULT_CHART_FONT : chartMainFont;
@@ -182,7 +191,7 @@ public class UIConfiguration {
     return myWeekendAlphaRenderingOption;
   }
 
-  public BooleanOption getWeekNumberOption() {
+  public DefaultEnumerationOption getWeekNumberOption() {
     return myWeekNumberOption;
   }
 
