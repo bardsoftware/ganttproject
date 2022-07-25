@@ -19,6 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package biz.ganttproject.core.chart.text;
 
 import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.option.ChangeValueEvent;
+import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.core.option.ObservableProperty;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import com.google.common.collect.Iterables;
@@ -89,37 +92,6 @@ public class TimeFormatters {
     Locale getLocale();
     String i18n(String key);
     ObservableProperty<Function<Date, Integer>> getWeekNumbering();
-  }
-
-  public static class ObservableProperty<T> {
-    private String myName;
-    private T myValue;
-    private List<PropertyChangeListener> myListeners = new ArrayList();;
-
-    public ObservableProperty (String name, T initValue) {
-      myName = name;
-      myValue = initValue;
-    }
-
-    public T getValue() {
-      return myValue;
-    }
-
-    public void setValue(T value) {
-      T oldValue = myValue;
-      myValue = value;
-      firePropertyChanged(oldValue, value);
-    }
-
-    public void addListener(PropertyChangeListener listener) {
-      myListeners.add(listener);
-    }
-
-    private void firePropertyChanged(T oldValue, T newValue) {
-      for (PropertyChangeListener listener : myListeners) {
-        listener.propertyChange(new PropertyChangeEvent(this, myName, oldValue, newValue));
-      }
-    }
   }
 
   public void setLocaleApi(LocaleApi localeApi) {
