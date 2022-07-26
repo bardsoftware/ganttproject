@@ -205,7 +205,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myPainter = new StyledPainterImpl(myChartUIConfiguration);
     myTimeUnitStack = timeUnitStack;
 
-    myWeekNumProperty = new ObservableProperty("weekNumbering", WeekNumberingKt.getDefault());
+    myWeekNumProperty = new ObservableProperty("weekNumbering", WeekNumberingKt.getDefaultWeekNumbering());
 
     final TimeFormatters.LocaleApi localeApi = new TimeFormatters.LocaleApi() {
       @Override
@@ -240,13 +240,13 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myWeekNumberOption.addChangeValueListener(evt -> {
       switch (evt.getNewValue().toString()) {
         case UIConfiguration.WeekOption.US:
-          myWeekNumProperty.setValue(WeekNumberingKt.getUs());
+          myWeekNumProperty.setValue(WeekNumberingKt.getUsWeekNumbering());
           break;
         case UIConfiguration.WeekOption.EUROPEAN:
-          myWeekNumProperty.setValue(WeekNumberingKt.getEuropean());
+          myWeekNumProperty.setValue(WeekNumberingKt.getEuropeanWeekNumbering());
           break;
         case UIConfiguration.WeekOption.DEFAULT:
-          myWeekNumProperty.setValue(WeekNumberingKt.getDefault());
+          myWeekNumProperty.setValue(WeekNumberingKt.getDefaultWeekNumbering());
           break;
         case UIConfiguration.WeekOption.RELATIVE_TO_PROJECT:
           myWeekNumProperty.setValue(new RelativeWeekNumbering(myTaskManager.getProjectStart()));
