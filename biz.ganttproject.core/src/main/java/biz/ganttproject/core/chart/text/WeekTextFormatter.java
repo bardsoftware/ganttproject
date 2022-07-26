@@ -20,17 +20,18 @@ package biz.ganttproject.core.chart.text;
 
 import biz.ganttproject.core.chart.text.TimeFormatters.LocaleApi;
 import biz.ganttproject.core.time.CalendarFactory;
-
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.function.Function;
 
 
 public class WeekTextFormatter extends CachingTextFormatter implements TimeFormatter {
   private Calendar myCalendar;
   private DateFormat myDateFormat;
   private String myWeekText;
+  private Function<Date, Integer> myWeekNumbering;
 
   WeekTextFormatter() {
     myCalendar = CalendarFactory.newCalendar();
@@ -43,7 +44,7 @@ public class WeekTextFormatter extends CachingTextFormatter implements TimeForma
   }
 
   private TimeUnitText createTopText() {
-    Integer weekNo = myCalendar.get(Calendar.WEEK_OF_YEAR);
+    Integer weekNo = myWeekNumbering.apply(myCalendar.getTime());
     String shortText = weekNo.toString();
     String middleText = MessageFormat.format("{0} {1}", myWeekText, weekNo);
     String longText = middleText;
@@ -60,6 +61,11 @@ public class WeekTextFormatter extends CachingTextFormatter implements TimeForma
     myCalendar = CalendarFactory.newCalendar();
     myDateFormat = localeApi.getShortDateFormat();
     myWeekText = localeApi.i18n("week");
+    myWeekNumbering = localeApi.getWeekNumbering().getValue();
+    localeApi.getWeekNumbering().addListener(evt ->  {
+      clearCache();
+      myWeekNumbering = (Function<Date, Integer>) evt.getNewValue();
+    });
   }
 
   @Override

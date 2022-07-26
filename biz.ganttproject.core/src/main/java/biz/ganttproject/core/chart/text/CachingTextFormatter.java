@@ -16,6 +16,7 @@ import java.util.HashMap;
  */
 public abstract class CachingTextFormatter {
   private final HashMap<Date, TimeUnitText[]> myTextCache = new HashMap<Date, TimeUnitText[]>();
+  private LocaleApi myLocale;
 
   protected CachingTextFormatter() {
   }
@@ -40,7 +41,16 @@ public abstract class CachingTextFormatter {
     return myTextCache.get(startDate);
   }
 
+  public LocaleApi getLocale() {
+    return myLocale;
+  }
+
   public void setLocale(LocaleApi locale) {
+    myLocale = locale;
+    clearCache();
+  }
+
+  protected void clearCache() {
     myTextCache.clear();
   }
 
