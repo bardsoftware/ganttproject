@@ -1,4 +1,6 @@
-CellSkinBase: only repackaging
+CellSkinBase: repackaging
 LabeledSkinBase: right-align graphics in the labeled
-NestedTablecolumnHeader: only repackaging
+NestedTablecolumnHeader: repackaging
+TableCellSkinBase: repackaging
 TableColumnHeader: font and background bindings
+TableHeaderRow: repackaging
