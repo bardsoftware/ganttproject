@@ -98,6 +98,7 @@ class ColloboqueServer(
           inputXlog.baseTxnId,
           newBaseTxnId,
           inputXlog.projectRefid,
+          inputXlog.transactions,
           SERVER_COMMIT_RESPONSE_TYPE
         )
         serverResponseChannel.send(Json.encodeToString(response))

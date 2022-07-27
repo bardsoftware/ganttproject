@@ -102,6 +102,7 @@ data class InputXlog(
  *
  * @param baseTxnId the transaction to which the changes were applied.
  * @param newBaseTxnId the resulting transaction.
+ * @param logRecords the transaction itself, replicated back to client
  *
  * TODO: Get rid of type. It's used for routing in `WebSocketClient::onMessage`.
  * TODO: Provide transaction conflicts handling.
@@ -111,6 +112,7 @@ data class ServerCommitResponse(
   val baseTxnId: String,
   val newBaseTxnId: String,
   val projectRefid: String,
+  val logRecords: List<XlogRecord>,
   val type: String
 )
 
