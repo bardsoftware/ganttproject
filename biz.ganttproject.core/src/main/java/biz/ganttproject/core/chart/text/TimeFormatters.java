@@ -19,15 +19,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package biz.ganttproject.core.chart.text;
 
 import biz.ganttproject.core.chart.grid.Offset;
+import biz.ganttproject.core.option.ObservableProperty;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import com.google.common.collect.Iterables;
 
 import java.text.DateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -88,6 +87,7 @@ public class TimeFormatters {
     DateFormat createDateFormat(String pattern);
     Locale getLocale();
     String i18n(String key);
+    ObservableProperty<Function<Date, Integer>> getWeekNumbering();
   }
 
   public void setLocaleApi(LocaleApi localeApi) {

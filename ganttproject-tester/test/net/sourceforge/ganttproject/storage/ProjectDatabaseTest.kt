@@ -53,7 +53,7 @@ class ProjectDatabaseTest {
   private lateinit var dsl: DSLContext
 
   @BeforeEach
-  private fun init() {
+  fun init() {
     dataSource = JdbcDataSource().also {
       it.setURL("jdbc:h2:mem:test$SQL_PROJECT_DATABASE_OPTIONS")
     }
@@ -67,7 +67,7 @@ class ProjectDatabaseTest {
   }
 
   @AfterEach
-  private fun clear() {
+  fun clear() {
     dataSource.connection.use { conn ->
       conn.createStatement().execute("shutdown")
     }

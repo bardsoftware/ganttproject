@@ -887,7 +887,9 @@ private class TreeSelectionListenerImpl(
     if (!disabled) {
       copyOf(selectedItems.filterNotNull()).map { it.value }
         .filter { it.manager.taskHierarchy.contains(it) }.also {
-          selectionManager.setSelectedTasks(it, selectionSource)
+          SwingUtilities.invokeLater {
+            selectionManager.setSelectedTasks(it, selectionSource)
+          }
         }
     }
   }
