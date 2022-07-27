@@ -25,13 +25,16 @@ import com.github.ajalt.clikt.parameters.types.int
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
 import fi.iki.elonen.NanoWSD
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.InitRecord
 import net.sourceforge.ganttproject.storage.InputXlog
+import net.sourceforge.ganttproject.storage.ServerCommitResponse
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.Executors
@@ -100,6 +103,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
   NanoWSD("localhost", port) {
   private val wsResponseScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
   private val wsRequestScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+  private val connectedClients = mutableMapOf<ProjectRefid, MutableList<WebSocket>>()
 
   override fun openWebSocket(handshake: IHTTPSession): WebSocket {
     return WebSocketImpl(handshake)
@@ -114,8 +118,12 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
       wsResponseScope.launch {
         for (response in serverResponseChannel) {
           LOG.debug("Sending response {}", response)
+          LOG.debug("Connected clients: {}", connectedClients)
           try {
-            send(response)
+            val decodedResponse = Json.decodeFromString(ServerCommitResponse.serializer(), response)
+            connectedClients[decodedResponse.projectRefid]?.forEach { it ->
+              it.send(response)
+            }
           } catch (e: Exception) {
             LOG.error("Failed to send response {}", response, e)
           }
@@ -138,10 +146,19 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
     }
 
     override fun onClose(code: WebSocketFrame.CloseCode?, reason: String?, initiatedByRemote: Boolean) {
+      for (webSockets in connectedClients.values) {
+        webSockets.remove(this)
+      }
       LOG.debug("WebSocket closed")
     }
 
     override fun onMessage(message: WebSocketFrame) {
+      if (message.textPayload.startsWith("PROJECTREFID")) {
+        val refid = message.textPayload.substring("PROJECTREFID ".length)
+        connectedClients.putIfAbsent(refid, mutableListOf())
+        connectedClients[refid]!!.add(this)
+        return
+      }
       val inputXlog = parseInputXlog(message.textPayload) ?: return
       LOG.debug("Message received\n {}", inputXlog)
       if (inputXlog.transactions.size != 1) {
