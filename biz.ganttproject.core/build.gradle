@@ -25,7 +25,8 @@ dependencies {
 
     testImplementation(
         'org.junit.jupiter:junit-jupiter-api:5.+',
-        'com.nhaarman.mockitokotlin2:mockito-kotlin:2.+'
+        'org.mockito:mockito-core:4.6.1',
+        'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
     )
     testRuntimeOnly(
         'org.junit.jupiter:junit-jupiter-engine:5.+'
