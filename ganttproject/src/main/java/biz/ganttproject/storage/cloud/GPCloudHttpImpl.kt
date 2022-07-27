@@ -421,6 +421,10 @@ class WebSocketClient {
   fun sendLogs(logs: InputXlog) {
     this.websocket?.send("XLOG ${Base64.getEncoder().encodeToString(Json.encodeToString(logs).toByteArray())}")
   }
+
+  fun sendProjectRefId(projectRefid: String) {
+    this.websocket?.send("PROJECTREFID $projectRefid")
+  }
 }
 
 val webSocket = WebSocketClient()
