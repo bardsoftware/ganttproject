@@ -34,7 +34,7 @@ import kotlinx.serialization.json.decodeFromStream
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.InitRecord
 import net.sourceforge.ganttproject.storage.InputXlog
-import net.sourceforge.ganttproject.storage.ServerCommitResponse
+import net.sourceforge.ganttproject.storage.ServerResponse
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.Executors
@@ -55,7 +55,7 @@ class DevServerMain : CliktCommand() {
 
     val initInputChannel = Channel<InitRecord>()
     val updateInputChannel = Channel<InputXlog>()
-    val serverResponseChannel = Channel<String>()
+    val serverResponseChannel = Channel<ServerResponse>()
     val connectionFactory = PostgresConnectionFactory(pgHost, pgPort, pgSuperUser, pgSuperAuth)
     val colloboqueServer = ColloboqueServer(connectionFactory::initProject, connectionFactory::createConnection,
       initInputChannel, updateInputChannel, serverResponseChannel)
@@ -99,7 +99,7 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
 
 class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: ColloboqueServer,
                                 private val updateInputChannel: Channel<InputXlog>,
-                                private val serverResponseChannel: Channel<String>) :
+                                private val serverResponseChannel: Channel<ServerResponse>) :
   NanoWSD("localhost", port) {
   private val wsResponseScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
   private val wsRequestScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
@@ -120,9 +120,12 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
           LOG.debug("Sending response {}", response)
           LOG.debug("Connected clients: {}", connectedClients)
           try {
-            val decodedResponse = Json.decodeFromString(ServerCommitResponse.serializer(), response)
-            connectedClients[decodedResponse.projectRefid]?.forEach { it ->
-              it.send(response)
+            val projectRefid = when (response) {
+              is ServerResponse.CommitResponse -> response.projectRefid
+              is ServerResponse.ErrorResponse -> response.projectRefid
+            }
+            connectedClients[projectRefid]?.forEach {
+              it.send(Json.encodeToString(ServerResponse.serializer(), response))
             }
           } catch (e: Exception) {
             LOG.error("Failed to send response {}", response, e)
@@ -153,10 +156,9 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
     }
 
     override fun onMessage(message: WebSocketFrame) {
-      if (message.textPayload.startsWith("PROJECTREFID")) {
-        val refid = message.textPayload.substring("PROJECTREFID ".length)
-        connectedClients.putIfAbsent(refid, mutableListOf())
-        connectedClients[refid]!!.add(this)
+      if (message.textPayload.startsWith("LISTEN")) {
+        val refid = message.textPayload.substring("LISTEN ".length)
+        connectedClients.getOrPut(refid) { mutableListOf() }.add(this)
         return
       }
       val inputXlog = parseInputXlog(message.textPayload) ?: return

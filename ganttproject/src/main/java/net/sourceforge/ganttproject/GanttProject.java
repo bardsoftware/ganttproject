@@ -66,14 +66,9 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.storage.InputXlog;
-import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
-import net.sourceforge.ganttproject.storage.ServerCommitResponse;
 import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -86,11 +81,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-
-import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.getWebSocket;
-import static biz.ganttproject.storage.cloud.GPCloudHttpImplKt.isColloboqueLocalTest;
 
 /**
  * Main frame of the project

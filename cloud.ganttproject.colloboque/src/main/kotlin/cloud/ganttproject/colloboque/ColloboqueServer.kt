@@ -56,7 +56,7 @@ class ColloboqueServer(
   private val connectionFactory: (projectRefid: String) -> Connection,
   private val initInputChannel: Channel<InitRecord>,
   private val updateInputChannel: Channel<InputXlog>,
-  private val serverResponseChannel: Channel<String>) {
+  private val serverResponseChannel: Channel<ServerResponse>) {
   private val refidToBaseTxnId: MutableMap<ProjectRefid, ProjectRefid> = mutableMapOf()
 
   private val wsCommunicationScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
@@ -94,23 +94,21 @@ class ColloboqueServer(
       try {
         val newBaseTxnId = applyXlog(inputXlog.projectRefid, inputXlog.baseTxnId, inputXlog.transactions[0])
           ?: continue
-        val response = ServerCommitResponse(
+        val response = ServerResponse.CommitResponse(
           inputXlog.baseTxnId,
           newBaseTxnId,
           inputXlog.projectRefid,
-          inputXlog.transactions,
-          SERVER_COMMIT_RESPONSE_TYPE
+          inputXlog.transactions
         )
-        serverResponseChannel.send(Json.encodeToString(response))
+        serverResponseChannel.send(response)
       } catch (e: Exception) {
         LOG.error("Failed to commit\n {}", inputXlog, exception = e)
-        val errorResponse = ServerCommitError(
+        val errorResponse = ServerResponse.ErrorResponse(
           inputXlog.baseTxnId,
           inputXlog.projectRefid,
-          e.message.orEmpty(),
-          SERVER_COMMIT_ERROR_TYPE
+          e.message.orEmpty()
         )
-        serverResponseChannel.send(Json.encodeToString(errorResponse))
+        serverResponseChannel.send(errorResponse)
       }
     }
   }

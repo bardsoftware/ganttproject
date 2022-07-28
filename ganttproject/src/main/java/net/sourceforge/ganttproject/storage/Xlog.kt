@@ -30,7 +30,7 @@ data class InitRecord(
 )
 
 @Serializable
-sealed class OperationDto() {
+sealed class OperationDto {
   @Serializable
   data class InsertOperationDto(
     val tableName: String,
@@ -97,33 +97,32 @@ data class InputXlog(
   val transactions: List<XlogRecord>
 )
 
-/**
- * Response from the server, which contains the result of applying changes sent by the client.
- *
- * @param baseTxnId the transaction to which the changes were applied.
- * @param newBaseTxnId the resulting transaction.
- * @param logRecords the transaction itself, replicated back to client
- *
- * TODO: Get rid of type. It's used for routing in `WebSocketClient::onMessage`.
- * TODO: Provide transaction conflicts handling.
- */
 @Serializable
-data class ServerCommitResponse(
-  val baseTxnId: String,
-  val newBaseTxnId: String,
-  val projectRefid: String,
-  val logRecords: List<XlogRecord>,
-  val type: String
-)
+sealed class ServerResponse {
+  /**
+   * Response from the server, which contains the result of applying changes sent by the client.
+   *
+   * @param baseTxnId the transaction to which the changes were applied.
+   * @param newBaseTxnId the resulting transaction.
+   * @param logRecords the transaction itself, replicated back to client
+   *
+   * TODO: Provide transaction conflicts handling.
+   */
+  @Serializable
+  data class CommitResponse(
+    val baseTxnId: String,
+    val newBaseTxnId: String,
+    val projectRefid: String,
+    val logRecords: List<XlogRecord>
+  ) : ServerResponse()
 
-/** Response from the server that signals about transaction commit failure. */
-@Serializable
-data class ServerCommitError(
-  val baseTxnId: String,
-  val projectRefid: String,
-  val message: String,
-  val type: String
-)
-
-const val SERVER_COMMIT_RESPONSE_TYPE = "ServerCommitResponse"
-const val SERVER_COMMIT_ERROR_TYPE = "ServerCommitError"
+  /**
+   * Response from the server that signals about transaction commit failure.
+   * */
+  @Serializable
+  data class ErrorResponse(
+    val baseTxnId: String,
+    val projectRefid: String,
+    val message: String
+  ) : ServerResponse()
+}
