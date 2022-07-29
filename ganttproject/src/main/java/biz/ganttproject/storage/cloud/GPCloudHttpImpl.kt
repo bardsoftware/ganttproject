@@ -306,12 +306,12 @@ class WebSocketClient {
   }
 
   private fun onMessage(payload: ObjectNode) {
+    // looks like Kotlin serializes polymorphic types to JSON with additional field "type"
+    // mapped to fully qualified name of the class, let's utilize it
     payload.get("type")?.textValue()?.let {
       when (it) {
         "ProjectLockStatusChange" -> fireLockStatusChange(payload)
         "ProjectChange", "ProjectRevert" -> fireContentsChange(payload)
-        // looks like Kotlin serializes polymorphic types to JSON with additional field "type"
-        // where fully qualified name is written, let's utilize it
         ServerResponse.CommitResponse::class.java.canonicalName -> fireCommitResponseReceived(payload)
         ServerResponse.ErrorResponse::class.java.canonicalName -> fireCommitErrorReceived(payload)
         else -> fireStructureChange(payload)
