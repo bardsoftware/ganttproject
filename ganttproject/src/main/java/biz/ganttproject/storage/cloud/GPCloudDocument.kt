@@ -591,6 +591,7 @@ fun GPCloudDocument.onboard(documentManager: DocumentManager, webSocket: WebSock
   this.offlineDocumentFactory = { path -> documentManager.newDocument(path) }
   this.proxyDocumentFactory = documentManager::getProxyDocument
   webSocket.register(this)
+  this.projectRefid?.let { webSocket.sendProjectRefId(it) }
 
   if (GPCloudOptions.defaultOfflineMode.value && !GPCloudOptions.cloudFiles.getFileOptions(this.projectIdFingerprint).onlineOnly.toBoolean()) {
     this.modeValue = OnlineDocumentMode.MIRROR

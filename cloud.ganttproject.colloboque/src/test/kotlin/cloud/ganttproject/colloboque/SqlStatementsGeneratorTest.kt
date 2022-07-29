@@ -140,14 +140,14 @@ class SqlStatementsGeneratorTest {
 
     val txns = projectDatabase.fetchTransactions(limit = 10)
     assertEquals(1, txns.size)
-    assertEquals(1, txns[0].postgresStatements.size)
+    assertEquals(1, txns[0].colloboqueOperations.size)
 
     // Verify that executing the log record produces the same task.
     // Importantly, it checks that dates are converted identically.
     projectDatabase.shutdown()
     projectDatabase.init()
 
-    val sqlString = generateSqlStatement(dsl, txns[0].postgresStatements[0])
+    val sqlString = generateSqlStatement(dsl, txns[0].colloboqueOperations[0])
     dsl.execute(sqlString)
     assertEquals(tasks[0], dsl.selectFrom(TASK).fetch()[0])
   }

@@ -25,13 +25,16 @@ import com.github.ajalt.clikt.parameters.types.int
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
 import fi.iki.elonen.NanoWSD
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.InitRecord
 import net.sourceforge.ganttproject.storage.InputXlog
+import net.sourceforge.ganttproject.storage.ServerResponse
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.Executors
@@ -52,7 +55,7 @@ class DevServerMain : CliktCommand() {
 
     val initInputChannel = Channel<InitRecord>()
     val updateInputChannel = Channel<InputXlog>()
-    val serverResponseChannel = Channel<String>()
+    val serverResponseChannel = Channel<ServerResponse>()
     val connectionFactory = PostgresConnectionFactory(pgHost, pgPort, pgSuperUser, pgSuperAuth)
     val colloboqueServer = ColloboqueServer(connectionFactory::initProject, connectionFactory::createConnection,
       initInputChannel, updateInputChannel, serverResponseChannel)
@@ -96,10 +99,11 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
 
 class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: ColloboqueServer,
                                 private val updateInputChannel: Channel<InputXlog>,
-                                private val serverResponseChannel: Channel<String>) :
+                                private val serverResponseChannel: Channel<ServerResponse>) :
   NanoWSD("localhost", port) {
   private val wsResponseScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
   private val wsRequestScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+  private val connectedClients = mutableMapOf<ProjectRefid, MutableList<WebSocket>>()
 
   override fun openWebSocket(handshake: IHTTPSession): WebSocket {
     return WebSocketImpl(handshake)
@@ -114,8 +118,15 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
       wsResponseScope.launch {
         for (response in serverResponseChannel) {
           LOG.debug("Sending response {}", response)
+          LOG.debug("Connected clients: {}", connectedClients)
           try {
-            send(response)
+            val projectRefid = when (response) {
+              is ServerResponse.CommitResponse -> response.projectRefid
+              is ServerResponse.ErrorResponse -> response.projectRefid
+            }
+            connectedClients[projectRefid]?.forEach {
+              it.send(Json.encodeToString(ServerResponse.serializer(), response))
+            }
           } catch (e: Exception) {
             LOG.error("Failed to send response {}", response, e)
           }
@@ -138,10 +149,18 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
     }
 
     override fun onClose(code: WebSocketFrame.CloseCode?, reason: String?, initiatedByRemote: Boolean) {
+      for (webSockets in connectedClients.values) {
+        webSockets.remove(this)
+      }
       LOG.debug("WebSocket closed")
     }
 
     override fun onMessage(message: WebSocketFrame) {
+      if (message.textPayload.startsWith("LISTEN")) {
+        val refid = message.textPayload.substring("LISTEN ".length)
+        connectedClients.getOrPut(refid) { mutableListOf() }.add(this)
+        return
+      }
       val inputXlog = parseInputXlog(message.textPayload) ?: return
       LOG.debug("Message received\n {}", inputXlog)
       if (inputXlog.transactions.size != 1) {

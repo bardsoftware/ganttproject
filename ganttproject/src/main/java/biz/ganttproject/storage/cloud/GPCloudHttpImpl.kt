@@ -41,10 +41,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.storage.InputXlog
-import net.sourceforge.ganttproject.storage.SERVER_COMMIT_ERROR_TYPE
-import net.sourceforge.ganttproject.storage.SERVER_COMMIT_RESPONSE_TYPE
-import net.sourceforge.ganttproject.storage.ServerCommitResponse
+import net.sourceforge.ganttproject.storage.*
 import okhttp3.*
 import org.apache.commons.codec.binary.Base64InputStream
 import org.apache.http.HttpHost
@@ -274,7 +271,7 @@ class WebSocketClient {
   private val structureChangeListeners = mutableListOf<(Any) -> Unit>()
   private val lockStatusChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
   private val contentChangeListeners = mutableListOf<(ObjectNode) -> Unit>()
-  private val xlogCommitResponseListeners = mutableListOf<(ServerCommitResponse) -> Unit>()
+  private val xlogCommitResponseListeners = mutableListOf<(ServerResponse.CommitResponse) -> Unit>()
   private val baseTxnIdListeners = mutableListOf<(String) -> Unit>()
   private var listeningDocument: GPCloudDocument? = null
 
@@ -309,12 +306,14 @@ class WebSocketClient {
   }
 
   private fun onMessage(payload: ObjectNode) {
+    // looks like Kotlin serializes polymorphic types to JSON with additional field "type"
+    // mapped to fully qualified name of the class, let's utilize it
     payload.get("type")?.textValue()?.let {
       when (it) {
         "ProjectLockStatusChange" -> fireLockStatusChange(payload)
         "ProjectChange", "ProjectRevert" -> fireContentsChange(payload)
-        SERVER_COMMIT_RESPONSE_TYPE -> fireCommitResponseReceived(payload)
-        SERVER_COMMIT_ERROR_TYPE -> fireCommitErrorReceived(payload)
+        ServerResponse.CommitResponse::class.java.canonicalName -> fireCommitResponseReceived(payload)
+        ServerResponse.ErrorResponse::class.java.canonicalName -> fireCommitErrorReceived(payload)
         else -> fireStructureChange(payload)
       }
     }
@@ -360,7 +359,7 @@ class WebSocketClient {
   private fun fireCommitResponseReceived(payload: ObjectNode) {
     LOG.debug("Commit response received:\n {}", payload)
     try {
-      val serverResponse = Json.decodeFromString<ServerCommitResponse>(payload.toString())
+      val serverResponse = Json.decodeFromString<ServerResponse.CommitResponse>(payload.toString())
       xlogCommitResponseListeners.forEach { it(serverResponse) }
     } catch (e: Exception) {
       LOG.debug("Failed to parse ServerCommitResponse:\n {}", payload)
@@ -394,7 +393,7 @@ class WebSocketClient {
     }
   }
 
-  fun onCommitResponseReceived(listener: (ServerCommitResponse) -> Unit): () -> Unit {
+  fun onCommitResponseReceived(listener: (ServerResponse.CommitResponse) -> Unit): () -> Unit {
     xlogCommitResponseListeners.add(listener)
     return { xlogCommitResponseListeners.remove(listener) }
   }
@@ -420,6 +419,10 @@ class WebSocketClient {
 
   fun sendLogs(logs: InputXlog) {
     this.websocket?.send("XLOG ${Base64.getEncoder().encodeToString(Json.encodeToString(logs).toByteArray())}")
+  }
+
+  fun sendProjectRefId(projectRefid: String) {
+    this.websocket?.send("LISTEN $projectRefid")
   }
 }
 

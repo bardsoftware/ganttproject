@@ -51,7 +51,7 @@ class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager
     this.projectDatabase.startLog(baseTxnId)
   }
 
-  private fun fireXlogReceived(response: ServerCommitResponse) {
+  private fun fireXlogReceived(response: ServerResponse.CommitResponse) {
     myBaseTxnCommitInfo.update(response.baseTxnId, response.newBaseTxnId, 1)
   }
 
