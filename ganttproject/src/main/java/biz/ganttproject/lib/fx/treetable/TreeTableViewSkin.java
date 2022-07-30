@@ -36,13 +36,8 @@ import javafx.event.WeakEventHandler;
 import javafx.scene.AccessibleAction;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
-import javafx.scene.control.TreeItem;
+import javafx.scene.control.*;
 import javafx.scene.control.TreeItem.TreeModificationEvent;
-import javafx.scene.control.TreeTableCell;
-import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTablePosition;
-import javafx.scene.control.TreeTableRow;
-import javafx.scene.control.TreeTableView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 
@@ -60,7 +55,7 @@ import java.util.List;
  */
 public class TreeTableViewSkin<T> extends TableViewSkinBase<T, TreeItem<T>, TreeTableView<T>, TreeTableRow<T>, TreeTableColumn<T,?>> {
 
-  /***************************************************************************
+  /* *************************************************************************
    *                                                                         *
    * Private Fields                                                          *
    *                                                                         *
@@ -70,11 +65,11 @@ public class TreeTableViewSkin<T> extends TableViewSkinBase<T, TreeItem<T>, Tree
   ObjectProperty<ObservableList<TreeItem<T>>> tableBackingListProperty;
 
   private WeakReference<TreeItem<T>> weakRootRef;
-  protected final TreeTableViewBehavior<T>  behavior;
+  private final TreeTableViewBehavior<T>  behavior;
 
 
 
-  /***************************************************************************
+  /* *************************************************************************
    *                                                                         *
    * Listeners                                                               *
    *                                                                         *
@@ -114,7 +109,7 @@ public class TreeTableViewSkin<T> extends TableViewSkinBase<T, TreeItem<T>, Tree
 
 
 
-  /***************************************************************************
+  /* *************************************************************************
    *                                                                         *
    * Constructors                                                            *
    *                                                                         *
@@ -122,7 +117,7 @@ public class TreeTableViewSkin<T> extends TableViewSkinBase<T, TreeItem<T>, Tree
 
   /**
    * Creates a new TreeTableViewSkin instance, installing the necessary child
-   * nodes into the Control children list, as
+   * nodes into the Control {Control::getChildren() children} list, as
    * well as the necessary input mappings for handling key, mouse, etc events.
    *
    * @param control The control that this skin should be installed onto.
@@ -196,7 +191,7 @@ public class TreeTableViewSkin<T> extends TableViewSkinBase<T, TreeItem<T>, Tree
 
 
 
-  /***************************************************************************
+  /* *************************************************************************
    *                                                                         *
    * Public API                                                              *
    *                                                                         *
@@ -273,7 +268,7 @@ public class TreeTableViewSkin<T> extends TableViewSkinBase<T, TreeItem<T>, Tree
 
 
 
-  /***************************************************************************
+  /* *************************************************************************
    *                                                                         *
    * Private methods                                                         *
    *                                                                         *

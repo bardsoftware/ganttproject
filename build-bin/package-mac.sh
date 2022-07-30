@@ -54,6 +54,7 @@ jpackage --type app-image \
                     -Dfile.encoding=UTF-8
                     --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED
                     --add-exports javafx.base/com.sun.javafx=ALL-UNNAMED
+                    --add-exports javafx.base/com.sun.javafx.logging=ALL-UNNAMED
                     --add-exports javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED
                     --add-exports javafx.controls/com.sun.javafx.scene.control.skin=ALL-UNNAMED
                     --add-exports javafx.controls/com.sun.javafx.scene.control.skin.resources=ALL-UNNAMED
