@@ -41,15 +41,7 @@ import javafx.css.StyleableProperty;
 import javafx.css.converter.SizeConverter;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
-import javafx.scene.control.TableColumnBase;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableCell;
-import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTablePosition;
-import javafx.scene.control.TreeTableRow;
-import javafx.scene.control.TreeTableView;
-import javafx.scene.control.skin.CellSkinBase;
-import javafx.scene.layout.Region;
+import javafx.scene.control.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,7 +55,7 @@ import java.util.List;
  */
 public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTableRow<T>, TreeTableCell<T,?>> {
 
-    /***************************************************************************
+    /* *************************************************************************
      *                                                                         *
      * Private Fields                                                          *
      *                                                                         *
@@ -82,7 +74,7 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
 
 
 
-    /***************************************************************************
+    /* *************************************************************************
      *                                                                         *
      * Constructors                                                            *
      *                                                                         *
@@ -90,7 +82,7 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
 
     /**
      * Creates a new TreeTableRowSkin instance, installing the necessary child
-     * nodes into the Control  children list, as
+     * nodes into the Control {Control::getChildren() children} list, as
      * well as the necessary input mappings for handling key, mouse, etc events.
      *
      * @param control The control that this skin should be installed onto.
@@ -154,7 +146,7 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
     }
 
 
-    /***************************************************************************
+    /* *************************************************************************
      *                                                                         *
      * Listeners                                                               *
      *                                                                         *
@@ -166,7 +158,7 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
     };
 
 
-    /***************************************************************************
+    /* *************************************************************************
      *                                                                         *
      * Properties                                                              *
      *                                                                         *
@@ -191,7 +183,7 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
                 }
 
                 @Override public CssMetaData<TreeTableRow<?>,Number> getCssMetaData() {
-                    return StyleableProperties.INDENT;
+                    return TreeTableRowSkin.StyleableProperties.INDENT;
                 }
             };
         }
@@ -200,7 +192,7 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
 
 
 
-    /***************************************************************************
+    /* *************************************************************************
      *                                                                         *
      * Public API                                                              *
      *                                                                         *
@@ -251,7 +243,7 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
 
 
 
-    /***************************************************************************
+    /* *************************************************************************
      *                                                                         *
      * Private Implementation                                                  *
      *                                                                         *
@@ -262,7 +254,7 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
         TreeTableColumn tableColumn = (TreeTableColumn<T,?>) tcb;
         TreeTableCell cell = (TreeTableCell) tableColumn.getCellFactory().call(tableColumn);
 
-        cell.updateTreeTableColumn(tableColumn);
+        cell.updateTableColumn(tableColumn);
         cell.updateTreeTableView(tableColumn.getTreeTableView());
 
         return cell;
@@ -318,7 +310,7 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
 
     /** {@inheritDoc} */
     @Override protected void updateCell(TreeTableCell<T, ?> cell, TreeTableRow<T> row) {
-        cell.updateTreeTableRow(row);
+        cell.updateTableRow(row);
     }
 
     /** {@inheritDoc} */
@@ -390,10 +382,15 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
             if (disclosureNode.getScene() != null) {
                 disclosureNode.applyCss();
             }
-            if (disclosureNode instanceof Region) {
-                Region disclosureRegion = (Region) disclosureNode;
-                disclosureRegion.prefHeightProperty().bind(getSkinnable().heightProperty());
-            }
+            // -- BEGIN OF GanttProject changes --
+            // [GanttProject] this makes the disclosure node of the same height with the whole row
+            // so that it was vertically aligned.
+            // [dbarashev 2022-07-25] apparently not needed anymore
+            // if (disclosureNode instanceof Region) {
+            //    Region disclosureRegion = (Region) disclosureNode;
+            //   disclosureRegion.prefHeightProperty().bind(getSkinnable().heightProperty());
+            //}
+            // -- END OF GanttProject changes --
         }
     }
 
@@ -405,7 +402,7 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
     }
 
 
-    /***************************************************************************
+    /* *************************************************************************
      *                                                                         *
      *                         Stylesheet Handling                             *
      *                                                                         *
@@ -417,16 +414,16 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
             new CssMetaData<TreeTableRow<?>,Number>("-fx-indent",
                 SizeConverter.getInstance(), 10.0) {
 
-            @Override public boolean isSettable(TreeTableRow<?> n) {
-                DoubleProperty p = ((TreeTableRowSkin<?>) n.getSkin()).indentProperty();
-                return p == null || !p.isBound();
-            }
+                @Override public boolean isSettable(TreeTableRow<?> n) {
+                    DoubleProperty p = ((TreeTableRowSkin<?>) n.getSkin()).indentProperty();
+                    return p == null || !p.isBound();
+                }
 
-            @Override public StyleableProperty<Number> getStyleableProperty(TreeTableRow<?> n) {
-                final TreeTableRowSkin<?> skin = (TreeTableRowSkin<?>) n.getSkin();
-                return (StyleableProperty<Number>)(WritableValue<Number>)skin.indentProperty();
-            }
-        };
+                @Override public StyleableProperty<Number> getStyleableProperty(TreeTableRow<?> n) {
+                    final TreeTableRowSkin<?> skin = (TreeTableRowSkin<?>) n.getSkin();
+                    return (StyleableProperty<Number>)(WritableValue<Number>)skin.indentProperty();
+                }
+            };
 
         private static final List<CssMetaData<? extends Styleable, ?>> STYLEABLES;
         static {
@@ -444,7 +441,7 @@ public class TreeTableRowSkin<T> extends TableRowSkinBase<TreeItem<T>, TreeTable
      * CssMetaData of its superclasses
      */
     public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData() {
-        return StyleableProperties.STYLEABLES;
+        return TreeTableRowSkin.StyleableProperties.STYLEABLES;
     }
 
     /**

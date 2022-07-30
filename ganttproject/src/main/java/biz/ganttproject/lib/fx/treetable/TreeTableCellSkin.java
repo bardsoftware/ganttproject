@@ -78,6 +78,7 @@ public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, Tr
     super(control);
 
     // install default input map for the TreeTableCell control
+    // -- BEGIN OF GanttProject changes --
     behavior = new TreeTableCellBehavior<>(control) {
       private final AtomicBoolean isEditingStartExpected = new AtomicBoolean(false);
       private final ScheduledExecutorService myEditCellExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -106,6 +107,7 @@ public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, Tr
         super.handleClicks(button, clickCount, isAlreadySelected);
       }
     };
+    // -- END OF GanttProject changes --
 //        control.setInputMap(behavior.getInputMap());
   }
 
@@ -173,8 +175,10 @@ public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, Tr
     int nodeLevel = treeTable.getTreeItemLevel(treeItem);
     if (! treeTable.isShowRoot()) nodeLevel--;
 
+    // -- BEGIN OF GanttProject changes --
     double indentPerLevel = 13.0;
     leftPadding += 10 + nodeLevel * indentPerLevel;
+    // -- END OF GanttProject changes --
 
     // add in the width of the disclosure node, if one exists
     Map<TableColumnBase<?,?>, Double> mdwp = TableRowSkinBase.maxDisclosureWidthMap;
