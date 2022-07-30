@@ -7,3 +7,4 @@ TableHeaderRow: repackaging
 TableRowSkinBase: was needed a hack with the row height to center the disclosure node, but now only repackaging
 TableSkinUtil: repackaging
 TableViewSkinBase: repackaging and removed usage of AccessController
+TreeTableCellSkin: replaced behavior instance, to allow for double-click action; replaced calculation of the indent to fit a disclosure node
