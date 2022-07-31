@@ -29,6 +29,7 @@ import com.sun.javafx.scene.control.Properties;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.scene.control.Control;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.shape.Rectangle;
@@ -45,113 +46,114 @@ import javafx.scene.shape.Rectangle;
  */
 public abstract class TableCellSkinBase<S, T, C extends IndexedCell<T>> extends CellSkinBase<C> {
 
-    /***************************************************************************
-     *                                                                         *
-     * Private Fields                                                          *
-     *                                                                         *
-     **************************************************************************/
+  /* *************************************************************************
+   *                                                                         *
+   * Private Fields                                                          *
+   *                                                                         *
+   **************************************************************************/
 
-    boolean isDeferToParentForPrefWidth = false;
+  boolean isDeferToParentForPrefWidth = false;
 
 
 
-    /***************************************************************************
-     *                                                                         *
-     * Constructors                                                            *
-     *                                                                         *
-     **************************************************************************/
+  /* *************************************************************************
+   *                                                                         *
+   * Constructors                                                            *
+   *                                                                         *
+   **************************************************************************/
 
-    /**
-     * Creates a new TableCellSkinBase instance, installing the necessary child
-     * nodes into the Control children list, as
-     * well as the necessary input mappings for handling key, mouse, etc events.
-     *
-     * @param control The control that this skin should be installed onto.
-     */
-    public TableCellSkinBase(final C control) {
-        super(control);
+  /**
+   * Creates a new TableCellSkinBase instance, installing the necessary child
+   * nodes into the Control {@link Control::getChildren children} list, as
+   * well as the necessary input mappings for handling key, mouse, etc events.
+   *
+   * @param control The control that this skin should be installed onto.
+   */
+  public TableCellSkinBase(final C control) {
+    super(control);
 
-        // RT-22038
-        Rectangle clip = new Rectangle();
-        clip.widthProperty().bind(control.widthProperty());
-        clip.heightProperty().bind(control.heightProperty());
-        getSkinnable().setClip(clip);
-        // --- end of RT-22038
+    // RT-22038
+    Rectangle clip = new Rectangle();
+    clip.widthProperty().bind(control.widthProperty());
+    clip.heightProperty().bind(control.heightProperty());
+    getSkinnable().setClip(clip);
+    // --- end of RT-22038
 
-        TableColumnBase<?,?> tableColumn = getTableColumn();
-        if (tableColumn != null) {
-            tableColumn.widthProperty().addListener(weakColumnWidthListener);
-        }
-
-        if (control.getProperties().containsKey(Properties.DEFER_TO_PARENT_PREF_WIDTH)) {
-            isDeferToParentForPrefWidth = true;
-        }
+    TableColumnBase<?,?> tableColumn = getTableColumn();
+    if (tableColumn != null) {
+      tableColumn.widthProperty().addListener(weakColumnWidthListener);
     }
 
-
-
-    /***************************************************************************
-     *                                                                         *
-     * Listeners                                                               *
-     *                                                                         *
-     **************************************************************************/
-
-    private InvalidationListener columnWidthListener = valueModel -> getSkinnable().requestLayout();
-
-    private WeakInvalidationListener weakColumnWidthListener =
-            new WeakInvalidationListener(columnWidthListener);
+    if (control.getProperties().containsKey(Properties.DEFER_TO_PARENT_PREF_WIDTH)) {
+      isDeferToParentForPrefWidth = true;
+    }
+  }
 
 
 
-    /***************************************************************************
-     *                                                                         *
-     * Abstract Methods                                                        *
-     *                                                                         *
-     **************************************************************************/
+  /* *************************************************************************
+   *                                                                         *
+   * Listeners                                                               *
+   *                                                                         *
+   **************************************************************************/
 
-    /**
-     * The TableColumnBase instance that is responsible for this Cell.
-     * @return the TableColumnBase instance that is responsible for this Cell
-     */
-    public abstract ReadOnlyObjectProperty<? extends TableColumnBase<S,T>> tableColumnProperty();
-    public final TableColumnBase<S,T> getTableColumn() {
-        return tableColumnProperty().get();
+  private InvalidationListener columnWidthListener = valueModel -> getSkinnable().requestLayout();
+
+  private WeakInvalidationListener weakColumnWidthListener =
+    new WeakInvalidationListener(columnWidthListener);
+
+
+
+  /* *************************************************************************
+   *                                                                         *
+   * Abstract Methods                                                        *
+   *                                                                         *
+   **************************************************************************/
+
+  /**
+   * The TableColumnBase instance that is responsible for this Cell.
+   * @return the TableColumnBase instance that is responsible for this Cell
+   */
+  public abstract ReadOnlyObjectProperty<? extends TableColumnBase<S,T>> tableColumnProperty();
+  public final TableColumnBase<S,T> getTableColumn() {
+    return tableColumnProperty().get();
+  }
+
+
+
+  /* *************************************************************************
+   *                                                                         *
+   * Public Methods                                                          *
+   *                                                                         *
+   **************************************************************************/
+
+  /** {@inheritDoc} */
+  @Override public void dispose() {
+    if (getSkinnable() == null) return;
+    TableColumnBase<?,T> tableColumn = getTableColumn();
+    if (tableColumn != null) {
+      tableColumn.widthProperty().removeListener(weakColumnWidthListener);
     }
 
+    super.dispose();
+  }
 
+  /** {@inheritDoc} */
+  @Override protected void layoutChildren(final double x, final double y,
+                                          final double w, final double h) {
+    // fit the cell within this space
+    // FIXME the subtraction of bottom padding isn't right here - but it
+    // results in better visuals, so I'm leaving it in place for now.
+    layoutLabelInArea(x, y, w, h - getSkinnable().getPadding().getBottom());
+  }
 
-    /***************************************************************************
-     *                                                                         *
-     * Public Methods                                                          *
-     *                                                                         *
-     **************************************************************************/
-
-    /** {@inheritDoc} */
-    @Override public void dispose() {
-        TableColumnBase<?,T> tableColumn = getTableColumn();
-        if (tableColumn != null) {
-            tableColumn.widthProperty().removeListener(weakColumnWidthListener);
-        }
-
-        super.dispose();
+  /** {@inheritDoc} */
+  @Override protected double computePrefWidth(double height, double topInset, double rightInset, double bottomInset, double leftInset) {
+    if (isDeferToParentForPrefWidth) {
+      return super.computePrefWidth(height, topInset, rightInset, bottomInset, leftInset);
     }
 
-    /** {@inheritDoc} */
-    @Override protected void layoutChildren(final double x, final double y,
-            final double w, final double h) {
-        // fit the cell within this space
-        // FIXME the subtraction of bottom padding isn't right here - but it
-        // results in better visuals, so I'm leaving it in place for now.
-        layoutLabelInArea(x, y, w, h - getSkinnable().getPadding().getBottom());
-    }
-
-    /** {@inheritDoc} */
-    @Override protected double computePrefWidth(double height, double topInset, double rightInset, double bottomInset, double leftInset) {
-        if (isDeferToParentForPrefWidth) {
-            return super.computePrefWidth(height, topInset, rightInset, bottomInset, leftInset);
-        }
-
-        TableColumnBase<?,?> tableColumn = getTableColumn();
-        return tableColumn == null ? 0 : snapSizeX(tableColumn.getWidth());
-    }
+    TableColumnBase<?,?> tableColumn = getTableColumn();
+    return tableColumn == null ? 0 : snapSizeX(tableColumn.getWidth());
+  }
 }

@@ -31,12 +31,7 @@ import com.sun.javafx.scene.control.behavior.TreeTableCellBehavior;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.Node;
-import javafx.scene.control.TableColumnBase;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableCell;
-import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableRow;
-import javafx.scene.control.TreeTableView;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 
 import java.awt.*;
@@ -56,7 +51,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, TreeTableCell<S,T>> {
 
-  /***************************************************************************
+  /* *************************************************************************
    *                                                                         *
    * Private Fields                                                          *
    *                                                                         *
@@ -66,7 +61,7 @@ public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, Tr
 
 
 
-  /***************************************************************************
+  /* *************************************************************************
    *                                                                         *
    * Constructors                                                            *
    *                                                                         *
@@ -74,7 +69,7 @@ public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, Tr
 
   /**
    * Creates a new TreeTableCellSkin instance, installing the necessary child
-   * nodes into the Control children list, as
+   * nodes into the Control {Control::getChildren() children} list, as
    * well as the necessary input mappings for handling key, mouse, etc events.
    *
    * @param control The control that this skin should be installed onto.
@@ -83,6 +78,7 @@ public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, Tr
     super(control);
 
     // install default input map for the TreeTableCell control
+    // -- BEGIN OF GanttProject changes --
     behavior = new TreeTableCellBehavior<>(control) {
       private final AtomicBoolean isEditingStartExpected = new AtomicBoolean(false);
       private final ScheduledExecutorService myEditCellExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -111,12 +107,13 @@ public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, Tr
         super.handleClicks(button, clickCount, isAlreadySelected);
       }
     };
+    // -- END OF GanttProject changes --
 //        control.setInputMap(behavior.getInputMap());
   }
 
 
 
-  /***************************************************************************
+  /* *************************************************************************
    *                                                                         *
    * Public API                                                              *
    *                                                                         *
@@ -133,7 +130,7 @@ public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, Tr
 
 
 
-  /***************************************************************************
+  /* *************************************************************************
    *                                                                         *
    * Private implementation                                                  *
    *                                                                         *
@@ -169,7 +166,7 @@ public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, Tr
       return leftPadding;
     }
 
-    TreeTableRow<S> treeTableRow = cell.getTreeTableRow();
+    TreeTableRow<S> treeTableRow = cell.getTableRow();
     if (treeTableRow == null) return leftPadding;
 
     TreeItem<S> treeItem = treeTableRow.getTreeItem();
@@ -178,11 +175,10 @@ public class TreeTableCellSkin<S,T> extends TableCellSkinBase<TreeItem<S>, T, Tr
     int nodeLevel = treeTable.getTreeItemLevel(treeItem);
     if (! treeTable.isShowRoot()) nodeLevel--;
 
+    // -- BEGIN OF GanttProject changes --
     double indentPerLevel = 13.0;
-//    if (treeTableRow.getSkin() instanceof javafx.scene.control.skin.TreeTableRowSkin) {
-//      indentPerLevel = ((javafx.scene.control.skin.TreeTableRowSkin<?>)treeTableRow.getSkin()).getIndentationPerLevel();
-//    }
     leftPadding += 10 + nodeLevel * indentPerLevel;
+    // -- END OF GanttProject changes --
 
     // add in the width of the disclosure node, if one exists
     Map<TableColumnBase<?,?>, Double> mdwp = TableRowSkinBase.maxDisclosureWidthMap;
