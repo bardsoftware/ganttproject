@@ -27,6 +27,7 @@ import javafx.scene.control.*
 import javafx.scene.text.Text
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIUtil
+import java.beans.PropertyChangeListener
 import java.util.*
 import javax.swing.*
 
@@ -199,6 +200,7 @@ fun (GPAction).getGlyphIcon(): Text? =
       }
     }
 
+private val gpActionListener = WeakHashMap<GPAction, PropertyChangeListener>()
 fun GPAction.asMenuItem(): MenuItem =
   if (this == GPAction.SEPARATOR) {
     SeparatorMenuItem()
@@ -207,19 +209,24 @@ fun GPAction.asMenuItem(): MenuItem =
       CheckMenuItem(name).also { fxMenuItem ->
         fxMenuItem.isSelected = selected as Boolean
         fxMenuItem.onAction = EventHandler { _ ->
-          putValue(Action.SELECTED_KEY, fxMenuItem.isSelected)
+          this.putValue(Action.SELECTED_KEY, fxMenuItem.isSelected)
           SwingUtilities.invokeLater {
-            actionPerformed(null)
+            this.actionPerformed(null)
           }
         }
-        this.addPropertyChangeListener {
-          fxMenuItem.isSelected = (getValue(Action.SELECTED_KEY) as? Boolean) ?: false
+
+        gpActionListener[this]?.let { this.removePropertyChangeListener(it) }
+        PropertyChangeListener {
+          fxMenuItem.isSelected = (this.getValue(Action.SELECTED_KEY) as? java.lang.Boolean)?.booleanValue() ?: false
+        }.also {
+          this.addPropertyChangeListener(it)
+          gpActionListener[this] = it
         }
       }
     } ?: MenuItem(name).also {
       it.onAction = EventHandler {
         SwingUtilities.invokeLater {
-          actionPerformed(null)
+          this.actionPerformed(null)
         }
       }
       getGlyphIcon()?.let { icon ->

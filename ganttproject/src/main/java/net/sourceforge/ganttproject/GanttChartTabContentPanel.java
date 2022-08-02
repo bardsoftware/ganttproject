@@ -26,6 +26,7 @@ import biz.ganttproject.ganttview.TaskFilterActionSet;
 import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.task.TaskActions;
+import com.google.common.base.Suppliers;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Side;
@@ -102,14 +103,15 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   private final ContextMenu tableFilterMenu = new ContextMenu();
   private final Label filterTaskLabel = new Label();
 
+  private Supplier<TaskFilterActionSet> filterActions = Suppliers.memoize(() -> new TaskFilterActionSet(taskTable.getFilterManager()));
+  //private final TaskFilterActionSet
   @Override
   protected Component createButtonPanel() {
 
     Button tableFilterButton = ToolbarKt.createButton(new TableButtonAction("taskTable.tableMenuFilter"), true);
-    Objects.requireNonNull(tableFilterButton).setOnAction(event -> {
-      var filterActions = new TaskFilterActionSet(taskTable.getFilterManager());
+    tableFilterButton.setOnAction(event -> {
       tableFilterMenu.getItems().clear();
-      filterActions.tableFilterActions(new MenuBuilderFx(tableFilterMenu));
+      filterActions.get().tableFilterActions(new MenuBuilderFx(tableFilterMenu));
       tableFilterMenu.show(tableFilterButton, Side.BOTTOM, 0.0, 0.0);
       event.consume();
     });

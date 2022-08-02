@@ -34,10 +34,10 @@ class TaskFilterAction(
 ) : GPAction(actionName) {
 
   init {
-    putValue(SELECTED_KEY, java.lang.Boolean.FALSE)
+    putValue(SELECTED_KEY, filterManager.activeFilter == taskFilter)
     filterManager.filterListeners.add { filter ->
       if (taskFilter != filter) {
-        putValue(SELECTED_KEY, java.lang.Boolean.FALSE)
+        putValue(SELECTED_KEY, false)
       }
     }
 
@@ -54,15 +54,19 @@ class TaskFilterAction(
 
   override fun actionPerformed(e: ActionEvent?) {
     val isChecked = getValue(SELECTED_KEY)
-    if (isChecked is java.lang.Boolean) {
-      setChecked(isChecked.booleanValue())
+    if (isChecked is Boolean) {
+      setChecked(isChecked)
     }
   }
 
   override fun putValue(key: String?, newValue: Any?) {
-    super.putValue(key, newValue)
-    if (SELECTED_KEY == key && newValue is Boolean) {
-      taskFilterOption.value = newValue
+    if (SELECTED_KEY == key) {
+      if (newValue is Boolean) {
+        taskFilterOption.value = newValue
+        super.putValue(key, if (newValue) java.lang.Boolean.TRUE else java.lang.Boolean.FALSE)
+      }
+    } else {
+      super.putValue(key, newValue)
     }
   }
 
