@@ -84,7 +84,7 @@ class TaskFilterAction(
 
 class TaskFilterActionSet(taskFilterManager: TaskFilterManager) {
   // Task filters -> actions
-  private val filterCompletedTasksAction = TaskFilterAction("taskTable.filter.completedTasks",
+  private val filterCompletedTasksAction = TaskFilterAction("taskTable.filter.uncompletedTasks",
     taskFilterManager, taskFilterManager.filterCompletedTasksOption, taskFilterManager.completedTasksFilter)
   private val filterDueTodayTasksAction = TaskFilterAction("taskTable.filter.dueTodayTasks",
     taskFilterManager, taskFilterManager.filterDueTodayOption, taskFilterManager.dueTodayFilter)
