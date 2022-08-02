@@ -53,11 +53,6 @@ public class ArtefactAction extends GPAction implements ActionStateChangedListen
   }
 
   @Override
-  public GPAction withIcon(IconSize size) {
-    return new ArtefactAction(getID(), size, myProvider, myDelegates);
-  }
-
-  @Override
   public void actionPerformed(ActionEvent e) {
     AbstractAction activeAction = myProvider.getActiveAction();
     activeAction.actionPerformed(e);

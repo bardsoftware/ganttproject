@@ -39,10 +39,6 @@ class SaveProjectAction private constructor(
     isEnabled = false
   }
 
-  override fun withIcon(size: IconSize): GPAction {
-    return SaveProjectAction(myProject, myProjectUiFacade, size)
-  }
-
   override fun getIconFilePrefix(): String {
     return "save_"
   }

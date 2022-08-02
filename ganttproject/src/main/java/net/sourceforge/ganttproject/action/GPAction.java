@@ -124,28 +124,6 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     actionPerformed(null);
   }
 
-  public GPAction withIcon(IconSize size) {
-    final GPAction result = new GPAction(myName, size) {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        GPAction.this.actionPerformed(e);
-      }
-
-      @Override
-      public boolean isEnabled() {
-        return GPAction.this.isEnabled();
-      }
-
-    };
-    addPropertyChangeListener(new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        result.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-      }
-    });
-    return result;
-  }
-
   public KeyStroke getKeyStroke() {
     return myKeyStroke;
   }

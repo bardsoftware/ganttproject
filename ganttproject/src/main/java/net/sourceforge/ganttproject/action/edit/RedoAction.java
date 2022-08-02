@@ -44,11 +44,6 @@ public class RedoAction extends GPAction implements GPUndoListener {
   }
 
   @Override
-  public GPAction withIcon(IconSize size) {
-    return new RedoAction(myUndoManager, size);
-  }
-
-  @Override
   public void actionPerformed(ActionEvent e) {
     if (calledFromAppleScreenMenu(e)) {
       return;

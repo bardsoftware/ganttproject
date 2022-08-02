@@ -45,11 +45,6 @@ public class TaskPropertiesAction extends TaskActionBase {
   }
 
   @Override
-  public GPAction withIcon(IconSize size) {
-    return new TaskPropertiesAction(myProject, getSelectionManager(), getUIFacade(), size);
-  }
-
-  @Override
   protected boolean isEnabled(List<Task> selection) {
     return selection.size() == 1;
   }

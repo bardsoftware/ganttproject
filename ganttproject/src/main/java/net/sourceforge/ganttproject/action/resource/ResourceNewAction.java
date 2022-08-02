@@ -57,11 +57,6 @@ public class ResourceNewAction extends ResourceAction {
   }
 
   @Override
-  public GPAction withIcon(IconSize size) {
-    return new ResourceNewAction(getManager(), myProjectDatabase, myRoleManager, myTaskManager, myUIFacade, size);
-  }
-
-  @Override
   public void actionPerformed(ActionEvent event) {
     if (calledFromAppleScreenMenu(event)) {
       return;

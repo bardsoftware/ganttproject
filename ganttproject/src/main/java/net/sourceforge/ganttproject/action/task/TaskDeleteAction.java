@@ -41,11 +41,6 @@ public class TaskDeleteAction extends TaskActionBase {
   }
 
   @Override
-  public GPAction withIcon(IconSize size) {
-    return new TaskDeleteAction(getTaskManager(), getSelectionManager(), getUIFacade(), size);
-  }
-
-  @Override
   protected boolean isEnabled(List<Task> selection) {
     return !selection.isEmpty();
   }

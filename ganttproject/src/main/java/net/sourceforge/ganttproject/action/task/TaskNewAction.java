@@ -47,11 +47,6 @@ public class TaskNewAction extends GPAction {
   }
 
   @Override
-  public GPAction withIcon(IconSize size) {
-    return new TaskNewAction(myProject, myUiFacade, newTaskActor, size);
-  }
-
-  @Override
   public boolean isEnabled() {
     return newTaskActor.getCanAddTask().get();
   }

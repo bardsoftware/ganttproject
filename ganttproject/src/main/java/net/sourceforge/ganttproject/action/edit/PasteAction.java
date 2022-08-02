@@ -58,11 +58,6 @@ public class PasteAction extends GPAction {
   }
 
   @Override
-  public GPAction withIcon(IconSize size) {
-    return new PasteAction(myProject, myUiFacade, myViewmanager, size, myUndoManager);
-  }
-
-  @Override
   public void actionPerformed(ActionEvent evt) {
     if (calledFromAppleScreenMenu(evt)) {
       return;
