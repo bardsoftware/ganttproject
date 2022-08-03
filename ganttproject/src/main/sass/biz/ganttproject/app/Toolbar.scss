@@ -70,10 +70,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
   -fx-spacing: 0;
 
   Button {
-    -fx-alignment: center-left;
+    //-fx-alignment: center-left;
     -fx-padding: 2 2 2 2;
-    -fx-border-insets: 0;
-    -fx-background-insets: 0;
+    //-fx-border-insets: 0;
+    //-fx-background-insets: 0;
     -fx-min-width: 24px;
     -fx-min-height: 18px;
     -fx-max-height: 24px;
