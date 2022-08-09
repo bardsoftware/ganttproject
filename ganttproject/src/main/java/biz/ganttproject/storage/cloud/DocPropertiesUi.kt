@@ -37,12 +37,11 @@ import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.javafx.JavaFx
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.gui.ProjectOpenStrategy
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
 import net.sourceforge.ganttproject.language.GanttLanguage
@@ -51,6 +50,7 @@ import java.awt.Component
 import java.io.IOException
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.Executors
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
@@ -450,23 +450,23 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   private fun onOnlineDocFetch(fetchResult: FetchResult) {
     val document = this.project.document
     ProjectOpenStrategy(project, uiFacade) { onAuth -> onAuth() }.use { strategy ->
-      val docFuture = strategy.open(document)
-      runBlocking {
+      val docChannel = Channel<Document>()
+      CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
         try {
-          docFuture.await()
+          docChannel.receive().also {
+            // If document is obtained, we need to run further steps.
+            // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
+            SwingUtilities.invokeLater {
+              uiFacade.undoManager.die()
+              project.close()
+              strategy.openFileAsIs(it)
+            }
+          }
         } catch (ex: Exception) {
           GPLogger.log(ex)
-          null
-        }
-      }?.let {
-        // If document is obtained, we need to run further steps.
-        // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
-        SwingUtilities.invokeLater {
-          uiFacade.undoManager.die()
-          project.close()
-          strategy.openFileAsIs(it)
         }
       }
+      strategy.open(document, docChannel)
     }
   }
 

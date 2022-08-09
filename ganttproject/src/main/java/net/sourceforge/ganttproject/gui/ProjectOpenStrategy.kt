@@ -103,37 +103,37 @@ internal class ProjectOpenStrategy(
     }
   }
 
-  private val openScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+  private val openScope = CoroutineScope(Executors.newFixedThreadPool(3).asCoroutineDispatcher())
 
-  fun open(document: Document, docChannel: Channel<Document> = Channel()): Deferred<Document> {
+  fun open(document: Document, docChannel: Channel<Document>) {
+    val localChannel = Channel<Document>()
+    openScope.launch {
+      try {
+        localChannel.receive().also {
+          it.checkWellFormed()
+          docChannel.send(it)
+        }
+      } catch (ex: ForbiddenException) {
+        signin { open(document, docChannel) }
+      } catch (ex: PaymentRequiredException) {
+        docChannel.close(ex)
+      } catch (ex: SAXException) {
+        throw Document.DocumentException(
+          RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex
+        )
+      } catch (ex: Exception) {
+        docChannel.close(ex)
+      }
+    }
     openScope.launch {
       val online = document.asOnlineDocument()
       if (online == null) {
-        docChannel.send(document)
+        localChannel.send(document)
       } else {
-        try {
-          val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
-          processFetchResult(currentFetch, document, docChannel)
-        } catch (ex: ForbiddenException) {
-          signin { open(document, docChannel) }
-        } catch (ex: PaymentRequiredException) {
-          docChannel.close(ex)
-        }
+        val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
+        processFetchResult(currentFetch, document, localChannel)
       }
     }
-
-    return GlobalScope.async {
-      try {
-        docChannel.receive().also {
-          it.checkWellFormed()
-        }
-      } catch (ex: SAXException) {
-         throw Document.DocumentException(
-            RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex
-         )
-      }
-    }
-
   }
 
   private suspend fun processFetchResult(fetchResult: FetchResult, document: Document, successChannel: Channel<Document>) {
@@ -466,10 +466,10 @@ internal class CommandLineProjectOpenStrategy(
   private val preferences: Preferences
 ) {
   fun openStartupDocument(path: String) {
+    DOCUMENT_LOGGER.debug(">>> openStartupDocument($path)")
     val document: Document = documentManager.getDocument(path)
     val finishChannel = Channel<Boolean>()
-    GlobalScope.launch { projectUiFacade.openProject(document, project, finishChannel) }
-    GlobalScope.launch {
+    CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
       try {
         finishChannel.receive()
       } catch (e: Document.DocumentException) {
@@ -477,11 +477,14 @@ internal class CommandLineProjectOpenStrategy(
           uiFacade.showErrorDialog(e)
         }
       } catch (e: IOException) {
-        if (!tryImportDocument(document)) {
+        // TODO: shall we try to import a document here? when it may make sense? CSV/MPP ?
           uiFacade.showErrorDialog(e)
-        }
+      } catch (e: Exception) {
+        uiFacade.showErrorDialog(e)
       }
+      DOCUMENT_LOGGER.debug("<<< openStartupDocument($path)")
     }
+    projectUiFacade.openProject(document, project, finishChannel)
   }
 
   private fun tryImportDocument(document: Document): Boolean {
@@ -510,4 +513,5 @@ internal class CommandLineProjectOpenStrategy(
     return success
   }
 }
+private val DOCUMENT_LOGGER = GPLogger.create("Document.Info")
 private val DOCUMENT_ERROR_LOGGER = GPLogger.create("Document.Error")

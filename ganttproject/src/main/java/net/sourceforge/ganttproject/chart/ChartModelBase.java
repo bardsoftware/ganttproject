@@ -238,7 +238,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
     });
     myWeekNumberOption.addChangeValueListener(evt -> {
-      switch (evt.getNewValue().toString()) {
+      switch (Objects.requireNonNullElse(evt.getNewValue(), UIConfiguration.WeekOption.DEFAULT).toString()) {
         case UIConfiguration.WeekOption.US:
           myWeekNumProperty.setValue(WeekNumberingKt.getUsWeekNumbering());
           break;

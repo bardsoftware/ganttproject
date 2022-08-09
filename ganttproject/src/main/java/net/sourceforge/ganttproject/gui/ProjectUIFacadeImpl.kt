@@ -219,11 +219,36 @@ class ProjectUIFacadeImpl(
         uiFacade = myWorkbenchFacade,
         signin = authenticationFlow ?: this::signin,
       ).use { strategy ->
+        DOCUMENT_LOGGER.debug(">>> openProject({})", document.uri)
         // Run coroutine which fetches document and wait until it sends the result to the channel.
-        val docFuture = strategy.open(document)
-        runBlocking {
+        val docChannel = Channel<Document>()
+        CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
           try {
-            docFuture.await()
+            DOCUMENT_LOGGER.debug("... waiting for the document")
+            docChannel.receive().also { doc ->
+              DOCUMENT_LOGGER.debug("... document is ready")
+              // If document is obtained, we need to run further steps.
+              // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
+              SwingUtilities.invokeLater {
+                try {
+                  beforeClose()
+                  project.close()
+                  strategy.openFileAsIs(doc)
+                    .checkLegacyMilestones()
+                    .checkEarliestStartConstraints()
+                    .runUiTasks()
+                  document.asOnlineDocument()?.let {
+                    if (it is GPCloudDocument) {
+                      it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
+                      it.onboard(documentManager, webSocket)
+                    }
+                  }
+                  runBlocking { onFinish?.send(true) }
+                } catch (ex: DocumentException) {
+                  onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
+                }
+              }
+            }
           } catch (ex: Exception) {
             when (ex) {
               // If channel was closed with a cause and it was because of HTTP 403, we show UI for sign-in
@@ -234,31 +259,12 @@ class ProjectUIFacadeImpl(
                 onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("Can't open document $document", ex)
               }
             }
-            null
           }
-        }?.let {
-          // If document is obtained, we need to run further steps.
-          // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
-          SwingUtilities.invokeLater {
-            try {
-              beforeClose()
-              project.close()
-              strategy.openFileAsIs(it)
-                .checkLegacyMilestones()
-                .checkEarliestStartConstraints()
-                .runUiTasks()
-              document.asOnlineDocument()?.let {
-                if (it is GPCloudDocument) {
-                  it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
-                  it.onboard(documentManager, webSocket)
-                }
-              }
-              runBlocking { onFinish?.send(true) }
-            } catch (ex: DocumentException) {
-              onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
-            }
+          finally {
+            DOCUMENT_LOGGER.debug("<<< openProject()")
           }
         }
+        strategy.open(document, docChannel)
       }
     } catch (e: Exception) {
       throw DocumentException("Can't open document $document", e)
@@ -437,4 +443,5 @@ class ProjectSaveFlow(
   }
 }
 
+private val DOCUMENT_LOGGER = GPLogger.create("Document.Info")
 private val DOCUMENT_ERROR_LOGGER = GPLogger.create("Document.Error")

@@ -600,17 +600,5 @@ data class ProjectWriteResponse(
 /** Checks whether the app is running in Colloboque testing mode. */
 fun isColloboqueLocalTest(): Boolean = getCloudEnv() == GPCloudEnv.EMULATOR
 
-enum class GPCloudEnv {
-  EMULATOR, LOCAL, STAGING, PROD
-}
-fun getCloudEnv(): GPCloudEnv = System.getProperty("gpcloud", "emulator").lowercase().let {
-  when {
-    it.startsWith("e") -> GPCloudEnv.EMULATOR
-    it.startsWith("l") -> GPCloudEnv.LOCAL
-    it.startsWith("s") -> GPCloudEnv.STAGING
-    it.startsWith("p") -> GPCloudEnv.PROD
-    else -> error("Unknown GP Cloud environment $it")
-  }
-}
 private val HOST = HttpHost.create(GPCLOUD_ORIGIN)
 private val LOG = GPLogger.create("Cloud.Http")

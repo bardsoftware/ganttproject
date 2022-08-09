@@ -30,10 +30,8 @@ import javafx.scene.control.Label
 import javafx.scene.control.TextArea
 import javafx.scene.layout.*
 import javafx.stage.Screen
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
@@ -45,6 +43,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.NotificationPane
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.Executors
 import java.util.function.Consumer
 import kotlin.math.max
 
@@ -79,13 +78,9 @@ class StorageDialogBuilder(
     myDocumentReceiver = OpenDocumentReceiver { document: Document, authFlow: AuthenticationFlow ->
       val onFinish = Channel<Boolean>()
       val killProgress = myDialogUi.toggleProgress(true)
-      GlobalScope.launch(Dispatchers.IO) {
+      CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
         try {
-          val proxyAuthFlow: AuthenticationFlow = { onAuth ->
-            killProgress()
-            authFlow(onAuth)
-          }
-          projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish, proxyAuthFlow)
+          onFinish.receive()
           myDialogUi.close()
         } catch (e: IOException) {
           killProgress()
@@ -101,6 +96,11 @@ class StorageDialogBuilder(
           LOG.error("Failed to open document {}", document.uri, exception = e)
         }
       }
+      val proxyAuthFlow: AuthenticationFlow = { onAuth ->
+        killProgress()
+        authFlow(onAuth)
+      }
+      projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish, proxyAuthFlow)
     }
     // This will be called when user saves a project.
     myDocumentUpdater = Consumer { document ->

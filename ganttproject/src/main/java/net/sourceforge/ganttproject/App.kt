@@ -153,6 +153,7 @@ class AppBuilder(args: Array<String>) {
     }
     return this
   }
+
   fun withDocument(path: String): AppBuilder {
     whenAppInitialized { ganttProject ->
       val strategy = CommandLineProjectOpenStrategy(

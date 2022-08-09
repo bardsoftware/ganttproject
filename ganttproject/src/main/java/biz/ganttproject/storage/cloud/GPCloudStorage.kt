@@ -35,6 +35,19 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
 
+enum class GPCloudEnv {
+  EMULATOR, LOCAL, STAGING, PROD
+}
+fun getCloudEnv(): GPCloudEnv = System.getProperty("gpcloud", "emulator").lowercase().let {
+  when {
+    it.startsWith("e") -> GPCloudEnv.EMULATOR
+    it.startsWith("l") -> GPCloudEnv.LOCAL
+    it.startsWith("s") -> GPCloudEnv.STAGING
+    it.startsWith("p") -> GPCloudEnv.PROD
+    else -> error("Unknown GP Cloud environment $it")
+  }
+}
+
 //const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
 val GPCLOUD_SCHEME = when (getCloudEnv()) {
   GPCloudEnv.EMULATOR, GPCloudEnv.LOCAL -> "http"

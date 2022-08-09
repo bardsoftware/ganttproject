@@ -104,9 +104,6 @@ private fun <T> (FieldChange<T>?).ifChanged(consumer: (T)->Unit) {
 
 internal fun createMutatorFixingDuration(myManager: TaskManagerImpl, task: TaskImpl, taskUpdateBuilder: ProjectDatabase.TaskUpdateBuilder?): MutatorImpl {
   return object : MutatorImpl(myManager, task, taskUpdateBuilder) {
-    init {
-      Exception("mutator for task=${task.taskID}").printStackTrace()
-    }
     override fun setStart(start: GanttCalendar) {
       super.setStart(start)
       task.myEnd = null
