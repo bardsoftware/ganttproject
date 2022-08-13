@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 //import javafx.scene.control.skin.TreeTableCellSkin
+import biz.ganttproject.FXUtil
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.getModifiers
 import biz.ganttproject.app.getNumberFormat
@@ -68,8 +69,10 @@ var cellPadding = 20.0
 fun calculateMinCellHeight(fontSpec: FontSpec) {
   applicationFontSpec.value = fontSpec
   Font.font(fontSpec.family, fontSpec.size.factor * Font.getDefault().size)?.also { font ->
-    applicationFont.set(font)
-    minCellHeight.value = font.size + cellPadding
+    FXUtil.runLater {
+      applicationFont.set(font)
+      minCellHeight.value = font.size + cellPadding
+    }
   } ?: run {
     println("font $fontSpec not found")
   }
