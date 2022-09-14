@@ -16,10 +16,14 @@ import biz.ganttproject.core.model.task.ConstraintType;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.time.*;
 import biz.ganttproject.customproperty.*;
+import biz.ganttproject.storage.db.tables.records.TaskRecord;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import net.sourceforge.ganttproject.*;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttTask;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
@@ -27,7 +31,9 @@ import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.storage.ProjectDatabase;
 import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder;
+import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
 import net.sourceforge.ganttproject.task.algorithm.*;
 import net.sourceforge.ganttproject.task.dependency.*;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
@@ -37,6 +43,7 @@ import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 import net.sourceforge.ganttproject.task.event.*;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
+import net.sourceforge.ganttproject.util.ColorConvertion;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URL;
@@ -1031,5 +1038,50 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public DependencyGraph getDependencyGraph() {
     return myDependencyGraph;
+  }
+
+  public void reloadTasksFromH2(ProjectDatabase database) {
+    try {
+      List<TaskRecord> tasks = database.readAllTasks();
+      for (TaskRecord record : tasks) {
+        TaskImpl taskImpl = new GanttTask(
+          record.getName(),
+          GanttCalendar.parseXMLDate(record.getStartDate().toString()),
+          record.getDuration(),
+          TaskManagerImpl.this,
+          record.getNum(),
+          record.getUid()
+        );
+        taskImpl.setColor(ColorConvertion.determineColor(record.getColor()));
+        taskImpl.setCompletionPercentage(record.getCompletion());
+        taskImpl.setPriority(Task.Priority.fromPersistentValue(record.getPriority()));
+        taskImpl.setWebLink(record.getWebLink());
+        taskImpl.setNotes(record.getNotes());
+        if (record.getIsMilestone()) {
+          taskImpl.setMilestone(record.getIsMilestone());
+        }
+
+        Task originalTask = getTask(record.getNum());
+        myTaskMap.myId2task.put(record.getNum(), taskImpl);
+        myDependencyGraph.addTask(taskImpl);
+
+        Task prevSibling = getTaskHierarchy().getPreviousSibling(originalTask);
+        if (prevSibling != null && prevSibling != getRootTask()) {
+          System.out.println("Task name: " + taskImpl.getName() + " prev sibling name: " + prevSibling.getName());
+          int position = getTaskHierarchy().getTaskIndex(prevSibling);
+          Task parentTask = getTaskHierarchy().getContainer(prevSibling);
+          getTaskHierarchy().move(taskImpl, parentTask, position);
+        } else {
+          System.out.println("Task name: " + taskImpl.getName());
+          Task parentTask = originalTask.getSupertask();
+          getTaskHierarchy().move(taskImpl, parentTask);
+        }
+
+        originalTask.delete();
+      }
+      fireTaskModelReset();
+    } catch (ProjectDatabaseException e) {
+      GPLogger.log(e);
+    }
   }
 }

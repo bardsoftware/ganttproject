@@ -31,6 +31,7 @@ import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.storage.ProjectDatabase;
 import net.sourceforge.ganttproject.task.Task.Priority;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import net.sourceforge.ganttproject.task.algorithm.DependencyGraph;
@@ -266,4 +267,6 @@ public interface TaskManager {
   GPCalendarListener getCalendarListener();
 
   TaskUpdateBuilder createTaskUpdateBuilder(Task task);
+
+  void reloadTasksFromH2(ProjectDatabase projectDatabase);
 }
