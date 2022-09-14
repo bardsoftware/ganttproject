@@ -43,6 +43,7 @@ import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
 import net.sourceforge.ganttproject.language.GanttLanguage
+import net.sourceforge.ganttproject.task.event.*
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.io.File
 import java.io.IOException
@@ -240,6 +241,47 @@ class ProjectUIFacadeImpl(
                   document.asOnlineDocument()?.let {
                     if (it is GPCloudDocument) {
                       it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
+                      it.colloboqueClient?.addExternalUpdatesListener(object : TaskListener {
+                        override fun taskScheduleChanged(e: TaskScheduleEvent?) {
+
+                        }
+
+                        override fun dependencyAdded(e: TaskDependencyEvent?) {
+
+                        }
+
+                        override fun dependencyRemoved(e: TaskDependencyEvent?) {
+
+                        }
+
+                        override fun dependencyChanged(e: TaskDependencyEvent?) {
+
+                        }
+
+                        override fun taskAdded(e: TaskHierarchyEvent?) {
+
+                        }
+
+                        override fun taskRemoved(e: TaskHierarchyEvent?) {
+
+                        }
+
+                        override fun taskMoved(e: TaskHierarchyEvent?) {
+
+                        }
+
+                        override fun taskPropertiesChanged(e: TaskPropertyEvent?) {
+                        }
+
+                        override fun taskProgressChanged(e: TaskPropertyEvent?) {
+
+                        }
+
+                        override fun taskModelReset() {
+                          //println("Reloading tasks from H2")
+                          project.taskManager.reloadTasksFromH2(project.projectDatabase)
+                        }
+                      })
                       it.onboard(documentManager, webSocket)
                     }
                   }

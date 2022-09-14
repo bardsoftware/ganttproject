@@ -21,6 +21,7 @@ package biz.ganttproject.storage.cloud
 import com.google.common.collect.ImmutableMap
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.*
+import net.sourceforge.ganttproject.task.event.TaskListener
 import net.sourceforge.ganttproject.undo.GPUndoListener
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import org.apache.commons.lang3.tuple.ImmutablePair
@@ -30,6 +31,7 @@ import javax.swing.event.UndoableEditEvent
 class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager: GPUndoManager) {
   private val myBaseTxnCommitInfo = TxnCommitInfo("", -1)
   private var projectRefid: String? = null
+  private var externalUpdatesListener: TaskListener? = null
 
   init {
     undoManager.addUndoableEditListener(object: GPUndoListener {
@@ -51,7 +53,13 @@ class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager
     this.projectDatabase.startLog(baseTxnId)
   }
 
+  fun addExternalUpdatesListener(listener: TaskListener) {
+    externalUpdatesListener = listener
+  }
+
   private fun fireXlogReceived(response: ServerResponse.CommitResponse) {
+    projectDatabase.applyUpdates(response.logRecords)
+    externalUpdatesListener?.taskModelReset()
     myBaseTxnCommitInfo.update(response.baseTxnId, response.newBaseTxnId, 1)
   }
 
