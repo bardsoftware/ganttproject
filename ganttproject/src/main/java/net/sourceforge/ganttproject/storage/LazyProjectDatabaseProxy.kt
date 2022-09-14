@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.storage.ProjectDatabase.*
 import net.sourceforge.ganttproject.task.Task
@@ -84,6 +85,14 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
 
   override fun validateColumnConsumer(columnConsumer: ColumnConsumer) {
     getDatabase().validateColumnConsumer(columnConsumer)
+  }
+
+  override fun applyUpdates(logRecords: List<XlogRecord>) {
+    getDatabase().applyUpdates(logRecords)
+  }
+
+  override fun readAllTasks(): List<TaskRecord> {
+    return getDatabase().readAllTasks()
   }
 
   fun createProjectEventListener(): ProjectEventListener = projectEventListenerImpl

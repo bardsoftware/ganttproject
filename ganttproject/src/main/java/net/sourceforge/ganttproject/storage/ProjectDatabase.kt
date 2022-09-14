@@ -24,6 +24,7 @@ import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.customproperty.SimpleSelect
+import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import java.awt.Color
@@ -116,4 +117,10 @@ interface ProjectDatabase {
 
   @Throws(ProjectDatabaseException::class)
   fun validateColumnConsumer(columnConsumer: ColumnConsumer)
+
+  @Throws(ProjectDatabaseException::class)
+  fun applyUpdates(logRecords: List<XlogRecord>)
+
+  @Throws(ProjectDatabaseException::class)
+  fun readAllTasks(): List<TaskRecord>
 }

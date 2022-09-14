@@ -30,6 +30,7 @@ import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.util.ColorConvertion
 import org.h2.jdbcx.JdbcDataSource
@@ -53,6 +54,28 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
   private var currentTxn: TransactionImpl? = null
   private var localTxnId: Int = -1
+
+  /**
+   * Applies updates from Colloboque
+   */
+  @Throws(ProjectDatabaseException::class)
+  override fun applyUpdates(logRecords: List<XlogRecord>) {
+    withDSL { dsl ->
+      dsl.transaction { config ->
+        val context = DSL.using(config)
+        val statements = logRecords[0].colloboqueOperations.map { generateSqlStatement(dsl, it) }
+          statements.forEach {
+            try {
+              context.execute(it)
+            } catch (e: Exception) {
+              val errorMessage = "Failed to execute query from Colloboque: $it"
+              LOG.error(errorMessage)
+              throw ProjectDatabaseException(errorMessage, e)
+            }
+          }
+      }
+    }
+  }
 
   private fun <T> withDSL(
     errorMessage: () -> String = { "Failed to execute query" },
@@ -233,6 +256,13 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       dsl.select(TASK.NUM).from(TASK).where(whereExpression).mapNotNull {
         lookupById(it.value1())
       }
+    }
+  }
+
+  @Throws(ProjectDatabaseException::class)
+  override fun readAllTasks(): List<TaskRecord> {
+    return withDSL { dsl ->
+      dsl.selectFrom(TASK).fetch().toList()
     }
   }
 
