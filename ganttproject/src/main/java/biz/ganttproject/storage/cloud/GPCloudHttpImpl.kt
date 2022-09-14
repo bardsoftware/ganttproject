@@ -359,7 +359,7 @@ class WebSocketClient {
   private fun fireCommitResponseReceived(payload: ObjectNode) {
     LOG.debug("Commit response received:\n {}", payload)
     try {
-      val serverResponse = Json.decodeFromString<ServerResponse.CommitResponse>(payload.toString())
+      val serverResponse = Json.decodeFromString(ServerResponse.serializer(), payload.toString()) as ServerResponse.CommitResponse
       xlogCommitResponseListeners.forEach { it(serverResponse) }
     } catch (e: Exception) {
       LOG.debug("Failed to parse ServerCommitResponse:\n {}", payload)
