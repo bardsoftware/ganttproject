@@ -27,8 +27,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.parser.TaskLoader
