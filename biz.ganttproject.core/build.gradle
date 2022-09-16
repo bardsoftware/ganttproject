@@ -20,12 +20,12 @@ dependencies {
     direct configurations.api
     implementation configurations.direct
     implementation configurations.providedCompile
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.3'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.4'
 
 
     testImplementation(
         'org.junit.jupiter:junit-jupiter-api:5.+',
-        'org.mockito:mockito-core:4.6.1',
+        'org.mockito:mockito-core:4.8.0',
         'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
     )
     testRuntimeOnly(
