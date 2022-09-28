@@ -8,7 +8,7 @@ configurations {
 
 dependencies {
     providedCompile project(path: ':ganttproject', configuration: 'exported')
-    api('net.sf.mpxj:mpxj:10.7.+') {
+    api('net.sf.mpxj:mpxj:10.11.+') {
         exclude group: 'org.xerial', module: 'sqlite-jdbc'
         exclude group: 'com.jgoodies'
     }
