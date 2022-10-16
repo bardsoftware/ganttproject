@@ -30,7 +30,7 @@ dependencies {
     exported 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2'
     exported 'com.evanlennick:retry4j:0.+'
     exported 'com.fasterxml.jackson.core:jackson-core:2.13.4'
-    exported 'com.fasterxml.jackson.core:jackson-databind:2.13.4'
+    exported 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
     exported 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.4'
     exported 'com.jgoodies:jgoodies-common:1.8.+'
     exported 'com.jgoodies:jgoodies-looks:2.7.+'
