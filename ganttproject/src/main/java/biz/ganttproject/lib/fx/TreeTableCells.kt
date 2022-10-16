@@ -47,9 +47,18 @@ import javafx.util.StringConverter
 import javafx.util.converter.BigDecimalStringConverter
 import javafx.util.converter.DefaultStringConverter
 import javafx.util.converter.NumberStringConverter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import net.sourceforge.ganttproject.language.GanttLanguage
+import java.lang.ref.WeakReference
 import java.math.BigDecimal
+import java.util.concurrent.Executors
 import javax.swing.UIManager
+import kotlin.time.Duration.Companion.minutes
 
 data class MyStringConverter<S, T>(
   val toString: (cell: TextCell<S, T>, cellValue: T?) -> String?,
@@ -104,6 +113,31 @@ fun initColorProperties() {
   }
 }
 
+val liveCells = mutableListOf<WeakReference<TextCell<*,*>>>()
+val fontListener by lazy {
+  { liveCells.forEach { it.get()?.let {cell -> cell.updateFont()} }}.also { listener ->
+    applicationFont.addListener{ _, _, _ -> listener() }
+    flow {
+      while (true) {
+        emit(Unit)
+        delay(1.minutes)
+      }
+    }.onEach {
+      synchronized(liveCells) {
+        println("live cells count=${liveCells.size}")
+        liveCells.retainAll { it.get() != null }
+        println("after cleanup=${liveCells.size}")
+      }
+    }.launchIn(cleanupScope)
+  }
+}
+private fun registerCell(cell: TextCell<*, *>) {
+  synchronized(liveCells) {
+    liveCells.add(WeakReference(cell))
+  }
+  fontListener
+}
+
 class TextCell<S, T>(
   private val converter: MyStringConverter<S, T>
 ) : TreeTableCell<S, T>() {
@@ -141,11 +175,11 @@ class TextCell<S, T>(
 
   init {
     styleClass.add("gp-tree-table-cell")
-    applicationFont.addListener { _, _, _ -> updateFont() }
+    registerCell(this)
     updateFont()
   }
 
-  private fun updateFont() {
+  internal fun updateFont() {
       """-fx-font-family: ${applicationFont.value.family}; -fx-font-size: ${applicationFont.value.size } """.let {
         textField.style = it
         this.style = it
@@ -492,3 +526,5 @@ private fun <S> updateCellClasses(cell: TreeTableCell<S, *>, empty: Boolean) {
     }
   }
 }
+
+private val cleanupScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
