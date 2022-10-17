@@ -37,9 +37,7 @@ import net.sourceforge.ganttproject.util.MouseUtil;
 
 import javax.swing.*;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
 
 class MouseListenerImpl extends MouseListenerBase {
@@ -114,9 +112,13 @@ class MouseListenerImpl extends MouseListenerBase {
     if (text.equals(GPAction.getKeyStrokeText("mouse.select.single"))) {
       getTaskSelectionManager().clear();
     }
-    if (text.equals(GPAction.getKeyStrokeText("mouse.select.single"))
-        || text.equals(GPAction.getKeyStrokeText("mouse.select.multiple"))) {
+    if (text.equals(GPAction.getKeyStrokeText("mouse.select.single"))) {
       getTaskSelectionManager().setSelectedTasks(Collections.singletonList(taskUnderPointer), myChartImplementation);
+    }
+    if (text.equals(GPAction.getKeyStrokeText("mouse.select.multiple"))) {
+      var newSelection = new LinkedHashSet<>(getTaskSelectionManager().getSelectedTasks());
+      newSelection.add(taskUnderPointer);
+      getTaskSelectionManager().setSelectedTasks(new ArrayList<>(newSelection), myChartImplementation);
     }
 
     // Now examine what exactly is under the pointer
