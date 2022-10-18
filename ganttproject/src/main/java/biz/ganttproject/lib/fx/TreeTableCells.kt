@@ -121,9 +121,7 @@ val fontListener by lazy {
       }
     }.onEach {
       synchronized(liveCells) {
-        println("live cells count=${liveCells.size}")
         liveCells.retainAll { it.get() != null }
-        println("after cleanup=${liveCells.size}")
       }
     }.launchIn(cleanupScope)
   }
