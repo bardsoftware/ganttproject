@@ -87,12 +87,16 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
     getDatabase().validateColumnConsumer(columnConsumer)
   }
 
-  override fun applyUpdates(logRecords: List<XlogRecord>) {
-    getDatabase().applyUpdates(logRecords)
+  override fun applyUpdate(logRecord: XlogRecord) {
+    getDatabase().applyUpdate(logRecord)
   }
 
   override fun readAllTasks(): List<TaskRecord> {
     return getDatabase().readAllTasks()
+  }
+
+  override fun addExternalUpdatesListener(listener: TaskListener) {
+    getDatabase().addExternalUpdatesListener(listener)
   }
 
   fun createProjectEventListener(): ProjectEventListener = projectEventListenerImpl

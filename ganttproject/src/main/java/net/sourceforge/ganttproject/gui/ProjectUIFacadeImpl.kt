@@ -20,7 +20,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.gui
 
 import biz.ganttproject.app.*
+import biz.ganttproject.core.calendar.ImportCalendarOption
 import biz.ganttproject.core.option.GPOptionGroup
+import biz.ganttproject.lib.fx.SimpleTreeCollapseView
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.*
 import biz.ganttproject.storage.cloud.*
@@ -28,6 +30,7 @@ import com.google.common.collect.Lists
 import com.sandec.mdfx.MDFXNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
 import javafx.geometry.Pos
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
@@ -36,13 +39,24 @@ import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.action.task.TaskDeleteAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.Document.DocumentException
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
+import net.sourceforge.ganttproject.importer.BufferProject
+import net.sourceforge.ganttproject.importer.asImportBufferProjectApi
+import net.sourceforge.ganttproject.importer.importBufferProject
 import net.sourceforge.ganttproject.language.GanttLanguage
+import net.sourceforge.ganttproject.parser.TaskLoader
+import net.sourceforge.ganttproject.resource.HumanResourceManager
+import net.sourceforge.ganttproject.resource.HumanResourceMerger
+import net.sourceforge.ganttproject.resource.HumanResourceMerger.MergeResourcesOption.BY_ID
+import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskManager
+import net.sourceforge.ganttproject.task.TaskManagerImpl
 import net.sourceforge.ganttproject.task.event.*
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.io.File
@@ -241,7 +255,7 @@ class ProjectUIFacadeImpl(
                   document.asOnlineDocument()?.let {
                     if (it is GPCloudDocument) {
                       it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
-                      it.colloboqueClient?.addExternalUpdatesListener(object : TaskListener {
+                      project.projectDatabase.addExternalUpdatesListener(object : TaskListener {
                         override fun taskScheduleChanged(e: TaskScheduleEvent?) {
 
                         }
@@ -279,7 +293,35 @@ class ProjectUIFacadeImpl(
 
                         override fun taskModelReset() {
                           //println("Reloading tasks from H2")
-                          project.taskManager.reloadTasksFromH2(project.projectDatabase)
+                          val hierarchyMap = mutableMapOf<Int, Pair<Int, Int>>()
+                          project.taskManager.tasks.forEach { task ->
+                            val taskId = task.taskID
+                            val parentId = task.supertask.taskID
+                            val position = project.taskManager.taskHierarchy.getTaskIndex(task)
+                            hierarchyMap[taskId] = parentId to position
+                          }
+                          val emptyTaskManager = project.taskManager.emptyClone()
+                          emptyTaskManager.reloadTasksFromH2(project.projectDatabase, hierarchyMap)
+                          val bufferProject = BufferProject(
+                            emptyTaskManager,
+                            project.projectDatabase,
+                            project.roleManager,
+                            project.activeCalendar,
+                            myWorkbenchFacade
+                          )
+                          val mergeOption = HumanResourceMerger.MergeResourcesOption()
+                          val importCalendarOption = ImportCalendarOption()
+                          mergeOption.loadPersistentValue(BY_ID)
+                          importCalendarOption.loadPersistentValue(ImportCalendarOption.Values.REPLACE.name)
+                          importBufferProject(
+                            project,
+                            bufferProject,
+                            myWorkbenchFacade.asImportBufferProjectApi(),
+                            mergeOption,
+                            importCalendarOption
+                          ).onEach { (original, _) ->
+                            original.delete()
+                          }
                         }
                       })
                       it.onboard(documentManager, webSocket)

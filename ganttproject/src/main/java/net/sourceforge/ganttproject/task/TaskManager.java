@@ -27,6 +27,7 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.customproperty.CustomPropertyManager;
+import kotlin.Pair;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -163,7 +164,11 @@ public interface TaskManager {
       mySource = source;
       return this;
     }
-    public abstract Task build();
+    public Task build() {
+      return build(false);
+    }
+
+    public abstract Task build(boolean replaceExistingTasks);
   }
 
   public TaskBuilder newTaskBuilder();
@@ -268,5 +273,5 @@ public interface TaskManager {
 
   TaskUpdateBuilder createTaskUpdateBuilder(Task task);
 
-  void reloadTasksFromH2(ProjectDatabase projectDatabase);
+  void reloadTasksFromH2(ProjectDatabase projectDatabase, Map<Integer, Pair<Integer, Integer>> hierarchyMap);
 }

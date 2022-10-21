@@ -71,7 +71,7 @@ public class ImporterFromCsvFile extends ImporterBase {
     opener.setOptions(((GanttProject)getProject()).getGanttOptions().getCSVOptions());
     try {
       List<Pair<Level, String>> errors = opener.load();
-      importBufferProject(getProject(), bufferProject, BufferProjectImportKt.asImportBufferProjectApi(getUiFacade()),
+        importBufferProject(getProject(), bufferProject, BufferProjectImportKt.asImportBufferProjectApi(getUiFacade()),
           myMergeResourcesOption, null);
       reportErrors(errors, "CSV");
     } catch (Exception e) {

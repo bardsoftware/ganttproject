@@ -27,6 +27,7 @@ import biz.ganttproject.customproperty.SimpleSelect
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
+import net.sourceforge.ganttproject.task.event.TaskListener
 import java.awt.Color
 
 open class ProjectDatabaseException: Exception {
@@ -119,8 +120,10 @@ interface ProjectDatabase {
   fun validateColumnConsumer(columnConsumer: ColumnConsumer)
 
   @Throws(ProjectDatabaseException::class)
-  fun applyUpdates(logRecords: List<XlogRecord>)
+  fun applyUpdate(logRecord: XlogRecord)
 
   @Throws(ProjectDatabaseException::class)
   fun readAllTasks(): List<TaskRecord>
+
+  fun addExternalUpdatesListener(listener: TaskListener)
 }

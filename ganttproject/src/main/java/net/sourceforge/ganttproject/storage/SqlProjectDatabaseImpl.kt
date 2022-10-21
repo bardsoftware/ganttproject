@@ -30,8 +30,8 @@ import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskManager.TaskBuilder
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
+import net.sourceforge.ganttproject.task.event.TaskListener
 import net.sourceforge.ganttproject.util.ColorConvertion
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.*
@@ -54,16 +54,23 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
   private var currentTxn: TransactionImpl? = null
   private var localTxnId: Int = -1
+  private var areEventsEnabled: Boolean = true
+
+  private var externalUpdatesListener: TaskListener? = null
+
+  override fun addExternalUpdatesListener(listener: TaskListener) {
+    externalUpdatesListener = listener
+  }
 
   /**
    * Applies updates from Colloboque
    */
   @Throws(ProjectDatabaseException::class)
-  override fun applyUpdates(logRecords: List<XlogRecord>) {
+  override fun applyUpdate(logRecord: XlogRecord) {
     withDSL { dsl ->
       dsl.transaction { config ->
         val context = DSL.using(config)
-        val statements = logRecords[0].colloboqueOperations.map { generateSqlStatement(dsl, it) }
+        val statements = logRecord.colloboqueOperations.map { generateSqlStatement(dsl, it) }
           statements.forEach {
             try {
               context.execute(it)
@@ -75,6 +82,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
           }
       }
     }
+    externalUpdatesListener?.taskModelReset()
   }
 
   private fun <T> withDSL(

@@ -31,7 +31,6 @@ import javax.swing.event.UndoableEditEvent
 class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager: GPUndoManager) {
   private val myBaseTxnCommitInfo = TxnCommitInfo("", -1)
   private var projectRefid: String? = null
-  private var externalUpdatesListener: TaskListener? = null
 
   init {
     undoManager.addUndoableEditListener(object: GPUndoListener {
@@ -53,13 +52,8 @@ class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager
     this.projectDatabase.startLog(baseTxnId)
   }
 
-  fun addExternalUpdatesListener(listener: TaskListener) {
-    externalUpdatesListener = listener
-  }
-
   private fun fireXlogReceived(response: ServerResponse.CommitResponse) {
-    projectDatabase.applyUpdates(response.logRecords)
-    externalUpdatesListener?.taskModelReset()
+    projectDatabase.applyUpdate(response.logRecords[0])
     myBaseTxnCommitInfo.update(response.baseTxnId, response.newBaseTxnId, 1)
   }
 

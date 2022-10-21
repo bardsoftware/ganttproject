@@ -20,6 +20,7 @@ import biz.ganttproject.storage.db.tables.records.TaskRecord;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import kotlin.Pair;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -362,11 +363,11 @@ public class TaskManagerImpl implements TaskManager {
   public TaskBuilder newTaskBuilder() {
     return new TaskBuilder() {
       @Override
-      public Task build() {
+      public Task build(boolean replaceExistingTasks) {
         if (myPrototype != null) {
           myId = myPrototype.getTaskID();
         }
-        if (myId == null || myTaskMap.getTask(myId) != null) {
+        if (!replaceExistingTasks && (myId == null || myTaskMap.getTask(myId) != null)) {
           myId = getAndIncrementId();
         }
 
@@ -376,8 +377,9 @@ public class TaskManagerImpl implements TaskManager {
         var taskUid = Strings.isNullOrEmpty(myUid) ? UUID.randomUUID().toString().replace("-", "") : myUid;
         TaskImpl task = new GanttTask("", startDate == null ? CalendarFactory.createGanttCalendar() : startDate, 1, TaskManagerImpl.this, myId, taskUid);
         TaskManagerImplKt.setupNewTask(this, task, TaskManagerImpl.this);
-        registerTask(task);
-
+        if (!replaceExistingTasks) {
+          registerTask(task);
+        }
 
         if (myPrevSibling != null && myPrevSibling != getRootTask()) {
           int position = getTaskHierarchy().getTaskIndex(myPrevSibling) + 1;
@@ -1040,46 +1042,41 @@ public class TaskManagerImpl implements TaskManager {
     return myDependencyGraph;
   }
 
-  public void reloadTasksFromH2(ProjectDatabase database) {
+  public void reloadTasksFromH2(ProjectDatabase database, Map<Integer, Pair<Integer, Integer>> hierarchyMap) {
     try {
       List<TaskRecord> tasks = database.readAllTasks();
       for (TaskRecord record : tasks) {
-        TaskImpl taskImpl = new GanttTask(
-          record.getName(),
-          GanttCalendar.parseXMLDate(record.getStartDate().toString()),
-          record.getDuration(),
-          TaskManagerImpl.this,
-          record.getNum(),
-          record.getUid()
-        );
-        taskImpl.setColor(ColorConvertion.determineColor(record.getColor()));
-        taskImpl.setCompletionPercentage(record.getCompletion());
-        taskImpl.setPriority(Task.Priority.fromPersistentValue(record.getPriority()));
-        taskImpl.setWebLink(record.getWebLink());
-        taskImpl.setNotes(record.getNotes());
+        TaskBuilder builder = newTaskBuilder()
+          .withId(record.getNum())
+          .withUid(record.getUid())
+          .withName(record.getName())
+          .withStartDate(GanttCalendar.parseXMLDate(record.getStartDate().toString()).getTime())
+          .withDuration(createLength(record.getDuration()))
+          .withColor(ColorConvertion.determineColor(record.getColor()))
+          .withCompletion(record.getCompletion())
+          .withPriority(Task.Priority.fromPersistentValue(record.getPriority()))
+          .withWebLink(record.getWebLink())
+          .withNotes(record.getNotes());
+
         if (record.getIsMilestone()) {
-          taskImpl.setMilestone(record.getIsMilestone());
+          builder.withLegacyMilestone();
         }
 
-        Task originalTask = getTask(record.getNum());
-        myTaskMap.myId2task.put(record.getNum(), taskImpl);
-        myDependencyGraph.addTask(taskImpl);
+        Task impl = builder.build();
 
-        Task prevSibling = getTaskHierarchy().getPreviousSibling(originalTask);
-        if (prevSibling != null && prevSibling != getRootTask()) {
-          System.out.println("Task name: " + taskImpl.getName() + " prev sibling name: " + prevSibling.getName());
-          int position = getTaskHierarchy().getTaskIndex(prevSibling);
-          Task parentTask = getTaskHierarchy().getContainer(prevSibling);
-          getTaskHierarchy().move(taskImpl, parentTask, position);
-        } else {
-          System.out.println("Task name: " + taskImpl.getName());
-          Task parentTask = originalTask.getSupertask();
-          getTaskHierarchy().move(taskImpl, parentTask);
-        }
-
-        originalTask.delete();
+        myTaskMap.addTask(impl);
       }
-      fireTaskModelReset();
+
+      for (Integer taskId : myTaskMap.myId2task.keySet()) {
+        Task task = getTask(taskId);
+        Task parentTask = getTask(hierarchyMap.get(taskId).getFirst());
+        int position = hierarchyMap.get(taskId).getSecond();
+        if (parentTask == null || parentTask.equals(getRootTask())) {
+          getTaskHierarchy().move(task, getRootTask());
+        } else {
+          getTaskHierarchy().move(task, parentTask, position);
+        }
+      }
     } catch (ProjectDatabaseException e) {
       GPLogger.log(e);
     }
