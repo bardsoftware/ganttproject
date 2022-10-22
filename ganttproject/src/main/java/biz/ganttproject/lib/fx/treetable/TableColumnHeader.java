@@ -583,40 +583,10 @@ public class TableColumnHeader extends Region {
     // when they change in the settings.
     // Also, there is an attempt to set the background color to the value from Swing LAF, but I am not sure
     // if it is working properly.
-    var backgroundProperty = new SimpleObjectProperty<>(
-      buildBackground(TreeTableCellsKt.getApplicationBackground().getValue()));
-    TreeTableCellsKt.getApplicationBackground().addListener((observable, oldValue, newValue) -> {
-      backgroundProperty.setValue(buildBackground(newValue));
-    });
-    backgroundProperty().bind(backgroundProperty);
     label.fontProperty().bind(TreeTableCellsKt.getApplicationFont());
     label.textFillProperty().bind(TreeTableCellsKt.getApplicationForeground());
   }
 
-  private Background buildBackground(Color applicationColor) {
-    var borderColor = (applicationColor.getBrightness() > 0.5)
-      ? applicationColor.darker().darker() : applicationColor.brighter().brighter();
-    var borderInsets = isLastVisibleColumn
-      ? new Insets(5.0, 0.0, 5.0, 0.0)
-      : new Insets(5.0, 1.0, 5.0, 0.0);
-    return new Background(
-      new BackgroundFill(
-        applicationColor,
-        CornerRadii.EMPTY,
-        Insets.EMPTY
-      ),
-      new BackgroundFill(
-        borderColor,
-        CornerRadii.EMPTY,
-        new Insets(5.0, 0.0, 5.0, 0.0)
-      ),
-      new BackgroundFill(
-        applicationColor,
-        CornerRadii.EMPTY,
-        borderInsets
-      )
-    );
-  }
   // -----  END OF GANTTPROJECT CHANGES -----
 
   private void doColumnAutoSize(int cellsToMeasure) {
