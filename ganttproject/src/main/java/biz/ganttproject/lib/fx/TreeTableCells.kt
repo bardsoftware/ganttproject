@@ -102,16 +102,16 @@ val applicationForeground = SimpleObjectProperty<Paint>(Color.BLACK)
 fun initColorProperties() {
   UIManager.addPropertyChangeListener { evt ->
     if ("lookAndFeel" == evt.propertyName && evt.oldValue != evt.newValue) {
-      UIManager.getColor("TableHeader.background")?.let { swingColor ->
-        val fxColor = Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)
-        applicationBackground.value = fxColor
-      }
-      UIManager.getColor("TableHeader.foreground")?.let { swingColor ->
-        applicationForeground.value = Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)
-      }
+      applicationBackground.value = "TableHeader.background".colorFromUiManager() ?: "Panel.background".colorFromUiManager() ?: Color.WHITE
+      applicationForeground.value = "TableHeader.foreground".colorFromUiManager() ?: "Panel.foreground".colorFromUiManager() ?: Color.BLACK
     }
   }
 }
+
+private fun String.colorFromUiManager(): Color? =
+  UIManager.getColor(this)?.let { swingColor ->
+    Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)
+  }
 
 val liveCells = mutableListOf<WeakReference<TextCell<*,*>>>()
 val fontListener by lazy {
