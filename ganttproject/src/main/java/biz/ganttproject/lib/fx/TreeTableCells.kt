@@ -100,12 +100,18 @@ fun initFontProperty(appFontOption: FontOption, rowPaddingOption: DoubleOption) 
 val applicationBackground = SimpleObjectProperty(Color.BLACK)
 val applicationForeground = SimpleObjectProperty<Paint>(Color.BLACK)
 fun initColorProperties() {
+  val onChange = {
+    applicationBackground.value =
+      "TableHeader.background".colorFromUiManager() ?: "Panel.background".colorFromUiManager() ?: Color.WHITE
+    applicationForeground.value =
+      "TableHeader.foreground".colorFromUiManager() ?: "Panel.foreground".colorFromUiManager() ?: Color.BLACK
+  }
   UIManager.addPropertyChangeListener { evt ->
     if ("lookAndFeel" == evt.propertyName && evt.oldValue != evt.newValue) {
-      applicationBackground.value = "TableHeader.background".colorFromUiManager() ?: "Panel.background".colorFromUiManager() ?: Color.WHITE
-      applicationForeground.value = "TableHeader.foreground".colorFromUiManager() ?: "Panel.foreground".colorFromUiManager() ?: Color.BLACK
+      onChange()
     }
   }
+  onChange()
 }
 
 private fun String.colorFromUiManager(): Color? =
