@@ -89,6 +89,7 @@ class ColloboqueServer(
 
   private suspend fun processUpdatesLoop() {
     for (inputXlog in updateInputChannel) {
+      LOG.debug("Next xlog: $inputXlog")
       try {
         val newBaseTxnId = applyXlog(inputXlog.projectRefid, inputXlog.baseTxnId, inputXlog.transactions[0])
           ?: continue
@@ -96,7 +97,8 @@ class ColloboqueServer(
           inputXlog.baseTxnId,
           newBaseTxnId,
           inputXlog.projectRefid,
-          inputXlog.transactions
+          inputXlog.transactions,
+          inputXlog.clientTrackingCode
         )
         serverResponseChannel.send(response)
       } catch (e: Exception) {
@@ -117,7 +119,8 @@ class ColloboqueServer(
    */
   private fun applyXlog(projectRefid: ProjectRefid, baseTxnId: String, transaction: XlogRecord): String? {
     if (transaction.colloboqueOperations.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
-    if (getBaseTxnId(projectRefid) != baseTxnId) throw ColloboqueServerException("Invalid transaction id $baseTxnId")
+    val expectedBaseTxnId = getBaseTxnId(projectRefid)
+    if (expectedBaseTxnId != baseTxnId) throw ColloboqueServerException("Invalid transaction id $baseTxnId, expected $expectedBaseTxnId")
     try {
       connectionFactory(projectRefid).use { connection ->
         return DSL

@@ -362,7 +362,8 @@ class WebSocketClient {
       val serverResponse = Json.decodeFromString(ServerResponse.serializer(), payload.toString()) as ServerResponse.CommitResponse
       xlogCommitResponseListeners.forEach { it(serverResponse) }
     } catch (e: Exception) {
-      LOG.debug("Failed to parse ServerCommitResponse:\n {}", payload)
+      LOG.error("Failed to process ServerCommitResponse", e)
+      LOG.error("Failed to parse ServerCommitResponse:\n {}", payload)
     }
   }
 

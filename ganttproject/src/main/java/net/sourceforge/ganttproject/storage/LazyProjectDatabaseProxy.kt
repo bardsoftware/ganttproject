@@ -95,7 +95,7 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
     return getDatabase().readAllTasks()
   }
 
-  override fun addExternalUpdatesListener(listener: TaskListener) {
+  override fun addExternalUpdatesListener(listener: ProjectDatabaseExternalUpdateListener) {
     getDatabase().addExternalUpdatesListener(listener)
   }
 

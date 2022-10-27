@@ -19,18 +19,28 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import com.google.common.collect.ImmutableMap
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.*
-import net.sourceforge.ganttproject.task.event.TaskListener
 import net.sourceforge.ganttproject.undo.GPUndoListener
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import org.apache.commons.lang3.tuple.ImmutablePair
+import java.util.*
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.event.UndoableEditEvent
 
 class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager: GPUndoManager) {
   private val myBaseTxnCommitInfo = TxnCommitInfo("", -1)
   private var projectRefid: String? = null
+  private val eventLoopScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+  private val channelScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+  private val internalChannel = Channel<List<XlogRecord>>()
+  private val externalChannel = Channel<ServerResponse.CommitResponse>()
 
   init {
     undoManager.addUndoableEditListener(object: GPUndoListener {
@@ -41,7 +51,64 @@ class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager
       override fun undoOrRedoHappened() {}
       override fun undoReset() {}
     })
+    eventLoopScope.launch {
+      runEventLoop(internalChannel, externalChannel)
+    }
   }
+
+  private suspend fun runEventLoop(internalChannel: Channel<List<XlogRecord>>, externalChannel: Channel<ServerResponse.CommitResponse>) {
+    var acceptInternal = true
+    while (true) {
+      println("Next event loop cycle. Accept internal=$acceptInternal")
+      if (acceptInternal) {
+        select<Unit> {
+          internalChannel.onReceive { txns ->
+            println("Message from the internal channel")
+            sendXlog(txns)
+            // TODO: start timeout to report missing response in a few moments
+            acceptInternal = false
+            println("We will stop accepting internal messages until we hear a response")
+          }
+          externalChannel.onReceive { response ->
+            println("Message from the EXTERNAL channel")
+            receiveXlog(response)
+            acceptInternal = true
+          }
+        }
+      } else {
+        val response = externalChannel.receive()
+        println("Message from the EXTERNAL channel")
+        receiveXlog(response)
+        acceptInternal = true
+      }
+    }
+  }
+
+  private fun sendXlog(txns: List<XlogRecord>) {
+    webSocket.sendLogs(
+      InputXlog(
+        myBaseTxnCommitInfo.get().left,
+        "userId",
+        projectRefid!!,
+        txns,
+        myBaseTxnCommitInfo.generateTrackingCode()
+      )
+    )
+  }
+
+  private fun receiveXlog(response: ServerResponse.CommitResponse) {
+    try {
+      // Check if we received our own update
+      if (response.clientTrackingCode != myBaseTxnCommitInfo.trackingCode) {
+        // This is not our own update so let's apply it
+        projectDatabase.applyUpdate(response.logRecords[0])
+      }
+      myBaseTxnCommitInfo.update(response.baseTxnId, response.newBaseTxnId, 1)
+    } catch (ex: Exception) {
+      LOG.error("Failed to apply external update", ex)
+    }
+  }
+
   fun attach(webSocket: WebSocketClient) {
     webSocket.onCommitResponseReceived { response  -> this.fireXlogReceived(response) }
   }
@@ -53,8 +120,9 @@ class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager
   }
 
   private fun fireXlogReceived(response: ServerResponse.CommitResponse) {
-    projectDatabase.applyUpdate(response.logRecords[0])
-    myBaseTxnCommitInfo.update(response.baseTxnId, response.newBaseTxnId, 1)
+    channelScope.launch {
+      externalChannel.send(response)
+    }
   }
 
   private fun onBaseTxnIdReceived(baseTxnId: String) {
@@ -68,12 +136,9 @@ class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager
       val baseTxnCommitInfo = myBaseTxnCommitInfo.get()
       val txns: List<XlogRecord> = projectDatabase.fetchTransactions(baseTxnCommitInfo.right + 1, 1)
       if (txns.isNotEmpty()) {
-        webSocket.sendLogs(InputXlog(
-          baseTxnCommitInfo.left,
-          "userId",
-          projectRefid!!,
-          txns
-        ))
+        channelScope.launch {
+          internalChannel.send(txns)
+        }
       }
     } catch (e: ProjectDatabaseException) {
       LOG.error("Failed to send logs", arrayOf<Any>(), ImmutableMap.of<String, Any>(), e)
@@ -90,6 +155,8 @@ class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager
  */
 private class TxnCommitInfo(serverId: String, localId: Int) {
   private val myTxnId: AtomicReference<ImmutablePair<String, Int>>
+  var trackingCode: String = ""
+    private set
 
   init {
     myTxnId = AtomicReference(ImmutablePair(serverId, localId))
@@ -109,6 +176,13 @@ private class TxnCommitInfo(serverId: String, localId: Int) {
   fun get(): ImmutablePair<String, Int> {
     return myTxnId.get()
   }
+
+  fun generateTrackingCode(): String =
+    UUID.randomUUID().toString().replace("-", "").also {
+      trackingCode = it
+    }
+
+
 }
 
 private val LOG = GPLogger.create("Cloud.RealTimeSync")

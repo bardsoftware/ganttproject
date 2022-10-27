@@ -56,9 +56,9 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   private var localTxnId: Int = -1
   private var areEventsEnabled: Boolean = true
 
-  private var externalUpdatesListener: TaskListener? = null
+  private var externalUpdatesListener: ProjectDatabaseExternalUpdateListener = {}
 
-  override fun addExternalUpdatesListener(listener: TaskListener) {
+  override fun addExternalUpdatesListener(listener: ProjectDatabaseExternalUpdateListener) {
     externalUpdatesListener = listener
   }
 
@@ -82,7 +82,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
           }
       }
     }
-    externalUpdatesListener?.taskModelReset()
+    externalUpdatesListener()
   }
 
   private fun <T> withDSL(
