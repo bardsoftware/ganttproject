@@ -1046,13 +1046,14 @@ public class TaskManagerImpl implements TaskManager {
     try {
       List<TaskRecord> tasks = database.readAllTasks();
       for (TaskRecord record : tasks) {
+        var color = record.getColor();
         TaskBuilder builder = newTaskBuilder()
           .withId(record.getNum())
           .withUid(record.getUid())
           .withName(record.getName())
           .withStartDate(GanttCalendar.parseXMLDate(record.getStartDate().toString()).getTime())
           .withDuration(createLength(record.getDuration()))
-          .withColor(ColorConvertion.determineColor(record.getColor()))
+          .withColor(color != null ? ColorConvertion.determineColor(record.getColor()) : getConfig().getDefaultColor())
           .withCompletion(record.getCompletion())
           .withPriority(Task.Priority.fromPersistentValue(record.getPriority()))
           .withWebLink(record.getWebLink())
@@ -1068,12 +1069,13 @@ public class TaskManagerImpl implements TaskManager {
       }
 
       for (Integer taskId : myTaskMap.myId2task.keySet()) {
-        Task task = getTask(taskId);
-        Task parentTask = getTask(hierarchyMap.get(taskId).getFirst());
-        int position = hierarchyMap.get(taskId).getSecond();
+        var task = getTask(taskId);
+        var existingParentId = hierarchyMap.get(taskId);
+        Task parentTask = existingParentId == null ? null : getTask(existingParentId.getFirst());
         if (parentTask == null || parentTask.equals(getRootTask())) {
           getTaskHierarchy().move(task, getRootTask());
         } else {
+          int position = existingParentId.getSecond();
           getTaskHierarchy().move(task, parentTask, position);
         }
       }

@@ -105,7 +105,7 @@ class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager
       }
       myBaseTxnCommitInfo.update(response.baseTxnId, response.newBaseTxnId, 1)
     } catch (ex: Exception) {
-      LOG.error("Failed to apply external update", ex)
+      LOG.error("Failed to apply external update", exception = ex)
     }
   }
 

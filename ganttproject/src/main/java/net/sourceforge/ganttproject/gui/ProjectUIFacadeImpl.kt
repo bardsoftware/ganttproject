@@ -29,6 +29,7 @@ import com.google.common.collect.Lists
 import com.sandec.mdfx.MDFXNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.application.Platform
 import javafx.geometry.Pos
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
@@ -248,6 +249,7 @@ class ProjectUIFacadeImpl(
                     if (it is GPCloudDocument) {
                       it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
                       project.projectDatabase.addExternalUpdatesListener {
+                        Platform.runLater {
                           //println("Reloading tasks from H2")
                           val hierarchyMap = mutableMapOf<Int, Pair<Int, Int>>()
                           project.taskManager.tasks.forEach { task ->
@@ -269,7 +271,6 @@ class ProjectUIFacadeImpl(
                           val importCalendarOption = ImportCalendarOption()
                           mergeOption.loadPersistentValue(BY_ID)
                           importCalendarOption.loadPersistentValue(ImportCalendarOption.Values.REPLACE.name)
-                            //project.close()
                           importBufferProject(
                             project,
                             bufferProject,
@@ -277,6 +278,7 @@ class ProjectUIFacadeImpl(
                             mergeOption,
                             importCalendarOption
                           )
+                        }
                       }
                       it.onboard(documentManager, webSocket)
                     }
