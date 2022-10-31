@@ -101,7 +101,9 @@ class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager
       // Check if we received our own update
       if (response.clientTrackingCode != myBaseTxnCommitInfo.trackingCode) {
         // This is not our own update so let's apply it
-        projectDatabase.applyUpdate(response.logRecords[0])
+        projectDatabase.applyUpdate(response.logRecords, response.baseTxnId, response.newBaseTxnId)
+      } else {
+        projectDatabase.applyUpdate(emptyList(), response.baseTxnId, response.newBaseTxnId)
       }
       myBaseTxnCommitInfo.update(response.baseTxnId, response.newBaseTxnId, 1)
     } catch (ex: Exception) {
@@ -133,8 +135,7 @@ class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager
   private fun sendProjectStateLogs() {
     LOG.debug("Sending project state logs")
     try {
-      val baseTxnCommitInfo = myBaseTxnCommitInfo.get()
-      val txns: List<XlogRecord> = projectDatabase.fetchTransactions(baseTxnCommitInfo.right + 1, 1)
+      val txns = projectDatabase.outgoingTransactions
       if (txns.isNotEmpty()) {
         channelScope.launch {
           internalChannel.send(txns)

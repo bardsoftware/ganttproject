@@ -87,11 +87,14 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
     getDatabase().validateColumnConsumer(columnConsumer)
   }
 
-  override fun applyUpdate(logRecord: XlogRecord) {
-    getDatabase().applyUpdate(logRecord)
+  override fun applyUpdate(logRecords: List<XlogRecord>, baseTxnId: String, targetTxnId: String) {
+    getDatabase().applyUpdate(logRecords, baseTxnId, targetTxnId)
   }
 
-  override fun readAllTasks(): List<TaskRecord> {
+    override val outgoingTransactions: List<XlogRecord>
+        get() = getDatabase().outgoingTransactions
+
+    override fun readAllTasks(): List<TaskRecord> {
     return getDatabase().readAllTasks()
   }
 

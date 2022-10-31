@@ -31,7 +31,6 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
-import net.sourceforge.ganttproject.task.event.TaskListener
 import net.sourceforge.ganttproject.util.ColorConvertion
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.*
@@ -54,6 +53,11 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
   private var currentTxn: TransactionImpl? = null
   private var localTxnId: Int = -1
+  private var baseTxnId: String = ""
+  /** For a range R of local txn ids [i_1, i_n) which were completed between a transition from a sync point s1 to s2,
+   * maps s1 to R.
+   */
+  private val syncTxnMap = mutableMapOf<String, IntRange>()
   private var areEventsEnabled: Boolean = true
 
   private var externalUpdatesListener: ProjectDatabaseExternalUpdateListener = {}
@@ -66,11 +70,12 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
    * Applies updates from Colloboque
    */
   @Throws(ProjectDatabaseException::class)
-  override fun applyUpdate(logRecord: XlogRecord) {
+  override fun applyUpdate(logRecords: List<XlogRecord>, baseTxnId: String, targetTxnId: String) {
     withDSL { dsl ->
       dsl.transaction { config ->
         val context = DSL.using(config)
-        val statements = logRecord.colloboqueOperations.map { generateSqlStatement(dsl, it) }
+        logRecords.forEach { logRecord ->
+          val statements = logRecord.colloboqueOperations.map { generateSqlStatement(dsl, it) }
           statements.forEach {
             try {
               context.execute(it)
@@ -80,9 +85,14 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
               throw ProjectDatabaseException(errorMessage, e)
             }
           }
+        }
       }
     }
-    externalUpdatesListener()
+    syncTxnMap[targetTxnId] = syncTxnMap[baseTxnId]!!.endInclusive.let { IntRange(it, it) }
+    this.baseTxnId = targetTxnId
+    if (logRecords.isNotEmpty()) {
+      externalUpdatesListener()
+    }
   }
 
   private fun <T> withDSL(
@@ -134,11 +144,15 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
                       colloboqueUndoOperationDto: OperationDto) {
     val query = SqlQuery(buildQuery(DSL.using(SQLDialect.H2)), colloboqueOperationDto)
     val undoQuery = SqlQuery(buildUndoQuery(DSL.using(SQLDialect.H2)), colloboqueUndoOperationDto)
-    currentTxn?.add(query, undoQuery) ?: executeAndLog(listOf(query), localTxnId).also { localTxnId++ }
+    currentTxn?.add(query, undoQuery) ?: executeAndLog(listOf(query), localTxnId).also {
+      incrementLocalTxnId()
+    }
   }
 
   private fun withLog(queries: List<SqlQuery>, undoQueries: List<SqlUndoQuery>) {
-    currentTxn?.add(queries, undoQueries) ?: executeAndLog(queries, localTxnId).also { localTxnId++ }
+    currentTxn?.add(queries, undoQueries) ?: executeAndLog(queries, localTxnId).also {
+      incrementLocalTxnId()
+    }
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -155,6 +169,8 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   override fun startLog(baseTxnId: String) {
     localTxnId = 0
+    this.baseTxnId = baseTxnId
+    syncTxnMap[baseTxnId] = 0..0
   }
 
   private val isLogStarted get() = localTxnId >= 0
@@ -240,10 +256,27 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     try {
       if (queries.isEmpty()) return
       executeAndLog(queries, localTxnId)
-      localTxnId++  // Increment only on success.
+      // Increment only on success.
+      incrementLocalTxnId()
     } finally {
       currentTxn = null
     }
+  }
+
+  private fun incrementLocalTxnId() {
+    syncTxnMap[baseTxnId]?.let {
+      localTxnId++
+      syncTxnMap[baseTxnId] = it.start.rangeTo(it.endInclusive + 1)
+    }
+  }
+
+  override val outgoingTransactions: List<XlogRecord> get() {
+    if (baseTxnId.isBlank()) {
+      return emptyList()
+    }
+    val outgoingRange = syncTxnMap[baseTxnId]!!
+    LOG.debug("Outgoing txns: from base txn={} local range={}", baseTxnId, outgoingRange)
+    return fetchTransactions(outgoingRange.start, outgoingRange.endInclusive - outgoingRange.start)
   }
 
   @Throws(ProjectDatabaseException::class)
