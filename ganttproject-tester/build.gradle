@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '1.7.20'
     repositories {
         mavenCentral()
     }
@@ -15,20 +15,20 @@ apply plugin: 'kotlin'
 
 dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
-    testImplementation fileTree(dir: project.ext.libDir, include: ['*.jar'])
     testImplementation project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
     testImplementation project(':biz.ganttproject.core')
     testImplementation project(':ganttproject')
     testImplementation project(':biz.ganttproject.impex.msproject2')
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
     testImplementation "org.jooq:jooq:3.16.+"
-    testImplementation group: 'com.h2database', name: 'h2', version: '2.1.+'
+    testImplementation "com.h2database:h2:2.1.+"
+    testImplementation "org.easymock:easymock:3.2"
 
     testImplementation fileTree(dir: project.projectDir.absolutePath + "/resources")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
-    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.9.1'
 }
 
 sourceSets {

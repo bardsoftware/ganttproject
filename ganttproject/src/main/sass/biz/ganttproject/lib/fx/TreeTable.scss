@@ -18,10 +18,13 @@
     }
   }
     .column-header {
-        -fx-font-weight: normal;
+      -fx-background-color: $gp-light-gray, $gp-dark-gray, $gp-light-gray;
+      -fx-background-insets: 0 0 0 0, 5 0 5 0, 5 1 5 0;
+      -fx-font-weight: normal;
     }
     -fx-border-width: 0;
     & > .column-header-background {
+      -fx-background-color: $gp-light-gray;
         & > .show-hide-columns-button {
             -fx-cursor: hand;
         }

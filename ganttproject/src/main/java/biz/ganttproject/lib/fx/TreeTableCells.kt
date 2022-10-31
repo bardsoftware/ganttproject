@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 //import javafx.scene.control.skin.TreeTableCellSkin
+import biz.ganttproject.FXUtil
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.getModifiers
 import biz.ganttproject.app.getNumberFormat
@@ -46,9 +47,18 @@ import javafx.util.StringConverter
 import javafx.util.converter.BigDecimalStringConverter
 import javafx.util.converter.DefaultStringConverter
 import javafx.util.converter.NumberStringConverter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import net.sourceforge.ganttproject.language.GanttLanguage
+import java.lang.ref.WeakReference
 import java.math.BigDecimal
+import java.util.concurrent.Executors
 import javax.swing.UIManager
+import kotlin.time.Duration.Companion.minutes
 
 data class MyStringConverter<S, T>(
   val toString: (cell: TextCell<S, T>, cellValue: T?) -> String?,
@@ -68,8 +78,10 @@ var cellPadding = 20.0
 fun calculateMinCellHeight(fontSpec: FontSpec) {
   applicationFontSpec.value = fontSpec
   Font.font(fontSpec.family, fontSpec.size.factor * Font.getDefault().size)?.also { font ->
-    applicationFont.set(font)
-    minCellHeight.value = font.size + cellPadding
+    FXUtil.runLater {
+      applicationFont.set(font)
+      minCellHeight.value = font.size + cellPadding
+    }
   } ?: run {
     println("font $fontSpec not found")
   }
@@ -88,17 +100,46 @@ fun initFontProperty(appFontOption: FontOption, rowPaddingOption: DoubleOption) 
 val applicationBackground = SimpleObjectProperty(Color.BLACK)
 val applicationForeground = SimpleObjectProperty<Paint>(Color.BLACK)
 fun initColorProperties() {
+  val onChange = {
+    applicationBackground.value =
+      "TableHeader.background".colorFromUiManager() ?: "Panel.background".colorFromUiManager() ?: Color.WHITE
+    applicationForeground.value =
+      "TableHeader.foreground".colorFromUiManager() ?: "Panel.foreground".colorFromUiManager() ?: Color.BLACK
+  }
   UIManager.addPropertyChangeListener { evt ->
     if ("lookAndFeel" == evt.propertyName && evt.oldValue != evt.newValue) {
-      UIManager.getColor("TableHeader.background")?.let { swingColor ->
-        val fxColor = Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)
-        applicationBackground.value = fxColor
-      }
-      UIManager.getColor("TableHeader.foreground")?.let { swingColor ->
-        applicationForeground.value = Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)
-      }
+      onChange()
     }
   }
+  onChange()
+}
+
+private fun String.colorFromUiManager(): Color? =
+  UIManager.getColor(this)?.let { swingColor ->
+    Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)
+  }
+
+val liveCells = mutableListOf<WeakReference<TextCell<*,*>>>()
+val fontListener by lazy {
+  { liveCells.forEach { it.get()?.let {cell -> cell.updateFont()} }}.also { listener ->
+    applicationFont.addListener{ _, _, _ -> listener() }
+    flow {
+      while (true) {
+        emit(Unit)
+        delay(1.minutes)
+      }
+    }.onEach {
+      synchronized(liveCells) {
+        liveCells.retainAll { it.get() != null }
+      }
+    }.launchIn(cleanupScope)
+  }
+}
+private fun registerCell(cell: TextCell<*, *>) {
+  synchronized(liveCells) {
+    liveCells.add(WeakReference(cell))
+  }
+  fontListener
 }
 
 class TextCell<S, T>(
@@ -138,11 +179,11 @@ class TextCell<S, T>(
 
   init {
     styleClass.add("gp-tree-table-cell")
-    applicationFont.addListener { _, _, _ -> updateFont() }
+    registerCell(this)
     updateFont()
   }
 
-  private fun updateFont() {
+  internal fun updateFont() {
       """-fx-font-family: ${applicationFont.value.family}; -fx-font-size: ${applicationFont.value.size } """.let {
         textField.style = it
         this.style = it
@@ -489,3 +530,5 @@ private fun <S> updateCellClasses(cell: TreeTableCell<S, *>, empty: Boolean) {
     }
   }
 }
+
+private val cleanupScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())

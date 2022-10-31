@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.7.10" apply false
+    id "org.jetbrains.kotlin.jvm" version "1.7.20" apply false
 }
 ext.semver = '3.3'
 ext.buildNum = '3290'
@@ -23,7 +23,7 @@ allprojects {
     ext {
         libDir = 'lib'
         mvnDir = 'lib/mvn'
-        kotlin_version = "1.7.10"
+        kotlin_version = "1.7.20"
         javaExportOptions = [
             '--add-exports', 'javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED',
             '--add-exports', 'javafx.base/com.sun.javafx=ALL-UNNAMED',

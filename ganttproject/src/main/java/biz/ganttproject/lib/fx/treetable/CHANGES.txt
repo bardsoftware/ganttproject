@@ -1,3 +1,6 @@
+The purpose of most of the repackagings is to make instanceof checks happy.
+Unfortunately, some pieces of code expect that skins or other objects are instances of very specific classes.
+
 CellSkinBase: repackaging
 LabeledSkinBase: right-align graphics in the labeled
 NestedTablecolumnHeader: repackaging
@@ -8,7 +11,7 @@ TableRowSkinBase: was needed a hack with the row height to center the disclosure
 TableSkinUtil: repackaging
 TableViewSkinBase: repackaging and removed usage of AccessController
 TreeTableCellSkin: replaced behavior instance, to allow for double-click action; replaced calculation of the indent to fit a disclosure node
-TreeTableRowSkin: used to be changes but apparently not needed anymore, so only repackaging
+TreeTableRowSkin: repackaging
 TreeTableViewSkin: repackaging
 VirtualContainerBase: repackaging
 VirtualFlow: repackaging

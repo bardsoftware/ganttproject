@@ -18,12 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
-//import javafx.scene.control.skin.TreeTableRowSkin
-//import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
-//import biz.ganttproject.lib.fx.treetable.VirtualFlow
+import biz.ganttproject.lib.fx.treetable.VirtualFlow
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.app.MenuBuilderFx
+import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
+import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
 import biz.ganttproject.walkTree
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
@@ -32,8 +32,6 @@ import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.geometry.Pos
 import javafx.scene.control.*
-import javafx.scene.control.skin.TreeTableViewSkin
-import javafx.scene.control.skin.VirtualFlow
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
@@ -291,7 +289,9 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
     FXUtil.runLater {
       tableHeaderRow.walkTree {
         if (it is Labeled) {
-          it.style = """-fx-font-family: ${applicationFont.value.family}; -fx-font-size: ${applicationFont.value.size } """
+          it.font = applicationFont.value
+          //println("this=$it itfont=${it.font} app font=${applicationFont.value}")
+          //it.style = """-fx-font-family: ${applicationFont.value.family}; -fx-font-size: ${applicationFont.value.size } """
         }
       }
     }
@@ -330,7 +330,7 @@ class MyVirtualFlow<T: IndexedCell<*>> : VirtualFlow<T>() {
 }
 
 class MyTreeTableRow<T> : TreeTableRow<T>() {
-  //override fun createDefaultSkin() = TreeTableRowSkin(this)
+  override fun createDefaultSkin() = TreeTableRowSkin(this)
 
   init {
     disclosureNode = HBox().also { hbox ->
