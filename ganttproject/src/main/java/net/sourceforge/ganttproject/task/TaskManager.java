@@ -164,11 +164,8 @@ public interface TaskManager {
       mySource = source;
       return this;
     }
-    public Task build() {
-      return build(false);
-    }
+    public abstract Task build();
 
-    public abstract Task build(boolean replaceExistingTasks);
   }
 
   public TaskBuilder newTaskBuilder();

@@ -363,11 +363,11 @@ public class TaskManagerImpl implements TaskManager {
   public TaskBuilder newTaskBuilder() {
     return new TaskBuilder() {
       @Override
-      public Task build(boolean replaceExistingTasks) {
+      public Task build() {
         if (myPrototype != null) {
           myId = myPrototype.getTaskID();
         }
-        if (!replaceExistingTasks && (myId == null || myTaskMap.getTask(myId) != null)) {
+        if (myId == null || myTaskMap.getTask(myId) != null) {
           myId = getAndIncrementId();
         }
 
@@ -377,9 +377,7 @@ public class TaskManagerImpl implements TaskManager {
         var taskUid = Strings.isNullOrEmpty(myUid) ? UUID.randomUUID().toString().replace("-", "") : myUid;
         TaskImpl task = new GanttTask("", startDate == null ? CalendarFactory.createGanttCalendar() : startDate, 1, TaskManagerImpl.this, myId, taskUid);
         TaskManagerImplKt.setupNewTask(this, task, TaskManagerImpl.this);
-        if (!replaceExistingTasks) {
-          registerTask(task);
-        }
+        registerTask(task);
 
         if (myPrevSibling != null && myPrevSibling != getRootTask()) {
           int position = getTaskHierarchy().getTaskIndex(myPrevSibling) + 1;
