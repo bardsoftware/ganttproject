@@ -53,7 +53,7 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
   //private final HumanResourceManager myBufferResourceManager;
 
   public BufferProject(IGanttProject targetProject, UIFacade uiFacade) {
-    this(targetProject.getTaskManager(), targetProject.getProjectDatabase(), targetProject.getRoleManager(), targetProject.getActiveCalendar(), uiFacade);
+    this(targetProject.getTaskManager().emptyClone(), targetProject.getProjectDatabase(), targetProject.getRoleManager(), targetProject.getActiveCalendar(), uiFacade);
   }
 
   public BufferProject(TaskManager targetTaskManager, ProjectDatabase targetProjectDatabase, RoleManager targetRoleManager, GPCalendarCalc targetCalendar, UIFacade uiFacade) {
