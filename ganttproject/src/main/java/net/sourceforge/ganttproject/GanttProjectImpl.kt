@@ -263,11 +263,13 @@ internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: L
   }
 }
 
-internal fun <T> (IGanttProject).restoreProject(listeners: List<ProjectEventListener>, restoreCode: ()->T): T {
+internal fun <T> (IGanttProject).restoreProject(listeners: List<ProjectEventListener>, closeCurrentProject: Boolean = true, restoreCode: ()->T): T {
   val completionPromise = SimpleBarrier<Document>()
   listeners.forEach { it.projectRestoring(completionPromise) }
   val projectDocument = document
-  close()
+  if (closeCurrentProject) {
+    close()
+  }
   val algs = taskManager.algorithmCollection
   return try {
     algs.scheduler.isEnabled = false
