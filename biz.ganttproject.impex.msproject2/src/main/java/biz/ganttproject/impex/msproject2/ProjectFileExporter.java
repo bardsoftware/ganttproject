@@ -82,6 +82,7 @@ class ProjectFileExporter {
     myOutputProject.getProjectConfig().setAutoOutlineNumber(true);
     myOutputProject.getProjectConfig().setAutoResourceUniqueID(false);
     myOutputProject.getProjectConfig().setAutoTaskUniqueID(false);
+    myOutputProject.setDefaultCalendar(myOutputProject.addDefaultBaseCalendar());
   }
 
   ProjectFile run() throws MPXJException {

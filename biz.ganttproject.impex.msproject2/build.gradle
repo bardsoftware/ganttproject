@@ -8,12 +8,12 @@ configurations {
 
 dependencies {
     providedCompile project(path: ':ganttproject', configuration: 'exported')
-    api('net.sf.mpxj:mpxj:10.7.+') {
+    api('net.sf.mpxj:mpxj:10.11.0') {
         exclude group: 'org.xerial', module: 'sqlite-jdbc'
         exclude group: 'com.jgoodies'
     }
     implementation configurations.api
-    implementation 'javax.xml.bind:jaxb-api:2.3.+'
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
     implementation 'javax.xml:jaxb-impl:2.1'
 
     implementation configurations.providedCompile
