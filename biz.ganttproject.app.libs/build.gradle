@@ -74,6 +74,13 @@ task copyPluginFiles(dependsOn: jar) {
             from(configurations.exported) {
                 include "*.jar"
                 exclude "javafx*.jar"
+                exclude "slf4j*.jar"
+            }
+        }
+        copy {
+            into(new File(rootProject.projectDir, "ganttproject-builder/lib/"))
+            from(configurations.exported) {
+                include "slf4j*.jar"
             }
         }
         if (project.hasProperty("withJavafx")) {

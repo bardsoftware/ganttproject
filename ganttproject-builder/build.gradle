@@ -45,6 +45,7 @@ task distBin(dependsOn: [
             into(rootProject.distBinDir)
             from(fileTree(".")) {
                 include "lib/javagalician.jar"
+                include "lib/slf4j*.jar"
                 include "ganttproject.bat"
                 include "ganttproject.exe"
                 include "ganttproject.l4j.ini"
