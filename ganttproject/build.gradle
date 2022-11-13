@@ -14,7 +14,7 @@ buildscript {
 plugins {
     id "org.jetbrains.kotlin.jvm"
     id "maven-publish"
-    id "nu.studer.jooq" version "7.1.+"
+    id "nu.studer.jooq" version "8.0"
     id "org.jetbrains.kotlin.plugin.serialization" version "$kotlin_version"
 }
 
@@ -52,7 +52,7 @@ dependencies {
     implementation files('src/main/resources/resources')
 
     implementation group: 'com.h2database', name: 'h2', version: '2.1.+'
-    implementation 'org.jooq:jooq:3.16.+'
+    implementation 'org.jooq:jooq:3.17.5'
     jooqGenerator 'org.jooq:jooq-meta-extensions'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1'
