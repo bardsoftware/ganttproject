@@ -9,7 +9,7 @@ ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins/base")
 version = "${semver}.${buildNum}"
 
 // Config for all projects: deps come from Maven repository,
-// compile using Java 11, libs normally sit in lib
+// compile using Java 17, libs normally sit in lib
 allprojects {
     configurations {
         direct
@@ -40,8 +40,8 @@ allprojects {
         ]
 
     }
-    sourceCompatibility = 11
-    targetCompatibility = 11
+    sourceCompatibility = 17
+    targetCompatibility = 17
 
     clean {
         delete += "dist-bin"
