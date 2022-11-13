@@ -16,7 +16,7 @@
   <icon>ganttproject.ico</icon>
   <classPath>
     <mainClass>com.bardsoftware.eclipsito.Launch</mainClass>
-    <cp>%EXEDIR%</cp>
+    <cp>%EXEDIR%;%EXEDIR%\lib\slf4j-api-2.0.3.jar;%EXEDIR%\lib\slf4j-jdk14-2.0.3.jar</cp>
   </classPath>
   <jre>
     <path>.\runtime\</path>

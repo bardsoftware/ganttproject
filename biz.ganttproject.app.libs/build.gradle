@@ -29,9 +29,9 @@ dependencies {
 
     exported 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2'
     exported 'com.evanlennick:retry4j:0.+'
-    exported 'com.fasterxml.jackson.core:jackson-core:2.13.4'
-    exported 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
-    exported 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.4'
+    exported 'com.fasterxml.jackson.core:jackson-core:2.14.0'
+    exported 'com.fasterxml.jackson.core:jackson-databind:2.14.0'
+    exported 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.14.0'
     exported 'com.jgoodies:jgoodies-common:1.8.+'
     exported 'com.jgoodies:jgoodies-looks:2.7.+'
     exported 'com.squareup.okhttp3:okhttp:3.+'
@@ -74,6 +74,13 @@ task copyPluginFiles(dependsOn: jar) {
             from(configurations.exported) {
                 include "*.jar"
                 exclude "javafx*.jar"
+                exclude "slf4j*.jar"
+            }
+        }
+        copy {
+            into(new File(rootProject.projectDir, "ganttproject-builder/lib/"))
+            from(configurations.exported) {
+                include "slf4j*.jar"
             }
         }
         if (project.hasProperty("withJavafx")) {

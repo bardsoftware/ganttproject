@@ -44,7 +44,7 @@ object PgpUtil {
   private val FP_CALC: KeyFingerPrintCalculator = BcKeyFingerprintCalculator()
 
   private val ourPublicKey by lazy {
-    val publicKeyResource = System.getProperty("app.update.public_key", "/ganttproject-3.0.pub.asc")
+    val publicKeyResource = System.getProperty("app.update.public_key", "/ganttproject-3.3.pub.asc")
     val publicKeyStream = Eclipsito::class.java.getResourceAsStream(publicKeyResource) ?:
       throw RuntimeException(
         "Failed to read the public key from $publicKeyResource. This resource is missing.".also { LOG.error(it) }

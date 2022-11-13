@@ -21,6 +21,7 @@ package biz.ganttproject.impex.msproject2;
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.option.GPOption;
 import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.importer.BufferProjectImportKt;
@@ -34,6 +35,7 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.util.collect.Pair;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -64,8 +66,9 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
 
   @Override
   public void run() {
+    var logger = GPLogger.create("Import.MSProject");
+    File selectedFile = getFile();
     try {
-      File selectedFile = getFile();
       BufferProject bufferProject = new BufferProject(getProject(), getUiFacade());
       ProjectFileImporter importer = new ProjectFileImporter(bufferProject, getUiFacade().getTaskColumnList(), selectedFile);
       importer.run();
@@ -82,6 +85,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
       findChangedDates(originalDates, buffer2realTask, errors);
       reportErrors(errors, "Import.MSProject");
     } catch (Exception e) {
+      logger.error("Exception when importing {}", new Object[] {selectedFile}, Collections.emptyMap(), e);
       getUiFacade().showErrorDialog(e);
     } finally {
       getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(true);
