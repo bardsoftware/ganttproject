@@ -130,11 +130,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   @Override
   public @NotNull Map<Task, Task> importProject(
-      @NotNull BufferProject bufferProject,
-      @NotNull HumanResourceMerger.MergeResourcesOption mergeResourcesOption,
-      @Nullable ImportCalendarOption importCalendarOption) {
-    return GanttProjectImplKt.restoreProject(this, myProjectImpl.getListeners(), false,
-      () -> myProjectImpl.importProject(bufferProject, mergeResourcesOption, importCalendarOption)
+    @NotNull BufferProject bufferProject,
+    @NotNull HumanResourceMerger.MergeResourcesOption mergeResourcesOption,
+    @Nullable ImportCalendarOption importCalendarOption, boolean closeCurrentProject) {
+    return GanttProjectImplKt.restoreProject(this, myProjectImpl.getListeners(), closeCurrentProject,
+      () -> myProjectImpl.importProject(bufferProject, mergeResourcesOption, importCalendarOption, closeCurrentProject)
     );
   }
 

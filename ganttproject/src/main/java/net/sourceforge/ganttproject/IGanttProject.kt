@@ -62,15 +62,19 @@ interface IGanttProject {
   fun close()
   var document: Document
   val documentManager: DocumentManager
+
   fun addProjectEventListener(listener: ProjectEventListener)
   fun removeProjectEventListener(listener: ProjectEventListener)
   var isModified: Boolean
 
   @Throws(IOException::class, Document.DocumentException::class)
   fun open(document: Document)
-  fun importProject(bufferProject: BufferProject,
-                    mergeOption: HumanResourceMerger.MergeResourcesOption,
-                    importCalendarOption: ImportCalendarOption?): TaskMapping
+  fun importProject(
+    bufferProject: BufferProject,
+    mergeOption: HumanResourceMerger.MergeResourcesOption,
+    importCalendarOption: ImportCalendarOption?,
+    closeCurrentProject: Boolean
+  ): TaskMapping
 
   @Throws(Document.DocumentException::class, IOException::class)
   fun restore(fromDocument: Document)

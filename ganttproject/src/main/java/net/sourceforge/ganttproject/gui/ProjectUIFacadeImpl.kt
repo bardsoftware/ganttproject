@@ -51,6 +51,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.resource.HumanResourceMerger
 import net.sourceforge.ganttproject.resource.HumanResourceMerger.MergeResourcesOption.BY_ID
 import net.sourceforge.ganttproject.task.event.*
+import net.sourceforge.ganttproject.task.importFromDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.io.File
 import java.io.IOException
@@ -251,15 +252,15 @@ class ProjectUIFacadeImpl(
                       project.projectDatabase.addExternalUpdatesListener {
                         Platform.runLater {
                           //println("Reloading tasks from H2")
-                          val hierarchyMap = mutableMapOf<Int, Pair<Int, Int>>()
+                          val hierarchyMap = mutableMapOf<String, Pair<String, Int>>()
                           project.taskManager.tasks.forEach { task ->
-                            val taskId = task.taskID
-                            val parentId = task.supertask.taskID
+                            val taskId = task.uid
+                            val parentId = task.supertask.uid
                             val position = project.taskManager.taskHierarchy.getTaskIndex(task)
                             hierarchyMap[taskId] = parentId to position
                           }
                           val emptyTaskManager = project.taskManager.emptyClone()
-                          emptyTaskManager.reloadTasksFromH2(project.projectDatabase, hierarchyMap)
+                          emptyTaskManager.importFromDatabase(project.projectDatabase.readAllTasks(), hierarchyMap)
                           val bufferProject = BufferProject(
                             emptyTaskManager,
                             project.projectDatabase,
@@ -276,7 +277,8 @@ class ProjectUIFacadeImpl(
                             bufferProject,
                             myWorkbenchFacade.asImportBufferProjectApi(),
                             mergeOption,
-                            importCalendarOption
+                            importCalendarOption,
+                            closeCurrentProject = true
                           )
                         }
                       }

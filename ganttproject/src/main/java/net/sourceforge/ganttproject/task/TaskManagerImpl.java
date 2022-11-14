@@ -361,7 +361,7 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public TaskBuilder newTaskBuilder() {
-    return new TaskBuilder() {
+    return new TaskBuilder(getConfig().getDefaultColor()) {
       @Override
       public Task build() {
         if (myPrototype != null) {
@@ -1038,47 +1038,5 @@ public class TaskManagerImpl implements TaskManager {
   @Override
   public DependencyGraph getDependencyGraph() {
     return myDependencyGraph;
-  }
-
-  public void reloadTasksFromH2(ProjectDatabase database, Map<Integer, Pair<Integer, Integer>> hierarchyMap) {
-    try {
-      List<TaskRecord> tasks = database.readAllTasks();
-      for (TaskRecord record : tasks) {
-        var color = record.getColor();
-        TaskBuilder builder = newTaskBuilder()
-          .withId(record.getNum())
-          .withUid(record.getUid())
-          .withName(record.getName())
-          .withStartDate(GanttCalendar.parseXMLDate(record.getStartDate().toString()).getTime())
-          .withDuration(createLength(record.getDuration()))
-          .withColor(color != null ? ColorConvertion.determineColor(record.getColor()) : getConfig().getDefaultColor())
-          .withCompletion(record.getCompletion())
-          .withPriority(Task.Priority.fromPersistentValue(record.getPriority()))
-          .withWebLink(record.getWebLink())
-          .withNotes(record.getNotes());
-
-        if (record.getIsMilestone()) {
-          builder.withLegacyMilestone();
-        }
-
-        Task impl = builder.build();
-
-        myTaskMap.addTask(impl);
-      }
-
-      for (Integer taskId : myTaskMap.myId2task.keySet()) {
-        var task = getTask(taskId);
-        var existingParentId = hierarchyMap.get(taskId);
-        Task parentTask = existingParentId == null ? null : getTask(existingParentId.getFirst());
-        if (parentTask == null || parentTask.equals(getRootTask())) {
-          getTaskHierarchy().move(task, getRootTask());
-        } else {
-          int position = existingParentId.getSecond();
-          getTaskHierarchy().move(task, parentTask, position);
-        }
-      }
-    } catch (ProjectDatabaseException e) {
-      GPLogger.log(e);
-    }
   }
 }

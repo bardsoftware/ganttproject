@@ -161,9 +161,12 @@ open class GanttProjectImpl(taskManager: TaskManagerImpl? = null,
     // TODO Auto-generated method stub
   }
 
-  override fun importProject(bufferProject: BufferProject,
-                    mergeOption: HumanResourceMerger.MergeResourcesOption,
-                    importCalendarOption: ImportCalendarOption?): TaskMapping {
+  override fun importProject(
+    bufferProject: BufferProject,
+    mergeOption: HumanResourceMerger.MergeResourcesOption,
+    importCalendarOption: ImportCalendarOption?,
+    closeCurrentProject: Boolean
+  ): TaskMapping {
       roleManager.importData(bufferProject.roleManager)
       if (importCalendarOption != null) {
         activeCalendar.importCalendar(bufferProject.activeCalendar, importCalendarOption)

@@ -57,6 +57,7 @@ public interface TaskManager {
     USER
   }
   abstract class TaskBuilder {
+    final Color defaultColor;
     String myName;
     String myUid;
     Integer myId;
@@ -76,6 +77,9 @@ public interface TaskManager {
     BigDecimal myCost;
     EventSource mySource = EventSource.UNDEFINED;
 
+    public TaskBuilder(Color defaultColor) {
+      this.defaultColor = defaultColor;
+    }
     public TaskBuilder withColor(Color color) {
       myColor = color;
       return this;
@@ -164,35 +168,36 @@ public interface TaskManager {
       mySource = source;
       return this;
     }
+
     public abstract Task build();
 
   }
 
-  public TaskBuilder newTaskBuilder();
+  TaskBuilder newTaskBuilder();
 
   Task[] getTasks();
 
-  public Task getRootTask();
+  Task getRootTask();
 
-  public GanttTask getTask(int taskId);
+  GanttTask getTask(int taskId);
 
-  public void registerTask(Task task);
+  void registerTask(Task task);
 
-  public GanttTask createTask();
+  GanttTask createTask();
 
   @Deprecated
-  public GanttTask createTask(int taskId);
+  GanttTask createTask(int taskId);
 
 
   String encode(TimeDuration duration);
 
   TimeDuration createLength(String lengthAsString);
 
-  public TimeDuration createLength(long length);
+  TimeDuration createLength(long length);
 
   TimeDuration createLength(TimeUnit unit, float length);
 
-  public TimeDuration createLength(TimeUnit timeUnit, Date startDate, Date endDate);
+  TimeDuration createLength(TimeUnit timeUnit, Date startDate, Date endDate);
 
   Date shift(Date original, TimeDuration duration);
 
@@ -208,7 +213,7 @@ public interface TaskManager {
 
   void addTaskListener(TaskListener listener);
 
-  public class Access {
+  class Access {
     public static TaskManager newInstance(TaskContainmentHierarchyFacade.Factory containmentFacadeFactory,
         TaskManagerConfig config) {
       return new TaskManagerImpl(containmentFacadeFactory, config, null);
@@ -220,22 +225,22 @@ public interface TaskManager {
     }
   }
 
-  public TimeDuration getProjectLength();
+  TimeDuration getProjectLength();
 
-  public int getTaskCount();
+  int getTaskCount();
 
-  public Date getProjectStart();
+  Date getProjectStart();
 
-  public Date getProjectEnd();
+  Date getProjectEnd();
 
   int getProjectCompletion();
 
-  public TaskManager emptyClone();
+  TaskManager emptyClone();
 
-  public Map<Task, Task> importData(TaskManager taskManager,
+  Map<Task, Task> importData(TaskManager taskManager,
       Map<CustomPropertyDefinition, CustomPropertyDefinition> customPropertyMapping);
 
-  public void importAssignments(TaskManager importedTaskManager, HumanResourceManager hrManager,
+  void importAssignments(TaskManager importedTaskManager, HumanResourceManager hrManager,
       Map<Task, Task> original2importedTask, Map<HumanResource, HumanResource> original2importedResource);
 
   /**
@@ -244,9 +249,9 @@ public interface TaskManager {
    * @param root
    *          The root of the tasks to consider in the critical path finding.
    */
-  public void processCriticalPath(Task root);
+  void processCriticalPath(Task root);
 
-  public void deleteTask(Task tasktoRemove);
+  void deleteTask(Task tasktoRemove);
 
   CustomPropertyManager getCustomPropertyManager();
 
@@ -269,6 +274,4 @@ public interface TaskManager {
   GPCalendarListener getCalendarListener();
 
   TaskUpdateBuilder createTaskUpdateBuilder(Task task);
-
-  void reloadTasksFromH2(ProjectDatabase projectDatabase, Map<Integer, Pair<Integer, Integer>> hierarchyMap);
 }
