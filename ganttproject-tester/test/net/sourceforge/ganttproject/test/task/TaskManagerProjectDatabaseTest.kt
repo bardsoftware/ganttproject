@@ -31,7 +31,7 @@ class TaskManagerProjectDatabaseTest: TaskTestCase() {
   }
 
   @Test
-  fun `import from database preserves hierarchy`() {
+  fun `test import from database preserves hierarchy`() {
     val supertask1 = createTask()
     val childTask1 = createTask().also { taskManager.taskHierarchy.move(it, supertask1) }
     val childTask2 = createTask().also { taskManager.taskHierarchy.move(it, supertask1) }
