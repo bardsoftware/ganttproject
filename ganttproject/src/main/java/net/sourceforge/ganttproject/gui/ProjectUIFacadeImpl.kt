@@ -51,6 +51,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.resource.HumanResourceMerger
 import net.sourceforge.ganttproject.resource.HumanResourceMerger.MergeResourcesOption.BY_ID
 import net.sourceforge.ganttproject.task.event.*
+import net.sourceforge.ganttproject.task.export
 import net.sourceforge.ganttproject.task.importFromDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.io.File
@@ -251,16 +252,8 @@ class ProjectUIFacadeImpl(
                       it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
                       project.projectDatabase.addExternalUpdatesListener {
                         Platform.runLater {
-                          //println("Reloading tasks from H2")
-                          val hierarchyMap = mutableMapOf<String, Pair<String, Int>>()
-                          project.taskManager.tasks.forEach { task ->
-                            val taskId = task.uid
-                            val parentId = task.supertask.uid
-                            val position = project.taskManager.taskHierarchy.getTaskIndex(task)
-                            hierarchyMap[taskId] = parentId to position
-                          }
                           val emptyTaskManager = project.taskManager.emptyClone()
-                          emptyTaskManager.importFromDatabase(project.projectDatabase.readAllTasks(), hierarchyMap)
+                          emptyTaskManager.importFromDatabase(project.projectDatabase.readAllTasks(), project.taskManager.taskHierarchy.export())
                           val bufferProject = BufferProject(
                             emptyTaskManager,
                             project.projectDatabase,

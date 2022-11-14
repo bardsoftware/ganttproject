@@ -86,6 +86,17 @@ fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, level: Int = 0, vi
   }
 }
 
+fun TaskContainmentHierarchyFacade.export(): ExportedHierarchy {
+  val hierarchyMap = mutableMapOf<String, Pair<String, Int>>()
+  depthFirstWalk(rootTask) { parent, child, position, _ ->
+    child?.let {
+      hierarchyMap[it.uid] = parent.uid to position
+    }
+    true
+  }
+  return hierarchyMap
+}
+
 private typealias TaskId = String
 private typealias PositionAtParent = Pair<TaskId, Int>
 typealias ExportedHierarchy = Map<TaskId, PositionAtParent>
