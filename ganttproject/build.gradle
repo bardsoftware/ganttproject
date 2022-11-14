@@ -167,6 +167,9 @@ task copyEclipsito(type: Copy) {
     from(fileTree("lib/core")) {
         include "eclipsito.jar"
     }
+    from(fileTree("src/main/resources")) {
+        include 'logging.properties'
+    }
 }
 
 task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) {
