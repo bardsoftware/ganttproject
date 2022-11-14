@@ -42,7 +42,7 @@ jobs:
 
     - uses: actions/setup-java@v1
       with:
-        java-version: 11.0.15
+        java-version: 17.0.4
         java-package: jdk+fx
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL

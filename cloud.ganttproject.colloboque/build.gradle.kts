@@ -6,9 +6,9 @@ val kotlinVersion: String by project
 
 plugins {
     id("application")
-    id("org.jetbrains.kotlin.jvm") version "1.7.0"
+    id("org.jetbrains.kotlin.jvm") version "1.7.21"
     id("maven-publish")
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.21"
 }
 
 application {
@@ -32,10 +32,10 @@ dependencies {
     implementation("org.postgresql:postgresql:42.3.6")
 
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.3")
-    implementation(kotlin("stdlib", kotlinVersion))
+    implementation(kotlin("stdlib", version = kotlinVersion))
     implementation(kotlin("reflect", version = kotlinVersion))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
-    implementation("org.jooq:jooq:3.16.6")
+    implementation("org.jooq:jooq:3.17.5")
     implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("com.github.ajalt.clikt:clikt:3.5.0")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
@@ -52,7 +52,7 @@ dependencies {
 
 tasks.getByName<KotlinCompile>("compileKotlin") {
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 
