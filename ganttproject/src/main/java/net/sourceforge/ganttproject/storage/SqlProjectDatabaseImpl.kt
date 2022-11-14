@@ -53,6 +53,47 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
   private var currentTxn: TransactionImpl? = null
   private var localTxnId: Int = -1
+  private var baseTxnId: String = ""
+  /** For a range R of local txn ids [i_1, i_n) which were completed between a transition from a sync point s1 to s2,
+   * maps s1 to R.
+   */
+  private val syncTxnMap = mutableMapOf<String, IntRange>()
+  private var areEventsEnabled: Boolean = true
+
+  private var externalUpdatesListener: ProjectDatabaseExternalUpdateListener = {}
+
+  override fun addExternalUpdatesListener(listener: ProjectDatabaseExternalUpdateListener) {
+    externalUpdatesListener = listener
+  }
+
+  /**
+   * Applies updates from Colloboque
+   */
+  @Throws(ProjectDatabaseException::class)
+  override fun applyUpdate(logRecords: List<XlogRecord>, baseTxnId: String, targetTxnId: String) {
+    withDSL { dsl ->
+      dsl.transaction { config ->
+        val context = DSL.using(config)
+        logRecords.forEach { logRecord ->
+          val statements = logRecord.colloboqueOperations.map { generateSqlStatement(dsl, it) }
+          statements.forEach {
+            try {
+              context.execute(it)
+            } catch (e: Exception) {
+              val errorMessage = "Failed to execute query from Colloboque: $it"
+              LOG.error(errorMessage)
+              throw ProjectDatabaseException(errorMessage, e)
+            }
+          }
+        }
+      }
+    }
+    syncTxnMap[targetTxnId] = syncTxnMap[baseTxnId]!!.endInclusive.let { IntRange(it, it) }
+    this.baseTxnId = targetTxnId
+    if (logRecords.isNotEmpty()) {
+      externalUpdatesListener()
+    }
+  }
 
   private fun <T> withDSL(
     errorMessage: () -> String = { "Failed to execute query" },
@@ -103,11 +144,15 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
                       colloboqueUndoOperationDto: OperationDto) {
     val query = SqlQuery(buildQuery(DSL.using(SQLDialect.H2)), colloboqueOperationDto)
     val undoQuery = SqlQuery(buildUndoQuery(DSL.using(SQLDialect.H2)), colloboqueUndoOperationDto)
-    currentTxn?.add(query, undoQuery) ?: executeAndLog(listOf(query), localTxnId).also { localTxnId++ }
+    currentTxn?.add(query, undoQuery) ?: executeAndLog(listOf(query), localTxnId).also {
+      incrementLocalTxnId()
+    }
   }
 
   private fun withLog(queries: List<SqlQuery>, undoQueries: List<SqlUndoQuery>) {
-    currentTxn?.add(queries, undoQueries) ?: executeAndLog(queries, localTxnId).also { localTxnId++ }
+    currentTxn?.add(queries, undoQueries) ?: executeAndLog(queries, localTxnId).also {
+      incrementLocalTxnId()
+    }
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -124,6 +169,8 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   override fun startLog(baseTxnId: String) {
     localTxnId = 0
+    this.baseTxnId = baseTxnId
+    syncTxnMap[baseTxnId] = 0..0
   }
 
   private val isLogStarted get() = localTxnId >= 0
@@ -209,10 +256,27 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     try {
       if (queries.isEmpty()) return
       executeAndLog(queries, localTxnId)
-      localTxnId++  // Increment only on success.
+      // Increment only on success.
+      incrementLocalTxnId()
     } finally {
       currentTxn = null
     }
+  }
+
+  private fun incrementLocalTxnId() {
+    syncTxnMap[baseTxnId]?.let {
+      localTxnId++
+      syncTxnMap[baseTxnId] = it.start.rangeTo(it.endInclusive + 1)
+    }
+  }
+
+  override val outgoingTransactions: List<XlogRecord> get() {
+    if (baseTxnId.isBlank()) {
+      return emptyList()
+    }
+    val outgoingRange = syncTxnMap[baseTxnId]!!
+    LOG.debug("Outgoing txns: from base txn={} local range={}", baseTxnId, outgoingRange)
+    return fetchTransactions(outgoingRange.start, outgoingRange.endInclusive - outgoingRange.start)
   }
 
   @Throws(ProjectDatabaseException::class)
@@ -233,6 +297,13 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
       dsl.select(TASK.NUM).from(TASK).where(whereExpression).mapNotNull {
         lookupById(it.value1())
       }
+    }
+  }
+
+  @Throws(ProjectDatabaseException::class)
+  override fun readAllTasks(): List<TaskRecord> {
+    return withDSL { dsl ->
+      dsl.selectFrom(TASK).fetch().toList()
     }
   }
 

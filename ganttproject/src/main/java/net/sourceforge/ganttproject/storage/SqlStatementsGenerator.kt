@@ -16,11 +16,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package cloud.ganttproject.colloboque;
+package net.sourceforge.ganttproject.storage;
 
-import net.sourceforge.ganttproject.storage.BinaryPred
-import net.sourceforge.ganttproject.storage.OperationDto
-import net.sourceforge.ganttproject.storage.RangePred
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.InsertSetMoreStep

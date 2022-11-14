@@ -153,6 +153,7 @@ open class GanttProjectImpl(taskManager: TaskManagerImpl? = null,
 
   @Throws(Document.DocumentException::class, IOException::class)
   override fun restore(fromDocument: Document) {
+    restoreProject(fromDocument, this.listeners)
   }
 
   @Throws(IOException::class)
@@ -160,32 +161,34 @@ open class GanttProjectImpl(taskManager: TaskManagerImpl? = null,
     // TODO Auto-generated method stub
   }
 
-  override fun importProject(bufferProject: BufferProject,
-                    mergeOption: HumanResourceMerger.MergeResourcesOption,
-                    importCalendarOption: ImportCalendarOption?): TaskMapping {
-    roleManager.importData(bufferProject.roleManager)
-    if (importCalendarOption != null) {
-      activeCalendar.importCalendar(bufferProject.activeCalendar, importCalendarOption)
-    }
-    val that2thisResourceCustomDefs = resourceCustomPropertyManager.importData(bufferProject.resourceCustomPropertyManager)
-    val original2ImportedResource = humanResourceManager.importData(
-      bufferProject.humanResourceManager, OverwritingMerger(mergeOption), that2thisResourceCustomDefs
-    )
-    val that2thisCustomDefs = taskCustomColumnManager.importData(bufferProject.taskCustomColumnManager)
-    val origTaskManager = taskManager
-    return try {
-      origTaskManager.setEventsEnabled(false)
-      val result = origTaskManager.importData(bufferProject.taskManager, that2thisCustomDefs)
-      origTaskManager.importAssignments(
-        bufferProject.taskManager, humanResourceManager,
-        result, original2ImportedResource
-      )
-      result.also {
-        fireProjectOpened()
+  override fun importProject(
+    bufferProject: BufferProject,
+    mergeOption: HumanResourceMerger.MergeResourcesOption,
+    importCalendarOption: ImportCalendarOption?,
+    closeCurrentProject: Boolean
+  ): TaskMapping {
+      roleManager.importData(bufferProject.roleManager)
+      if (importCalendarOption != null) {
+        activeCalendar.importCalendar(bufferProject.activeCalendar, importCalendarOption)
       }
-    } finally {
-      origTaskManager.setEventsEnabled(true)
-    }
+      val that2thisResourceCustomDefs =
+        resourceCustomPropertyManager.importData(bufferProject.resourceCustomPropertyManager)
+      val original2ImportedResource = humanResourceManager.importData(
+        bufferProject.humanResourceManager, OverwritingMerger(mergeOption), that2thisResourceCustomDefs
+      )
+      val that2thisCustomDefs = taskCustomColumnManager.importData(bufferProject.taskCustomColumnManager)
+      val origTaskManager = taskManager
+      try {
+        origTaskManager.setEventsEnabled(false)
+        val result = origTaskManager.importData(bufferProject.taskManager, that2thisCustomDefs)
+        origTaskManager.importAssignments(
+          bufferProject.taskManager, humanResourceManager,
+          result, original2ImportedResource
+        )
+        return result
+      } finally {
+        origTaskManager.setEventsEnabled(true)
+      }
   }
 }
 
@@ -257,26 +260,34 @@ internal class DefaultTaskColorOption internal constructor(defaultColor: Color) 
   }
 }
 
-
 internal fun (IGanttProject).restoreProject(fromDocument: Document, listeners: List<ProjectEventListener>) {
+  restoreProject(listeners) {
+    fromDocument.read()
+  }
+}
+
+internal fun <T> (IGanttProject).restoreProject(listeners: List<ProjectEventListener>, closeCurrentProject: Boolean = true, restoreCode: ()->T): T {
   val completionPromise = SimpleBarrier<Document>()
   listeners.forEach { it.projectRestoring(completionPromise) }
   val projectDocument = document
-  close()
+  if (closeCurrentProject) {
+    close()
+  }
   val algs = taskManager.algorithmCollection
-  try {
+  return try {
     algs.scheduler.isEnabled = false
     algs.recalculateTaskScheduleAlgorithm.isEnabled = false
     algs.adjustTaskBoundsAlgorithm.isEnabled = false
-    fromDocument.read()
+    restoreCode()
   } finally {
     algs.recalculateTaskScheduleAlgorithm.isEnabled = true
     algs.adjustTaskBoundsAlgorithm.isEnabled = true
     algs.scheduler.isEnabled = true
+    completionPromise.resolve(projectDocument)
+    document = projectDocument
   }
-  completionPromise.resolve(projectDocument)
-  document = projectDocument
 }
+
 
 internal fun createProjectModificationListener(project: IGanttProject, uiFacade: UIFacade) =
   createTaskListenerWithTimerBarrier(timerBarrier = TimerBarrier(1000).apply {

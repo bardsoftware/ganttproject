@@ -79,7 +79,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
       getTaskManager().getAlgorithmCollection().getScheduler().setEnabled(false);
 
       Map<Task, Task> buffer2realTask = importBufferProject(getProject(), bufferProject,
-          BufferProjectImportKt.asImportBufferProjectApi(getUiFacade()), myMergeResourcesOption, myImportCalendarOption);
+          BufferProjectImportKt.asImportBufferProjectApi(getUiFacade()), myMergeResourcesOption, myImportCalendarOption, false);
       Map<GanttTask, Date> originalDates = importer.getOriginalStartDates();
 
       findChangedDates(originalDates, buffer2realTask, errors);

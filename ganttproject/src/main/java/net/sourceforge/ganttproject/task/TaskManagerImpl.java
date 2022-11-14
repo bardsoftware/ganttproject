@@ -16,10 +16,15 @@ import biz.ganttproject.core.model.task.ConstraintType;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.time.*;
 import biz.ganttproject.customproperty.*;
+import biz.ganttproject.storage.db.tables.records.TaskRecord;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import net.sourceforge.ganttproject.*;
+import kotlin.Pair;
+import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.GanttTask;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
@@ -27,7 +32,9 @@ import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
+import net.sourceforge.ganttproject.storage.ProjectDatabase;
 import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder;
+import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
 import net.sourceforge.ganttproject.task.algorithm.*;
 import net.sourceforge.ganttproject.task.dependency.*;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
@@ -37,6 +44,7 @@ import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 import net.sourceforge.ganttproject.task.event.*;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
+import net.sourceforge.ganttproject.util.ColorConvertion;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URL;
@@ -353,7 +361,7 @@ public class TaskManagerImpl implements TaskManager {
 
   @Override
   public TaskBuilder newTaskBuilder() {
-    return new TaskBuilder() {
+    return new TaskBuilder(getConfig().getDefaultColor()) {
       @Override
       public Task build() {
         if (myPrototype != null) {
@@ -370,7 +378,6 @@ public class TaskManagerImpl implements TaskManager {
         TaskImpl task = new GanttTask("", startDate == null ? CalendarFactory.createGanttCalendar() : startDate, 1, TaskManagerImpl.this, myId, taskUid);
         TaskManagerImplKt.setupNewTask(this, task, TaskManagerImpl.this);
         registerTask(task);
-
 
         if (myPrevSibling != null && myPrevSibling != getRootTask()) {
           int position = getTaskHierarchy().getTaskIndex(myPrevSibling) + 1;

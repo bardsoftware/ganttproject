@@ -78,11 +78,11 @@ fun buildInsertTaskDto(task: Task): OperationDto.InsertOperationDto {
       Tables.TASK.START_DATE.name to task.start.toLocalDate().toString(),
       Tables.TASK.DURATION.name to task.duration.length.toString(),
       Tables.TASK.COMPLETION.name to task.completionPercentage.toString(),
-      Tables.TASK.EARLIEST_START_DATE.name to task.third?.toLocalDate().toString(),
+      Tables.TASK.EARLIEST_START_DATE.name to (task.third?.let { it.toLocalDate().toString() } ?: null),
       Tables.TASK.PRIORITY.name to task.priority.persistentValue,
       Tables.TASK.WEB_LINK.name to task.externalizedWebLink(),
-      Tables.TASK.COST_MANUAL_VALUE.name to costManualValue.toString(),
-      Tables.TASK.IS_COST_CALCULATED.name to isCostCalculated.toString(),
+      Tables.TASK.COST_MANUAL_VALUE.name to (costManualValue?.let { it.toString() } ?: null),
+      Tables.TASK.IS_COST_CALCULATED.name to (isCostCalculated?.let { it.toString() } ?: null),
       Tables.TASK.NOTES.name to task.externalizedNotes(),
     )
   )

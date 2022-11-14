@@ -23,9 +23,7 @@ import biz.ganttproject.core.table.ColumnList
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.resource.HumanResourceMerger.MergeResourcesOption
-import net.sourceforge.ganttproject.resource.OverwritingMerger
 import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskManagerImpl
 
 data class ImportBufferProjectApi(
   val taskColumnList: () -> ColumnList,
@@ -42,9 +40,10 @@ fun importBufferProject(
   bufferProject: BufferProject,
   importApi: ImportBufferProjectApi,
   mergeOption: MergeResourcesOption,
-  importCalendarOption: ImportCalendarOption?
+  importCalendarOption: ImportCalendarOption?,
+  closeCurrentProject: Boolean = false
 ): TaskMapping {
-  val result = targetProject.importProject(bufferProject, mergeOption, importCalendarOption)
+  val result = targetProject.importProject(bufferProject, mergeOption, importCalendarOption, closeCurrentProject)
   importApi.refresh()
   importApi.taskColumnList().importData(bufferProject.visibleFields, true)
   importApi.resourceColumnList().importData(bufferProject.myResourceVisibleFields, true)

@@ -94,7 +94,8 @@ data class InputXlog(
   val baseTxnId: String,
   val userId: String,
   val projectRefid: String,
-  val transactions: List<XlogRecord>
+  val transactions: List<XlogRecord>,
+  val clientTrackingCode: String
 )
 
 @Serializable
@@ -113,7 +114,8 @@ sealed class ServerResponse {
     val baseTxnId: String,
     val newBaseTxnId: String,
     val projectRefid: String,
-    val logRecords: List<XlogRecord>
+    val logRecords: List<XlogRecord>,
+    val clientTrackingCode: String
   ) : ServerResponse()
 
   /**

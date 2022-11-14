@@ -82,7 +82,7 @@ public class PasteAction extends GPAction {
       HumanResourceMerger.MergeResourcesOption mergeOption = new HumanResourceMerger.MergeResourcesOption();
       mergeOption.setValue(HumanResourceMerger.MergeResourcesOption.NO);
       importBufferProject(myProject, clipboardProject, BufferProjectImportKt.asImportBufferProjectApi(myUiFacade),
-          mergeOption, null);
+          mergeOption, null, false);
     } catch (Exception e) {
       e.printStackTrace();
     }

@@ -19,6 +19,10 @@
 
 package net.sourceforge.ganttproject.task
 
+import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.storage.db.tables.records.TaskRecord
+import net.sourceforge.ganttproject.util.ColorConvertion
+
 internal fun TaskManager.TaskBuilder.setupNewTask(task: TaskImpl, manager: TaskManagerImpl) {
   val name = myName ?: run {
     myPrototype?.name ?: manager.taskNamePrefixOption.value.toString() + "_" + task.taskID
@@ -79,5 +83,49 @@ fun TaskContainmentHierarchyFacade.depthFirstWalk(root: Task, level: Int = 0, vi
       }
     }
     visitor(root, null, children.size, level)
+  }
+}
+
+fun TaskContainmentHierarchyFacade.export(): ExportedHierarchy {
+  val hierarchyMap = mutableMapOf<String, Pair<String, Int>>()
+  depthFirstWalk(rootTask) { parent, child, position, _ ->
+    child?.let {
+      hierarchyMap[it.uid] = parent.uid to position
+    }
+    true
+  }
+  return hierarchyMap
+}
+
+private typealias TaskId = String
+private typealias PositionAtParent = Pair<TaskId, Int>
+typealias ExportedHierarchy = Map<TaskId, PositionAtParent>
+
+fun TaskManager.importFromDatabase(records: List<TaskRecord>, hierarchy: ExportedHierarchy) {
+  records.forEach { record ->
+    val color = record.color
+    this.newTaskBuilder().let { builder ->
+      builder.withId(record.num)
+        .withUid(record.uid)
+        .withName(record.name)
+        .withStartDate(GanttCalendar.parseXMLDate(record.startDate.toString()).time)
+        .withDuration(createLength(record.duration.toLong()))
+        .withColor(if (color != null) ColorConvertion.determineColor(record.color) else builder.defaultColor)
+        .withCompletion(record.completion)
+        .withPriority(Task.Priority.fromPersistentValue(record.priority))
+        .withWebLink(record.webLink)
+        .withNotes(record.notes)
+      if (record.isMilestone) {
+        builder.withLegacyMilestone()
+      }
+      builder.build()
+    }
+  }
+
+  this.tasks.forEach { task ->
+    val positionAtParent = hierarchy[task.uid] ?: "" to 0
+    tasks.firstOrNull { it.uid == positionAtParent.first }?.let { parentTask ->
+      taskHierarchy.move(task, parentTask, positionAtParent.second)
+    }
   }
 }

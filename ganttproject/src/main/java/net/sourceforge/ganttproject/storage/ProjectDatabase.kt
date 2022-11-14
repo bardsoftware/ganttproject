@@ -24,6 +24,7 @@ import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.customproperty.SimpleSelect
+import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import java.awt.Color
@@ -45,6 +46,8 @@ interface ProjectDatabaseTxn {
 }
 
 typealias ColumnConsumer = Pair<SimpleSelect, (Int, Any?)->Unit>
+typealias ProjectDatabaseExternalUpdateListener = () -> Unit
+
 /** Storage for holding the current state of a Gantt project. */
 interface ProjectDatabase {
   /** Build and execute an update query. */
@@ -105,6 +108,7 @@ interface ProjectDatabase {
   @Throws(ProjectDatabaseException::class)
   fun fetchTransactions(startLocalTxnId: Int = 0, limit: Int): List<XlogRecord>
 
+  val outgoingTransactions: List<XlogRecord>
   /** Run a query with the given `whereExpression` against the Task table.
    * The query results are converted to Task instances with `lookupById`
    */
@@ -116,4 +120,12 @@ interface ProjectDatabase {
 
   @Throws(ProjectDatabaseException::class)
   fun validateColumnConsumer(columnConsumer: ColumnConsumer)
+
+  @Throws(ProjectDatabaseException::class)
+  fun applyUpdate(logRecords: List<XlogRecord>, baseTxnId: String, targetTxnId: String)
+
+  @Throws(ProjectDatabaseException::class)
+  fun readAllTasks(): List<TaskRecord>
+
+  fun addExternalUpdatesListener(listener: ProjectDatabaseExternalUpdateListener)
 }

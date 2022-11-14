@@ -105,7 +105,7 @@ public class ImporterFromGanttFile extends ImporterBase {
       }
 
       importBufferProject(targetProject, bufferProject, BufferProjectImportKt.asImportBufferProjectApi(getUiFacade()),
-          myMergeResourcesOption, myImportCalendarOption);
+          myMergeResourcesOption, myImportCalendarOption, false);
     } catch (Exception  e) {
       getUiFacade().showErrorDialog(e);
     }
