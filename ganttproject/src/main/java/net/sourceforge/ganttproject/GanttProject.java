@@ -19,9 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.LoggerApi;
-import biz.ganttproject.app.FXSearchUi;
-import biz.ganttproject.app.FXToolbar;
-import biz.ganttproject.app.FXToolbarBuilder;
+import biz.ganttproject.app.*;
 import biz.ganttproject.customproperty.CalculatedPropertyUpdater;
 import biz.ganttproject.customproperty.CustomPropertyHolder;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
@@ -331,6 +329,15 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         }
         return mapping;
       });
+    getProjectImpl().addProjectEventListener(new ProjectEventListener.Stub() {
+      @Override
+      public void projectOpened(BarrierEntrance barrierRegistry, Barrier<IGanttProject> barrier) {
+        barrier.await(iGanttProject -> {
+          calculatedPropertyUpdater.update();
+          return Unit.INSTANCE;
+        });
+      }
+    });
     getUndoManager().addUndoableEditListener(new GPUndoListener() {
       @Override
       public void undoOrRedoHappened() {
