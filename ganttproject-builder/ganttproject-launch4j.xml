@@ -8,7 +8,7 @@
   <cmdLine>--verbosity 1 --version-dirs plugins;~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject</cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
-  <downloadUrl>https://bell-sw.com/pages/downloads/#/java-11-lts</downloadUrl>
+  <downloadUrl>https://bell-sw.com/pages/downloads/#/java-17-lts</downloadUrl>
   <supportUrl>https://help.ganttproject.biz</supportUrl>
   <stayAlive>true</stayAlive>
   <restartOnCrash>false</restartOnCrash>
@@ -22,22 +22,22 @@
     <path>.\runtime\</path>
     <bundledJre64Bit>true</bundledJre64Bit>
     <bundledJreAsFallback>false</bundledJreAsFallback>
-    <minVersion>11</minVersion>
+    <minVersion>17</minVersion>
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>64/32</runtimeBits>
     <initialHeapSize>256</initialHeapSize>
-    <maxHeapSize>1024</maxHeapSize>
+    <maxHeapSize>2048</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>3.2.3200.0</fileVersion>
-    <txtFileVersion>GanttProject 3.2</txtFileVersion>
+    <fileVersion>3.3.3290.0</fileVersion>
+    <txtFileVersion>GanttProject 3.3 Beta</txtFileVersion>
     <fileDescription>GanttProject Launcher</fileDescription>
     <copyright>Copyright (C) 2022 BarD Software s.r.o.</copyright>
-    <productVersion>3.2.3200.0</productVersion>
-    <txtProductVersion>GanttProject 3.2</txtProductVersion>
+    <productVersion>3.3.3290.0</productVersion>
+    <txtProductVersion>GanttProject 3.3 Beta</txtProductVersion>
     <productName>GanttProject</productName>
-    <companyName></companyName>
+    <companyName>BarD Software s.r.o.</companyName>
     <internalName>GanttProject</internalName>
     <originalFilename>ganttproject.exe</originalFilename>
     <trademarks></trademarks>
@@ -47,7 +47,7 @@
     <startupErr>GanttProject failed to start. Please visit https://help.ganttproject.biz to get support.</startupErr>
     <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.
         </bundledJreErr>
-    <jreVersionErr>GanttProject needs Java 11+ with JavaFX modules. Please visit https://help.ganttproject.biz to get support.</jreVersionErr>
+    <jreVersionErr>GanttProject needs Java 17+ with JavaFX modules. Please visit https://help.ganttproject.biz to get support.</jreVersionErr>
     <launcherErr>Java Runtime not found or is corrupted. Please visit https://help.ganttproject.biz to get support.
         </launcherErr>
     <instanceAlreadyExistsMsg>An application instance is already running.</instanceAlreadyExistsMsg>

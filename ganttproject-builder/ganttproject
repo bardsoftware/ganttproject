@@ -141,14 +141,10 @@ check_java() {
 
   VERSION="$( $JAVA_COMMAND -version 2>&1 | grep version | head -n 1)"
   log "...found $VERSION"
-  [[ "$VERSION" =~ 11\.? ]] && return 0;
-  [[ "$VERSION" =~ 12\.? ]] && return 0;
-  [[ "$VERSION" =~ 13\.? ]] && return 0;
-  [[ "$VERSION" =~ 14\.? ]] && return 0;
-  [[ "$VERSION" =~ 15\.? ]] && return 0;
-  [[ "$VERSION" =~ 16\.? ]] && return 0;
   [[ "$VERSION" =~ 17\.? ]] && return 0;
-  log "...this seems to be an old Java Runtime";
+  [[ "$VERSION" =~ 18\.? ]] && return 0;
+  [[ "$VERSION" =~ 19\.? ]] && return 0;
+  log "...this seems to be an old Java Runtime (or maybe just too new)";
   JAVA_COMMAND=""
   return 1
 }

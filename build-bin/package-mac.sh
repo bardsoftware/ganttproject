@@ -4,7 +4,7 @@ set -e
 
 OUTPUT=${1:-/workspace}
 INPUT=${2:-"./ganttproject-builder/dist-bin"}
-VERSION=${3:-"3.0"}
+VERSION=${3:-"3.3.3290"}
 RUNTIME_ARG=${4:-"--runtime"}
 
 
@@ -25,7 +25,7 @@ if [[ "$RUNTIME_ARG" == "--runtime" ]]; then
     rm -rf ${OUTPUT}/runtime
     echo "Building Java Runtime"
     ${JLINK} \
-      --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.xml,jdk.charsets,jdk.crypto.ec,jdk.localedata,jdk.unsupported,jdk.unsupported.desktop,javafx.controls,javafx.swing,javafx.web \
+      --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.naming,java.net.http,java.security.jgss,java.sql,java.xml,jdk.charsets,jdk.crypto.ec,jdk.localedata,jdk.unsupported,jdk.unsupported.desktop,javafx.controls,javafx.swing,javafx.web \
       --no-header-files --no-man-pages \
       --output "${OUTPUT}/runtime" \
       --strip-debug \
@@ -50,7 +50,7 @@ jpackage --type app-image \
                     -Dcom.apple.mrj.application.apple.menu.about.name=GanttProject 
                     -Xdock:name=GanttProject 
                     -Xdock:icon=$APPDIR/ganttproject.icns 
-                    -Xmx1024m 
+                    -Xmx2048m
                     -Dfile.encoding=UTF-8
                     --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED
                     --add-exports javafx.base/com.sun.javafx=ALL-UNNAMED
@@ -64,7 +64,7 @@ jpackage --type app-image \
                     --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED
                     --add-exports javafx.graphics/com.sun.javafx.util=ALL-UNNAMED
                     --add-opens java.desktop/sun.swing=ALL-UNNAMED
-                    -classpath $APPDIR:$APPDIR/eclipsito.jar
+                    -classpath $APPDIR:$APPDIR/eclipsito.jar:$APPDIR/lib/slf4j-api-2.0.3.jar:$APPDIR/lib/slf4j-jdk14-2.0.3.jar
                     -Duser.dir=$APPDIR
                     -DversionDirs=plugins:~/.ganttproject.d/updates
                     -Dapp=net.sourceforge.ganttproject.GanttProject' \
@@ -82,28 +82,3 @@ jpackage --type app-image \
 mv /tmp/plugins ${OUTPUT}/GanttProject.app/Contents/app
 cp build-cfg/ganttproject.icns ${OUTPUT}/GanttProject.app/Contents/app
 
-# jpackage --type dmg \
-#     --app-image build/GanttProject.app \
-#     --license-file ganttproject-builder/LICENSE \
-#     -n "GanttProject 2.8.11" \
-#      --mac-sign \
-#      --mac-signing-key-user-name "Developer ID Application: BarD Software s.r.o"
-
-# find ${OUTPUT}/GanttProject.app -type f \
-#   -not -path "*/Contents/runtime/*" \
-#   -not -path "*/Contents/MacOS/GanttProject" \
-#   -not -path "*libapplauncher.dylib" \
-#   -exec codesign --timestamp --entitlements build-cfg/ganttproject.entitlements.xml -s "Developer ID Application: BarD Software s.r.o" --prefix com.bardsoftware.ganttproject --options runtime -v \;
-
-# mkdir -p ${OUTPUT}/ganttproject
-# cp -R ${INPUT}/{eclipsito.jar,lib,logging.properties,plugins} ${OUTPUT}/ganttproject
-# mkdir -p ${OUTPUT}/resources
-# cp build-cfg/ganttproject.icns ${OUTPUT}/resources 
-# if [[ "$RUNTIME_ARG" == "--runtime" ]]; then
-#   cp build-bin/mac/ganttproject-platypus-jre.command ${OUTPUT}/ganttproject.command
-# elif [[ "$RUNTIME_ARG" == "--no-runtime" ]]; then
-#   cp ganttproject-builder/ganttproject.command ${OUTPUT}/ganttproject.command
-# fi
-
-# platypus -P build-bin/mac/GanttProject.platypus -y ${OUTPUT}/GanttProject.app
-# cp build-cfg/Info.plist ${OUTPUT}/GanttProject.app/Contents/
