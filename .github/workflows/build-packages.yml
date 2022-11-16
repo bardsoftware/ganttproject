@@ -22,7 +22,10 @@ jobs:
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
-              run: ./gradlew distzip
+              run: |
+                  ./gradlew distbin distzip
+                  echo "===== PLUGINS =====
+                  ls ganttproject-builder/dist-bin/plugins/base
 
             - id: 'auth'
               uses: 'google-github-actions/auth@v1'
@@ -37,7 +40,11 @@ jobs:
 
             - name: Upload ZIP
               run: |
-                  gsutil cp ganttproject-builder/build/distributions/*.zip gs://dl.ganttproject.biz
+                  #!/bin/sh
+                  cd ganttproject-builder/build/distributions
+                  for f in *.zip; do
+                    gsutil cp $f gs://dl.ganttproject.biz
+                    gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f
 
 #  packageLinux:
 #    runs-on: ubuntu-latest
