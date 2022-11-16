@@ -43,8 +43,9 @@ jobs:
                   #!/bin/sh
                   cd ganttproject-builder/build/distributions
                   for f in *.zip; do
-                    gsutil cp $f gs://dl.ganttproject.biz
-                    gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f
+                    gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
+                  done;
+                  
 
 #  packageLinux:
 #    runs-on: ubuntu-latest
