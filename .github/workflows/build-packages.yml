@@ -24,7 +24,7 @@ jobs:
             - name: Build GanttProject
               run: |
                   ./gradlew distbin distzip
-                  echo "===== PLUGINS =====
+                  echo "===== PLUGINS ====="
                   ls ganttproject-builder/dist-bin/plugins/base
 
             - id: 'auth'
