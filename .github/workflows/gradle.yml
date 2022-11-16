@@ -23,11 +23,13 @@ jobs:
           git submodule update --init --force --recursive --depth=1
       - uses: actions/setup-java@v3
         with:
-          java-version: 17.0.4
+          distribution: 'liberica'
+          java-version: 17.0.5
           java-package: jdk+fx
+          cache: 'gradle'
       - name: Build GanttProject
-        run: ./gradlew build
+        run: ./gradlew --no-daemon build
       - name: Publish libs
-        run: ./gradlew publishToMavenLocal
+        run: ./gradlew --no-daemon publishToMavenLocal
       - name: Build Colloboque
-        run: cd cloud.ganttproject.colloboque && ./gradlew build
+        run: cd cloud.ganttproject.colloboque && ./gradlew --no-daemon build
