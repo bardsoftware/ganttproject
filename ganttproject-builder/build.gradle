@@ -176,3 +176,13 @@ task debugApp(type: JavaExec, dependsOn: distBin) {
     jvmArgs = ['-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=y'] + javaExportOptions
 }
 
+tasks.getByPath('distZip')
+    .mustRunAfter(':org.ganttproject.impex.htmlpdf:copyPlugin')
+    .mustRunAfter(':org.ganttproject.chart.pert:copyPlugin')
+    .mustRunAfter(':biz.ganttproject.impex.msproject2:copyPlugin')
+    .mustRunAfter(':biz.ganttproject.impex.ical:copyPlugin')
+    .mustRunAfter(':ganttproject:copyPlugin')
+    .mustRunAfter(':biz.ganttproject.core:copyPlugin')
+    .mustRunAfter(':biz.ganttproject.app.localization:copyPlugin')
+    .mustRunAfter(':biz.ganttproject.app.libs:copyPlugin')
+    .mustRunAfter('build')
