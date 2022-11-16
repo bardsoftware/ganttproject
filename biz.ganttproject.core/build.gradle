@@ -48,32 +48,8 @@ test {
     useJUnitPlatform()
 }
 
-task copyPlugin(dependsOn: assemble) {
-    doFirst {
-        println "Copying $project.name to $rootProject.pluginsDir"
-    }
-    doLast {
-        println "Installing $project.name"
-        copy {
-            into(new File(rootProject.pluginsDir, project.name))
-            from(fileTree(".")) {
-                include "plugin.xml"
-            }
-            from(fileTree("src/main/")) {
-                include "resources/**"
-            }
-        }
-        copy {
-            into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
-            from(configurations.direct) {
-                include "*.jar"
-            }
-            from(jar.outputs.getFiles().getFiles().flatten())
-            rename { filename -> filename + ".lib" }
-        }
-        println "<<< $project.name"
-    }
-
+task copyPlugin(dependsOn: jar) {
+    install(copyPlugin, jar, project)
 }
 
 addPublishing(project)

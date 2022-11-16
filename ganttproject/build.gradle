@@ -130,10 +130,11 @@ sourceSets {
 }
 
 task copyPluginFiles(dependsOn: jar) {
+    def pluginDistDir = new File(rootProject.pluginsDir, project.name)
     doLast {
         println ">>> Installing $project.name"
         copy {
-            into(new File(rootProject.pluginsDir, project.name))
+            into(pluginDistDir)
             from(fileTree(".")) {
                 include "plugin.xml"
             }
@@ -149,14 +150,9 @@ task copyPluginFiles(dependsOn: jar) {
                 include "resources/xslt/**"
             }
         }
-        copy {
-            into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
-            from(jar.outputs.getFiles().getFiles().flatten())
-            from(configurations.compileClasspath.minus(configurations.providedCompile)) {
-                include "*.jar"
-                exclude "eclipsito.jar"
-            }
-            rename { filename -> filename + ".lib" }
+        installLibs(jar, project)
+        delete fileTree(pluginDistDir).matching {
+            include "**/eclipsito.jar.lib"
         }
         println "<<< $project.name"
     }

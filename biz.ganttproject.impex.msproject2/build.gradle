@@ -32,23 +32,6 @@ compileTestKotlin {
     }
 }
 
-task copyPlugin(dependsOn: assemble) {
-    doLast {
-        println ">>> Installing $project.name"
-        copy {
-            into(new File(rootProject.pluginsDir, project.name))
-            from(fileTree(".")) {
-                include "plugin.xml"
-            }
-        }
-        copy {
-            into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
-            from(jar.outputs.getFiles().getFiles().flatten())
-            from(configurations.compileClasspath.minus(configurations.providedCompile.resolve())) {
-                include "*.jar"
-            }
-            rename { filename -> filename + ".lib" }
-        }
-        println "<<< $project.name"
-    }
+task copyPlugin(dependsOn: jar) {
+    install(copyPlugin, jar, project)
 }

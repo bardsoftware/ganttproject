@@ -72,6 +72,40 @@ def addPublishing(project) {
         }
     }
 }
+
+def installLibs(jar, project) {
+    def pluginDistDir = new File(rootProject.pluginsDir, project.name)
+    copy {
+        into(new File(pluginDistDir, "lib/"))
+        from(configurations.direct) {
+            include "*.jar"
+        }
+        from(jar.outputs.getFiles().getFiles().flatten())
+        from(project.configurations.compileClasspath.minus(project.configurations.providedCompile.resolve())) {
+            include "*.jar"
+        }
+        rename { filename -> filename + ".lib" }
+    }
+}
+
+def install(task, jar, project) {
+    def pluginDistDir = new File(rootProject.pluginsDir, project.name)
+    task.doLast {
+        println ">>> Installing $project.name into $pluginDistDir ---- $project.projectDir"
+        copy {
+            into(pluginDistDir)
+            from(fileTree(project.projectDir)) {
+                include "plugin.xml"
+            }
+            from(fileTree("$project.projectDir/src/main/")) {
+                include "resources/**"
+            }
+
+        }
+        installLibs(jar, project)
+        println "<<< $project.name"
+    }
+}
 //
 //runtime {
 //    distDir = rootProject.distBinDir

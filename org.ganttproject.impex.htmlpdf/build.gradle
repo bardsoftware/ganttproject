@@ -1,6 +1,3 @@
-apply plugin: 'java'
-apply plugin: 'idea'
-
 dependencies {
     providedCompile project(path: ':ganttproject', configuration: 'exported')
     implementation group: 'com.itextpdf', name: 'itextpdf', version: '5.+'
@@ -8,27 +5,6 @@ dependencies {
     implementation configurations.providedCompile
 }
 
-task copyPlugin(dependsOn: assemble) {
-    doLast {
-        println ">>> Installing $project.name"
-        copy {
-            into(new File(rootProject.pluginsDir, project.name))
-            from(fileTree(".")) {
-                include "plugin.xml"
-            }
-            from(fileTree("src/main")) {
-                include "resources/**"
-            }
-        }
-        copy {
-            into(new File(rootProject.pluginsDir, "${project.name}/lib/"))
-            from(jar.outputs.getFiles().getFiles().flatten())
-            from(configurations.compileClasspath.minus(configurations.providedCompile.resolve())) {
-                include "*.jar"
-            }
-            rename { filename -> filename + ".lib" }
-
-        }
-        println "<<< $project.name"
-    }
+task copyPlugin(dependsOn: jar) {
+    install(copyPlugin, jar, project)
 }

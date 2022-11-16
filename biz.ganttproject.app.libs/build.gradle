@@ -7,8 +7,6 @@ buildscript {
     }
 }
 
-apply plugin: 'java'
-
 ext {
     libDir = 'lib'
 }
@@ -27,27 +25,27 @@ dependencies {
     exported 'commons-codec:commons-codec:1.+'
     exported 'commons-io:commons-io:2.+'
 
-    exported 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2'
-    exported 'com.evanlennick:retry4j:0.+'
+    exported "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2"
+    exported "com.evanlennick:retry4j:0.15.0"
     exported 'com.fasterxml.jackson.core:jackson-core:2.14.0'
     exported 'com.fasterxml.jackson.core:jackson-databind:2.14.0'
     exported 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.14.0'
     exported 'com.jgoodies:jgoodies-common:1.8.+'
-    exported 'com.jgoodies:jgoodies-looks:2.7.+'
-    exported 'com.squareup.okhttp3:okhttp:3.+'
+    exported "com.jgoodies:jgoodies-looks:2.7.0"
+    exported "com.squareup.okhttp3:okhttp:3.14.9"
 
-    exported 'de.jensd:fontawesomefx-commons:9.+'
-    exported 'de.jensd:fontawesomefx-fontawesome:4.7.+'
-    exported 'de.jensd:fontawesomefx-materialicons:2.2.+'
+    exported "de.jensd:fontawesomefx-commons:9.1.2"
+    exported "de.jensd:fontawesomefx-fontawesome:4.7.0-9.1.2"
+    exported "de.jensd:fontawesomefx-materialicons:2.2.0-9.1.2"
 
     exported 'net.java.balloontip:balloontip:1.2.4.1'
-    exported 'org.apache.commons:commons-lang3:3.+'
+    exported "org.apache.commons:commons-lang3:3.12.0"
 
-    exported 'org.apache.httpcomponents:httpclient:4.5.+'
-    exported 'org.apache.httpcomponents:httpmime:4.5.+'
-    exported 'org.apache.poi:poi:5.+'
-    exported 'org.controlsfx:controlsfx:11.+'
-    exported 'org.nanohttpd:nanohttpd:2.3.+'
+    exported "org.apache.httpcomponents:httpclient:4.5.13"
+    exported "org.apache.httpcomponents:httpmime:4.5.13"
+    exported "org.apache.poi:poi:5.2.2"
+    exported "org.controlsfx:controlsfx:11.1.2"
+    exported "org.nanohttpd:nanohttpd:2.3.1"
     exported('org.jdom:jdom') {
         version {
             // because milton libraries depend on JDOM 1
@@ -60,17 +58,18 @@ dependencies {
     exported configurations.compileClasspath
 }
 
-task copyPluginFiles(dependsOn: jar) {
+def pluginDistDir = new File(rootProject.pluginsDir, project.name)
+task copyPlugin(dependsOn: assemble) {
     doLast {
-        println ">>> Installing $project.name"
+        println ">>> Installing $project.name into $pluginDistDir"
         copy {
-            into(new File(rootProject.pluginsDir, project.name))
+            into(pluginDistDir)
             from(fileTree(".")) {
                 include "plugin.xml"
             }
         }
         copy {
-            into(new File(rootProject.pluginsDir, "${project.name}/lib"))
+            into(new File(pluginDistDir, "lib"))
             from(configurations.exported) {
                 include "*.jar"
                 exclude "javafx*.jar"
@@ -85,7 +84,7 @@ task copyPluginFiles(dependsOn: jar) {
         }
         if (project.hasProperty("withJavafx")) {
             copy {
-                into(new File(rootProject.pluginsDir, "${project.name}/lib"))
+                into(new File(pluginDistDir, "lib"))
                 from(fileTree("javafx")) {
                     include "*"
                 }
@@ -93,11 +92,5 @@ task copyPluginFiles(dependsOn: jar) {
         }
 
         println "<<< $project.name"
-    }
-}
-
-task copyPlugin(dependsOn: ['copyPluginFiles']) {
-    doFirst {
-        println "Copying $project.name to $rootProject.pluginsDir"
     }
 }
