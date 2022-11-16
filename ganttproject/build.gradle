@@ -129,10 +129,19 @@ sourceSets {
     test.kotlin.srcDirs += "src/test/java"
 }
 
-task copyPluginFiles(dependsOn: jar) {
+task copyPlugin(dependsOn: jar) {
     def pluginDistDir = new File(rootProject.pluginsDir, project.name)
     doLast {
-        println ">>> Installing $project.name"
+        println ">>> ------------ Installing $project.name into $pluginDistDir ------------"
+        copy {
+            into(rootProject.distBinDir)
+            from(fileTree("lib/core")) {
+                include "eclipsito.jar"
+            }
+            from(fileTree("src/main/resources")) {
+                include 'logging.properties'
+            }
+        }
         copy {
             into(pluginDistDir)
             from(fileTree(".")) {
@@ -155,22 +164,6 @@ task copyPluginFiles(dependsOn: jar) {
             include "**/eclipsito.jar.lib"
         }
         println "<<< $project.name"
-    }
-}
-
-task copyEclipsito(type: Copy) {
-    into(rootProject.distBinDir)
-    from(fileTree("lib/core")) {
-        include "eclipsito.jar"
-    }
-    from(fileTree("src/main/resources")) {
-        include 'logging.properties'
-    }
-}
-
-task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) {
-    doFirst {
-        println "Copying $project.name to $rootProject.pluginsDir"
     }
 }
 

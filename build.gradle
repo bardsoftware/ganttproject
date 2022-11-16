@@ -91,7 +91,7 @@ def installLibs(jar, project) {
 def install(task, jar, project) {
     def pluginDistDir = new File(rootProject.pluginsDir, project.name)
     task.doLast {
-        println ">>> Installing $project.name into $pluginDistDir ---- $project.projectDir"
+        println ">>> ------------ Installing $project.name into $pluginDistDir ------------"
         copy {
             into(pluginDistDir)
             from(fileTree(project.projectDir)) {
