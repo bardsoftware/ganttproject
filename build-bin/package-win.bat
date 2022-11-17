@@ -26,3 +26,5 @@ jpackage -t msi -d build -i ganttproject-builder/dist-bin/ -n "GanttProject 3.3 
   --file-associations build-cfg\file-associations.properties ^
   --icon build-cfg\ganttproject.ico ^
   --verbose 
+dir build
+mv "build\GanttProject 3.3 Beta-3.3.3291.msi" "build\ganttproject-3.3.3291.msi"

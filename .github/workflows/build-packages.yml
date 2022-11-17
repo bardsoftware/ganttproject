@@ -66,6 +66,25 @@ jobs:
                   ./gradlew distbin
                   echo "===== PLUGINS ====="
                   ls ganttproject-builder/dist-bin/plugins/base
+            - name: Build MSI installer
+              run: |
+                  build-bin/package-win.bat
+
+            - id: 'auth'
+              uses: 'google-github-actions/auth@v1'
+              with:
+                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+            - name: 'Set up Cloud SDK'
+              uses: 'google-github-actions/setup-gcloud@v1'
+
+            - name: 'Use gcloud CLI'
+              run: 'gcloud info'
+
+            - name: Upload ZIP
+              run: |
+                  gsutil cp build\ganttproject-3.3.3291.msi gs://dl.ganttproject.biz
+                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-3.3.3291.msi
 
 #  packageLinux:
 #    runs-on: ubuntu-latest
