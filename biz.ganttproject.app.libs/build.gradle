@@ -67,6 +67,7 @@ task copyPlugin(dependsOn: assemble) {
             from(fileTree(".")) {
                 include "plugin.xml"
             }
+            rename { filename -> filename + ".lib" }
         }
         copy {
             into(new File(pluginDistDir, "lib"))

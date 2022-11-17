@@ -46,6 +46,26 @@ jobs:
                     gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
                   done;
                   
+    distMsi:
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v3
+            - name: Checkout submodules
+              shell: bash
+              run: |
+                  git submodule sync --recursive
+                  git submodule update --init --force --recursive --depth=1
+            - uses: actions/setup-java@v3
+              with:
+                  distribution: 'liberica'
+                  java-version: 17.0.5
+                  java-package: jdk+fx
+                  cache: 'gradle'
+            - name: Build GanttProject
+              run: |
+                  ./gradlew distbin
+                  echo "===== PLUGINS ====="
+                  ls ganttproject-builder/dist-bin/plugins/base
 
 #  packageLinux:
 #    runs-on: ubuntu-latest
