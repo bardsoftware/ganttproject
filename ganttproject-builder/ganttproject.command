@@ -192,7 +192,7 @@ if [ ! -f "$GP_HOME/eclipsito.jar" ]; then
   log "Can't find the required Eclipsito library at $GP_HOME/eclipsito.jar"
   exit 1
 fi
-CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME/lib/slf4j-api-2.0.3.jar:$GP_HOME/lib/slf4j-jdk14-2.0.3.jar:$GP_HOME"
+CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME/lib/slf4j-api-2.0.4.jar:$GP_HOME/lib/slf4j-jdk14-2.0.4.jar:$GP_HOME"
 export CLASSPATH
 BOOT_CLASS=com.bardsoftware.eclipsito.Launch
 MACOS_ARGS="-Dapple.laf.useScreenMenuBar=true -Dcom.apple.macos.useScreenMenuBar=true	-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject -Xdock:name=GanttProject -Xdock:icon=ganttproject.icns"
@@ -214,7 +214,7 @@ JAVA_EXPORTS="--add-exports javafx.controls/com.sun.javafx.scene.control.behavio
   --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED\
   --add-exports javafx.graphics/com.sun.javafx.util=ALL-UNNAMED\
   --add-opens java.desktop/sun.swing=ALL-UNNAMED"
-"$JAVA_COMMAND" -Xmx1024m $JAVA_EXPORTS -Duser.dir="$GP_HOME" -Dfile.encoding=UTF-8 $MACOS_ARGS $DEBUG_ARGS $BOOT_CLASS \
+"$JAVA_COMMAND" -Dgpcloud=prod -Xmx1024m $JAVA_EXPORTS -Duser.dir="$GP_HOME" -Dfile.encoding=UTF-8 $MACOS_ARGS $DEBUG_ARGS $BOOT_CLASS \
   --app net.sourceforge.ganttproject.GanttProject \
   --version-dirs "$GP_HOME"/plugins:~/.ganttproject.d/updates \
   -log true -log_file "$LOG_FILE" "${APP_ARGS[@]}"

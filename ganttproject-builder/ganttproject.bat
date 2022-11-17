@@ -5,8 +5,8 @@ SET GP_HOME=.
 SET "JAVA_COMMAND=%JAVA_HOME%\bin\java.exe"
 IF "%JAVA_HOME%"=="" SET JAVA_COMMAND=java
 
-SET LOCAL_CLASSPATH=%GP_HOME%\eclipsito.jar;%GP_HOME%\lib\slf4j-api-2.0.3.jar;%GP_HOME%\lib\slf4j-jdk14-2.0.3.jar;%GP_HOME%
-SET JVM_ARGS=-Xmx1024m  -ea -Dsun.java2d.d3d=false
+SET LOCAL_CLASSPATH=%GP_HOME%\eclipsito.jar;%GP_HOME%\lib\slf4j-api-2.0.4.jar;%GP_HOME%\lib\slf4j-jdk14-2.0.4.jar;%GP_HOME%
+SET JVM_ARGS=-Dgpcloud=prod -Xmx2048m  -ea -Dsun.java2d.d3d=false
 SET "ECLIPSITO_ARGS=--verbosity 4  --version-dirs plugins;~/.ganttproject.d/updates --app net.sourceforge.ganttproject.GanttProject"
 SET "JAVA_EXPORTS=--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED --add-exports javafx.base/com.sun.javafx=ALL-UNNAMED   --add-exports javafx.base/com.sun.javafx.logging=ALL-UNNAMED --add-exports javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED --add-exports javafx.controls/com.sun.javafx.scene.control.skin=ALL-UNNAMED --add-exports javafx.controls/com.sun.javafx.scene.control.skin.resources=ALL-UNNAMED --add-exports javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED --add-exports javafx.graphics/com.sun.javafx.scene.traversal=ALL-UNNAMED --add-exports javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED --add-exports javafx.graphics/com.sun.javafx.util=ALL-UNNAMED --add-opens java.desktop/sun.swing=ALL-UNNAMED"
 
