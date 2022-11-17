@@ -7,7 +7,7 @@ jlink ^
 
 jpackage -t msi -d build -i ganttproject-builder/dist-bin/ -n "GanttProject 3.3 Beta" ^
   --main-class com.bardsoftware.eclipsito.Launch --main-jar eclipsito.jar ^
-  --java-options "-DversionDirs=app/plugins -Dapp=net.sourceforge.ganttproject.GanttProject" ^
+  --java-options "-DversionDirs=app/plugins -Dapp=net.sourceforge.ganttproject.GanttProject -Dgpcloud=prod -Xms32m -Xmx2048m -Dsun.java2d.d3d=false -ea" ^
   --java-options "--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED --add-exports javafx.base/com.sun.javafx=ALL-UNNAMED" ^
   --java-options "--add-exports javafx.base/com.sun.javafx.logging=ALL-UNNAMED --add-exports javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED" ^
   --java-options "--add-exports javafx.controls/com.sun.javafx.scene.control.skin=ALL-UNNAMED --add-exports javafx.controls/com.sun.javafx.scene.control.skin.resources=ALL-UNNAMED" ^
@@ -19,7 +19,7 @@ jpackage -t msi -d build -i ganttproject-builder/dist-bin/ -n "GanttProject 3.3 
   --java-options "--add-opens java.desktop/sun.swing=ALL-UNNAMED" ^
   --runtime-image runtime --win-dir-chooser --win-menu ^
   --description "Free desktop project scheduling and project management application" ^
-  --app-version "3.3.3290" ^
+  --app-version "3.3.3291" ^
   --copyright "Copyright 2022 BarD Software s.r.o" ^
   --vendor "BarD Software s.r.o" ^
   --license-file LICENSE ^
