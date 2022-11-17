@@ -86,6 +86,52 @@ jobs:
                   gsutil cp build\ganttproject-3.3.3291.msi gs://dl.ganttproject.biz
                   gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-3.3.3291.msi
 
+    distMac:
+        runs-on: macos-latest
+        steps:
+            - uses: actions/checkout@v3
+            - name: Checkout submodules
+              shell: bash
+              run: |
+                  git submodule sync --recursive
+                  git submodule update --init --force --recursive --depth=1
+            - uses: actions/setup-java@v3
+              with:
+                  distribution: 'liberica'
+                  java-version: 17.0.5
+                  java-package: jdk+fx
+                  cache: 'gradle'
+            - name: Build GanttProject
+              run: |
+                  ./gradlew distbin
+                  echo "===== PLUGINS ====="
+                  ls ganttproject-builder/dist-bin/plugins/base
+
+            - name: Build GanttProject.app
+              run: |
+                  ./build-bin/package-mac.sh
+                  cd build 
+                  tar -czf ganttproject-app-3.3.3290.tgz GanttProject.app
+
+            - id: 'auth'
+              uses: 'google-github-actions/auth@v1'
+              with:
+                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+            - name: 'Set up Cloud SDK'
+              uses: 'google-github-actions/setup-gcloud@v1'
+
+            - name: 'Use gcloud CLI'
+              run: 'gcloud info'
+
+            - name: Upload ZIP
+              run: |
+                  #!/bin/sh
+                  cd build
+                  for f in *.tgz; do
+                    gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
+                  done;
+
 #  packageLinux:
 #    runs-on: ubuntu-latest
 #
