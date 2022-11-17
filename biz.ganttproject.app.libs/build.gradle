@@ -75,6 +75,7 @@ task copyPlugin(dependsOn: assemble) {
                 exclude "javafx*.jar"
                 exclude "slf4j*.jar"
             }
+	    rename { filename -> filename + " .lib" }
         }
         copy {
             into(new File(rootProject.projectDir, "ganttproject-builder/lib/"))

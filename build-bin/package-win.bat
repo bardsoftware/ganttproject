@@ -5,7 +5,7 @@ jlink ^
   --strip-debug ^
   --compress=2
 
-jpackage -t msi -d build -i ganttproject-builder/dist-bin/ -n "GanttProject 3.3" ^
+jpackage -t msi -d build -i ganttproject-builder/dist-bin/ -n "GanttProject 3.3 Beta" ^
   --main-class com.bardsoftware.eclipsito.Launch --main-jar eclipsito.jar ^
   --java-options "-DversionDirs=app/plugins -Dapp=net.sourceforge.ganttproject.GanttProject" ^
   --java-options "--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED --add-exports javafx.base/com.sun.javafx=ALL-UNNAMED" ^
@@ -19,6 +19,7 @@ jpackage -t msi -d build -i ganttproject-builder/dist-bin/ -n "GanttProject 3.3"
   --java-options "--add-opens java.desktop/sun.swing=ALL-UNNAMED" ^
   --runtime-image runtime --win-dir-chooser --win-menu ^
   --description "Free desktop project scheduling and project management application" ^
+  --app-version "3.3.3290" ^
   --copyright "Copyright 2022 BarD Software s.r.o" ^
   --vendor "BarD Software s.r.o" ^
   --license-file LICENSE ^
