@@ -56,7 +56,7 @@
              homepage="https://www.ganttproject.biz/"
              section="editors"
              priority="optional"
-             depends="java11-runtime | bellsoft-java11-runtime | zulu11-jre | zulu17-jre"
+             depends="java17-runtime | bellsoft-java17-runtime | zulu17-jre"
              conflicts="ganttproject-praha"
              replaces="ganttproject-praha"
              postrm="${distDebWork}/postrm"

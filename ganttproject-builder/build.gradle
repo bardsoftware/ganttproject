@@ -13,8 +13,6 @@ ant.importBuild 'build.xml'
 ant.properties.distBin = 'dist-bin'
 ant.properties.distDebWork = "deb"
 ant.properties.distDebPackage = "${rootProject.buildDir}/distributions"
-//ant.properties.distMacWork = 'dist-mac'
-//ant.properties.distMacZip = "${rootProject.buildDir}/distributions/ganttproject.app-${version}.zip"
 ant.properties.version = "${rootProject.version}"
 ant.properties.version_build = "${rootProject.version}"
 
@@ -74,10 +72,12 @@ task distBin(dependsOn: [
     }
 }
 
-task distZip(type: Zip, dependsOn: distBin) {
+tasks.register('distZip', Zip) {
+    archiveFileName = "$archivesBaseName-${version}.zip"
+    destinationDirectory = new File(rootProject.buildDir, "distributions")
     from 'dist-bin'
-    into archivesBaseName + '-' + version
 }
+tasks.distZip.dependsOn distBin
 
 task distWin(dependsOn: distBin) {
     doLast {

@@ -23,9 +23,11 @@ jobs:
                   cache: 'gradle'
             - name: Build GanttProject
               run: |
-                  ./gradlew distbin distzip
+                  ./gradlew distbin distzip distdeb
                   echo "===== PLUGINS ====="
                   ls ganttproject-builder/dist-bin/plugins/base
+                  echo "===== DISTRIBUTIONS ====="
+                  ls build/distributions
 
             - id: 'auth'
               uses: 'google-github-actions/auth@v1'
@@ -38,11 +40,11 @@ jobs:
             - name: 'Use gcloud CLI'
               run: 'gcloud info'
 
-            - name: Upload ZIP
+            - name: Upload Packages
               run: |
                   #!/bin/sh
-                  cd ganttproject-builder/build/distributions
-                  for f in *.zip; do
+                  cd build/distributions
+                  for f in *; do
                     gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
                   done;
                   
