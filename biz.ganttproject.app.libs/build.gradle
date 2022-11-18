@@ -67,7 +67,6 @@ task copyPlugin(dependsOn: assemble) {
             from(fileTree(".")) {
                 include "plugin.xml"
             }
-            rename { filename -> filename + ".lib" }
         }
         copy {
             into(new File(pluginDistDir, "lib"))
@@ -76,7 +75,7 @@ task copyPlugin(dependsOn: assemble) {
                 exclude "javafx*.jar"
                 exclude "slf4j*.jar"
             }
-	    rename { filename -> filename + " .lib" }
+    	    rename { filename -> filename + " .lib" }
         }
         copy {
             into(new File(rootProject.projectDir, "ganttproject-builder/lib/"))
