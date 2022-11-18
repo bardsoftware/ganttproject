@@ -191,21 +191,17 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   private final FontOption myChartFontOption;
 
-  private final DefaultEnumerationOption myWeekNumberOption;
-  private ObservableProperty<java.util.function.Function<Date, Integer>> myWeekNumProperty;
-
+  private final WeekNumbering weekNumbering;
 
   public ChartModelBase(TaskManager taskManager, TimeUnitStack timeUnitStack, final UIConfiguration projectConfig) {
     myTaskManager = taskManager;
     myProjectConfig = projectConfig;
     myChartUIConfiguration = new ChartUIConfiguration(projectConfig);
     myChartFontOption = projectConfig.getChartFontOption();
-    myWeekNumberOption = projectConfig.getWeekNumberOption();
+    weekNumbering = new WeekNumbering(taskManager);
 
     myPainter = new StyledPainterImpl(myChartUIConfiguration);
     myTimeUnitStack = timeUnitStack;
-
-    myWeekNumProperty = new ObservableProperty("weekNumbering", WeekNumberingKt.getDefaultWeekNumbering());
 
     final TimeFormatters.LocaleApi localeApi = new TimeFormatters.LocaleApi() {
       @Override
@@ -226,7 +222,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
       @Override
       public ObservableProperty<java.util.function.Function<Date, Integer>> getWeekNumbering() {
-        return myWeekNumProperty;
+        return weekNumbering.getNumberingFunction();
       }
     };
 
@@ -235,44 +231,6 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       @Override
       public void languageChanged(Event event) {
         timeFormatters.setLocaleApi(localeApi);
-      }
-    });
-    myWeekNumberOption.addChangeValueListener(evt -> {
-      switch (Objects.requireNonNullElse(evt.getNewValue(), UIConfiguration.WeekOption.DEFAULT).toString()) {
-        case UIConfiguration.WeekOption.US:
-          myWeekNumProperty.setValue(WeekNumberingKt.getUsWeekNumbering());
-          break;
-        case UIConfiguration.WeekOption.EUROPEAN:
-          myWeekNumProperty.setValue(WeekNumberingKt.getEuropeanWeekNumbering());
-          break;
-        case UIConfiguration.WeekOption.DEFAULT:
-          myWeekNumProperty.setValue(WeekNumberingKt.getDefaultWeekNumbering());
-          break;
-        case UIConfiguration.WeekOption.RELATIVE_TO_PROJECT:
-          myWeekNumProperty.setValue(new RelativeWeekNumbering(myTaskManager.getProjectStart()));
-      }
-    });
-    myTaskManager.addTaskListener(new TaskListenerAdapter() {
-      @Override
-      public void taskScheduleChanged(@NotNull TaskScheduleEvent e) {
-        resetWeekNumbering();
-      }
-      @Override
-      public void taskAdded(@NotNull TaskHierarchyEvent e) {
-        resetWeekNumbering();
-      }
-      @Override
-      public void taskMoved(@NotNull TaskHierarchyEvent e) {
-        resetWeekNumbering();
-      }
-      @Override
-      public void taskRemoved(@NotNull TaskHierarchyEvent e) {
-        resetWeekNumbering();
-      }
-      private void resetWeekNumbering() {
-        if (UIConfiguration.WeekOption.RELATIVE_TO_PROJECT.equals(myWeekNumberOption.getSelectedValue())) {
-          myWeekNumProperty.setValue(new RelativeWeekNumbering(myTaskManager.getProjectStart()));
-        }
       }
     });
 
@@ -319,7 +277,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
           projectConfig.getProjectBoundariesOption(),
           projectConfig.getWeekendAlphaRenderingOption(),
           myChartUIConfiguration.getChartStylesOption(),
-          projectConfig.getWeekNumberOption()
+          weekNumbering.getOption()
         },
         getOptionEventDispatcher());
     myChartGrid = new DayGridSceneBuilder(new DayGridSceneBuilder.InputApi() {

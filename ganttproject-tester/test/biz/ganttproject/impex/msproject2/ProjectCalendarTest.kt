@@ -26,6 +26,7 @@ import net.sf.mpxj.ProjectFile
 import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.TestSetupHelper
 import net.sourceforge.ganttproject.importer.ImporterFromGanttFile
+import org.junit.jupiter.api.Test
 import java.awt.Color
 import java.io.File
 import java.text.DateFormat
@@ -91,6 +92,50 @@ class ProjectCalendarTest: TestCase() {
     assertEquals(parser.parse("2018-04-30"), publicHolidays[1].myDate)
   }
 
+  @Test
+  fun `first week of year`() {
+    // Year 2022
+    assertEquals(1, Calendar.Builder().setLocale(Locale.US)
+      .setWeekDefinition(Calendar.SUNDAY, 1)
+      .setDate(2022, 0, 1)
+      .build().get(Calendar.WEEK_OF_YEAR))
+    assertEquals(2, Calendar.Builder().setLocale(Locale.US)
+      .setWeekDefinition(Calendar.SUNDAY, 1)
+      .setDate(2022, 0, 3)
+      .build().get(Calendar.WEEK_OF_YEAR))
+    assertEquals(53, Calendar.Builder().setLocale(Locale.UK)
+      .setWeekDefinition(Calendar.MONDAY, 4)
+      .setDate(2021, 0, 1)
+      .build().get(Calendar.WEEK_OF_YEAR))
+    assertEquals(1, Calendar.Builder().setLocale(Locale.UK)
+      .setWeekDefinition(Calendar.MONDAY, 4)
+      .setDate(2022, 0, 3)
+      .build().get(Calendar.WEEK_OF_YEAR))
+
+    // Year 2015 (January 1st was Thursday)
+    assertEquals(1, Calendar.Builder().setLocale(Locale.US)
+      .setWeekDefinition(Calendar.SUNDAY, 1)
+      .setDate(2015, 0, 1)
+      .build().get(Calendar.WEEK_OF_YEAR))
+    assertEquals(1, Calendar.Builder().setLocale(Locale.UK)
+      .setWeekDefinition(Calendar.MONDAY, 4)
+      .setDate(2015, 0, 1)
+      .build().get(Calendar.WEEK_OF_YEAR))
+
+    // Year 2023 (January 1st is Sunday)
+    assertEquals(1, Calendar.Builder().setLocale(Locale.US)
+      .setWeekDefinition(Calendar.SUNDAY, 1)
+      .setDate(2023, 0, 1)
+      .build().get(Calendar.WEEK_OF_YEAR))
+    assertEquals(52, Calendar.Builder().setLocale(Locale.UK)
+      .setWeekDefinition(Calendar.MONDAY, 4)
+      .setDate(2023, 0, 1)
+      .build().get(Calendar.WEEK_OF_YEAR))
+    assertEquals(1, Calendar.Builder().setLocale(Locale.UK)
+      .setWeekDefinition(Calendar.MONDAY, 4)
+      .setDate(2023, 0, 2)
+      .build().get(Calendar.WEEK_OF_YEAR))
+  }
 
 }
 

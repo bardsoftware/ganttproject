@@ -67,20 +67,6 @@ public class UIConfiguration {
   private Supplier<Integer> myAppFontSize;
   private IntegerOption myDpiOption;
 
-
-  public class WeekOption extends DefaultEnumerationOption<String> {
-
-    public final static String DEFAULT = "chart.weekNumbering.default";
-    public final static String EUROPEAN = "chart.weekNumbering.european";
-    public final static String US = "chart.weekNumbering.us";
-    public final static String RELATIVE_TO_PROJECT = "chart.weekNumbering.relative_to_project";
-
-    public WeekOption() {
-      super("chart.weekNumbering", new String[] {DEFAULT, EUROPEAN, US, RELATIVE_TO_PROJECT});
-    }
-  }
-  private final WeekOption myWeekNumberOption = new WeekOption();
-
   public UIConfiguration(Color taskColor, boolean isRedlineOn) {
 //    myChartMainFont = chartMainFont == null ? Fonts.DEFAULT_CHART_FONT : chartMainFont;
     this.isRedlineOn = isRedlineOn;
@@ -191,9 +177,6 @@ public class UIConfiguration {
     return myWeekendAlphaRenderingOption;
   }
 
-  public DefaultEnumerationOption getWeekNumberOption() {
-    return myWeekNumberOption;
-  }
 
   class RedlineOption extends DefaultBooleanOption implements GP1XOptionConverter {
     RedlineOption() {
