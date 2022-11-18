@@ -23,6 +23,7 @@ import com.google.common.collect.Sets;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Objects;
 import java.util.SortedSet;
 
 public abstract class GPAbstractOption<T> implements GPOption<T> {
@@ -90,6 +91,9 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
   protected void resetValue(T value, boolean resetInitial, Object triggerId) {
     if (resetInitial) {
       myInitialValue = value;
+    }
+    if (Objects.equals(myValue, value)) {
+      return;
     }
     ChangeValueEvent event = new ChangeValueEvent(getID(), myValue, value, triggerId);
     myValue = value;
