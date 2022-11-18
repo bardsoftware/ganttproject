@@ -199,6 +199,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myChartUIConfiguration = new ChartUIConfiguration(projectConfig);
     myChartFontOption = projectConfig.getChartFontOption();
     weekNumbering = new WeekNumbering(taskManager);
+    weekNumbering.getNumberingFunction().addListener(event -> resetOffsets());
 
     myPainter = new StyledPainterImpl(myChartUIConfiguration);
     myTimeUnitStack = timeUnitStack;
@@ -227,12 +228,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     };
 
     final TimeFormatters timeFormatters = new TimeFormatters(localeApi);
-    GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
-      @Override
-      public void languageChanged(Event event) {
-        timeFormatters.setLocaleApi(localeApi);
-      }
-    });
+    GanttLanguage.getInstance().addListener(event -> timeFormatters.setLocaleApi(localeApi));
 
     myChartHeader = new TimelineSceneBuilder(new TimelineSceneBuilder.InputApi() {
       @Override
@@ -628,7 +624,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   @Override
   public TimeUnit getBottomUnit() {
-    return myBottomUnit;
+    return weekNumbering.decorate(myBottomUnit);
   }
 
   private TimeUnit getDefaultUnit() {

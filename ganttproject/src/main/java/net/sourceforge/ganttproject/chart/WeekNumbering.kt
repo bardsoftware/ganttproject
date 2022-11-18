@@ -20,14 +20,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart
 
 import biz.ganttproject.core.option.DefaultEnumerationOption
-import biz.ganttproject.core.option.EnumerationOption
 import biz.ganttproject.core.option.ObservableProperty
 import biz.ganttproject.core.time.CalendarFactory
+import biz.ganttproject.core.time.TimeUnit
+import biz.ganttproject.core.time.impl.GPTimeUnitStack
+import biz.ganttproject.core.time.impl.WeekFramerImpl
 import com.google.common.base.Function
-import net.sourceforge.ganttproject.gui.UIConfiguration
-import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 /**
@@ -35,13 +36,6 @@ import java.util.*
  */
 
 val usWeekNumbering = Function { date: Date ->
-//  val weekNumbering = WeekFields.of(Locale.US)
-//  val localDate = date.toInstant().atZone(ZoneOffset.UTC).toLocalDate()
-//  localDate[weekNumbering.weekOfWeekBasedYear()]
-//  Calendar.getInstance(Locale.US).let {
-//    it.time = date
-//    it[Calendar.WEEK_OF_YEAR]
-//  }
   Calendar.Builder().setLocale(Locale.US)
     .setWeekDefinition(Calendar.SUNDAY, 1)
     .setInstant(date)
@@ -49,37 +43,25 @@ val usWeekNumbering = Function { date: Date ->
 }
 
 val europeanWeekNumbering = Function { date: Date ->
-//  val weekNumbering = WeekFields.of(Locale.UK)
-//  val localDate = date.toInstant().atZone(ZoneOffset.UTC).toLocalDate()
-//  localDate[weekNumbering.weekOfWeekBasedYear()]
   Calendar.Builder().setLocale(Locale.UK)
     .setWeekDefinition(Calendar.MONDAY, 4)
     .setInstant(date)
-    .build().also {println(it)}.get(Calendar.WEEK_OF_YEAR).also {
-    System.err.println("[EUR] date=$date week=$it")
-  }
+    .build().get(Calendar.WEEK_OF_YEAR)
 }
 
 val defaultWeekNumbering = Function { date: Date ->
   CalendarFactory.createGanttCalendar(date).let {
     it[Calendar.WEEK_OF_YEAR]
-  }.also {
-    System.err.println("[DEF ${GanttLanguage.getInstance().locale}] date=$date week=$it")
   }
 }
 
 class RelativeWeekNumbering(private val startProjectDate: Date) : Function<Date, Int> {
   override fun apply(date: Date): Int {
-    val calendar = CalendarFactory.newCalendar()
-    calendar.time = date
-    var weekNum = calendar[Calendar.WEEK_OF_YEAR]
-    calendar.time = startProjectDate
-    val startWeekNum = calendar[Calendar.WEEK_OF_YEAR]
-    weekNum -= startWeekNum
-    if (weekNum >= 0) {
-      weekNum++
-    }
-    return weekNum
+    val weekFramer = WeekFramerImpl()
+    val adjustedDate = weekFramer.adjustLeft(date)
+    val adjustedProjectStartDate = weekFramer.adjustLeft(startProjectDate)
+    return adjustedProjectStartDate.toInstant().until(adjustedDate.toInstant(), ChronoUnit.DAYS).toInt() /7 +
+      if (adjustedDate.before(adjustedProjectStartDate)) 0 else 1
   }
 }
 
@@ -110,7 +92,7 @@ class WeekNumbering(private val taskManager: TaskManager) {
     taskManager.addTaskListener(TaskListenerAdapter(this::updateWeekNumbering))
   }
 
-  fun updateWeekNumbering() {
+  private fun updateWeekNumbering() {
     numberingFunction.value = when (val optionValue = option.selectedValue ?: DEFAULT) {
       US -> usWeekNumbering
       EUROPEAN -> europeanWeekNumbering
@@ -120,4 +102,49 @@ class WeekNumbering(private val taskManager: TaskManager) {
     }
   }
 
+  fun decorate(timeUnit: TimeUnit) =
+    if (timeUnit != GPTimeUnitStack.WEEK) {
+      timeUnit
+    } else {
+      WeekTimeUnitDecorator(timeUnit, option)
+    }
+
+}
+
+private val weekFramerUs = WeekFramerImpl {
+  Calendar.Builder().setLocale(Locale.US)
+    .setWeekDefinition(Calendar.SUNDAY, 1)
+    .build()
+}
+
+private val weekFramerEurope = WeekFramerImpl {
+  Calendar.Builder().setLocale(Locale.UK)
+    .setWeekDefinition(Calendar.MONDAY, 4)
+    .build()
+}
+
+class WeekTimeUnitDecorator(
+  private val weekTimeUnit: TimeUnit,
+  private val weekNumberingOption: WeekOption): TimeUnit by weekTimeUnit {
+
+  override fun adjustRight(baseDate: Date): Date =
+    when (weekNumberingOption.selectedValue) {
+      US -> weekFramerUs.adjustRight(baseDate)
+      EUROPEAN -> weekFramerEurope.adjustRight(baseDate)
+      else -> weekTimeUnit.adjustRight(baseDate)
+    }
+
+  override fun adjustLeft(baseDate: Date): Date =
+    when (weekNumberingOption.selectedValue) {
+      US -> weekFramerUs.adjustLeft(baseDate)
+      EUROPEAN -> weekFramerEurope.adjustLeft(baseDate)
+      else -> weekTimeUnit.adjustLeft(baseDate)
+    }
+
+  override fun jumpLeft(baseDate: Date): Date =
+    when (weekNumberingOption.selectedValue) {
+      US -> weekFramerUs.jumpLeft(baseDate)
+      EUROPEAN -> weekFramerEurope.jumpLeft(baseDate)
+      else -> weekTimeUnit.jumpLeft(baseDate)
+    }
 }
