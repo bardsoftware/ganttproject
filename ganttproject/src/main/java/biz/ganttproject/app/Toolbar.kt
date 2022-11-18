@@ -38,6 +38,7 @@ import javafx.scene.control.*
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
+import javafx.util.Callback
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.ActionUtil
 import java.awt.event.KeyAdapter
@@ -140,21 +141,44 @@ private class DropdownVisitor(val actions: List<GPAction>, val appFont: SimpleOb
       return
     }
     ComboBox(FXCollections.observableArrayList(actions.map { it.name }.toList())).also { comboBox ->
-      comboBox.selectionModel.select(0)
-      comboBox.onAction = EventHandler {
+      val actionHandler = {
         if (comboBox.selectionModel.selectedIndex in actions.indices) {
           actions[comboBox.selectionModel.selectedIndex].actionPerformed(null)
         }
       }
+      comboBox.selectionModel.select(0)
+      comboBox.onAction = EventHandler { actionHandler() }
+      comboBox.cellFactory = Callback {listView ->
+        ComboBoxListCellImpl().also {
+          it.onMousePressed = EventHandler {
+            actionHandler() }
+        }
+      }
       appFont?.addListener { _, _, _ -> applyFontStyle(comboBox) }
       applyFontStyle(comboBox)
+
       actions[0].localizedNameObservable.addListener { _, _, _ ->  comboBox.items.setAll(actions.map {action ->
-        action.localizedNameObservable.let {
-          it.value
-        }
+        action.localizedNameObservable.value
       }.toList())}
       toolbar.toolbar.items.add(comboBox)
     }
+  }
+}
+
+class ComboBoxListCellImpl: ListCell<String>() {
+  override fun updateItem(item: String?, empty: Boolean) {
+      super.updateItem(item, empty)
+      updateDisplayText(this, item, empty)
+  }
+}
+
+private fun updateDisplayText(cell: ListCell<String>, item: String?, empty: Boolean) {
+  if (empty) {
+    cell.graphic = null
+    cell.text = null
+  } else {
+    cell.text = item
+    cell.graphic = null
   }
 }
 
