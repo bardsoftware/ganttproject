@@ -19,46 +19,41 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.chart.text;
 
 import biz.ganttproject.core.chart.text.TimeFormatters.LocaleApi;
-import biz.ganttproject.core.time.CalendarFactory;
+
 import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.function.Function;
 
 
 public class WeekTextFormatter extends CachingTextFormatter implements TimeFormatter {
-  private Calendar myCalendar;
   private DateFormat myDateFormat;
   private String myWeekText;
   private Function<Date, Integer> myWeekNumbering;
 
   WeekTextFormatter() {
-    myCalendar = CalendarFactory.newCalendar();
   }
 
   @Override
   protected TimeUnitText[] createTimeUnitText(Date startDate) {
-    myCalendar.setTime(startDate);
-    return new TimeUnitText[] { createTopText(), createBottomText() };
+    return new TimeUnitText[] { createTopText(startDate), createBottomText(startDate) };
   }
 
-  private TimeUnitText createTopText() {
-    Integer weekNo = myWeekNumbering.apply(myCalendar.getTime());
+  private TimeUnitText createTopText(Date date) {
+    Integer weekNo = myWeekNumbering.apply(date);
     String shortText = weekNo.toString();
     String middleText = MessageFormat.format("{0} {1}", myWeekText, weekNo);
     String longText = middleText;
     return new TimeUnitText(longText, middleText, shortText);
   }
 
-  private TimeUnitText createBottomText() {
-    return new TimeUnitText(myDateFormat.format(myCalendar.getTime()));
+  private TimeUnitText createBottomText(Date date) {
+    return new TimeUnitText(myDateFormat.format(date));
   }
 
   @Override
   public void setLocale(LocaleApi localeApi) {
     super.setLocale(localeApi);
-    myCalendar = CalendarFactory.newCalendar();
     myDateFormat = localeApi.getShortDateFormat();
     myWeekText = localeApi.i18n("week");
     myWeekNumbering = localeApi.getWeekNumbering().getValue();
