@@ -124,9 +124,11 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
       return false;
     }
 
-    myCalendar.setTime(curDayStart);
-    int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
-    return myTypes[dayOfWeek - 1] == GPCalendar.DayType.WEEKEND;
+    synchronized (myCalendar) {
+      myCalendar.setTime(curDayStart);
+      int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
+      return myTypes[dayOfWeek - 1] == GPCalendar.DayType.WEEKEND;
+    }
   }
 
   @Override
@@ -254,15 +256,21 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   }
 
   private Date getRecurringDate(Date date) {
-    myCalendar.setTime(date);
-    myCalendar.set(Calendar.YEAR, DUMMY_YEAR_FOR_RECURRING_EVENTS);
-    return myCalendar.getTime();
+    synchronized (myCalendar) {
+      myCalendar.setTime(date);
+      myCalendar.set(Calendar.YEAR, DUMMY_YEAR_FOR_RECURRING_EVENTS);
+      return myCalendar.getTime();
+    }
   }
   @Override
   public int getDayMask(Date date) {
     int result = 0;
-    myCalendar.setTime(date);
-    int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
+    int dayOfWeek = 0;
+    synchronized (myCalendar) {
+      myCalendar.setTime(date);
+      dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
+    }
+    assert dayOfWeek >= 1 && dayOfWeek <= 7 : "Unexpected day of week calculated for " + date;
     boolean isHoliday = isPublicHoliDay(date);
     boolean isWeekend = myTypes[dayOfWeek - 1] == DayType.WEEKEND;
     if (isWeekend) {
@@ -289,15 +297,17 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
 
   @Override
   public void setPublicHolidays(Collection<CalendarEvent> holidays) {
-    myRecurringEvents.clear();
-    myOneOffEvents.clear();
-    for (CalendarEvent h : holidays) {
-      if (h.isRecurring) {
-        myCalendar.setTime(h.myDate);
-        myCalendar.set(Calendar.YEAR, DUMMY_YEAR_FOR_RECURRING_EVENTS);
-        myRecurringEvents.put(myCalendar.getTime(), h);
-      } else {
-        myOneOffEvents.put(h.myDate, h);
+    synchronized (myCalendar) {
+      myRecurringEvents.clear();
+      myOneOffEvents.clear();
+      for (CalendarEvent h : holidays) {
+        if (h.isRecurring) {
+          myCalendar.setTime(h.myDate);
+          myCalendar.set(Calendar.YEAR, DUMMY_YEAR_FOR_RECURRING_EVENTS);
+          myRecurringEvents.put(myCalendar.getTime(), h);
+        } else {
+          myOneOffEvents.put(h.myDate, h);
+        }
       }
     }
     fireCalendarChanged();
