@@ -80,6 +80,9 @@ object WeekOption : DefaultEnumerationOption<String?>(
     RELATIVE_TO_PROJECT
   ))
 
+/**
+ * Encapsulates objects and functions required for correct work of week numbering option.
+ */
 class WeekNumbering(private val taskManager: TaskManager) {
   val option = WeekOption
   val numberingFunction = ObservableProperty<WeekNumberingFunction>("weekNumbering", defaultWeekNumbering)
@@ -108,7 +111,6 @@ class WeekNumbering(private val taskManager: TaskManager) {
     } else {
       WeekTimeUnitDecorator(timeUnit, option)
     }
-
 }
 
 private val weekFramerUs = WeekFramerImpl {
@@ -123,6 +125,14 @@ private val weekFramerEurope = WeekFramerImpl {
     .build()
 }
 
+/**
+ * Time units defined in GPTimeUnitStack are integrated with the default locale which is set via GanttLanguage,
+ * and it is not easy to make them aware of the week numbering option.
+ *
+ * We need to change the first day of the week depending on the week numbering option value, however, it seems
+ * that we only need it to display the week boundaries and number on the chart. Hence, we decorate time
+ * units which are passed to the renderers so that they account for the week numbering option value.
+ */
 class WeekTimeUnitDecorator(
   private val weekTimeUnit: TimeUnit,
   private val weekNumberingOption: WeekOption): TimeUnit by weekTimeUnit {

@@ -19,7 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.calendar
 
 import biz.ganttproject.core.time.CalendarFactory
-import net.sourceforge.ganttproject.chart.RelativeWeekNumbering
+import biz.ganttproject.core.time.impl.GPTimeUnitStack
+import net.sourceforge.ganttproject.chart.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -30,19 +31,7 @@ import java.util.*
 class WeekNumberingTest {
   @BeforeEach
   fun setUp() {
-    object : CalendarFactory() {
-      init {
-        setLocaleApi(object : LocaleApi {
-          override fun getLocale(): Locale {
-            return Locale.US
-          }
-
-          override fun getShortDateFormat(): DateFormat {
-            return DateFormat.getDateInstance(DateFormat.SHORT, Locale.US)
-          }
-        })
-      }
-    }
+    setDefaultCalendarLocale()
   }
 
   @Test
@@ -61,6 +50,31 @@ class WeekNumberingTest {
     assertEquals(-1, relativeWeekNumbering.apply("2022-02-19".asDate()))
     assertEquals(-2, relativeWeekNumbering.apply("2022-02-12".asDate()))
   }
+
+  @Test
+  fun `decorator accounts for the week numbering option`() {
+    val weekOption = WeekOption
+    val decorator = WeekTimeUnitDecorator(GPTimeUnitStack.WEEK, weekOption)
+    weekOption.selectedValue = DEFAULT
+    assertEquals("2022-02-20".asDate(), decorator.adjustLeft("2022-02-24".asDate()))
+    weekOption.selectedValue = EUROPEAN
+    assertEquals("2022-02-21".asDate(), decorator.adjustLeft("2022-02-24".asDate()))
+  }
 }
 
 private fun String.asDate() = SimpleDateFormat("yyyy-MM-dd").parse(this)
+private fun setDefaultCalendarLocale(locale: Locale = Locale.US) {
+  object : CalendarFactory() {
+    init {
+      setLocaleApi(object : LocaleApi {
+        override fun getLocale(): Locale {
+          return locale
+        }
+
+        override fun getShortDateFormat(): DateFormat {
+          return DateFormat.getDateInstance(DateFormat.SHORT, locale)
+        }
+      })
+    }
+  }
+}
