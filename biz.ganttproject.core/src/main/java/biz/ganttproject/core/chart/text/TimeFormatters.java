@@ -59,13 +59,14 @@ public class TimeFormatters {
     commonFormatters.put(GPTimeUnitStack.QUARTER.getName(), new QuarterTextFormatter());
     commonFormatters.put(GPTimeUnitStack.YEAR.getName(), new YearTextFormatter());
 
+    var weekFormatter = new WeekTextFormatter();
     ourUpperFormatters.putAll(commonFormatters);
     ourUpperFormatters.put(GPTimeUnitStack.MONTH.getName(), new MonthTextFormatter(localeApi, "MMMM yyyy", "MMM''yyyy", "MM''yy"));
-    ourUpperFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter());
+    ourUpperFormatters.put(GPTimeUnitStack.WEEK.getName(), weekFormatter);
 
     ourLowerFormatters.putAll(commonFormatters);
     ourLowerFormatters.put(GPTimeUnitStack.MONTH.getName(), new MonthTextFormatter(localeApi, "MMMM", "MMM", "MM"));
-    ourLowerFormatters.put(GPTimeUnitStack.WEEK.getName(), new WeekTextFormatter());
+    ourLowerFormatters.put(GPTimeUnitStack.WEEK.getName(), weekFormatter);
     setLocaleApi(localeApi);
   }
 
