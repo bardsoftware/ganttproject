@@ -60,12 +60,13 @@ class ColumnManager(
   // The list of columns shown in the task table
   private val currentTableColumns: ColumnList,
   private val customColumnsManager: CustomPropertyManager,
-  private val undoManager: GPUndoManager,
-  private val calculationMethodValidator: CalculationMethodValidator
-  ) {
+  calculationMethodValidator: CalculationMethodValidator,
+  private val applyExecutor: ApplyExecutorType
+) {
 
   internal val btnAddController = BtnController(onAction = this::onAddColumn)
   internal val btnDeleteController = BtnController(onAction = this::onDeleteColumn)
+  internal val btnApplyController = BtnController(onAction = this::onApply)
 
   private val listItems = FXCollections.observableArrayList<ColumnAsListItem>()
   private val listView: ListView<ColumnAsListItem> = ListView()
@@ -86,11 +87,13 @@ class ColumnManager(
           errorPane.styleClass.add("noerror")
         }
         errorLabel.text = ""
+        btnApplyController.isDisabled.value = false
       }
       else {
         errorLabel.text = it
         errorPane.isVisible = true
         errorPane.styleClass.remove("noerror")
+        btnApplyController.isDisabled.value = true
       }
     })
   internal val content: Node
@@ -162,6 +165,12 @@ class ColumnManager(
     listItems.removeAll(listView.selectionModel.selectedItems)
   }
 
+  private fun onApply() {
+    when (applyExecutor) {
+      ApplyExecutorType.DIRECT -> applyChanges()
+      ApplyExecutorType.SWING -> SwingUtilities.invokeLater { applyChanges() }
+    }
+  }
   fun applyChanges() {
     // First we remove custom columns which were removed from the list.
     mergedColumns.forEach { existing ->
@@ -450,7 +459,7 @@ internal class ColumnAsListItem(
   init {
     if (column != null) {
       title = column.name
-      val customColumn = customColumnsManager.definitions.find { it.id == column?.id }
+      val customColumn = customColumnsManager.definitions.find { it.id == column.id }
       type = run {
         if (isCustom) {
           customColumn?.getPropertyType()
@@ -465,7 +474,6 @@ internal class ColumnAsListItem(
       expression = customColumn?.calculationMethod?.let {
         when (it) {
           is SimpleSelect -> it.selectExpression
-          else -> ""
         }
       } ?: ""
     }
@@ -476,7 +484,7 @@ private class CellImpl : ListCell<ColumnAsListItem>() {
   private val iconVisible = MaterialIconView(MaterialIcon.VISIBILITY)
   private val iconHidden = MaterialIconView(MaterialIcon.VISIBILITY_OFF)
   private val iconPane = StackPane().also {
-    it.onMouseClicked = EventHandler { evt ->
+    it.onMouseClicked = EventHandler { _ ->
       item.isVisible = !item.isVisible
       updateItem(item, false)
     }
@@ -544,17 +552,17 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
         }
       }.vbox
     )
-    val columnManager = ColumnManager(columnList, customColumnsManager, undoManager, CalculationMethodValidator(projectDatabase))
+    val columnManager = ColumnManager(
+      columnList, customColumnsManager, CalculationMethodValidator(projectDatabase), applyExecutor
+    )
     dlg.setContent(columnManager.content)
     dlg.setupButton(ButtonType.APPLY) { btn ->
       btn.text = localizer.formatText("apply")
       btn.styleClass.add("btn-attention")
+      btn.disableProperty().bind(columnManager.btnApplyController.isDisabled)
       btn.setOnAction {
         undoManager.undoableEdit(ourLocalizer.formatText("undoableEdit.title")) {
-          when (applyExecutor) {
-            ApplyExecutorType.DIRECT -> columnManager.applyChanges()
-            ApplyExecutorType.SWING -> SwingUtilities.invokeLater { columnManager.applyChanges() }
-          }
+          columnManager.btnApplyController.onAction()
         }
         dlg.hide()
       }
