@@ -144,7 +144,7 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
     myPropertyChangeSupport.removePropertyChangeListener(listener);
   }
 
-  private ObservableProperty<Boolean> isWritableProperty = new ObservableProperty<>("isWritable", true);
+  private ObservableProperty<Boolean> isWritableProperty = new ObservableBoolean("", true);
   public ObservableProperty<Boolean> getIsWritableProperty() {
     return isWritableProperty;
   }

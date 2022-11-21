@@ -20,7 +20,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart
 
 import biz.ganttproject.core.option.DefaultEnumerationOption
-import biz.ganttproject.core.option.ObservableProperty
+import biz.ganttproject.core.option.ObservableObject
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.TimeUnit
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
@@ -85,7 +85,7 @@ object WeekOption : DefaultEnumerationOption<String?>(
  */
 class WeekNumbering(private val taskManager: TaskManager) {
   val option = WeekOption
-  val numberingFunction = ObservableProperty<WeekNumberingFunction>("weekNumbering", defaultWeekNumbering)
+  val numberingFunction = ObservableObject<WeekNumberingFunction>(initValue = defaultWeekNumbering)
 
   init {
     option.addChangeValueListener {

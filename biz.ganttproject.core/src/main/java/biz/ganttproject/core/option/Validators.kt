@@ -99,16 +99,16 @@ object DateValidators {
   }
 }
 
-class ValidatedObservable<T>(observableValue: GPObservable<String>, private val validator: ValueValidator<T>) : GPObservable<T?> {
+class ValidatedObservable<T>(observableValue: ObservableString, private val validator: ValueValidator<T>) : GPObservable<T?> {
 
   private var parsedValue: T? = null
   private val watchers: MutableList<ObservableWatcher<T?>> by lazy { mutableListOf() }
   override val value: T? get() = parsedValue
-  val validationMessage = ObservableProperty<String?>("", "")
+  val validationMessage = ObservableString("")
 
   init {
-    observableValue.addWatcher {sourceEvent -> validate(sourceEvent.newValue, sourceEvent.trigger) }
-    validate(observableValue.value, null)
+    observableValue.addWatcher {sourceEvent -> validate(sourceEvent.newValue ?: "", sourceEvent.trigger) }
+    validate(observableValue.value ?: "", null)
   }
 
   override fun addWatcher(watcher: ObservableWatcher<T?>) {
@@ -120,7 +120,7 @@ class ValidatedObservable<T>(observableValue: GPObservable<String>, private val 
     doValidate(newValue).fold(
       onSuccess = { newValidated ->
         if (newValidated != oldValidated) {
-          val evt = ObservableEvent("", oldValidated, newValidated, trigger)
+          val evt = ObservableEvent(oldValidated, newValidated, trigger)
           watchers.forEach { it(evt) }
           parsedValue = newValidated
         }
@@ -140,7 +140,7 @@ class ValidatedObservable<T>(observableValue: GPObservable<String>, private val 
 }
 
 fun <T> StringProperty.validated(validator: ValueValidator<T>): ValidatedObservable<T> {
-  val textObservable = ObservableProperty<String>("", this.value)
+  val textObservable = ObservableString("", this.value)
   return ValidatedObservable(textObservable, validator).also {
     this.addListener { _, _, newValue -> textObservable.set(newValue, this) }
   }

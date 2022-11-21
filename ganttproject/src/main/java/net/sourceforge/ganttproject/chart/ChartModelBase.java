@@ -32,31 +32,28 @@ import biz.ganttproject.core.chart.text.TimeFormatter;
 import biz.ganttproject.core.chart.text.TimeFormatters;
 import biz.ganttproject.core.chart.text.TimeUnitText.Position;
 import biz.ganttproject.core.option.*;
-import biz.ganttproject.core.time.*;
-import com.google.common.base.Function;
+import biz.ganttproject.core.time.TimeDuration;
+import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.core.time.TimeUnitFunctionOfDate;
+import biz.ganttproject.core.time.TimeUnitStack;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TimelineLabelChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent;
-import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
-import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
-import org.jetbrains.annotations.NotNull;
-
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.text.DateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Controls painting of the common part of Gantt and resource charts (in
@@ -64,7 +61,7 @@ import java.util.List;
  * calculates the offsets of the timeline grid cells)
  */
 public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */ChartModel, TimelineLabelRendererImpl.ChartModelApi {
-  public static interface ScrollingSession {
+  public interface ScrollingSession {
     void scrollTo(int xpos, int ypos);
 
     void finish();
@@ -73,8 +70,8 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   private class ScrollingSessionImpl implements ScrollingSession {
     private int myPrevXpos;
 
-    private OffsetList myTopOffsets;
-    private OffsetList myBottomOffsets;
+    private final OffsetList myTopOffsets;
+    private final OffsetList myBottomOffsets;
     private OffsetList myDefaultOffsets;
 
     private ScrollingSessionImpl(int startXpos) {
@@ -139,12 +136,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   public static final Object STATIC_MUTEX = new Object();
 
-  private static final Predicate<? super Task> MILESTONE_PREDICATE = new Predicate<Task>() {
-    @Override
-    public boolean apply(Task input) {
-      return input.isMilestone();
-    }
-  };
+  private static final Predicate<? super Task> MILESTONE_PREDICATE = (Predicate<Task>) Task::isMilestone;
 
   private final OptionEventDispatcher myOptionEventDispatcher = new OptionEventDispatcher();
 
@@ -165,7 +157,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
 
   private final StyledPainterImpl myPainter;
 
-  private final List<GPOptionChangeListener> myOptionListeners = new ArrayList<GPOptionChangeListener>();
+  private final List<GPOptionChangeListener> myOptionListeners = new ArrayList<>();
 
   private final UIConfiguration myProjectConfig;
   private ChartUIConfiguration myChartUIConfiguration;
@@ -199,7 +191,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     myChartUIConfiguration = new ChartUIConfiguration(projectConfig);
     myChartFontOption = projectConfig.getChartFontOption();
     weekNumbering = new WeekNumbering(taskManager);
-    weekNumbering.getNumberingFunction().addListener(event -> resetOffsets());
+    weekNumbering.getNumberingFunction().addWatcher(event -> {resetOffsets(); return Unit.INSTANCE;});
 
     myPainter = new StyledPainterImpl(myChartUIConfiguration);
     myTimeUnitStack = timeUnitStack;
@@ -328,12 +320,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     addRenderer(myChartGrid);
     addRenderer(myTimelineLabelRenderer);
 
-    ChangeValueListener fontChangeValueListener = new ChangeValueListener() {
-      @Override
-      public void changeValue(ChangeValueEvent event) {
-        setBaseFont(myChartFontOption.getValue());
-      }
-    };
+    ChangeValueListener fontChangeValueListener = event -> setBaseFont(myChartFontOption.getValue());
     myChartFontOption.addChangeValueListener(fontChangeValueListener);
     getProjectConfig().getDpiOption().addChangeValueListener(fontChangeValueListener);
     setBaseFont(myChartFontOption.getValue());
@@ -352,7 +339,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
     getChartUIConfiguration().setBaseFont(font, fontSize);
   }
 
-  private OffsetManager myOffsetManager = new OffsetManager(new OffsetBuilderFactory() {
+  private final OffsetManager myOffsetManager = new OffsetManager(new OffsetBuilderFactory() {
     @Override
     public OffsetBuilder createTopAndBottomUnitBuilder() {
       return createOffsetBuilderFactory().build();
@@ -366,12 +353,9 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
         .withRightMargin(myScrollingSession == null ? 0 : defaultUnitCountPerLastBottomUnit * 2)
         .withTopUnit(getBottomUnit())
         .withBottomUnit(getTimeUnitStack().getDefaultTimeUnit())
-        .withOffsetStepFunction(new Function<TimeUnit, Float>() {
-          @Override
-          public Float apply(TimeUnit timeUnit) {
-            int offsetUnitCount = timeUnit.getAtomCount(getTimeUnitStack().getDefaultTimeUnit());
-            return 1f / offsetUnitCount;
-          }
+        .withOffsetStepFunction(timeUnit -> {
+          int offsetUnitCount = timeUnit.getAtomCount(getTimeUnitStack().getDefaultTimeUnit());
+          return 1f / offsetUnitCount;
         }).build();
     }
   });
@@ -597,8 +581,7 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
   public TimeDuration getVisibleLength() {
     double pixelsLength = getBounds().getWidth();
     float unitsLength = (float) (pixelsLength / getBottomUnitWidth());
-    TimeDuration result = getTaskManager().createLength(getBottomUnit(), unitsLength);
-    return result;
+    return getTaskManager().createLength(getBottomUnit(), unitsLength);
   }
 
   public void setHeaderHeight(int i) {

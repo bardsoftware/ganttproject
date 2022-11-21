@@ -28,8 +28,6 @@ import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.MapChangeListener
 import javafx.collections.ObservableList
@@ -71,8 +69,7 @@ class ColumnManager(
     it.children.add(errorLabel)
   }
 
-  private val customPropertyEditor = CustomPropertyEditor(
-    customColumnsManager, calculationMethodValidator, btnDeleteController, listItems,
+  private val customPropertyEditor = CustomPropertyEditor(calculationMethodValidator, btnDeleteController, listItems,
     errorUi = {
       if (it == null) {
         errorPane.isVisible = false
@@ -254,7 +251,6 @@ internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {
  * Editor component shown to the right of the property list.
  */
 internal class CustomPropertyEditor(
-  customColumnsManager: CustomPropertyManager,
   private val calculationMethodValidator: CalculationMethodValidator,
   private val btnDeleteController: BtnController,
   private val listItems: ObservableList<ColumnAsListItem>,
@@ -272,33 +268,32 @@ internal class CustomPropertyEditor(
     val fallback2 = RootLocalizer.createWithRootKey("option.taskProperties.customColumn", fallback1)
     RootLocalizer.createWithRootKey("option.customPropertyDialog", fallback2)
   }
-  private val nameOption = DefaultStringOption("name")
-  private val typeOption = DefaultEnumerationOption("type", PropertyType.values())
-  private val defaultValueOption = DefaultStringOption("defaultValue").also { option ->
-    option.validator = ValueValidator<String> {
+  private val nameOption = ObservableString(id = "name")
+  private val typeOption = ObservableEnum(id ="type", initValue = PropertyType.STRING, allValues = PropertyType.values())
+  private val defaultValueOption = ObservableString(
+    id = "defaultValue",
+    initValue = "",
+    validator = {
       if (it.isNotBlank()) {
-        (typeOption.selectedValue.createValidator().parse(it) ?: it).toString()
+        (typeOption.value.createValidator().parse(it) ?: it).toString()
       } else it
-    }
+    })
+
+  private val isCalculatedOption: ObservableBoolean = ObservableBoolean(id = "isCalculated").also {
+    it.addWatcher { evt -> expressionOption.setWritable(evt.newValue) }
   }
-  private val isCalculatedOption: DefaultBooleanOption = DefaultBooleanOption("isCalculated").also { option ->
-    option.addChangeValueListener { evt ->
-      (evt.newValue as? Boolean)?.let {
-        expressionOption.isWritable = it
-      }
-    }
-  }
-  private val expressionOption = DefaultStringOption("expression").also { option ->
-    option.validator = ValueValidator<String> {
+
+  private val expressionOption = ObservableString(id ="expression", initValue = "",
+    validator = {
       if (isCalculatedOption.value && it.isNotBlank()) {
         calculationMethodValidator.validate(
           // Incomplete instance just for validation purposes
-          SimpleSelect("", it, typeOption.selectedValue.getCustomPropertyClass().javaClass)
+          SimpleSelect("", it, typeOption.value.getCustomPropertyClass().javaClass)
         )
       }
       it
     }
-  }
+  )
 
   private val allOptions = listOf(nameOption, typeOption, defaultValueOption, isCalculatedOption, expressionOption)
 
@@ -312,29 +307,29 @@ internal class CustomPropertyEditor(
     isPropertyChangeIgnored = true
     field = selectedItem
     if (selectedItem != null) {
-      nameOption.value = selectedItem.title
-      typeOption.value = selectedItem.type.toString()
-      defaultValueOption.value = selectedItem.defaultValue
+      nameOption.set(selectedItem.title)
+      typeOption.set(selectedItem.type)
+      defaultValueOption.set(selectedItem.defaultValue)
 
       if (selectedItem.isCustom) {
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.custom")
         propertySheet.isDisable = false
         btnDeleteController.isDisabled.value = false
-        isCalculatedOption.value = selectedItem.isCalculated
-        expressionOption.value = selectedItem.expression
+        isCalculatedOption.set(selectedItem.isCalculated)
+        expressionOption.set(selectedItem.expression)
       } else {
         btnDeleteController.isDisabled.value = true
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.builtin")
         propertySheet.isDisable = true
-        isCalculatedOption.value = false
-        expressionOption.value = ""
+        isCalculatedOption.set(false)
+        expressionOption.set("")
       }
     }
     isPropertyChangeIgnored = false
   }
 
   init {
-    allOptions.forEach { it.addChangeValueListener { onPropertyChange() } }
+    allOptions.forEach { it.addWatcher { onEdit() } }
     propertySheet.validationErrors.addListener(MapChangeListener {
       if (propertySheet.validationErrors.isEmpty()) {
         errorUi(null)
@@ -345,14 +340,14 @@ internal class CustomPropertyEditor(
     })
   }
 
-  private fun onPropertyChange() {
+  private fun onEdit() {
     if (!isPropertyChangeIgnored) {
       selectedItem?.let {selected ->
-        selected.title = nameOption.value
-        selected.type = typeOption.selectedValue
-        selected.defaultValue = defaultValueOption.value
+        selected.title = nameOption.value ?: ""
+        selected.type = typeOption.value
+        selected.defaultValue = defaultValueOption.value ?: ""
         selected.isCalculated = isCalculatedOption.value
-        selected.expression = expressionOption.value
+        selected.expression = expressionOption.value ?: ""
         listItems.replaceAll { if (it.title == selected.cloneOf?.title) { selected } else { it } }
         selectedItem = selected.clone()
       }
@@ -362,7 +357,7 @@ internal class CustomPropertyEditor(
   fun focus() {
     propertySheet.requestFocus()
     //editors["title"]?.editor?.requestFocus()
-    onPropertyChange()
+    onEdit()
   }
 }
 

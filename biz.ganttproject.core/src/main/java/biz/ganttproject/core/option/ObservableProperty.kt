@@ -25,22 +25,10 @@ interface GPObservable<T> {
 }
 
 typealias ObservableWatcher<T> = (ObservableEvent<T>) -> Unit
-data class ObservableEvent<T>(val property: String, val oldValue: T, val newValue: T, val trigger: Any?)
-/**
- * @author apopov77@gmail.com
- */
+data class ObservableEvent<T>(val oldValue: T, val newValue: T, val trigger: Any?)
 
-class ObservableProperty<T>(val name: String, val initValue: T): GPObservable<T> {
-
-  private val listeners: MutableList<ChangeValueListener> = mutableListOf()
+class ObservableImpl<T>(initValue: T): GPObservable<T> {
   private val watchers = mutableListOf<ObservableWatcher<T>>()
-
-  override val value: T get() = mutableValue
-
-  override fun addWatcher(watcher: ObservableWatcher<T>) {
-    watchers.add(watcher)
-  }
-
   var mutableValue: T = initValue
   fun set(newValue: T, trigger: Any? = null) {
     val oldValue = mutableValue
@@ -48,15 +36,35 @@ class ObservableProperty<T>(val name: String, val initValue: T): GPObservable<T>
     firePropertyChanged(oldValue, newValue, trigger)
   }
 
-  fun addListener(listener: ChangeValueListener) {
-    listeners.add(listener)
+  override val value: T get() = mutableValue
+
+  override fun addWatcher(watcher: ObservableWatcher<T>) {
+    watchers.add(watcher)
   }
 
   private fun firePropertyChanged(oldValue: T, newValue: T, trigger: Any?) {
-    for (listener in listeners) {
-      listener.changeValue(ChangeValueEvent(name, oldValue, newValue, this))
-    }
-    val evt = ObservableEvent(name, oldValue, newValue, trigger)
+    val evt = ObservableEvent(oldValue, newValue, trigger)
     watchers.forEach { it(evt) }
   }
+
 }
+sealed class ObservableProperty<T>(val id: String, initValue: T, private val delegate: ObservableImpl<T> = ObservableImpl(initValue))
+  : GPObservable<T> by delegate {
+  private val isWritable_ = ObservableImpl( true)
+  val isWritable: GPObservable<Boolean> get() = isWritable_
+
+  fun set(newValue: T, trigger: Any? = null) {
+    this.delegate.set(newValue, trigger)
+  }
+  fun setWritable(value: Boolean) {
+    isWritable_.set(value)
+  }
+}
+
+class ObservableString(id: String, initValue: String? = null,
+                       val validator: ValueValidator<String> = voidValidator,
+                       val isScreened: Boolean = false): ObservableProperty<String?>(id, initValue)
+class ObservableBoolean(id: String, initValue: Boolean = false): ObservableProperty<Boolean>(id,initValue)
+class ObservableEnum<E : Enum<E>>(id: String, initValue: E, val allValues: Array<E>): ObservableProperty<E>(id,initValue)
+
+class ObservableObject<T>(id: String = "", initValue: T?): ObservableProperty<T?>(id, initValue)

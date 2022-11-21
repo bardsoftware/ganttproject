@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.chart.text;
 
 import biz.ganttproject.core.chart.text.TimeFormatters.LocaleApi;
+import kotlin.Unit;
 
 import java.text.DateFormat;
 import java.text.MessageFormat;
@@ -56,10 +57,11 @@ public class WeekTextFormatter extends CachingTextFormatter implements TimeForma
     super.setLocale(localeApi);
     myDateFormat = localeApi.getShortDateFormat();
     myWeekText = localeApi.i18n("week");
-    myWeekNumbering = localeApi.getWeekNumbering().getMutableValue();
-    localeApi.getWeekNumbering().addListener(evt ->  {
+    myWeekNumbering = localeApi.getWeekNumbering().getValue();
+    localeApi.getWeekNumbering().addWatcher(evt ->  {
       clearCache();
-      myWeekNumbering = (Function<Date, Integer>) evt.getNewValue();
+      myWeekNumbering = evt.getNewValue();
+      return Unit.INSTANCE;
     });
   }
 

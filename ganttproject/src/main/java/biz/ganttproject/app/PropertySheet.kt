@@ -32,10 +32,10 @@ import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import javafx.util.StringConverter
 
-private data class OptionItem(val option: GPOption<*>, val editor: Node, val label: String?)
+private data class OptionItem(val option: GPObservable<*>, val editor: Node, val label: String?)
 private val MIN_COLUMN_WIDTH = 100.0
 
-class PropertySheet(val node: Node, val validationErrors: ObservableMap<String, String>) {
+class PropertySheet(val node: Node, val validationErrors: ObservableMap<ObservableProperty<*>, String>) {
   fun requestFocus() {
     node.requestFocus()
   }
@@ -46,13 +46,13 @@ class PropertySheet(val node: Node, val validationErrors: ObservableMap<String, 
 }
 
 class PropertySheetBuilder(private val localizer: Localizer) {
-  private val validationErrors = FXCollections.observableMap(mutableMapOf<String, String>())
+  private val validationErrors = FXCollections.observableMap(mutableMapOf<ObservableProperty<*>, String>())
 
-  fun createPropertySheet(options: List<GPOption<*>>): PropertySheet {
+  fun createPropertySheet(options: List<ObservableProperty<*>>): PropertySheet {
     val gridPane = PropertyPane().also {
       it.styleClass.add("property-pane")
     }
-    options.filter { it.hasUi() }.map { createOptionEditorAndLabel(it) }.forEachIndexed { idx, item ->
+    options.map { createOptionEditorAndLabel(it) }.forEachIndexed { idx, item ->
       if (item.label != null) {
         val label = createLabel(item)
         gridPane.add(label, 0, idx)
@@ -81,29 +81,25 @@ class PropertySheetBuilder(private val localizer: Localizer) {
     return Label(item.label)
   }
 
-  private fun createOptionEditorAndLabel(option: GPOption<*>): OptionItem {
+  private fun createOptionEditorAndLabel(option: ObservableProperty<*>): OptionItem {
     val editor = when (option) {
-      is BooleanOption -> createBooleanOptionEditor(option)
-      is StringOption -> createStringOptionEditor(option)
-      is EnumerationOption -> createEnumerationOptionEditor(option)
-      else -> createNoEditor(option)
+      is ObservableBoolean -> createBooleanOptionEditor(option)
+      is ObservableString -> createStringOptionEditor(option)
+      is ObservableEnum -> createEnumerationOptionEditor(option)
+      is ObservableObject<*> -> error("Can't create editor for ObservableObject=${option.id}")
     }
-    option.isWritableProperty.addListener { evt: ChangeValueEvent ->
-      (evt.newValue as Boolean).let {
-        editor.isDisable = !it
-      }
-    }
+    option.isWritable.addWatcher { evt -> editor.isDisable = !evt.newValue }
 
     return OptionItem(option, editor, getOptionLabel(option))
   }
 
-  private fun createBooleanOptionEditor(option: BooleanOption): Node {
+  private fun createBooleanOptionEditor(option: ObservableBoolean): Node {
     return CheckBox().also {checkBox ->
       checkBox.onAction = EventHandler {
-        option.setValue(checkBox.isSelected, checkBox)
+        option.set(checkBox.isSelected, checkBox)
       }
-      option.addChangeValueListener {evt ->
-        if (evt.triggerID != checkBox) {
+      option.addWatcher { evt ->
+        if (evt.trigger != checkBox) {
           checkBox.isSelected = option.value
         }
       }
@@ -111,19 +107,19 @@ class PropertySheetBuilder(private val localizer: Localizer) {
 
   }
 
-  private fun createEnumerationOptionEditor(option: EnumerationOption): Node {
-    val key2i18n: List<Pair<String, String>> = option.availableValues.map { it to localizer.formatText("$it.label") }.toList()
+  private fun <E: Enum<E>> createEnumerationOptionEditor(option: ObservableEnum<E>): Node {
+    val key2i18n: List<Pair<E, String>> = option.allValues.map { it to localizer.formatText("$it.label") }.toList()
     return ComboBox(FXCollections.observableArrayList(key2i18n)).also { comboBox ->
       comboBox.onAction = EventHandler{
-        option.setValue(comboBox.value.first, comboBox)
+        option.set(comboBox.value.first, comboBox)
       }
-      option.addChangeValueListener { evt ->
-        if (evt.triggerID != comboBox) {
+      option.addWatcher { evt ->
+        if (evt.trigger != comboBox) {
           comboBox.selectionModel.select(key2i18n.find { it.first == option.value })
         }
       }
-      comboBox.converter = object : StringConverter<Pair<String, String>>() {
-        override fun toString(item: Pair<String, String>?) = item?.second
+      comboBox.converter = object : StringConverter<Pair<E, String>>() {
+        override fun toString(item: Pair<E, String>?) = item?.second
         override fun fromString(string: String?) = key2i18n.find { it.second == string }
       }
     }
@@ -132,29 +128,29 @@ class PropertySheetBuilder(private val localizer: Localizer) {
   private fun createNoEditor(option: GPOption<*>) = Label(option.value?.toString())
 
 
-  private fun createStringOptionEditor(option: StringOption): Node =
+  private fun createStringOptionEditor(option: ObservableString): Node =
     (if (option.isScreened) { PasswordField() } else { TextField() }).also { textField ->
-      val validatedText = textField.textProperty().validated(option.validator ?: voidValidator)
+      val validatedText = textField.textProperty().validated(option.validator)
       validatedText.addWatcher { evt ->
-        option.setValue(evt.newValue, textField)
+        option.set(evt.newValue, textField)
       }
       validatedText.validationMessage.addWatcher {
         if (it.newValue == null) {
           textField.markValid()
-          validationErrors.remove(option.id)
+          validationErrors.remove(option)
         } else {
           textField.markInvalid()
-          validationErrors[option.id] = it.newValue
+          validationErrors[option] = it.newValue
         }
       }
-      option.addChangeValueListener {
-        if (it.triggerID != textField) {
+      option.addWatcher {
+        if (it.trigger != textField) {
           textField.text = option.value
         }
       }
     }
 
-  private fun getOptionLabel(option: GPOption<*>) = localizer.formatTextOrNull("${option.id}.label")
+  private fun getOptionLabel(option: ObservableProperty<*>) = localizer.formatTextOrNull("${option.id}.label")
 }
 
 

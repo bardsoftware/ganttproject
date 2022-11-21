@@ -27,6 +27,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.GPColorChooser;
@@ -300,9 +301,9 @@ public class OptionsPageBuilder {
     }
     result.setEnabled(option.isWritable());
     final Component finalResult = result;
-    option.getIsWritableProperty().addListener(evt -> {
-        assert evt.getNewValue() instanceof Boolean : "Unexpected value of property isWritable: " + evt.getNewValue();
-        finalResult.setEnabled((Boolean) evt.getNewValue());
+    option.getIsWritableProperty().addWatcher(evt -> {
+        finalResult.setEnabled(evt.getNewValue());
+        return Unit.INSTANCE;
       }
     );
     return result;
