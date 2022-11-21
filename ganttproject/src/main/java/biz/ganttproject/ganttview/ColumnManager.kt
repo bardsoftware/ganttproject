@@ -18,9 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.ganttview
 
-import biz.ganttproject.app.Localizer
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.dialog
+import biz.ganttproject.app.*
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
@@ -33,24 +31,19 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
+import javafx.collections.MapChangeListener
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
-import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.StackPane
-import javafx.scene.paint.Color
 import javafx.util.Callback
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
-import org.controlsfx.control.PropertySheet
-import org.controlsfx.property.BeanProperty
-import org.controlsfx.property.editor.PropertyEditor
-import java.beans.PropertyDescriptor
 import javax.swing.SwingUtilities
 
 /**
@@ -116,15 +109,10 @@ class ColumnManager(
     }
     listView.items = listItems
     listView.cellFactory = Callback { CellImpl() }
-    customPropertyEditor.propertySheet.apply {
-      items.setAll(FXCollections.observableArrayList(customPropertyEditor.props))
-      isModeSwitcherVisible = false
-      isSearchBoxVisible = false
-    }
     val propertySheetBox = vbox {
       addClasses("property-sheet-box")
       add(customPropertyEditor.propertySheetLabel, Pos.CENTER_LEFT, Priority.NEVER)
-      add(customPropertyEditor.propertySheet, Pos.CENTER, Priority.ALWAYS)
+      add(customPropertyEditor.propertySheet.node, Pos.CENTER, Priority.ALWAYS)
       add(errorPane)
     }
     content = HBox().also {
@@ -184,7 +172,7 @@ class ColumnManager(
         // Apply changes made in the columns which has existed before.
         it.isVisible = columnItem.isVisible
         if (columnItem.isCustom) {
-          customColumnsManager.definitions.find { def -> def.id == it.id }?.fromColumnItem(columnItem)
+          customColumnsManager.definitions.find { def -> def.id == it.id }?.importColumnItem(columnItem)
         }
       } ?: run {
         // Create custom columns which were added in the dialog
@@ -208,11 +196,11 @@ internal data class BtnController(
   val onAction: () -> Unit
 )
 internal enum class PropertyType(private val displayName: String) {
-  STRING(RootLocalizer.formatText("text")),
-  INTEGER(RootLocalizer.formatText("integer")),
-  DATE(RootLocalizer.formatText("date")),
-  DECIMAL(RootLocalizer.formatText("double")),
-  BOOLEAN(RootLocalizer.formatText("boolean"));
+  STRING("text"),
+  INTEGER("integer"),
+  DATE("date"),
+  DECIMAL("double"),
+  BOOLEAN("boolean");
 
   override fun toString() = this.displayName
 }
@@ -242,7 +230,7 @@ internal fun PropertyType.createValidator(): ValueValidator<*> = when (this) {
   else -> voidValidator
 }
 
-internal fun CustomPropertyDefinition.fromColumnItem(item: ColumnAsListItem) {
+internal fun CustomPropertyDefinition.importColumnItem(item: ColumnAsListItem) {
   this.name = item.title
   if (item.defaultValue.trim().isNotBlank()) {
     this.defaultValueAsString = item.defaultValue
@@ -272,9 +260,51 @@ internal class CustomPropertyEditor(
   private val listItems: ObservableList<ColumnAsListItem>,
   private val errorUi: (String?) -> Unit
 ) {
-  internal val propertySheet: PropertySheet = PropertySheet().also {
-    it.styleClass.add("custom-column-props")
+  private val localizer = run {
+    val fallback1 = MappingLocalizer(mapOf()) {
+      if (it.endsWith(".label")) {
+        val key = it.split('.', limit = 2)[0]
+        RootLocalizer.formatText(key)
+      } else {
+        it
+      }
+    }
+    val fallback2 = RootLocalizer.createWithRootKey("option.taskProperties.customColumn", fallback1)
+    RootLocalizer.createWithRootKey("option.customPropertyDialog", fallback2)
   }
+  private val nameOption = DefaultStringOption("name")
+  private val typeOption = DefaultEnumerationOption("type", PropertyType.values()).also {
+    it.value = PropertyType.STRING.toString()
+  }
+  private val defaultValueOption = DefaultStringOption("defaultValue").also { option ->
+    option.validator = ValueValidator<String> {
+      if (!it.isBlank()) {
+        (typeOption.selectedValue.createValidator().parse(it) ?: it).toString()
+      } else it
+    }
+  }
+  private val isCalculatedOption: DefaultBooleanOption = DefaultBooleanOption("isCalculated").also { option ->
+    option.addChangeValueListener { evt ->
+      (evt.newValue as? Boolean)?.let {
+        expressionOption.isWritable = it
+      }
+    }
+  }
+  private val expressionOption = DefaultStringOption("expression").also { option ->
+    option.validator = ValueValidator<String> {
+      if (isCalculatedOption.value && it.isNotBlank()) {
+        calculationMethodValidator.validate(
+          // Incomplete instance just for validation purposes
+          SimpleSelect("", it, typeOption.selectedValue.getCustomPropertyClass().javaClass)
+        )
+      }
+      it
+    }
+  }
+
+  private val allOptions = listOf(nameOption, typeOption, defaultValueOption, isCalculatedOption, expressionOption)
+
+  internal val propertySheet = PropertySheetBuilder(localizer).createPropertySheet(allOptions)
   internal val propertySheetLabel = Label().also {
     it.styleClass.add("title")
   }
@@ -284,123 +314,54 @@ internal class CustomPropertyEditor(
     isPropertyChangeIgnored = true
     field = selectedItem
     if (selectedItem != null) {
-      editableValue.title = selectedItem.title
-      editableValue.type = selectedItem.type
+      nameOption.value = selectedItem.title
+      typeOption.value = selectedItem.type.toString()
+      defaultValueOption.value = selectedItem.defaultValue
+
       if (selectedItem.isCustom) {
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.custom")
         propertySheet.isDisable = false
         btnDeleteController.isDisabled.value = false
-        editableValue.defaultValue = selectedItem.defaultValue
-        editableValue.isCalculated = selectedItem.isCalculated
-        editableValue.expression = selectedItem.expression
+        isCalculatedOption.value = selectedItem.isCalculated
+        expressionOption.value = selectedItem.expression
       } else {
         btnDeleteController.isDisabled.value = true
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.builtin")
         propertySheet.isDisable = true
-        editableValue.isCalculated = false
-        editableValue.expression = ""
+        isCalculatedOption.value = false
+        expressionOption.value = ""
       }
     }
     isPropertyChangeIgnored = false
   }
   private val editableValue = ColumnAsListItem(column = null, isVisible = true, isCustom = true, customColumnsManager = customColumnsManager)
-  private val title = BeanProperty(editableValue,
-    PropertyDescriptor("title", ColumnAsListItem::class.java).also {
-      it.displayName = RootLocalizer.formatText("option.customPropertyDialog.name.label")
-    }
-  )
-  private val type = BeanProperty(editableValue,
-    PropertyDescriptor("type", ColumnAsListItem::class.java).also {
-      it.displayName = RootLocalizer.formatText("option.taskProperties.customColumn.type.label")
-    }
-  )
-  private val defaultValue = BeanProperty(editableValue,
-    PropertyDescriptor("defaultValue", ColumnAsListItem::class.java).also {
-      it.displayName = RootLocalizer.formatText("option.customPropertyDialog.defaultValue.label")
-    }
-  )
-  private val isCalculated = BeanProperty(editableValue, PropertyDescriptor("calculated", ColumnAsListItem::class.java).also {
-    it.displayName = RootLocalizer.formatText("option.customPropertyDialog.isCalculated.label")
-  })
-  private val expression = BeanProperty(editableValue, PropertyDescriptor("expression", ColumnAsListItem::class.java).also {
-    it.displayName = RootLocalizer.formatText("option.customPropertyDialog.expression.label")
-  })
-  val props = listOf(title, type, defaultValue, isCalculated, expression)
-  private val editors = mutableMapOf<String, PropertyEditor<*>>()
 
   init {
-    val defaultEditor = propertySheet.propertyEditorFactory
-    propertySheet.propertyEditorFactory = Callback { item ->
-      val propertyName = props.map {it.propertyDescriptor}.find { it.displayName == item.name }?.name
-      defaultEditor.call(item).also { propertyEditor ->
-        editors[propertyName!!] = propertyEditor
+    allOptions.forEach { it.addChangeValueListener { onPropertyChange() } }
+    propertySheet.validationErrors.addListener(MapChangeListener {
+      if (propertySheet.validationErrors.isEmpty()) {
+        errorUi(null)
+        listItems[listItems.indexOf(selectedItem)] = selectedItem
+      } else {
+        errorUi(propertySheet.validationErrors.values.joinToString(separator = "\n"))
       }
-    }
-    props.forEach { it.observableValue.get().addListener { _, _, _ -> onPropertyChange() } }
-  }
-
-  private fun PropertyEditor<*>.markValid() {
-    this.editor.styleClass.remove("validation-error")
-    this.editor.effect = null
-  }
-
-  private fun PropertyEditor<*>.markInvalid() {
-    if (!this.editor.styleClass.contains("validation-error")) {
-      this.editor.styleClass.add("validation-error")
-      this.editor.effect = InnerShadow(10.0, Color.RED)
-    }
+    })
   }
 
   private fun onPropertyChange() {
     if (!isPropertyChangeIgnored) {
-      selectedItem?.title = editableValue.title
-      selectedItem?.type = editableValue.type
-
-      var errorMessage: String? = null
-      editors["expression"]?.let {editor ->
-        try {
-          editor.editor.isDisable = !editableValue.isCalculated
-          if (editableValue.isCalculated && editableValue.expression.isNotBlank()) {
-            calculationMethodValidator.validate(
-              // Incomplete instance just for validation purposes
-              SimpleSelect(
-              "", editableValue.expression, editableValue.type.getCustomPropertyClass().javaClass
-              )
-            )
-          }
-
-          editor.markValid()
-          selectedItem?.isCalculated = editableValue.isCalculated
-          selectedItem?.expression = editableValue.expression
-        } catch (ex: ValidationException) {
-          editor.markInvalid()
-          errorMessage = ex.message ?: ""
-        }
-      }
-      editors["defaultValue"]?.let { editor ->
-        try {
-          if (editableValue.defaultValue.isNotBlank()) {
-            editableValue.type.createValidator().parse(editableValue.defaultValue)
-          }
-
-          editor.markValid()
-          selectedItem?.defaultValue = editableValue.defaultValue
-        } catch (ex: ValidationException) {
-          editor.markInvalid()
-          errorMessage = ex.message ?: ""
-        }
-      }
-      if (errorMessage != null) {
-        errorUi(errorMessage)
-      } else {
-        errorUi(null)
-        listItems[listItems.indexOf(selectedItem)] = selectedItem
-      }
+      selectedItem?.title = nameOption.value
+      println("name: ${selectedItem?.title}")
+      selectedItem?.type = typeOption.selectedValue
+      selectedItem?.defaultValue = defaultValueOption.value
+      selectedItem?.isCalculated = isCalculatedOption.value
+      selectedItem?.expression = expressionOption.value
     }
   }
 
   fun focus() {
-    editors["title"]?.editor?.requestFocus()
+    propertySheet.requestFocus()
+    //editors["title"]?.editor?.requestFocus()
     onPropertyChange()
   }
 }
