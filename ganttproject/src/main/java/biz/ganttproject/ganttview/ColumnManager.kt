@@ -122,7 +122,7 @@ class ColumnManager(
     }
 
     listView.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-      customPropertyEditor.selectedItem = newValue
+      customPropertyEditor.selectedItem = newValue.clone()
     }
     listView.selectionModel.select(0)
 
@@ -273,9 +273,7 @@ internal class CustomPropertyEditor(
     RootLocalizer.createWithRootKey("option.customPropertyDialog", fallback2)
   }
   private val nameOption = DefaultStringOption("name")
-  private val typeOption = DefaultEnumerationOption("type", PropertyType.values()).also {
-    it.value = PropertyType.STRING.toString()
-  }
+  private val typeOption = DefaultEnumerationOption("type", PropertyType.values())
   private val defaultValueOption = DefaultStringOption("defaultValue").also { option ->
     option.validator = ValueValidator<String> {
       if (it.isNotBlank()) {
@@ -334,7 +332,6 @@ internal class CustomPropertyEditor(
     }
     isPropertyChangeIgnored = false
   }
-  private val editableValue = ColumnAsListItem(column = null, isVisible = true, isCustom = true, customColumnsManager = customColumnsManager)
 
   init {
     allOptions.forEach { it.addChangeValueListener { onPropertyChange() } }
@@ -356,7 +353,8 @@ internal class CustomPropertyEditor(
         selected.defaultValue = defaultValueOption.value
         selected.isCalculated = isCalculatedOption.value
         selected.expression = expressionOption.value
-        listItems.replaceAll { if (it.column?.id == selected.column?.id) { selected } else { it } }
+        listItems.replaceAll { if (it.title == selected.cloneOf?.title) { selected } else { it } }
+        selectedItem = selected.clone()
       }
     }
   }
@@ -374,6 +372,16 @@ internal class ColumnAsListItem(
   val isCustom: Boolean,
   val customColumnsManager: CustomPropertyManager
 ) {
+  constructor(cloneOf: ColumnAsListItem): this(cloneOf.column, cloneOf.isVisible, cloneOf.isCustom, cloneOf.customColumnsManager) {
+    this.cloneOf = cloneOf
+    this.title = cloneOf.title
+    this.type = cloneOf.type
+    this.defaultValue = cloneOf.defaultValue
+    this.isCalculated = cloneOf.isCalculated
+    this.expression = cloneOf.expression
+  }
+  internal var cloneOf: ColumnAsListItem? = null
+
   var title: String = ""
 
   var type: PropertyType = PropertyType.STRING
@@ -383,6 +391,7 @@ internal class ColumnAsListItem(
   var isCalculated: Boolean = false
 
   var expression: String = ""
+
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -398,6 +407,12 @@ internal class ColumnAsListItem(
   override fun hashCode(): Int {
     return title.hashCode()
   }
+
+  override fun toString(): String {
+    return "ColumnAsListItem(title='$title')"
+  }
+
+  fun clone(): ColumnAsListItem = ColumnAsListItem(this)
 
   init {
     if (column != null) {

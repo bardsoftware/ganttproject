@@ -136,7 +136,6 @@ class PropertySheetBuilder(private val localizer: Localizer) {
     (if (option.isScreened) { PasswordField() } else { TextField() }).also { textField ->
       val validatedText = textField.textProperty().validated(option.validator ?: voidValidator)
       validatedText.addWatcher { evt ->
-        println("vlalidated ${option.id}: $evt")
         option.setValue(evt.newValue, textField)
       }
       validatedText.validationMessage.addWatcher {
