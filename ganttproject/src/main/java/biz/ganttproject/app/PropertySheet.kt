@@ -27,12 +27,16 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.GridPane
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import javafx.util.StringConverter
+import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.util.BrowserControl
+import java.awt.event.ActionEvent
 
-private data class OptionItem(val option: GPObservable<*>, val editor: Node, val label: String?)
+private data class OptionItem(val option: ObservableProperty<*>, val editor: Node, val label: String?)
 private val MIN_COLUMN_WIDTH = 100.0
 
 class PropertySheet(val node: Node, val validationErrors: ObservableMap<ObservableProperty<*>, String>) {
@@ -51,19 +55,31 @@ class PropertySheetBuilder(private val localizer: Localizer) {
   fun createPropertySheet(options: List<ObservableProperty<*>>): PropertySheet {
     val gridPane = PropertyPane().also {
       it.styleClass.add("property-pane")
+      it.stylesheets.add("/biz/ganttproject/app/PropertySheet.css")
     }
     options.map { createOptionEditorAndLabel(it) }.forEachIndexed { idx, item ->
       if (item.label != null) {
         val label = createLabel(item)
         gridPane.add(label, 0, idx)
-        gridPane.add(item.editor, 1, idx)
 
-        if (item.editor is Region) {
-          item.editor.minWidth = MIN_COLUMN_WIDTH
-          item.editor.maxWidth = Double.MAX_VALUE
+        item.editor.also {editor ->
+          if (editor is Region) {
+            editor.minWidth = MIN_COLUMN_WIDTH
+            editor.maxWidth = Double.MAX_VALUE
+          }
+          label.labelFor = editor
+          HBox(editor).also {hbox ->
+            HBox.setHgrow(item.editor, Priority.ALWAYS)
+
+            getOptionHelpUrl(item.option)?.let { url ->
+              hbox.children.add(createButton(OpenUrlAction(url), onlyIcon = true)?.also {
+                it.styleClass.add("btn-help-url")
+              })
+            }
+            gridPane.add(hbox, 1, idx)
+            GridPane.setHgrow(hbox, Priority.ALWAYS)
+          }
         }
-        label.labelFor = item.editor
-        GridPane.setHgrow(item.editor, Priority.ALWAYS)
 
       }
       if (idx == 0) {
@@ -151,6 +167,7 @@ class PropertySheetBuilder(private val localizer: Localizer) {
     }
 
   private fun getOptionLabel(option: ObservableProperty<*>) = localizer.formatTextOrNull("${option.id}.label")
+  private fun getOptionHelpUrl(option: ObservableProperty<*>) = localizer.formatTextOrNull("${option.id}.helpUrl")
 }
 
 
@@ -172,5 +189,11 @@ private fun Node.markInvalid() {
   if (!this.styleClass.contains("validation-error")) {
     this.styleClass.add("validation-error")
     this.effect = InnerShadow(10.0, Color.RED)
+  }
+}
+
+private class OpenUrlAction(private val url: String): GPAction("help.openUrl") {
+  override fun actionPerformed(e: ActionEvent?) {
+    BrowserControl.displayURL(url)
   }
 }

@@ -95,3 +95,45 @@
   //}
 
 }
+
+@mixin btn-toolbar-common() {
+  -fx-alignment: center;
+  -fx-background-color: transparent;
+  -fx-border-width: 0;
+  -fx-border-insets: 0;
+  -fx-text-fill: $gp-medium-gray;
+
+  .glyph-icon {
+    -fx-alignment: center;
+    -fx-fill: $gp-medium-gray;
+  }
+
+  &:hover {
+    -fx-background-color: derive($gp-light-gray, -10%);
+    -fx-background-radius: 3px;
+
+    .glyph-icon {
+      -fx-fill: derive($gp-medium-gray, -10%);
+    }
+  }
+
+  &:pressed, &:hover:pressed {
+    -fx-background-color: derive($gp-light-gray, -15%);
+    .glyph-icon {
+      -fx-fill: derive($gp-medium-gray, -15%);
+    }
+  }
+}
+
+@mixin btn-toolbar-small() {
+  -fx-padding: 2 2 2 2;
+  -fx-min-width: 24px;
+  -fx-min-height: 18px;
+  -fx-max-height: 24px;
+  -fx-pref-height: 24px;
+
+  .glyph-icon {
+    -glyph-size: 18px;
+    -fx-padding: 0;
+  }
+}

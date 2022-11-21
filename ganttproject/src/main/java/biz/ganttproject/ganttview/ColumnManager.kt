@@ -262,7 +262,7 @@ internal class CustomPropertyEditor(
         val key = it.split('.', limit = 2)[0]
         RootLocalizer.formatText(key)
       } else {
-        it
+        null
       }
     }
     val fallback2 = RootLocalizer.createWithRootKey("option.taskProperties.customColumn", fallback1)

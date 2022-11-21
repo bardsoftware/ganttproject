@@ -50,15 +50,17 @@ class ObservableImpl<T>(initValue: T): GPObservable<T> {
 }
 sealed class ObservableProperty<T>(val id: String, initValue: T, private val delegate: ObservableImpl<T> = ObservableImpl(initValue))
   : GPObservable<T> by delegate {
-  private val isWritable_ = ObservableImpl( true)
-  val isWritable: GPObservable<Boolean> get() = isWritable_
+  private val _isWritable = ObservableImpl( true)
+  val isWritable: GPObservable<Boolean> get() = _isWritable
 
   fun set(newValue: T, trigger: Any? = null) {
     this.delegate.set(newValue, trigger)
   }
   fun setWritable(value: Boolean) {
-    isWritable_.set(value)
+    _isWritable.set(value)
   }
+
+
 }
 
 class ObservableString(id: String, initValue: String? = null,
