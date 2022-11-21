@@ -3,6 +3,8 @@
  */
 package biz.ganttproject.core.option;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.beans.PropertyChangeListener;
 
 /**
@@ -32,6 +34,7 @@ public interface GPOption<T> {
 
   Runnable addChangeValueListener(ChangeValueListener listener, int priority);
 
+  ObservableProperty<Boolean> getIsWritableProperty();
   boolean isWritable();
 
   void addPropertyChangeListener(PropertyChangeListener listener);
@@ -45,4 +48,8 @@ public interface GPOption<T> {
   boolean hasUi();
 
   void setHasUi(boolean hasUi);
+
+  @Nullable ValueValidator<T> getValidator();
+
+  void setValidator(ValueValidator<T> validator);
 }

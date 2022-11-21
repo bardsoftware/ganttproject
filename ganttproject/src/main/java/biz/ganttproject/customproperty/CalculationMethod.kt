@@ -36,7 +36,7 @@ class CalculationMethodValidator(private val projectDatabase: ProjectDatabase) {
         try {
           projectDatabase.validateColumnConsumer(ColumnConsumer(calculationMethod) {_,_->})
         } catch (ex: ProjectDatabaseException) {
-          throw ValidationException(ex.message)
+          throw ValidationException("Syntax error or incompatible result type")
         }
       }
     }

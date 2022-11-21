@@ -96,13 +96,15 @@ class WeekNumbering(private val taskManager: TaskManager) {
   }
 
   private fun updateWeekNumbering() {
-    numberingFunction.value = when (val optionValue = option.selectedValue ?: DEFAULT) {
-      US -> usWeekNumbering
-      EUROPEAN -> europeanWeekNumbering
-      DEFAULT -> defaultWeekNumbering
-      RELATIVE_TO_PROJECT -> RelativeWeekNumbering(taskManager.projectStart)
-      else -> error("Unexpected value of week numbering option: $optionValue")
-    }
+    numberingFunction.set(
+      when (val optionValue = option.selectedValue ?: DEFAULT) {
+        US -> usWeekNumbering
+        EUROPEAN -> europeanWeekNumbering
+        DEFAULT -> defaultWeekNumbering
+        RELATIVE_TO_PROJECT -> RelativeWeekNumbering(taskManager.projectStart)
+        else -> error("Unexpected value of week numbering option: $optionValue")
+      }
+    )
   }
 
   fun decorate(timeUnit: TimeUnit) =

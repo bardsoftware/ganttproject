@@ -56,7 +56,7 @@ public class WeekTextFormatter extends CachingTextFormatter implements TimeForma
     super.setLocale(localeApi);
     myDateFormat = localeApi.getShortDateFormat();
     myWeekText = localeApi.i18n("week");
-    myWeekNumbering = localeApi.getWeekNumbering().getValue();
+    myWeekNumbering = localeApi.getWeekNumbering().getMutableValue();
     localeApi.getWeekNumbering().addListener(evt ->  {
       clearCache();
       myWeekNumbering = (Function<Date, Integer>) evt.getNewValue();
