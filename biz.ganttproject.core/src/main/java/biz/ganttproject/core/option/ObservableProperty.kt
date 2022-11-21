@@ -19,28 +19,44 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package biz.ganttproject.core.option
 
+interface GPObservable<T> {
+  val value: T
+  fun addWatcher(watcher: ObservableWatcher<T>)
+}
+
+typealias ObservableWatcher<T> = (ObservableEvent<T>) -> Unit
+data class ObservableEvent<T>(val property: String, val oldValue: T, val newValue: T, val trigger: Any?)
 /**
  * @author apopov77@gmail.com
  */
 
-class ObservableProperty<T>(val name: String, var initValue: T) {
+class ObservableProperty<T>(val name: String, val initValue: T): GPObservable<T> {
 
   private val listeners: MutableList<ChangeValueListener> = mutableListOf()
+  private val watchers = mutableListOf<ObservableWatcher<T>>()
 
-  var value: T = initValue
-    set(newValue) {
-      val oldValue = field
-      field = newValue
-      firePropertyChanged(oldValue, newValue)
-    }
+  override val value: T get() = mutableValue
+
+  override fun addWatcher(watcher: ObservableWatcher<T>) {
+    watchers.add(watcher)
+  }
+
+  var mutableValue: T = initValue
+  fun set(newValue: T, trigger: Any? = null) {
+    val oldValue = mutableValue
+    mutableValue = newValue
+    firePropertyChanged(oldValue, newValue, trigger)
+  }
 
   fun addListener(listener: ChangeValueListener) {
     listeners.add(listener)
   }
 
-  private fun firePropertyChanged(oldValue: T, newValue: T) {
+  private fun firePropertyChanged(oldValue: T, newValue: T, trigger: Any?) {
     for (listener in listeners) {
       listener.changeValue(ChangeValueEvent(name, oldValue, newValue, this))
     }
+    val evt = ObservableEvent(name, oldValue, newValue, trigger)
+    watchers.forEach { it(evt) }
   }
 }

@@ -20,6 +20,7 @@ package biz.ganttproject.core.option;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
+import org.jetbrains.annotations.Nullable;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -43,8 +44,6 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
   private final Listeners myListeners = new Listeners();
   private final PropertyChangeSupport myPropertyChangeSupport = new PropertyChangeSupport(this);
 
-  private boolean isWritable = true;
-
   private T myValue;
   private T myInitialValue;
 
@@ -52,6 +51,7 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
 
   private boolean myHasUi = true;
 
+  private ValueValidator<T> validator = null;
   protected GPAbstractOption(String id) {
     this(id, null);
   }
@@ -144,13 +144,17 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
     myPropertyChangeSupport.removePropertyChangeListener(listener);
   }
 
+  private ObservableProperty<Boolean> isWritableProperty = new ObservableProperty<>("isWritable", true);
+  public ObservableProperty<Boolean> getIsWritableProperty() {
+    return isWritableProperty;
+  }
   @Override
   public boolean isWritable() {
-    return isWritable;
+    return isWritableProperty.getValue();
   }
 
   public void setWritable(boolean isWritable) {
-    this.isWritable = isWritable;
+    this.isWritableProperty.set(isWritable, null);
     myPropertyChangeSupport.firePropertyChange("isWritable", Boolean.valueOf(!isWritable), Boolean.valueOf(isWritable));
   }
 
@@ -171,6 +175,17 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
   public void setHasUi(boolean hasUi) {
     myHasUi = hasUi;
   }
+
+  @Override
+  public @Nullable ValueValidator<T> getValidator() {
+    return validator;
+  }
+
+  @Override
+  public void setValidator(ValueValidator<T> validator) {
+    this.validator = validator;
+  }
+
 
   protected PropertyChangeSupport getPropertyChangeSupport() {
     return myPropertyChangeSupport;

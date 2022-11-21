@@ -20,31 +20,30 @@ package biz.ganttproject.core.option
 
 import com.google.common.base.Strings
 import com.google.common.base.Supplier
+import javafx.beans.property.StringProperty
 import org.apache.commons.math3.util.Pair
 import java.text.DateFormat
 import java.text.ParseException
 import java.time.Duration
 import java.util.*
 
-interface ValueValidator<T> {
+fun interface ValueValidator<T> {
   @Throws(ValidationException::class)
   fun parse(text: String): T
 }
 
-val voidValidator = object : ValueValidator<Any> {
-  override fun parse(text: String): Any = text
-}
+val voidValidator = ValueValidator<String> { text -> text }
 
-val integerValidator: ValueValidator<Int> = object : ValueValidator<Int> {
-  override fun parse(text: String): Int = try {
+val integerValidator: ValueValidator<Int> = ValueValidator { text ->
+  try {
     text.toInt()
   } catch (ex: NumberFormatException) {
     throw ValidationException(ex)
   }
 }
 
-val doubleValidator: ValueValidator<Double> = object : ValueValidator<Double> {
-  override fun parse(text: String): Double = try {
+val doubleValidator: ValueValidator<Double> = ValueValidator { text ->
+  try {
     text.toDouble()
   } catch (ex: NumberFormatException) {
     throw ValidationException(ex)
@@ -52,8 +51,8 @@ val doubleValidator: ValueValidator<Double> = object : ValueValidator<Double> {
 }
 
 fun createStringDateValidator(dv: DateValidatorType? = null, formats: Supplier<List<DateFormat>>) : ValueValidator<Date> =
-  object : ValueValidator<Date> {
-    override fun parse(text: String): Date = try {
+  ValueValidator { text ->
+    try {
       if (Strings.isNullOrEmpty(text)) {
         throw ValidationException()
       }
@@ -98,5 +97,51 @@ object DateValidators {
       Pair.create<Boolean?, String?>(java.lang.Boolean.TRUE, null)
     }
   }
+}
 
+class ValidatedObservable<T>(observableValue: GPObservable<String>, private val validator: ValueValidator<T>) : GPObservable<T?> {
+
+  private var parsedValue: T? = null
+  private val watchers: MutableList<ObservableWatcher<T?>> by lazy { mutableListOf() }
+  override val value: T? get() = parsedValue
+  val validationMessage = ObservableProperty<String?>("", "")
+
+  init {
+    observableValue.addWatcher {sourceEvent -> validate(sourceEvent.newValue, sourceEvent.trigger) }
+    validate(observableValue.value, null)
+  }
+
+  override fun addWatcher(watcher: ObservableWatcher<T?>) {
+    watchers.add(watcher)
+  }
+
+  internal fun validate(newValue: String, trigger: Any?) {
+    val oldValidated = parsedValue
+    doValidate(newValue).fold(
+      onSuccess = { newValidated ->
+        if (newValidated != oldValidated) {
+          val evt = ObservableEvent("", oldValidated, newValidated, trigger)
+          watchers.forEach { it(evt) }
+          parsedValue = newValidated
+        }
+        validationMessage.set(null)
+      },
+      onFailure = {
+        validationMessage.set(it.message ?: "Failed to validate value = $newValue")
+      }
+    )
+  }
+  private fun doValidate(value: String): Result<T> = try {
+    Result.success(validator.parse(value))
+  } catch (ex: ValidationException) {
+    Result.failure(ex)
+  }
+
+}
+
+fun <T> StringProperty.validated(validator: ValueValidator<T>): ValidatedObservable<T> {
+  val textObservable = ObservableProperty<String>("", this.value)
+  return ValidatedObservable(textObservable, validator).also {
+    this.addListener { _, _, newValue -> textObservable.set(newValue, this) }
+  }
 }

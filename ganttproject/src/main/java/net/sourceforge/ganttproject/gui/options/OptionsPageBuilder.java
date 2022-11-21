@@ -300,15 +300,11 @@ public class OptionsPageBuilder {
     }
     result.setEnabled(option.isWritable());
     final Component finalResult = result;
-    option.addPropertyChangeListener(new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        if ("isWritable".equals(evt.getPropertyName())) {
-          assert evt.getNewValue() instanceof Boolean : "Unexpected value of property isWritable: " + evt.getNewValue();
-          finalResult.setEnabled((Boolean) evt.getNewValue());
-        }
+    option.getIsWritableProperty().addListener(evt -> {
+        assert evt.getNewValue() instanceof Boolean : "Unexpected value of property isWritable: " + evt.getNewValue();
+        finalResult.setEnabled((Boolean) evt.getNewValue());
       }
-    });
+    );
     return result;
   }
 
