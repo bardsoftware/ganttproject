@@ -38,7 +38,7 @@ val integerValidator: ValueValidator<Int> = ValueValidator { text ->
   try {
     text.toInt()
   } catch (ex: NumberFormatException) {
-    throw ValidationException(ex)
+    throw ValidationException("Not an integer number: $text")
   }
 }
 
@@ -46,7 +46,7 @@ val doubleValidator: ValueValidator<Double> = ValueValidator { text ->
   try {
     text.toDouble()
   } catch (ex: NumberFormatException) {
-    throw ValidationException(ex)
+    throw ValidationException("Not a decimal number: $text")
   }
 }
 
@@ -64,7 +64,7 @@ fun createStringDateValidator(dv: DateValidatorType? = null, formats: Supplier<L
         }
       }
       if (parsed == null) {
-        throw ValidationException("Can't parse value=" + text + "as date")
+        throw ValidationException("Can't parse value=$text as date")
       }
       dv?.let {
         val validationResult = it(parsed)

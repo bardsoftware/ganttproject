@@ -278,7 +278,7 @@ internal class CustomPropertyEditor(
   }
   private val defaultValueOption = DefaultStringOption("defaultValue").also { option ->
     option.validator = ValueValidator<String> {
-      if (!it.isBlank()) {
+      if (it.isNotBlank()) {
         (typeOption.selectedValue.createValidator().parse(it) ?: it).toString()
       } else it
     }
@@ -350,12 +350,14 @@ internal class CustomPropertyEditor(
 
   private fun onPropertyChange() {
     if (!isPropertyChangeIgnored) {
-      selectedItem?.title = nameOption.value
-      println("name: ${selectedItem?.title}")
-      selectedItem?.type = typeOption.selectedValue
-      selectedItem?.defaultValue = defaultValueOption.value
-      selectedItem?.isCalculated = isCalculatedOption.value
-      selectedItem?.expression = expressionOption.value
+      selectedItem?.let {selected ->
+        selected.title = nameOption.value
+        selected.type = typeOption.selectedValue
+        selected.defaultValue = defaultValueOption.value
+        selected.isCalculated = isCalculatedOption.value
+        selected.expression = expressionOption.value
+        listItems.replaceAll { if (it.column?.id == selected.column?.id) { selected } else { it } }
+      }
     }
   }
 
@@ -372,35 +374,15 @@ internal class ColumnAsListItem(
   val isCustom: Boolean,
   val customColumnsManager: CustomPropertyManager
 ) {
-  private val _title = SimpleStringProperty("")
-  var title: String
-    get() = _title.value
-    set(value) { _title.value = value }
-  fun titleProperty() = _title
+  var title: String = ""
 
-  private val _type = SimpleObjectProperty(PropertyType.STRING)
-  var type: PropertyType
-    get() = _type.value
-    set(value) { _type.value = value }
-  fun typeProperty() = _type
+  var type: PropertyType = PropertyType.STRING
 
-  private val _defaultValue = SimpleStringProperty("")
-  var defaultValue: String
-    get() = _defaultValue.value
-    set(value) { _defaultValue.value = value }
-  fun defaultValueProperty() = _defaultValue
+  var defaultValue: String = ""
 
-  private val _isCalculated = SimpleBooleanProperty(false)
-  var isCalculated: Boolean
-    get() = _isCalculated.value
-    set(value) { _isCalculated.value = value }
-  fun calculatedProperty() = _isCalculated
+  var isCalculated: Boolean = false
 
-  private val _expression = SimpleStringProperty("")
-  var expression: String
-    get() = _expression.value
-    set(value) { _expression.value = value }
-  fun expressionProperty() = _expression
+  var expression: String = ""
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -408,13 +390,13 @@ internal class ColumnAsListItem(
 
     other as ColumnAsListItem
 
-    if (_title != other._title) return false
+    if (title != other.title) return false
 
     return true
   }
 
   override fun hashCode(): Int {
-    return _title.hashCode()
+    return title.hashCode()
   }
 
   init {
