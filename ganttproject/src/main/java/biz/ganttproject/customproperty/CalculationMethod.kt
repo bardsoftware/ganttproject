@@ -20,7 +20,7 @@ package biz.ganttproject.customproperty
 
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.option.Completion
-import biz.ganttproject.storage.db.tables.Task
+import biz.ganttproject.storage.db.Tables
 import net.sourceforge.ganttproject.storage.ColumnConsumer
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException
@@ -46,10 +46,10 @@ class CalculationMethodValidator(private val projectDatabase: ProjectDatabase) {
   }
 }
 
-private val ourTaskTableFields: List<String> = Task.TASK.run {
+private val ourTaskTableFields: List<String> = Tables.TASKVIEWFORCOMPUTEDCOLUMNS.run {
   listOf(
     COLOR.name, COST_MANUAL_VALUE.name, COMPLETION.name, DURATION.name, EARLIEST_START_DATE.name, IS_COST_CALCULATED.name,
-    IS_MILESTONE.name, IS_PROJECT_TASK.name, NAME.name, NOTES.name, NUM.name, PRIORITY.name, START_DATE.name, WEB_LINK.name
+    IS_MILESTONE.name, IS_PROJECT_TASK.name, NAME.name, NOTES.name, ID.name, PRIORITY.name, START_DATE.name, WEB_LINK.name, COST.name, END_DATE.name
   )
 }
 class ExpressionAutoCompletion {

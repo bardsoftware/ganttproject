@@ -28,7 +28,6 @@ import net.sourceforge.ganttproject.task.TaskImpl
 import org.jooq.DSLContext
 import org.jooq.Insert
 import java.math.BigDecimal
-import java.time.LocalDate
 
 fun buildInsertTaskQuery(dsl: DSLContext, task: Task): Insert<TaskRecord> {
   var costManualValue: BigDecimal? = null
@@ -46,10 +45,10 @@ fun buildInsertTaskQuery(dsl: DSLContext, task: Task): Insert<TaskRecord> {
     .set(Tables.TASK.SHAPE, task.shape?.array)
     .set(Tables.TASK.IS_MILESTONE, task.isLegacyMilestone)
     .set(Tables.TASK.IS_PROJECT_TASK, task.isProjectTask)
-    .set(Tables.TASK.START_DATE, task.start.toLocalDate())
+    .set(Tables.TASK.START_DATE, task.start.toLocalDateTime())
     .set(Tables.TASK.DURATION, task.duration.length)
     .set(Tables.TASK.COMPLETION, task.completionPercentage)
-    .set(Tables.TASK.EARLIEST_START_DATE, task.third?.toLocalDate())
+    .set(Tables.TASK.EARLIEST_START_DATE, task.third?.toLocalDateTime())
     .set(Tables.TASK.PRIORITY, task.priority.persistentValue)
     .set(Tables.TASK.WEB_LINK, task.externalizedWebLink())
     .set(Tables.TASK.COST_MANUAL_VALUE, costManualValue)
@@ -78,11 +77,11 @@ fun buildInsertTaskDto(task: Task): OperationDto.InsertOperationDto {
       Tables.TASK.START_DATE.name to task.start.toLocalDate().toString(),
       Tables.TASK.DURATION.name to task.duration.length.toString(),
       Tables.TASK.COMPLETION.name to task.completionPercentage.toString(),
-      Tables.TASK.EARLIEST_START_DATE.name to (task.third?.let { it.toLocalDate().toString() } ?: null),
+      Tables.TASK.EARLIEST_START_DATE.name to (task.third?.toLocalDate()?.toString()),
       Tables.TASK.PRIORITY.name to task.priority.persistentValue,
       Tables.TASK.WEB_LINK.name to task.externalizedWebLink(),
-      Tables.TASK.COST_MANUAL_VALUE.name to (costManualValue?.let { it.toString() } ?: null),
-      Tables.TASK.IS_COST_CALCULATED.name to (isCostCalculated?.let { it.toString() } ?: null),
+      Tables.TASK.COST_MANUAL_VALUE.name to (costManualValue?.toString()),
+      Tables.TASK.IS_COST_CALCULATED.name to (isCostCalculated?.toString()),
       Tables.TASK.NOTES.name to task.externalizedNotes(),
     )
   )

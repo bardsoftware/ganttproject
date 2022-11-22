@@ -39,6 +39,9 @@ import org.jooq.impl.DSL
 import org.jooq.impl.DSL.field
 import java.awt.Color
 import java.sql.SQLException
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.*
 import javax.sql.DataSource
 
 class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDatabase {
@@ -157,7 +160,12 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   @Throws(ProjectDatabaseException::class)
   override fun init() {
-    val scriptStream = javaClass.getResourceAsStream(DB_INIT_SCRIPT_PATH) ?: throw ProjectDatabaseException("Init script not found")
+    runScript(DB_INIT_SCRIPT_PATH)
+    runScript(DB_INIT_SCRIPT_PATH2)
+  }
+
+  private fun runScript(path: String) {
+    val scriptStream = javaClass.getResourceAsStream(path) ?: throw ProjectDatabaseException("Init script not found")
     try {
       val queries = String(scriptStream.readAllBytes(), Charsets.UTF_8)
 
@@ -312,12 +320,12 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   override fun mapTasks(vararg columnConsumer: ColumnConsumer) {
     withDSL { dsl ->
-      var q: SelectSelectStep<out Record> = dsl.select(TASK.NUM)
+      var q: SelectSelectStep<out Record> = dsl.select(TASKVIEWFORCOMPUTEDCOLUMNS.ID)
       columnConsumer.forEach {
         q = q.select(field(it.first.selectExpression, it.first.resultClass).`as`(it.first.propertyId))
       }
-      q.from(TASK).forEach {row  ->
-        val taskNum = row[TASK.NUM]
+      q.from(TASKVIEWFORCOMPUTEDCOLUMNS).forEach { row  ->
+        val taskNum = row[TASKVIEWFORCOMPUTEDCOLUMNS.ID]
         columnConsumer.forEach {
           it.second(taskNum, row[it.first.propertyId])
         }
@@ -328,7 +336,9 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   override fun validateColumnConsumer(columnConsumer: ColumnConsumer) {
     withDSL { dsl ->
-      dsl.select(field(columnConsumer.first.selectExpression).cast(columnConsumer.first.resultClass)).from(TASK).limit(1).also {
+      dsl.select(field(columnConsumer.first.selectExpression).cast(columnConsumer.first.resultClass))
+        .from(TASKVIEWFORCOMPUTEDCOLUMNS)
+        .limit(1).also {
         it.execute()
       }
     }
@@ -549,7 +559,7 @@ class SqlTaskUpdateBuilder(private val task: Task,
     appendUpdate(TASK.PRIORITY, oldValue?.persistentValue, newValue?.persistentValue)
 
   override fun setStart(oldValue: GanttCalendar, newValue: GanttCalendar) =
-    appendUpdate(TASK.START_DATE, oldValue.toLocalDate(), newValue.toLocalDate())
+    appendUpdate(TASK.START_DATE, oldValue.toLocalDateTime(), newValue.toLocalDateTime())
 
   override fun setDuration(oldValue: TimeDuration, newValue: TimeDuration) =
     appendUpdate(TASK.DURATION, oldValue.length, newValue.length)
@@ -588,10 +598,11 @@ class SqlTaskUpdateBuilder(private val task: Task,
     appendUpdate(TASK.IS_PROJECT_TASK, oldValue, newValue)
 }
 
+fun Calendar.toLocalDateTime() = LocalDateTime.ofInstant(this.toInstant(), ZoneId.of("UTC"))
 private fun Task.logId(): String = "${uid}:${taskID}"
 
 const val SQL_PROJECT_DATABASE_OPTIONS = ";DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true"
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state$SQL_PROJECT_DATABASE_OPTIONS"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"
-
+private const val DB_INIT_SCRIPT_PATH2 = "/sql/init-project-database-step2.sql"
 private val LOG = GPLogger.create("ProjectDatabase")

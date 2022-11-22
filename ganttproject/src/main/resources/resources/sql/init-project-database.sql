@@ -6,10 +6,10 @@ create table if not exists Task (
     shape                   varchar                     null,
     is_milestone            boolean                 not null,
     is_project_task         boolean                 not null,
-    start_date              date                    not null,
+    start_date              datetime                not null,
     duration                integer                 not null,
     completion              integer                     null,
-    earliest_start_date     date                        null,
+    earliest_start_date     datetime                    null,
     priority                varchar                 not null,
     web_link                varchar                     null,
     cost_manual_value       numeric(100000, 2)          null,
@@ -46,3 +46,24 @@ create table if not exists LogRecord (
 
   primary key (id)
 );
+
+CREATE VIEW TaskViewForComputedColumns AS
+    SELECT
+    uid,
+    num as id,
+    name,
+    color,
+    is_milestone,
+    is_project_task,
+    start_date,
+    CAST('2022-02-24' AS datetime) AS end_date,
+    duration,
+    completion,
+    earliest_start_date,
+    priority,
+    web_link,
+    cost_manual_value,
+    is_cost_calculated,
+    notes,
+    42.0 AS cost
+    FROM Task;

@@ -36,10 +36,15 @@ import net.sourceforge.ganttproject.undo.GPUndoListener
 class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabase, private val taskManager: () -> TaskManager): ProjectDatabase {
   private var lazyProjectDatabase: ProjectDatabase? = null
   private val projectEventListenerImpl by lazy { ProjectEventListenerImpl(this, taskManager) }
+
   private fun isInitialized(): Boolean = lazyProjectDatabase != null
 
   private fun getDatabase(): ProjectDatabase {
-    return lazyProjectDatabase ?: databaseFactory().also { it.init(); lazyProjectDatabase = it }
+    return lazyProjectDatabase ?: databaseFactory().also {
+      it.init();
+      lazyProjectDatabase = it
+      H2Functions.taskManager.set(taskManager())
+    }
   }
 
   override fun startLog(baseTxnId: String) {
