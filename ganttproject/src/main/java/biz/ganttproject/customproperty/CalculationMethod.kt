@@ -19,9 +19,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.customproperty
 
 import biz.ganttproject.core.option.ValidationException
+import biz.ganttproject.core.option.Completion
+import biz.ganttproject.storage.db.tables.Task
 import net.sourceforge.ganttproject.storage.ColumnConsumer
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException
+import kotlin.math.min
 
 sealed class CalculationMethod(val propertyId: String, val resultClass: Class<*>)
 
@@ -40,5 +43,22 @@ class CalculationMethodValidator(private val projectDatabase: ProjectDatabase) {
         }
       }
     }
+  }
+}
+
+private val ourTaskTableFields: List<String> = Task.TASK.run {
+  listOf(
+    COLOR.name, COST_MANUAL_VALUE.name, COMPLETION.name, DURATION.name, EARLIEST_START_DATE.name, IS_COST_CALCULATED.name,
+    IS_MILESTONE.name, IS_PROJECT_TASK.name, NAME.name, NOTES.name, NUM.name, PRIORITY.name, START_DATE.name, WEB_LINK.name
+  )
+}
+class ExpressionAutoCompletion {
+  fun complete(text: String, pos: Int): List<Completion> {
+    var seekPos = min(pos, text.length - 1)
+    while (seekPos >= 0 && (text[seekPos].isJavaIdentifierPart() || text[seekPos].isJavaIdentifierStart())) {
+      seekPos--
+    }
+    val completionPrefix = if (seekPos + 1 in 0..text.length && pos+1 in 0..text.length) text.substring(seekPos + 1, pos + 1) else ""
+    return ourTaskTableFields.filter { it.startsWith(completionPrefix) }.map { Completion(seekPos + 1, pos + 1, it) }
   }
 }

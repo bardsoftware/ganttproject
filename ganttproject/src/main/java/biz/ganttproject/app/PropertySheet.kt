@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.app
 
 import biz.ganttproject.core.option.*
+import biz.ganttproject.lib.fx.AutoCompletionTextFieldBinding
 import javafx.collections.FXCollections
 import javafx.collections.ObservableMap
 import javafx.event.EventHandler
@@ -146,6 +147,9 @@ class PropertySheetBuilder(private val localizer: Localizer) {
 
   private fun createStringOptionEditor(option: ObservableString): Node =
     (if (option.isScreened) { PasswordField() } else { TextField() }).also { textField ->
+      AutoCompletionTextFieldBinding(textField = textField, suggestionProvider ={req ->
+          option.completions(req.userText, textField.caretPosition)
+      }, converter = {it.text})
       val validatedText = textField.textProperty().validated(option.validator)
       validatedText.addWatcher { evt ->
         option.set(evt.newValue, textField)

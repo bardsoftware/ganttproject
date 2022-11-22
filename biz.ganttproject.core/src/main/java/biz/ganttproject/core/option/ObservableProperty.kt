@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package biz.ganttproject.core.option
 
+data class Completion(val posStart: Int, val posEnd: Int, val text: String)
+
 interface GPObservable<T> {
   val value: T
   fun addWatcher(watcher: ObservableWatcher<T>)
@@ -63,9 +65,15 @@ sealed class ObservableProperty<T>(val id: String, initValue: T, private val del
 
 }
 
-class ObservableString(id: String, initValue: String? = null,
-                       val validator: ValueValidator<String> = voidValidator,
-                       val isScreened: Boolean = false): ObservableProperty<String?>(id, initValue)
+
+class ObservableString(
+  id: String, initValue: String? = null,
+  val validator: ValueValidator<String> = voidValidator,
+  val isScreened: Boolean = false)
+  : ObservableProperty<String?>(id, initValue) {
+
+    var completions: (String, Int) -> List<Completion> = { _, _ -> emptyList() }
+}
 class ObservableBoolean(id: String, initValue: Boolean = false): ObservableProperty<Boolean>(id,initValue)
 class ObservableEnum<E : Enum<E>>(id: String, initValue: E, val allValues: Array<E>): ObservableProperty<E>(id,initValue)
 

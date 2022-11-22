@@ -23,6 +23,7 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.customproperty.*
+import biz.ganttproject.core.option.Completion
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
@@ -52,6 +53,7 @@ class ColumnManager(
   private val currentTableColumns: ColumnList,
   private val customColumnsManager: CustomPropertyManager,
   calculationMethodValidator: CalculationMethodValidator,
+  expressionAutoCompletion: (String, Int) -> List<Completion>,
   private val applyExecutor: ApplyExecutorType
 ) {
 
@@ -69,7 +71,7 @@ class ColumnManager(
     it.children.add(errorLabel)
   }
 
-  private val customPropertyEditor = CustomPropertyEditor(calculationMethodValidator, btnDeleteController, listItems,
+  private val customPropertyEditor = CustomPropertyEditor(calculationMethodValidator, expressionAutoCompletion, btnDeleteController, listItems,
     errorUi = {
       if (it == null) {
         errorPane.isVisible = false
@@ -252,6 +254,7 @@ internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {
  */
 internal class CustomPropertyEditor(
   private val calculationMethodValidator: CalculationMethodValidator,
+  private val expressionAutoCompletion: (String, Int) -> List<Completion>,
   private val btnDeleteController: BtnController,
   private val listItems: ObservableList<ColumnAsListItem>,
   private val errorUi: (String?) -> Unit
@@ -293,7 +296,9 @@ internal class CustomPropertyEditor(
       }
       it
     }
-  )
+  ).also {
+    it.completions = expressionAutoCompletion
+  }
 
   private val allOptions = listOf(nameOption, typeOption, defaultValueOption, isCalculatedOption, expressionOption)
 
@@ -506,7 +511,7 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
       }.vbox
     )
     val columnManager = ColumnManager(
-      columnList, customColumnsManager, CalculationMethodValidator(projectDatabase), applyExecutor
+      columnList, customColumnsManager, CalculationMethodValidator(projectDatabase), ExpressionAutoCompletion()::complete, applyExecutor
     )
     dlg.setContent(columnManager.content)
     dlg.setupButton(ButtonType.APPLY) { btn ->
