@@ -57,8 +57,9 @@ tasks.getByName<KotlinCompile>("compileKotlin") {
 }
 
 tasks.register<Copy>("copyDbScript") {
-    from("$rootDir/../ganttproject/src/main/resources/resources/sql/init-project-database.sql")
+    from("$rootDir/../ganttproject/src/main/resources/resources/sql/")
     into("src/test/resources/sql")
+
 }
 
 tasks.getByName<Test>("test") {
