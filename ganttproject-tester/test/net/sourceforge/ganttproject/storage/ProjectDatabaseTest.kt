@@ -26,7 +26,7 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.customproperty.CustomColumnsValues
 import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.storage.db.Tables.TASKDEPENDENCY
-import biz.ganttproject.storage.db.tables.Task.*
+import biz.ganttproject.storage.db.tables.Task.TASK
 import net.sourceforge.ganttproject.TestSetupHelper
 import net.sourceforge.ganttproject.task.CostStub
 import net.sourceforge.ganttproject.task.Task
@@ -38,8 +38,11 @@ import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.awt.Color
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -652,7 +655,8 @@ class ProjectDatabaseTest {
     assertEquals(1, txns[0].colloboqueOperations.size) { "Recorded statements: ${txns[0].colloboqueOperations}"}
     when (val stmt = txns[0].colloboqueOperations[0]) {
       is OperationDto.UpdateOperationDto -> {
-        assert(stmt.newValues.containsKey("start_date") && stmt.newValues["start_date"] == TestSetupHelper.newTuesday().toXMLString())
+        assertTrue(stmt.newValues.containsKey("start_date"))
+        assertEquals(TestSetupHelper.newTuesday().toXMLString(), stmt.newValues["start_date"])
       }
       else -> {
         fail("Wrong type of operation. Operation dto: $stmt")

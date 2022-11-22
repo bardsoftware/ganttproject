@@ -559,7 +559,7 @@ class SqlTaskUpdateBuilder(private val task: Task,
     appendUpdate(TASK.PRIORITY, oldValue?.persistentValue, newValue?.persistentValue)
 
   override fun setStart(oldValue: GanttCalendar, newValue: GanttCalendar) =
-    appendUpdate(TASK.START_DATE, oldValue.toLocalDateTime(), newValue.toLocalDateTime())
+    appendUpdate(TASK.START_DATE, oldValue.toLocalDate(), newValue.toLocalDate())
 
   override fun setDuration(oldValue: TimeDuration, newValue: TimeDuration) =
     appendUpdate(TASK.DURATION, oldValue.length, newValue.length)
@@ -598,7 +598,6 @@ class SqlTaskUpdateBuilder(private val task: Task,
     appendUpdate(TASK.IS_PROJECT_TASK, oldValue, newValue)
 }
 
-fun Calendar.toLocalDateTime() = LocalDateTime.ofInstant(this.toInstant(), ZoneId.of("UTC"))
 private fun Task.logId(): String = "${uid}:${taskID}"
 
 const val SQL_PROJECT_DATABASE_OPTIONS = ";DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true"
