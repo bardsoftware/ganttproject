@@ -19,7 +19,6 @@
 package net.sourceforge.ganttproject.test.task
 
 import biz.ganttproject.storage.db.tables.records.TaskRecord
-import net.sourceforge.ganttproject.storage.toLocalDate
 import net.sourceforge.ganttproject.task.export
 import net.sourceforge.ganttproject.task.importFromDatabase
 import org.junit.jupiter.api.BeforeEach
