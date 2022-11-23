@@ -29,12 +29,12 @@ dependencies {
     implementation("com.google.guava:guava:31.1-jre")
 
     implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("org.postgresql:postgresql:42.3.6")
+    implementation("org.postgresql:postgresql:42.5.0")
 
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.3")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.14.0")
     implementation(kotlin("stdlib", version = kotlinVersion))
     implementation(kotlin("reflect", version = kotlinVersion))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jooq:jooq:3.17.5")
     implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("com.github.ajalt.clikt:clikt:3.5.0")
@@ -45,9 +45,9 @@ dependencies {
 
     implementation(files("lib/eclipsito.jar"))
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-    testImplementation("com.h2database:h2:2.1.212")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
+    testImplementation("com.h2database:h2:2.1.214")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 }
 
 tasks.getByName<KotlinCompile>("compileKotlin") {

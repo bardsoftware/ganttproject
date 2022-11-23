@@ -58,6 +58,7 @@ jpackage --type app-image \
                     -Duser.dir=$APPDIR
                     -DversionDirs=plugins:~/.ganttproject.d/updates
                     -Dapp=net.sourceforge.ganttproject.GanttProject
+                    -Dorg.jooq.no-logo=true
                     -Dgpcloud=prod' \
     --arguments '--verbosity 4' \
     --arguments '--version-dirs plugins:~/.ganttproject.d/updates' \

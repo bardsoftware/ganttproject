@@ -212,7 +212,7 @@ JAVA_EXPORTS="--add-exports javafx.controls/com.sun.javafx.scene.control.behavio
   --add-exports javafx.graphics/com.sun.javafx.util=ALL-UNNAMED\
   --add-opens java.desktop/sun.swing=ALL-UNNAMED\
   --add-opens java.desktop/sun.awt.X11=ALL-UNNAMED"
-"$JAVA_COMMAND" -Dgpcloud=prod -Xmx2048m $JAVA_EXPORTS -Duser.dir="$(pwd)" $DEBUG_ARGS $BOOT_CLASS \
+"$JAVA_COMMAND" -Dgpcloud=prod -Dorg.jooq.no-logo=true -Xmx2048m $JAVA_EXPORTS -Duser.dir="$(pwd)" $DEBUG_ARGS $BOOT_CLASS \
   --app net.sourceforge.ganttproject.GanttProject \
   --version-dirs "$GP_HOME"/plugins:~/.ganttproject.d/updates \
   -log true -log_file "$LOG_FILE" "${APP_ARGS[@]}"
