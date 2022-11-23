@@ -104,7 +104,7 @@ fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -
       dialogBuilder.createDialog(
           jfxPanel,
           arrayOf(CancelAction("close").also { it.putValue(GPAction.HAS_DIALOG_BUTTON, false) }),
-          title?.value ?: "", null).also {
+          title?.value ?: "").also {
         swingDialogController.set(it)
         dialogController.setDialogFrame(it)
       }
@@ -125,6 +125,9 @@ interface DialogController {
   fun removeButtonBar()
   fun toggleProgress(shown: Boolean): () -> Unit
   fun resize()
+
+  fun setEscCloseEnabled(value: Boolean)
+
   var beforeShow: () -> Unit
   var onShown: () -> Unit
   var onClosed: () -> Unit
@@ -269,6 +272,10 @@ class DialogControllerSwing : DialogController {
     }
   }
 
+  override fun setEscCloseEnabled(value: Boolean) {
+    this.dialogFrame.isEscCloseEnabled = value
+  }
+
   override fun showAlert(title: LocalizedString, content: Node) {
     Platform.runLater {
       createAlertPane(this.content, this.contentStack, title, content)
@@ -382,6 +389,10 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
   }
 
   override fun resize() {
+  }
+
+  override fun setEscCloseEnabled(value: Boolean) {
+    TODO("Not implemented yet")
   }
 
   override fun showAlert(title: LocalizedString, content: Node) {
@@ -505,6 +516,10 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
 
   override fun resize() {
 
+  }
+
+  override fun setEscCloseEnabled(value: Boolean) {
+    TODO("Not yet implemented")
   }
 
   private fun createButton(buttonType: ButtonType): Button {

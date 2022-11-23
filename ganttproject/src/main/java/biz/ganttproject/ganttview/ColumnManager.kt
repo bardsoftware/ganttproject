@@ -28,6 +28,7 @@ import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
+import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.collections.MapChangeListener
@@ -60,6 +61,7 @@ class ColumnManager(
   internal val btnAddController = BtnController(onAction = this::onAddColumn)
   internal val btnDeleteController = BtnController(onAction = this::onDeleteColumn)
   internal val btnApplyController = BtnController(onAction = this::onApply)
+  internal val escCloseEnabled = SimpleBooleanProperty(true)
 
   private val listItems = FXCollections.observableArrayList<ColumnAsListItem>()
   private val listView: ListView<ColumnAsListItem> = ListView()
@@ -71,7 +73,7 @@ class ColumnManager(
     it.children.add(errorLabel)
   }
 
-  private val customPropertyEditor = CustomPropertyEditor(calculationMethodValidator, expressionAutoCompletion, btnDeleteController, listItems,
+  private val customPropertyEditor = CustomPropertyEditor(calculationMethodValidator, expressionAutoCompletion, btnDeleteController, escCloseEnabled, listItems,
     errorUi = {
       if (it == null) {
         errorPane.isVisible = false
@@ -256,6 +258,7 @@ internal class CustomPropertyEditor(
   private val calculationMethodValidator: CalculationMethodValidator,
   private val expressionAutoCompletion: (String, Int) -> List<Completion>,
   private val btnDeleteController: BtnController,
+  private val escCloseEnabled: BooleanProperty,
   private val listItems: ObservableList<ColumnAsListItem>,
   private val errorUi: (String?) -> Unit
 ) {
@@ -302,7 +305,9 @@ internal class CustomPropertyEditor(
 
   private val allOptions = listOf(nameOption, typeOption, defaultValueOption, isCalculatedOption, expressionOption)
 
-  internal val propertySheet = PropertySheetBuilder(localizer).createPropertySheet(allOptions)
+  internal val propertySheet = PropertySheetBuilder(localizer).createPropertySheet(allOptions).also {
+    escCloseEnabled.bind(it.isEscCloseEnabled)
+  }
   internal val propertySheetLabel = Label().also {
     it.styleClass.add("title")
   }
@@ -513,6 +518,7 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
     val columnManager = ColumnManager(
       columnList, customColumnsManager, CalculationMethodValidator(projectDatabase), ExpressionAutoCompletion()::complete, applyExecutor
     )
+    columnManager.escCloseEnabled.addListener { _, _, newValue -> dlg.setEscCloseEnabled(newValue) }
     dlg.setContent(columnManager.content)
     dlg.setupButton(ButtonType.APPLY) { btn ->
       btn.text = localizer.formatText("apply")

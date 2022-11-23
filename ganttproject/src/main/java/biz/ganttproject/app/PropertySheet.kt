@@ -20,6 +20,8 @@ package biz.ganttproject.app
 
 import biz.ganttproject.core.option.*
 import biz.ganttproject.lib.fx.AutoCompletionTextFieldBinding
+import javafx.beans.property.BooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableMap
 import javafx.event.EventHandler
@@ -40,7 +42,11 @@ import java.awt.event.ActionEvent
 private data class OptionItem(val option: ObservableProperty<*>, val editor: Node, val label: String?)
 private val MIN_COLUMN_WIDTH = 100.0
 
-class PropertySheet(val node: Node, val validationErrors: ObservableMap<ObservableProperty<*>, String>) {
+class PropertySheet(
+  val node: Node,
+  val validationErrors: ObservableMap<ObservableProperty<*>, String>,
+  val isEscCloseEnabled: BooleanProperty
+) {
   fun requestFocus() {
     node.requestFocus()
   }
@@ -52,7 +58,7 @@ class PropertySheet(val node: Node, val validationErrors: ObservableMap<Observab
 
 class PropertySheetBuilder(private val localizer: Localizer) {
   private val validationErrors = FXCollections.observableMap(mutableMapOf<ObservableProperty<*>, String>())
-
+  private val isEscCloseEnabled = SimpleBooleanProperty(true)
   fun createPropertySheet(options: List<ObservableProperty<*>>): PropertySheet {
     val gridPane = PropertyPane().also {
       it.styleClass.add("property-pane")
@@ -91,7 +97,7 @@ class PropertySheetBuilder(private val localizer: Localizer) {
         }
       }
     }
-    return PropertySheet(gridPane, validationErrors)
+    return PropertySheet(gridPane, validationErrors, isEscCloseEnabled)
   }
 
   private fun createLabel(item: OptionItem): Label {
@@ -149,7 +155,9 @@ class PropertySheetBuilder(private val localizer: Localizer) {
     (if (option.isScreened) { PasswordField() } else { TextField() }).also { textField ->
       AutoCompletionTextFieldBinding(textField = textField, suggestionProvider ={req ->
           option.completions(req.userText, textField.caretPosition)
-      }, converter = {it.text})
+      }, converter = {it.text}).also {
+        isEscCloseEnabled.bind(it.autoCompletionPopup.showingProperty().not())
+      }
       val validatedText = textField.textProperty().validated(option.validator)
       validatedText.addWatcher { evt ->
         option.set(evt.newValue, textField)

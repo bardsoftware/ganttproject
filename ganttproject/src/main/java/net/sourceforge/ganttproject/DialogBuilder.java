@@ -57,8 +57,9 @@ public class DialogBuilder {
     /** Original animation view, used to set it back when the dialog is closed again */
     private final JDialog myDlg;
     private final JFrame myMainFrame;
+    private boolean isEscCloseEnabled = true;
 
-    DialogImpl(JDialog dlg, JFrame mainFrame, NotificationManager notificationManager) {
+    DialogImpl(JDialog dlg, JFrame mainFrame) {
       myDlg = dlg;
       myMainFrame = mainFrame;
     }
@@ -108,6 +109,15 @@ public class DialogBuilder {
       DialogAligner.center(myDlg, myMainFrame, centering);
     }
 
+    @Override
+    public boolean isEscCloseEnabled() {
+      return isEscCloseEnabled;
+    }
+
+    @Override
+    public void setEscCloseEnabled(boolean value) {
+      isEscCloseEnabled = value;
+    }
   }
   private final JFrame myMainFrame;
 
@@ -126,9 +136,9 @@ public class DialogBuilder {
    * @param title dialog title
    * @return dialog object
    */
-  public Dialog createDialog(Component content, Action[] buttonActions, String title, final NotificationManager notificationManager) {
+  public Dialog createDialog(Component content, Action[] buttonActions, String title) {
     final JDialog dlg = new JDialog(myMainFrame, true);
-    final DialogImpl result = new DialogImpl(dlg, myMainFrame, notificationManager);
+    final DialogImpl result = new DialogImpl(dlg, myMainFrame);
     dlg.setTitle(title);
     dlg.getContentPane().setLayout(new BorderLayout());
     dlg.getContentPane().add(content, BorderLayout.CENTER);
@@ -219,7 +229,9 @@ public class DialogBuilder {
             @Override
             public void actionPerformed(ActionEvent e) {
               nextAction.actionPerformed(e);
-              result.hide();
+              if (result.isEscCloseEnabled()) {
+                result.hide();
+              }
             }
           });
         }

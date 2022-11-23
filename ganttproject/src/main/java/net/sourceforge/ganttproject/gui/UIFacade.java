@@ -56,6 +56,10 @@ public interface UIFacade {
     void center(Centering centering);
     void onShown(Runnable onShown);
     void onClosed(Runnable onClosed);
+
+    boolean isEscCloseEnabled();
+
+    void setEscCloseEnabled(boolean value);
     //void resize();
   }
 
