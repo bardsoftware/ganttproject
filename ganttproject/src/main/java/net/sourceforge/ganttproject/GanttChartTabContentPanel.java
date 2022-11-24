@@ -100,7 +100,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     return myComponent;
   }
 
-  private final ContextMenu tableFilterMenu = new ContextMenu();
+
   private final Label filterTaskLabel = new Label();
 
   private Supplier<TaskFilterActionSet> filterActions = Suppliers.memoize(() -> new TaskFilterActionSet(taskTable.getFilterManager()));
@@ -110,6 +110,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
 
     Button tableFilterButton = ToolbarKt.createButton(new TableButtonAction("taskTable.tableMenuFilter"), true);
     tableFilterButton.setOnAction(event -> {
+      var tableFilterMenu = new ContextMenu();
       tableFilterMenu.getItems().clear();
       filterActions.get().tableFilterActions(new MenuBuilderFx(tableFilterMenu));
       tableFilterMenu.show(tableFilterButton, Side.BOTTOM, 0.0, 0.0);

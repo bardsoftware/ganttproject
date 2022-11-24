@@ -2,6 +2,7 @@
 @import "../../app/typography";
 @import "../../app/buttons";
 @import "../../app/validation";
+@import "../../app/menu";
 
 .gp-tree-table-view {
   .gp-check-box-tree-table-cell {
@@ -141,5 +142,7 @@
             -fx-pref-width: 15;
         }
     }
+
+  @include context-menu();
 }
 

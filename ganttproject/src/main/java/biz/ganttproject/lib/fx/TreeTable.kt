@@ -18,12 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
-import biz.ganttproject.lib.fx.treetable.VirtualFlow
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.app.MenuBuilderFx
 import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
 import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
+import biz.ganttproject.lib.fx.treetable.VirtualFlow
 import biz.ganttproject.walkTree
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView

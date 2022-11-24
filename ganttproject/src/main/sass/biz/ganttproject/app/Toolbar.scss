@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 @import "theme";
 @import "buttons";
+@import "menu";
 
 .toolbar-common {
   -fx-background-color: transparent;
@@ -220,4 +221,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-padding: 3 5 0 0;
     -fx-text-fill: $gp-medium-gray;
   }
+
+  @include context-menu();
 }

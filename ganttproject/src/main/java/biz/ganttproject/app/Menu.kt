@@ -18,11 +18,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
+import biz.ganttproject.lib.fx.vbox
+import biz.ganttproject.walkTree
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.event.EventHandler
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.text.Text
 import net.sourceforge.ganttproject.action.GPAction
@@ -64,7 +67,9 @@ interface MenuBuilder {
 class MenuBuilderFx(private val contextMenu: ContextMenu) : MenuBuilder {
   private val stack = Stack<Function1<MenuItem, Unit>>()
   init {
-    stack.push { contextMenu.items.add(it) }
+    stack.push {
+      contextMenu.items.add(it)
+    }
   }
   private fun add(item: MenuItem) = stack.peek().invoke(item)
 
@@ -78,7 +83,9 @@ class MenuBuilderFx(private val contextMenu: ContextMenu) : MenuBuilder {
   override fun submenu(title: String, code: (MenuBuilder)->Unit) {
     Menu(title).also { menu ->
       add(menu)
-      stack.push { menu.items.add(it) }
+      stack.push {
+        menu.items.add(it)
+      }
       code(this)
       stack.pop()
     }
@@ -205,11 +212,26 @@ fun GPAction.asMenuItem(): MenuItem =
   if (this == GPAction.SEPARATOR) {
     SeparatorMenuItem()
   } else {
-    val menuItem = getValue(Action.SELECTED_KEY)?.let { selected ->
-      CheckMenuItem(name).also { fxMenuItem ->
-        fxMenuItem.isSelected = selected as Boolean
-        fxMenuItem.onAction = EventHandler { _ ->
-          this.putValue(Action.SELECTED_KEY, fxMenuItem.isSelected)
+    val node: Node = getValue(Action.SELECTED_KEY)?.let { isSelected ->
+      CheckBox(name).also { checkBox ->
+        checkBox.graphic = vbox {
+          val helpText = this@asMenuItem.getValue(Action.SHORT_DESCRIPTION)?.toString()
+          addClasses("custom-checkbox-menu-item")
+          add(Label(name).also {
+            if (helpText != null) {
+              it.styleClass.add("title")
+            }
+          })
+          helpText?.let {
+            add(Label(it).also {
+              it.styleClass.add("help")
+            })
+          }
+        }
+        checkBox.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+        checkBox.isSelected = isSelected as Boolean
+        checkBox.onAction = EventHandler { _ ->
+          this.putValue(Action.SELECTED_KEY, checkBox.isSelected)
           SwingUtilities.invokeLater {
             this.actionPerformed(null)
           }
@@ -217,20 +239,21 @@ fun GPAction.asMenuItem(): MenuItem =
 
         gpActionListener[this]?.let { this.removePropertyChangeListener(it) }
         PropertyChangeListener {
-          fxMenuItem.isSelected = (this.getValue(Action.SELECTED_KEY) as? java.lang.Boolean)?.booleanValue() ?: false
+          checkBox.isSelected = (this.getValue(Action.SELECTED_KEY) as? java.lang.Boolean)?.booleanValue() ?: false
         }.also {
           this.addPropertyChangeListener(it)
           gpActionListener[this] = it
         }
       }
-    } ?: MenuItem(name).also {
-      it.onAction = EventHandler {
-        SwingUtilities.invokeLater {
-          this.actionPerformed(null)
-        }
-      }
+    } ?: Label(name).also {label ->
       getGlyphIcon()?.let { icon ->
-        it.graphic = icon
+        label.graphic = icon
+      }
+    }
+    val menuItem = CustomMenuItem(node)
+    menuItem.onAction = EventHandler { _ ->
+      SwingUtilities.invokeLater {
+        this.actionPerformed(null)
       }
     }
     menuItem.also {
