@@ -38,7 +38,7 @@ val integerValidator: ValueValidator<Int> = ValueValidator { text ->
   try {
     text.toInt()
   } catch (ex: NumberFormatException) {
-    throw ValidationException("Not an integer number: $text")
+    throw ValidationException(validatorI18N("validator.int.error.parse", arrayOf(text)))
   }
 }
 
@@ -46,7 +46,7 @@ val doubleValidator: ValueValidator<Double> = ValueValidator { text ->
   try {
     text.toDouble()
   } catch (ex: NumberFormatException) {
-    throw ValidationException("Not a decimal number: $text")
+    throw ValidationException(validatorI18N("validator.decimal.error.parse", arrayOf(text)))
   }
 }
 
@@ -145,3 +145,5 @@ fun <T> StringProperty.validated(validator: ValueValidator<T>): ValidatedObserva
     this.addListener { _, _, newValue -> textObservable.set(newValue, this) }
   }
 }
+
+var validatorI18N: (key: String, params: Array<Any>) -> String = { key, params -> key }

@@ -180,7 +180,7 @@ abstract class AutoCompletionBinding<T> protected constructor(
    *
    * @return the [AutoCompletePopup] used by this binding
    */
-  val autoCompletionPopup: AutoCompletePopup<T>
+  val autoCompletionPopup: AutoCompletePopup<T> = AutoCompletePopup()
   private val suggestionsTaskLock = Any()
   private var suggestionsTask: FetchSuggestionsTask? = null
   /**
@@ -540,7 +540,6 @@ abstract class AutoCompletionBinding<T> protected constructor(
    * @param converter The converter to be used to convert suggestions to strings
    */
   init {
-    autoCompletionPopup = AutoCompletePopup()
     autoCompletionPopup.converter = object: StringConverter<T>() {
       override fun toString(completion: T): String = converter(completion)
 

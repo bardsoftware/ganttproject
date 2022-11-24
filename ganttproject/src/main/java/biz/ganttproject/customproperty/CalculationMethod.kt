@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.customproperty
 
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.option.Completion
 import biz.ganttproject.storage.db.Tables
@@ -39,7 +40,7 @@ class CalculationMethodValidator(private val projectDatabase: ProjectDatabase) {
         try {
           projectDatabase.validateColumnConsumer(ColumnConsumer(calculationMethod) {_,_->})
         } catch (ex: ProjectDatabaseException) {
-          throw ValidationException("Syntax error or incompatible result type")
+          throw ValidationException(RootLocalizer.formatText("option.customPropertyDialog.expression.validation.syntax"))
         }
       }
     }
@@ -59,6 +60,6 @@ class ExpressionAutoCompletion {
       seekPos--
     }
     val completionPrefix = if (seekPos + 1 in 0..text.length && pos+1 in 0..text.length) text.substring(seekPos + 1, pos + 1) else ""
-    return ourTaskTableFields.filter { it.startsWith(completionPrefix) }.map { Completion(seekPos + 1, pos + 1, it) }
+    return ourTaskTableFields.filter { it.startsWith(completionPrefix) }.sorted().map { Completion(seekPos + 1, pos + 1, it) }
   }
 }

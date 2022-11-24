@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.app
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.core.option.validatorI18N
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ObservableValue
@@ -186,7 +187,9 @@ class SingleTranslationLocalizer(val bundle: ResourceBundle) : DefaultLocalizer(
 
 private var ourLocale: Locale = Locale.getDefault()
 private val ourCurrentTranslation: SimpleObjectProperty<ResourceBundle?> = SimpleObjectProperty(getResourceBundle(Locale.getDefault(), true))
-var RootLocalizer : DefaultLocalizer = DefaultLocalizer(currentTranslation = ourCurrentTranslation)
+var RootLocalizer : DefaultLocalizer = DefaultLocalizer(currentTranslation = ourCurrentTranslation).also {
+  validatorI18N = it::formatText
+}
 
 fun setLocale(locale: Locale) {
   ourLocale = locale
