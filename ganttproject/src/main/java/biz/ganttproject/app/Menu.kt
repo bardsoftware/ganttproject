@@ -207,6 +207,8 @@ fun (GPAction).getGlyphIcon(): Text? =
       }
     }
 
+fun GPAction.getHelpText(): String? = RootLocalizer.formatTextOrNull("${this.id}.help")
+
 private val gpActionListener = WeakHashMap<GPAction, PropertyChangeListener>()
 fun GPAction.asMenuItem(): MenuItem =
   if (this == GPAction.SEPARATOR) {
@@ -215,7 +217,7 @@ fun GPAction.asMenuItem(): MenuItem =
     val node: Node = getValue(Action.SELECTED_KEY)?.let { isSelected ->
       CheckBox(name).also { checkBox ->
         checkBox.graphic = vbox {
-          val helpText = this@asMenuItem.getValue(Action.SHORT_DESCRIPTION)?.toString()
+          val helpText = this@asMenuItem.getHelpText()
           addClasses("custom-checkbox-menu-item")
           add(Label(name).also {
             if (helpText != null) {
