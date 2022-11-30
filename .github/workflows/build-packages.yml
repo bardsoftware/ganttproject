@@ -4,6 +4,9 @@ on:
     push:
         branches: ['master', 'BRANCH*']
         paths: ['ganttproject-builder/VERSION']
+env:
+    BUILD_NUMBER: 3292
+    VERSION: 3.3.3292
 
 jobs:
     distZip:
@@ -65,13 +68,31 @@ jobs:
                   cache: 'gradle'
             - name: Build GanttProject
               run: |
-                  ./gradlew distbin
+                  ./gradlew distbin distwin
                   echo "===== PLUGINS ====="
                   ls ganttproject-builder/dist-bin/plugins/base
             - name: Build MSI installer
               run: |
                   build-bin/package-win.bat
 
+            - name: Install NSIS
+              run: |
+                  iwr -useb get.scoop.sh -outfile 'install.ps1'
+                  .\install.ps1 -RunAsAdmin
+                  scoop update
+                  scoop bucket add extras
+                  scoop install nsis
+            - name: Print NSIS version
+              run: makensis -VERSION
+            - name: Print NSIS compile flags
+              run: makensis -HDRINFO
+
+            - name: Build NSIS package
+              run: |
+                  cd ganttproject-builder\dist-win
+                  makensis ganttproject.nsi
+                  dir
+                  mv ganttproject-%VERSION%.exe ..\..\build
             - id: 'auth'
               uses: 'google-github-actions/auth@v1'
               with:
@@ -83,10 +104,12 @@ jobs:
             - name: 'Use gcloud CLI'
               run: 'gcloud info'
 
-            - name: Upload ZIP
+            - name: Upload Packages
               run: |
-                  gsutil cp build\ganttproject-3.3.3291.msi gs://dl.ganttproject.biz
-                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-3.3.3291.msi
+                  gsutil cp build\ganttproject-%VERSION%.msi gs://dl.ganttproject.biz
+                  gsutil cp build\ganttproject-%VERSION%.exe gs://dl.ganttproject.biz
+                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-%VERSION%.msi
+                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-%VERSION%.exe
 
     distMac:
         runs-on: macos-latest

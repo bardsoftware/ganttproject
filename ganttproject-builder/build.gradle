@@ -110,7 +110,7 @@ task distWin(dependsOn: distBin) {
             rename 'ganttproject.nsi.tpl', 'ganttproject.nsi'
         }
         copy {
-            from '.'
+            from '..'
             into 'dist-win'
             include 'runtime/**'
         }
