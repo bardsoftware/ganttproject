@@ -313,13 +313,16 @@ public class CalendarEditorPanel {
             button.getStyleClass().add("btn-attention");
             button.setText(InternationalizationKt.getRootLocalizer().formatText("add"));
             button.setOnAction(event -> {
-              for (LocalDate localDate : multiDatePicker.getSelectedDates()) {
-                Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-                if (!tableModel.contains(date)) {
-                  tableModel.setValueAt(CalendarFactory.createGanttCalendar(date), tableModel.getRowCount() - 1, 0);
+              var selectedDates = multiDatePicker.getSelectedDates();
+              SwingUtilities.invokeLater(() -> {
+                for (LocalDate localDate : selectedDates) {
+                  Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                  if (!tableModel.contains(date)) {
+                    tableModel.setValueAt(CalendarFactory.createGanttCalendar(date), tableModel.getRowCount() - 1, 0);
+                  }
                 }
-              }
-              controller.hide();
+                controller.hide();
+              });
             });
             return null;
           });

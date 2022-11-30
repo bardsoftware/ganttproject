@@ -51,6 +51,8 @@ import java.util.List;
 public class WeekendConfigurationPage implements WizardPage {
   private final JPanel myPanel;
   private final JLabel myBasedOnLabel = new JLabel();
+  private final GPCalendarCalc myRealCalendar;
+
   {
     myBasedOnLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
   }
@@ -104,6 +106,7 @@ public class WeekendConfigurationPage implements WizardPage {
   public WeekendConfigurationPage(final GPCalendarCalc calendar, I18N i18n, UIFacade uiFacade) {
     OptionsPageBuilder builder = new OptionsPageBuilder();
 
+    myRealCalendar = calendar;
     myI18N = i18n;
     myPanel = new JPanel(new BorderLayout());
 
@@ -246,6 +249,7 @@ public class WeekendConfigurationPage implements WizardPage {
     if (!active) {
       myCalendarOption.commit();
       myRenderWeekendOption.commit();
+      myRealCalendar.setPublicHolidays(myCalendarEditorPanel.getEvents());
     }
   }
 

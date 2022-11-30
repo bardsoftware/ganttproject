@@ -75,9 +75,7 @@ import javax.swing.event.UndoableEditEvent;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -710,7 +708,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   @Override
   public @NotNull String getDescription() {
-    return prjInfos.getDescription();
+    return Objects.requireNonNullElse(prjInfos.getDescription(), "");
   }
 
   @Override
