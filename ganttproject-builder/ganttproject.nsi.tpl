@@ -10,7 +10,7 @@ Icon "ganttproject.ico"
 
 !define MUI_ICON "ganttproject.ico"
 
-OutFile ganttproject-${VERSION_BUILD}.exe
+OutFile ganttproject-${VERSION}.exe
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\GanttProject-3.2
