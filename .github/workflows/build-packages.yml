@@ -68,7 +68,7 @@ jobs:
                   cache: 'gradle'
             - name: Build GanttProject
               run: |
-                  ./gradlew distbin distwin
+                  ./gradlew distbin
                   echo "===== PLUGINS ====="
                   ls ganttproject-builder/dist-bin/plugins/base
             - name: Build MSI installer
@@ -86,6 +86,12 @@ jobs:
               run: makensis -VERSION
             - name: Print NSIS compile flags
               run: makensis -HDRINFO
+
+            - name: Prepare files for NSIS
+              run: |
+                  ./gradlew distwin
+                  echo "===== dist-win ====="
+                  ls ganttproject-builder/dist-win
 
             - name: Build NSIS package
               run: |
