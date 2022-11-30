@@ -121,7 +121,7 @@ private fun String.colorFromUiManager(): Color? =
 
 val liveCells = mutableListOf<WeakReference<TextCell<*,*>>>()
 val fontListener by lazy {
-  { liveCells.forEach { it.get()?.let {cell -> cell.updateFont()} }}.also { listener ->
+  { liveCells.forEach { it.get()?.updateFont() }}.also { listener ->
     applicationFont.addListener{ _, _, _ -> listener() }
     flow {
       while (true) {
@@ -240,7 +240,7 @@ class TextCell<S, T>(
     } finally {
       onEditingCompleted()
     }
-    val rowIdx = this.treeTableRow.index
+    val rowIdx = this.tableRow.index
     val col = this.tableColumn
     Platform.runLater {
       doCancelEdit(rowIdx, col)
@@ -395,7 +395,9 @@ fun <S> createBooleanColumn(name: String, getValue: (S) -> Boolean?, setValue: (
     setCellValueFactory {
       SimpleBooleanProperty(getValue(it.value.value) ?: false)
     }
-    cellFactory =  Callback { CheckBoxTableCell() }
+    cellFactory =  Callback { CheckBoxTableCell<S>().also {
+      it.isEditable = this.isEditable
+    } }
     onEditCommit = EventHandler {event -> setValue(event.rowValue.value, event.newValue) }
   }
 
@@ -474,7 +476,7 @@ class TextCellFactory<S, T>(
     TextCell(converter).also(cellSetup)
 }
 
-class CheckBoxTableCell<S>() : TreeTableCell<S, Boolean>() {
+class CheckBoxTableCell<S> : TreeTableCell<S, Boolean>() {
   private var isChecked = false
   set(value) {
     field = value
@@ -487,7 +489,7 @@ class CheckBoxTableCell<S>() : TreeTableCell<S, Boolean>() {
   private val button = Button("", null).also {
     it.onAction = EventHandler {
       val newValue = !isChecked
-      this.treeTableView.edit(this.treeTableRow.index, this.tableColumn)
+      this.treeTableView.edit(this.tableRow.index, this.tableColumn)
       commitEdit(newValue)
       isChecked = newValue
     }
@@ -495,6 +497,7 @@ class CheckBoxTableCell<S>() : TreeTableCell<S, Boolean>() {
 
   init {
     styleClass.add("gp-check-box-tree-table-cell")
+    button.disableProperty().bind(editableProperty().not())
   }
 
   override fun updateItem(item: Boolean?, empty: Boolean) {
@@ -513,7 +516,7 @@ class CheckBoxTableCell<S>() : TreeTableCell<S, Boolean>() {
 }
 
 private fun <S> updateCellClasses(cell: TreeTableCell<S, *>, empty: Boolean) {
-  if (cell.treeTableView.focusModel.isFocused(cell.treeTableRow.index, cell.tableColumn)) {
+  if (cell.treeTableView.focusModel.isFocused(cell.tableRow.index, cell.tableColumn)) {
     if (cell.styleClass.indexOf("focused") < 0) {
       cell.styleClass.add("focused")
     }
@@ -523,7 +526,7 @@ private fun <S> updateCellClasses(cell: TreeTableCell<S, *>, empty: Boolean) {
   cell.styleClass.removeAll("odd")
   cell.styleClass.removeAll("even")
   if (!empty) {
-    if (cell.treeTableRow.index % 2 == 0) {
+    if (cell.tableRow.index % 2 == 0) {
       cell.styleClass.add("even")
     } else {
       cell.styleClass.add("odd")
