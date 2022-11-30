@@ -98,7 +98,8 @@ jobs:
                   cd ganttproject-builder\dist-win
                   makensis ganttproject.nsi
                   dir
-                  mv ganttproject-%VERSION%.exe ..\..\build
+                  mv ganttproject-$env:VERSION.exe ..\..\build
+
             - id: 'auth'
               uses: 'google-github-actions/auth@v1'
               with:
@@ -112,10 +113,10 @@ jobs:
 
             - name: Upload Packages
               run: |
-                  gsutil cp build\ganttproject-%VERSION%.msi gs://dl.ganttproject.biz
-                  gsutil cp build\ganttproject-%VERSION%.exe gs://dl.ganttproject.biz
-                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-%VERSION%.msi
-                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-%VERSION%.exe
+                  gsutil cp build\ganttproject-$env:VERSION.msi gs://dl.ganttproject.biz
+                  gsutil cp build\ganttproject-$env:VERSION.exe gs://dl.ganttproject.biz
+                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.msi
+                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.exe
 
     distMac:
         runs-on: macos-latest
