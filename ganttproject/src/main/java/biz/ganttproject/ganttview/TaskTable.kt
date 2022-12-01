@@ -68,7 +68,7 @@ import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm
 import net.sourceforge.ganttproject.task.depthFirstWalk
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
-import net.sourceforge.ganttproject.task.event.TaskPropertyEvent
+import net.sourceforge.ganttproject.undo.GPUndoListener
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.awt.Component
 import java.math.BigDecimal
@@ -76,6 +76,7 @@ import java.util.*
 import java.util.List.copyOf
 import java.util.function.Consumer
 import javax.swing.SwingUtilities
+import javax.swing.event.UndoableEditEvent
 import kotlin.math.ceil
 
 
@@ -319,14 +320,18 @@ class TaskTable(
         reload()
       }
     })
+    undoManager.addUndoableEditListener(object : GPUndoListener {
+      override fun undoableEditHappened(e: UndoableEditEvent) {
+        treeTable.coalescingRefresh()
+      }
+
+      override fun undoOrRedoHappened() {}
+      override fun undoReset() {}
+    })
   }
 
   private fun initTaskEventHandlers() {
     taskManager.addTaskListener(object : TaskListenerAdapter() {
-      override fun taskPropertiesChanged(e: TaskPropertyEvent) {
-        treeTable.coalescingRefresh()
-      }
-
       override fun taskAdded(e: TaskHierarchyEvent) {
         LOGGER.debug("taskAdded: event={}", e)
         if (e.taskSource == TaskManager.EventSource.USER) {
@@ -607,8 +612,7 @@ class TaskTable(
           }}
         )
       }
-      else -> null
-    }?.also {
+    }.also {
       it.isEditable = customProperty.calculationMethod == null
       it.isVisible = column.isVisible
       it.userData = column
@@ -936,7 +940,7 @@ class DragAndDropSupport(private val selectionManager: TaskSelectionManager) {
     }
   }
   private fun dragDetected(cell: TextCell<Task, Task>) {
-    val task = cell.treeTableRow.treeItem.value
+    val task = cell.tableRow.treeItem.value
     clipboardContent = ClipboardContents(task.manager).also { clipboard ->
       clipboard.addTasks(selectionManager.selectedTasks.let {selection ->
         mutableListOf<Task>().also {
@@ -947,7 +951,7 @@ class DragAndDropSupport(private val selectionManager: TaskSelectionManager) {
     clipboardProcessor = ClipboardTaskProcessor(task.manager)
     val db = cell.startDragAndDrop(TransferMode.COPY)
     val content = ClipboardContent()
-    content[TEXT_FORMAT] = cell.treeTableRow.treeItem.value.taskID
+    content[TEXT_FORMAT] = cell.tableRow.treeItem.value.taskID
     db.setContent(content)
     db.dragView = cell.snapshot(null, null)
     cell.setOnDragExited { db.clear() }
@@ -955,7 +959,7 @@ class DragAndDropSupport(private val selectionManager: TaskSelectionManager) {
 
   private fun dragOver(event: DragEvent, cell: TextCell<Task, Task>) {
     if (!event.dragboard.hasContent(TEXT_FORMAT)) return
-    val thisItem = cell.treeTableRow.treeItem
+    val thisItem = cell.tableRow.treeItem
 
     if (!clipboardProcessor.canMove(thisItem.value, clipboardContent)) {
       clearDropLocation()
@@ -974,7 +978,7 @@ class DragAndDropSupport(private val selectionManager: TaskSelectionManager) {
   }
 
   private fun drop(cell: TextCell<Task, Task>) {
-    val dropTarget = cell.treeTableRow.treeItem.value
+    val dropTarget = cell.tableRow.treeItem.value
     clipboardContent.cut()
     clipboardProcessor.pasteAsChild(dropTarget, clipboardContent)
   }
