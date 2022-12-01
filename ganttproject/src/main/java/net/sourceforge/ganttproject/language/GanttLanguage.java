@@ -237,20 +237,32 @@ public class GanttLanguage {
   }
 
   public String formatDate(Calendar date) {
-    return currentDateFormat.format(date.getTime());
+    synchronized (currentDateFormat) {
+      return currentDateFormat.format(date.getTime());
+    }
   }
 
   public String formatShortDate(Calendar date) {
-    return shortCurrentDateFormat.format(date.getTime());
+    synchronized (shortCurrentDateFormat) {
+      return shortCurrentDateFormat.format(date.getTime());
+    }
   }
 
-  public String formatShortDate(Date date) { return shortCurrentDateFormat.format(date); }
+  public String formatShortDate(Date date) {
+    synchronized (shortCurrentDateFormat) {
+      return shortCurrentDateFormat.format(date);
+    }
+  }
   public String formatTime(Calendar date) {
-    return currentTimeFormat.format(date.getTime());
+    synchronized (currentTimeFormat) {
+      return currentTimeFormat.format(date.getTime());
+    }
   }
 
   public String formatDateTime(Date date) {
-    return currentDateTimeFormat.format(date);
+    synchronized (currentDateTimeFormat) {
+      return currentDateTimeFormat.format(date);
+    }
   }
 
 
