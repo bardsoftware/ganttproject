@@ -4,8 +4,9 @@ set -e
 
 OUTPUT=${1:-"build"}
 INPUT=${2:-"./ganttproject-builder/dist-bin"}
-VERSION=${3:-"3.3.3290"}
+VERSION=${3:-"$(cat ${INPUT}/plugins/base/VERSION)"}
 
+echo "Building GanttProject $VERSION macOS package from $INPUT"
 mkdir -p "$OUTPUT" tmp
 
 test_runtime() {
@@ -73,5 +74,6 @@ jpackage --type app-image \
 
 mv tmp/plugins "${OUTPUT}"/GanttProject.app/Contents/app
 cp build-cfg/ganttproject.icns "${OUTPUT}"/GanttProject.app/Contents/app
-
+echo "You can find the package in $OUTPUT"
+ls $OUTPUT
 
