@@ -3,8 +3,6 @@
 ext.launch4j = '/opt/launch4j/launch4j'
 // Directories where we build the distro
 ext.distBinDir = file('dist-bin')
-ext.pluginsVersion = file("dist-bin/plugins/VERSION")
-ext.pluginsDir = file("dist-bin/plugins/${semver}")
 
 archivesBaseName = 'ganttproject'
 version = "${rootProject.version}"

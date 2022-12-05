@@ -1,13 +1,16 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+
 plugins {
     id "org.jetbrains.kotlin.jvm" version "1.7.21" apply false
 }
-ext.semver = '3.3'
-ext.buildNum = '3291'
 ext.distBinDir = file('ganttproject-builder/dist-bin')
 ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins/base")
 
-version = "${semver}.${buildNum}"
-
+def readVersion() {
+    return Files.readString(Paths.get("ganttproject-builder/VERSION")).trim()
+}
+version = System.getenv("VERSION") == null ? readVersion() : System.getenv("VERSION")
 // Config for all projects: deps come from Maven repository,
 // compile using Java 17, libs normally sit in lib
 allprojects {

@@ -3,7 +3,7 @@ name: Build Packages
 on:
     push:
         branches: ['master', 'BRANCH*']
-        paths: ['ganttproject-builder/VERSION']
+        paths: ['ganttproject-builder/VERSION', '.github/workflows/build-packages.yml']
 env:
     BUILD_NUMBER: 3292
     VERSION: 3.3.3292
@@ -77,6 +77,22 @@ jobs:
               run: |
                   build-bin/package-win.bat
 
+            - id: 'auth'
+              uses: 'google-github-actions/auth@v1'
+              with:
+                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+            - name: 'Set up Cloud SDK'
+              uses: 'google-github-actions/setup-gcloud@v1'
+
+            - name: 'Use gcloud CLI'
+              run: 'gcloud info'
+
+            - name: Upload Packages
+              run: |
+                  gsutil cp build\ganttproject-$env:VERSION.msi gs://dl.ganttproject.biz
+                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.msi
+
             - name: Install NSIS
               run: |
                   iwr -useb get.scoop.sh -outfile 'install.ps1'
@@ -102,22 +118,9 @@ jobs:
                   dir
                   mv ganttproject-$env:VERSION.exe ..\..\build
 
-            - id: 'auth'
-              uses: 'google-github-actions/auth@v1'
-              with:
-                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-
-            - name: 'Set up Cloud SDK'
-              uses: 'google-github-actions/setup-gcloud@v1'
-
-            - name: 'Use gcloud CLI'
-              run: 'gcloud info'
-
             - name: Upload Packages
               run: |
-                  gsutil cp build\ganttproject-$env:VERSION.msi gs://dl.ganttproject.biz
                   gsutil cp build\ganttproject-$env:VERSION.exe gs://dl.ganttproject.biz
-                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.msi
                   gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.exe
 
     distMac:
