@@ -151,7 +151,7 @@ jobs:
               run: |
                   ./build-bin/package-mac.sh
                   cd build 
-                  tar -czf ganttproject-app-$VERSION.tgz GanttProject.app
+                  tar -czf ganttproject-app-$VERSION.tgz "${MAC_APP_NAME}.app"
 
             - id: 'auth'
               uses: 'google-github-actions/auth@v1'

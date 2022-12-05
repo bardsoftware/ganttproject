@@ -14,7 +14,7 @@ Icon "ganttproject.ico"
 OutFile ganttproject-${VERSION}.exe
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\${APP_FOLDER_NAME}
+InstallDir $PROGRAMFILES\$APP_FOLDER_NAME
 
 
 !define MUI_ABORTWARNING
