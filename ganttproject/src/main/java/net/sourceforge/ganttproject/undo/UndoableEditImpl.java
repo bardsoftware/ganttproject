@@ -58,7 +58,7 @@ class UndoableEditImpl extends AbstractUndoableEdit {
   }
 
   private Document saveFile() throws IOException {
-    Document doc = myManager.getDocumentManager().newAutosaveDocument();
+    Document doc = myManager.getAutoSaveManager().newAutoSaveDocument();
     doc.write();
     return doc;
   }

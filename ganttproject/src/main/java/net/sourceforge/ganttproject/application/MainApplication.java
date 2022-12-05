@@ -5,6 +5,7 @@ package net.sourceforge.ganttproject.application;
 
 import biz.ganttproject.LoggerApi;
 import biz.ganttproject.app.InternationalizationKt;
+import biz.ganttproject.storage.AutoSaveKt;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.AppBuilder;
 import net.sourceforge.ganttproject.GPLogger;
@@ -65,7 +66,7 @@ public class MainApplication implements IPlatformRunnable {
       appBuilder.withSplash();
       appBuilder.withWindowVisible();
       appBuilder.whenWindowOpened(frame -> {
-        DocumentCreator.createAutosaveCleanup().run();
+        AutoSaveKt.createAutosaveCleanup().run();
         return Unit.INSTANCE;
       });
       if (appBuilder.getMainArgs().fixMenuBarTitle) {

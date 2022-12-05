@@ -18,6 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import static org.eclipse.core.runtime.Platform.getUpdater;
 
 public abstract class GPVersion {
@@ -70,5 +73,9 @@ public abstract class GPVersion {
 
   public static String getCurrentBuildNumber() {
     return getCurrentVersionNumber().split("\\.")[2];
+  }
+
+  public static String getCurrentShortVersionNumber() {
+    return Arrays.stream(getCurrentVersionNumber().split("\\.")).limit(2).collect(Collectors.joining("."));
   }
 }

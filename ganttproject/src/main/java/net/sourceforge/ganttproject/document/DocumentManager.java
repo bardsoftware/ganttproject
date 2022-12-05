@@ -33,9 +33,6 @@ import java.util.List;
 public interface DocumentManager {
   Document newUntitledDocument() throws IOException;
   Document newDocument(String path) throws IOException;
-  Document newAutosaveDocument() throws IOException;
-
-  Document getLastAutosaveDocument(Document priorTo) throws IOException;
 
   Document getDocument(String path);
 

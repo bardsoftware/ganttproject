@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.undo;
 
+import biz.ganttproject.storage.AutoSaveManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.DocumentManager;
@@ -106,6 +107,9 @@ public class UndoManagerImpl implements GPUndoManager {
   ProjectDatabase getProjectDatabase() { return myProjectDatabase; }
   DocumentManager getDocumentManager() {
     return myDocumentManager;
+  }
+  AutoSaveManager getAutoSaveManager() {
+    return new AutoSaveManager(myDocumentManager);
   }
 
   protected ParserFactory getParserFactory() {

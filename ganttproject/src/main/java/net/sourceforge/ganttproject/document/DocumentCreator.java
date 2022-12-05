@@ -9,15 +9,11 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.table.ColumnList;
-import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.storage.DocumentKt;
 import biz.ganttproject.storage.DocumentUri;
 import biz.ganttproject.storage.cloud.GPCloudDocument;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.SystemUtils;
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttOptions;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.webdav.HttpDocument;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
@@ -27,22 +23,10 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.ParserFactory;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -190,127 +174,6 @@ public class DocumentCreator implements DocumentManager {
   @Override
   public Document newDocument(String path) throws IOException {
     return createDocument(path, DocumentKt.getDefaultLocalFolder(), null, null);
-  }
-
-  @Override
-  public Document newAutosaveDocument() throws IOException {
-    File tempFile = File.createTempFile("_ganttproject_autosave", ".gan", getTempDir());
-    return getDocument(tempFile.getAbsolutePath());
-  }
-
-  public static @NotNull Runnable createAutosaveCleanup() {
-    long now = CalendarFactory.newCalendar().getTimeInMillis();
-    final File tempDir = getTempDir();
-    final long cutoff;
-    try {
-      File optionsFile = GanttOptions.getOptionsFile();
-      if (!optionsFile.exists()) {
-        return () -> {};
-      }
-      BasicFileAttributes attrs = Files.readAttributes(optionsFile.toPath(), BasicFileAttributes.class);
-      FileTime accessTime = attrs.lastAccessTime();
-      FileTime modifyTime = attrs.lastModifiedTime();
-      long lastFileTime = Math.max(accessTime.toMillis(), modifyTime.toMillis());
-      cutoff = Math.min(lastFileTime, now);
-    } catch (IOException e) {
-      GPLogger.log(e);
-      return () -> {};
-    }
-    return new Runnable() {
-      @Override
-      public void run() {
-        GPLogger.log("Deleting old auto-save files");
-        deleteAutosaves();
-      }
-
-      private void deleteAutosaves() {
-        // Let's find autosaves created before launch of this GP instance
-        File[] previousAutosaves = tempDir.listFiles(new FileFilter() {
-          @Override
-          public boolean accept(File file) {
-            return file.getName().startsWith("_ganttproject_autosave") && file.lastModified() < cutoff;
-          }
-        });
-        for (File f : previousAutosaves) {
-          f.deleteOnExit();
-        }
-      }
-    };
-  }
-
-  private FileSystem getAutosaveZipFs() {
-    try {
-      File tempDir = getTempDir();
-      if (tempDir == null) {
-        return null;
-      }
-      File autosaveFile = new File(tempDir, "_ganttproject_autosave.zip");
-      if (autosaveFile.exists() && !autosaveFile.canWrite()) {
-        myLogger.warning(String.format(
-            "Autosave file %s is not writable", autosaveFile.getAbsolutePath()));
-        return null;
-      }
-      URI uri = new URI("jar:file:" + autosaveFile.toURI().getPath());
-      return FileSystems.newFileSystem(uri, ImmutableMap.<String, Object>of("create", "true"));
-    } catch (Throwable e) {
-      myLogger.log(Level.SEVERE, "Failure when creating ZIP FS for autosaves", e);
-      return null;
-    }
-  }
-
-  private static File getTempDir() {
-    File tempDir;
-    if (SystemUtils.IS_OS_LINUX ){
-      tempDir = new File("/var/tmp");
-      if (tempDir.exists() && tempDir.isDirectory() && tempDir.canWrite()) {
-        return tempDir;
-      }
-    }
-    tempDir = new File(System.getProperty("java.io.tmpdir"));
-    if (tempDir.exists() && tempDir.isDirectory() && tempDir.canWrite()) {
-      return tempDir;
-    }
-    try {
-      File tempFile = File.createTempFile("_ganttproject_autosave", ".empty");
-      tempDir = tempFile.getParentFile();
-      if (tempDir.exists() && tempDir.isDirectory() && tempDir.canWrite()) {
-        return tempDir;
-      }
-    } catch (IOException e) {
-      GPLogger.getLogger(DocumentManager.class).log(Level.WARNING, "Can't get parent of the temp file", e);
-    }
-    GPLogger.getLogger(DocumentManager.class).warning("Failed to find temporary directory");
-    return null;
-  }
-
-  @Override
-  public Document getLastAutosaveDocument(Document priorTo) throws IOException {
-    File f = File.createTempFile("tmp", "", getTempDir());
-    File directory = f.getParentFile();
-    File files[] = directory.listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(File f, String arg1) {
-        return arg1.startsWith("_ganttproject_autosave");
-      }
-    });
-    Arrays.sort(files, new Comparator<File>() {
-      @Override
-      public int compare(File left, File right) {
-        return Long.valueOf(left.lastModified()).compareTo(Long.valueOf(right.lastModified()));
-      }
-    });
-    if (files.length == 0) {
-      return null;
-    }
-    if (priorTo == null) {
-      return getDocument(files[files.length - 1].getAbsolutePath());
-    }
-    for (int i = files.length - 1; i >= 0; i--) {
-      if (files[i].getName().equals(priorTo.getFileName())) {
-        return i > 0 ? getDocument(files[i - 1].getAbsolutePath()) : null;
-      }
-    }
-    return null;
   }
 
   protected ColumnList getVisibleFields() {

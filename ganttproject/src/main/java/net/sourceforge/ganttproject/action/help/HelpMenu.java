@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.help;
 
+import biz.ganttproject.storage.AutoSaveManager;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -110,7 +111,7 @@ public class HelpMenu {
     @Override
     public void actionPerformed(ActionEvent arg0) {
       try {
-        final Document lastAutosaveDocument = myDocumentManager.getLastAutosaveDocument(null);
+        final Document lastAutosaveDocument = new AutoSaveManager(myDocumentManager).getLastAutoSaveDocument(null);
         if (lastAutosaveDocument != null) {
           runAction(lastAutosaveDocument);
         }
@@ -134,7 +135,7 @@ public class HelpMenu {
             public void run() {
               Document prevAutosaveDocument = null;
               try {
-                prevAutosaveDocument = myDocumentManager.getLastAutosaveDocument(autosaveDocument);
+                prevAutosaveDocument = new AutoSaveManager(myDocumentManager).getLastAutoSaveDocument(autosaveDocument);
               } catch (IOException e) {
                 GPLogger.log(new RuntimeException("Failed to read autosave documents", e));
               }

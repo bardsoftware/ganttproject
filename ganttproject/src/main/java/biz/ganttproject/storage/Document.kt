@@ -27,12 +27,17 @@ import com.google.common.io.ByteStreams
 import javafx.beans.property.ObjectProperty
 import javafx.beans.value.ObservableBooleanValue
 import javafx.beans.value.ObservableObjectValue
+import net.harawata.appdirs.AppDirsFactory
+import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.GPVersion
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.ProxyDocument
+import org.apache.commons.lang3.SystemUtils
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
 import java.nio.file.Paths
@@ -279,6 +284,51 @@ fun getDefaultLocalFolder(): File {
 }
 
 fun getUserDir() = File(System.getProperty("user.dir"))
+
+val cacheDir: File? by lazy {
+  val fancyFolder = AppDirsFactory.getInstance()
+    .getUserCacheDir("GanttProject", GPVersion.getCurrentShortVersionNumber(), "BarD Software")
+    .asWritableDir(tryCreate = true)
+  if (fancyFolder != null) {
+    return@lazy fancyFolder
+  }
+  // We failed to create a fancy OS-dependent folder, let's try other ways.
+  // On Linux we look into /var/tmp
+  if (SystemUtils.IS_OS_LINUX) {
+    val linuxTmpDir = "/var/tmp".asWritableDir()
+    if (linuxTmpDir != null) {
+      return@lazy linuxTmpDir
+    }
+  }
+  // We also try using the directory specified in the system property.
+  val systemTmpDir = System.getProperty("java.io.tmpdir")?.asWritableDir()
+  if (systemTmpDir != null) {
+    return@lazy systemTmpDir
+  }
+  // Finally, let's try to create a temporary file, wherever it is, and use it's containing folder.
+  val hackyTmpDir = try {
+    File.createTempFile("_ganttproject_autosave", ".empty").parentFile.asWritableDir()
+  } catch (e: IOException) {
+    LOG.error( "Can't get parent of the temp file", e)
+    null
+  }
+  if (hackyTmpDir != null) {
+    return@lazy hackyTmpDir
+  }
+  LOG.error("Failed to find temporary directory")
+  null
+}
+
+private fun File.asWritableDir(): File? =
+  if (this.exists() && this.isDirectory && this.canWrite()) this else null
+
+private fun String.asWritableDir(tryCreate: Boolean = false): File? = File(this).let {
+  if (it.exists() && it.isDirectory && it.canWrite()) it
+  else {
+    if (tryCreate && it.mkdirs()) it else null
+  }
+}
+
 fun String.withGanExtension() =
   if (this.lowercase().endsWith(".gan")) {
     this
@@ -316,3 +366,5 @@ fun String.asDocumentUrl(): Pair<URL, String> =
       }
     }
   }
+
+private val LOG = GPLogger.create("Document")
