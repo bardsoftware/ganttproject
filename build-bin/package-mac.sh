@@ -31,7 +31,7 @@ test_runtime || (build_runtime && test_runtime)
 #(cd .. && rm -rf ganttproject-$VERSION && unzip ganttproject-$VERSION.zip && rm -rf /tmp/plugins/ && rm -rf ganttproject/build/GanttProject.app/ )
 mv "${INPUT}"/plugins tmp
 jpackage --type app-image \
-    --name $APP_NAME \
+    --name "${APP_NAME}" \
     --input "${INPUT}" \
     --dest "${OUTPUT}" \
     --java-options "-Dapple.laf.useScreenMenuBar=true
