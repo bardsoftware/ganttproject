@@ -7,7 +7,7 @@ on:
 env:
     BUILD_NUMBER: 3292
     VERSION: 3.3.3292
-    WINDOWS_APP_FOLDER_NAME: GanttProject 3.3 Beta
+    WINDOWS_APP_FOLDER_NAME: GanttProject-3.3-Beta
     MAC_APP_NAME: GanttProject 3.3 Beta
 
 jobs:

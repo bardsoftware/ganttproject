@@ -5,7 +5,7 @@ jlink ^
   --strip-debug ^
   --compress=2
 
-jpackage -t msi -d build -i ganttproject-builder/dist-bin/ -n "%WINDOWS_APP_FOLDER_NAME%" ^
+jpackage -t msi -d build -i ganttproject-builder/dist-bin/ -n %WINDOWS_APP_FOLDER_NAME% ^
   --main-class com.bardsoftware.eclipsito.Launch --main-jar eclipsito.jar ^
   --java-options "-DversionDirs=app/plugins -Dapp=net.sourceforge.ganttproject.GanttProject -Dgpcloud=prod -Dorg.jooq.no-logo=true -Xms32m -Xmx2048m -Dsun.java2d.d3d=false -ea" ^
   --java-options "--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED --add-exports javafx.base/com.sun.javafx=ALL-UNNAMED --add-exports javafx.base/com.sun.javafx.event=ALL-UNNAMED" ^
