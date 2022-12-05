@@ -20,22 +20,8 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.app.FontManager;
 import biz.ganttproject.app.MenuBuilderSwing;
-import biz.ganttproject.core.option.ChangeValueEvent;
-import biz.ganttproject.core.option.ChangeValueListener;
-import biz.ganttproject.core.option.DefaultBooleanOption;
-import biz.ganttproject.core.option.DefaultDoubleOption;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.DefaultFileOption;
-import biz.ganttproject.core.option.DefaultFontOption;
-import biz.ganttproject.core.option.DefaultIntegerOption;
-import biz.ganttproject.core.option.DefaultStringOption;
-import biz.ganttproject.core.option.DoubleOption;
-import biz.ganttproject.core.option.FontOption;
-import biz.ganttproject.core.option.FontSpec;
+import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.option.FontSpec.Size;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import com.google.common.base.MoreObjects;
@@ -49,17 +35,7 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeelInfo;
-import net.sourceforge.ganttproject.gui.GanttLookAndFeels;
-import net.sourceforge.ganttproject.gui.GanttStatusBar;
-import net.sourceforge.ganttproject.gui.NotificationChannel;
-import net.sourceforge.ganttproject.gui.NotificationItem;
-import net.sourceforge.ganttproject.gui.NotificationManager;
-import net.sourceforge.ganttproject.gui.NotificationManagerImpl;
-import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
-import net.sourceforge.ganttproject.gui.TaskSelectionContext;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.ViewLogDialog;
+import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
 import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
@@ -86,17 +62,10 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 
 class UIFacadeImpl extends ProgressProvider implements UIFacade {
@@ -107,9 +76,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final UIFacade myFallbackDelegate;
   private final TaskSelectionManager myTaskSelectionManager;
   private final List<GPOptionGroup> myOptionGroups = Lists.newArrayList();
-  private final GPOptionGroup myOptions;
   private final LafOption myLafOption;
-  private final GPOptionGroup myLogoOptions;
   private final DefaultFileOption myLogoOption;
   private final NotificationManagerImpl myNotificationManager;
   private final TaskView myTaskView = new TaskView();
@@ -168,7 +135,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myStatusBar.setNotificationManager(notificationManager);
     myFallbackDelegate = fallbackDelegate;
     Job.getJobManager().setProgressProvider(this);
-    myTaskSelectionManager = new TaskSelectionManager(() -> project.getTaskManager());
+    myTaskSelectionManager = new TaskSelectionManager(project::getTaskManager);
     myNotificationManager = notificationManager;
 
     myLafOption = new LafOption(this);
@@ -179,13 +146,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
     myLanguageOption = new LanguageOption() {
       {
-        GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
-          @Override
-          public void languageChanged(GanttLanguage.Event event) {
-            Locale selected = getSelectedValue();
-            reloadValues(GanttLanguage.getInstance().getAvailableLocales());
-            setSelectedValue(selected);
-          }
+        GanttLanguage.getInstance().addListener(event -> {
+          Locale selected = getSelectedValue();
+          reloadValues(GanttLanguage.getInstance().getAvailableLocales());
+          setSelectedValue(selected);
         });
       }
 
@@ -239,14 +203,14 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
     GPOption[] options = new GPOption[]{myLafOption, myAppFontOption, myChartFontOption, myRowPaddingOption, myDpiOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
         dateSampleOption};
-    myOptions = new GPOptionGroup("ui", options);
+    GPOptionGroup myOptions = new GPOptionGroup("ui", options);
     I18N i18n = new OptionsPageBuilder.I18N();
     myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLafOption), "looknfeel");
     myOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLanguageOption), "language");
     myOptions.setTitled(false);
 
     myLogoOption = new DefaultFileOption("ui.logo");
-    myLogoOptions = new GPOptionGroup("ui2", myLogoOption);
+    GPOptionGroup myLogoOptions = new GPOptionGroup("ui2", myLogoOption);
     myLogoOptions.setTitled(false);
     addOptions(myOptions);
     addOptions(myLogoOptions);
@@ -283,18 +247,13 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     String cancel = GanttLanguage.getInstance().getText("cancel");
     int result = JOptionPane.showOptionDialog(myMainFrame, message, title, JOptionPane.YES_NO_CANCEL_OPTION,
         JOptionPane.QUESTION_MESSAGE, null, new String[]{yes, no, cancel}, yes);
-    switch (result) {
-      case JOptionPane.YES_OPTION:
-        return Choice.YES;
-      case JOptionPane.NO_OPTION:
-        return Choice.NO;
-      case JOptionPane.CANCEL_OPTION:
-        return Choice.CANCEL;
-      case JOptionPane.CLOSED_OPTION:
-        return Choice.CANCEL;
-      default:
-        return Choice.CANCEL;
-    }
+    return switch (result) {
+      case JOptionPane.YES_OPTION -> Choice.YES;
+      case JOptionPane.NO_OPTION -> Choice.NO;
+      case JOptionPane.CANCEL_OPTION -> Choice.CANCEL;
+      case JOptionPane.CLOSED_OPTION -> Choice.CANCEL;
+      default -> Choice.CANCEL;
+    };
   }
 
   @Override
@@ -489,9 +448,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   static String getExceptionReport(Throwable e) {
-    StringBuffer result = new StringBuffer();
+    StringBuilder result = new StringBuilder();
     result.append(e.getMessage());
-    if (e instanceof DocumentException == false) {
+    if (!(e instanceof DocumentException)) {
       result.append("\n\n");
       StringWriter stringWriter = new StringWriter();
       PrintWriter writer = new PrintWriter(stringWriter);
@@ -638,8 +597,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       for (Enumeration<Object> keys = defaults.keys(); keys.hasMoreElements(); ) {
         String key = String.valueOf(keys.nextElement());
         Object obj = UIManager.get(key);
-        if (obj instanceof Font) {
-          Font f = (Font) obj;
+        if (obj instanceof Font f) {
           myOriginalFonts.put(key, f);
         }
       }
@@ -711,7 +669,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public GPOptionGroup[] getOptions() {
-    return myOptionGroups.toArray(new GPOptionGroup[myOptionGroups.size()]);
+    return myOptionGroups.toArray(new GPOptionGroup[0]);
   }
 
   @Override
@@ -730,7 +688,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         return MoreObjects.firstNonNull(ImageIO.read(imageFile), DEFAULT_LOGO.getImage());
       }
       GPLogger.logToLogger("File=" + myLogoOption.getValue() + " does not exist or is not readable");
-    } catch (IOException e) {
+    } catch (Exception e) {
       GPLogger.logToLogger(String.format("Failed to create image from file %s", imageFile));
       GPLogger.logToLogger(e);
     }
