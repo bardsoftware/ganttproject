@@ -7,9 +7,11 @@ on:
 env:
     BUILD_NUMBER: 3292
     VERSION: 3.3.3292
+    WINDOWS_APP_FOLDER_NAME: GanttProject 3.3 Beta
+    MAC_APP_NAME: GanttProject 3.3 Beta
 
 jobs:
-    distZip:
+    Linux:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
@@ -52,7 +54,7 @@ jobs:
                     gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
                   done;
                   
-    distMsi:
+    Windows:
         runs-on: windows-latest
         steps:
             - uses: actions/checkout@v3
@@ -123,7 +125,7 @@ jobs:
                   gsutil cp build\ganttproject-$env:VERSION.exe gs://dl.ganttproject.biz
                   gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.exe
 
-    distMac:
+    macOS:
         runs-on: macos-latest
         steps:
             - uses: actions/checkout@v3

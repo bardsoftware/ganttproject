@@ -1,6 +1,7 @@
 Unicode True
 !define VERSION "$%VERSION%"
 !define VERSION_BUILD "$%BUILD_NUMBER%"
+!define APP_FOLDER_NAME "$%WINDOWS_APP_FOLDER_NAME%"
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 
@@ -13,7 +14,7 @@ Icon "ganttproject.ico"
 OutFile ganttproject-${VERSION}.exe
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\GanttProject-3.2
+InstallDir $PROGRAMFILES\${APP_FOLDER_NAME}
 
 
 !define MUI_ABORTWARNING
