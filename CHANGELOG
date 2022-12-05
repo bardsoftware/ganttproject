@@ -1,3 +1,18 @@
+ganttproject (3.3.3292) unstable; urgency=low
+  * This is a beta version of GanttProject 3.3
+  * GanttProject 3.3 key updates:
+    - Calculated columns
+    - Additional task filters
+    - Project relative week numbering
+    - Migration to Java 17
+    - Native package for Apple Silicon platform
+    - MSI package for Windows
+
+    The list of closed issues is available at
+    https://github.com/bardsoftware/ganttproject/milestone/19
+
+ -- Dmitry Barashev <contact@ganttproject.biz>  Mon, 5 Dec 2022 12:00:00 +0000
+
 ganttproject (3.0.2914-1) unstable; urgency=low
   * This is a release candidate build of GanttProject 3.0.
   * GanttProject 3.0 adds a number of major features:
