@@ -10,7 +10,6 @@ env:
     WINDOWS_APP_FOLDER_NAME: GanttProject 3.3 Beta
     MAC_APP_NAME: GanttProject 3.3 Beta
 
-
 jobs:
     Linux:
         runs-on: ubuntu-latest

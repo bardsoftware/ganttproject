@@ -38,9 +38,8 @@ jpackage --type app-image \
                     -Dcom.apple.macos.useScreenMenuBar=true 
                     -Dcom.apple.mrj.application.apple.menu.about.name=GanttProject
                     -Dsun.java2d.metal=true
-                    -Xdock:name=$APP_NAME" \
-                    '-Xdock:icon=$APPDIR/ganttproject.icns' \
-                    "-Xmx2048m
+                    -Xdock:name="'$APP_NAME -Xdock:icon=$APPDIR/ganttproject.icns'" \
+                    -Xmx2048m \
                     -Dfile.encoding=UTF-8
                     --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED
                     --add-exports javafx.base/com.sun.javafx=ALL-UNNAMED
@@ -54,10 +53,9 @@ jpackage --type app-image \
                     --add-exports javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED
                     --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED
                     --add-exports javafx.graphics/com.sun.javafx.util=ALL-UNNAMED
-                    --add-opens java.desktop/sun.swing=ALL-UNNAMED" \
-                    '-classpath $APPDIR:$APPDIR/eclipsito.jar:$APPDIR/lib/slf4j-api-2.0.4.jar:$APPDIR/lib/slf4j-jdk14-2.0.4.jar
-                    -Duser.dir=$APPDIR' \
-                    "-DversionDirs=plugins:~/.ganttproject.d/updates
+                    --add-opens java.desktop/sun.swing=ALL-UNNAMED \
+                    -classpath "'$APPDIR:$APPDIR/eclipsito.jar:$APPDIR/lib/slf4j-api-2.0.4.jar:$APPDIR/lib/slf4j-jdk14-2.0.4.jar'"\
+                    -Duser.dir="'$APPDIR'" -DversionDirs=plugins:~/.ganttproject.d/updates \
                     -Dapp=net.sourceforge.ganttproject.GanttProject
                     -Dorg.jooq.no-logo=true
                     -Dgpcloud=prod" \
