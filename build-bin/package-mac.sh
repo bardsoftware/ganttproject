@@ -71,7 +71,7 @@ jpackage --type app-image \
     --main-class com.bardsoftware.eclipsito.Launch  --main-jar eclipsito.jar
 
 mv tmp/plugins "${OUTPUT}/${APP_NAME}.app/Contents/app"
-cp build-cfg/ganttproject.icns "${OUTPUT}"/GanttProject.app/Contents/app
+cp build-cfg/ganttproject.icns "${OUTPUT}/${APP_NAME}.app/Contents/app"
 echo "You can find the package in $OUTPUT"
 ls $OUTPUT
 
