@@ -72,6 +72,7 @@
                 <include name="*.jar"/>
                 <include name="*.gan"/>
                 <include name="logging.properties"/>
+                <include name="lib/**"/>
             </tarfileset>
             <tarfileset dir="${distBin}" filemode="755" prefix="usr/share/${package.name}">
                 <include name="ganttproject"/>
