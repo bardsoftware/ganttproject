@@ -5,7 +5,12 @@ buildscript {
             url "https://plugins.gradle.org/m2/"
         }
     }
+    dependencies {
+        classpath 'org.openjfx:javafx-plugin:0.0.13'
+    }
 }
+
+apply plugin: 'org.openjfx.javafxplugin'
 
 ext {
     libDir = 'lib'
@@ -58,6 +63,12 @@ dependencies {
     exported configurations.compileClasspath
 }
 
+javafx {
+    version = "17"
+    modules = [ "javafx.controls","javafx.swing","javafx.web" ]
+    configuration = "exported"
+}
+
 def pluginDistDir = new File(rootProject.pluginsDir, project.name)
 task copyPlugin(dependsOn: assemble) {
     doLast {
@@ -72,10 +83,12 @@ task copyPlugin(dependsOn: assemble) {
             into(new File(pluginDistDir, "lib"))
             from(configurations.exported) {
                 include "*.jar"
-                exclude "javafx*.jar"
+                if (!project.hasProperty("withJavafx")) {
+                    exclude "javafx*.jar"
+                }
                 exclude "slf4j*.jar"
             }
-    	    rename { filename -> filename + " .lib" }
+    	    rename { filename -> filename + ".lib" }
         }
         copy {
             into(new File(rootProject.projectDir, "ganttproject-builder/lib/"))
@@ -83,15 +96,6 @@ task copyPlugin(dependsOn: assemble) {
                 include "slf4j*.jar"
             }
         }
-        if (project.hasProperty("withJavafx")) {
-            copy {
-                into(new File(pluginDistDir, "lib"))
-                from(fileTree("javafx")) {
-                    include "*"
-                }
-            }
-        }
-
         println "<<< $project.name"
     }
 }

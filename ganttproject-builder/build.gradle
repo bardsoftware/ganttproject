@@ -64,9 +64,6 @@ task distBin(dependsOn: [
                 include "VERSION"
             }
         }
-        delete fileTree(rootProject.distBinDir).matching {
-            include "**/javafx**.jar.lib"
-        }
     }
 }
 

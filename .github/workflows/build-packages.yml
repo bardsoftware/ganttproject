@@ -29,7 +29,8 @@ jobs:
                   cache: 'gradle'
             - name: Build GanttProject
               run: |
-                  ./gradlew distbin distzip distdeb
+                  ./gradlew distbin distzip 
+                  ./gradlew -PwithJavafx distdeb
                   echo "===== PLUGINS ====="
                   ls ganttproject-builder/dist-bin/plugins/base
                   echo "===== DISTRIBUTIONS ====="
