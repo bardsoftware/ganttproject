@@ -1,7 +1,7 @@
 Unicode True
 !define VERSION "$%VERSION%"
 !define VERSION_BUILD "$%BUILD_NUMBER%"
-!define APP_FOLDER_NAME "$%WINDOWS_APP_FOLDER_NAME%"
+!define APPFOLDERNAME "$%WINDOWS_APP_FOLDER_NAME%"
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 
@@ -14,7 +14,7 @@ Icon "ganttproject.ico"
 OutFile ganttproject-${VERSION}.exe
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\$APP_FOLDER_NAME
+InstallDir $PROGRAMFILES\${APPFOLDERNAME}
 
 
 !define MUI_ABORTWARNING
@@ -87,6 +87,7 @@ Section "GanttProject"
 
   File /r plugins
   File /r runtime
+  File /r lib
 
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\GanttProject "Install_Dir" "$INSTDIR"

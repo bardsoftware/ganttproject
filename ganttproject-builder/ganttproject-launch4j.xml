@@ -16,7 +16,7 @@
   <icon>ganttproject.ico</icon>
   <classPath>
     <mainClass>com.bardsoftware.eclipsito.Launch</mainClass>
-    <cp>%EXEDIR%;%EXEDIR%\lib\slf4j-api-2.0.4.jar;%EXEDIR%\lib\slf4j-jdk14-2.0.4.jar</cp>
+    <cp>%EXEDIR%;%EXEDIR%\eclipsito.jar;%EXEDIR%\lib\slf4j-api-2.0.4.jar;%EXEDIR%\lib\slf4j-jdk14-2.0.4.jar</cp>
   </classPath>
   <jre>
     <path>.\runtime\</path>
@@ -30,11 +30,11 @@
     <maxHeapSize>2048</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>3.3.3290.0</fileVersion>
+    <fileVersion>3.3.3292.0</fileVersion>
     <txtFileVersion>GanttProject 3.3 Beta</txtFileVersion>
     <fileDescription>GanttProject Launcher</fileDescription>
     <copyright>Copyright (C) 2022 BarD Software s.r.o.</copyright>
-    <productVersion>3.3.3290.0</productVersion>
+    <productVersion>3.3.3292.0</productVersion>
     <txtProductVersion>GanttProject 3.3 Beta</txtProductVersion>
     <productName>GanttProject</productName>
     <companyName>BarD Software s.r.o.</companyName>
