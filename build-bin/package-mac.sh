@@ -38,7 +38,7 @@ jpackage --type app-image \
                     -Dcom.apple.macos.useScreenMenuBar=true 
                     -Dcom.apple.mrj.application.apple.menu.about.name=GanttProject
                     -Dsun.java2d.metal=true
-                    -Xdock:name="'$APP_NAME -Xdock:icon=$APPDIR/ganttproject.icns'" \
+                    -Xdock:name=$APP_NAME"' -Xdock:icon=$APPDIR/ganttproject.icns'" \
                     -Xmx2048m \
                     -Dfile.encoding=UTF-8
                     --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED
