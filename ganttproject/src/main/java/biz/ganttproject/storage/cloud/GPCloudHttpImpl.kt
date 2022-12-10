@@ -599,7 +599,7 @@ data class ProjectWriteResponse(
 )
 
 /** Checks whether the app is running in Colloboque testing mode. */
-fun isColloboqueLocalTest(): Boolean = getCloudEnv() == GPCloudEnv.EMULATOR
+fun isColloboqueLocalTest(): Boolean = cloudEnvironment == GPCloudEnv.EMULATOR
 
 private val HOST = HttpHost.create(GPCLOUD_ORIGIN)
 private val LOG = GPLogger.create("Cloud.Http")

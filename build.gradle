@@ -8,7 +8,7 @@ ext.distBinDir = file('ganttproject-builder/dist-bin')
 ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins/base")
 
 def readVersion() {
-    return Files.readString(Paths.get("ganttproject-builder/VERSION")).trim()
+    return Files.readString(Paths.get(rootProject.projectDir.absolutePath, "ganttproject-builder", "VERSION")).trim()
 }
 version = System.getenv("VERSION") == null ? readVersion() : System.getenv("VERSION")
 // Config for all projects: deps come from Maven repository,

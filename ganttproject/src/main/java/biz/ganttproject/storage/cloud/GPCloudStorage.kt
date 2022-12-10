@@ -38,7 +38,10 @@ import java.util.*
 enum class GPCloudEnv {
   EMULATOR, LOCAL, STAGING, PROD
 }
-fun getCloudEnv(): GPCloudEnv = System.getProperty("gpcloud", "emulator").lowercase().let {
+
+internal val cloudEnvironment: GPCloudEnv by lazy(::getCloudEnv)
+
+fun getCloudEnv(): GPCloudEnv = System.getProperty("gpcloud", System.getenv("GPCLOUD") ?: "emulator").lowercase().let {
   when {
     it.startsWith("e") -> GPCloudEnv.EMULATOR
     it.startsWith("l") -> GPCloudEnv.LOCAL
@@ -49,35 +52,35 @@ fun getCloudEnv(): GPCloudEnv = System.getProperty("gpcloud", "emulator").lowerc
 }
 
 //const val GPCLOUD_HOST = "cumulus-dot-ganttproject-cloud.appspot.com"
-val GPCLOUD_SCHEME = when (getCloudEnv()) {
+val GPCLOUD_SCHEME = when (cloudEnvironment) {
   GPCloudEnv.EMULATOR, GPCloudEnv.LOCAL -> "http"
   else -> "https"
 }
 //const val GPCLOUD_HOST = "cloud.ganttproject.biz"
-val GPCLOUD_HOST = when (getCloudEnv())  {
+val GPCLOUD_HOST = when (cloudEnvironment)  {
   GPCloudEnv.EMULATOR -> "localhost"
   GPCloudEnv.LOCAL -> "ganttproject.localhost"
   else -> "ganttproject.cloud"
 }
-val GPCLOUD_PORT = when (getCloudEnv()) {
+val GPCLOUD_PORT = when (cloudEnvironment) {
   GPCloudEnv.EMULATOR -> 9000
   GPCloudEnv.LOCAL -> 80
   else -> 443
 }
-val GPCLOUD_ORIGIN = "$GPCLOUD_SCHEME://$GPCLOUD_HOST:$GPCLOUD_PORT"
+val GPCLOUD_ORIGIN = "$GPCLOUD_SCHEME://$GPCLOUD_HOST" + if (cloudEnvironment == GPCloudEnv.LOCAL) ":$GPCLOUD_PORT" else ""
 val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
 val GPCLOUD_SIGNIN_URL = "$GPCLOUD_ORIGIN/__/auth/desktop"
 val GPCLOUD_SIGNUP_URL = "$GPCLOUD_ORIGIN/__/auth/handler"
 
-val GPCLOUD_WEBSOCKET_SCHEME = when (getCloudEnv()) {
+val GPCLOUD_WEBSOCKET_SCHEME = when (cloudEnvironment) {
   GPCloudEnv.EMULATOR, GPCloudEnv.LOCAL -> "ws"
   else -> "wss"
 }
-val GPCLOUD_WEBSOCKET_HOST = when (getCloudEnv()) {
+val GPCLOUD_WEBSOCKET_HOST = when (cloudEnvironment) {
   GPCloudEnv.EMULATOR -> "localhost"
   else -> "ws.$GPCLOUD_HOST"
 }
-val GPCLOUD_WEBSOCKET_PORT = when (getCloudEnv()) {
+val GPCLOUD_WEBSOCKET_PORT = when (cloudEnvironment) {
   GPCloudEnv.EMULATOR -> 9001
   GPCloudEnv.LOCAL -> 80
   else -> 443
