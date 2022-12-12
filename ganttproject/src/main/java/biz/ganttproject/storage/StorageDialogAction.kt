@@ -40,10 +40,14 @@ class StorageDialogAction(
     private val actionId: String) : GPAction(actionId) {
 
   override fun actionPerformed(actionEvent: ActionEvent?) {
-    projectUiFacade.ensureProjectSaved(project).await { result ->
-      if (result) {
-        doRun()
+    if (mode == StorageDialogBuilder.Mode.OPEN) {
+      projectUiFacade.ensureProjectSaved(project).await { result ->
+        if (result) {
+          doRun()
+        }
       }
+    } else {
+      doRun()
     }
   }
 

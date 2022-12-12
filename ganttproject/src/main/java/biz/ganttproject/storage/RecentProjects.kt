@@ -23,9 +23,12 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.cloud.GPCloudDocument
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
 import javafx.application.Platform
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
+import javafx.scene.control.Button
 import javafx.scene.layout.Pane
 import kotlinx.coroutines.*
 import net.sourceforge.ganttproject.GPLogger
@@ -48,6 +51,7 @@ import java.util.function.Consumer
  * @author dbarashev@bardsoftware.com
  */
 class RecentProjects(
+    private val currentDocument: Document,
     private val mode: StorageDialogBuilder.Mode,
     private val documentManager: DocumentManager,
     private val documentReceiver: (Document) -> Unit) : StorageUi {
@@ -57,6 +61,7 @@ class RecentProjects(
   override val category = "desktop"
   override val id = "recent"
 
+  private val state = RecentProjectState(currentDocument, mode)
   override fun createSettingsUi(): Optional<Pane> {
     return Optional.empty()
   }
@@ -69,13 +74,18 @@ class RecentProjects(
 
     val actionButtonHandler = object {
       var selectedItem: RecentDocAsFolderItem? = null
+      var button: Button? = null
+        set(btn) {
+          btn?.disableProperty()?.bind(state.canWrite.not())
+          field = btn
+        }
 
       fun onSelectionChange(item: FolderItem) {
         if (item is RecentDocAsFolderItem) {
-            selectedItem = item
-          }
+          selectedItem = item
+          state.currentItem = item
         }
-
+      }
 
       fun onAction() {
         selectedItem?.let {
@@ -91,19 +101,38 @@ class RecentProjects(
 
     this.paneElements = builder.apply {
       withI18N(i18n)
-      withActionButton { btn -> btn.addEventHandler(ActionEvent.ACTION) { actionButtonHandler.onAction() }}
+      withActionButton { btn ->
+        btn.addEventHandler(ActionEvent.ACTION) { actionButtonHandler.onAction() }
+        actionButtonHandler.button = btn
+      }
       withListView(
           onSelectionChange = actionButtonHandler::onSelectionChange,
           onLaunch = { actionButtonHandler.onAction() },
           itemActionFactory = {
             Collections.emptyMap()
           },
-          cellFactory = { CellWithBasePath() }
+          cellFactory = { CellWithBasePath() },
+        onNameTyped = { filename, matchedItems, _, _ ->
+          state.onNameTyped(filename, matchedItems)
+        }
       )
       withListViewHint(progressLabel)
       withValidator { _, _ -> ValidationResult() }
+      if (mode == StorageDialogBuilder.Mode.SAVE) {
+        withConfirmation(RootLocalizer.create("document.overwrite"), state.confirmationRequired)
+      }
     }.build()
     paneElements.breadcrumbView?.show()
+    if (this.mode == StorageDialogBuilder.Mode.SAVE) {
+      this.paneElements.filenameInput.text = currentDocument.fileName
+      this.state.currentItemProperty.addListener { _, _, _ ->
+        Platform.runLater { paneElements.confirmationCheckBox?.isSelected = false }
+      }
+      this.paneElements.confirmationCheckBox?.selectedProperty()?.addListener { _, _, newValue ->
+        state.confirmationReceived.value = newValue
+      }
+    }
+
     return paneElements.browserPane.also {
       it.stylesheets.addAll(
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
@@ -256,6 +285,50 @@ class RecentDocAsFolderItem(
   val fullPath: String = this.url.path
   override val isDirectory: Boolean = false
 
+}
+
+private class RecentProjectState(
+  val currentDocument: Document,
+  val mode: StorageDialogBuilder.Mode) {
+
+  var currentItem: RecentDocAsFolderItem? = null
+    set(value) {
+      field = value
+      currentItemProperty.value = value
+      validate()
+    }
+  val currentItemProperty = SimpleObjectProperty<RecentDocAsFolderItem?>(null)
+
+  // This property indicates if the user must confirm the action on the current file. This may be needed if
+  // we're saving a document and currentFile exists.
+  val confirmationRequired: SimpleBooleanProperty = SimpleBooleanProperty(false)
+
+  // This property indicates if the user has confirmed his decision to take the action on the current file.
+  var confirmationReceived: SimpleBooleanProperty = SimpleBooleanProperty(false).also {
+    it.addListener { _, _, _ -> validate() }
+  }
+
+  // This property indicates if the action is possible. E.g. if the action is SAVE and currentFile is read-only,
+  // this property value will be false.
+  val canWrite = SimpleBooleanProperty(false)
+
+  fun onNameTyped(typedName: String, matchedItems: List<RecentDocAsFolderItem>) {
+    currentItem = if (mode == StorageDialogBuilder.Mode.SAVE && matchedItems.size == 1) {
+      matchedItems[0]
+    } else {
+      null
+    }
+  }
+
+  private fun validate() {
+    if (mode == StorageDialogBuilder.Mode.SAVE) {
+      confirmationRequired.value = this.currentItem?.asDocument()?.uri != this.currentDocument.uri
+      canWrite.value = this.currentItem != null && (confirmationReceived.value || !confirmationRequired.value)
+    } else {
+      canWrite.value = true
+      confirmationRequired.value = false
+    }
+  }
 }
 
 private val i18n = RootLocalizer.createWithRootKey("storageService.recent", BROWSE_PANE_LOCALIZER)

@@ -205,6 +205,7 @@ class StoragePane internal constructor(
     }
     val localStorage = LocalStorage(dialogUi, mode, currentDocument, openDocument)
     val recentProjects = RecentProjects(
+        currentDocument,
         mode,
         documentManager,
         openDocument)
