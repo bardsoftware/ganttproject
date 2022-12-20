@@ -236,6 +236,7 @@ public class ChartUIConfiguration {
     copy.setHeaderHeight(getHeaderHeight());
     copy.setRowHeight(getRowHeight());
     copy.setYOffSet(getYOffSet());
+    copy.setBaseFont(getChartFont(), getBaseFontSize());
     return copy;
   }
 
