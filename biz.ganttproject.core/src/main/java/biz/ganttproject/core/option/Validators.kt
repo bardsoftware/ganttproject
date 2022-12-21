@@ -115,7 +115,7 @@ class ValidatedObservable<T>(observableValue: ObservableString, private val vali
     watchers.add(watcher)
   }
 
-  internal fun validate(newValue: String, trigger: Any?) {
+  fun validate(newValue: String, trigger: Any?) {
     val oldValidated = parsedValue
     doValidate(newValue).fold(
       onSuccess = { newValidated ->

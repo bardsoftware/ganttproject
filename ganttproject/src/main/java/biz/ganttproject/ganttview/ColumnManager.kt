@@ -296,8 +296,8 @@ internal class CustomPropertyEditor(
           // Incomplete instance just for validation purposes
           SimpleSelect("", it, typeOption.value.getCustomPropertyClass().javaClass)
         )
-      }
-      it
+        it
+      } else throw ValidationException(localizer.formatText("expression.validation.empty"))
     }
   ).also {
     it.completions = expressionAutoCompletion

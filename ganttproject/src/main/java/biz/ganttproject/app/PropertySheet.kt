@@ -159,9 +159,15 @@ class PropertySheetBuilder(private val localizer: Localizer) {
         isEscCloseEnabled.bind(it.autoCompletionPopup.showingProperty().not())
       }
       val validatedText = textField.textProperty().validated(option.validator)
+      option.isWritable.addWatcher {
+        if (it.newValue) {
+          validatedText.validate(textField.text, null)
+        }
+      }
       validatedText.addWatcher { evt ->
         option.set(evt.newValue, textField)
       }
+
       validatedText.validationMessage.addWatcher {
         if (it.newValue == null) {
           textField.markValid()
