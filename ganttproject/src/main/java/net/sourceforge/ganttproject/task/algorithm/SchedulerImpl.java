@@ -38,6 +38,7 @@ import net.sourceforge.ganttproject.task.algorithm.DependencyGraph.ImplicitSubSu
 import net.sourceforge.ganttproject.task.algorithm.DependencyGraph.Node;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Supplier;
@@ -85,7 +86,11 @@ public class SchedulerImpl extends AlgorithmBase {
         try {
           schedule(node);
         } catch (IllegalArgumentException e) {
-          getDiagnostic().logError(e);
+          if (getDiagnostic() != null) {
+            getDiagnostic().logError(e);
+          } else {
+            error(e);
+          }
         }
       }
     }
@@ -93,7 +98,7 @@ public class SchedulerImpl extends AlgorithmBase {
 
   private void schedule(Node node) {
     Logger logger = GPLogger.getLogger(this);
-    GPLogger.debug(logger, "Scheduling node %s", node);
+    debug("Scheduling node {}", node);
     Range<Date> startRange = Range.all();
     Range<Date> endRange = Range.all();
 
@@ -102,7 +107,7 @@ public class SchedulerImpl extends AlgorithmBase {
 
     List<Date> subtaskRanges = Lists.newArrayList();
     List<DependencyEdge> incoming = node.getIncoming();
-    GPLogger.debug(logger, ".. #incoming edges=%d", incoming.size());
+    debug(".. #incoming edges={}", incoming.size());
     for (DependencyEdge edge : incoming) {
       if (!edge.refresh()) {
         continue;
@@ -120,16 +125,16 @@ public class SchedulerImpl extends AlgorithmBase {
         }
       }
       if (startRange.isEmpty() || endRange.isEmpty()) {
-        GPLogger.logToLogger("both start and end ranges were calculated as empty for task=" + node.getTask() + ". Skipping it");
+        debug("..both start and end ranges were calculated as empty for task={} Skipping it", node.getTask());
       }
     }
-    GPLogger.debug(logger, "..Ranges: start=%s end=%s weakStart=%s weakEnd=%s", startRange, endRange, weakStartRange, weakEndRange);
+    debug("..Ranges: start={} end={} weakStart={} weakEnd={}", startRange, endRange, weakStartRange, weakEndRange);
 
     Range<Date> subtasksSpan = subtaskRanges.isEmpty() ?
         Range.closed(node.getTask().getStart().getTime(), node.getTask().getEnd().getTime()) : Range.encloseAll(subtaskRanges);
     Range<Date> subtreeStartUpwards = subtasksSpan.span(Range.downTo(node.getTask().getStart().getTime(), BoundType.CLOSED));
     Range<Date> subtreeEndDownwards = subtasksSpan.span(Range.upTo(node.getTask().getEnd().getTime(), BoundType.CLOSED));
-    GPLogger.debug(logger, "..Subtasks span=%s", subtasksSpan);
+    debug("..Subtasks span={}", subtasksSpan);
 
     if (!startRange.equals(Range.all())) {
       startRange = startRange.intersection(weakStartRange);
@@ -143,13 +148,13 @@ public class SchedulerImpl extends AlgorithmBase {
     }
     if (node.getTask().getThirdDateConstraint() == TaskImpl.EARLIESTBEGIN && node.getTask().getThird() != null) {
       startRange = startRange.intersection(Range.downTo(node.getTask().getThird().getTime(), BoundType.CLOSED));
-      GPLogger.debug(logger, ".. applying earliest start=%s. Now start range=%s", node.getTask().getThird(), startRange);
+      debug(".. applying earliest start={}. Now start range={}", node.getTask().getThird(), startRange);
     }
     if (!subtaskRanges.isEmpty()) {
       startRange = startRange.intersection(subtasksSpan);
       endRange = endRange.intersection(subtasksSpan);
     }
-    GPLogger.debug(logger, ".. finally, start range=%s", startRange);
+    debug(".. finally, start range={}", startRange);
     if (startRange.hasLowerBound()) {
       modifyTaskStart(node.getTask(), startRange.lowerEndpoint());
     }
@@ -212,5 +217,13 @@ public class SchedulerImpl extends AlgorithmBase {
       mutator.shift(shift);
       mutator.commit();
     }
+  }
+
+  private void debug(String message, Object... params) {
+    GPLogger.create("SchedulerImpl").debug(message, params, Collections.emptyMap());
+  }
+
+  private void error(Exception ex) {
+    GPLogger.create("SchedulerImpl").error(ex.getMessage(), new Object[0], Collections.emptyMap(), ex);
   }
 }
