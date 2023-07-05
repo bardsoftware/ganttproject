@@ -23,8 +23,8 @@ repositories {
 }
 
 dependencies {
-    implementation("biz.ganttproject:biz.ganttproject.core:22.+")
-    implementation("biz.ganttproject:ganttproject:22.+")
+    implementation("biz.ganttproject:biz.ganttproject.core:23.+")
+    implementation("biz.ganttproject:ganttproject:23.+")
     implementation("ch.qos.logback:logback-classic:1.2.11")
     implementation("com.google.guava:guava:31.1-jre")
 
