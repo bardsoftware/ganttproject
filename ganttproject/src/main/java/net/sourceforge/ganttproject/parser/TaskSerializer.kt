@@ -165,7 +165,7 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
       xmlCustomProperty.value?.let { valueStr ->
         when {
           cc.type == String::class.java -> valueStr
-          cc.type == Boolean::class.java -> java.lang.Boolean.valueOf(valueStr)
+          cc.type == java.lang.Boolean::class.java -> java.lang.Boolean.valueOf(valueStr)
           cc.type == Int::class.java -> Integer.valueOf(valueStr)
           cc.type == Double::class.java -> java.lang.Double.valueOf(valueStr)
           GregorianCalendar::class.java.isAssignableFrom(cc.type) ->
