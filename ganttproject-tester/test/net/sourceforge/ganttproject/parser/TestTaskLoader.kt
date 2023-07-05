@@ -56,4 +56,20 @@ class TestTaskLoader {
           assertEquals(129.toBigDecimal(), it.cost.manualValue)
       }
   }
+
+  @Test
+  fun `custom property values`() {
+      val xmlTask1 = XmlTasks.XmlTask(id = 1, uid = "", name = "Task1", startDate = "2022-04-19",
+          customPropertyValues = listOf(XmlTasks.XmlTask.XmlCustomProperty("tpc0", "true"), XmlTasks.XmlTask.XmlCustomProperty("tpc1", "foobar"))
+      )
+      val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+      val tpc0 = taskManager.customPropertyManager.createDefinition( "tpc0", "boolean", "b", "false")
+      val tpc1 = taskManager.customPropertyManager.createDefinition( "tpc1", "text", "s", "")
+      val taskLoader = TaskLoader(taskManager, SimpleTreeCollapseView())
+      taskLoader.loadTask(null, xmlTask1).let {
+          assertEquals(true, it.customValues.getValue(tpc0))
+          assertEquals("foobar", it.customValues.getValue(tpc1))
+      }
+
+  }
 }
