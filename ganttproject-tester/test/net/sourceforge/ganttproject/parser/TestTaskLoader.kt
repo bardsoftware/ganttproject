@@ -21,21 +21,39 @@ package net.sourceforge.ganttproject.parser
 import biz.ganttproject.core.io.XmlTasks
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView
 import net.sourceforge.ganttproject.TestSetupHelper
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class TestTaskLoader {
   @Test
   fun `empty UID is ignored, non-empty is preserved`() {
-    val xmlTask1 = XmlTasks.XmlTask(id = 1, uid = "", name = "Task1", startDate = "2022-04-19")
-    val xmlTask2 = XmlTasks.XmlTask(id = 2, uid = "c4f3b4b3", name = "Task2", startDate = "2022-04-19")
+      val xmlTask1 = XmlTasks.XmlTask(id = 1, uid = "", name = "Task1", startDate = "2022-04-19")
+      val xmlTask2 = XmlTasks.XmlTask(id = 2, uid = "c4f3b4b3", name = "Task2", startDate = "2022-04-19")
 
-    val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
-    val taskLoader = TaskLoader(taskManager, SimpleTreeCollapseView())
-    val task1 = taskLoader.loadTask(null, xmlTask1)
-    val task2 = taskLoader.loadTask(null, xmlTask2)
-    assert(task1.uid.isNotBlank())
-    assertEquals("c4f3b4b3", task2.uid)
+      val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+      val taskLoader = TaskLoader(taskManager, SimpleTreeCollapseView())
+      val task1 = taskLoader.loadTask(null, xmlTask1)
+      val task2 = taskLoader.loadTask(null, xmlTask2)
+      assert(task1.uid.isNotBlank())
+      assertEquals("c4f3b4b3", task2.uid)
   }
 
+  @Test
+  fun `calculated and explicit task cost`() {
+      val xmlTask1 = XmlTasks.XmlTask(id = 1, uid = "", name = "Task1", startDate = "2022-04-19")
+      val xmlTask2 = XmlTasks.XmlTask(id = 2, uid = "c4f3b4b3", name = "Task2", startDate = "2022-04-19").also {
+          it.costManualValue = 129.toBigDecimal()
+          it.isCostCalculated = false
+      }
+
+      val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+      val taskLoader = TaskLoader(taskManager, SimpleTreeCollapseView())
+      taskLoader.loadTask(null, xmlTask1).let {
+          assertTrue(it.cost.isCalculated)
+      }
+      taskLoader.loadTask(null, xmlTask2).let {
+          assertFalse(it.cost.isCalculated)
+          assertEquals(129.toBigDecimal(), it.cost.manualValue)
+      }
+  }
 }
