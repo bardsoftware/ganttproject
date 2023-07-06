@@ -19,20 +19,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package org.ganttproject.impex.htmlpdf.itext;
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
-import biz.ganttproject.core.option.BooleanOption;
-import biz.ganttproject.core.option.DefaultBooleanOption;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
+import com.itextpdf.text.*;
 import com.itextpdf.text.Font;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
@@ -56,6 +48,8 @@ import org.ganttproject.impex.htmlpdf.StylesheetImpl;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 import org.osgi.service.prefs.Preferences;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
@@ -88,6 +82,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     }
   }
   private static final BaseColor SORTAVALA_GREEN = new BaseColor(0x66, 0x99, 0x99);
+  private static final int FONT_SIZE = 12;
   private Document myDoc;
   private PdfWriter myWriter;
   private IGanttProject myProject;
@@ -220,7 +215,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   }
 
   protected Font getSansRegularBold() {
-    return getSansRegularBold(12);
+    return getSansRegularBold(FONT_SIZE);
   }
 
   private String getCharset() {
@@ -282,13 +277,13 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   private void writeAttributes(PdfPTable table, LinkedHashMap<String, String> attrs) {
     for (Entry<String, String> nextEntry : attrs.entrySet()) {
       {
-        Paragraph p = new Paragraph(nextEntry.getKey(), getSansRegularBold(12));
+        Paragraph p = new Paragraph(nextEntry.getKey(), getSansRegularBold(FONT_SIZE));
         PdfPCell cell = new PdfPCell(p);
         cell.setBorder(PdfPCell.NO_BORDER);
         table.addCell(cell);
       }
       {
-        Paragraph p = new Paragraph(nextEntry.getValue(), getSansRegular(12));
+        Paragraph p = new Paragraph(nextEntry.getValue(), getSansRegular(FONT_SIZE));
         PdfPCell cell = new PdfPCell(p);
         cell.setBorder(PdfPCell.NO_BORDER);
         table.addCell(cell);
@@ -324,7 +319,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     head.addCell(attrsCell);
     addEmptyRow(head, 20);
     if (getProject().getDescription().length() > 0) {
-      Paragraph p = new Paragraph(getProject().getDescription(), getSansRegular(12));
+      Paragraph p = new Paragraph(getProject().getDescription(), getSansRegular(FONT_SIZE));
       PdfPCell cell = new PdfPCell(p);
       cell.setBorder(PdfPCell.TOP | PdfPCell.BOTTOM);
       cell.setBorderColor(SORTAVALA_GREEN);
@@ -409,7 +404,12 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     table.setWidthPercentage(95);
     for (Column field : orderedColumns) {
       if (field.isVisible()) {
-        PdfPCell cell = new PdfPCell(new Paragraph(field.getName(), getSansRegularBold(12f)));
+        PdfPCell cell;
+        if (field.getID().equals(TaskDefaultColumn.COLOR.getStub().getID())) {
+          cell = new PdfPCell();
+        } else {
+          cell = new PdfPCell(new Paragraph(field.getName(), getSansRegularBold(FONT_SIZE)));
+        }
         cell.setPaddingTop(4);
         cell.setPaddingBottom(4);
         cell.setPaddingLeft(5);
@@ -444,20 +444,49 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         if (value == null) {
           value = "";
         }
-        Paragraph p = new Paragraph(value, getSansRegular(12));
-        cell = new PdfPCell(p);
-        if (TaskDefaultColumn.COST.getStub().getID().equals(column.getID())
+        if (TaskDefaultColumn.COLOR.getStub().getID().equals(column.getID())) {
+          var size = FONT_SIZE;
+          var image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+          Graphics2D g = image.createGraphics();
+
+          g.setPaint(Color.WHITE);
+          g.fillRect(0, 0, size, size);
+          var color = ColorOption.Util.INSTANCE.determineColor(value);
+          g.setPaint(color);
+          g.setBackground(Color.WHITE);
+          g.setRenderingHint(
+            RenderingHints.KEY_ANTIALIASING,
+            RenderingHints.VALUE_ANTIALIAS_ON);
+
+          g.fillOval(1, 1, size-2, size-2);
+
+          try {
+            cell = new PdfPCell(Image.getInstance(image, null));
+            cell.setBackgroundColor(BaseColor.WHITE);
+            cell.setBorderWidth(0);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            cell.setPadding(2.0f);
+          } catch (BadElementException | IOException e) {
+            throw new RuntimeException(e);
+          }
+        } else {
+          Paragraph p = new Paragraph(value, getSansRegular(12));
+          cell = new PdfPCell(p);
+          if (TaskDefaultColumn.COST.getStub().getID().equals(column.getID())
             || ResourceDefaultColumn.STANDARD_RATE.getStub().getID().equals(column.getID())
             || ResourceDefaultColumn.TOTAL_COST.getStub().getID().equals(column.getID())
             || ResourceDefaultColumn.TOTAL_LOAD.getStub().getID().equals(column.getID())
             || (taskCustomColumn != null && taskCustomColumn.getPropertyClass().isNumeric())
             || (resourceCustomColumn != null && resourceCustomColumn.getPropertyClass().isNumeric())) {
-          cell.setHorizontalAlignment(PdfPCell.ALIGN_RIGHT);
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_RIGHT);
+          }
+          cell.setBorderWidth(0);
+          cell.setPaddingLeft(5);
         }
-        cell.setBorderWidth(0);
-        cell.setPaddingLeft(5);
       }
       table.addCell(cell);
+
     }
   }
 
