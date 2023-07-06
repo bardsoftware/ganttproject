@@ -20,6 +20,7 @@ package org.ganttproject.impex.htmlpdf;
 
 import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
+import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.customproperty.CustomProperty;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.base.Joiner;
@@ -64,6 +65,7 @@ public class PropertyFetcher {
     id2value.put(TaskDefaultColumn.OUTLINE_NUMBER.getStub().getID(), Joiner.on('.').join(outlinePath));
     id2value.put(TaskDefaultColumn.ID.getStub().getID(), String.valueOf(t.getTaskID()));
     id2value.put(TaskDefaultColumn.COST.getStub().getID(), InternationalizationKt.getNumberFormat().format(t.getCost().getValue()));
+    id2value.put(TaskDefaultColumn.COLOR.getStub().getID(), ColorOption.Util.INSTANCE.getColor(t.getColor()));
 
     CustomColumnsValues customValues = t.getCustomValues();
     for (CustomPropertyDefinition def : myProject.getTaskCustomColumnManager().getDefinitions()) {
