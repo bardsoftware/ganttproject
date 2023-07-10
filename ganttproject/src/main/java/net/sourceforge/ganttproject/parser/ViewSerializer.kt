@@ -40,8 +40,9 @@ fun loadView(xmlView: XmlView, zoomManager: ZoomManager, columnList: ColumnList)
     // Set orders for the columns which had no orders defined
     val countPositiveOrders = stubs.count { it.order >= 0 }
     stubs.filter { it.order == -1 }.forEachIndexed { idx, stub -> stub.order = idx + countPositiveOrders }
-    columnList.importData(ColumnList.Immutable.fromList(stubs + TaskDefaultColumn.getColumnStubs().filter { defaultColumn ->
-      stubs.firstOrNull { it.id == defaultColumn.id } == null
-    }), false)
+    val defaultColumns = TaskDefaultColumn.getColumnStubs().filter { defaultColumn ->
+        stubs.firstOrNull { it.id == defaultColumn.id } == null
+    }.onEach { it.isVisible = false }
+    columnList.importData(ColumnList.Immutable.fromList(stubs + defaultColumns), false)
   }
 }
