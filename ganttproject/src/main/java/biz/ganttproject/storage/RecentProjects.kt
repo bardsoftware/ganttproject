@@ -88,13 +88,15 @@ class RecentProjects(
       }
 
       fun onAction() {
-        selectedItem?.let {
-          it.asDocument()?.let(documentReceiver) ?: run {
-            LOG.error("File {} seems to be not existing", it)
-            paneElements.setValidationResult(ValidationResult.fromError(
-              paneElements.filenameInput, RootLocalizer.formatText("document.storage.error.read.notExists")
-            ))
-          }
+        if (state.confirmationReceived.value) {
+            selectedItem?.let {
+                it.asDocument()?.let(documentReceiver) ?: run {
+                    LOG.error("File {} seems to be not existing", it)
+                    paneElements.setValidationResult(ValidationResult.fromError(
+                        paneElements.filenameInput, RootLocalizer.formatText("document.storage.error.read.notExists")
+                    ))
+                }
+            }
         }
       }
     }
@@ -125,6 +127,7 @@ class RecentProjects(
     paneElements.breadcrumbView?.show()
     if (this.mode == StorageDialogBuilder.Mode.SAVE) {
       this.paneElements.filenameInput.text = currentDocument.fileName
+      this.paneElements.filenameInput.isDisable = true
       this.state.currentItemProperty.addListener { _, _, _ ->
         Platform.runLater { paneElements.confirmationCheckBox?.isSelected = false }
       }
