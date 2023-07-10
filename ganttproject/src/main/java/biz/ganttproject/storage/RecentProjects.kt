@@ -42,6 +42,7 @@ import java.io.File
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 
@@ -88,7 +89,7 @@ class RecentProjects(
       }
 
       fun onAction() {
-        if (state.confirmationReceived.value) {
+        if (mode == StorageDialogBuilder.Mode.OPEN || state.confirmationReceived.value) {
             selectedItem?.let {
                 it.asDocument()?.let(documentReceiver) ?: run {
                     LOG.error("File {} seems to be not existing", it)
@@ -151,6 +152,8 @@ class RecentProjects(
     busyIndicator: Consumer<Boolean>,
     progressLabel: LocalizedString
   ) {
+    val updateScope = CoroutineScope(Executors.newFixedThreadPool(5).asCoroutineDispatcher())
+    val awaitScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
     val result = Collections.synchronizedList<RecentDocAsFolderItem>(mutableListOf())
     busyIndicator.accept(true)
     progressLabel.update("0", documentManager.recentDocuments.size.toString())
@@ -158,7 +161,7 @@ class RecentProjects(
     val asyncs = documentManager.recentDocuments.map { path ->
       try {
         val doc = RecentDocAsFolderItem(path, (documentManager.webDavStorageUi as WebDavStorageImpl).serversOption, documentManager)
-        GlobalScope.async(Dispatchers.IO) {
+        updateScope.async {
           doc.updateMetadata()
           result.add(doc)
           Platform.runLater {
@@ -170,11 +173,12 @@ class RecentProjects(
         CompletableDeferred(value = null)
       }
     }
-    GlobalScope.launch {
+    awaitScope.launch {
       try {
         asyncs.awaitAll()
         consumer.accept(FXCollections.observableArrayList(result))
       } finally {
+        updateScope.cancel()
         Platform.runLater {
           busyIndicator.accept(false)
           progressLabel.clear()
@@ -186,6 +190,7 @@ class RecentProjects(
   override fun focus() {
     this.paneElements.filenameInput.requestFocus()
   }
+
 }
 
 /**
