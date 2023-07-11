@@ -129,8 +129,8 @@ class FolderView<T : FolderItem>(
         doFilter(FXCollections.observableArrayList(myContents), byValue)))
   }
 
-  fun doFilter(contents: List<T>, byValue: String): List<T> {
-    return contents.filter { it.name.toLowerCase().contains(byValue.toLowerCase()) }
+  private fun doFilter(contents: List<T>, byValue: String): List<T> {
+    return contents.filter { it.name.lowercase().contains(byValue.lowercase()) }
   }
 
   fun doFilter(byValue: String): List<T> {

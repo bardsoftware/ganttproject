@@ -116,7 +116,7 @@ class RecentProjects(
           },
           cellFactory = { CellWithBasePath() },
         onNameTyped = { filename, matchedItems, _, _ ->
-          state.onNameTyped(filename, matchedItems)
+          state.onNameTyped(matchedItems)
         }
       )
       withListViewHint(progressLabel)
@@ -330,7 +330,7 @@ private class RecentProjectState(
   // this property value will be false.
   val canWrite = SimpleBooleanProperty(false)
 
-  fun onNameTyped(typedName: String, matchedItems: List<RecentDocAsFolderItem>) {
+  fun onNameTyped(matchedItems: List<RecentDocAsFolderItem>) {
     currentItem = if (mode == StorageDialogBuilder.Mode.SAVE && matchedItems.size == 1) {
       matchedItems[0]
     } else {

@@ -183,7 +183,7 @@ class LocalStorage(
       }
     }
 
-    val listViewHint = SimpleStringProperty(i18n.formatText("${myMode.name.toLowerCase()}.listViewHint"))
+    val listViewHint = SimpleStringProperty(i18n.formatText("${myMode.name.lowercase()}.listViewHint"))
 
     val filePath = Paths.get(currentDocument.filePath) ?: Paths.get("/")
     this.paneElements = builder.apply {

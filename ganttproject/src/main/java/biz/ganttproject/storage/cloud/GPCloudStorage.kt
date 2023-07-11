@@ -120,7 +120,7 @@ class GPCloudStorage(
         openDocument(doc)
       }
     }
-    browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, this.documentManager, documentConsumer, this.currentDocument)
+    browserPane = GPCloudBrowserPane(this.mode, this.dialogUi, documentConsumer, this.currentDocument)
 
     val offlinePane = GPCloudOfflinePane(this.mode)
     val offlineBrowser = GPCloudOfflineBrowser(this.mode, this.dialogUi, documentConsumer)
