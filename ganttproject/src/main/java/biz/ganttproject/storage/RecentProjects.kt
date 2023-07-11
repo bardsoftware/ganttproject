@@ -69,7 +69,7 @@ class RecentProjects(
 
   override fun createUi(): Pane {
     val progressLabel = i18n.create("progress.label")
-    val builder = BrowserPaneBuilder<RecentDocAsFolderItem>(mode, { ex -> GPLogger.log(ex) }) { _, success, busyIndicator ->
+    val builder = BrowserPaneBuilder(mode, { ex -> GPLogger.log(ex) }) { _, success, busyIndicator ->
       loadRecentDocs(success, busyIndicator, progressLabel)
     }
 
@@ -165,7 +165,7 @@ class RecentProjects(
           doc.updateMetadata()
           result.add(doc)
           Platform.runLater {
-            progressLabel.update(counter.incrementAndGet().toString(), documentManager.recentDocuments.size.toString())
+              progressLabel.update(counter.incrementAndGet().toString(), documentManager.recentDocuments.size.toString())
           }
         }
       } catch (ex: MalformedURLException) {
@@ -176,7 +176,16 @@ class RecentProjects(
     awaitScope.launch {
       try {
         asyncs.awaitAll()
-        consumer.accept(FXCollections.observableArrayList(result))
+        documentManager.clearRecentDocuments()
+        val filteredResult = result.mapNotNull {
+            if (it.tags.containsKey(FolderItemTag.UNAVAILABLE)) {
+                null
+            } else {
+                documentManager.addToRecentDocuments(it.asDocument())
+                it
+            }
+        }
+        consumer.accept(FXCollections.observableArrayList(filteredResult))
       } finally {
         updateScope.cancel()
         Platform.runLater {
@@ -235,20 +244,21 @@ class RecentDocAsFolderItem(
       "file" -> {
         File(this.url.path).let {
           when {
-            it.isFile && it.canWrite() -> this.tags.add(i18n.formatText("tag.local"))
-            it.isFile && it.canRead() -> this.tags.addAll(listOf(
-                i18n.formatText("tag.local"),
-                i18n.formatText("tag.readonly")
+            it.isFile && it.canWrite() -> this.tags[FolderItemTag.TYPE] = i18n.formatText("tag.local")
+            it.isFile && it.canRead() -> this.tags.putAll(mapOf(
+                FolderItemTag.TYPE to i18n.formatText("tag.local"),
+                FolderItemTag.READONLY to i18n.formatText("tag.readonly")
             ))
+            !it.isFile || !it.exists() -> this.tags[FolderItemTag.UNAVAILABLE] = i18n.formatText("tag.unavailable")
             else -> {}
           }
         }
       }
       "cloud" -> {
-        this.tags.add(i18n.formatText("tag.cloud"))
+        this.tags[FolderItemTag.TYPE] = i18n.formatText("tag.cloud")
       }
       "webdav" -> {
-        this.tags.add(i18n.formatText("tag.webdav"))
+        this.tags[FolderItemTag.TYPE] = i18n.formatText("tag.webdav")
       }
       else -> {
       }
@@ -279,7 +289,7 @@ class RecentDocAsFolderItem(
   override val isLocked: Boolean = false
   override val isLockable: Boolean = false
   override val canChangeLock: Boolean = false
-  override val tags: MutableList<String> = mutableListOf()
+  override val tags: MutableMap<FolderItemTag, String> = mutableMapOf()
   override val name: String
     get() = DocumentUri.createPath(this.fullPath).getFileName()
   override val basePath: String

@@ -212,7 +212,7 @@ class WebDavResourceAsFolderItem(val myResource: WebDavResource) : FolderItem {
       }
 
     }
-  override val tags = listOf<String>()
+  override val tags = mapOf<FolderItemTag, String>()
 }
 
 private data class State(

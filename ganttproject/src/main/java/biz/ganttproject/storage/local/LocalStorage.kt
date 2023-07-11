@@ -55,7 +55,7 @@ class FileAsFolderItem(val file: File) : FolderItem, Comparable<FileAsFolderItem
   override val name: String = file.name
   override val basePath = file.parentFile.absolutePath
   override val isDirectory: Boolean = file.isDirectory
-  override val tags = listOf<String>()
+  override val tags = mapOf<FolderItemTag, String>()
 }
 
 /**

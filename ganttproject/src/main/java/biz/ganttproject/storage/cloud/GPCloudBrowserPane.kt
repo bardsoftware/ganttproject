@@ -39,7 +39,7 @@ import java.time.Instant
 import java.util.function.Consumer
 
 abstract class CloudJsonAsFolderItem : FolderItem {
-  override val tags = listOf<String>()
+  override val tags = mapOf<FolderItemTag, String>()
   override val basePath = ""
 }
 /**
@@ -116,7 +116,7 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val basePath = ""
   override val isDirectory = false
   override val canChangeLock = false
-  override val tags = listOf<String>()
+  override val tags = mapOf<FolderItemTag, String>()
 
   val generation: Long
     get() = node["number"].asLong(-1)
