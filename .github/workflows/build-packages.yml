@@ -5,8 +5,8 @@ on:
         branches: ['master', 'BRANCH*']
         paths: ['ganttproject-builder/VERSION', '.github/workflows/build-packages.yml']
 env:
-    BUILD_NUMBER: 3292
-    VERSION: 3.3.3292
+    BUILD_NUMBER: 3295
+    VERSION: 3.3.3295
     WINDOWS_APP_FOLDER_NAME: GanttProject-3.3-Beta
     MAC_APP_NAME: GanttProject 3.3 Beta
 
@@ -24,7 +24,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.5
+                  java-version: 17.0.7
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
@@ -68,7 +68,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.5
+                  java-version: 17.0.7
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
@@ -139,7 +139,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.5
+                  java-version: 17.0.7
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
