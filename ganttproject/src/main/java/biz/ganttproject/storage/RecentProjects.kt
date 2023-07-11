@@ -42,6 +42,7 @@ import java.io.File
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 
@@ -68,7 +69,7 @@ class RecentProjects(
 
   override fun createUi(): Pane {
     val progressLabel = i18n.create("progress.label")
-    val builder = BrowserPaneBuilder<RecentDocAsFolderItem>(mode, { ex -> GPLogger.log(ex) }) { _, success, busyIndicator ->
+    val builder = BrowserPaneBuilder(mode, { ex -> GPLogger.log(ex) }) { _, success, busyIndicator ->
       loadRecentDocs(success, busyIndicator, progressLabel)
     }
 
@@ -88,13 +89,15 @@ class RecentProjects(
       }
 
       fun onAction() {
-        selectedItem?.let {
-          it.asDocument()?.let(documentReceiver) ?: run {
-            LOG.error("File {} seems to be not existing", it)
-            paneElements.setValidationResult(ValidationResult.fromError(
-              paneElements.filenameInput, RootLocalizer.formatText("document.storage.error.read.notExists")
-            ))
-          }
+        if (mode == StorageDialogBuilder.Mode.OPEN || state.confirmationReceived.value) {
+            selectedItem?.let {
+                it.asDocument()?.let(documentReceiver) ?: run {
+                    LOG.error("File {} seems to be not existing", it)
+                    paneElements.setValidationResult(ValidationResult.fromError(
+                        paneElements.filenameInput, RootLocalizer.formatText("document.storage.error.read.notExists")
+                    ))
+                }
+            }
         }
       }
     }
@@ -113,7 +116,7 @@ class RecentProjects(
           },
           cellFactory = { CellWithBasePath() },
         onNameTyped = { filename, matchedItems, _, _ ->
-          state.onNameTyped(filename, matchedItems)
+          state.onNameTyped(matchedItems)
         }
       )
       withListViewHint(progressLabel)
@@ -125,6 +128,7 @@ class RecentProjects(
     paneElements.breadcrumbView?.show()
     if (this.mode == StorageDialogBuilder.Mode.SAVE) {
       this.paneElements.filenameInput.text = currentDocument.fileName
+      this.paneElements.filenameInput.isDisable = true
       this.state.currentItemProperty.addListener { _, _, _ ->
         Platform.runLater { paneElements.confirmationCheckBox?.isSelected = false }
       }
@@ -148,6 +152,8 @@ class RecentProjects(
     busyIndicator: Consumer<Boolean>,
     progressLabel: LocalizedString
   ) {
+    val updateScope = CoroutineScope(Executors.newFixedThreadPool(5).asCoroutineDispatcher())
+    val awaitScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
     val result = Collections.synchronizedList<RecentDocAsFolderItem>(mutableListOf())
     busyIndicator.accept(true)
     progressLabel.update("0", documentManager.recentDocuments.size.toString())
@@ -155,11 +161,11 @@ class RecentProjects(
     val asyncs = documentManager.recentDocuments.map { path ->
       try {
         val doc = RecentDocAsFolderItem(path, (documentManager.webDavStorageUi as WebDavStorageImpl).serversOption, documentManager)
-        GlobalScope.async(Dispatchers.IO) {
+        updateScope.async {
           doc.updateMetadata()
           result.add(doc)
           Platform.runLater {
-            progressLabel.update(counter.incrementAndGet().toString(), documentManager.recentDocuments.size.toString())
+              progressLabel.update(counter.incrementAndGet().toString(), documentManager.recentDocuments.size.toString())
           }
         }
       } catch (ex: MalformedURLException) {
@@ -167,11 +173,21 @@ class RecentProjects(
         CompletableDeferred(value = null)
       }
     }
-    GlobalScope.launch {
+    awaitScope.launch {
       try {
         asyncs.awaitAll()
-        consumer.accept(FXCollections.observableArrayList(result))
+        documentManager.clearRecentDocuments()
+        val filteredResult = result.mapNotNull {
+            if (it.tags.containsKey(FolderItemTag.UNAVAILABLE)) {
+                null
+            } else {
+                documentManager.addToRecentDocuments(it.asDocument())
+                it
+            }
+        }
+        consumer.accept(FXCollections.observableArrayList(filteredResult))
       } finally {
+        updateScope.cancel()
         Platform.runLater {
           busyIndicator.accept(false)
           progressLabel.clear()
@@ -183,6 +199,7 @@ class RecentProjects(
   override fun focus() {
     this.paneElements.filenameInput.requestFocus()
   }
+
 }
 
 /**
@@ -227,20 +244,21 @@ class RecentDocAsFolderItem(
       "file" -> {
         File(this.url.path).let {
           when {
-            it.isFile && it.canWrite() -> this.tags.add(i18n.formatText("tag.local"))
-            it.isFile && it.canRead() -> this.tags.addAll(listOf(
-                i18n.formatText("tag.local"),
-                i18n.formatText("tag.readonly")
+            it.isFile && it.canWrite() -> this.tags[FolderItemTag.TYPE] = i18n.formatText("tag.local")
+            it.isFile && it.canRead() -> this.tags.putAll(mapOf(
+                FolderItemTag.TYPE to i18n.formatText("tag.local"),
+                FolderItemTag.READONLY to i18n.formatText("tag.readonly")
             ))
+            !it.isFile || !it.exists() -> this.tags[FolderItemTag.UNAVAILABLE] = i18n.formatText("tag.unavailable")
             else -> {}
           }
         }
       }
       "cloud" -> {
-        this.tags.add(i18n.formatText("tag.cloud"))
+        this.tags[FolderItemTag.TYPE] = i18n.formatText("tag.cloud")
       }
       "webdav" -> {
-        this.tags.add(i18n.formatText("tag.webdav"))
+        this.tags[FolderItemTag.TYPE] = i18n.formatText("tag.webdav")
       }
       else -> {
       }
@@ -271,7 +289,7 @@ class RecentDocAsFolderItem(
   override val isLocked: Boolean = false
   override val isLockable: Boolean = false
   override val canChangeLock: Boolean = false
-  override val tags: MutableList<String> = mutableListOf()
+  override val tags: MutableMap<FolderItemTag, String> = mutableMapOf()
   override val name: String
     get() = DocumentUri.createPath(this.fullPath).getFileName()
   override val basePath: String
@@ -312,7 +330,7 @@ private class RecentProjectState(
   // this property value will be false.
   val canWrite = SimpleBooleanProperty(false)
 
-  fun onNameTyped(typedName: String, matchedItems: List<RecentDocAsFolderItem>) {
+  fun onNameTyped(matchedItems: List<RecentDocAsFolderItem>) {
     currentItem = if (mode == StorageDialogBuilder.Mode.SAVE && matchedItems.size == 1) {
       matchedItems[0]
     } else {

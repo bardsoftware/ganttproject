@@ -55,7 +55,7 @@ class FileAsFolderItem(val file: File) : FolderItem, Comparable<FileAsFolderItem
   override val name: String = file.name
   override val basePath = file.parentFile.absolutePath
   override val isDirectory: Boolean = file.isDirectory
-  override val tags = listOf<String>()
+  override val tags = mapOf<FolderItemTag, String>()
 }
 
 /**
@@ -183,7 +183,7 @@ class LocalStorage(
       }
     }
 
-    val listViewHint = SimpleStringProperty(i18n.formatText("${myMode.name.toLowerCase()}.listViewHint"))
+    val listViewHint = SimpleStringProperty(i18n.formatText("${myMode.name.lowercase()}.listViewHint"))
 
     val filePath = Paths.get(currentDocument.filePath) ?: Paths.get("/")
     this.paneElements = builder.apply {

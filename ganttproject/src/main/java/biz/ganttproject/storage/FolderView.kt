@@ -28,6 +28,11 @@ import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
 
+enum class FolderItemTag {
+    TYPE,
+    READONLY,
+    UNAVAILABLE
+}
 /**
  * Interface of a single filesystem item.
  */
@@ -45,7 +50,7 @@ interface FolderItem {
   // Is it possible to change lock state: unlock if locked or lock if unlocked
   val canChangeLock: Boolean
   // Item tags, indicating whether item is local, is read-only, etc
-  val tags: List<String>
+  val tags: Map<FolderItemTag, String>
 }
 
 private val unsupported = SimpleBooleanProperty(false)
@@ -124,8 +129,8 @@ class FolderView<T : FolderItem>(
         doFilter(FXCollections.observableArrayList(myContents), byValue)))
   }
 
-  fun doFilter(contents: List<T>, byValue: String): List<T> {
-    return contents.filter { it.name.toLowerCase().contains(byValue.toLowerCase()) }
+  private fun doFilter(contents: List<T>, byValue: String): List<T> {
+    return contents.filter { it.name.lowercase().contains(byValue.lowercase()) }
   }
 
   fun doFilter(byValue: String): List<T> {

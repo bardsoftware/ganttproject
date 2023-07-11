@@ -32,14 +32,13 @@ import javafx.scene.control.Button
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
-import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.http.HttpStatus
 import java.time.Instant
 import java.util.function.Consumer
 
 abstract class CloudJsonAsFolderItem : FolderItem {
-  override val tags = listOf<String>()
+  override val tags = mapOf<FolderItemTag, String>()
   override val basePath = ""
 }
 /**
@@ -104,8 +103,6 @@ class ProjectJsonAsFolderItem(val node: JsonNode) : CloudJsonAsFolderItem() {
   override val name: String
     get() = this.node["name"].asText()
   override val isDirectory = false
-  val refid: String = this.node["refid"].asText()
-
 }
 
 class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
@@ -116,7 +113,7 @@ class VersionJsonAsFolderItem(val node: JsonNode) : FolderItem {
   override val basePath = ""
   override val isDirectory = false
   override val canChangeLock = false
-  override val tags = listOf<String>()
+  override val tags = mapOf<FolderItemTag, String>()
 
   val generation: Long
     get() = node["number"].asLong(-1)
@@ -139,7 +136,6 @@ val ROOT_URI = DocumentUri(listOf(), true, RootLocalizer.formatText("cloud.offic
 class GPCloudBrowserPane(
     private val mode: StorageDialogBuilder.Mode,
     private val dialogUi: StorageDialogBuilder.DialogUi,
-    private val documentManager: DocumentManager,
     private val documentConsumer: (Document) -> Unit,
     private val currentDocument: Document) : FlowPage() {
   private val loaderService = LoaderService<CloudJsonAsFolderItem>()
@@ -234,7 +230,7 @@ class GPCloudBrowserPane(
           if (it.isEmpty()) {
             listViewHint.set(i18n.formatText("listViewHint.emptyProjects"))
           } else {
-            listViewHint.set(i18n.formatText("${this.mode.name.toLowerCase()}.listViewHint"))
+            listViewHint.set(i18n.formatText("${this.mode.name.lowercase()}.listViewHint"))
           }
         }
         success.accept(it)
@@ -292,8 +288,6 @@ class GPCloudBrowserPane(
     }
   }
 
-  enum class ActionOnLocked { OPEN, CANCEL }
-
   private fun <T: CloudJsonAsFolderItem> loadTeams(path: Path, setResult: Consumer<ObservableList<T>>, showMaskPane: Consumer<Boolean>) {
     loaderService.apply {
       busyIndicator = showMaskPane
@@ -309,7 +303,7 @@ class GPCloudBrowserPane(
             when (ex.status) {
               HttpStatus.SC_SERVICE_UNAVAILABLE -> loadOfflineMirrors(setResult)
               HttpStatus.SC_FORBIDDEN, HttpStatus.SC_UNAUTHORIZED -> {
-                this@GPCloudBrowserPane.controller!!.start()
+                this@GPCloudBrowserPane.controller.start()
               }
               else -> dialogUi.error(CLOUD_LOCALIZER.formatText("error.loadTeams.http", ex.status, ex.message ?: ""))
             }

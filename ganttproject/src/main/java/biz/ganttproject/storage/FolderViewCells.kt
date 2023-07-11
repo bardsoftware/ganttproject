@@ -76,8 +76,11 @@ class CellWithBasePath<T: FolderItem> : FolderViewCell<T>() {
         )
         item.resource.value.tags.let {
           if (it.isNotEmpty()) {
+            if (it.containsKey(FolderItemTag.UNAVAILABLE)) {
+              pane.isDisable = true
+            }
             vbox.children.add(
-                HBox(Label(it.joinToString(", "))).apply {
+                HBox(Label(it.values.joinToString(", "))).apply {
                   styleClass.add("list-item-tags")
                 }
             )
