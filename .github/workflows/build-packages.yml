@@ -160,7 +160,8 @@ jobs:
             - name: Build DMG
               run: |
                   pip install "dmgbuild"
-                  dmgbuild -s build-cfg/dmgbuild.py "GanttProject Test" build/ganttproject-$VERSION.dmg
+                  mv "build/$MAC_APP_NAME" build/GanttProject.app
+                  dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" build/ganttproject-$VERSION.dmg
 
             - id: 'auth'
               uses: 'google-github-actions/auth@v1'
