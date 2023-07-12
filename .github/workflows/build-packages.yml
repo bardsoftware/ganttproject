@@ -167,7 +167,10 @@ jobs:
                   
                   build-bin/notarize.sh $VERSION "$MACOS_CERTIFICATE_NAME" "qwer" sign
 
-#            - uses: actions/setup-python@v4
+            - name: Create temporary DMG for notarization
+              run: |
+                  jpackage --type dmg --app-image build/GanttProject.app -n "ganttproject-$VERSION" --dest build/
+            #            - uses: actions/setup-python@v4
 #              with:
 #                python-version: '3.10'
 #            - name: Build DMG
