@@ -156,16 +156,16 @@ jobs:
               run: |
                   ./build-bin/package-mac.sh
 
-            - name: Sign GanttProject.app
-              run: |
-                  echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
-
-                  security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain 
-                  security default-keychain -s build.keychain
-                  security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-                  security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
-                  
-                  build-bin/notarize.sh $VERSION "$MACOS_CERTIFICATE_NAME" "qwer" sign
+#            - name: Sign GanttProject.app
+#              run: |
+#                  echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+#
+#                  security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+#                  security default-keychain -s build.keychain
+#                  security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+#                  security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+#
+#                  build-bin/notarize.sh $VERSION "$MACOS_CERTIFICATE_NAME" "qwer" sign
 
             - name: Create temporary DMG for notarization
               run: |
