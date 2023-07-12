@@ -155,6 +155,7 @@ jobs:
             - name: Build GanttProject.app
               run: |
                   ./build-bin/package-mac.sh
+                  ./build/GanttProject.app/Contents/MacOS/GanttProject -h || echo "failed to run"
 
 #            - name: Sign GanttProject.app
 #              run: |
