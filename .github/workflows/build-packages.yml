@@ -152,7 +152,7 @@ jobs:
               run: |
                   ./build-bin/package-mac.sh
                   cd build 
-                  tar -czf ganttproject-app-$VERSION.tgz "${MAC_APP_NAME}.app"
+                  tar -czf ganttproject-app-$VERSION.tgz "GanttProject.app"
 
             - uses: actions/setup-python@v4
               with:
