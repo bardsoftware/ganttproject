@@ -164,9 +164,8 @@ jobs:
                   security default-keychain -s build.keychain
                   security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
                   security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
-                  security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
                   
-                  build-bin/notarize.sh $VERSION "BarD Software s.r.o." "qwer" sign
+                  build-bin/notarize.sh $VERSION "$MACOS_CERTIFICATE_NAME" "qwer" sign
 
 #            - uses: actions/setup-python@v4
 #              with:
