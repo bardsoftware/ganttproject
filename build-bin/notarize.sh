@@ -28,13 +28,13 @@ do_staple() {
 
 case $COMMAND in
 sign)
-    do_prepare()
+    do_prepare
     ;;
 notarize)
-    do_notarize()
+    do_notarize
     ;;
 staple)
-    do_staple()
+    do_staple
     ;;
 *)
     echo "Unknown command: $COMMAND" && exit 1
