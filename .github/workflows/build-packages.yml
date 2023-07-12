@@ -160,7 +160,6 @@ jobs:
             - name: Build DMG
               run: |
                   pip install "dmgbuild"
-                  mv "build/$MAC_APP_NAME" build/GanttProject.app
                   dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" build/ganttproject-$VERSION.dmg
 
             - id: 'auth'

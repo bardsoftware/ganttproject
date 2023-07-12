@@ -31,7 +31,7 @@ test_runtime || (build_runtime && test_runtime)
 #(cd .. && rm -rf ganttproject-$VERSION && unzip ganttproject-$VERSION.zip && rm -rf /tmp/plugins/ && rm -rf ganttproject/build/GanttProject.app/ )
 mv "${INPUT}"/plugins tmp
 jpackage --type app-image \
-    --name "${APP_NAME}" \
+    --name "GanttProject" \
     --input "${INPUT}" \
     --dest "${OUTPUT}" \
     --java-options "-Dapple.laf.useScreenMenuBar=true
@@ -63,6 +63,7 @@ jpackage --type app-image \
     --arguments '--version-dirs plugins:~/.ganttproject.d/updates' \
     --arguments '--app net.sourceforge.ganttproject.GanttProject' \
     --copyright 'Copyright (C) 2023 BarD Software s.r.o.' \
+    --vendor 'BarD Software s.r.o.' \
     --app-version "${VERSION}" \
     --runtime-image "${OUTPUT}"/runtime \
     --icon build-cfg/ganttproject.icns \
