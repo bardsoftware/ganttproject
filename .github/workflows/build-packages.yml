@@ -9,6 +9,10 @@ env:
     VERSION: 3.3.3295
     WINDOWS_APP_FOLDER_NAME: GanttProject-3.3-Beta-II
     MAC_APP_NAME: GanttProject 3.3 Beta II
+    MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE }}
+    MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_PWD }}
+    MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_NAME }}
+    MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
 
 jobs:
 #    Linux:
@@ -151,16 +155,26 @@ jobs:
             - name: Build GanttProject.app
               run: |
                   ./build-bin/package-mac.sh
-                  cd build 
-                  tar -czf ganttproject-app-$VERSION.tgz "GanttProject.app"
 
-            - uses: actions/setup-python@v4
-              with:
-                python-version: '3.10'
-            - name: Build DMG
+            - name: Sign GanttProject.app
               run: |
-                  pip install "dmgbuild"
-                  dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" build/ganttproject-$VERSION.dmg
+                  echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+
+                  security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain 
+                  security default-keychain -s build.keychain
+                  security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+                  security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+                  security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+                  
+                  build-bin/notarize.sh $VERSION "BarD Software s.r.o." "qwer" sign
+
+#            - uses: actions/setup-python@v4
+#              with:
+#                python-version: '3.10'
+#            - name: Build DMG
+#              run: |
+#                  pip install "dmgbuild"
+#                  dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" build/ganttproject-$VERSION.dmg
 
             - id: 'auth'
               uses: 'google-github-actions/auth@v1'
@@ -177,9 +191,6 @@ jobs:
               run: |
                   #!/bin/sh
                   cd build
-                  for f in *.tgz; do
-                    gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
-                  done;
                   for f in *.dmg; do
                     gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
                   done;
