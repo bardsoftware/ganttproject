@@ -63,8 +63,18 @@
              postinst="${distDebWork}/postinst">
             <version upstream="${version}"/>
             <maintainer name="GanttProject Team" email="contact@ganttproject.biz"/>
-            <description synopsis="${package.synopsis}">
-                ${package.description}
+            <description synopsis="Free project scheduling and management tool">
+GanttProject is a free project scheduling and management application.
+
+Feature highlights:
+* Work Breakdown Structure, task dependencies, cost calculation
+* Gantt chart, resource chart, PERT chart
+* Export to image, PDF and HTML
+* Interoperability with Microsoft Project and spreadsheet apps, such as Microsoft Excel
+* Collaborative work using GanttProject Cloud or standard WebDAV servers
+
+GanttProject is distributed under GPLv3.
+
             </description>
             <!-- GanttProject distro goes into /usr/share/ganttproject -->
             <tarfileset dir="${distBin}" prefix="usr/share/${package.name}">
