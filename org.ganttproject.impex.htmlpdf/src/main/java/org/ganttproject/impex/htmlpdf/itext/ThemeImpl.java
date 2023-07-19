@@ -92,7 +92,9 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   private final BooleanOption myLandscapeOption = new DefaultBooleanOption("export.itext.landscape");
   private final EnumerationOption myPageSizeOption = new DefaultEnumerationOption<String>("export.itext.pageSize",
       ourSizes);
-  private final GPOptionGroup myPageOptions = new GPOptionGroup("export.itext.page", myPageSizeOption,
+  private final IntegerOption myFontSizeOption = new DefaultIntegerOption("export.itext.fontSize", FONT_SIZE);
+
+  private final GPOptionGroup myPageOptions = new GPOptionGroup("export.itext.page", myPageSizeOption, myFontSizeOption,
       myLandscapeOption);
   private final GPOptionGroup myDataOptions = new GPOptionGroup("export.itext.data",
       myShowNotesOption);
@@ -157,9 +159,23 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         myPrefs.put("page-orientation", myLandscapeOption.isChecked() ? "landscape" : "portrait");
       }
     });
+    myFontSizeOption.addChangeValueListener(evt -> {
+      if (myPrefs != null) {
+        myPrefs.putInt("font-size", myFontSizeOption.getValue());
+      }
+    });
     myLandscapeOption.loadPersistentValue("true");
     myPageOptions.commit();
     myDataOptions.commit();
+  }
+
+  private int getFontSize() {
+    var value =  myFontSizeOption.getValue();
+    return value == null || value < 6 ? FONT_SIZE : value;
+  }
+
+  private float getRowPaddingBottom() {
+    return getFontSize() * 0.2f;
   }
 
   GPOptionGroup[] getOptions() {
@@ -192,6 +208,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     myPageSizeOption.setValue(prefs.get("page-size", "A4"));
     myLandscapeOption.setValue("landscape".equals(prefs.get("page-orientation", "portrait")));
     myShowNotesOption.setValue(prefs.getBoolean("export-notes", false));
+    myFontSizeOption.setValue(prefs.getInt("font-size", FONT_SIZE));
   }
 
   private String getOriginalFontName() {
@@ -215,7 +232,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   }
 
   protected Font getSansRegularBold() {
-    return getSansRegularBold(FONT_SIZE);
+    return getSansRegularBold(getFontSize());
   }
 
   private String getCharset() {
@@ -277,13 +294,13 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   private void writeAttributes(PdfPTable table, LinkedHashMap<String, String> attrs) {
     for (Entry<String, String> nextEntry : attrs.entrySet()) {
       {
-        Paragraph p = new Paragraph(nextEntry.getKey(), getSansRegularBold(FONT_SIZE));
+        Paragraph p = new Paragraph(nextEntry.getKey(), getSansRegularBold(getFontSize()));
         PdfPCell cell = new PdfPCell(p);
         cell.setBorder(PdfPCell.NO_BORDER);
         table.addCell(cell);
       }
       {
-        Paragraph p = new Paragraph(nextEntry.getValue(), getSansRegular(FONT_SIZE));
+        Paragraph p = new Paragraph(nextEntry.getValue(), getSansRegular(getFontSize()));
         PdfPCell cell = new PdfPCell(p);
         cell.setBorder(PdfPCell.NO_BORDER);
         table.addCell(cell);
@@ -319,7 +336,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     head.addCell(attrsCell);
     addEmptyRow(head, 20);
     if (getProject().getDescription().length() > 0) {
-      Paragraph p = new Paragraph(getProject().getDescription(), getSansRegular(FONT_SIZE));
+      Paragraph p = new Paragraph(getProject().getDescription(), getSansRegular(getFontSize()));
       PdfPCell cell = new PdfPCell(p);
       cell.setBorder(PdfPCell.TOP | PdfPCell.BOTTOM);
       cell.setBorderColor(SORTAVALA_GREEN);
@@ -408,7 +425,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         if (field.getID().equals(TaskDefaultColumn.COLOR.getStub().getID())) {
           cell = new PdfPCell();
         } else {
-          cell = new PdfPCell(new Paragraph(field.getName(), getSansRegularBold(FONT_SIZE)));
+          cell = new PdfPCell(new Paragraph(field.getName(), getSansRegularBold(getFontSize())));
         }
         cell.setPaddingTop(4);
         cell.setPaddingBottom(4);
@@ -445,7 +462,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
           value = "";
         }
         if (TaskDefaultColumn.COLOR.getStub().getID().equals(column.getID())) {
-          var size = FONT_SIZE;
+          var size = getFontSize();
           var image = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
           Graphics2D g = image.createGraphics();
 
@@ -471,7 +488,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
             throw new RuntimeException(e);
           }
         } else {
-          Paragraph p = new Paragraph(value, getSansRegular(12));
+          Paragraph p = new Paragraph(value, getSansRegular(getFontSize()));
           cell = new PdfPCell(p);
           if (TaskDefaultColumn.COST.getStub().getID().equals(column.getID())
             || ResourceDefaultColumn.STANDARD_RATE.getStub().getID().equals(column.getID())
@@ -485,6 +502,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
           cell.setPaddingLeft(5);
         }
       }
+      cell.setPaddingBottom(getRowPaddingBottom());
       table.addCell(cell);
 
     }
@@ -532,7 +550,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         if (myShowNotesOption.isChecked() && t.getNotes() != null && !"".equals(t.getNotes())) {
           nameCell = new PdfPCell(createNameCellContent(t));
         } else {
-          nameCell = new PdfPCell(new Paragraph(t.getName(), getSansRegular(12)));
+          nameCell = new PdfPCell(new Paragraph(t.getName(), getSansRegular(getFontSize())));
         }
         nameCell.setBorderWidth(0);
         nameCell.setPaddingLeft(5 + depth * 10);
@@ -544,18 +562,19 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
 
       private PdfPTable createNameCellContent(Task t) {
         PdfPTable table = new PdfPTable(1);
-        Paragraph p = new Paragraph(t.getName(), getSansRegular(12));
+        Paragraph p = new Paragraph(t.getName(), getSansRegular(getFontSize()));
         PdfPCell cell1 = new PdfPCell();
         cell1.setBorder(PdfPCell.NO_BORDER);
         cell1.setPhrase(p);
         cell1.setPaddingLeft(0);
         table.addCell(cell1);
 
-        Paragraph notes = new Paragraph(t.getNotes(), getSansItalic(8));
+        Paragraph notes = new Paragraph(t.getNotes(), getSansItalic(getFontSize() * 0.75f));
         PdfPCell cell2 = new PdfPCell();
         cell2.setBorder(PdfPCell.NO_BORDER);
         cell2.setPhrase(notes);
         cell2.setPaddingLeft(3);
+        cell2.setPaddingBottom(getRowPaddingBottom());
         table.addCell(cell2);
         return table;
       }
@@ -586,7 +605,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     {
       PdfPCell cell = new PdfPCell();
       cell.setBorder(Rectangle.NO_BORDER);
-      Paragraph p = new Paragraph(topLeft, getSansRegularBold(18));
+      Paragraph p = new Paragraph(topLeft, getSansRegularBold(getFontSize() * 1.5f));
       p.setAlignment(Paragraph.ALIGN_LEFT);
       // colontitle.setLeading(0);
       cell.setHorizontalAlignment(Element.ALIGN_LEFT);
@@ -599,7 +618,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     {
       PdfPCell cell = new PdfPCell();
       cell.setBorder(Rectangle.NO_BORDER);
-      Paragraph p = new Paragraph(topRight, getSansRegularBold(10));
+      Paragraph p = new Paragraph(topRight, getSansRegularBold(getFontSize() * 0.9f));
       p.setAlignment(Paragraph.ALIGN_RIGHT);
       cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
       cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
@@ -617,7 +636,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
       cell.setBorder(Rectangle.TOP);
       cell.setBorderWidthTop(2);
       cell.setBorderColor(SORTAVALA_GREEN);
-      Paragraph p = new Paragraph(bottomLeft, getSansRegularBold(18));
+      Paragraph p = new Paragraph(bottomLeft, getSansRegularBold(getFontSize() * 1.5f));
       p.setAlignment(Paragraph.ALIGN_LEFT);
       p.setExtraParagraphSpace(0);
       p.setIndentationLeft(0);
@@ -635,7 +654,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
       cell.setBorder(Rectangle.TOP);
       cell.setBorderWidthTop(2);
       cell.setBorderColor(SORTAVALA_GREEN);
-      Paragraph p = new Paragraph(bottomRight, getSansRegularBold(10));
+      Paragraph p = new Paragraph(bottomRight, getSansRegularBold(getFontSize() * 0.9f));
       p.setAlignment(Paragraph.ALIGN_RIGHT);
       cell.setPhrase(p);
       head.addCell(cell);
