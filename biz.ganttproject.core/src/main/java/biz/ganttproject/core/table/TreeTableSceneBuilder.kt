@@ -56,6 +56,5 @@ class TreeTableSceneBuilder(private val input: InputApi) {
     val depthIndent: Int,
     val horizontalOffset: Int,
     val fontSpec: FontSpec
-  ) {
-  }
+  )
 }

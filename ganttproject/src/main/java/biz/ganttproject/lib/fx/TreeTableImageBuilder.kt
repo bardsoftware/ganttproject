@@ -31,7 +31,6 @@ import net.sourceforge.ganttproject.chart.ChartUIConfiguration
 import net.sourceforge.ganttproject.chart.StyledPainterImpl
 import net.sourceforge.ganttproject.task.Task
 import java.awt.Color
-import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.util.*

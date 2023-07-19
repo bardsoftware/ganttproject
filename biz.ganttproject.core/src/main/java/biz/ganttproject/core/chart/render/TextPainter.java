@@ -18,19 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package biz.ganttproject.core.chart.render;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.util.Map;
-import java.util.Properties;
-
-import biz.ganttproject.core.chart.canvas.TextMetrics;
-import com.google.common.base.Supplier;
-
 import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
 import biz.ganttproject.core.chart.canvas.Canvas.Label;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+
+import java.awt.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.function.Supplier;
 
 /**
  * Paints text labels.
@@ -79,26 +76,14 @@ public class TextPainter extends AbstractTextPainter {
     int textHeight = font.getSize();
     Style.Padding padding = style.getPadding();
     switch (alignHor) {
-    case LEFT:
-      xleft += padding.getLeft();
-      break;
-    case CENTER:
-      xleft = xleft - (label.lengthPx + padding.getX()) / 2 + padding.getLeft();
-      break;
-    case RIGHT:
-      xleft = xleft - (label.lengthPx + padding.getRight());
-      break;
+      case LEFT -> xleft += padding.getLeft();
+      case CENTER -> xleft = xleft - (label.lengthPx + padding.getX()) / 2 + padding.getLeft();
+      case RIGHT -> xleft = xleft - (label.lengthPx + padding.getRight());
     }
     switch (alignVer) {
-    case CENTER:
-      ybottom = ybottom + (textHeight + padding.getY()) / 2 - padding.getBottom();
-      break;
-    case TOP:
-      ybottom = ybottom + (textHeight + padding.getY()) + padding.getTop();
-      break;
-    case BOTTOM:
-      ybottom -= (padding.getBottom() + myGraphics.getFontMetrics().getDescent());
-      break;
+      case CENTER -> ybottom = ybottom + (textHeight + padding.getY()) / 2 - padding.getBottom();
+      case TOP -> ybottom = ybottom + (textHeight + padding.getY()) + padding.getTop();
+      case BOTTOM -> ybottom -= (padding.getBottom() + myGraphics.getFontMetrics().getDescent());
     }
     Style.Color background = style.getBackgroundColor(text);
     Style.Borders border = style.getBorder(text);

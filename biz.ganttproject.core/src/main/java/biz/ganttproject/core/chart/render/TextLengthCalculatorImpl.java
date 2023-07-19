@@ -97,8 +97,7 @@ public class TextLengthCalculatorImpl implements TextMetrics {
 
     @Override
     public boolean equals(Object o) {
-      State rvalue = (State) o;
-      if (rvalue == null) {
+      if (!(o instanceof State rvalue)) {
         return false;
       }
       return rvalue.context.equals(this.context) && rvalue.font.equals(this.font);

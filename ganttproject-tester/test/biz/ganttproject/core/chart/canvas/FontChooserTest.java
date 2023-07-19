@@ -1,11 +1,10 @@
 package biz.ganttproject.core.chart.canvas;
 
-import java.awt.Font;
-import java.util.Properties;
-
+import com.google.common.base.Suppliers;
 import junit.framework.TestCase;
 
-import com.google.common.base.Suppliers;
+import java.awt.*;
+import java.util.Properties;
 
 public class FontChooserTest extends TestCase {
 
@@ -19,7 +18,7 @@ public class FontChooserTest extends TestCase {
 
   public void testNoFontStyle() {
     Properties p = new Properties();
-    FontChooser chooser = new FontChooser(p, null, Suppliers.ofInstance(myBaseFont));
+    FontChooser chooser = new FontChooser(p, null, Suppliers.ofInstance(myBaseFont)::get);
     Font font = chooser.getFont("nosuchstyle");
     assertEquals(10, font.getSize());
     assertEquals("Dialog", font.getFamily());
@@ -29,7 +28,7 @@ public class FontChooserTest extends TestCase {
     Properties p = new Properties();
     p.put("bigger.font", "+1");
     p.put("smaller.font", "-1");
-    FontChooser chooser = new FontChooser(p, null, Suppliers.ofInstance(myBaseFont));
+    FontChooser chooser = new FontChooser(p, null, Suppliers.ofInstance(myBaseFont)::get);
 
     {
       Font font = chooser.getFont("bigger");
@@ -46,7 +45,7 @@ public class FontChooserTest extends TestCase {
   public void testBaseFontAbsoluteValue() {
     Properties p = new Properties();
     p.put("bigger.font", "18");
-    FontChooser chooser = new FontChooser(p, null, Suppliers.ofInstance(myBaseFont));
+    FontChooser chooser = new FontChooser(p, null, Suppliers.ofInstance(myBaseFont)::get);
     {
       Font font = chooser.getFont("bigger");
       assertEquals(18, font.getSize());
@@ -60,7 +59,7 @@ public class FontChooserTest extends TestCase {
     p.put("custom.smaller.font", "Serif -2");
     p.put("custom.samesize.font", "Serif +0");
 
-    FontChooser chooser = new FontChooser(p, null, Suppliers.ofInstance(myBaseFont));
+    FontChooser chooser = new FontChooser(p, null, Suppliers.ofInstance(myBaseFont)::get);
     {
       Font font = chooser.getFont("custom.bigger");
       assertEquals(11, font.getSize());
@@ -82,7 +81,7 @@ public class FontChooserTest extends TestCase {
     Properties p = new Properties();
     p.put("custom.bigger.font", "Serif 18");
     p.put("custom.smaller.font", "Serif 8");
-    FontChooser chooser = new FontChooser(p, null, Suppliers.ofInstance(myBaseFont));
+    FontChooser chooser = new FontChooser(p, null, Suppliers.ofInstance(myBaseFont)::get);
     {
       Font font = chooser.getFont("custom.bigger");
       assertEquals(18, font.getSize());
@@ -99,7 +98,7 @@ public class FontChooserTest extends TestCase {
     Properties p = new Properties();
     p.put("custom.bigger.font", "Serif-BOLD-16");
     p.put("custom.smaller.font", "Serif-ITALIC-8");
-    FontChooser chooser = new FontChooser(p, null, Suppliers.ofInstance(myBaseFont));
+    FontChooser chooser = new FontChooser(p, null, Suppliers.ofInstance(myBaseFont)::get);
     {
       Font font = chooser.getFont("custom.bigger");
       assertEquals(16, font.getSize());

@@ -18,16 +18,18 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.render;
 
+import biz.ganttproject.core.chart.canvas.Canvas.Label;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
-import biz.ganttproject.core.chart.canvas.Canvas.Label;
 import biz.ganttproject.core.chart.canvas.FontChooser;
 import biz.ganttproject.core.chart.canvas.TextMetrics;
-import com.google.common.base.Supplier;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.Properties;
+import java.util.function.Supplier;
 
 import static java.lang.Math.min;
 

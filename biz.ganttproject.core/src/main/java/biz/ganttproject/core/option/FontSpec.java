@@ -31,7 +31,7 @@ import com.google.common.base.Strings;
  * @author dbarashev (Dmitry Barashev)
  */
 public class FontSpec {
-  public static enum Size {
+  public enum Size {
     SMALLER(0.75f), NORMAL(1.0f), LARGE(1.25f), LARGER(1.5f), HUGE(2.0f);
     
     private final float myFactor;
@@ -66,10 +66,9 @@ public class FontSpec {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof FontSpec == false) {
+    if (!(obj instanceof FontSpec that)) {
       return false;
     }
-    FontSpec that = (FontSpec) obj;
     return Objects.equals(myFamily, that.myFamily) && Objects.equals(mySize, that.mySize);
   }
 
