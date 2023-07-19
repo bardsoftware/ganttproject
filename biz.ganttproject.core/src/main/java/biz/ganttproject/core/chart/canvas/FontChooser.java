@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 public class FontChooser {
 
   private final Properties myProperties;
-  private Map<String, Font> myFonts = new HashMap<String, Font>();
+  private Map<String, Font> myFonts = new HashMap<>();
   private final TextMetrics myCalculator;
   private final Supplier<Font> myBaseFont;
 
@@ -42,7 +42,7 @@ public class FontChooser {
   }
 
   public int decreaseBaseFontSize() {
-    Map<String, Font> newFonts = new HashMap<String, Font>();
+    Map<String, Font> newFonts = new HashMap<>();
     int minSize = Integer.MAX_VALUE;
     for (String style : myFonts.keySet()) {
       Font f = myFonts.get(style);
@@ -108,9 +108,6 @@ public class FontChooser {
             f = myBaseFont.get().deriveFont(absoluteSize);
           } else {
             f = Font.decode(family + " 10");
-            if (f == null) {
-              f = myBaseFont.get();
-            }
             f = f.deriveFont(absoluteSize);
           }
         } catch (NumberFormatException e) {
