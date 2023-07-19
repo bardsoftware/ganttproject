@@ -95,8 +95,13 @@ class TableSceneBuilder(
 //      }
 
       // TODO: add rectangle borders and color?
-      paintString(col.name, x + TEXT_PADDING + width.actual/2, rectangle.middleY, width.actual).also {
-        it.setAlignment(Canvas.HAlignment.CENTER, Canvas.VAlignment.CENTER)
+      val headerAnchorX = when (config.headerAlignment) {
+        Canvas.HAlignment.CENTER -> x + TEXT_PADDING + width.actual/2
+        Canvas.HAlignment.LEFT -> x + TEXT_PADDING
+        Canvas.HAlignment.RIGHT -> x + TEXT_PADDING + width.actual
+      }
+      paintString(col.name, headerAnchorX, rectangle.middleY, width.actual).also {
+        it.setAlignment(config.headerAlignment, Canvas.VAlignment.CENTER)
       }
       x += width.actual
     }
@@ -146,6 +151,7 @@ class TableSceneBuilder(
 
   data class Config(
     val headerHeight: Int,
+    val headerAlignment: Canvas.HAlignment,
     val rowHeight: Int,
     val horizontalOffset: Int,
     val textMetrics: TextMetrics,

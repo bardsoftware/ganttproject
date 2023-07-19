@@ -20,9 +20,9 @@ package biz.ganttproject.core.chart.scene.gantt
 
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
+import biz.ganttproject.core.option.FontSpec
 import biz.ganttproject.core.table.HEADER_HEIGHT_DECREMENT
 import biz.ganttproject.core.table.TEXT_PADDING
-import biz.ganttproject.core.table.TableSceneBuilder
 import biz.ganttproject.core.table.TreeTableSceneBuilder.*
 import biz.ganttproject.core.table.TableSceneBuilder.Table.*
 import biz.ganttproject.core.table.TreeTableSceneBuilder
@@ -39,7 +39,8 @@ class TreeTableSceneBuilderTest {
       rowHeight = 10,
       depthIndent = 15,
       horizontalOffset = 2,
-      headerHeight = 10
+      headerHeight = 10,
+      fontSpec = FontSpec("dialog", FontSpec.Size.NORMAL)
     )
     val sceneBuilder = TreeTableSceneBuilder(input)
     val column = Column("name", width = 50, isTreeColumn = true)

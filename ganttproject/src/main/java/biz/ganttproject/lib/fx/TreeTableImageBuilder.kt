@@ -48,6 +48,7 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
   val sceneBuilderInput = TreeTableSceneBuilder.InputApi(
     textMetrics = textMetrics,
     headerHeight = taskTable.headerHeightProperty.intValue(),
+    headerAlignment = Canvas.HAlignment.CENTER,
     rowHeight = taskTable.taskTableChartConnector.rowHeight.value,
     depthIndent = 15,
     horizontalOffset = 0,
