@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.chart.canvas;
 
+import biz.ganttproject.core.option.FontSpec;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
@@ -346,7 +348,7 @@ public class Canvas {
 
     private final int myBottomY;
 
-    private Font myFont;
+    private FontSpec myFont;
 
     private int myMaxLength;
 
@@ -387,7 +389,7 @@ public class Canvas {
       myIndex = index;
     }
 
-    public void setFont(Font font) {
+    public void setFont(FontSpec font) {
       myFont = font;
     }
 
@@ -399,7 +401,7 @@ public class Canvas {
       return myMaxLength;
     }
 
-    public Font getFont() {
+    public FontSpec getFont() {
       return myFont;
     }
 

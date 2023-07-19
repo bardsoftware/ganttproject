@@ -31,23 +31,28 @@ import net.sourceforge.ganttproject.chart.ChartUIConfiguration
 import net.sourceforge.ganttproject.chart.StyledPainterImpl
 import net.sourceforge.ganttproject.task.Task
 import java.awt.Color
+import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.util.*
+import kotlin.math.roundToInt
 
 /**
  * @author dbarashev@bardsoftware.com
  */
 fun TaskTable.buildImage(graphics2D: Graphics2D) {
-
   val taskTable = this
-  val textMetrics = TextLengthCalculatorImpl(graphics2D)
+
+  val textMetrics = TextLengthCalculatorImpl((graphics2D.create() as Graphics2D).also {
+    it.font = applicationFontSpec.value.asAwtFontOfSize(applicationFont.value.size.roundToInt())
+  })
   val sceneBuilderInput = TreeTableSceneBuilder.InputApi(
     textMetrics = textMetrics,
     headerHeight = taskTable.headerHeightProperty.intValue(),
     rowHeight = taskTable.taskTableChartConnector.rowHeight.value,
     depthIndent = 15,
-    horizontalOffset = 0
+    horizontalOffset = 0,
+    fontSpec = applicationFontSpec.value
   )
   val treeTableSceneBuilder = TreeTableSceneBuilder(sceneBuilderInput)
 

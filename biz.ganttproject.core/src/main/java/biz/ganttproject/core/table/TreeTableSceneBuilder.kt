@@ -22,9 +22,10 @@ import biz.ganttproject.core.table.TableSceneBuilder.*
 import biz.ganttproject.core.table.TableSceneBuilder.Table.*
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
+import biz.ganttproject.core.option.FontSpec
 
 class TreeTableSceneBuilder(private val input: InputApi) {
-  private val tableSceneConfig = Config(input.headerHeight, input.rowHeight, input.horizontalOffset, input.textMetrics)
+  private val tableSceneConfig = Config(input.headerHeight, input.rowHeight, input.horizontalOffset, input.textMetrics, input.fontSpec)
 
   fun build(columns: List<Column>, items: List<Item>, canvas: Canvas = Canvas()): Canvas {
     val rows = toRow(items)
@@ -54,6 +55,7 @@ class TreeTableSceneBuilder(private val input: InputApi) {
     val rowHeight: Int,
     val depthIndent: Int,
     val horizontalOffset: Int,
+    val fontSpec: FontSpec
   ) {
   }
 }

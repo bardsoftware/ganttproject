@@ -114,11 +114,7 @@ public class StyledPainterImpl implements Painter {
         }
       }
     });
-    myTextPainter = new TextPainter(myProperties, new Supplier<Font>() {
-      public Font get() {
-        return config.getChartFont();
-      }
-    });
+    myTextPainter = new TextPainter(myProperties, config::getChartFont);
     myLineRenderer = new LineRenderer(myProperties);
     myRectangleRenderer = new RectangleRenderer(myProperties);
     mySummaryTaskRenderer = new SummaryTaskRenderer(myProperties);

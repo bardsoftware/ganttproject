@@ -20,6 +20,7 @@ package biz.ganttproject.core.table
 
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
+import biz.ganttproject.core.option.FontSpec
 import java.awt.Color
 import java.lang.Integer.max
 
@@ -95,8 +96,8 @@ class TableSceneBuilder(
 //      }
 
       // TODO: add rectangle borders and color?
-      paintString(it.name, x + TEXT_PADDING, rectangle.middleY, width.actual).also {
-        it.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
+      paintString(it.name, x + TEXT_PADDING + width.actual/2, rectangle.middleY, width.actual).also {
+        it.setAlignment(Canvas.HAlignment.CENTER, Canvas.VAlignment.CENTER)
       }
       x += width.actual
     }
@@ -139,14 +140,17 @@ class TableSceneBuilder(
         fitString += dots
       }
     }
-    return canvas.createText(x, y, fitString)
+    return canvas.createText(x, y, fitString).also {
+      it.font = config.fontSpec
+    }
   }
 
   data class Config(
     val headerHeight: Int,
     val rowHeight: Int,
     val horizontalOffset: Int,
-    val textMetrics: TextMetrics
+    val textMetrics: TextMetrics,
+    val fontSpec: FontSpec
   )
 
   class Table(val columns: List<Column>, val rows: List<Row>) {

@@ -75,7 +75,8 @@ public class TextPainter extends AbstractTextPainter {
   private void paint(int xleft, int ybottom, HAlignment alignHor, VAlignment alignVer, Text text, Label label,
       Style style) {
     label.setVisible(true);
-    int textHeight = myGraphics.getFont().getSize();
+    var font = text.getFont() == null ? myGraphics.getFont() : text.getFont().asAwtFont(myBaseFont.get().getSize2D());
+    int textHeight = font.getSize();
     Style.Padding padding = style.getPadding();
     switch (alignHor) {
     case LEFT:
@@ -114,7 +115,10 @@ public class TextPainter extends AbstractTextPainter {
       }
       myGraphics.setColor(savedColor);
     }
+    var oldFont = myGraphics.getFont();
+    myGraphics.setFont(font);
     myGraphics.drawString(label.text, xleft, ybottom);
+    myGraphics.setFont(oldFont);
   }
 
   @Override

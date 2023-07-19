@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.option;
 
+import java.awt.*;
 import java.util.Objects;
 
 import com.google.common.base.Strings;
@@ -80,5 +81,13 @@ public class FontSpec {
   @Override
   public String toString() {
     return asString();
+  }
+
+  public Font asAwtFont(float baseFontSize) {
+    return asAwtFontOfSize(Math.round(baseFontSize * mySize.myFactor));
+  }
+
+  public Font asAwtFontOfSize(int exactFontSize) {
+    return new Font(myFamily, Font.PLAIN, exactFontSize);
   }
 }
