@@ -3,5 +3,6 @@ charset = utf-8
 indent_size = 4
 indent_style = space
 
-[{*.java, *.kt, *.scss, *.css}]
+[{*.java,*.kt,*.scss,*.css}]
 indent_size = 2
+tab_width = 2

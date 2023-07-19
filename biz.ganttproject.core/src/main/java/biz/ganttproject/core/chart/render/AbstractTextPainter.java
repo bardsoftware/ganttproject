@@ -18,16 +18,18 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.chart.render;
 
+import biz.ganttproject.core.chart.canvas.Canvas.Label;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
-import biz.ganttproject.core.chart.canvas.Canvas.Label;
 import biz.ganttproject.core.chart.canvas.FontChooser;
 import biz.ganttproject.core.chart.canvas.TextMetrics;
-import com.google.common.base.Supplier;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.Properties;
+import java.util.function.Supplier;
 
 import static java.lang.Math.min;
 
@@ -46,11 +48,10 @@ public abstract class AbstractTextPainter {
     FontChooser fontChooser = new FontChooser(myProperties, getTextMetrics(), myBaseFont);
     textGroup.setFonts(fontChooser);
     for (int i = 0; i < textGroup.getLineCount(); i++) {
-      final int lineNumber = i;
-      Font font = textGroup.getFont(lineNumber);
+      Font font = textGroup.getFont(i);
       if (font != null) {
-        Map<String, Object> styles = getFontStyles(font, textGroup.getColor(lineNumber));
-        paintTextLine(textGroup, lineNumber, styles);
+        Map<String, Object> styles = getFontStyles(font, textGroup.getColor(i));
+        paintTextLine(textGroup, i, styles);
       }
     }
   }
@@ -60,18 +61,18 @@ public abstract class AbstractTextPainter {
     int leftX = textGroup.getLeftX();
     int bottomY = textGroup.getBottomY(lineNum);
 
-    if (line.isEmpty()) {
-      return;
-    } else if (line.size() == 1) {
-      paintWithMinLabel(line, leftX, bottomY, styles);
-    } else {
-      List<Text> middle = line.subList(1, line.size() - 1);
-      OptionalInt minLabel = paintWithMinLabel(middle, leftX, bottomY, styles);
+    if (!line.isEmpty()) {
+      if (line.size() == 1) {
+        paintWithMinLabel(line, leftX, bottomY, styles);
+      } else {
+        List<Text> middle = line.subList(1, line.size() - 1);
+        OptionalInt minLabel = paintWithMinLabel(middle, leftX, bottomY, styles);
 
-      Text first = line.get(0);
-      paintBorderLabel(first, minLabel, leftX, bottomY, styles);
-      Text last = line.get(line.size() - 1);
-      paintBorderLabel(last, minLabel, leftX, bottomY, styles);
+        Text first = line.get(0);
+        paintBorderLabel(first, minLabel, leftX, bottomY, styles);
+        Text last = line.get(line.size() - 1);
+        paintBorderLabel(last, minLabel, leftX, bottomY, styles);
+      }
     }
   }
 

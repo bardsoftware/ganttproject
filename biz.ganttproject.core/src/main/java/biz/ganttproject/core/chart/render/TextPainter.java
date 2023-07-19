@@ -18,19 +18,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 package biz.ganttproject.core.chart.render;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.util.Map;
-import java.util.Properties;
-
-import biz.ganttproject.core.chart.canvas.TextMetrics;
-import com.google.common.base.Supplier;
-
 import biz.ganttproject.core.chart.canvas.Canvas.HAlignment;
 import biz.ganttproject.core.chart.canvas.Canvas.Label;
 import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.VAlignment;
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+
+import java.awt.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.function.Supplier;
 
 /**
  * Paints text labels.
@@ -75,29 +72,18 @@ public class TextPainter extends AbstractTextPainter {
   private void paint(int xleft, int ybottom, HAlignment alignHor, VAlignment alignVer, Text text, Label label,
       Style style) {
     label.setVisible(true);
-    int textHeight = myGraphics.getFont().getSize();
+    var font = text.getFont() == null ? myGraphics.getFont() : text.getFont().asAwtFont(myBaseFont.get().getSize2D());
+    int textHeight = font.getSize();
     Style.Padding padding = style.getPadding();
     switch (alignHor) {
-    case LEFT:
-      xleft += padding.getLeft();
-      break;
-    case CENTER:
-      xleft = xleft - (label.lengthPx + padding.getX()) / 2 + padding.getLeft();
-      break;
-    case RIGHT:
-      xleft = xleft - (label.lengthPx + padding.getRight());
-      break;
+      case LEFT -> xleft += padding.getLeft();
+      case CENTER -> xleft = xleft - (label.lengthPx + padding.getX()) / 2 + padding.getLeft();
+      case RIGHT -> xleft = xleft - (label.lengthPx + padding.getRight());
     }
     switch (alignVer) {
-    case CENTER:
-      ybottom = ybottom + (textHeight + padding.getY()) / 2 - padding.getBottom();
-      break;
-    case TOP:
-      ybottom = ybottom + (textHeight + padding.getY()) + padding.getTop();
-      break;
-    case BOTTOM:
-      ybottom -= (padding.getBottom() + myGraphics.getFontMetrics().getDescent());
-      break;
+      case CENTER -> ybottom = ybottom + (textHeight + padding.getY()) / 2 - padding.getBottom();
+      case TOP -> ybottom = ybottom + (textHeight + padding.getY()) + padding.getTop();
+      case BOTTOM -> ybottom -= (padding.getBottom() + myGraphics.getFontMetrics().getDescent());
     }
     Style.Color background = style.getBackgroundColor(text);
     Style.Borders border = style.getBorder(text);
@@ -114,7 +100,10 @@ public class TextPainter extends AbstractTextPainter {
       }
       myGraphics.setColor(savedColor);
     }
+    var oldFont = myGraphics.getFont();
+    myGraphics.setFont(font);
     myGraphics.drawString(label.text, xleft, ybottom);
+    myGraphics.setFont(oldFont);
   }
 
   @Override

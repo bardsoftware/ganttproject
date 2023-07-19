@@ -18,13 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.chart.render;
 
-import java.awt.Font;
-import java.awt.Graphics2D;
+import biz.ganttproject.core.chart.canvas.TextMetrics;
+
+import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
-
-import biz.ganttproject.core.chart.canvas.TextMetrics;
 
 /**
  * Contains methods to calculate the text length
@@ -98,8 +97,7 @@ public class TextLengthCalculatorImpl implements TextMetrics {
 
     @Override
     public boolean equals(Object o) {
-      State rvalue = (State) o;
-      if (rvalue == null) {
+      if (!(o instanceof State rvalue)) {
         return false;
       }
       return rvalue.context.equals(this.context) && rvalue.font.equals(this.font);

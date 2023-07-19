@@ -20,6 +20,7 @@ package biz.ganttproject.core.table
 
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
+import biz.ganttproject.core.option.FontSpec
 import java.awt.Color
 import java.lang.Integer.max
 
@@ -47,18 +48,17 @@ class TableSceneBuilder(
     return canvas
   }
 
-  data class ColumnWidth(val actual: Int, val maxContent: Int) {
-  }
+  data class ColumnWidth(val actual: Int, val maxContent: Int)
 
   private fun calculateColsWidth(): Map<Table.Column, ColumnWidth> {
     val widths = mutableMapOf<Table.Column, ColumnWidth>()
     table.columns.forEach { col ->
       widths[col] = ColumnWidth(col.width ?: 0, run {
         val colNameWidth = config.textMetrics.getTextLength(col.name)
-        val colContentWidth = table.rows.map {
+        val colContentWidth = table.rows.maxOfOrNull {
           val indent = if (col.isTreeColumn) it.indent else 0
           indent + (it.values[col]?.let(config.textMetrics::getTextLength) ?: 0)
-        }.maxOrNull() ?: 0
+        } ?: 0
         max(colNameWidth, colContentWidth)
       })
     }
@@ -73,9 +73,9 @@ class TableSceneBuilder(
 
   private fun paintHeader(state: PaintState) {
     var x = config.horizontalOffset
-    table.columns.forEach {
+    table.columns.forEach { col ->
       val height = config.headerHeight - HEADER_HEIGHT_DECREMENT
-      val width = colsWidth[it]!!
+      val width = colsWidth[col]!!
 
       val rectangle = canvas.createRectangle(
         x, state.y, width.actual, height
@@ -95,8 +95,13 @@ class TableSceneBuilder(
 //      }
 
       // TODO: add rectangle borders and color?
-      paintString(it.name, x + TEXT_PADDING, rectangle.middleY, width.actual).also {
-        it.setAlignment(Canvas.HAlignment.LEFT, Canvas.VAlignment.CENTER)
+      val headerAnchorX = when (config.headerAlignment) {
+        Canvas.HAlignment.CENTER -> x + TEXT_PADDING + width.actual/2
+        Canvas.HAlignment.LEFT -> x + TEXT_PADDING
+        Canvas.HAlignment.RIGHT -> x + TEXT_PADDING + width.actual
+      }
+      paintString(col.name, headerAnchorX, rectangle.middleY, width.actual).also {
+        it.setAlignment(config.headerAlignment, Canvas.VAlignment.CENTER)
       }
       x += width.actual
     }
@@ -107,16 +112,16 @@ class TableSceneBuilder(
     var x = config.horizontalOffset
     table.columns.forEach { col ->
       val width = colsWidth[col]!!
-      row.values[col]?.also {
+      row.values[col]?.also { value ->
         val indent = TEXT_PADDING + if (col.isTreeColumn) row.indent else 0
         when (col.alignment) {
           Canvas.HAlignment.RIGHT -> {
-            paintString(it, x + width.actual - TEXT_PADDING, y, width.actual).also {
+            paintString(value, x + width.actual - TEXT_PADDING, y, width.actual).also {
               it.setAlignment(col.alignment, Canvas.VAlignment.CENTER)
             }
           }
           Canvas.HAlignment.LEFT -> {
-            paintString(it, x + indent, y, width.actual).also {
+            paintString(value, x + indent, y, width.actual).also {
               it.setAlignment(col.alignment, Canvas.VAlignment.CENTER)
             }
           }
@@ -139,14 +144,18 @@ class TableSceneBuilder(
         fitString += dots
       }
     }
-    return canvas.createText(x, y, fitString)
+    return canvas.createText(x, y, fitString).also {
+      it.font = config.fontSpec
+    }
   }
 
   data class Config(
     val headerHeight: Int,
+    val headerAlignment: Canvas.HAlignment,
     val rowHeight: Int,
     val horizontalOffset: Int,
-    val textMetrics: TextMetrics
+    val textMetrics: TextMetrics,
+    val fontSpec: FontSpec
   )
 
   class Table(val columns: List<Column>, val rows: List<Row>) {
@@ -182,5 +191,5 @@ class TableSceneBuilder(
 // Because of hysterical raisins the height of the timeline area in the chart is 1 pixel less
 // (see TimelineSceneBuilder). This might be due to the legacy technology of painting Swing tree component
 // instead of building our own canvas model. We apply decrement here too.
-val HEADER_HEIGHT_DECREMENT = 1
-val TEXT_PADDING = 5
+const val HEADER_HEIGHT_DECREMENT = 1
+const val TEXT_PADDING = 5

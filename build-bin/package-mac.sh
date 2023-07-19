@@ -31,15 +31,15 @@ test_runtime || (build_runtime && test_runtime)
 #(cd .. && rm -rf ganttproject-$VERSION && unzip ganttproject-$VERSION.zip && rm -rf /tmp/plugins/ && rm -rf ganttproject/build/GanttProject.app/ )
 mv "${INPUT}"/plugins tmp
 jpackage --type app-image \
-    --name "${APP_NAME}" \
+    --name "GanttProject" \
     --input "${INPUT}" \
     --dest "${OUTPUT}" \
-    --java-options "-Dapple.laf.useScreenMenuBar=true
+    --java-options '-Dapple.laf.useScreenMenuBar=true
                     -Dcom.apple.macos.useScreenMenuBar=true 
                     -Dcom.apple.mrj.application.apple.menu.about.name=GanttProject
                     -Dsun.java2d.metal=true
-                    -Xdock:name=$APP_NAME"' -Xdock:icon=$APPDIR/ganttproject.icns'" \
-                    -Xmx2048m \
+                    -Xdock:name=GanttProject -Xdock:icon=$APPDIR/ganttproject.icns
+                    -Xmx2048m
                     -Dfile.encoding=UTF-8
                     --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED
                     --add-exports javafx.base/com.sun.javafx=ALL-UNNAMED
@@ -53,16 +53,17 @@ jpackage --type app-image \
                     --add-exports javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED
                     --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED
                     --add-exports javafx.graphics/com.sun.javafx.util=ALL-UNNAMED
-                    --add-opens java.desktop/sun.swing=ALL-UNNAMED \
-                    -classpath "'$APPDIR:$APPDIR/eclipsito.jar:$APPDIR/lib/slf4j-api-2.0.4.jar:$APPDIR/lib/slf4j-jdk14-2.0.4.jar'"\
-                    -Duser.dir="'$APPDIR'" -DversionDirs=plugins:~/.ganttproject.d/updates \
+                    --add-opens java.desktop/sun.swing=ALL-UNNAMED
+                    -classpath $APPDIR:$APPDIR/eclipsito.jar:$APPDIR/lib/slf4j-api-2.0.4.jar:$APPDIR/lib/slf4j-jdk14-2.0.4.jar
+                    -Duser.dir=$APPDIR -DversionDirs=plugins:~/.ganttproject.d/updates
                     -Dapp=net.sourceforge.ganttproject.GanttProject
                     -Dorg.jooq.no-logo=true
-                    -Dgpcloud=prod" \
+                    -Dgpcloud=prod' \
     --arguments '--verbosity 4' \
     --arguments '--version-dirs plugins:~/.ganttproject.d/updates' \
     --arguments '--app net.sourceforge.ganttproject.GanttProject' \
-    --copyright 'Copyright (C) 2022 BarD Software s.r.o.' \
+    --copyright 'Copyright (C) 2023 BarD Software s.r.o.' \
+    --vendor 'BarD Software s.r.o.' \
     --app-version "${VERSION}" \
     --runtime-image "${OUTPUT}"/runtime \
     --icon build-cfg/ganttproject.icns \
@@ -70,8 +71,8 @@ jpackage --type app-image \
     --mac-package-identifier com.bardsoftware.ganttproject \
     --main-class com.bardsoftware.eclipsito.Launch  --main-jar eclipsito.jar
 
-mv tmp/plugins "${OUTPUT}/${APP_NAME}.app/Contents/app"
-cp build-cfg/ganttproject.icns "${OUTPUT}/${APP_NAME}.app/Contents/app"
+mv tmp/plugins "${OUTPUT}/GanttProject.app/Contents/app"
+cp build-cfg/ganttproject.icns "${OUTPUT}/GanttProject.app/Contents/app"
 echo "You can find the package in $OUTPUT"
 ls $OUTPUT
 

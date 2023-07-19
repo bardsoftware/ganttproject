@@ -18,21 +18,20 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.chart.canvas;
 
-import java.awt.Color;
-import java.awt.Font;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+
+import java.awt.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
+import java.util.function.Supplier;
 
 public class FontChooser {
 
   private final Properties myProperties;
-  private Map<String, Font> myFonts = new HashMap<String, Font>();
+  private Map<String, Font> myFonts = new HashMap<>();
   private final TextMetrics myCalculator;
   private final Supplier<Font> myBaseFont;
 
@@ -43,7 +42,7 @@ public class FontChooser {
   }
 
   public int decreaseBaseFontSize() {
-    Map<String, Font> newFonts = new HashMap<String, Font>();
+    Map<String, Font> newFonts = new HashMap<>();
     int minSize = Integer.MAX_VALUE;
     for (String style : myFonts.keySet()) {
       Font f = myFonts.get(style);
@@ -109,9 +108,6 @@ public class FontChooser {
             f = myBaseFont.get().deriveFont(absoluteSize);
           } else {
             f = Font.decode(family + " 10");
-            if (f == null) {
-              f = myBaseFont.get();
-            }
             f = f.deriveFont(absoluteSize);
           }
         } catch (NumberFormatException e) {

@@ -3,18 +3,17 @@
 VER=$1
 SIG=$2
 NOTARIZE_PASSWORD=$3
-
+COMMAND=$4
 
 do_prepare() {
-find build/GanttProject.app/ -type f -not -path *Contents/runtime/* -not -path */Contents/MacOS/GanttProject -not -path *libapplauncher.dylib -exec codesign --timestamp -f -s "$SIG" --prefix com.bardsoftware. --entitlements build-cfg/ganttproject.entitlements.xml --options runtime -v --keychain ~/Library/Keychains/login.keychain-db {} \;
-find build/GanttProject.app/Contents/runtime -type f -not -path */legal/* -not -path */man/* -exec codesign --timestamp -f -s "$SIG" --prefix com.bardsoftware. --entitlements build-cfg/ganttproject.entitlements.xml --options runtime -v --keychain ~/Library/Keychains/login.keychain-db {} \;
-codesign -f --timestamp --entitlements build-cfg/ganttproject.entitlements.xml -s "$SIG" --prefix com.bardsoftware. --options runtime -v build/GanttProject.app/Contents/runtime
-codesign -f --timestamp --entitlements build-cfg/ganttproject.entitlements.xml -s "$SIG" --prefix com.bardsoftware. --options runtime -v build/GanttProject.app
-codesign -vvv --deep --strict build/GanttProject.app
-spctl -a -t exec -vv build/GanttProject.app
+#find build/GanttProject.app/ -type f -not -path *Contents/runtime/* -not -path */Contents/MacOS/GanttProject -not -path *libapplauncher.dylib -exec codesign --timestamp -f -s "$SIG" --prefix com.bardsoftware. --entitlements build-cfg/ganttproject.entitlements.xml --options runtime -v --keychain ~/Library/Keychains/login.keychain-db {} \;
+#find build/GanttProject.app/Contents/runtime -type f -not -path */legal/* -not -path */man/* -exec codesign --timestamp -f -s "$SIG" --prefix com.bardsoftware. --entitlements build-cfg/ganttproject.entitlements.xml --options runtime -v --keychain ~/Library/Keychains/login.keychain-db {} \;
+#codesign -f --timestamp --entitlements build-cfg/ganttproject.entitlements.xml -s "$SIG" --prefix com.bardsoftware. --options runtime -v build/GanttProject.app/Contents/runtime
+#codesign -f --timestamp --entitlements build-cfg/ganttproject.entitlements.xml -s "$SIG" --prefix com.bardsoftware. --options runtime -v build/GanttProject.app
+#codesign -vvv --deep --strict build/GanttProject.app
+#spctl -a -t exec -vv build/GanttProject.app
 
-
-jpackage --type dmg --app-image build/GanttProject.app -n "GanttProject $VER"
+security dump-keychain build.keychain
 }
 
 do_notarize() {
@@ -26,6 +25,17 @@ do_staple() {
 	xcrun stapler staple build/GanttProject.app
 }
 
-do_prepare
-#do_notarize
-#do_staple
+case $COMMAND in
+sign)
+    do_prepare
+    ;;
+notarize)
+    do_notarize
+    ;;
+staple)
+    do_staple
+    ;;
+*)
+    echo "Unknown command: $COMMAND" && exit 1
+    ;;
+esac

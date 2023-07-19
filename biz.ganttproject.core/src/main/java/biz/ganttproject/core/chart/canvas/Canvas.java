@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.chart.canvas;
 
+import biz.ganttproject.core.option.FontSpec;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
@@ -30,35 +32,35 @@ import java.util.*;
  * @author bard
  */
 public class Canvas {
-  private ArrayList<Rectangle> myRectangles = new ArrayList<Rectangle>();
+  private final ArrayList<Rectangle> myRectangles = new ArrayList<>();
 
-  private ArrayList<Line> myLines = new ArrayList<Line>();
+  private final ArrayList<Line> myLines = new ArrayList<>();
 
-  private ArrayList<Text> myTexts = new ArrayList<Text>();
+  private final ArrayList<Text> myTexts = new ArrayList<>();
 
-  private Map<Object, Shape> myModelObject2primitive = new WeakHashMap<Object, Shape>();
+  private final Map<Object, Shape> myModelObject2primitive = new WeakHashMap<>();
 
-  private List<Canvas> myLayers = new ArrayList<Canvas>();
+  private final List<Canvas> myLayers = new ArrayList<>();
 
   private int myDeltaX;
 
   private int myDeltaY;
 
-  private List<TextGroup> myTextGroups = new ArrayList<TextGroup>();
+  private final List<TextGroup> myTextGroups = new ArrayList<>();
 
-  private final DummySpatialIndex<Text> myTextIndex = new DummySpatialIndex<Text>();
+  private final DummySpatialIndex<Text> myTextIndex = new DummySpatialIndex<>();
 
   private final DummySpatialIndex<Rhombus> myRhombusIndex = new DummySpatialIndex<>();
 
   /** Horizontal alignments for texts */
   public enum HAlignment {
     CENTER, LEFT, RIGHT
-  };
+  }
 
   /** Vertical alignments for texts */
   public enum VAlignment {
     CENTER, TOP, BOTTOM
-  };
+  }
 
   public static class Shape {
     private Color myBackgroundColor;
@@ -79,7 +81,7 @@ public class Canvas {
 
     private LinkedHashSet<String> getStyles() {
       if (myStyles == null) {
-        myStyles = new LinkedHashSet<String>();
+        myStyles = new LinkedHashSet<>();
       }
       return myStyles;
     }
@@ -346,9 +348,7 @@ public class Canvas {
 
     private final int myBottomY;
 
-    private Font myFont;
-
-    private int myMaxLength;
+    private FontSpec myFont;
 
     private HAlignment myHAlignment = HAlignment.LEFT;
 
@@ -360,12 +360,7 @@ public class Canvas {
 
     private Text(int leftX, int bottomY, final String text, SpatialIndex<Text> index) {
       this(leftX, bottomY, (TextSelector)null, index);
-      mySelector = new TextSelector() {
-        @Override
-        public Label[] getLabels(TextMetrics textLengthCalculator) {
-          return new Label[] {createLabel(text, textLengthCalculator.getTextLength(text))};
-        }
-      };
+      mySelector = textLengthCalculator -> new Label[] {createLabel(text, textLengthCalculator.getTextLength(text))};
     }
 
     void index(Label label) {
@@ -383,23 +378,14 @@ public class Canvas {
       myLeftX = leftX;
       myBottomY = bottomY;
       mySelector = delegateSelector;
-      myMaxLength = -1;
       myIndex = index;
     }
 
-    public void setFont(Font font) {
+    public void setFont(FontSpec font) {
       myFont = font;
     }
 
-    public void setMaxLength(int maxLength) {
-      myMaxLength = maxLength;
-    }
-
-    public int getMaxLength() {
-      return myMaxLength;
-    }
-
-    public Font getFont() {
+    public FontSpec getFont() {
       return myFont;
     }
 
@@ -454,24 +440,24 @@ public class Canvas {
   }
 
   public static class TextGroup {
-    private List<String> myLineStyles;
-    private int myHeight;
+    private final List<String> myLineStyles;
+    private final int myHeight;
     private FontChooser myFontChooser;
-    private List<Font> myFonts;
-    private List<List<Text>> myLines = new ArrayList<List<Text>>();
-    private int myBottomY;
-    private int myLeftX;
-    private List<Integer> myBaselines = new ArrayList<Integer>();
+    private final List<Font> myFonts;
+    private final List<List<Text>> myLines = new ArrayList<>();
+    private final int myBottomY;
+    private final int myLeftX;
+    private final List<Integer> myBaselines = new ArrayList<>();
 
     public TextGroup(int leftX, int bottomY, int height, String... lineStyles) {
       myLeftX = leftX;
       myBottomY = bottomY;
       myHeight = height;
-      myLineStyles = new ArrayList<String>(Arrays.asList(lineStyles));
+      myLineStyles = new ArrayList<>(Arrays.asList(lineStyles));
       for (int i = 0; i < myLineStyles.size(); i++) {
-        myLines.add(new ArrayList<Text>());
+        myLines.add(new ArrayList<>());
       }
-      myFonts = new ArrayList<Font>();
+      myFonts = new ArrayList<>();
     }
 
     public void setFonts(FontChooser fontChooser) {
@@ -500,10 +486,9 @@ public class Canvas {
       return totalHeight;
     }
 
-    public Text addText(int x, int y, TextSelector textSelector) {
+    public void addText(int x, int y, TextSelector textSelector) {
       Text result = new Text(x, y, textSelector);
       myLines.get(y).add(result);
-      return result;
     }
 
     public int getLineCount() {
@@ -606,8 +591,7 @@ public class Canvas {
 
   public void paint(Painter painter) {
     painter.prePaint();
-    for (int i = 0; i < myRectangles.size(); i++) {
-      Rectangle next = myRectangles.get(i);
+    for (Rectangle next : myRectangles) {
       if (next.isVisible()) {
         painter.paint(next);
       }
@@ -617,14 +601,12 @@ public class Canvas {
         painter.paint(r);
       }
     }
-    for (int i = 0; i < myLines.size(); i++) {
-      Line next = myLines.get(i);
+    for (Line next : myLines) {
       if (next.isVisible()) {
         painter.paint(next);
       }
     }
-    for (int i = 0; i < myTexts.size(); i++) {
-      Text next = myTexts.get(i);
+    for (Text next : myTexts) {
       if (next.isVisible()) {
         painter.paint(next);
       }
@@ -663,11 +645,10 @@ public class Canvas {
 
   public Shape getPrimitive(int x, int xThreshold, int y, int yThreshold) {
     Shape result = null;
-    for (int i = 0; i < myRectangles.size(); i++) {
-      Rectangle next = myRectangles.get(i);
+    for (Rectangle next : myRectangles) {
       // System.err.println(" next rectangle="+next);
       if (next.getLeftX() <= x + xThreshold && next.getRightX() >= x - xThreshold
-          && next.getTopY() <= y + yThreshold && next.getBottomY() >= y - yThreshold) {
+        && next.getTopY() <= y + yThreshold && next.getBottomY() >= y - yThreshold) {
         result = next;
         break;
       }
