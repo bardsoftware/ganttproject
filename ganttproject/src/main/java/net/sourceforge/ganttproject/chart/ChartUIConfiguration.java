@@ -54,7 +54,7 @@ public class ChartUIConfiguration {
 
   private int myRowHeight;
 
-  private UIConfiguration myProjectConfig;
+  private final UIConfiguration myProjectConfig;
 
   private int myHeaderHeight = 44;
 
@@ -66,7 +66,7 @@ public class ChartUIConfiguration {
 
   private int myBaseFontSize;
 
-  private ChartPropertiesOption myChartStylesOption;
+  private final ChartPropertiesOption myChartStylesOption;
 
   private boolean noteIconEnabled = false;
 

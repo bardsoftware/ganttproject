@@ -68,11 +68,11 @@ public enum TaskDefaultColumn {
   private final String myNameKey;
   private Comparator<?> mySortComparator;
 
-  private TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey) {
+  TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey) {
     this(delegate, valueClass, nameKey, Functions.ALWAYS_EDITABLE);
   }
 
-  private TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey, Predicate<? extends Object> isEditable) {
+  TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey, Predicate<? extends Object> isEditable) {
     myDelegate = delegate;
     myValueClass = valueClass;
     myIsEditablePredicate= isEditable;
@@ -131,18 +131,8 @@ public enum TaskDefaultColumn {
   }
 
   static class Functions {
-    static Predicate<Object> NOT_EDITABLE = new Predicate<Object>() {
-      @Override
-      public boolean apply(Object input) {
-        return false;
-      }
-    };
+    static Predicate<Object> NOT_EDITABLE = input -> false;
 
-    static Predicate<Object> ALWAYS_EDITABLE = new Predicate<Object>() {
-      @Override
-      public boolean apply(Object input) {
-        return true;
-      }
-    };
+    static Predicate<Object> ALWAYS_EDITABLE = input -> true;
   }
 }

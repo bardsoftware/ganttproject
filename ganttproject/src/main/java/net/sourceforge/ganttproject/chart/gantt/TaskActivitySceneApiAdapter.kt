@@ -31,7 +31,6 @@ import net.sourceforge.ganttproject.task.TaskImpl
 import net.sourceforge.ganttproject.task.TaskProperties
 import java.awt.Color
 import java.util.*
-import kotlin.math.max
 
 internal class ITaskSceneTaskImpl(private val task: Task, private val model: ChartModel) : ITaskSceneTask {
   private val props = TaskProperties(model.timeUnitStack)
