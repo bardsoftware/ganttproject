@@ -493,12 +493,13 @@ class TaskTable(
             treeTable.treeColumn = this
           }
         } else {
-          createTextColumn(taskDefaultColumn.getName(),
-            { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
-            { task, value -> undoManager.undoableEdit("Edit properties of task ${task.name}") {
+          createTextColumn(
+            name = taskDefaultColumn.getName(),
+            getValue = { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
+            setValue = { task: Task, value -> undoManager.undoableEdit("Edit properties of task ${task.name}") {
               taskTableModel.setValue(value, task, taskDefaultColumn)
             }},
-            { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
+            onEditingCompleted = { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
           )
         }
       }

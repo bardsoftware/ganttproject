@@ -19,9 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.chart;
 
 import biz.ganttproject.core.chart.render.AlphaRenderingOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.KeyValueOption;
-import biz.ganttproject.core.option.ListOption;
+import biz.ganttproject.core.option.*;
 import net.sourceforge.ganttproject.font.Fonts;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 
@@ -68,7 +66,7 @@ public class ChartUIConfiguration {
 
   private final ChartPropertiesOption myChartStylesOption;
 
-  private boolean noteIconEnabled = false;
+  private final BooleanOption noteIconEnabledOption = new DefaultBooleanOption("chart.note_icon_enabled", false);
 
   private static class ChartPropertiesOption extends KeyValueOption {
     public ChartPropertiesOption() {
@@ -112,6 +110,7 @@ public class ChartUIConfiguration {
     myBottomUnitGridColor = new Color(0.482f, 0.482f, 0.482f);
     myProjectConfig = projectConfig;
     myChartStylesOption = new ChartPropertiesOption();
+    noteIconEnabledOption.setHasUi(false);
   }
 
   ListOption<Map.Entry<String, String>> getChartStylesOption() {
@@ -252,10 +251,8 @@ public class ChartUIConfiguration {
   }
 
   public boolean isNoteIconEnabled() {
-    return noteIconEnabled;
+    return noteIconEnabledOption.getValue();
   }
 
-  public void setNoteIconEnabled(boolean noteIconEnabled) {
-    this.noteIconEnabled = noteIconEnabled;
-  }
+  BooleanOption getNoteIconEnabledOption() { return noteIconEnabledOption; }
 }
