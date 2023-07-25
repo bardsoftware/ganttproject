@@ -99,6 +99,12 @@
           &.colored {
             -fx-border-width: 1;
           }
+          .button {
+            -fx-background-color: transparent;
+            -fx-border-color: transparent;
+            -fx-border-radius: 0;
+            -fx-padding: 0;
+          }
         }
         .badge-error {
           -fx-background-color: $gp-error;
