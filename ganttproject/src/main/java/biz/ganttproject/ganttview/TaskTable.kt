@@ -500,7 +500,11 @@ class TaskTable(
               taskTableModel.setValue(value, task, taskDefaultColumn)
             }},
             onEditingCompleted = { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
-          )
+          ).apply {
+            if (taskDefaultColumn == TaskDefaultColumn.OUTLINE_NUMBER) {
+              this.comparator = TaskDefaultColumn.Functions.OUTLINE_NUMBER_COMPARATOR
+            }
+          }
         }
       }
       GregorianCalendar::class.java.isAssignableFrom(taskDefaultColumn.valueClass) -> {

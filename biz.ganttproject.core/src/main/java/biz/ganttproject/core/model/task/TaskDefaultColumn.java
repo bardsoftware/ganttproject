@@ -25,9 +25,7 @@ import com.google.common.base.Predicate;
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.GregorianCalendar;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -130,9 +128,27 @@ public enum TaskDefaultColumn {
     return ourLocaleApi == null ? getNameKey() : ourLocaleApi.i18n(getNameKey());
   }
 
-  static class Functions {
+  public static class Functions {
     static Predicate<Object> NOT_EDITABLE = input -> false;
 
     static Predicate<Object> ALWAYS_EDITABLE = input -> true;
+
+    public static Comparator<String> OUTLINE_NUMBER_COMPARATOR = (s1, s2) -> {
+      try (var sc1 = new Scanner(s1).useDelimiter("\\."); var sc2 = new Scanner(s2).useDelimiter("\\.")) {
+        while (sc1.hasNextInt() && sc2.hasNextInt()) {
+          var diff = sc1.nextInt() - sc2.nextInt();
+          if (diff != 0) {
+            return Integer.signum(diff);
+          }
+        }
+        if (sc1.hasNextInt()) {
+          return 1;
+        }
+        if (sc2.hasNextInt()) {
+          return -1;
+        }
+        return 0;
+      }
+    };
   }
 }
