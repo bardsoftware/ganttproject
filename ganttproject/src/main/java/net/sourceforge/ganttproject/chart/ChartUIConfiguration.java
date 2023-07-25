@@ -68,6 +68,8 @@ public class ChartUIConfiguration {
 
   private ChartPropertiesOption myChartStylesOption;
 
+  private boolean noteIconEnabled = false;
+
   private static class ChartPropertiesOption extends KeyValueOption {
     public ChartPropertiesOption() {
       super("chart.styles");
@@ -247,5 +249,13 @@ public class ChartUIConfiguration {
 
   public int getBaseFontSize() {
     return myBaseFontSize;
+  }
+
+  public boolean isNoteIconEnabled() {
+    return noteIconEnabled;
+  }
+
+  public void setNoteIconEnabled(boolean noteIconEnabled) {
+    this.noteIconEnabled = noteIconEnabled;
   }
 }

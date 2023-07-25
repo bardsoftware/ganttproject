@@ -48,7 +48,7 @@ internal class ITaskSceneTaskImpl(private val task: Task, private val model: Cha
   override val shape: ShapePaint?
     get() = task.shape
   override val notes: String?
-    get() = task.notes
+    get() = if (model.chartUIConfiguration.isNoteIconEnabled) task.notes else null
 
   override fun isMilestone() = (task as TaskImpl).isLegacyMilestone
   override val end: GanttCalendar

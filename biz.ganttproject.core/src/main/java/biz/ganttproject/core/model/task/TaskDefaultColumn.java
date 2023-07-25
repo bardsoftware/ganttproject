@@ -50,7 +50,8 @@ public enum TaskDefaultColumn {
   OUTLINE_NUMBER(new ColumnList.ColumnStub("tpd11", null, false, 4, 20), String.class, "tableColOutline", Functions.NOT_EDITABLE),
   COST(new ColumnList.ColumnStub("tpd12", null, false, -1, 20), BigDecimal.class, "tableColCost"),
   RESOURCES(new ColumnList.ColumnStub("tpd13", null, false, -1, 20), String.class, "resources", Functions.NOT_EDITABLE),
-  COLOR(new ColumnList.ColumnStub("tpd14", null, false, -1, 20), Color.class, "option.taskDefaultColor.label");
+  COLOR(new ColumnList.ColumnStub("tpd14", null, false, -1, 20), Color.class, "option.taskDefaultColor.label"),
+  NOTES(new ColumnList.ColumnStub("tpd15", null, false, -1, 20), String.class, "notes");
 
   public interface LocaleApi {
     String i18n(String key);
