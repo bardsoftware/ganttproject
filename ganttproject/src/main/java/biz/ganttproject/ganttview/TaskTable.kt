@@ -122,7 +122,7 @@ class TaskTable(
     BuiltinColumns(
       isZeroWidth = {
         when (TaskDefaultColumn.find(it)) {
-          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO -> true
+          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO, TaskDefaultColumn.NOTES -> true
           else -> false
         }
       },
@@ -204,7 +204,11 @@ class TaskTable(
 
   fun loadDefaultColumns() = Platform.runLater {
     treeTable.columns.clear()
-    columnList.importData(ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs().map { ColumnStub(it) }.toList()), false)
+    columnList.importData(ColumnList.Immutable.fromList(
+      TaskDefaultColumn.getColumnStubs().map {
+        ColumnStub(it)
+      }.toList()
+    ), false)
     buildColumns(columnList.columns())
     reload()
   }
@@ -463,7 +467,7 @@ class TaskTable(
     val tableColumns =
       columns.mapNotNull { column ->
         when (val taskDefaultColumn = TaskDefaultColumn.find(column.id)) {
-          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO -> null
+          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO, TaskDefaultColumn.NOTES -> null
           null -> createCustomColumn(column)
           else -> createDefaultColumn(column, taskDefaultColumn)
         }?.also {
