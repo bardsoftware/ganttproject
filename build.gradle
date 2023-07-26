@@ -2,7 +2,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.7.21" apply false
+    id "org.jetbrains.kotlin.jvm" version "1.8.21" apply false
 }
 ext.distBinDir = file('ganttproject-builder/dist-bin')
 ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins/base")
@@ -26,7 +26,7 @@ allprojects {
     ext {
         libDir = 'lib'
         mvnDir = 'lib/mvn'
-        kotlin_version = "1.7.21"
+        kotlin_version = "1.8.21"
         javaExportOptions = [
             '--add-exports', 'javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED',
             '--add-exports', 'javafx.base/com.sun.javafx.event=ALL-UNNAMED',
