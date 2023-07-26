@@ -335,25 +335,7 @@ class ResourceColumnSpecImpl(
   }
 }
 
-val OUTLINE_NUMBER_COMPARATOR: Comparator<String> = Comparator { s1, s2 ->
-  Scanner(s1).useDelimiter("\\.").use { sc1 ->
-    Scanner(s2).useDelimiter("\\.").use { sc2 ->
-      while (sc1.hasNextInt() && sc2.hasNextInt()) {
-        val diff = sc1.nextInt() - sc2.nextInt()
-        if (diff != 0) {
-          return@Comparator Integer.signum(diff)
-        }
-      }
-      if (sc1.hasNextInt()) {
-        return@Comparator 1
-      }
-      if (sc2.hasNextInt()) {
-        return@Comparator -1
-      }
-      return@Comparator 0
-    }
-  }
-}
+val OUTLINE_NUMBER_COMPARATOR: Comparator<String> = TaskDefaultColumn.Functions.OUTLINE_NUMBER_COMPARATOR
 
 fun SpreadsheetRecord.digDate(column: String, addError: (Level, String) -> Unit): Date? =
   this.getDate(column) ?: parseDateOrError1(this[column], addError)

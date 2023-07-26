@@ -493,13 +493,18 @@ class TaskTable(
             treeTable.treeColumn = this
           }
         } else {
-          createTextColumn(taskDefaultColumn.getName(),
-            { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
-            { task, value -> undoManager.undoableEdit("Edit properties of task ${task.name}") {
+          createTextColumn(
+            name = taskDefaultColumn.getName(),
+            getValue = { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
+            setValue = { task: Task, value -> undoManager.undoableEdit("Edit properties of task ${task.name}") {
               taskTableModel.setValue(value, task, taskDefaultColumn)
             }},
-            { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
-          )
+            onEditingCompleted = { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
+          ).apply {
+            if (taskDefaultColumn == TaskDefaultColumn.OUTLINE_NUMBER) {
+              this.comparator = TaskDefaultColumn.Functions.OUTLINE_NUMBER_COMPARATOR
+            }
+          }
         }
       }
       GregorianCalendar::class.java.isAssignableFrom(taskDefaultColumn.valueClass) -> {
@@ -828,7 +833,22 @@ class TaskTable(
       if (task == null) {
         null
       } else {
-        if (TaskDefaultColumn.COLOR.stub.isVisible || TaskDefaultColumn.INFO.stub.isVisible) {
+        fun setupIcon(icon: GlyphIcon<*>, scale: Double = 0.75, code: (StackPane, Button) -> Unit) {
+          icon.glyphSize = scale * (minCellHeight.value - cellPadding)
+          icon.textAlignment = TextAlignment.CENTER
+          val btn = Button("", icon).also {
+            it.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+          }
+          StackPane(btn).also {
+            it.styleClass.add("badge")
+            //it.alignment = Pos.CENTER
+            it.prefWidth = minCellHeight.value - cellPadding + 5.0
+            it.prefHeight = it.prefWidth
+            it.minWidth = it.prefWidth
+            code(it, btn)
+          }
+        }
+        if (TaskDefaultColumn.COLOR.stub.isVisible || TaskDefaultColumn.INFO.stub.isVisible || TaskDefaultColumn.NOTES.stub.isVisible) {
           HBox().also { hbox ->
             hbox.alignment = Pos.CENTER
             hbox.spacing = 3.0
@@ -836,20 +856,19 @@ class TaskTable(
               hbox.children.add(it)
               HBox.setHgrow(it, Priority.ALWAYS)
             }
+            if (TaskDefaultColumn.NOTES.stub.isVisible && !task.notes.isNullOrBlank()) {
+              setupIcon(FontAwesomeIconView(FontAwesomeIcon.FILE_TEXT_ALT), scale=1.0) {stackPane, btn ->
+                hbox.children.add(stackPane)
+                btn.tooltip = Tooltip(task.notes)
+              }
+            }
             if (TaskDefaultColumn.INFO.stub.isVisible) {
               task.getProgressStatus().getIcon()?.let { icon ->
-                icon.glyphSize = 0.75 * (minCellHeight.value - cellPadding)
-                icon.textAlignment = TextAlignment.CENTER
-                StackPane(icon).also {
-                  it.styleClass.add("badge")
-                  hbox.children.add(it)
-                  it.alignment = Pos.CENTER
-                  it.prefWidth = minCellHeight.value - cellPadding + 5.0
-                  it.prefHeight = it.prefWidth
-                  it.minWidth = it.prefWidth
+                setupIcon(icon) { stackPane, _ ->
+                  hbox.children.add(stackPane)
                   if ("true" == System.getProperty("table.badges.colored", "true")) {
-                    it.styleClass.add("colored")
-                    it.styleClass.add(
+                    stackPane.styleClass.add("colored")
+                    stackPane.styleClass.add(
                       when (task.getProgressStatus()) {
                         Task.ProgressStatus.DEADLINE_MISS -> "badge-error"
                         Task.ProgressStatus.INPROGRESS -> "badge-warning"
@@ -877,6 +896,7 @@ class TaskTable(
     cell.contentDisplay = ContentDisplay.RIGHT
     cell.alignment = Pos.CENTER_LEFT
   }
+
 }
 
 private class TreeSelectionListenerImpl(

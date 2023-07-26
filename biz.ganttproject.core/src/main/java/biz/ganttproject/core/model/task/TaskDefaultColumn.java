@@ -25,9 +25,7 @@ import com.google.common.base.Predicate;
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.GregorianCalendar;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -50,7 +48,8 @@ public enum TaskDefaultColumn {
   OUTLINE_NUMBER(new ColumnList.ColumnStub("tpd11", null, false, 4, 20), String.class, "tableColOutline", Functions.NOT_EDITABLE),
   COST(new ColumnList.ColumnStub("tpd12", null, false, -1, 20), BigDecimal.class, "tableColCost"),
   RESOURCES(new ColumnList.ColumnStub("tpd13", null, false, -1, 20), String.class, "resources", Functions.NOT_EDITABLE),
-  COLOR(new ColumnList.ColumnStub("tpd14", null, false, -1, 20), Color.class, "option.taskDefaultColor.label");
+  COLOR(new ColumnList.ColumnStub("tpd14", null, false, -1, 20), Color.class, "option.taskDefaultColor.label"),
+  NOTES(new ColumnList.ColumnStub("tpd15", null, false, -1, 20), String.class, "notes");
 
   public interface LocaleApi {
     String i18n(String key);
@@ -67,11 +66,11 @@ public enum TaskDefaultColumn {
   private final String myNameKey;
   private Comparator<?> mySortComparator;
 
-  private TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey) {
+  TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey) {
     this(delegate, valueClass, nameKey, Functions.ALWAYS_EDITABLE);
   }
 
-  private TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey, Predicate<? extends Object> isEditable) {
+  TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey, Predicate<? extends Object> isEditable) {
     myDelegate = delegate;
     myValueClass = valueClass;
     myIsEditablePredicate= isEditable;
@@ -129,18 +128,26 @@ public enum TaskDefaultColumn {
     return ourLocaleApi == null ? getNameKey() : ourLocaleApi.i18n(getNameKey());
   }
 
-  static class Functions {
-    static Predicate<Object> NOT_EDITABLE = new Predicate<Object>() {
-      @Override
-      public boolean apply(Object input) {
-        return false;
-      }
-    };
+  public static class Functions {
+    static Predicate<Object> NOT_EDITABLE = input -> false;
 
-    static Predicate<Object> ALWAYS_EDITABLE = new Predicate<Object>() {
-      @Override
-      public boolean apply(Object input) {
-        return true;
+    static Predicate<Object> ALWAYS_EDITABLE = input -> true;
+
+    public static Comparator<String> OUTLINE_NUMBER_COMPARATOR = (s1, s2) -> {
+      try (var sc1 = new Scanner(s1).useDelimiter("\\."); var sc2 = new Scanner(s2).useDelimiter("\\.")) {
+        while (sc1.hasNextInt() && sc2.hasNextInt()) {
+          var diff = sc1.nextInt() - sc2.nextInt();
+          if (diff != 0) {
+            return Integer.signum(diff);
+          }
+        }
+        if (sc1.hasNextInt()) {
+          return 1;
+        }
+        if (sc2.hasNextInt()) {
+          return -1;
+        }
+        return 0;
       }
     };
   }

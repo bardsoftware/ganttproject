@@ -261,10 +261,12 @@ public abstract class ChartModelBase implements /* TimeUnitStack.Listener, */Cha
       }
     });
     myChartGridOptions = new ChartOptionGroup("ganttChartGridDetails",
-        new GPOption[] { projectConfig.getRedlineOption(),
+        new GPOption[] {
+          projectConfig.getRedlineOption(),
           projectConfig.getProjectBoundariesOption(),
           projectConfig.getWeekendAlphaRenderingOption(),
           myChartUIConfiguration.getChartStylesOption(),
+          myChartUIConfiguration.getNoteIconEnabledOption(),
           weekNumbering.getOption()
         },
         getOptionEventDispatcher());
