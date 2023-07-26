@@ -388,14 +388,20 @@ class TaskTable(
             requestSwingFocus()
             if (treeTable.editingCell == null) {
               val idx = treeTable.getRow(cmd.treeItem)
-              treeTable.scrollTo(cmd.treeItem)
               treeTable.edit(idx, findNameColumn())
             } else {
+              //println("there is an editing cell")
               //println("editing cell is ${treeTable.editingCell}")
             }
           }
           is CommitEditing -> {
             commitEditing()
+          }
+          is StartScrolling -> {
+            treeTable.scrollTo(cmd.treeItem)
+            FXUtil.runLater {
+              runBlocking {  newTaskActor.inboxChannel.send(TreeItemScrolled(cmd.treeItem)) }
+            }
           }
         }
       }
@@ -484,11 +490,19 @@ class TaskTable(
                   taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
                 }
               }
-              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(targetTask)) }
+              runBlocking {
+                LOGGER.debug("onEditCommit (name): task=$targetTask")
+                newTaskActor.inboxChannel.send(EditingCompleted(targetTask))
+              }
             }
             onEditCancel = EventHandler { event ->
+              LOGGER.debug("onEditCancel: event=$event")
+              LOGGER.error("why cancel?", exception = Exception())
               val targetTask: Task = event.rowValue.value
-              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(targetTask)) }
+              runBlocking {
+                LOGGER.debug("onEditCancel (name): task=$targetTask")
+                newTaskActor.inboxChannel.send(EditingCompleted(targetTask))
+              }
             }
             treeTable.treeColumn = this
           }
@@ -496,10 +510,12 @@ class TaskTable(
           createTextColumn(
             name = taskDefaultColumn.getName(),
             getValue = { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
-            setValue = { task: Task, value -> undoManager.undoableEdit("Edit properties of task ${task.name}") {
-              taskTableModel.setValue(value, task, taskDefaultColumn)
-            }},
-            onEditingCompleted = { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
+            setValue = { task: Task, value ->
+              undoManager.undoableEdit("Edit properties of task ${task.name}") {
+                taskTableModel.setValue(value, task, taskDefaultColumn)
+                runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(task)) }
+              }
+            }
           ).apply {
             if (taskDefaultColumn == TaskDefaultColumn.OUTLINE_NUMBER) {
               this.comparator = TaskDefaultColumn.Functions.OUTLINE_NUMBER_COMPARATOR
@@ -577,12 +593,15 @@ class TaskTable(
     val customProperty = taskManager.customPropertyManager.getCustomPropertyDefinition(column.id) ?: return null
     return when (customProperty.propertyClass) {
       CustomPropertyClass.TEXT -> {
-        createTextColumn(customProperty.name,
-          { taskTableModel.getValue(it, customProperty)?.toString() },
-          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
-            taskTableModel.setValue(value, task, customProperty)
-          }},
-          { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
+        createTextColumn(
+          name = customProperty.name,
+          getValue = { taskTableModel.getValue(it, customProperty)?.toString() },
+          setValue = { task, value ->
+            undoManager.undoableEdit("Edit properties of task ${task.name}") {
+              taskTableModel.setValue(value, task, customProperty)
+              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(task)) }
+            }
+          }
         )
       }
       CustomPropertyClass.BOOLEAN -> {
@@ -826,9 +845,12 @@ class TaskTable(
     dragAndDropSupport.install(cell)
 
     cell.alignment = Pos.CENTER_LEFT
-    cell.onEditingCompleted = {
-      runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
-    }
+//    cell.onEditingCompleted = {
+//      runBlocking {
+//        LOGGER.debug("cell::onEditingCompleted (name): cell=$cell")
+//        newTaskActor.inboxChannel.send(EditingCompleted())
+//      }
+//    }
     cell.graphicSupplier = { task: Task? ->
       if (task == null) {
         null
