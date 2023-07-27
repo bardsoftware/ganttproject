@@ -24,7 +24,6 @@ import com.google.common.collect.Queues
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.scene.control.TreeItem
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -144,7 +143,7 @@ class NewTaskActor<T> {
       }
       is TreeItemReady -> {
         when (state) {
-          IDLE -> TODO("this must be error: we received a tree item prior to new task")
+          IDLE -> error("this must be error: we received a tree item prior to new task")
           TASK_READY -> {
             if (msg.treeItem.value === newTask) {
               // It is a tree item created for the latest task. Now let's make it visible in the tree.
@@ -156,7 +155,7 @@ class NewTaskActor<T> {
             }
           }
           TREE_ITEM_READY, SCROLLING, EDIT_STARTING -> {
-            TODO("this must be error: we received a new tree item when we are editing or about to start editing")
+            error("this must be error: we received a new tree item when we are editing or about to start editing")
           }
           EDIT_COMPLETING -> {
             // We created a new tree item while we were finishing editing the previous one. That's okay, we'll process
@@ -208,7 +207,7 @@ class NewTaskActor<T> {
             processQueue()
           }
           IDLE, TASK_READY-> {}
-          else -> TODO("this must be error: editing completed when state is $state")
+          else -> error("this must be error: editing completed when state is $state")
         }
       }
     }
