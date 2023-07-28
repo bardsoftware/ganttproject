@@ -197,3 +197,5 @@ jobs:
                   for f in *.dmg; do
                     gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
                   done;
+
+

@@ -405,7 +405,7 @@ private val ourLocalizer = RootLocalizer.createWithRootKey("platform.update")
 object UpdateOptions {
   val isCheckEnabled = DefaultBooleanOption("checkEnabled", true)
   val latestShownVersion = DefaultStringOption("latestShownVersion")
-  val updateUrl = DefaultStringOption("url", System.getProperty("platform.update.url", "https://www.ganttproject.biz/dl/updates/ganttproject-3.3.json"))
+  val updateUrl = DefaultStringOption("url", System.getProperty("platform.update.url", "https://www.ganttproject.biz/dl/updates/ganttproject-3.3.3300.json"))
   val optionGroup: GPOptionGroup = GPOptionGroup("platform.update", isCheckEnabled, latestShownVersion, updateUrl)
 
 }
