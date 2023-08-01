@@ -519,7 +519,10 @@ class TaskTable(
                 taskTableModel.setValue(value, task, taskDefaultColumn)
                 runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(task)) }
               }
-            }
+            },
+            onEditCompleted = { runBlocking {
+              newTaskActor.inboxChannel.send(EditingCompleted(it))
+            }}
           ).apply {
             if (taskDefaultColumn == TaskDefaultColumn.OUTLINE_NUMBER) {
               this.comparator = TaskDefaultColumn.Functions.OUTLINE_NUMBER_COMPARATOR
@@ -604,6 +607,11 @@ class TaskTable(
             undoManager.undoableEdit("Edit properties of task ${task.name}") {
               taskTableModel.setValue(value, task, customProperty)
               runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(task)) }
+            }
+          },
+          onEditCompleted = {
+            runBlocking {
+              newTaskActor.inboxChannel.send(EditingCompleted(it))
             }
           }
         )
@@ -849,12 +857,12 @@ class TaskTable(
     dragAndDropSupport.install(cell)
 
     cell.alignment = Pos.CENTER_LEFT
-//    cell.onEditingCompleted = {
-//      runBlocking {
-//        LOGGER.debug("cell::onEditingCompleted (name): cell=$cell")
-//        newTaskActor.inboxChannel.send(EditingCompleted())
-//      }
-//    }
+    cell.onEditingCompleted = {
+      runBlocking {
+        LOGGER.debug("cell::onEditingCompleted(name): cell={}", cell)
+        newTaskActor.inboxChannel.send(EditingCompleted(cell.item))
+      }
+    }
     cell.graphicSupplier = { task: Task? ->
       if (task == null) {
         null
