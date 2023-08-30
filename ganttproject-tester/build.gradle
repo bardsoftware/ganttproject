@@ -22,7 +22,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
     testImplementation 'org.jooq:jooq:3.18.6'
     testImplementation "com.h2database:h2:2.2.+"
-    testImplementation "org.easymock:easymock:5.1.0"
+    testImplementation "org.easymock:easymock:5.2.0"
 
     testImplementation fileTree(dir: project.projectDir.absolutePath + "/resources")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
