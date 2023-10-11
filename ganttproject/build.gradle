@@ -52,7 +52,7 @@ dependencies {
     implementation files('src/main/resources/resources')
 
     implementation group: 'com.h2database', name: 'h2', version: '2.2.+'
-    implementation 'org.jooq:jooq:3.18.6'
+    implementation 'org.jooq:jooq:3.18.7'
     jooqGenerator 'org.jooq:jooq-meta-extensions'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0'
