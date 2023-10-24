@@ -51,8 +51,8 @@ dependencies {
     implementation fileTree(dir: project.ext.libDir, include: ['*.jar'])
     implementation files('src/main/resources/resources')
 
-    implementation group: 'com.h2database', name: 'h2', version: '2.1.+'
-    implementation 'org.jooq:jooq:3.17.5'
+    implementation "com.h2database:h2:2.1.+"
+    implementation "org.jooq:jooq:3.17.5"
     jooqGenerator 'org.jooq:jooq-meta-extensions'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1'

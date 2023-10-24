@@ -88,7 +88,6 @@ val GPCLOUD_WEBSOCKET_PORT = when (cloudEnvironment) {
 
 val GPCLOUD_WEBSOCKET_URL = "$GPCLOUD_WEBSOCKET_SCHEME://$GPCLOUD_WEBSOCKET_HOST:$GPCLOUD_WEBSOCKET_PORT"
 enum class SceneId { BROWSER, SIGNUP, SIGNIN, OFFLINE, SPINNER, TOKEN_SPINNER, OFFLINE_BROWSER }
-typealias SceneChanger = (Node, SceneId) -> Unit
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -133,18 +132,6 @@ class GPCloudStorage(
     }
     return myPane
   }
-
-  private fun nextPage(newPage: Node, sceneId: SceneId) {
-    Platform.runLater {
-      FXUtil.transitionCenterPane(myPane, newPage) {
-        dialogUi.resize()
-        if (sceneId == SceneId.BROWSER) {
-          browserPane.focus()
-        }
-      }
-    }
-  }
-
 }
 
 fun (GPCloudOptions).onAuthToken(): AuthTokenCallback {
