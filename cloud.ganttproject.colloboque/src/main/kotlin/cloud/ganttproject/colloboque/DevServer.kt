@@ -19,9 +19,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package cloud.ganttproject.colloboque
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
+import com.github.ajalt.clikt.output.MordantHelpFormatter
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
 import fi.iki.elonen.NanoWSD
@@ -43,13 +45,18 @@ import java.util.zip.CRC32
 fun main(args: Array<String>) = DevServerMain().main(args)
 
 class DevServerMain : CliktCommand() {
-  private val port by option("--port").int().default(9000)
-  private val wsPort by option("--ws-port").int().default(9001)
-  private val pgHost by option("--pg-host").default("localhost")
-  private val pgPort by option("--pg-port").int().default(5432)
-  private val pgSuperUser by option("--pg-super-user").default("postgres")
-  private val pgSuperAuth by option("--pg-super-auth").default("")
+  private val port by option("--port", help = "HTTP port to listen on").int().default(9000)
+  private val wsPort by option("--ws-port", help = "WebSocket port to listen on").int().default(9001)
+  private val pgHost by option("--pg-host", help = "Postgres host name").default("localhost")
+  private val pgPort by option("--pg-port", help = "Postgres port").int().default(5432)
+  private val pgSuperUser by option("--pg-super-user", help = "Postgres super user name").default("postgres")
+  private val pgSuperAuth by option("--pg-super-auth", help = "Postgres super user password").default("")
 
+  init {
+    context {
+      helpFormatter = { MordantHelpFormatter(it, showDefaultValues = true) }
+    }
+  }
   override fun run() {
     STARTUP_LOG.debug("Starting dev Colloboque server on port {}", port)
 

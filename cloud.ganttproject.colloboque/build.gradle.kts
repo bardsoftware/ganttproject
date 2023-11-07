@@ -6,7 +6,7 @@ val kotlinVersion: String by project
 
 plugins {
     id("application")
-    id("org.jetbrains.kotlin.jvm") version "1.7.21"
+    id("org.jetbrains.kotlin.jvm") version "1.9.10"
     id("maven-publish")
     id("org.jetbrains.kotlin.plugin.serialization") version "1.7.21"
 }
@@ -19,6 +19,14 @@ application {
 repositories {
     google()
     mavenCentral()
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/bardsoftware/ganttproject")
+        credentials {
+            username = project.findProperty("gpr.user")?.toString() ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.key")?.toString() ?: System.getenv("TOKEN")
+        }
+    }
     mavenLocal()
 }
 
@@ -37,7 +45,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jooq:jooq:3.17.5")
     implementation("org.slf4j:slf4j-api:1.7.36")
-    implementation("com.github.ajalt.clikt:clikt:3.5.0")
+    implementation("com.github.ajalt.clikt:clikt:4.+")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
     implementation("org.nanohttpd:nanohttpd-websocket:2.3.1")
 
