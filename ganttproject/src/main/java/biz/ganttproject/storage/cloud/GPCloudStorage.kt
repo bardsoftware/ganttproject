@@ -67,7 +67,7 @@ val GPCLOUD_PORT = when (cloudEnvironment) {
   GPCloudEnv.LOCAL -> 80
   else -> 443
 }
-val GPCLOUD_ORIGIN = "$GPCLOUD_SCHEME://$GPCLOUD_HOST" + if (cloudEnvironment == GPCloudEnv.LOCAL) ":$GPCLOUD_PORT" else ""
+val GPCLOUD_ORIGIN = "$GPCLOUD_SCHEME://$GPCLOUD_HOST" + if (cloudEnvironment == GPCloudEnv.EMULATOR) ":$GPCLOUD_PORT" else ""
 val GPCLOUD_PROJECT_READ_URL = "$GPCLOUD_ORIGIN/p/read"
 val GPCLOUD_SIGNIN_URL = "$GPCLOUD_ORIGIN/__/auth/desktop"
 val GPCLOUD_SIGNUP_URL = "$GPCLOUD_ORIGIN/__/auth/handler"

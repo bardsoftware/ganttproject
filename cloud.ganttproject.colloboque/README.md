@@ -59,3 +59,14 @@ It should print to the console something like
 14:49:38.883 DEBUG [Startup @ main] - Connected to the database. PostgreSQL 15.3 (Debian 15.3-1.pgdg120+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit
 <=
 ```
+
+## Building and running the client
+
+Please refer to [GanttProject Docs](../README.md) for instructions on building and running GanttProject. 
+For Colloboque development purposes, running GanttProject with `gradle run` is okay: it will try to connect to 
+Colloboque server running on `localhost:9000` and will open a test document with a single task. 
+
+It is expected that two GanttProject instances will send their updates to the server, will receive the updates
+from the server and immediately apply them. At the moment, the following update types are supported:
+
+- adding a new task

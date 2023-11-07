@@ -72,8 +72,9 @@ class DevServerMain : CliktCommand() {
 }
 
 class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueServer) : NanoHTTPD("localhost", port) {
-  override fun serve(session: IHTTPSession): Response =
-    when (session.uri) {
+  override fun serve(session: IHTTPSession): Response {
+    LOG.debug("${session.uri}")
+    return when (session.uri) {
       "/init" -> {
         session.parameters["projectRefid"]?.firstOrNull()?.let {
           val projectXml =
@@ -83,6 +84,7 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
           newFixedLengthResponse("Ok")
         } ?: newFixedLengthResponse(Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "projectRefid is missing")
       }
+
       "/" -> newFixedLengthResponse("Hello")
       "/p/read" -> {
         session.parameters["projectRefid"]?.firstOrNull()?.let {
@@ -90,9 +92,9 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
             colloboqueServer.init(it, PROJECT_XML_TEMPLATE)
           }
 
-          newFixedLengthResponse(PROJECT_XML_TEMPLATE.toBase64()).also {response ->
+          newFixedLengthResponse(PROJECT_XML_TEMPLATE.toBase64()).also { response ->
             response.addHeader("ETag", "-1")
-            response.addHeader("Digest", CRC32().let {hash ->
+            response.addHeader("Digest", CRC32().let { hash ->
               hash.update(PROJECT_XML_TEMPLATE.toByteArray())
               hash.value.toString()
             })
@@ -100,8 +102,10 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
           }
         } ?: newFixedLengthResponse(Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "projectRefid is missing")
       }
+
       else -> newFixedLengthResponse(Status.NOT_FOUND, MIME_PLAINTEXT, "Not Found")
     }
+  }
 }
 
 class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: ColloboqueServer,

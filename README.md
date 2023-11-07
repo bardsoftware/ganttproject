@@ -16,3 +16,12 @@ Visit http://ganttproject.biz to learn more.
 
 ## License
 GanttProject is free and open-source software, distributed under GNU General Public License v3.
+
+## Check out, build and run
+
+Clone the repository using `git clone https://github.com/bardsoftware/ganttproject.git` and checkout the submodules
+with `git submodule update` from the repository root.
+
+You can build and run the core part of GanttProject, with no export/import features, using `gradle run`.
+
+If you want to build the complete app, use `gradle runapp` or `gradle distbin && cd ganttproject-builder/dist-bin && ./ganttproject` (on Linux and macOS)
