@@ -55,7 +55,7 @@ dependencies {
     implementation 'org.jooq:jooq:3.18.7'
     jooqGenerator 'org.jooq:jooq-meta-extensions'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1'
     implementation 'net.harawata:appdirs:1.2.2'
 
     testImplementation group: 'org.easymock', name: 'easymock', version: '5.+'
