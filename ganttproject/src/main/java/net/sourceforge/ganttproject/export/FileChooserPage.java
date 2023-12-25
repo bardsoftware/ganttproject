@@ -103,6 +103,7 @@ class FileChooserPage extends FileChooserPageBase {
 
   @Override
   protected IStatus onSelectedFileChange(File file) {
+    getOverwriteOption().getIsWritableProperty().set(false, this);
     if (!file.exists()) {
       File parent = file.getParentFile();
       if (!parent.exists()) {
@@ -126,6 +127,7 @@ class FileChooserPage extends FileChooserPageBase {
             null);
       }
     } else {
+      getOverwriteOption().getIsWritableProperty().set(true, this);
       if (!getOverwriteOption().isChecked()) {
         return new Status(IStatus.WARNING, "foo", IStatus.WARNING,
           InternationalizationKt.getRootLocalizer().formatText("fileChooser.warning.fileExists"), null);
