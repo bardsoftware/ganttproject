@@ -11,6 +11,9 @@ buildscript {
 apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
+configurations {
+    implementation.extendsFrom(providedCompile)
+}
 dependencies {
     providedCompile project(':biz.ganttproject.core')
     providedCompile project(':ganttproject')
