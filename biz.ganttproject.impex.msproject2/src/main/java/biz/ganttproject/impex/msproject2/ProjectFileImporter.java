@@ -319,7 +319,7 @@ class ProjectFileImporter {
       nativeResource.setName(r.getName());
       nativeResource.setMail(r.getEmailAddress());
       Rate standardRate = r.getStandardRate();
-      if (standardRate != null && standardRate.getAmount() != 0.0 && r.getStandardRateUnits() == TimeUnit.DAYS) {
+      if (standardRate != null && standardRate.getAmount() != 0.0 && standardRate.getUnits() == TimeUnit.DAYS) {
         nativeResource.setStandardPayRate(BigDecimal.valueOf(standardRate.getAmount()));
       }
       myNativeProject.getHumanResourceManager().add(nativeResource);
@@ -331,13 +331,13 @@ class ProjectFileImporter {
 
   private void importCustomProperties(Resource r, HumanResource nativeResource) {
     for (ResourceField rf : ResourceField.values()) {
-      if (r.getCurrentValue(rf) == null || isNotCustomField(rf)) {
+      if (r.get(rf) == null || isNotCustomField(rf)) {
         continue;
       }
       CustomPropertyDefinition def = myResourceCustomPropertyMapping.get(rf);
       if (def == null) {
         String typeAsString = convertDataType(rf);
-        String name = r.getParentFile().getCustomFields().getCustomField(rf).getAlias();
+        String name = r.getParentFile().getCustomFields().get(rf).getAlias();
         if (name == null) {
           name = rf.getName();
         }
@@ -346,7 +346,7 @@ class ProjectFileImporter {
         myResourceCustomPropertyMapping.put(rf, def);
       }
       try {
-        nativeResource.setValue(def, convertDataValue(rf, r.getCurrentValue(rf)));
+        nativeResource.setValue(def, convertDataValue(rf, r.get(rf)));
       } catch (CustomColumnsException e) {
         throw new RuntimeException(e);
       }
@@ -354,7 +354,7 @@ class ProjectFileImporter {
   }
 
   private void importDaysOff(Resource r, final HumanResource nativeResource) {
-    ProjectCalendar c = r.getResourceCalendar();
+    ProjectCalendar c = r.getCalendar();
     if (c == null) {
       return;
     }
@@ -482,14 +482,14 @@ class ProjectFileImporter {
 
   private void importCustomFields(Task t, GanttTask nativeTask) {
     for (TaskField tf : TaskField.values()) {
-      if (isNotCustomField(tf) || t.getCurrentValue(tf) == null) {
+      if (isNotCustomField(tf) || t.get(tf) == null) {
         continue;
       }
 
       CustomPropertyDefinition def = myTaskCustomPropertyMapping.get(tf);
       if (def == null) {
         String typeAsString = convertDataType(tf);
-        String name = t.getParentFile().getCustomFields().getCustomField(tf).getAlias();
+        String name = t.getParentFile().getCustomFields().get(tf).getAlias();
         if (name == null) {
           name = tf.getName();
         }
@@ -499,7 +499,7 @@ class ProjectFileImporter {
         myTaskCustomPropertyMapping.put(tf, def);
       }
       try {
-        Object value = convertDataValue(tf, t.getCurrentValue(tf));
+        Object value = convertDataValue(tf, t.get(tf));
         if (!myCustomPropertyUniqueValueMapping.containsKey(def.getName())) {
           myCustomPropertyUniqueValueMapping.put(def.getName(), value);
         } else {

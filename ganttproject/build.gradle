@@ -32,8 +32,7 @@ javafx {
 }
 
 configurations {
-    exportedLibs
-    exported.extendsFrom archives, providedCompile, exportedLibs
+    implementation.extendsFrom providedCompile
 }
 
 dependencies {
@@ -42,12 +41,6 @@ dependencies {
     providedCompile project(path: ':biz.ganttproject.app.localization')
 
     api files("lib/core/eclipsito.jar")
-    exportedLibs files("lib/core/eclipsito.jar")
-
-    implementation configurations.direct
-    implementation configurations.providedCompile
-    implementation configurations.exportedLibs
-
     implementation fileTree(dir: project.ext.libDir, include: ['*.jar'])
     implementation files('src/main/resources/resources')
 

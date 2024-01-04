@@ -1,7 +1,12 @@
+configurations {
+    implementation.extendsFrom(providedCompile)
+}
+
 dependencies {
-    providedCompile project(path: ':ganttproject', configuration: 'exported')
+    providedCompile project(':biz.ganttproject.app.libs')
+    providedCompile project(':biz.ganttproject.core')
+    providedCompile project(':ganttproject')
     implementation 'org.mnode.ical4j:ical4j:1.+'
-    implementation configurations.providedCompile
 }
 
 task copyPlugin(dependsOn: jar) {
