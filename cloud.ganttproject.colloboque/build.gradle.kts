@@ -43,7 +43,7 @@ dependencies {
     implementation(kotlin("stdlib", version = kotlinVersion))
     implementation(kotlin("reflect", version = kotlinVersion))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("org.jooq:jooq:3.17.5")
+    implementation("org.jooq:jooq:3.19.1")
     implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("com.github.ajalt.clikt:clikt:4.+")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
