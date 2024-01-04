@@ -22,7 +22,7 @@ configurations {
 
 dependencies {
     exported 'org.slf4j:slf4j-api:2.0.9'
-    implementation 'org.slf4j:slf4j-jdk14:2.0.9'
+    implementation 'org.slf4j:slf4j-jdk14:2.0.10'
     implementation "com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:0.64.+"
     implementation "com.vladsch.flexmark:flexmark-ext-tables:0.64.+"
     implementation "com.vladsch.flexmark:flexmark-ext-attributes:0.64.+"
@@ -32,9 +32,9 @@ dependencies {
 
     exported "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2"
     exported "com.evanlennick:retry4j:0.15.0"
-    exported 'com.fasterxml.jackson.core:jackson-core:2.15.3'
-    exported 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
-    exported 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.3'
+    exported 'com.fasterxml.jackson.core:jackson-core:2.16.1'
+    exported 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
+    exported 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.16.1'
     exported 'com.jgoodies:jgoodies-common:1.8.+'
     exported "com.jgoodies:jgoodies-looks:2.7.0"
     exported "com.squareup.okhttp3:okhttp:3.14.9"
@@ -44,11 +44,11 @@ dependencies {
     exported "de.jensd:fontawesomefx-materialicons:2.2.0-9.1.2"
 
     exported 'net.java.balloontip:balloontip:1.2.4.1'
-    exported "org.apache.commons:commons-lang3:3.13.0"
+    exported "org.apache.commons:commons-lang3:3.14.0"
 
     exported "org.apache.httpcomponents:httpclient:4.5.14"
     exported "org.apache.httpcomponents:httpmime:4.5.14"
-    exported "org.apache.poi:poi:5.2.4"
+    exported "org.apache.poi:poi:5.2.5"
     exported "org.controlsfx:controlsfx:11.2.0"
     exported "org.nanohttpd:nanohttpd:2.3.1"
     exported('org.jdom:jdom') {
