@@ -6,7 +6,7 @@ val kotlinVersion: String by project
 
 plugins {
     id("application")
-    id("org.jetbrains.kotlin.jvm") version "1.9.10"
+    id("org.jetbrains.kotlin.jvm") version "1.9.22"
     id("maven-publish")
     id("org.jetbrains.kotlin.plugin.serialization") version "1.7.21"
 }
@@ -31,8 +31,8 @@ repositories {
 }
 
 dependencies {
-    implementation("biz.ganttproject:biz.ganttproject.core:23.+")
-    implementation("biz.ganttproject:ganttproject:23.+")
+    implementation("biz.ganttproject:biz.ganttproject.core:24.+")
+    implementation("biz.ganttproject:ganttproject:24.+")
     implementation("ch.qos.logback:logback-classic:1.2.11")
     implementation("com.google.guava:guava:31.1-jre")
 
