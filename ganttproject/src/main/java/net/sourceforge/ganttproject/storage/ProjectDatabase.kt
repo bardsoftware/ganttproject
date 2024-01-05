@@ -43,6 +43,14 @@ interface ProjectDatabaseTxn {
 
   @Throws(ProjectDatabaseException::class)
   fun redo()
+  fun rollback()
+}
+
+class DummyTxn: ProjectDatabaseTxn {
+  override fun commit() {}
+  override fun undo() {}
+  override fun redo() {}
+  override fun rollback() {}
 }
 
 typealias ColumnConsumer = Pair<SimpleSelect, (Int, Any?)->Unit>

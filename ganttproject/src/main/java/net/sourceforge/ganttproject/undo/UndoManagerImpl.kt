@@ -16,160 +16,125 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.undo;
+package net.sourceforge.ganttproject.undo
 
-import biz.ganttproject.storage.AutoSaveManager;
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.document.DocumentManager;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.language.GanttLanguage.Event;
-import net.sourceforge.ganttproject.parser.ParserFactory;
-import net.sourceforge.ganttproject.storage.ProjectDatabase;
-import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
-import javax.swing.event.UndoableEditListener;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoManager;
-import javax.swing.undo.UndoableEditSupport;
-import java.io.IOException;
+import biz.ganttproject.storage.AutoSaveManager
+import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.document.DocumentManager
+import net.sourceforge.ganttproject.language.GanttLanguage
+import net.sourceforge.ganttproject.parser.ParserFactory
+import net.sourceforge.ganttproject.storage.ProjectDatabase
+import java.io.IOException
+import javax.swing.UIManager
+import javax.swing.undo.CannotRedoException
+import javax.swing.undo.CannotUndoException
+import javax.swing.undo.UndoManager
+import javax.swing.undo.UndoableEditSupport
 
 /**
  * UndoManager implementation, it manages the undoable edits in GanttProject
  *
  * @author bard
  */
-public class UndoManagerImpl implements GPUndoManager {
-  private final ProjectDatabase myProjectDatabase;
-  private final UndoableEditSupport myUndoEventDispatcher;
+open class UndoManagerImpl(
+  val project: IGanttProject?,
+  private val myParserFactory: ParserFactory?,
+  val documentManager: DocumentManager,
+  val projectDatabase: ProjectDatabase
+) : GPUndoManager {
+  private val myUndoEventDispatcher = UndoableEditSupport()
+  private val mySwingUndoManager: UndoManager = UndoManager()
+  private var swingEditImpl: UndoableEditImpl? = null
 
-  private final UndoManager mySwingUndoManager;
-
-  private final DocumentManager myDocumentManager;
-
-  private final ParserFactory myParserFactory;
-
-  private final IGanttProject myProject;
-
-  private UndoableEditImpl swingEditImpl;
-
-  public UndoManagerImpl(@NotNull IGanttProject project,
-                         @NotNull ParserFactory parserFactory,
-                         @NotNull DocumentManager documentManager,
-                         @NotNull ProjectDatabase projectDatabase) {
-    myProject = project;
-    myParserFactory = parserFactory;
-    myDocumentManager = documentManager;
-    mySwingUndoManager = new UndoManager();
-    myUndoEventDispatcher = new UndoableEditSupport();
-    myProjectDatabase = projectDatabase;
-    GanttLanguage.getInstance().addListener(new GanttLanguage.Listener() {
-      public void languageChanged(Event event) {
-        UIManager.getDefaults().put("AbstractUndoableEdit.undoText", GanttLanguage.getInstance().getText("undo"));
-        UIManager.getDefaults().put("AbstractUndoableEdit.redoText", GanttLanguage.getInstance().getText("redo"));
-      }
-    });
+  init {
+    GanttLanguage.getInstance().addListener {
+      UIManager.getDefaults()["AbstractUndoableEdit.undoText"] = GanttLanguage.getInstance().getText("undo")
+      UIManager.getDefaults()["AbstractUndoableEdit.redoText"] = GanttLanguage.getInstance().getText("redo")
+    }
   }
 
-  @Override
-  public void undoableEdit(String localizedName, Runnable editImpl) {
-
+  override fun undoableEdit(localizedName: String, editImpl: Runnable) {
     try {
-      swingEditImpl = new UndoableEditImpl(localizedName, editImpl, this);
-      mySwingUndoManager.addEdit(swingEditImpl);
-      fireUndoableEditHappened(swingEditImpl);
-    } catch (IOException e) {
+      swingEditImpl = UndoableEditImpl(UndoableEditImpl.Args(
+        displayName = localizedName,
+        newAutosave = { autoSaveManager.newAutoSaveDocument() },
+        restore = { project?.restore(it) },
+        projectDatabase = projectDatabase
+      ), editImpl)
+      mySwingUndoManager.addEdit(swingEditImpl)
+      fireUndoableEditHappened(swingEditImpl!!)
+    } catch (e: IOException) {
       if (!GPLogger.log(e)) {
-        e.printStackTrace(System.err);
+        e.printStackTrace(System.err)
       }
     }
   }
 
-  private void fireUndoableEditHappened(UndoableEditImpl swingEditImpl) {
-    myUndoEventDispatcher.postEdit(swingEditImpl);
+  private fun fireUndoableEditHappened(swingEditImpl: UndoableEditImpl) {
+    myUndoEventDispatcher.postEdit(swingEditImpl)
   }
 
-  private void fireUndoOrRedoHappened() {
-    for (UndoableEditListener listener : myUndoEventDispatcher.getUndoableEditListeners()) {
-      ((GPUndoListener) listener).undoOrRedoHappened();
+  private fun fireUndoOrRedoHappened() {
+    for (listener in myUndoEventDispatcher.undoableEditListeners) {
+      (listener as GPUndoListener).undoOrRedoHappened()
     }
   }
 
-  private void fireUndoReset() {
-    for (UndoableEditListener listener : myUndoEventDispatcher.getUndoableEditListeners()) {
-      ((GPUndoListener) listener).undoReset();
+  private fun fireUndoReset() {
+    for (listener in myUndoEventDispatcher.undoableEditListeners) {
+      (listener as GPUndoListener).undoReset()
     }
   }
 
 
-  ProjectDatabase getProjectDatabase() { return myProjectDatabase; }
-  DocumentManager getDocumentManager() {
-    return myDocumentManager;
-  }
-  AutoSaveManager getAutoSaveManager() {
-    return new AutoSaveManager(myDocumentManager);
+  val autoSaveManager: AutoSaveManager
+    get() = AutoSaveManager(documentManager)
+
+  protected open val parserFactory: ParserFactory?
+    get() = myParserFactory
+
+  override fun canUndo(): Boolean {
+    return mySwingUndoManager.canUndo()
   }
 
-  protected ParserFactory getParserFactory() {
-    return myParserFactory;
+  override fun canRedo(): Boolean {
+    return mySwingUndoManager.canRedo()
   }
 
-  IGanttProject getProject() {
-    return myProject;
+  @Throws(CannotUndoException::class)
+  override fun undo() {
+    mySwingUndoManager.undo()
+    fireUndoOrRedoHappened()
   }
 
-  @Override
-  public boolean canUndo() {
-    return mySwingUndoManager.canUndo();
+  @Throws(CannotRedoException::class)
+  override fun redo() {
+    mySwingUndoManager.redo()
+    fireUndoOrRedoHappened()
   }
 
-  @Override
-  public boolean canRedo() {
-    return mySwingUndoManager.canRedo();
+  override fun getUndoPresentationName(): String {
+    return mySwingUndoManager.undoPresentationName
   }
 
-  @Override
-  public void undo() throws CannotUndoException {
-    mySwingUndoManager.undo();
-    fireUndoOrRedoHappened();
+  override fun getRedoPresentationName(): String {
+    return mySwingUndoManager.redoPresentationName
   }
 
-  @Override
-  public void redo() throws CannotRedoException {
-    mySwingUndoManager.redo();
-    fireUndoOrRedoHappened();
+  override fun addUndoableEditListener(listener: GPUndoListener) {
+    myUndoEventDispatcher.addUndoableEditListener(listener)
   }
 
-  @Override
-  public String getUndoPresentationName() {
-    return mySwingUndoManager.getUndoPresentationName();
+  override fun removeUndoableEditListener(listener: GPUndoListener) {
+    myUndoEventDispatcher.removeUndoableEditListener(listener)
   }
 
-  @Override
-  public String getRedoPresentationName() {
-    return mySwingUndoManager.getRedoPresentationName();
-  }
-
-  @Override
-  public void addUndoableEditListener(GPUndoListener listener) {
-    myUndoEventDispatcher.addUndoableEditListener(listener);
-  }
-
-  @Override
-  public void removeUndoableEditListener(GPUndoListener listener) {
-    myUndoEventDispatcher.removeUndoableEditListener(listener);
-  }
-
-  @Override
-  public void die() {
+  override fun die() {
     if (swingEditImpl != null) {
-      swingEditImpl.die();
+      swingEditImpl!!.die()
     }
-    if (mySwingUndoManager != null) {
-      mySwingUndoManager.discardAllEdits();
-    }
-    fireUndoReset();
+    mySwingUndoManager.discardAllEdits()
+    fireUndoReset()
   }
 }

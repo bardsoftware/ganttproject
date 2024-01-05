@@ -1,6 +1,6 @@
 /*
 GanttProject is an opensource project management tool.
-Copyright (C) 2005-2011 GanttProject team
+Copyright (C) 2005-2024 GanttProject team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,108 +16,115 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.undo;
+package net.sourceforge.ganttproject.undo
 
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.storage.ProjectDatabaseException;
-import net.sourceforge.ganttproject.storage.ProjectDatabaseTxn;
-
-import javax.swing.undo.AbstractUndoableEdit;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-import java.io.IOException;
+import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.storage.DummyTxn
+import net.sourceforge.ganttproject.storage.ProjectDatabase
+import net.sourceforge.ganttproject.storage.ProjectDatabaseException
+import net.sourceforge.ganttproject.storage.ProjectDatabaseTxn
+import java.io.IOException
+import javax.swing.undo.AbstractUndoableEdit
+import javax.swing.undo.CannotRedoException
+import javax.swing.undo.CannotUndoException
 
 /**
  * @author bard
  */
-class UndoableEditImpl extends AbstractUndoableEdit {
-  private final String myPresentationName;
+class UndoableEditImpl(
+  private val args: Args,
+  editImpl: Runnable
+) : AbstractUndoableEdit() {
+  data class Args(
+    val displayName: String,
+    val newAutosave: ()->Document,
+    val restore: (Document)->Unit,
+    val projectDatabase: ProjectDatabase
+  )
+  private val myDocumentBefore: Document
 
-  private final Document myDocumentBefore;
+  private val myDocumentAfter: Document
 
-  private final Document myDocumentAfter;
+  private val projectDatabaseTxn: ProjectDatabaseTxn
 
-  private final UndoManagerImpl myManager;
-
-  private ProjectDatabaseTxn projectDatabaseTxn = null;
-
-  UndoableEditImpl(String localizedName, Runnable editImpl, UndoManagerImpl manager) throws IOException {
-    myManager = manager;
-    myPresentationName = localizedName;
-    myDocumentBefore = saveFile();
-    try {
-      projectDatabaseTxn = myManager.getProjectDatabase().startTransaction(localizedName);
-      editImpl.run();
-      projectDatabaseTxn.commit();
-    } catch (ProjectDatabaseException ex) {
-      GPLogger.log(ex);
+  init {
+    myDocumentBefore = saveFile()
+    projectDatabaseTxn = try {
+      args.projectDatabase.startTransaction(args.displayName)
+    } catch (ex: ProjectDatabaseException) {
+      DummyTxn()
     }
-    myDocumentAfter = saveFile();
-  }
-
-  private Document saveFile() throws IOException {
-    Document doc = myManager.getAutoSaveManager().newAutoSaveDocument();
-    doc.write();
-    return doc;
-  }
-
-  @Override
-  public boolean canUndo() {
-    return myDocumentBefore.canRead();
-  }
-
-  @Override
-  public boolean canRedo() {
-    return myDocumentAfter.canRead();
-  }
-
-  @Override
-  public void redo() throws CannotRedoException {
     try {
-      restoreDocument(myDocumentAfter);
-      if (projectDatabaseTxn != null) {
-        try {
-          projectDatabaseTxn.redo();
-        } catch (ProjectDatabaseException e) {
-          GPLogger.log(e);
-        }
+      editImpl.run()
+      projectDatabaseTxn.commit()
+    } catch (ex: Exception) {
+      GPLogger.log(ex)
+      //projectDatabaseTxn.rollback()
+    }
+    myDocumentAfter = saveFile()
+  }
+
+  @Throws(IOException::class)
+  private fun saveFile(): Document {
+    val doc = args.newAutosave()
+    doc.write()
+    return doc
+  }
+
+  override fun canUndo(): Boolean {
+    return myDocumentBefore.canRead()
+  }
+
+  override fun canRedo(): Boolean {
+    return myDocumentAfter.canRead()
+  }
+
+  @Throws(CannotRedoException::class)
+  override fun redo() {
+    try {
+      restoreDocument(myDocumentAfter)
+      try {
+        projectDatabaseTxn.redo()
+      } catch (e: ProjectDatabaseException) {
+        GPLogger.log(e)
       }
-    } catch (DocumentException | IOException e) {
-      undoRedoExceptionHandler(e);
+    } catch (e: Document.DocumentException) {
+      undoRedoExceptionHandler(e)
+    } catch (e: IOException) {
+      undoRedoExceptionHandler(e)
     }
   }
 
-  @Override
-  public void undo() throws CannotUndoException {
+  @Throws(CannotUndoException::class)
+  override fun undo() {
     try {
-      restoreDocument(myDocumentBefore);
-      if (projectDatabaseTxn != null) {
-        try {
-          projectDatabaseTxn.undo();
-        } catch (ProjectDatabaseException e) {
-          GPLogger.log(e);
-        }
+      restoreDocument(myDocumentBefore)
+      try {
+        projectDatabaseTxn.undo()
+      } catch (e: ProjectDatabaseException) {
+        GPLogger.log(e)
       }
-    } catch (DocumentException | IOException e) {
-      undoRedoExceptionHandler(e);
+    } catch (e: Document.DocumentException) {
+      undoRedoExceptionHandler(e)
+    } catch (e: IOException) {
+      undoRedoExceptionHandler(e)
     }
   }
 
-  private void restoreDocument(Document document) throws IOException, DocumentException {
-    myManager.getProject().restore(document);
+  @Throws(IOException::class, Document.DocumentException::class)
+  private fun restoreDocument(document: Document) {
+    args.restore(document)
   }
 
-  @Override
-  public String getPresentationName() {
-    return myPresentationName;
+  override fun getPresentationName(): String {
+    return args.displayName
   }
 
-  private void undoRedoExceptionHandler(Exception e) {
+  private fun undoRedoExceptionHandler(e: Exception) {
     if (!GPLogger.log(e)) {
-      e.printStackTrace(System.err);
+      e.printStackTrace(System.err)
     }
-    throw new CannotRedoException();
+    throw CannotRedoException()
   }
 }
