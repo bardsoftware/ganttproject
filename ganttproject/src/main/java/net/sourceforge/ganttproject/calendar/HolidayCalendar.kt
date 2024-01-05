@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.calendar
 
+import biz.ganttproject.app.calendarsDir
 import biz.ganttproject.core.calendar.GPCalendar
 import org.eclipse.core.runtime.Platform
 import java.io.File
@@ -33,7 +34,7 @@ private fun loadCalendarFiles(): List<File> {
   val extensions = Platform.getExtensionRegistry()
       ?.getConfigurationElementsFor("net.sourceforge.ganttproject.calendar")
       ?: return listOf()
-  return extensions.mapNotNull { calendarConfig ->
+  val builtinCalendars = extensions.mapNotNull { calendarConfig ->
     val path = calendarConfig.getAttribute("path")
     val pattern = calendarConfig.getAttribute("pattern")
     val pluginBundle = Platform.getBundle(calendarConfig.declaringExtension.namespaceIdentifier)
@@ -42,6 +43,12 @@ private fun loadCalendarFiles(): List<File> {
       File(it).listFiles { f: File -> f.name.matches(pattern.toRegex()) }
     } ?: arrayOf()
   }.flatMap { it.asIterable() }
+
+  val customCalendars = calendarsDir?.let {
+    it.listFiles {f: File -> f.extension == "calendar"}
+  }?.toList() ?: emptyList()
+
+  return builtinCalendars + customCalendars
 }
 
 /**
