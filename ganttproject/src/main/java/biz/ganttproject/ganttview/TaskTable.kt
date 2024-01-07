@@ -74,6 +74,8 @@ import java.awt.Component
 import java.math.BigDecimal
 import java.util.*
 import java.util.List.copyOf
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import javax.swing.SwingUtilities
 import javax.swing.event.UndoableEditEvent
@@ -848,9 +850,23 @@ class TaskTable(
     }
   }
 
+  private val timer = Executors.newSingleThreadScheduledExecutor()
   fun initUserKeyboardInput() {
-    treeTable.requestFocus()
-    this.requestSwingFocus()
+    // It appears that when we activate the task table component (sitting inside JFXPanel) its Scene/Window
+    // receives "activated" event and reset the focus owner to some button, and it happens after we "request focus"
+    // to the table. This hack delays focus request, and it seems to work.
+    // Reproducing:
+    // 1. Create two tasks
+    // 2. Create a new resource (resource tab becomes visible)
+    // 3. Switch back to the task tab
+    // Expected: task properties action is enabled, the last created task is selected and Alt+enter opens its
+    // properties.
+    timer.schedule({
+      Platform.runLater {
+        treeTable.requestFocus()
+      }
+      this.requestSwingFocus()
+    }, 200, TimeUnit.MILLISECONDS)
   }
 
   private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->
