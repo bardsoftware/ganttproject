@@ -28,7 +28,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.8
+                  java-version: 17.0.9
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
@@ -72,7 +72,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.8
+                  java-version: 17.0.9
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
@@ -143,7 +143,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.8
+                  java-version: 17.0.9
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
