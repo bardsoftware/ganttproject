@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?><project name="" company="" webLink="" view-date="2022-11-06" view-index="0" gantt-divider-location="494" resource-divider-location="322" version="3.3.3292" locale="en">
+<?xml version="1.0" encoding="UTF-8"?><project name="" company="" webLink="" view-date="2024-01-07" view-index="0" gantt-divider-location="481" resource-divider-location="322" version="3.3.3300" locale="en">
     <description/>
     <view zooming-state="default:6" id="gantt-chart">
-        <field id="tpd3" name="Name" width="216" order="0"/>
-        <field id="tpd4" name="Begin date" width="81" order="1"/>
-        <field id="tpd5" name="End date" width="81" order="2"/>
-        <field id="tpd12" name="Cost" width="44" order="3"/>
+        <field id="tpd3" name="Name" width="209" order="0"/>
+        <field id="tpd4" name="Begin date" width="78" order="1"/>
+        <field id="tpd5" name="End date" width="78" order="2"/>
+        <field id="tpd12" name="Cost" width="43" order="3"/>
         <field id="tpc0" name="Is done" width="57" order="4"/>
         <option id="filter.completedTasks" value="false"/>
         <option id="filter.dueTodayTasks" value="false"/>
@@ -45,83 +45,83 @@
                 <simple-select select="completion=100"/>
             </taskproperty>
         </taskproperties>
-        <task id="0" uid="11366eb6d1e34238866b347d1f40062d" name="Architectural design" color="#99ccff" meeting="false" start="2022-12-07" duration="25" complete="85" expand="true" cost-manual-value="0" cost-calculated="false">
+        <task id="0" uid="11366eb6d1e34238866b347d1f40062d" name="Architectural design" color="#99ccff" meeting="false" start="2024-01-15" duration="25" complete="85" expand="true" cost-manual-value="0" cost-calculated="false">
             <customproperty taskproperty-id="tpc0" value="false"/>
-            <task id="9" uid="5fd8ed5da21241e99a89179e6edb4fe1" name="Create draft of architecture" color="#99ccff" meeting="false" start="2022-12-07" duration="10" complete="100" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="9" uid="5fd8ed5da21241e99a89179e6edb4fe1" name="Create draft of architecture" color="#99ccff" meeting="false" start="2024-01-15" duration="10" complete="100" expand="true" cost-manual-value="0" cost-calculated="false">
                 <depend id="10" type="2" difference="0" hardness="Strong"/>
                 <depend id="12" type="2" difference="0" hardness="Strong"/>
                 <customproperty taskproperty-id="tpc0" value="true"/>
             </task>
-            <task id="10" uid="73abfcd7ce684c55a742d8fca3514c92" name="Prepare construction documents" color="#ff0066" meeting="false" start="2022-12-21" duration="15" complete="75" thirdDate="2022-02-24" thirdDate-constraint="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="10" uid="73abfcd7ce684c55a742d8fca3514c92" name="Prepare construction documents" color="#ff0066" meeting="false" start="2024-01-29" duration="15" complete="75" thirdDate="2022-02-24" thirdDate-constraint="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <depend id="17" type="2" difference="0" hardness="Strong"/>
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
-            <task id="17" uid="b4f64881ec3e4ef482a6f77b18886bea" name="Agreement on architectural plan " color="#000000" meeting="true" start="2023-01-11" duration="0" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="17" uid="b4f64881ec3e4ef482a6f77b18886bea" name="Agreement on architectural plan " color="#000000" meeting="true" start="2024-02-19" duration="0" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <depend id="1" type="2" difference="0" hardness="Strong"/>
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
         </task>
-        <task id="11" uid="31e801fd4a7c4a15865a6cbb69ddc48f" name="Interior design" color="#99ccff" meeting="false" start="2022-12-21" duration="10" complete="33" expand="true" cost-manual-value="0" cost-calculated="false">
+        <task id="11" uid="31e801fd4a7c4a15865a6cbb69ddc48f" name="Interior design" color="#99ccff" meeting="false" start="2024-01-29" duration="10" complete="33" expand="true" cost-manual-value="0" cost-calculated="false">
             <depend id="6" type="2" difference="0" hardness="Strong"/>
             <customproperty taskproperty-id="tpc0" value="false"/>
-            <task id="12" uid="cea0fd324a3f45eabb60758bde36e3d7" name="Pre-design" color="#99ccff" meeting="false" start="2022-12-21" duration="5" complete="100" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="12" uid="cea0fd324a3f45eabb60758bde36e3d7" name="Pre-design" color="#99ccff" meeting="false" start="2024-01-29" duration="5" complete="100" expand="true" cost-manual-value="0" cost-calculated="false">
                 <depend id="13" type="2" difference="0" hardness="Strong"/>
                 <depend id="14" type="2" difference="0" hardness="Strong"/>
                 <customproperty taskproperty-id="tpc0" value="true"/>
             </task>
-            <task id="13" uid="2cfba44e55b54f0988e5be3b81bd4640" name="Furniture selection" color="#99ccff" meeting="false" start="2022-12-28" duration="5" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="13" uid="2cfba44e55b54f0988e5be3b81bd4640" name="Furniture selection" color="#99ccff" meeting="false" start="2024-02-05" duration="5" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
-            <task id="14" uid="9b2204155e774ec5bef1c75a37a0d85e" name="Equipment planning" color="#99ccff" meeting="false" start="2022-12-28" duration="5" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="14" uid="9b2204155e774ec5bef1c75a37a0d85e" name="Equipment planning" color="#99ccff" meeting="false" start="2024-02-05" duration="5" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <notes><![CDATA[
                     Embedded devices, kitchen, washing machine, dryer etc
                 ]]></notes>
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
         </task>
-        <task id="7" uid="daf2bf8e7e384aa7ad0af36b53be3a24" name="Construction phase" color="#99ccff" meeting="false" start="2023-01-11" duration="75" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+        <task id="7" uid="daf2bf8e7e384aa7ad0af36b53be3a24" name="Construction phase" color="#99ccff" meeting="false" start="2024-02-19" duration="75" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
             <depend id="20" type="2" difference="0" hardness="Strong"/>
             <customproperty taskproperty-id="tpc0" value="false"/>
-            <task id="1" uid="eb8213177e044b4889e7f7936605369b" name="Foundation building" color="#99ccff" meeting="false" start="2023-01-11" duration="15" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="1" uid="eb8213177e044b4889e7f7936605369b" name="Foundation building" color="#99ccff" meeting="false" start="2024-02-19" duration="15" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <depend id="2" type="2" difference="0" hardness="Strong"/>
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
-            <task id="2" uid="5c1d833760da4b62b7e38aeed0a8bc31" name="Ground Floor building" color="#99ccff" meeting="false" start="2023-02-01" duration="20" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="2" uid="5c1d833760da4b62b7e38aeed0a8bc31" name="Ground Floor building" color="#99ccff" meeting="false" start="2024-03-11" duration="20" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <depend id="4" type="2" difference="0" hardness="Strong"/>
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
-            <task id="4" uid="3cdccc3209c44904b949d953b5f4f612" name="First Floor building" color="#99ccff" meeting="false" start="2023-03-01" duration="20" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="4" uid="3cdccc3209c44904b949d953b5f4f612" name="First Floor building" color="#99ccff" meeting="false" start="2024-04-08" duration="20" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <depend id="5" type="2" difference="0" hardness="Strong"/>
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
-            <task id="5" uid="74e003b6937246a3846270c81cb69d5d" name="Roof" color="#99ccff" meeting="false" start="2023-03-29" duration="10" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="5" uid="74e003b6937246a3846270c81cb69d5d" name="Roof" color="#99ccff" meeting="false" start="2024-05-06" duration="10" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <depend id="18" type="2" difference="0" hardness="Strong"/>
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
-            <task id="16" uid="ba7342cf332b4f86865ce3fb90dd3671" name="Connect to communications" color="#99ccff" meeting="false" start="2023-04-12" duration="10" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="16" uid="ba7342cf332b4f86865ce3fb90dd3671" name="Connect to communications" color="#99ccff" meeting="false" start="2024-05-20" duration="10" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
-            <task id="18" uid="f256375e17da470eb0e444b2997efdb0" name="Construction completed " color="#000000" meeting="true" start="2023-04-12" duration="0" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="18" uid="f256375e17da470eb0e444b2997efdb0" name="Construction completed " color="#000000" meeting="true" start="2024-05-20" duration="0" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <depend id="6" type="2" difference="0" hardness="Strong"/>
                 <depend id="16" type="2" difference="0" hardness="Strong"/>
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
         </task>
-        <task id="8" uid="35218b8e0a38431dbd0e95a47783c674" name="Decoration phase" color="#99ccff" meeting="false" start="2023-04-12" duration="10" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+        <task id="8" uid="35218b8e0a38431dbd0e95a47783c674" name="Decoration phase" color="#99ccff" meeting="false" start="2024-05-20" duration="10" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
             <customproperty taskproperty-id="tpc0" value="false"/>
-            <task id="6" uid="63997695198e471285808b788ac7656d" name="Walls" color="#99ccff" meeting="false" start="2023-04-12" duration="5" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="6" uid="63997695198e471285808b788ac7656d" name="Walls" color="#99ccff" meeting="false" start="2024-05-20" duration="5" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <depend id="15" type="2" difference="0" hardness="Strong"/>
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
-            <task id="15" uid="239f6e24a17d40a3a74f5a9d6ea85165" name="Furniture" color="#99ccff" meeting="false" start="2023-04-19" duration="3" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="15" uid="239f6e24a17d40a3a74f5a9d6ea85165" name="Furniture" color="#99ccff" meeting="false" start="2024-05-27" duration="3" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <depend id="20" type="2" difference="0" hardness="Strong"/>
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
-            <task id="20" uid="48fd540f238144cc9782579742c3b575" name="Bring your family here" color="#000000" meeting="true" start="2023-04-26" duration="0" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
+            <task id="20" uid="48fd540f238144cc9782579742c3b575" name="Bring your family here" color="#000000" meeting="true" start="2024-06-03" duration="0" complete="0" expand="true" cost-manual-value="0" cost-calculated="false">
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
         </task>
-        <task id="49" uid="ff7c311f5ea84a2990770c2ebf5a8d9e" name="GanttProject 3.3 Beta" color="#ff3333" meeting="true" start="2022-12-07" duration="0" complete="0" thirdDate="2018-02-06" thirdDate-constraint="0" expand="true" cost-manual-value="0" cost-calculated="false">
+        <task id="49" uid="ff7c311f5ea84a2990770c2ebf5a8d9e" name="GanttProject 3.3" color="#ff3333" meeting="true" start="2024-01-15" duration="0" complete="0" thirdDate="2018-02-06" thirdDate-constraint="0" expand="true" cost-manual-value="0" cost-calculated="false">
             <depend id="0" type="2" difference="0" hardness="Rubber"/>
             <customproperty taskproperty-id="tpc0" value="false"/>
         </task>
