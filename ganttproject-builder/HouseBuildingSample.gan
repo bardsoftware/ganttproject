@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?><project name="" company="" webLink="" view-date="2024-01-07" view-index="0" gantt-divider-location="481" resource-divider-location="322" version="3.3.3300" locale="en">
+<?xml version="1.0" encoding="UTF-8"?><project name="" company="" webLink="" view-date="2024-01-07" view-index="0" gantt-divider-location="467" resource-divider-location="322" version="3.0.2906" locale="en">
     <description/>
     <view zooming-state="default:6" id="gantt-chart">
-        <field id="tpd3" name="Name" width="209" order="0"/>
-        <field id="tpd4" name="Begin date" width="78" order="1"/>
-        <field id="tpd5" name="End date" width="78" order="2"/>
-        <field id="tpd12" name="Cost" width="43" order="3"/>
+        <field id="tpd3" name="Name" width="202" order="0"/>
+        <field id="tpd4" name="Begin date" width="75" order="1"/>
+        <field id="tpd5" name="End date" width="75" order="2"/>
+        <field id="tpd12" name="Cost" width="42" order="3"/>
         <field id="tpc0" name="Is done" width="57" order="4"/>
         <option id="filter.completedTasks" value="false"/>
         <option id="filter.dueTodayTasks" value="false"/>
@@ -121,7 +121,7 @@
                 <customproperty taskproperty-id="tpc0" value="false"/>
             </task>
         </task>
-        <task id="49" uid="ff7c311f5ea84a2990770c2ebf5a8d9e" name="GanttProject 3.3" color="#ff3333" meeting="true" start="2024-01-15" duration="0" complete="0" thirdDate="2018-02-06" thirdDate-constraint="0" expand="true" cost-manual-value="0" cost-calculated="false">
+        <task id="49" uid="ff7c311f5ea84a2990770c2ebf5a8d9e" name="GanttProject 3.3" color="#ff3333" meeting="true" start="2024-01-15" duration="0" complete="0" thirdDate="2018-02-06" thirdDate-constraint="0" expand="true" cost-manual-value="0.0" cost-calculated="false">
             <depend id="0" type="2" difference="0" hardness="Rubber"/>
             <customproperty taskproperty-id="tpc0" value="false"/>
         </task>
