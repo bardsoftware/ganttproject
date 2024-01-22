@@ -92,13 +92,14 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
             colloboqueServer.init(it, PROJECT_XML_TEMPLATE)
           }
 
+          // TODO: find relevant xml config
           newFixedLengthResponse(PROJECT_XML_TEMPLATE.toBase64()).also { response ->
             response.addHeader("ETag", "-1")
             response.addHeader("Digest", CRC32().let { hash ->
               hash.update(PROJECT_XML_TEMPLATE.toByteArray())
               hash.value.toString()
             })
-            response.addHeader("BaseTxnId", baseTxnId)
+            response.addHeader("BaseTxnId", "0")
           }
         } ?: newFixedLengthResponse(Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "projectRefid is missing")
       }
@@ -194,7 +195,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
 
 private val STARTUP_LOG = GPLogger.create("Startup")
 private val LOG = GPLogger.create("ColloboqueWebServer")
-private val PROJECT_XML_TEMPLATE = """
+val PROJECT_XML_TEMPLATE = """
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">
   <tasks empty-milestones="true">

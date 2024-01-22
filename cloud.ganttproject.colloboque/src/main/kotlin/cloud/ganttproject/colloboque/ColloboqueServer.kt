@@ -23,10 +23,15 @@ import biz.ganttproject.core.io.parseXmlProject
 import biz.ganttproject.core.io.walkTasksDepthFirst
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView
+import cloud.ganttproject.colloboque.db.project_model_metadata.tables.references.TRANSACTIONLOG
+import cloud.ganttproject.colloboque.db.tables.references.TRANSACTIONLOG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.parser.TaskLoader
@@ -35,6 +40,7 @@ import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.conf.RenderNameCase
 import org.jooq.impl.DSL
+import org.jooq.impl.DSL.field
 import java.sql.Connection
 import java.text.DateFormat
 import java.time.LocalDateTime
@@ -117,7 +123,11 @@ class ColloboqueServer(
    * Performs transaction commit if `baseTxnId` corresponds to the value hold by the server.
    * Returns new baseTxnId on success.
    */
-  private fun applyXlog(projectRefid: ProjectRefid, baseTxnId: String, transaction: XlogRecord): String? {
+  private fun applyXlog(
+    projectRefid: ProjectRefid,
+    baseTxnId: String,
+    transaction: XlogRecord
+  ): String? {
     if (transaction.colloboqueOperations.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
     val expectedBaseTxnId = getBaseTxnId(projectRefid)
     if (expectedBaseTxnId != baseTxnId) throw ColloboqueServerException("Invalid transaction id $baseTxnId, expected $expectedBaseTxnId")
@@ -128,8 +138,9 @@ class ColloboqueServer(
           .transactionResult { config ->
             val context = config.dsl()
             transaction.colloboqueOperations.forEach { context.execute(generateSqlStatement(context, it)) }
-            generateNextTxnId(projectRefid, baseTxnId, transaction)
-            // TODO: update transaction id in the database
+            val txnId = generateNextTxnId(projectRefid, baseTxnId, transaction)
+            context.execute("INSERT INTO TransactionLog VALUES (?, ?)", txnId, Json.encodeToString(transaction))
+            txnId
           }.also { refidToBaseTxnId[projectRefid] = it }
       }
     } catch (e: Exception) {
@@ -139,6 +150,26 @@ class ColloboqueServer(
 
 
   fun getBaseTxnId(projectRefid: ProjectRefid) = refidToBaseTxnId[projectRefid]
+
+  fun getProjectRecords(projectRefid: ProjectRefid): List<Pair<BaseTxnId, XlogRecord>> {
+    val baseTxnId = getBaseTxnId(projectRefid)
+    val project = PROJECT_XML_TEMPLATE
+    val transactions = connectionFactory(projectRefid).use { connection ->
+      return@use DSL
+        .using(connection, SQLDialect.POSTGRES)
+        .transactionResult { config ->
+          val context = config.dsl()
+          context.setSchema(projectRefid).execute()
+          context.select(TRANSACTIONLOG.UID, field("TransactionLog.log_text"))
+            .where("DATE(TransactionLog.uid) > DATE(?)", baseTxnId).fetch()
+        }
+    }
+    return transactions.map { record ->
+      val txnId = record[0] as String
+      val transaction = Json.decodeFromString<XlogRecord>(record[1] as String)
+      txnId to transaction
+    }
+  }
 
   // TODO
   private fun generateNextTxnId(projectRefid: ProjectRefid, oldTxnId: String, transaction: XlogRecord): String {

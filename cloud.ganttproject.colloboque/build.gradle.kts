@@ -1,6 +1,7 @@
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jooq.meta.jaxb.Property
 
 val kotlinVersion: String by project
 
@@ -9,6 +10,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.10"
     id("maven-publish")
     id("org.jetbrains.kotlin.plugin.serialization") version "1.7.21"
+    id("nu.studer.jooq") version "8.2.1"
 }
 
 application {
@@ -56,9 +58,41 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
     testImplementation("com.h2database:h2:2.1.214")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
+
+    jooqGenerator("org.jooq:jooq-meta-extensions:3.18.0")
+}
+
+jooq {
+    configurations {
+        create("main") {
+            jooqConfiguration.apply {
+                logging = org.jooq.meta.jaxb.Logging.WARN
+                generator.apply {
+                    name = "org.jooq.codegen.KotlinGenerator"
+                    database.apply {
+                        name = "org.jooq.meta.extensions.ddl.DDLDatabase"
+                        properties.apply {
+                            add(Property().apply {
+                                key = "scripts"
+                                value = "src/main/resources/database-schema.sql"
+                            })
+                            add(Property().apply {
+                                key = "defaultNameCase"
+                                value = "lower"
+                            })
+                        }
+                    }
+                    target.apply {
+                        packageName = "cloud.ganttproject.colloboque.db"
+                    }
+                }
+            }
+        }
+    }
 }
 
 tasks.getByName<KotlinCompile>("compileKotlin") {
+    dependsOn(":generateJooq")
     kotlinOptions {
         jvmTarget = "17"
     }
