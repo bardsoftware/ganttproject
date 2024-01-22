@@ -49,6 +49,22 @@ class ColloboqueServerException: Exception {
   constructor(message: String, cause: Throwable): super(message, cause)
 }
 
+val localeApi by lazy {
+  object : CalendarFactory() {
+    init {
+      setLocaleApi(object : LocaleApi {
+        override fun getLocale(): Locale {
+          return Locale.US
+        }
+
+        override fun getShortDateFormat(): DateFormat {
+          return DateFormat.getDateInstance(DateFormat.SHORT, Locale.US)
+        }
+      })
+    }
+  }
+}
+
 class ColloboqueServer(
   private val initProject: (projectRefid: String) -> Unit,
   private val connectionFactory: (projectRefid: String) -> Connection,
@@ -148,19 +164,6 @@ class ColloboqueServer(
 
 
 private fun loadProject(xmlInput: String, dsl: DSLContext) {
-  object : CalendarFactory() {
-    init {
-      setLocaleApi(object : LocaleApi {
-        override fun getLocale(): Locale {
-          return Locale.US
-        }
-
-        override fun getShortDateFormat(): DateFormat {
-          return DateFormat.getDateInstance(DateFormat.SHORT, Locale.US)
-        }
-      })
-    }
-  }
   val bufferProject = GanttProjectImpl()
   val taskLoader = TaskLoader(bufferProject.taskManager, SimpleTreeCollapseView())
   parseXmlProject(xmlInput).let { xmlProject ->

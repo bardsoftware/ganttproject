@@ -317,12 +317,15 @@ public class TaskManagerImpl implements TaskManager {
     return root;
   }
 
-  private void projectClosed() {
+  public void reset() {
     myDependencyGraph.clear();
     myTaskMap.clear();
     myMaxID.set(0);
     myDependencyCollection.clear();
     myRoot.myTaskHierarchyItem.clearChildren();
+  }
+  private void projectClosed() {
+    reset();
     // createRootTask();
   }
 

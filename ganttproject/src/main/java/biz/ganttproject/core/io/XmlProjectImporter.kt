@@ -250,6 +250,7 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
 
   private fun importTasks(xmlTask: XmlTasks.XmlTask, parent: Task? = null) {
     val builder = taskManager.newTaskBuilder()
+        .withUid(xmlTask.uid)
         .withId(xmlTask.id)
         .withName(xmlTask.name)
         .withStartDate(GanttCalendar.parseXMLDate(xmlTask.startDate).time)
