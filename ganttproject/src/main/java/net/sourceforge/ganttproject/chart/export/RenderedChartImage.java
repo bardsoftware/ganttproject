@@ -42,6 +42,8 @@ public class RenderedChartImage extends SimpleRenderedImage {
   private final ChartModel myChartModel;
   private final int headerYOffset;
 
+  private final int myChartWidth;
+
   public RenderedChartImage(ChartModel chartModel, BufferedImage taskImage, int chartWidth, int chartHeight,
       int headerYOffset) {
     myChartModel = chartModel;
@@ -50,6 +52,7 @@ public class RenderedChartImage extends SimpleRenderedImage {
     colorModel = myColorModel;
     minX = 0;
     minY = 0;
+    myChartWidth = chartWidth;
     width = chartWidth + taskImage.getWidth();
     height = chartHeight;
     tileWidth = width;
@@ -58,7 +61,7 @@ public class RenderedChartImage extends SimpleRenderedImage {
   }
 
   public BufferedImage getWholeImage() {
-    BufferedImage chartImage = getChart(0, 0, getWidth(), getHeight(), getWidth(), getHeight());
+    BufferedImage chartImage = getChart(0, 0, myChartWidth, getHeight(), myChartWidth, getHeight());
     BufferedImage result = new BufferedImage(chartImage.getWidth() + myTaskImage.getWidth(), getHeight(),
         BufferedImage.TYPE_INT_RGB);
     Graphics g = result.getGraphics();

@@ -18,61 +18,65 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
+import biz.ganttproject.app.InternationalizationKt;
+import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.document.Document;
-import net.sourceforge.ganttproject.gui.options.GPOptionChoicePanel;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.osgi.service.prefs.Preferences;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.*;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.text.MessageFormat;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public abstract class FileChooserPageBase implements WizardPage {
-  public static final int FILE_SOURCE = 0;
-  public static final int URL_SOURCE = 1;
   protected static final String PREF_SELECTED_FILE = "selected_file";
-  private static final String PREF_SELECTED_URL = "selected_url";
 
-  private JPanel myComponent;
   private TextFieldAndFileChooserComponent myChooser;
-  private JTextField myUrlField;
   private final OptionsPageBuilder myOptionsBuilder;
   private final JPanel mySecondaryOptionsComponent;
-  private int ourSelectedSource = FileChooserPageBase.FILE_SOURCE;
   private final WizardImpl myWizard;
-  private final boolean isUrlChooserEnabled;
   private final JLabel myFileLabel = new JLabel("");
-  private final JLabel myUrlLabel = new JLabel(" ");
+  private BooleanOption myOverwriteOption = new DefaultBooleanOption("overwrite");
+
   private final Preferences myPreferences;
 
-  protected FileChooserPageBase(WizardImpl wizard, Preferences prefs, boolean enableUrlChooser) {
+  protected FileChooserPageBase(WizardImpl wizard, Preferences prefs) {
     myPreferences = prefs;
-    isUrlChooserEnabled = enableUrlChooser;
     myWizard = wizard;
     myOptionsBuilder = new OptionsPageBuilder();
     mySecondaryOptionsComponent = new JPanel(new BorderLayout());
     mySecondaryOptionsComponent.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+    myOptionsBuilder.setI18N(new OptionsPageBuilder.I18N() {
+      @Override
+      protected boolean hasValue(String key) {
+        return (key.equals(getCanonicalOptionLabelKey(myOverwriteOption) + ".trailing")) ? true : super.hasValue(key);
+      }
+
+      @Override
+      protected String getValue(String key) {
+        if (key.equals(getCanonicalOptionLabelKey(myOverwriteOption) + ".trailing")) {
+          return InternationalizationKt.getRootLocalizer().formatText("document.overwrite");
+        }
+        return super.getValue(key);
+      }
+    });
+
   }
 
   protected abstract String getFileChooserTitle();
 
+  protected BooleanOption getOverwriteOption() {
+    return myOverwriteOption;
+  }
   /** @return a default export filename */
   protected String getDefaultFileName() {
     Document document = myWizard.getUIFacade().getGanttChart().getProject().getDocument();
@@ -86,93 +90,32 @@ public abstract class FileChooserPageBase implements WizardPage {
     return JFileChooser.FILES_AND_DIRECTORIES;
   }
 
+  protected void tryChosenFile(File file) {
+    IStatus status = FileChooserPageBase.this.onSelectedFileChange(file);
+    if (!status.isOK()) {
+      onSelectedUrlChange(null);
+    }
+    FileChooserPageBase.setStatus(myFileLabel, status);
+  }
+
   @Override
   public Component getComponent() {
-    myComponent = new JPanel(new BorderLayout());
+      JPanel myComponent = new JPanel(new BorderLayout());
     myChooser = new TextFieldAndFileChooserComponent(myWizard.getUIFacade(), getFileChooserTitle()) {
       @Override
       protected void onFileChosen(File file) {
-        IStatus status = FileChooserPageBase.this.onSelectedFileChange(file);
-        if (status.isOK()) {
-          setFile(file);
-        } else {
-          onSelectedUrlChange(null);
-        }
-        FileChooserPageBase.setStatus(myFileLabel, status);
+        tryChosenFile(file);
       }
     };
     myChooser.setFileSelectionMode(getFileChooserSelectionMode());
     JComponent contentPanel = new JPanel(new BorderLayout());
-    if (!isUrlChooserEnabled) {
-      Box fileBox = Box.createVerticalBox();
-      myChooser.setAlignmentX(Component.LEFT_ALIGNMENT);
-      fileBox.add(myChooser);
-      myFileLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-      fileBox.add(myFileLabel);
-      contentPanel.add(fileBox, BorderLayout.NORTH);
-    } else {
-      final UrlFetcher urlFetcher = new UrlFetcher() {
-        @Override
-        protected void onFetchComplete(File file) {
-          super.onFetchComplete(file);
-          onSelectedFileChange(file);
-        }
-      };
-      myUrlField = new JTextField();
-      Box urlBox = Box.createVerticalBox();
-      urlBox.add(myUrlField);
-      urlBox.add(myUrlLabel);
-      myUrlField.getDocument().addDocumentListener(new DocumentListener() {
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-          onChange();
-        }
-
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-          onChange();
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-          onChange();
-        }
-
-        private void onChange() {
-          urlFetcher.setUrl(getSelectedUrl());
-        }
-      });
-
-      Box fileBox = Box.createVerticalBox();
-      fileBox.add(myChooser);
-      fileBox.add(myFileLabel);
-
-      Action fileSourceAction = new AbstractAction(GanttLanguage.getInstance().getText("file")) {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-          ourSelectedSource = FileChooserPageBase.FILE_SOURCE;
-          myChooser.tryFile();
-        }
-      };
-      Action urlSourceAction = new AbstractAction(GanttLanguage.getInstance().getText("url")) {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-          ourSelectedSource = FileChooserPageBase.URL_SOURCE;
-          urlFetcher.setStatusLabel(myUrlLabel);
-          urlFetcher.setUrl(getSelectedUrl());
-          onSelectedUrlChange(getSelectedUrl());
-        }
-      };
-      Action[] importSourceActions = new Action[] { fileSourceAction, urlSourceAction };
-      JComponent[] importSourceComponents = new JComponent[] { fileBox, urlBox };
-      GPOptionChoicePanel sourceChoicePanel = new GPOptionChoicePanel();
-
-      Box sourceBox = Box.createVerticalBox();
-      sourceBox.add(sourceChoicePanel.getComponent(importSourceActions, importSourceComponents, ourSelectedSource));
-      sourceBox.add(Box.createVerticalStrut(5));
-      sourceBox.add(urlFetcher.getComponent());
-      contentPanel.add(sourceBox, BorderLayout.NORTH);
-    }
+    Box fileBox = Box.createVerticalBox();
+    myChooser.setAlignmentX(Component.LEFT_ALIGNMENT);
+    fileBox.add(myChooser);
+    myFileLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    fileBox.add(myFileLabel);
+    fileBox.add(myOptionsBuilder.createOptionComponent(new GPOptionGroup("exporter", myOverwriteOption), myOverwriteOption));
+    contentPanel.add(fileBox, BorderLayout.NORTH);
     contentPanel.add(mySecondaryOptionsComponent, BorderLayout.CENTER);
     myComponent.add(contentPanel, BorderLayout.NORTH);
     return myComponent;
@@ -188,28 +131,22 @@ public abstract class FileChooserPageBase implements WizardPage {
       File f = new File(oldPath, getDefaultFileName());
       myChooser.setFile(f);
     }
-    if (myUrlField != null && myPreferences.get(FileChooserPageBase.PREF_SELECTED_URL, null) != null) {
-      myUrlField.setText(myPreferences.get(FileChooserPageBase.PREF_SELECTED_URL, null));
-    }
   }
 
   @Override
   public void setActive(boolean b) {
     GPOptionGroup[] optionGroups = getOptionGroups();
     if (b == false) {
-      for (int i = 0; i < optionGroups.length; i++) {
-        optionGroups[i].commit();
-      }
+        for (GPOptionGroup optionGroup : optionGroups) {
+            optionGroup.commit();
+        }
       if (myChooser.getFile() != null) {
         myPreferences.put(FileChooserPageBase.PREF_SELECTED_FILE, myChooser.getFile().getAbsolutePath());
       }
-      if (myUrlField != null) {
-        myPreferences.put(FileChooserPageBase.PREF_SELECTED_URL, myUrlField.getText());
-      }
     } else {
-      for (int i = 0; i < optionGroups.length; i++) {
-        optionGroups[i].lock();
-      }
+        for (GPOptionGroup optionGroup : optionGroups) {
+            optionGroup.lock();
+        }
       if (mySecondaryOptionsComponent != null) {
         mySecondaryOptionsComponent.removeAll();
       }
@@ -234,33 +171,7 @@ public abstract class FileChooserPageBase implements WizardPage {
   }
 
   private URL getSelectedUrl() {
-    try {
-      switch (ourSelectedSource) {
-      case FILE_SOURCE:
-        return myChooser.getSelectedURL();
-      case URL_SOURCE:
-        return new URL(myUrlField.getText());
-      default:
-        assert false : "Should not be here";
-        return null;
-      }
-    } catch (MalformedURLException e) {
-      reportMalformedUrl(e);
-      return null;
-    }
-  }
-
-  private void reportMalformedUrl(Exception e) {
-  }
-
-  protected void setOptionsEnabled(boolean enabled) {
-    if (mySecondaryOptionsComponent != null) {
-      setEnabledTree(mySecondaryOptionsComponent, enabled);
-    }
-  }
-
-  private void setEnabledTree(JComponent root, boolean isEnabled) {
-    UIUtil.setEnabledTree(root, isEnabled);
+     return myChooser.getSelectedURL();
   }
 
   protected abstract FileFilter createFileFilter();
@@ -301,114 +212,6 @@ public abstract class FileChooserPageBase implements WizardPage {
       label.setText(status.getMessage());
     } else {
       UIUtil.setupErrorLabel(label, status.getMessage());
-    }
-  }
-
-  class UrlFetcher {
-    private final DefaultBooleanOption myProgressOption = new DefaultBooleanOption("");
-    private JLabel myStatusLabel;
-    private final Timer myTimer = new Timer();
-    private boolean isFetching;
-    private URL myUrl;
-    private File myFetchedFile = null;
-
-    public UrlFetcher() {
-    }
-
-    public void setStatusLabel(JLabel label) {
-      myStatusLabel = label;
-    }
-
-    Component getComponent() {
-      OptionsPageBuilder builder = new OptionsPageBuilder();
-      return builder.createWaitIndicatorComponent(myProgressOption);
-    }
-
-    void setUrl(final URL url) {
-      synchronized (myTimer) {
-        myUrl = url;
-        if (isFetching) {
-          return;
-        }
-        reschedule();
-      }
-    }
-
-    private void fetch() {
-      myProgressOption.lock();
-      myProgressOption.toggle();
-      myProgressOption.commit();
-      try {
-        URLConnection connection = myUrl.openConnection();
-        connection.connect();
-        File tempFile = File.createTempFile("gp-import-", "");
-        tempFile.deleteOnExit();
-        InputStream from = myUrl.openStream();
-        try {
-          OutputStream to = new FileOutputStream(tempFile);
-          try {
-            byte[] buf = new byte[1024];
-            while (true) {
-              int r = from.read(buf);
-              if (r == -1) {
-                break;
-              }
-              to.write(buf, 0, r);
-            }
-            myFetchedFile = tempFile;
-            setStatus(new Status(IStatus.OK, "foo", IStatus.OK, MessageFormat.format("Successfully fetched from {0}",
-                new Object[] { myUrl }), null));
-          } finally {
-            to.flush();
-            to.close();
-          }
-        } finally {
-          from.close();
-        }
-      } catch (IOException e) {
-        setStatus(new Status(IStatus.ERROR, "foo", IStatus.ERROR, MessageFormat.format("Failed to fetch from {0}\n{1}",
-            new Object[] { myUrl, e.getMessage() }), e));
-      } finally {
-        isFetching = false;
-        myProgressOption.lock();
-        myProgressOption.toggle();
-        myProgressOption.commit();
-        onFetchComplete(myFetchedFile);
-      }
-    }
-
-    private void setStatus(IStatus status) {
-      FileChooserPageBase.setStatus(myStatusLabel, status);
-    }
-
-    protected void onFetchComplete(File file) {
-      if (!onSelectedFileChange(file).isOK()) {
-        onSelectedUrlChange(null);
-      }
-    }
-
-    private void reschedule() {
-      if (myUrl == null || myUrl.getHost() == null || myUrl.getHost().length() == 0) {
-        onFetchComplete(null);
-        return;
-      }
-      myFetchedFile = null;
-      onFetchComplete(null);
-      isFetching = true;
-      myTimer.schedule(new TimerTask() {
-        final URL myUrlAtStart = myUrl;
-
-        @Override
-        public void run() {
-          synchronized (myTimer) {
-            if (!myUrlAtStart.equals(myUrl)) {
-              reschedule();
-            } else {
-              fetch();
-            }
-          }
-        }
-      }, 3000);
     }
   }
 }

@@ -20,14 +20,12 @@ package biz.ganttproject.storage.cloud.http
 
 import biz.ganttproject.storage.cloud.GPCloudOptions
 import biz.ganttproject.storage.cloud.HttpClientBuilder
+import biz.ganttproject.storage.cloud.httpScope
 import biz.ganttproject.storage.cloud.isNetworkAvailable
 import com.google.common.base.Strings
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import java.net.UnknownHostException
-import java.time.Instant
 import java.util.logging.Level
 
 /**
@@ -40,13 +38,13 @@ fun tryAccessToken(onStart: () -> Unit = {},
     onError("NO_ACCESS_TOKEN")
     return
   }
-  if (Instant.ofEpochSecond(GPCloudOptions.validity.value.toLongOrNull() ?: 0).isBefore(Instant.now())) {
+  if (!GPCloudOptions.isTokenValid) {
     onError("ACCESS_TOKEN_EXPIRED")
     return
   }
 
   onStart()
-  GlobalScope.launch(Dispatchers.IO) {
+  httpScope.launch {
     try {
       callAuthCheck(onSuccess, onError)
     } catch (ex: Exception) {

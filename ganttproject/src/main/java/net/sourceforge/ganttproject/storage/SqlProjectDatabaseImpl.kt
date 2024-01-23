@@ -253,9 +253,13 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   @Throws(ProjectDatabaseException::class)
   override fun startTransaction(title: String): ProjectDatabaseTxn {
-    if (currentTxn != null) throw ProjectDatabaseException("Previous transaction not committed: $currentTxn")
-    return TransactionImpl(this, title).also {
-      currentTxn = it
+    return if (isColloboqueOn()) {
+      if (currentTxn != null) throw ProjectDatabaseException("Previous transaction not committed: $currentTxn")
+      TransactionImpl(this, title).also {
+        currentTxn = it
+      }
+    } else {
+      DummyTxn()
     }
   }
 
@@ -366,6 +370,10 @@ class TransactionImpl(private val database: SqlProjectDatabaseImpl, private val 
     if (isCommitted) throw ProjectDatabaseException("Transaction is already committed")
     database.commitTransaction(statements)
     isCommitted = true
+  }
+
+  override fun rollback() {
+    database.commitTransaction(emptyList())
   }
 
   override fun undo() {
@@ -600,6 +608,7 @@ class SqlTaskUpdateBuilder(private val task: Task,
 
 private fun Task.logId(): String = "${uid}:${taskID}"
 
+fun isColloboqueOn() = System.getProperty("colloboque.on", "false") == "true"
 const val SQL_PROJECT_DATABASE_OPTIONS = ";DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true"
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state$SQL_PROJECT_DATABASE_OPTIONS"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"

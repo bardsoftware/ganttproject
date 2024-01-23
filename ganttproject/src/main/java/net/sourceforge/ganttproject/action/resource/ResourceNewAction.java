@@ -71,6 +71,7 @@ public class ResourceNewAction extends ResourceAction {
         public void run() {
           getManager().add(resource);
           myUIFacade.getResourceTree().setSelected(resource, true);
+          myUIFacade.setViewIndex(UIFacade.RESOURCES_INDEX);
         }
       });
     }
