@@ -33,7 +33,7 @@ class ProjectFileUpdaterTest {
   }
 
   @Test fun `empty xlog`() {
-    assertEquals(PROJECT_XML_TEMPLATE, ProjectFileUpdater().applyXlog(PROJECT_XML_TEMPLATE, XlogRecord(emptyList())))
+    assertEquals(PROJECT_XML_TEMPLATE, updateProjectXml(PROJECT_XML_TEMPLATE, XlogRecord(emptyList())))
   }
 
   @Test fun `apply task name change`() {

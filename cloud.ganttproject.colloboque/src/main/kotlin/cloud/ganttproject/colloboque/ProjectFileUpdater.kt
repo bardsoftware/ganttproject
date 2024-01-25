@@ -25,11 +25,17 @@ import net.sourceforge.ganttproject.TaskManagerConfigImpl
 import net.sourceforge.ganttproject.io.GanttXMLSaver
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.roles.RoleManager
-import net.sourceforge.ganttproject.storage.LazyProjectDatabaseProxy
-import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl
-import net.sourceforge.ganttproject.storage.XlogRecord
+import net.sourceforge.ganttproject.storage.*
 import net.sourceforge.ganttproject.task.*
+import org.h2.jdbcx.JdbcDataSource
 import java.io.ByteArrayOutputStream
+
+private var databaseCounter: Long = 0
+private fun createInMemoryDatabase(): ProjectDatabase {
+  val dataSource = JdbcDataSource()
+  dataSource.setURL("jdbc:h2:mem:update${databaseCounter++};DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true")
+  return SqlProjectDatabaseImpl(dataSource)
+}
 
 /**
  * This function applies the `updates` to the contents of `projectXml` and returns the updated XML as a String.
@@ -42,9 +48,10 @@ fun updateProjectXml(projectXml: String, updates: XlogRecord): String {
   )
   val taskManagerConfig = TaskManagerConfigImpl(humanResourceManager, calendar)
   val taskManager = TaskManagerImpl(null, taskManagerConfig)
-  val projectDatabase = LazyProjectDatabaseProxy(databaseFactory = {
-    SqlProjectDatabaseImpl.createInMemoryDatabase()
-  }, taskManager = {taskManager}).also {
+  val projectDatabase = LazyProjectDatabaseProxy(
+    databaseFactory = {  createInMemoryDatabase() },
+    taskManager = {taskManager}
+  ).also {
     it.startLog("0")
   }
   val project = GanttProjectImpl(taskManager, projectDatabase)

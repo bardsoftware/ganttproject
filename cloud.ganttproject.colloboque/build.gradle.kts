@@ -44,6 +44,7 @@ dependencies {
     implementation(kotlin("reflect", version = kotlinVersion))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jooq:jooq:3.19.1")
+    implementation("com.h2database:h2:2.1.214")
     implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("com.github.ajalt.clikt:clikt:4.+")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
@@ -54,7 +55,6 @@ dependencies {
     implementation(files("lib/eclipsito.jar"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
-    testImplementation("com.h2database:h2:2.1.214")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 }
 
