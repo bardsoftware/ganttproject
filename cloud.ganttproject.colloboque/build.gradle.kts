@@ -63,26 +63,26 @@ dependencies {
     testImplementation("com.h2database:h2:2.1.214")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 
-    jooqGenerator("org.postgresql:postgresql:42.5.1")
-//    jooqGenerator("org.jooq:jooq-meta-extensions:$jooqVersion")
+//    jooqGenerator("org.postgresql:postgresql:42.5.1")
+    jooqGenerator("org.jooq:jooq-meta-extensions:$jooqVersion")
 }
 
 jooq {
     configurations {
         create("main") {
             jooqConfiguration.apply {
-                logging = org.jooq.meta.jaxb.Logging.WARN
-                jdbc.apply {
-                    driver = "org.postgresql.Driver"
-                    url = "jdbc:postgresql://localhost:5432/project_database_template"
-                    user = "postgres"
-                    password = ""
-                }
+                logging = org.jooq.meta.jaxb.Logging.INFO
+//                jdbc.apply {
+//                    driver = "org.postgresql.Driver"
+//                    url = "jdbc:postgresql://localhost:5432/project_database_template"
+//                    user = "postgres"
+//                    password = ""
+//                }
                 generator.apply {
                     name = "org.jooq.codegen.KotlinGenerator"
                     database.apply {
-                        name = "org.jooq.meta.postgres.PostgresDatabase"
-//                        name = "org.jooq.meta.extensions.ddl.DDLDatabase"
+//                        name = "org.jooq.meta.postgres.PostgresDatabase"
+                        name = "org.jooq.meta.extensions.ddl.DDLDatabase"
                         properties.apply {
                             add(Property().apply {
                                 key = "scripts"
@@ -93,16 +93,7 @@ jooq {
                                 value = "lower"
                             })
                         }
-//                        forcedTypes.add(ForcedType().apply {
-//                            // Specify the Java type of your custom type. This corresponds to the Converter's <U> type.
-//                            userType = "cloud.ganttproject.colloboque.db.project_model_metadata.enums.Taskintpropertyname"
-//                            // A Java regex matching fully-qualified columns, attributes, parameters. Use the pipe to separate several expressions.
-//                            // It is thus recommended to use defensive regexes for types.
-//                            includeTypes = "TaskIntPropertyName"
-//                            includeExpression = ".*"
-//                        }.withEnumConverter(true))
                     }
-//                    generate.withUdts(true)
 
                     target.apply {
                         packageName = "cloud.ganttproject.colloboque.db"

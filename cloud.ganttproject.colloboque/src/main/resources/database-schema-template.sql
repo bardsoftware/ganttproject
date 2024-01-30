@@ -1,16 +1,15 @@
 
-CREATE SCHEMA project_model_metadata;
-SET search_path TO project_model_metadata;
-CREATE TYPE TaskIntPropertyName AS ENUM ('completion', 'priority');
-CREATE TYPE TaskTextPropertyName AS ENUM ('priority', 'color', 'shape', 'web_link', 'notes');
+-- CREATE SCHEMA project_model_metadata;
+-- SET search_path TO project_model_metadata;
 
 
 ----------------------------------------------------------------------------------------------------------------
 -- This template schema is cloned for every "branch" of the project.
 
 CREATE SCHEMA project_template;
-
-SET search_path TO project_template,project_model_metadata;
+SET search_path TO project_template;
+CREATE TYPE "taskintpropertyname" AS ENUM ('completion', 'priority');
+CREATE TYPE "tasktextpropertyname" AS ENUM ('priority', 'color', 'shape', 'web_link', 'notes');
 
 -- Basic task data
 CREATE TABLE TaskName(
@@ -32,15 +31,15 @@ CREATE TABLE TaskDates(
 -- Integer valued properties
 CREATE TABLE TaskIntProperties(
                                   uid        VARCHAR(128) REFERENCES TaskName,
-                                  prop_name  TaskIntPropertyName,
+                                  prop_name  "taskintpropertyname",
                                   prop_value INT,
                                   PRIMARY KEY(uid, prop_name)
 );
 
 -- Text valued properties
 CREATE TABLE TaskTextProperties(
-                                   uid VARCHAR(128) REFERENCES TaskName,
-                                   prop_name TaskTextPropertyName,
+                                   uid        VARCHAR(128) REFERENCES TaskName,
+                                   prop_name  "tasktextpropertyname",
                                    prop_value VARCHAR(128),
                                    PRIMARY KEY(uid, prop_name)
 );
