@@ -1,9 +1,11 @@
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jooq.meta.jaxb.ForcedType
 import org.jooq.meta.jaxb.Property
 
 val kotlinVersion: String by project
+val jooqVersion = "3.19.0"
 
 plugins {
     id("application")
@@ -45,7 +47,9 @@ dependencies {
     implementation(kotlin("stdlib", version = kotlinVersion))
     implementation(kotlin("reflect", version = kotlinVersion))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("org.jooq:jooq:3.17.5")
+    implementation("org.jooq:jooq:$jooqVersion")
+    implementation("org.jooq:jooq-meta:$jooqVersion")
+    implementation("org.jooq:jooq-codegen:$jooqVersion")
     implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("com.github.ajalt.clikt:clikt:4.+")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
@@ -60,6 +64,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 
     jooqGenerator("org.postgresql:postgresql:42.5.1")
+//    jooqGenerator("org.jooq:jooq-meta-extensions:$jooqVersion")
 }
 
 jooq {
@@ -69,7 +74,7 @@ jooq {
                 logging = org.jooq.meta.jaxb.Logging.WARN
                 jdbc.apply {
                     driver = "org.postgresql.Driver"
-                    url = "jdbc:postgresql://localhost:5432/postgres"
+                    url = "jdbc:postgresql://localhost:5432/project_database_template"
                     user = "postgres"
                     password = ""
                 }
@@ -77,6 +82,7 @@ jooq {
                     name = "org.jooq.codegen.KotlinGenerator"
                     database.apply {
                         name = "org.jooq.meta.postgres.PostgresDatabase"
+//                        name = "org.jooq.meta.extensions.ddl.DDLDatabase"
                         properties.apply {
                             add(Property().apply {
                                 key = "scripts"
@@ -87,8 +93,16 @@ jooq {
                                 value = "lower"
                             })
                         }
+//                        forcedTypes.add(ForcedType().apply {
+//                            // Specify the Java type of your custom type. This corresponds to the Converter's <U> type.
+//                            userType = "cloud.ganttproject.colloboque.db.project_model_metadata.enums.Taskintpropertyname"
+//                            // A Java regex matching fully-qualified columns, attributes, parameters. Use the pipe to separate several expressions.
+//                            // It is thus recommended to use defensive regexes for types.
+//                            includeTypes = "TaskIntPropertyName"
+//                            includeExpression = ".*"
+//                        }.withEnumConverter(true))
                     }
-                    generate.withUdts(true)
+//                    generate.withUdts(true)
 
                     target.apply {
                         packageName = "cloud.ganttproject.colloboque.db"

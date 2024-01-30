@@ -9,17 +9,18 @@ CREATE TYPE TaskTextPropertyName AS ENUM ('priority', 'color', 'shape', 'web_lin
 -- This template schema is cloned for every "branch" of the project.
 
 CREATE SCHEMA project_template;
-SET search_path TO project_template;
+
+SET search_path TO project_template,project_model_metadata;
 
 -- Basic task data
 CREATE TABLE TaskName(
-                         uid TEXT PRIMARY KEY,
+                         uid VARCHAR(128) PRIMARY KEY,
                          num INT NOT NULL,
-                         name TEXT NOT NULL DEFAULT ''
+                         name VARCHAR(128) NOT NULL DEFAULT ''
 );
 -- Task start date and duration shall be changed as a whole
 CREATE TABLE TaskDates(
-                          uid           TEXT PRIMARY KEY REFERENCES TaskName,
+                          uid           VARCHAR(128) PRIMARY KEY REFERENCES TaskName,
                           start_date    DATE NOT NULL,
                           duration_days INT NOT NULL DEFAULT 1,
                           earliest_start_date DATE
@@ -30,28 +31,28 @@ CREATE TABLE TaskDates(
 
 -- Integer valued properties
 CREATE TABLE TaskIntProperties(
-                                  uid        TEXT REFERENCES TaskName,
-                                  prop_name  project_model_metadata.TaskIntPropertyName,
+                                  uid        VARCHAR(128) REFERENCES TaskName,
+                                  prop_name  TaskIntPropertyName,
                                   prop_value INT,
                                   PRIMARY KEY(uid, prop_name)
 );
 
 -- Text valued properties
 CREATE TABLE TaskTextProperties(
-                                   uid TEXT REFERENCES TaskName,
-                                   prop_name project_model_metadata.TaskTextPropertyName,
-                                   prop_value TEXT,
+                                   uid VARCHAR(128) REFERENCES TaskName,
+                                   prop_name TaskTextPropertyName,
+                                   prop_value VARCHAR(128),
                                    PRIMARY KEY(uid, prop_name)
 );
 
 CREATE TABLE TaskCostProperties(
-                                   uid TEXT REFERENCES TaskName PRIMARY KEY,
+                                   uid VARCHAR(128) REFERENCES TaskName PRIMARY KEY,
                                    is_cost_calculated BOOLEAN,
                                    cost_manual_value NUMERIC
 );
 
 CREATE TABLE TaskClassProperties(
-                                    uid TEXT REFERENCES TaskName PRIMARY KEY,
+                                    uid VARCHAR(128) REFERENCES TaskName PRIMARY KEY,
                                     is_milestone BOOLEAN NOT NULL DEFAULT false,
                                     is_project_task BOOLEAN NOT NULL DEFAULT false
 );
