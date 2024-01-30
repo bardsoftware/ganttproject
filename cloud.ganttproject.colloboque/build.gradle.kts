@@ -59,7 +59,7 @@ dependencies {
     testImplementation("com.h2database:h2:2.1.214")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 
-    jooqGenerator("org.jooq:jooq-meta-extensions:3.18.0")
+    jooqGenerator("org.postgresql:postgresql:42.5.1")
 }
 
 jooq {
@@ -67,14 +67,20 @@ jooq {
         create("main") {
             jooqConfiguration.apply {
                 logging = org.jooq.meta.jaxb.Logging.WARN
+                jdbc.apply {
+                    driver = "org.postgresql.Driver"
+                    url = "jdbc:postgresql://localhost:5432/postgres"
+                    user = "postgres"
+                    password = ""
+                }
                 generator.apply {
                     name = "org.jooq.codegen.KotlinGenerator"
                     database.apply {
-                        name = "org.jooq.meta.extensions.ddl.DDLDatabase"
+                        name = "org.jooq.meta.postgres.PostgresDatabase"
                         properties.apply {
                             add(Property().apply {
                                 key = "scripts"
-                                value = "src/main/resources/database-schema.sql"
+                                value = "src/main/resources/database-schema-template.sql"
                             })
                             add(Property().apply {
                                 key = "defaultNameCase"
@@ -82,6 +88,8 @@ jooq {
                             })
                         }
                     }
+                    generate.withUdts(true)
+
                     target.apply {
                         packageName = "cloud.ganttproject.colloboque.db"
                     }
