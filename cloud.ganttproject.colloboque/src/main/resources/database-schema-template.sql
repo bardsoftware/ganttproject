@@ -26,7 +26,7 @@ CREATE TABLE TaskDates(
 -- Integer valued properties
 CREATE TABLE TaskIntProperties(
                                   uid        VARCHAR(128) REFERENCES TaskName,
-                                  prop_name  project_template."taskintpropertyname",
+                                  prop_name  "taskintpropertyname",
                                   prop_value INT,
                                   PRIMARY KEY(uid, prop_name)
 );
@@ -34,7 +34,7 @@ CREATE TABLE TaskIntProperties(
 -- Text valued properties
 CREATE TABLE TaskTextProperties(
                                    uid        VARCHAR(128) REFERENCES TaskName,
-                                   prop_name  project_template."tasktextpropertyname",
+                                   prop_name  "tasktextpropertyname",
                                    prop_value VARCHAR(128),
                                    PRIMARY KEY(uid, prop_name)
 );

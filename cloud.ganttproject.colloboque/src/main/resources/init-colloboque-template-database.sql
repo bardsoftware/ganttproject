@@ -5,6 +5,27 @@ CREATE DATABASE project_database_template OWNER postgres IS_TEMPLATE=true;
 
 -- DROP FUNCTION clone_schema(text, text);
 
+CREATE OR REPLACE FUNCTION replace_schema_except_types(
+    source_text text,
+    source_schema text,
+    dest_schema text)
+    RETURNS text AS
+$BODY$
+DECLARE
+    end_text         text;
+    typename         text;
+BEGIN
+    end_text := replace(source_text, source_schema, dest_schema);
+    FOREACH typename IN ARRAY ARRAY['taskintpropertyname', 'tasktextpropertyname']
+    LOOP
+        end_text := replace(end_text, dest_schema || '.' || typename, source_schema || '.' || typename);
+    END LOOP;
+    RETURN end_text;
+END;
+$BODY$
+    LANGUAGE plpgsql VOLATILE COST 100;
+
+
 CREATE OR REPLACE FUNCTION clone_schema(
     source_schema text,
     dest_schema text,
@@ -12,7 +33,7 @@ CREATE OR REPLACE FUNCTION clone_schema(
     RETURNS void AS
 $BODY$
 
-    --  This function will clone all sequences, tables, triggers, data, views & functions from any existing schema to a new one
+-- This function will clone all sequences, tables, triggers, data, views & functions from any existing schema to a new one
 -- SAMPLE CALL:
 -- SELECT clone_schema('public', 'new_schema', TRUE);
 
@@ -106,15 +127,15 @@ BEGIN
     RAISE NOTICE '... done';
 
     -- Create enums
-    RAISE NOTICE 'Creating enums...';
-    FOR object IN
-    SELECT 'CREATE TYPE ' || quote_ident(dest_schema) || '.' || typname || ' AS ENUM (''' ||  string_agg(enumlabel, ''',''' ORDER BY enumsortorder) || ''')'
-    FROM pg_type JOIN pg_enum ON pg_type.oid=enumtypid
-    GROUP BY typname
-    LOOP
-        execute object;
-    END LOOP;
-    RAISE NOTICE '... done';
+--     RAISE NOTICE 'Creating enums...';
+--     FOR object IN
+--     SELECT 'CREATE TYPE ' || quote_ident(dest_schema) || '.' || typname || ' AS ENUM (''' ||  string_agg(enumlabel, ''',''' ORDER BY enumsortorder) || ''')'
+--     FROM pg_type JOIN pg_enum ON pg_type.oid=enumtypid
+--     GROUP BY typname
+--     LOOP
+--         execute object;
+--     END LOOP;
+--     RAISE NOTICE '... done';
 
     -- Create tables
     RAISE NOTICE 'Creating tables...';
@@ -136,7 +157,7 @@ BEGIN
 
             FOR column_, default_ IN
                 SELECT column_name::text,
-                       REPLACE(column_default::text, source_schema, dest_schema)
+                       replace_schema_except_types(column_default::text, source_schema, dest_schema)
                 FROM information_schema.COLUMNS
                 WHERE table_schema = dest_schema
                   AND TABLE_NAME = object
@@ -149,7 +170,7 @@ BEGIN
 
     --  add FK constraint
     FOR qry IN
-        SELECT 'ALTER TABLE ' || quote_ident(dest_schema) || '.' || quote_ident(rn.relname) || ' ADD CONSTRAINT ' || quote_ident(ct.conname) || ' ' || replace(pg_get_constraintdef(ct.oid), source_schema, dest_schema) || ';'
+        SELECT 'ALTER TABLE ' || quote_ident(dest_schema) || '.' || quote_ident(rn.relname) || ' ADD CONSTRAINT ' || quote_ident(ct.conname) || ' ' || replace_schema_except_types(pg_get_constraintdef(ct.oid), source_schema, dest_schema) || ';'
         FROM pg_constraint ct
                  JOIN pg_class rn ON rn.oid = ct.conrelid
         WHERE connamespace = src_oid
@@ -175,7 +196,8 @@ BEGIN
             WHERE table_schema = quote_ident(source_schema)
               AND table_name = quote_ident(object);
 
-            EXECUTE 'CREATE OR REPLACE VIEW ' || buffer || ' AS ' || replace(v_def, source_schema, dest_schema) || ';' ;
+            v_def := replace_schema_except_types(v_def, source_schema, dest_schema);
+            EXECUTE 'CREATE OR REPLACE VIEW ' || buffer || ' AS ' || v_def || ';' ;
 
         END LOOP;
 
@@ -187,7 +209,7 @@ BEGIN
 
         LOOP
             SELECT pg_get_functiondef(func_oid) INTO qry;
-            SELECT replace(qry, source_schema, dest_schema) INTO dest_qry;
+            SELECT replace_schema_except_types(qry, source_schema, dest_schema) INTO dest_qry;
             EXECUTE dest_qry;
         END LOOP;
 
@@ -198,7 +220,7 @@ BEGIN
         WHERE event_object_schema=source_schema and event_object_table=object
         GROUP BY trigger_name, action_timing, action_orientation, action_statement
         LOOP
-            EXECUTE 'CREATE TRIGGER ' || trigger_name_ || ' ' || trigger_timing_ || ' ' || trigger_events_ || ' ON ' || buffer || ' FOR EACH ' || trigger_orientation_ || ' ' || replace(trigger_action_, source_schema, dest_schema);
+            EXECUTE 'CREATE TRIGGER ' || trigger_name_ || ' ' || trigger_timing_ || ' ' || trigger_events_ || ' ON ' || buffer || ' FOR EACH ' || trigger_orientation_ || ' ' || replace_schema_except_types(trigger_action_, source_schema, dest_schema);
         END LOOP;
 
     RETURN;
@@ -214,37 +236,37 @@ ALTER FUNCTION clone_schema(text, text, boolean) OWNER TO postgres;
 
 CREATE OR REPLACE PROCEDURE update_int_task_property(task_uid TEXT, prop_name_ TaskIntPropertyName, prop_value_ INT)
     LANGUAGE SQL AS $$
-INSERT INTO TaskIntProperties(uid, prop_name, prop_value) VALUES(task_uid, prop_name_, prop_value_)
+INSERT INTO project_template.TaskIntProperties(uid, prop_name, prop_value) VALUES(task_uid, prop_name_, prop_value_)
 ON CONFLICT(uid, prop_name) DO UPDATE SET prop_value=prop_value_;
 $$;
 
 CREATE OR REPLACE PROCEDURE update_text_task_property(task_uid TEXT, prop_name_ TaskTextPropertyName, prop_value_ TEXT)
     LANGUAGE SQL AS $$
-INSERT INTO TaskTextProperties(uid, prop_name, prop_value) VALUES(task_uid, prop_name_, prop_value_)
+INSERT INTO project_template.TaskTextProperties(uid, prop_name, prop_value) VALUES(task_uid, prop_name_, prop_value_)
 ON CONFLICT(uid, prop_name) DO UPDATE SET prop_value=prop_value_;
 $$;
 
 CREATE OR REPLACE FUNCTION update_task_row() RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO TaskName(uid, num, name) VALUES (NEW.uid, NEW.num, NEW.name)
+    INSERT INTO project_template.TaskName(uid, num, name) VALUES (NEW.uid, NEW.num, NEW.name)
     ON CONFLICT(uid) DO UPDATE
         SET num=NEW.num,
             name=NEW.name;
 
-    INSERT INTO TaskDates(uid, start_date, duration_days, earliest_start_date)
+    INSERT INTO project_template.TaskDates(uid, start_date, duration_days, earliest_start_date)
     VALUES(NEW.uid, NEW.start_date, NEW.duration, NEW.earliest_start_date)
     ON CONFLICT(uid) DO UPDATE
         SET start_date = NEW.start_date,
             duration_days = NEW.duration,
             earliest_start_date=NEW.earliest_start_date;
 
-    INSERT INTO TaskCostProperties(uid, is_cost_calculated, cost_manual_value)
+    INSERT INTO project_template.TaskCostProperties(uid, is_cost_calculated, cost_manual_value)
     VALUES(NEW.uid, NEW.is_cost_calculated, NEW.cost_manual_value)
     ON CONFLICT(uid) DO UPDATE
         SET is_cost_calculated = NEW.is_cost_calculated,
             cost_manual_value = NEW.cost_manual_value;
 
-    INSERT INTO TaskClassProperties(uid, is_milestone, is_project_task)
+    INSERT INTO project_template.TaskClassProperties(uid, is_milestone, is_project_task)
     VALUES(NEW.uid, COALESCE(NEW.is_milestone, false), COALESCE(NEW.is_project_task, false))
     ON CONFLICT(uid) DO UPDATE
         SET is_milestone = COALESCE(NEW.is_milestone, false),
