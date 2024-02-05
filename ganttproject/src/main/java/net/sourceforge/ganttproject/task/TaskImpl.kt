@@ -215,7 +215,7 @@ internal open class MutatorImpl(
         taskUpdateBuilder?.setMilestone(milestoneChange.oldValue, it)
       }
       if (hasDateFieldsChange) {
-        hasActualDatesChange = taskImpl.start != myStartChange.oldValue || taskImpl.duration != myDurationChange.oldValue
+        hasActualDatesChange = taskImpl.start != myStartChange.oldValue || taskImpl.duration != myDurationChange.oldValue || taskImpl.third != myThirdChange.oldValue.startDate
         if (hasActualDatesChange && taskUpdateBuilder != null) {
           if (taskImpl.start != myStartChange.oldValue) {
             taskUpdateBuilder.setStart(myStartChange.oldValue, taskImpl.start)
