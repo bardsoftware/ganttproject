@@ -29,7 +29,7 @@ class TestEarliestStart: TaskTestCase() {
     super.setUp()
   }
   @Test
-  fun `earliest start enable-disable`() {
+  fun `test earliest start enable-disable`() {
     val monday = TestSetupHelper.newMonday()
     val tuesday = TestSetupHelper.newTuesday()
     val wednesday = TestSetupHelper.newWendesday()
@@ -50,7 +50,7 @@ class TestEarliestStart: TaskTestCase() {
     assertEquals(0, task.thirdDateConstraint)
   }
 
-  @Test fun `earliest start change triggers scheduler`() {
+  @Test fun `test earliest start change triggers scheduler`() {
     val monday = TestSetupHelper.newMonday()
     val wednesday = TestSetupHelper.newWendesday()
 
