@@ -23,8 +23,7 @@ import biz.ganttproject.core.io.parseXmlProject
 import biz.ganttproject.core.io.walkTasksDepthFirst
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView
-import cloud.ganttproject.colloboque.db.project_model_metadata.tables.references.TRANSACTIONLOG
-import cloud.ganttproject.colloboque.db.tables.references.TRANSACTIONLOG
+import cloud.ganttproject.colloboque.db.project_template.tables.references.TRANSACTIONLOG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
@@ -139,7 +138,9 @@ class ColloboqueServer(
             val context = config.dsl()
             transaction.colloboqueOperations.forEach { context.execute(generateSqlStatement(context, it)) }
             val txnId = generateNextTxnId(projectRefid, baseTxnId, transaction)
-            context.execute("INSERT INTO TransactionLog VALUES (?, ?)", txnId, Json.encodeToString(transaction))
+            val transactionJson = Json.encodeToString(transaction)
+            context.insertInto(TRANSACTIONLOG).columns(TRANSACTIONLOG.UID, TRANSACTIONLOG.LOG)
+              .values(txnId, transactionJson)
             txnId
           }.also { refidToBaseTxnId[projectRefid] = it }
       }
@@ -159,9 +160,8 @@ class ColloboqueServer(
         .using(connection, SQLDialect.POSTGRES)
         .transactionResult { config ->
           val context = config.dsl()
-          context.setSchema(projectRefid).execute()
-          context.select(TRANSACTIONLOG.UID, field("TransactionLog.log_text"))
-            .where("DATE(TransactionLog.uid) > DATE(?)", baseTxnId).fetch()
+          context.select(TRANSACTIONLOG.UID, TRANSACTIONLOG.LOG).from(TRANSACTIONLOG)
+            .where("DATE(?) > DATE(?)", TRANSACTIONLOG.UID, baseTxnId).fetch()
         }
     }
     return transactions.map { record ->

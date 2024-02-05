@@ -1,8 +1,3 @@
-
--- CREATE SCHEMA project_model_metadata;
--- SET search_path TO project_model_metadata;
-
-
 ----------------------------------------------------------------------------------------------------------------
 -- This template schema is cloned for every "branch" of the project.
 
@@ -31,7 +26,7 @@ CREATE TABLE TaskDates(
 -- Integer valued properties
 CREATE TABLE TaskIntProperties(
                                   uid        VARCHAR(128) REFERENCES TaskName,
-                                  prop_name  "taskintpropertyname",
+                                  prop_name  project_template."taskintpropertyname",
                                   prop_value INT,
                                   PRIMARY KEY(uid, prop_name)
 );
@@ -39,7 +34,7 @@ CREATE TABLE TaskIntProperties(
 -- Text valued properties
 CREATE TABLE TaskTextProperties(
                                    uid        VARCHAR(128) REFERENCES TaskName,
-                                   prop_name  "tasktextpropertyname",
+                                   prop_name  project_template."tasktextpropertyname",
                                    prop_value VARCHAR(128),
                                    PRIMARY KEY(uid, prop_name)
 );
@@ -82,3 +77,8 @@ from      TaskName
               LEFT JOIN TaskCostProperties TCP USING(uid)
               LEFT JOIN TaskClassProperties TCLP USING(uid)
 GROUP BY TaskName.uid, TaskDates.uid, TCP.uid, TCLP.uid;
+
+CREATE TABLE TransactionLog(
+                                    uid VARCHAR(128) PRIMARY KEY,
+                                    log VARCHAR(65535)
+);

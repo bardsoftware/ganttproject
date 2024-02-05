@@ -91,6 +91,7 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
           val baseTxnId = colloboqueServer.getBaseTxnId(it) ?: run {
             colloboqueServer.init(it, PROJECT_XML_TEMPLATE)
           }
+          LOG.debug("Relevant transaction logs: {}", colloboqueServer.getProjectRecords(baseTxnId))
 
           // TODO: find relevant xml config
           newFixedLengthResponse(PROJECT_XML_TEMPLATE.toBase64()).also { response ->

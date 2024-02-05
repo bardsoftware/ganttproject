@@ -106,15 +106,15 @@ BEGIN
     RAISE NOTICE '... done';
 
     -- Create enums
---     RAISE NOTICE 'Creating enums...';
---     FOR object IN
---     SELECT 'CREATE TYPE ' || quote_ident(dest_schema) || '.' || typname || ' AS ENUM (''' ||  string_agg(enumlabel, ''',''' ORDER BY enumsortorder) || ''')'
---     FROM pg_type JOIN pg_enum ON pg_type.oid=enumtypid
---     GROUP BY typname
---     LOOP
---         execute object;
---     END LOOP;
---     RAISE NOTICE '... done';
+    RAISE NOTICE 'Creating enums...';
+    FOR object IN
+    SELECT 'CREATE TYPE ' || quote_ident(dest_schema) || '.' || typname || ' AS ENUM (''' ||  string_agg(enumlabel, ''',''' ORDER BY enumsortorder) || ''')'
+    FROM pg_type JOIN pg_enum ON pg_type.oid=enumtypid
+    GROUP BY typname
+    LOOP
+        execute object;
+    END LOOP;
+    RAISE NOTICE '... done';
 
     -- Create tables
     RAISE NOTICE 'Creating tables...';
@@ -212,15 +212,15 @@ ALTER FUNCTION clone_schema(text, text, boolean) OWNER TO postgres;
 \i database-schema-template.sql
 
 
-CREATE OR REPLACE PROCEDURE update_int_task_property(task_uid TEXT, prop_name_ project_model_metadata.TaskIntPropertyName, prop_value_ INT)
+CREATE OR REPLACE PROCEDURE update_int_task_property(task_uid TEXT, prop_name_ TaskIntPropertyName, prop_value_ INT)
     LANGUAGE SQL AS $$
-INSERT INTO project_template.TaskIntProperties(uid, prop_name, prop_value) VALUES(task_uid, prop_name_, prop_value_)
+INSERT INTO TaskIntProperties(uid, prop_name, prop_value) VALUES(task_uid, prop_name_, prop_value_)
 ON CONFLICT(uid, prop_name) DO UPDATE SET prop_value=prop_value_;
 $$;
 
-CREATE OR REPLACE PROCEDURE update_text_task_property(task_uid TEXT, prop_name_ project_model_metadata.TaskTextPropertyName, prop_value_ TEXT)
+CREATE OR REPLACE PROCEDURE update_text_task_property(task_uid TEXT, prop_name_ TaskTextPropertyName, prop_value_ TEXT)
     LANGUAGE SQL AS $$
-INSERT INTO project_template.TaskTextProperties(uid, prop_name, prop_value) VALUES(task_uid, prop_name_, prop_value_)
+INSERT INTO TaskTextProperties(uid, prop_name, prop_value) VALUES(task_uid, prop_name_, prop_value_)
 ON CONFLICT(uid, prop_name) DO UPDATE SET prop_value=prop_value_;
 $$;
 

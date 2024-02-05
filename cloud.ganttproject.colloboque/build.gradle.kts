@@ -63,7 +63,6 @@ dependencies {
     testImplementation("com.h2database:h2:2.1.214")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 
-//    jooqGenerator("org.postgresql:postgresql:42.5.1")
     jooqGenerator("org.jooq:jooq-meta-extensions:$jooqVersion")
 }
 
@@ -71,17 +70,10 @@ jooq {
     configurations {
         create("main") {
             jooqConfiguration.apply {
-                logging = org.jooq.meta.jaxb.Logging.INFO
-//                jdbc.apply {
-//                    driver = "org.postgresql.Driver"
-//                    url = "jdbc:postgresql://localhost:5432/project_database_template"
-//                    user = "postgres"
-//                    password = ""
-//                }
+                logging = org.jooq.meta.jaxb.Logging.WARN
                 generator.apply {
                     name = "org.jooq.codegen.KotlinGenerator"
                     database.apply {
-//                        name = "org.jooq.meta.postgres.PostgresDatabase"
                         name = "org.jooq.meta.extensions.ddl.DDLDatabase"
                         properties.apply {
                             add(Property().apply {
