@@ -1,8 +1,11 @@
+configurations {
+    implementation.extendsFrom(providedCompile)
+}
 dependencies {
-    providedCompile project(path: ':ganttproject', configuration: 'exported')
+    providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
+    providedCompile project(path: ':biz.ganttproject.core')
+    providedCompile project(path: ':ganttproject')
     implementation group: 'com.itextpdf', name: 'itextpdf', version: '5.+'
-
-    implementation configurations.providedCompile
 }
 
 task copyPlugin(dependsOn: jar) {

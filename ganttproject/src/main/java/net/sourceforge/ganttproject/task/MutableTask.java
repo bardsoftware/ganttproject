@@ -45,10 +45,6 @@ public interface MutableTask {
 
   void setCompletionPercentage(int percentage);
 
-  // void setStartFixed(boolean isFixed);
-
-  // void setFinishFixed(boolean isFixed);
-
   void setShape(ShapePaint shape);
 
   void setColor(Color color);

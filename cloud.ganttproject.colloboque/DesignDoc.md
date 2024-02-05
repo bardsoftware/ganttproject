@@ -33,8 +33,9 @@ There is a number of related technologies and possible alternatives.
 ### PostgreSQL Multimaster
 https://pgconf.ru/en/2021/290216
 
-### PostgreSQL branching
+### Database branching and version control
 https://neon.tech/docs/introduction/branching
+https://github.com/dolthub/dolt
 
 ### CRDT
 

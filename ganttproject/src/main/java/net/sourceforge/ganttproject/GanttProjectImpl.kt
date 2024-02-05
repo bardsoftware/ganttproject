@@ -194,7 +194,7 @@ open class GanttProjectImpl(taskManager: TaskManagerImpl? = null,
 
 private val DEFAULT_TASK_COLOR = Color(140, 182, 206)
 
-private class TaskManagerConfigImpl(
+class TaskManagerConfigImpl(
   private val myResourceManager: HumanResourceManager,
   calendar: GPCalendarCalc
 ) : TaskManagerConfig {

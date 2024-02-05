@@ -5,27 +5,23 @@ plugins {
     id "maven-publish"
 }
 configurations {
-    direct
+    implementation.extendsFrom providedCompile
 }
 
 dependencies {
     providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
-    direct fileTree(dir: project.ext.libDir, include: ['*.jar'])
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.+'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.7.+'
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     api "com.google.guava:guava:31.+"
 
-    direct configurations.api
-    implementation configurations.direct
-    implementation configurations.providedCompile
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.3'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.16.1'
 
 
     testImplementation(
         'org.junit.jupiter:junit-jupiter-api:5.+',
-        'org.mockito:mockito-core:5.7.0',
+        'org.mockito:mockito-core:5.10.0',
         'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
     )
     testRuntimeOnly(

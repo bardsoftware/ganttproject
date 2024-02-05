@@ -14,7 +14,7 @@ buildscript {
 plugins {
     id "org.jetbrains.kotlin.jvm"
     id "maven-publish"
-    id "nu.studer.jooq" version "8.2.1"
+    id "nu.studer.jooq" version "9.0"
     id "org.jetbrains.kotlin.plugin.serialization" version "$kotlin_version"
 }
 
@@ -32,8 +32,7 @@ javafx {
 }
 
 configurations {
-    exportedLibs
-    exported.extendsFrom archives, providedCompile, exportedLibs
+    implementation.extendsFrom providedCompile
 }
 
 dependencies {
@@ -42,20 +41,14 @@ dependencies {
     providedCompile project(path: ':biz.ganttproject.app.localization')
 
     api files("lib/core/eclipsito.jar")
-    exportedLibs files("lib/core/eclipsito.jar")
-
-    implementation configurations.direct
-    implementation configurations.providedCompile
-    implementation configurations.exportedLibs
-
     implementation fileTree(dir: project.ext.libDir, include: ['*.jar'])
     implementation files('src/main/resources/resources')
 
     implementation group: 'com.h2database', name: 'h2', version: '2.2.+'
-    implementation 'org.jooq:jooq:3.18.7'
-    jooqGenerator 'org.jooq:jooq-meta-extensions'
+    implementation 'org.jooq:jooq:3.19.3'
+    jooqGenerator 'org.jooq:jooq-meta-extensions:3.19.3'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2'
     implementation 'net.harawata:appdirs:1.2.2'
 
     testImplementation group: 'org.easymock', name: 'easymock', version: '5.+'

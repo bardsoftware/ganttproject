@@ -74,6 +74,8 @@ import java.awt.Component
 import java.math.BigDecimal
 import java.util.*
 import java.util.List.copyOf
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import javax.swing.SwingUtilities
 import javax.swing.event.UndoableEditEvent
@@ -122,7 +124,7 @@ class TaskTable(
     BuiltinColumns(
       isZeroWidth = {
         when (TaskDefaultColumn.find(it)) {
-          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO -> true
+          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO, TaskDefaultColumn.NOTES -> true
           else -> false
         }
       },
@@ -204,7 +206,11 @@ class TaskTable(
 
   fun loadDefaultColumns() = Platform.runLater {
     treeTable.columns.clear()
-    columnList.importData(ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs().map { ColumnStub(it) }.toList()), false)
+    columnList.importData(ColumnList.Immutable.fromList(
+      TaskDefaultColumn.getColumnStubs().map {
+        ColumnStub(it)
+      }.toList()
+    ), false)
     buildColumns(columnList.columns())
     reload()
   }
@@ -388,14 +394,20 @@ class TaskTable(
             requestSwingFocus()
             if (treeTable.editingCell == null) {
               val idx = treeTable.getRow(cmd.treeItem)
-              treeTable.scrollTo(cmd.treeItem)
               treeTable.edit(idx, findNameColumn())
             } else {
+              //println("there is an editing cell")
               //println("editing cell is ${treeTable.editingCell}")
             }
           }
           is CommitEditing -> {
             commitEditing()
+          }
+          is StartScrolling -> {
+            treeTable.scrollTo(cmd.treeItem)
+            FXUtil.runLater {
+              runBlocking {  newTaskActor.inboxChannel.send(TreeItemScrolled(cmd.treeItem)) }
+            }
           }
         }
       }
@@ -457,7 +469,7 @@ class TaskTable(
     val tableColumns =
       columns.mapNotNull { column ->
         when (val taskDefaultColumn = TaskDefaultColumn.find(column.id)) {
-          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO -> null
+          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO, TaskDefaultColumn.NOTES -> null
           null -> createCustomColumn(column)
           else -> createDefaultColumn(column, taskDefaultColumn)
         }?.also {
@@ -484,11 +496,19 @@ class TaskTable(
                   taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
                 }
               }
-              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(targetTask)) }
+              runBlocking {
+                LOGGER.debug("onEditCommit (name): task=$targetTask")
+                newTaskActor.inboxChannel.send(EditingCompleted(targetTask))
+              }
             }
             onEditCancel = EventHandler { event ->
+              LOGGER.debug("onEditCancel: event=$event")
+              LOGGER.error("why cancel?", exception = Exception())
               val targetTask: Task = event.rowValue.value
-              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(targetTask)) }
+              runBlocking {
+                LOGGER.debug("onEditCancel (name): task=$targetTask")
+                newTaskActor.inboxChannel.send(EditingCompleted(targetTask))
+              }
             }
             treeTable.treeColumn = this
           }
@@ -496,10 +516,15 @@ class TaskTable(
           createTextColumn(
             name = taskDefaultColumn.getName(),
             getValue = { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
-            setValue = { task: Task, value -> undoManager.undoableEdit("Edit properties of task ${task.name}") {
-              taskTableModel.setValue(value, task, taskDefaultColumn)
-            }},
-            onEditingCompleted = { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
+            setValue = { task: Task, value ->
+              undoManager.undoableEdit("Edit properties of task ${task.name}") {
+                taskTableModel.setValue(value, task, taskDefaultColumn)
+                runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(task)) }
+              }
+            },
+            onEditCompleted = { runBlocking {
+              newTaskActor.inboxChannel.send(EditingCompleted(it))
+            }}
           ).apply {
             if (taskDefaultColumn == TaskDefaultColumn.OUTLINE_NUMBER) {
               this.comparator = TaskDefaultColumn.Functions.OUTLINE_NUMBER_COMPARATOR
@@ -577,12 +602,20 @@ class TaskTable(
     val customProperty = taskManager.customPropertyManager.getCustomPropertyDefinition(column.id) ?: return null
     return when (customProperty.propertyClass) {
       CustomPropertyClass.TEXT -> {
-        createTextColumn(customProperty.name,
-          { taskTableModel.getValue(it, customProperty)?.toString() },
-          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
-            taskTableModel.setValue(value, task, customProperty)
-          }},
-          { runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) } }
+        createTextColumn(
+          name = customProperty.name,
+          getValue = { taskTableModel.getValue(it, customProperty)?.toString() },
+          setValue = { task, value ->
+            undoManager.undoableEdit("Edit properties of task ${task.name}") {
+              taskTableModel.setValue(value, task, customProperty)
+              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(task)) }
+            }
+          },
+          onEditCompleted = {
+            runBlocking {
+              newTaskActor.inboxChannel.send(EditingCompleted(it))
+            }
+          }
         )
       }
       CustomPropertyClass.BOOLEAN -> {
@@ -817,9 +850,23 @@ class TaskTable(
     }
   }
 
+  private val timer = Executors.newSingleThreadScheduledExecutor()
   fun initUserKeyboardInput() {
-    treeTable.requestFocus()
-    this.requestSwingFocus()
+    // It appears that when we activate the task table component (sitting inside JFXPanel) its Scene/Window
+    // receives "activated" event and reset the focus owner to some button, and it happens after we "request focus"
+    // to the table. This hack delays focus request, and it seems to work.
+    // Reproducing:
+    // 1. Create two tasks
+    // 2. Create a new resource (resource tab becomes visible)
+    // 3. Switch back to the task tab
+    // Expected: task properties action is enabled, the last created task is selected and Alt+enter opens its
+    // properties.
+    timer.schedule({
+      Platform.runLater {
+        treeTable.requestFocus()
+      }
+      this.requestSwingFocus()
+    }, 200, TimeUnit.MILLISECONDS)
   }
 
   private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->
@@ -827,7 +874,10 @@ class TaskTable(
 
     cell.alignment = Pos.CENTER_LEFT
     cell.onEditingCompleted = {
-      runBlocking { newTaskActor.inboxChannel.send(EditingCompleted()) }
+      runBlocking {
+        LOGGER.debug("cell::onEditingCompleted(name): cell={}", cell)
+        newTaskActor.inboxChannel.send(EditingCompleted(cell.item))
+      }
     }
     cell.graphicSupplier = { task: Task? ->
       if (task == null) {

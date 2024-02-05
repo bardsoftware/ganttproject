@@ -5,11 +5,11 @@ import org.jooq.meta.jaxb.ForcedType
 import org.jooq.meta.jaxb.Property
 
 val kotlinVersion: String by project
-val jooqVersion = "3.19.0"
+val jooqVersion = "3.19.1"
 
 plugins {
     id("application")
-    id("org.jetbrains.kotlin.jvm") version "1.9.10"
+    id("org.jetbrains.kotlin.jvm") version "1.9.22"
     id("maven-publish")
     id("org.jetbrains.kotlin.plugin.serialization") version "1.7.21"
     id("nu.studer.jooq") version "8.2.1"
@@ -35,8 +35,8 @@ repositories {
 }
 
 dependencies {
-    implementation("biz.ganttproject:biz.ganttproject.core:23.+")
-    implementation("biz.ganttproject:ganttproject:23.+")
+    implementation("biz.ganttproject:biz.ganttproject.core:24.+")
+    implementation("biz.ganttproject:ganttproject:24.+")
     implementation("ch.qos.logback:logback-classic:1.2.11")
     implementation("com.google.guava:guava:31.1-jre")
 
@@ -48,8 +48,7 @@ dependencies {
     implementation(kotlin("reflect", version = kotlinVersion))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jooq:jooq:$jooqVersion")
-    implementation("org.jooq:jooq-meta:$jooqVersion")
-    implementation("org.jooq:jooq-codegen:$jooqVersion")
+    implementation("com.h2database:h2:2.1.214")
     implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("com.github.ajalt.clikt:clikt:4.+")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
@@ -60,7 +59,6 @@ dependencies {
     implementation(files("lib/eclipsito.jar"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
-    testImplementation("com.h2database:h2:2.1.214")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 
     jooqGenerator("org.jooq:jooq-meta-extensions:$jooqVersion")

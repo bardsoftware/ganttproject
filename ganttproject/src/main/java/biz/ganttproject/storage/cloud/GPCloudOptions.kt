@@ -19,8 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.core.option.*
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
+import java.time.Instant
 import java.util.*
 
 data class GPCloudFileOptions(
@@ -151,5 +151,9 @@ object GPCloudOptions {
   var websocketToken: String? = null
   val cloudFiles = CloudFileOptions()
   val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, defaultOfflineMode, validity, userId, cloudFiles)
+
+  val isTokenValid: Boolean get() = (validity.value.toLongOrNull() ?: 0).let {
+    (it == 0L) || (Instant.ofEpochSecond(it).isAfter(Instant.now()))
+  }
 }
 

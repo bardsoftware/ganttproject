@@ -34,10 +34,7 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.concurrent.Service
 import javafx.concurrent.Task
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
+import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
@@ -452,12 +449,14 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
         val validity = getParam(session, "validity")
         val websocketToken = getParam(session, "websocketToken")
 
+        LOG.debug("Received Auth Token:{} validity:{}", token, validity)
         onTokenReceived?.invoke(token, validity, userId, websocketToken)
         newFixedLengthResponse("").apply {
           addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
         }
       }
       "/start" -> {
+        LOG.debug("Received /start request.")
         onStart?.invoke()
         newFixedLengthResponse("").apply {
           addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
@@ -483,6 +482,7 @@ interface GPCloudHttpClient {
   }
   @Throws(IOException::class)
   fun sendGet(uri: String, args: Map<String, String?> = emptyMap()): Response
+
   @Throws(IOException::class)
   fun sendPost(uri: String, parts: Map<String, String?>, encoding: HttpPostEncoding = HttpPostEncoding.MULTIPART): Response
 }
@@ -562,7 +562,7 @@ object HttpClientBuilder {
 
   fun buildHttpClientOk(withAuth: Boolean): HttpClientOk {
     return if (withAuth) {
-      HttpClientOk(HOST.toHostString(), GPCloudOptions.userId?.value ?: "", { GPCloudOptions.authToken?.value ?: "" })
+      HttpClientOk(HOST.toHostString(), GPCloudOptions.userId.value ?: "", { GPCloudOptions.authToken.value ?: "" })
     } else {
       HttpClientOk(HOST.toHostString())
     }
@@ -603,3 +603,4 @@ fun isColloboqueLocalTest(): Boolean = cloudEnvironment == GPCloudEnv.EMULATOR
 
 private val HOST = HttpHost.create(GPCLOUD_ORIGIN)
 private val LOG = GPLogger.create("Cloud.Http")
+internal val httpScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())

@@ -4,6 +4,7 @@
  */
 package net.sourceforge.ganttproject.document;
 
+import biz.ganttproject.app.AppDirsKt;
 import biz.ganttproject.core.option.DefaultStringOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -71,7 +72,7 @@ public class DocumentCreator implements DocumentManager {
         myWebDavStorage.getWebDavReleaseLockOption(),
         myWebDavStorage.getProxyOption()
     });
-    myUserDir = DocumentKt.getUserDir();
+    myUserDir = AppDirsKt.getUserDir();
   }
 
   /**

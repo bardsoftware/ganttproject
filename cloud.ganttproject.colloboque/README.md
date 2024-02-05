@@ -7,8 +7,16 @@ This document gives an overview of a real-time collaboration server for GanttPro
 Colloboque server uses a couple of libraries from GanttProject. They are available in GanttProject GitHub packages, and 
 it is possible to build them locally.
 
-### Building
+### Building libraries from sources
 
+GanttProject and Colloboque are tightly coupled and share quite a lot of code. Sometimes you may need to change the library code and immediately 
+use it in Colloboque. For these purposes, you may want to build the libs locally and access them from the local Maven
+repository. To build the libraries, run `cd .. && gradle publishtomavenlocal`. The libraries have version numbers composed
+from the current date, using YY.MM.DD pattern (e.g. 24.01.04 if a library was built on Jan 4, 2024).
+
+### Building Colloboque
+
+Colloboque can be built with the standard `gradle build` command. 
 If you want to use libs from GitHub Packages, you need to pass your GitHub username and Personal Access Token to the 
 Gradle when building Colloboque using project properties:
 

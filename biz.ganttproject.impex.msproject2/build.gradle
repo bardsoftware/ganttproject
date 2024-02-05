@@ -3,21 +3,19 @@ plugins {
 }
 
 configurations {
-    api
+    implementation.extendsFrom(providedCompile)
 }
 
 dependencies {
-    providedCompile project(path: ':ganttproject', configuration: 'exported')
-    api('net.sf.mpxj:mpxj:10.14.0') {
+    providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
+    providedCompile project(path: ':biz.ganttproject.core')
+    providedCompile project(path: ':ganttproject')
+    api('net.sf.mpxj:mpxj:11.5.4') {
         exclude group: 'org.xerial', module: 'sqlite-jdbc'
         exclude group: 'com.jgoodies'
     }
-    implementation configurations.api
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
     implementation 'javax.xml:jaxb-impl:2.1'
-
-    implementation configurations.providedCompile
-    implementation fileTree(dir: project.ext.libDir, include: ['*.jar'])
 }
 
 compileKotlin {
