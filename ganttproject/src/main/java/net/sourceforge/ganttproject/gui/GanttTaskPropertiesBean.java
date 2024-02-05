@@ -542,7 +542,7 @@ public class GanttTaskPropertiesBean extends JPanel {
   }
 
   private GanttCalendar getThird() {
-    return myThird;
+    return getThirdDateConstraint() == 1 ? myThird : null;
   }
 
 
