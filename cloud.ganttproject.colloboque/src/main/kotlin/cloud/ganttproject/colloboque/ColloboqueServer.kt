@@ -83,7 +83,7 @@ class ColloboqueServer(
             }
         }
         // TODO: get from the database
-        return "0".also {
+        return LocalDateTime.now().toString().also {
           refidToBaseTxnId[projectRefid] = it
         }
       }
