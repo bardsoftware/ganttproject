@@ -264,17 +264,29 @@ internal class CustomPropertyEditor(
 ) {
   private val localizer = run {
     val fallback1 = MappingLocalizer(mapOf()) {
-      if (it.endsWith(".label")) {
-        val key = it.split('.', limit = 2)[0]
-        RootLocalizer.formatText(key)
-      } else {
-        null
+      when {
+        it.endsWith(".label") -> {
+          val key = it.split('.', limit = 2)[0]
+          RootLocalizer.create(key)
+        }
+        it == "columnExists" -> RootLocalizer.create(it)
+        else -> null
       }
     }
     val fallback2 = RootLocalizer.createWithRootKey("option.taskProperties.customColumn", fallback1)
     RootLocalizer.createWithRootKey("option.customPropertyDialog", fallback2)
   }
-  private val nameOption = ObservableString(id = "name")
+  private val nameOption = ObservableString(id = "name", validator = {value ->
+    listItems.find { it.title == value }?.let {
+      if (it != selectedItem?.cloneOf) {
+        throw ValidationException(localizer.formatText("columnExists", value))
+      }
+    }
+    if (value.isBlank()) {
+      throw ValidationException(localizer.formatText("name.validation.empty"))
+    }
+    value
+  })
   private val typeOption = ObservableEnum(id ="type", initValue = PropertyType.STRING, allValues = PropertyType.values())
   private val defaultValueOption = ObservableString(
     id = "defaultValue",
@@ -456,6 +468,7 @@ private class CellImpl : ListCell<ColumnAsListItem>() {
 
   init {
     styleClass.add("column-item-cell")
+    alignment = Pos.CENTER_LEFT
   }
 
   override fun updateItem(item: ColumnAsListItem?, empty: Boolean) {
@@ -466,14 +479,19 @@ private class CellImpl : ListCell<ColumnAsListItem>() {
       return
     }
     text = item.title
+    if (text.isEmpty()) {
+      text = " "
+    }
     if (graphic == null) {
       graphic = iconPane
     }
     if (item.isVisible) {
+      styleClass.add("is-visible")
       styleClass.remove("is-hidden")
       iconPane.children.setAll(iconVisible)
     } else {
       if (!styleClass.contains("is-hidden")) {
+        styleClass.remove("is-visible")
         styleClass.add("is-hidden")
         iconPane.children.setAll(iconHidden)
       }
@@ -531,7 +549,7 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
         dlg.hide()
       }
     }
-    dlg.setupButton(ButtonType.CANCEL) { btn ->
+    dlg.setupButton(ButtonType.NEXT) { btn ->
       btn.text = localizer.formatText("add")
       ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP)
       btn.disableProperty().bind(columnManager.btnAddController.isDisabled)
@@ -541,7 +559,7 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
       }
       btn.styleClass.addAll("btn-attention", "secondary")
     }
-    dlg.setupButton(ButtonType.CANCEL) { btn ->
+    dlg.setupButton(ButtonType.NEXT) { btn ->
       btn.text = localizer.formatText("delete")
       ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP_2)
       btn.disableProperty().bind(columnManager.btnDeleteController.isDisabled)
