@@ -119,11 +119,11 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
       )
       add(
         DateRangePicker(previews.dateRangeModel, MappingLocalizer(mapOf(
-        "custom" to { prefixedLocalizer.formatText("dateRange.custom") },
-        "view" to { prefixedLocalizer.formatText("dateRange.currentView") },
-        "project" to { i18n.formatText("wholeProject") }
+        "custom" to { prefixedLocalizer.create("dateRange.custom") },
+        "view" to { prefixedLocalizer.create("dateRange.currentView") },
+        "project" to { i18n.create("wholeProject") }
       )) { key ->
-        i18n.formatText(key)
+        i18n.create(key)
       }).component
       )
     }

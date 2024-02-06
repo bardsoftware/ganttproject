@@ -264,11 +264,13 @@ internal class CustomPropertyEditor(
 ) {
   private val localizer = run {
     val fallback1 = MappingLocalizer(mapOf()) {
-      if (it.endsWith(".label")) {
-        val key = it.split('.', limit = 2)[0]
-        RootLocalizer.formatText(key)
-      } else {
-        null
+      when {
+        it.endsWith(".label") -> {
+          val key = it.split('.', limit = 2)[0]
+          RootLocalizer.create(key)
+        }
+        it == "columnExists" -> RootLocalizer.create(it)
+        else -> null
       }
     }
     val fallback2 = RootLocalizer.createWithRootKey("option.taskProperties.customColumn", fallback1)
@@ -351,6 +353,14 @@ internal class CustomPropertyEditor(
   }
 
   private fun onEdit() {
+    listItems.find { it.title == nameOption.value }?.let {
+      if (it != selectedItem?.cloneOf) {
+        errorUi(localizer.formatText("columnExists", nameOption.value ?: ""))
+        return
+      } else {
+        errorUi(null)
+      }
+    }
     if (!isPropertyChangeIgnored) {
       selectedItem?.let {selected ->
         selected.title = nameOption.value ?: ""
