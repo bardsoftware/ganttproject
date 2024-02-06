@@ -19,7 +19,6 @@
       -fx-font-size: 100%;
       -fx-padding: 5 10 5 15;
       -fx-strikethrough: false;
-
       .glyph-icon {
         -glyph-size: 18;
         -fx-alignment: center;
@@ -29,6 +28,9 @@
           -fx-fill: darken($gp-dark-gray, 10%);
           -glyph-size: 18;
         }
+      }
+      &.is-visible {
+        -fx-font-weight: bold;
       }
       &.is-hidden > * {
         -fx-fill: lighten($gp-medium-gray, 20%);
