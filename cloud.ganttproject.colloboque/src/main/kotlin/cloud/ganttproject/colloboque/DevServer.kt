@@ -91,9 +91,7 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
           val baseTxnId = colloboqueServer.getBaseTxnId(it) ?: run {
             colloboqueServer.init(it, PROJECT_XML_TEMPLATE)
           }
-          LOG.debug("Relevant transaction logs: {}", colloboqueServer.getProjectRecords(baseTxnId))
 
-          // TODO: find relevant xml config
           newFixedLengthResponse(PROJECT_XML_TEMPLATE.toBase64()).also { response ->
             response.addHeader("ETag", "-1")
             response.addHeader("Digest", CRC32().let { hash ->
@@ -196,7 +194,7 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
 
 private val STARTUP_LOG = GPLogger.create("Startup")
 private val LOG = GPLogger.create("ColloboqueWebServer")
-val PROJECT_XML_TEMPLATE = """
+private val PROJECT_XML_TEMPLATE = """
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">
   <tasks empty-milestones="true">
