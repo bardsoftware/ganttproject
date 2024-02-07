@@ -589,9 +589,15 @@ public class TaskImpl implements Task {
 
   @Override
   public void setThirdDate(GanttCalendar third) {
-    Date closestWorkingStart = myManager.findClosestWorkingTime(third.getTime());
-    third.setTime(closestWorkingStart);
-    myThird = third;
+    if (third == null) {
+      myThird = null;
+      myThirdDateConstraint = 0;
+    } else {
+      Date closestWorkingStart = myManager.findClosestWorkingTime(third.getTime());
+      third.setTime(closestWorkingStart);
+      myThird = third;
+      myThirdDateConstraint = 1;
+    }
   }
 
   @Override

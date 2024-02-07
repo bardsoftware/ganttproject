@@ -82,6 +82,23 @@ class InternationalizationTest {
     assertEquals("Hello, World!", i18n.formatText("hello", i18n.formatText("world")))
     assertEquals("Hello, GanttProject!", i18n.formatText("hello", i18n.formatText("ganttproject")))
   }
+
+  @Test fun `mapping localizer`() {
+    val rootLocalizer = DefaultLocalizer(
+      currentTranslation = newResourceBundle(mapOf(
+        "foo.hello" to "Hello, {0}",
+    )))
+    val mappingLocalizer = MappingLocalizer(mapOf(
+      "helloWorld" to { rootLocalizer.create("foo.hello") }
+    )) {
+      LocalizedString("Unknown String", DummyLocalizer)
+    }
+
+    assertEquals("Hello, Local World", mappingLocalizer.formatText("helloWorld", "Local World"))
+    assertEquals("Unknown String", mappingLocalizer.formatText("helloUniverse"))
+  }
+
+
 }
 
 private fun newResourceBundle(kv: Map<Any, Any>) : SimpleObjectProperty<ResourceBundle?> {
