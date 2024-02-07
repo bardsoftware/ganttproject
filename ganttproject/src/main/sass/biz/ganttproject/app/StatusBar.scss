@@ -1,0 +1,69 @@
+/*!
+ * Copyright 2024 BarD Software s.r.o., Dmitry Barashev.
+ *
+ * This file is part of GanttProject, an opensource project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
+@import "theme";
+@import "../lib/fx/ToggleSwitch";
+
+.statusbar {
+  -fx-background-color: transparent;
+  -fx-text-fill: $gp-dark-gray;
+  -fx-padding: 1ex 24px;
+  -fx-alignment: center-left;
+  -fx-min-width: 50em;
+
+  Button {
+    -fx-min-height: 26px;
+    -fx-alignment: center;
+    -fx-background-color: transparent;
+    -fx-padding: 0 0.5em;
+
+    &:hover {
+      -fx-fill: $gp-dark-gray;
+      -fx-cursor: hand;
+
+      &.glyph-icon {
+        -fx-fill: $gp-dark-gray;
+      }
+    }
+    .glyph-icon {
+      -fx-alignment: center;
+      -fx-fill: $gp-medium-gray;
+      -glyph-size: 20px;
+    }
+  }
+  Button:pressed .glyph-icon, .statusbar Button:hover:pressed .glyph-icon {
+    -fx-fill: derive($gp-dark-gray, -15%);
+  }
+}
+
+.statusbar > * {
+  -fx-text-fill: $gp-medium-gray;
+}
+
+.statusbar Button .decoration-warning,
+.statusbar Button:hover .decoration-warning,
+.statusbar Button:hover:pressed .decoration-warning {
+  -fx-fill: #ff6f85;
+  -fx-background-color: #ff6f85;
+  -fx-border-color: none;
+}
+
+.dlg-connect {
+  -fx-pref-height: 400;
+  -fx-pref-width: 400;
+}
