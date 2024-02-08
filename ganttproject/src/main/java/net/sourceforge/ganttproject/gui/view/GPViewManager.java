@@ -28,21 +28,21 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
  * @author bard
  */
 public interface GPViewManager {
-  public void createView(GPView view, Icon icon);
+  void createView(ViewProvider view, Icon icon);
 
-  public GPAction getCopyAction();
+  GPAction getCopyAction();
 
-  public GPAction getCutAction();
+  GPAction getCutAction();
 
-  public GPAction getPasteAction();
+  GPAction getPasteAction();
 
-  public ChartSelection getSelectedArtefacts();
+  ChartSelection getSelectedArtefacts();
 
-  public Chart getActiveChart();
+  Chart getActiveChart();
 
-  public void activateNextView();
+  void activateNextView();
 
-  public void activatePrevView();
+  void activatePrevView();
 
-  public void toggleVisible(GPView view);
+  void toggleVisible(ViewProvider view);
 }

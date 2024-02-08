@@ -26,6 +26,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
 import net.sourceforge.ganttproject.gui.GPColorChooser;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.task.Task;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -42,10 +43,11 @@ import java.util.Set;
  * @author dbarashev (Dmitry Barashev)
  */
 class ViewSaver extends SaverBase {
-  public void save(UIFacade facade, ColumnList taskColumnList, TaskFilterManager taskFilterManager, TransformerHandler handler) throws SAXException {
+  public void save(UIFacade facade, ViewProvider ganttViewProvider, ViewProvider resourceViewProvider, ColumnList taskColumnList, TaskFilterManager taskFilterManager, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
     addAttribute("zooming-state", facade.getZoomManager().getZoomState().getPersistentName(), attrs);
     addAttribute("id", "gantt-chart", attrs);
+    ganttViewProvider.getPersistentAttributes().forEach((key, value) -> addAttribute(key, value, attrs));
     startElement("view", attrs, handler);
     writeColumns(taskColumnList, handler);
     new OptionSaver().saveOptionList(handler, facade.getGanttChart().getTaskLabelOptions().getOptions());
@@ -55,6 +57,7 @@ class ViewSaver extends SaverBase {
     endElement("view", handler);
 
     addAttribute("id", "resource-table", attrs);
+    resourceViewProvider.getPersistentAttributes().forEach((key, value) -> addAttribute(key, value, attrs));
     startElement("view", attrs, handler);
     writeColumns(facade.getResourceTree().getVisibleFields(), handler);
 

@@ -42,6 +42,7 @@ import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.LanguageOption;
@@ -411,23 +412,18 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   @Override
-  public int getGanttDividerLocation() {
-    return myFallbackDelegate.getGanttDividerLocation();
-  }
-
-  @Override
   public void setGanttDividerLocation(int location) {
     myFallbackDelegate.setGanttDividerLocation(location);
   }
 
   @Override
-  public int getResourceDividerLocation() {
-    return myFallbackDelegate.getResourceDividerLocation();
+  public void setResourceDividerLocation(int location) {
+    myFallbackDelegate.setResourceDividerLocation(location);
   }
 
   @Override
-  public void setResourceDividerLocation(int location) {
-    myFallbackDelegate.setResourceDividerLocation(location);
+  public GPViewManager getViewManager() {
+    return myFallbackDelegate.getViewManager();
   }
 
   @Override

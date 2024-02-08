@@ -8,16 +8,16 @@ import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.chart.Chart
-import net.sourceforge.ganttproject.gui.view.GPView
+import net.sourceforge.ganttproject.gui.view.ViewProvider
 import javax.swing.JComponent
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder
-import net.sourceforge.ganttproject.resource.HumanResource
 import java.awt.Component
 
 internal class ResourceChartTabContentPanel(
   project: IGanttProject, workbenchFacade: UIFacade, private val myTreeFacade: GanttResourcePanel,
-  override val chartComponent: Component
-) : ChartTabContentPanel(project, workbenchFacade, workbenchFacade.resourceChart), GPView {
+  override val chartComponent: JComponent
+) : ChartTabContentPanel(project, workbenchFacade, workbenchFacade.resourceChart),
+  ViewProvider {
 
   private var myTabContentPanel: JComponent? = null
   val component: JComponent
@@ -53,21 +53,18 @@ internal class ResourceChartTabContentPanel(
     return myTreeFacade.treeComponent
   }
 
-  override fun getChart(): Chart {
-    return getUiFacade().resourceChart
-  }
+  override val chart: Chart
+    get() = getUiFacade().resourceChart
+  override val viewComponent: Component
+    get() = component
+  override val node: Node
+    get() = Pane()
+  override val id: String
+    get() = "resourceChart"
+  override var persistentAttributes: Map<String, String>
+    get() = mapOf()
+    set(value) {}
 
-  override fun getViewComponent(): Component {
-    return component
-  }
-
-  override fun getNode(): Node {
-    return Pane()
-  }
-
-  override fun getId(): String {
-    return "resourceChart"
-  }
 
   init {
     addTableResizeListeners(myTreeFacade.treeComponent, myTreeFacade.treeTable.scrollPane.viewport)

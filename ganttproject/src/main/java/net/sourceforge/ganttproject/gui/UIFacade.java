@@ -29,6 +29,7 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -132,14 +133,11 @@ public interface UIFacade {
 
   void setViewIndex(int viewIndex);
 
-  int getGanttDividerLocation();
-
   void setGanttDividerLocation(int location);
-
-  int getResourceDividerLocation();
 
   void setResourceDividerLocation(int location);
 
+  GPViewManager getViewManager();
   /** Refreshes the UI (ie repaints all tasks in the chart) */
   void refresh();
 

@@ -43,9 +43,9 @@ class ViewHolder implements ChartSelectionListener, GanttLanguage.Listener {
 
   private final ViewManagerImpl myManager;
 
-  private final GPView myView;
+  private final ViewProvider myView;
 
-  ViewHolder(ViewManagerImpl manager, GanttTabbedPane tabs, GPView view, Icon icon, View fxView) {
+  ViewHolder(ViewManagerImpl manager, GanttTabbedPane tabs, ViewProvider view, Icon icon, View fxView) {
     myManager = manager;
     myTabs = tabs;
     myView = view;

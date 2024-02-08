@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action;
 
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.gui.view.GPView;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 
 import java.awt.event.ActionEvent;
@@ -31,11 +31,11 @@ import java.text.MessageFormat;
 public class ViewToggleAction extends GPAction {
   private final Chart myChart;
 
-  private final GPView myView;
+  private final ViewProvider myView;
 
   private final GPViewManager myViewManager;
 
-  public ViewToggleAction(Chart chart, GPViewManager viewManager, GPView view) {
+  public ViewToggleAction(Chart chart, GPViewManager viewManager, ViewProvider view) {
     myChart = chart;
     myView = view;
     myViewManager = viewManager;

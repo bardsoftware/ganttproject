@@ -16,21 +16,19 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.gui.view;
+package net.sourceforge.ganttproject.gui.view
 
-import java.awt.Component;
-
-import javafx.scene.Node;
-import net.sourceforge.ganttproject.chart.Chart;
+import javafx.scene.Node
+import net.sourceforge.ganttproject.chart.Chart
+import java.awt.Component
 
 /**
  * @author dbarashev (Dmitry Barashev)
  */
-public interface GPView {
-  public Chart getChart();
-
-  public Component getViewComponent();
-
-  Node getNode();
-  String getId();
+interface ViewProvider {
+  val chart: Chart
+  val viewComponent: Component
+  val node: Node
+  val id: String
+  var persistentAttributes: Map<String, String>
 }

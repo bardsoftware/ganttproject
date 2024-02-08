@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttPreviousState;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -52,19 +53,27 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
   private final UIFacade myUIFacade;
   private final Supplier<ColumnList> myTaskColumnList;
   private final Supplier<TaskFilterManager> myTaskFilters;
+  private final ViewProvider myGanttViewProvider;
+  private final ViewProvider myResourceViewProvider;
 
   private GanttGraphicArea area;
 
   public GanttXMLSaver(IGanttProject project) {
-    this(project, null, null, () -> null, () -> null);
+    this(project, null, null, null, null, () -> null, () -> null);
   }
 
-  public GanttXMLSaver(IGanttProject project, GanttGraphicArea area, UIFacade uiFacade, Supplier<ColumnList> taskColumnList, Supplier<TaskFilterManager> taskFilters) {
+  public GanttXMLSaver(IGanttProject project, GanttGraphicArea area, UIFacade uiFacade,
+                       ViewProvider ganttViewProvider,
+                       ViewProvider resourceViewProvider,
+                       Supplier<ColumnList> taskColumnList,
+                       Supplier<TaskFilterManager> taskFilters) {
     this.area = area;
     myProject = project;
     myUIFacade = uiFacade;
     myTaskColumnList = taskColumnList;
     myTaskFilters = taskFilters;
+    myGanttViewProvider = ganttViewProvider;
+    myResourceViewProvider = resourceViewProvider;
   }
 
   @Override
@@ -84,8 +93,8 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
         addAttribute("view-index", "" + myUIFacade.getViewIndex(), attrs);
         // TODO for GP 2.0: move view configurations into <view> tag (see
         // ViewSaver)
-        addAttribute("gantt-divider-location", "" + myUIFacade.getGanttDividerLocation(), attrs);
-        addAttribute("resource-divider-location", "" + myUIFacade.getResourceDividerLocation(), attrs);
+//        addAttribute("gantt-divider-location", "" + myUIFacade.getGanttDividerLocation(), attrs);
+//        addAttribute("resource-divider-location", "" + myUIFacade.getResourceDividerLocation(), attrs);
       }
       addAttribute("version", VERSION, attrs);
       addAttribute("locale", GanttLanguage.getInstance().getLocale().toString(), attrs);
@@ -135,7 +144,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
 
   private void saveViews(TransformerHandler handler) throws SAXException {
     if (getUIFacade() != null) {
-      new ViewSaver().save(getUIFacade(), myTaskColumnList.get(), myTaskFilters.get(), handler);
+      new ViewSaver().save(getUIFacade(), myGanttViewProvider, myResourceViewProvider, myTaskColumnList.get(), myTaskFilters.get(), handler);
     }
   }
 

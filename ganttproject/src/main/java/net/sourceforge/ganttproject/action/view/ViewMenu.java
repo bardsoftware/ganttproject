@@ -25,13 +25,16 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ViewToggleAction;
 import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.gui.view.GPView;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.plugins.PluginManager;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Collection of actions present in the view menu
@@ -46,14 +49,14 @@ public class ViewMenu extends JMenu {
     }
     for (Chart chart : charts) {
       chart.init(project, dpiOption, chartFontOption);
-      GPView view = new GPViewImpl(chart);
+      ViewProvider view = new GPViewImpl(chart);
       viewManager.createView(view, null);
       add(new JCheckBoxMenuItem(new ViewToggleAction(chart, viewManager, view)));
     }
     setToolTipText(null);
   }
 
-  private static class GPViewImpl implements GPView {
+  private static class GPViewImpl implements ViewProvider {
     private final Chart myChart;
     private Component myComponent;
 
@@ -82,5 +85,14 @@ public class ViewMenu extends JMenu {
       return null;
     }
 
+    @NotNull
+    @Override
+    public Map<String, String> getPersistentAttributes() {
+      return Collections.emptyMap();
+    }
+
+    @Override
+    public void setPersistentAttributes(@NotNull Map<String, String> stringStringMap) {
+    }
   }
 }

@@ -32,6 +32,7 @@ import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -155,20 +156,8 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public int getGanttDividerLocation() {
-    // TODO Auto-generated method stub
-    return 0;
-  }
-
-  @Override
   public void setGanttDividerLocation(int location) {
     // TODO Auto-generated method stub
-  }
-
-  @Override
-  public int getResourceDividerLocation() {
-    // TODO Auto-generated method stub
-    return 0;
   }
 
   @Override
@@ -176,7 +165,12 @@ public class ConsoleUIFacade implements UIFacade {
     // TODO Auto-generated method stub
   }
 
-  @Override
+    @Override
+    public GPViewManager getViewManager() {
+        return null;
+    }
+
+    @Override
   public void refresh() {
     // TODO Auto-generated method stub
   }

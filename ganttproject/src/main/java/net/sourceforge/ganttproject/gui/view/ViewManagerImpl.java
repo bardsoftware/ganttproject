@@ -32,11 +32,8 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Predicate;
 
 /**
  * View manager implementation based on the tab pane.
@@ -45,7 +42,7 @@ import java.util.function.Predicate;
  */
 public class ViewManagerImpl implements GPViewManager {
   private final GanttTabbedPane myTabs;
-  private final Map<GPView, ViewHolder> myViews = new LinkedHashMap<GPView, ViewHolder>();
+  private final Map<ViewProvider, ViewHolder> myViews = new LinkedHashMap<ViewProvider, ViewHolder>();
   private final ViewPane myViewPane;
   //GPView mySelectedView;
 
@@ -104,7 +101,7 @@ public class ViewManagerImpl implements GPViewManager {
     return new ProjectEventListener.Stub() {
       @Override
       public void projectClosed() {
-        for (GPView view : myViews.keySet()) {
+        for (ViewProvider view : myViews.keySet()) {
           view.getChart().reset();
         }
       }
@@ -132,19 +129,19 @@ public class ViewManagerImpl implements GPViewManager {
     myTabs.setSelectedIndex((myTabs.getSelectedIndex() - 1 + myTabs.getTabCount()) % myTabs.getTabCount());
   }
 
-  public GPView getSelectedView() {
+  public ViewProvider getSelectedView() {
     return myViews.keySet().stream().filter(view -> view.getId().equals(myViewPane.getSelectedViewId())).findFirst().get();
   }
 
   @Override
-  public void createView(GPView view, Icon icon) {
+  public void createView(ViewProvider view, Icon icon) {
     var fxView = myViewPane.createView(view.getNode(), view.getId());
     ViewHolder viewHolder = new ViewHolder(this, myTabs, view, icon, fxView);
     myViews.put(view, viewHolder);
   }
 
   @Override
-  public void toggleVisible(GPView view) {
+  public void toggleVisible(ViewProvider view) {
     ViewHolder viewHolder = myViews.get(view);
     assert viewHolder != null;
     viewHolder.setVisible(!viewHolder.isVisible());

@@ -842,18 +842,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   @Override
-  public int getGanttDividerLocation() {
-    return myGanttChartTabContent.getDividerLocation();
-  }
-
-  @Override
   public void setGanttDividerLocation(int location) {
     myGanttChartTabContent.setDividerLocation(location);
-  }
-
-  @Override
-  public int getResourceDividerLocation() {
-    return myResourceChartTabContent.getDividerLocation();
   }
 
   @Override
@@ -875,6 +865,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     @Override
     public GPSaver newSaver() {
       return new GanttXMLSaver(GanttProject.this, getArea(), getUIFacade(),
+        myGanttChartTabContent,
+        myResourceChartTabContent,
         () -> myTaskTableSupplier.get().getColumnList(), () -> myTaskFilterManager);
     }
   }
