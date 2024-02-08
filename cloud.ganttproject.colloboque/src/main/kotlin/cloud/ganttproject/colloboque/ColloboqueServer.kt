@@ -108,7 +108,7 @@ class ColloboqueServer(
       LOG.debug("Next xlog: $inputXlog")
       try {
         val newBaseTxnId = applyXlog(inputXlog.projectRefid, inputXlog.baseTxnId, inputXlog.transactions[0])
-                           ?: continue
+          ?: continue
         val response = ServerResponse.CommitResponse(
           inputXlog.baseTxnId,
           newBaseTxnId,
