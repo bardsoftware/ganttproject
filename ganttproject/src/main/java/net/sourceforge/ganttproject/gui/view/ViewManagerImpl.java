@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.view;
 
+import biz.ganttproject.app.ViewPane;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -35,6 +36,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * View manager implementation based on the tab pane.
@@ -44,13 +46,15 @@ import java.util.Map;
 public class ViewManagerImpl implements GPViewManager {
   private final GanttTabbedPane myTabs;
   private final Map<GPView, ViewHolder> myViews = new LinkedHashMap<GPView, ViewHolder>();
-  GPView mySelectedView;
+  private final ViewPane myViewPane;
+  //GPView mySelectedView;
 
   private final CopyAction myCopyAction;
   private final CutAction myCutAction;
   private final PasteAction myPasteAction;
 
-  public ViewManagerImpl(IGanttProject project, UIFacade uiFacade, GanttTabbedPane tabs, GPUndoManager undoManager) {
+  public ViewManagerImpl(IGanttProject project, UIFacade uiFacade, GanttTabbedPane tabs, GPUndoManager undoManager, ViewPane viewPane) {
+    myViewPane = viewPane;
     myTabs = tabs;
     project.addProjectEventListener(getProjectEventListener());
     // Create actions
@@ -58,6 +62,7 @@ public class ViewManagerImpl implements GPViewManager {
     myCutAction = new CutAction(this, undoManager);
     myPasteAction = new PasteAction(project, uiFacade, this, undoManager);
 
+    /*
     myTabs.getModel().addChangeListener(e -> {
       GPView selectedView = (GPView) myTabs.getSelectedUserObject();
       if (mySelectedView == selectedView) {
@@ -72,6 +77,7 @@ public class ViewManagerImpl implements GPViewManager {
       myViews.get(mySelectedView).setActive(true);
       updateActions();
     });
+     */
   }
 
   @Override
@@ -91,7 +97,7 @@ public class ViewManagerImpl implements GPViewManager {
 
   @Override
   public ChartSelection getSelectedArtefacts() {
-    return mySelectedView.getChart().getSelection();
+    return getSelectedView().getChart().getSelection();
   }
 
   ProjectEventListener getProjectEventListener() {
@@ -106,14 +112,14 @@ public class ViewManagerImpl implements GPViewManager {
   }
 
   void updateActions() {
-    ChartSelection selection = mySelectedView.getChart().getSelection();
+    ChartSelection selection = getSelectedView().getChart().getSelection();
     myCopyAction.setEnabled(false == selection.isEmpty());
     myCutAction.setEnabled(false == selection.isEmpty() && selection.isDeletable().isOK());
   }
 
   @Override
   public Chart getActiveChart() {
-    return mySelectedView.getChart();
+    return getSelectedView().getChart();
   }
 
   @Override
@@ -127,12 +133,13 @@ public class ViewManagerImpl implements GPViewManager {
   }
 
   public GPView getSelectedView() {
-    return mySelectedView;
+    return myViews.keySet().stream().filter(view -> view.getId().equals(myViewPane.getSelectedViewId())).findFirst().get();
   }
 
   @Override
   public void createView(GPView view, Icon icon) {
-    ViewHolder viewHolder = new ViewHolder(this, myTabs, view, icon);
+    var fxView = myViewPane.createView(view.getNode(), view.getId());
+    ViewHolder viewHolder = new ViewHolder(this, myTabs, view, icon, fxView);
     myViews.put(view, viewHolder);
   }
 

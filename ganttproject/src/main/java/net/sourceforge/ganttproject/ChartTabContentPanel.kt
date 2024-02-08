@@ -160,11 +160,11 @@ internal abstract class ChartTabContentPanel(
 
   protected abstract fun getTreeComponent(): Component
   protected abstract fun createButtonPanel(): Component?
-  fun getDividerLocation(): Int {
+  open fun getDividerLocation(): Int {
     return mySplitPane!!.dividerLocation
   }
 
-  fun setDividerLocation(location: Int) {
+  open fun setDividerLocation(location: Int) {
     mySplitPane!!.dividerLocation = location
   }
 
@@ -224,12 +224,12 @@ internal abstract class ChartTabContentPanel(
     table.addComponentListener(componentListener)
   }
 
-  open fun setActive(active: Boolean) {
-    if (active) {
-      getTreeComponent().requestFocus()
-      updateTimelineHeight()
-    }
-  }
+//  open fun setActive(active: Boolean) {
+//    if (active) {
+//      //getTreeComponent().requestFocus()
+//      updateTimelineHeight()
+//    }
+//  }
 
   //  private GanttImagePanel myImagePanel;
   init {

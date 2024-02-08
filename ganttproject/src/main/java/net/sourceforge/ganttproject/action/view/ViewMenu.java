@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.action.view;
 
 import biz.ganttproject.core.option.FontOption;
 import biz.ganttproject.core.option.IntegerOption;
+import javafx.scene.Node;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ViewToggleAction;
@@ -62,10 +63,6 @@ public class ViewMenu extends JMenu {
     }
 
     @Override
-    public void setActive(boolean active) {
-    }
-
-    @Override
     public Chart getChart() {
       return myChart;
     }
@@ -73,6 +70,16 @@ public class ViewMenu extends JMenu {
     @Override
     public Component getViewComponent() {
       return myComponent;
+    }
+
+    @Override
+    public Node getNode() {
+      return null;
+    }
+
+    @Override
+    public String getId() {
+      return null;
     }
 
   }

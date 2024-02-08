@@ -3,6 +3,8 @@
  */
 package net.sourceforge.ganttproject
 
+import javafx.scene.Node
+import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.chart.Chart
@@ -57,6 +59,14 @@ internal class ResourceChartTabContentPanel(
 
   override fun getViewComponent(): Component {
     return component
+  }
+
+  override fun getNode(): Node {
+    return Pane()
+  }
+
+  override fun getId(): String {
+    return "resourceChart"
   }
 
   init {

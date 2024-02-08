@@ -20,15 +20,17 @@ package net.sourceforge.ganttproject.gui.view;
 
 import java.awt.Component;
 
+import javafx.scene.Node;
 import net.sourceforge.ganttproject.chart.Chart;
 
 /**
  * @author dbarashev (Dmitry Barashev)
  */
 public interface GPView {
-  public void setActive(boolean active);
-
   public Chart getChart();
 
   public Component getViewComponent();
+
+  Node getNode();
+  String getId();
 }

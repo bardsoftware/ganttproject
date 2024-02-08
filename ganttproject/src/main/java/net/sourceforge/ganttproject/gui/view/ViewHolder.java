@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.gui.view;
 
 import javax.swing.Icon;
 
+import biz.ganttproject.app.View;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
 import net.sourceforge.ganttproject.gui.GanttTabbedPane;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -32,6 +33,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage.Event;
  */
 class ViewHolder implements ChartSelectionListener, GanttLanguage.Listener {
   private final GanttTabbedPane myTabs;
+  private final View myFxView;
 
   private int myIndex;
 
@@ -43,11 +45,12 @@ class ViewHolder implements ChartSelectionListener, GanttLanguage.Listener {
 
   private final GPView myView;
 
-  ViewHolder(ViewManagerImpl manager, GanttTabbedPane tabs, GPView view, Icon icon) {
+  ViewHolder(ViewManagerImpl manager, GanttTabbedPane tabs, GPView view, Icon icon, View fxView) {
     myManager = manager;
     myTabs = tabs;
     myView = view;
     myIcon = icon;
+    myFxView = fxView;
     GanttLanguage.getInstance().addListener(this);
     assert myView != null;
   }
@@ -58,18 +61,19 @@ class ViewHolder implements ChartSelectionListener, GanttLanguage.Listener {
     } else {
       myView.getChart().removeSelectionListener(this);
     }
+    myFxView.setActive(active);
   }
 
   void setVisible(boolean isVisible) {
-    if (isVisible) {
-      String tabName = myView.getChart().getName();
-      myTabs.addTab(tabName, myIcon, myView.getViewComponent(), tabName, myView);
-      myTabs.setSelectedComponent(myView.getViewComponent());
-      myIndex = myTabs.getSelectedIndex();
-
-    } else {
-      myTabs.remove(myIndex);
-    }
+//    if (isVisible) {
+//      String tabName = myView.getChart().getName();
+//      myTabs.addTab(tabName, myIcon, myView.getViewComponent(), tabName, myView);
+//      myTabs.setSelectedComponent(myView.getViewComponent());
+//      myIndex = myTabs.getSelectedIndex();
+//
+//    } else {
+//      myTabs.remove(myIndex);
+//    }
     this.isVisible = isVisible;
   }
 

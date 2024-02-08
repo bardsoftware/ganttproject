@@ -18,10 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.app.BarrierEntrance;
-import biz.ganttproject.app.FXToolbarBuilder;
-import biz.ganttproject.app.MenuBuilderFx;
-import biz.ganttproject.app.ToolbarKt;
+import biz.ganttproject.app.*;
 import biz.ganttproject.ganttview.TaskFilterActionSet;
 import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
@@ -30,12 +27,14 @@ import com.google.common.base.Suppliers;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Side;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.action.BaselineDialogAction;
@@ -87,10 +86,13 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     //addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());
   }
 
-  private Component createSchedulePanel() {
+  private FXToolbarBuilder createScheduleToolbar() {
     return new FXToolbarBuilder().withApplicationFont(TreeTableCellsKt.getApplicationFont()).addButton(myCriticalPathAction).addButton(myBaselineAction)
-      .withClasses("toolbar-common", "toolbar-small", "toolbar-chart", "align-right")
-      .withScene().build().getComponent();
+      .withClasses("toolbar-common", "toolbar-small", "toolbar-chart", "align-right");
+  }
+
+  private Component createSchedulePanel() {
+    return createScheduleToolbar().withScene().build().getComponent();
   }
 
   JComponent getComponent() {
@@ -107,7 +109,12 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   //private final TaskFilterActionSet
   @Override
   protected Component createButtonPanel() {
+    return createToolbarBuilder().withScene()
+      .build()
+      .getComponent();
+  }
 
+  private FXToolbarBuilder createToolbarBuilder() {
     Button tableFilterButton = ToolbarKt.createButton(new TableButtonAction("taskTable.tableMenuFilter"), true);
     tableFilterButton.setOnAction(event -> {
       var tableFilterMenu = new ContextMenu();
@@ -132,10 +139,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
         .addButton(myTaskActions.getLinkTasksAction().asToolbarAction())
         .addButton(myTaskActions.getUnlinkTasksAction().asToolbarAction())
         .addTail(filterComponent)
-        .withClasses("toolbar-common", "toolbar-small", "task-filter")
-        .withScene()
-        .build()
-        .getComponent();
+        .withClasses("toolbar-common", "toolbar-small", "task-filter");
   }
 
   static class TableButtonAction extends GPAction {
@@ -156,7 +160,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   @Override
   protected @NotNull Component getTreeComponent() {
     var jfxPanel = new JFXPanel();
-    var taskTable = myTaskTableSupplier.get();
+    this.taskTable = setupTaskTable();
     jfxPanel.addKeyListener(new KeyAdapter() {
       @Override
       public void keyPressed(KeyEvent e) {
@@ -171,7 +175,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
       setMyHeaderHeight(() -> taskTable.getHeaderHeightProperty().intValue());
       myInitializationCompleted.invoke();
     });
-    taskTable.getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> updateTimelineHeight());
     taskTable.setRequestSwingFocus(() -> {
       jfxPanel.requestFocus();
       return null;
@@ -180,6 +183,13 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
     taskTable.getColumnListWidthProperty().addListener((observable, oldValue, newValue) ->
       SwingUtilities.invokeLater(() -> setTableWidth(newValue.component1() + newValue.component2()))
     );
+
+    return jfxPanel;
+  }
+
+  private TaskTable setupTaskTable() {
+    var taskTable = myTaskTableSupplier.get();
+    taskTable.getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> updateTimelineHeight());
     taskTable.loadDefaultColumns();
     taskTable.getFilterManager().getHiddenTaskCount().addListener((obs,  oldValue,  newValue) -> Platform.runLater(() -> {
       if (newValue.intValue() != 0) {
@@ -188,21 +198,19 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
         filterTaskLabel.setText("");
       }
     }));
-
-    this.taskTable = taskTable;
-    return jfxPanel;
+    return taskTable;
   }
 
   // //////////////////////////////////////////////
   // GPView
-  @Override
-  public void setActive(boolean active) {
-    if (active) {
-      //myTaskTree.requestFocus();
-      this.taskTable.initUserKeyboardInput();
-      myTaskActions.getCreateAction().updateAction();
-    }
-  }
+//  @Override
+//  public void setActive(boolean active) {
+//    if (active) {
+//      //myTaskTree.requestFocus();
+//      this.taskTable.initUserKeyboardInput();
+//      myTaskActions.getCreateAction().updateAction();
+//    }
+//  }
 
   @Override
   public Chart getChart() {
@@ -212,5 +220,22 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements GPView {
   @Override
   public Component getViewComponent() {
     return getComponent();
+  }
+
+  @Override
+  public Node getNode() {
+    myInitializationCompleted.invoke();
+    return ViewPaneKt.createViewComponent(
+      /*toolbarBuilder=*/      () -> createToolbarBuilder().build().getToolbar$ganttproject(),
+      /*tableBuilder=*/        () -> setupTaskTable().getTreeTable(),
+      /*chartToolbarBuilder=*/ () -> createScheduleToolbar().build().getToolbar$ganttproject(),
+      /*chartBuilder=*/        this::getChartComponent,
+      myWorkbenchFacade.getDpiOption()
+    );
+  }
+
+  @Override
+  public String getId() {
+    return "ganttChart";
   }
 }

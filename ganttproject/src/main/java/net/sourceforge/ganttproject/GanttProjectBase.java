@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.app.Barrier;
 import biz.ganttproject.app.TwoPhaseBarrierImpl;
+import biz.ganttproject.app.ViewPane;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
@@ -70,6 +71,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.text.View;
 import java.awt.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -211,7 +213,9 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myTaskManager.addTaskListener(databaseProxy.createTaskEventListener());
     statusBar = new GanttStatusBar(this);
     myTabPane = new GanttTabbedPane();
-    myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());
+    //myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());
+    var viewPane = new ViewPane();
+    myContentPaneBuilder = new ContentPaneBuilder(viewPane, getStatusBar());
 
     NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
     myUIFacade = new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
@@ -257,7 +261,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
       }
     };
 //    myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
-    myViewManager = new ViewManagerImpl(getProject(), myUIFacade, myTabPane, getUndoManager());
+    myViewManager = new ViewManagerImpl(getProject(), myUIFacade, myTabPane, getUndoManager(), viewPane);
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
     myUIFacade.addOptions(myRssChecker.getUiOptions());

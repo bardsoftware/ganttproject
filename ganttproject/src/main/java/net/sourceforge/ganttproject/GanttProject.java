@@ -263,7 +263,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     //final FXToolbar toolbar = fxToolbar;
     //final List<? extends JComponent> buttons = addButtons(getToolBar());
     // Chart tabs
-    getTabs().setSelectedIndex(0);
+    //getTabs().setSelectedIndex(0);
 
     startupLogger.debug("6. changing language ...");
     languageChanged(null);
@@ -508,7 +508,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
 
     UIUtil.registerActions(getRootPane(), false, newAction, propertiesAction, deleteAction);
-    UIUtil.registerActions(myGanttChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
+    // TODO: it might be necessary to uncomment it
+    //UIUtil.registerActions(myGanttChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
     UIUtil.registerActions(myResourceChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
     getTabs().getModel().addChangeListener(e -> {
       // Tell artefact actions that the active provider changed, so they

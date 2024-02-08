@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.window;
 
+import biz.ganttproject.app.ViewPane;
+import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.control.MenuBar;
@@ -38,15 +40,17 @@ import java.awt.*;
  * @author dbarashev (Dmitry Barashev)
  */
 public class ContentPaneBuilder {
-  private final GanttTabbedPane myTabbedPane;
+  //private final GanttTabbedPane myTabbedPane;
   private final GanttStatusBar myStatusBar;
   private final AnimationHostImpl myAnimationHost = new AnimationHostImpl();
   private final JFXPanel myMenuPanel;
+  private final ViewPane myViewPane;
 
-  public ContentPaneBuilder(GanttTabbedPane tabbedPane, GanttStatusBar statusBar) {
-    myTabbedPane = tabbedPane;
+  public ContentPaneBuilder(ViewPane viewPane, GanttStatusBar statusBar) {
+    //myTabbedPane = tabbedPane;
     myStatusBar = statusBar;
     myMenuPanel = new JFXPanel();
+    myViewPane = viewPane;
   }
 
   public void build(Component toolbar, Container contentPane) {
@@ -56,7 +60,13 @@ public class ContentPaneBuilder {
     topPanel.add(myMenuPanel, BorderLayout.NORTH);
     topPanel.add(toolbar, BorderLayout.CENTER);
     contentPanel.add(topPanel, BorderLayout.NORTH);
-    contentPanel.add(myTabbedPane, BorderLayout.CENTER);
+    //contentPanel.add(myTabbedPane, BorderLayout.CENTER);
+    var jfxPanel = new JFXPanel();
+    Platform.runLater(() -> {
+      var scene = new Scene(myViewPane.createComponent());
+      jfxPanel.setScene(scene);
+    });
+    contentPanel.add(jfxPanel, BorderLayout.CENTER);
     contentPanel.add(myStatusBar, BorderLayout.SOUTH);
     contentPane.add(contentPanel);
   }
