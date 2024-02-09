@@ -1,18 +1,17 @@
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jooq.meta.jaxb.ForcedType
 import org.jooq.meta.jaxb.Property
 
 val kotlinVersion: String by project
-val jooqVersion = "3.19.1"
+val jooqVersion = "3.19.3"
 
 plugins {
     id("application")
     id("org.jetbrains.kotlin.jvm") version "1.9.22"
     id("maven-publish")
     id("org.jetbrains.kotlin.plugin.serialization") version "1.7.21"
-    id("nu.studer.jooq") version "8.2.1"
+    id("nu.studer.jooq") version "9.0"
 }
 
 application {
@@ -65,6 +64,7 @@ dependencies {
 }
 
 jooq {
+    version.set(jooqVersion)
     configurations {
         create("main") {
             jooqConfiguration.apply {
@@ -115,6 +115,9 @@ tasks.getByName<Test>("test") {
     dependsOn("copyDbScript")
 }
 
+tasks.getByName<ProcessResources>("processTestResources") {
+    dependsOn("copyDbScript")
+}
 
 group = "cloud.ganttproject"   // Generated output GroupId
 version = "22-SNAPSHOT" // Version in generated output
