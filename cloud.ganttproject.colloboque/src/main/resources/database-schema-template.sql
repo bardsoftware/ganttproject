@@ -4,7 +4,7 @@
 CREATE SCHEMA project_template;
 SET search_path TO project_template;
 CREATE TYPE "taskintpropertyname" AS ENUM ('completion', 'priority');
-CREATE TYPE "tasktextpropertyname" AS ENUM ('color', 'shape', 'web_link', 'notes');
+CREATE TYPE "tasktextpropertyname" AS ENUM ('priority', 'color', 'shape', 'web_link', 'notes');
 
 -- Basic task data
 CREATE TABLE TaskName(
