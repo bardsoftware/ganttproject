@@ -25,19 +25,17 @@ import biz.ganttproject.storage.cloud.GPCloudEnv
 import biz.ganttproject.storage.cloud.getCloudEnv
 import com.beust.jcommander.JCommander
 import javafx.application.Platform
+import javafx.stage.Stage
 import net.sourceforge.ganttproject.export.CommandLineExportApplication
 import net.sourceforge.ganttproject.gui.CommandLineProjectOpenStrategy
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.plugins.PluginManager
 import net.sourceforge.ganttproject.task.TaskManagerImpl
 import org.slf4j.Logger
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
 import java.io.File
 import java.lang.Thread.UncaughtExceptionHandler
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
-import javax.swing.JFrame
 import javax.swing.SwingUtilities
 
 
@@ -61,12 +59,12 @@ val mainWindow = AtomicReference<GanttProject?>(null)
  * @author dbarashev@bardsoftware.com
  */
 @JvmOverloads
-fun startUiApp(configure: (GanttProject) -> Unit = {}) {
+fun _startUiApp(configure: (GanttProject) -> Unit = {}) {
 
   Platform.setImplicitExit(false)
   SwingUtilities.invokeLater {
     try {
-      val ganttFrame = GanttProject(false)
+      val ganttFrame = GanttProject()
       configure(ganttFrame)
       APP_LOGGER.debug("Main frame created")
       mainWindow.set(ganttFrame)
@@ -77,10 +75,28 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
   }
 }
 
+fun startUiApp(configure: (GanttProject) -> Unit = {}) {
+  //Platform.setImplicitExit(false)
+  try {
+    Platform.startup{
+      val ganttFrame = GanttProject()
+      configure(ganttFrame)
+      val app = GanttProjectFxApp(ganttFrame)
+      app.init()
+      app.start(Stage())
+    }
+    APP_LOGGER.debug("Main frame created")
+    //mainWindow.set(ganttFrame)
+  } catch (e: Throwable) {
+    APP_LOGGER.error("Failure when launching application", exception = e)
+  } finally {
+  }
+}
+
 val APP_LOGGER: LoggerApi<Logger> = GPLogger.create("App")
 
 typealias RunBeforeUi = ()->Unit
-typealias RunAfterWindowOpened = (JFrame) -> Unit
+typealias RunAfterWindowOpened = () -> Unit
 typealias RunAfterAppInitialized = (GanttProject) -> Unit
 typealias RunWhenDocumentReady = (IGanttProject) -> Unit
 
@@ -192,11 +208,9 @@ class AppBuilder(args: Array<String>) {
     runBeforeUiCommands.forEach { cmd -> cmd() }
     startUiApp { ganttProject: GanttProject ->
       ganttProject.updater = org.eclipse.core.runtime.Platform.getUpdater() ?: DummyUpdater
-      ganttProject.addWindowListener(object : WindowAdapter() {
-        override fun windowOpened(e: WindowEvent?) {
-          runAfterWindowOpenedCommands.forEach { cmd -> cmd(ganttProject) }
-        }
-      })
+      ganttProject.uiFacade.onWindowOpened {
+          runAfterWindowOpenedCommands.forEach { cmd -> cmd() }
+      }
       ganttProject.uiInitializationPromise.await {
         runAfterAppInitializedCommands.forEach { cmd -> cmd(ganttProject) }
       }
