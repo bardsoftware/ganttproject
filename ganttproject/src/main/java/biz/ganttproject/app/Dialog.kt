@@ -46,8 +46,10 @@ import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.mainWindow
+import java.awt.Component
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
+import javax.swing.Action
 import javax.swing.SwingUtilities
 
 /**
@@ -68,29 +70,32 @@ import javax.swing.SwingUtilities
  * }
  */
 fun dialogFx(contentBuilder: (DialogController) -> Unit) {
-  Platform.runLater {
-    Dialog<Unit>().also {
-      it.isResizable = true
-      val dialogBuildApi = DialogControllerFx(it.dialogPane)
-      it.dialogPane.apply {
-        styleClass.addAll("dlg")
-        stylesheets.addAll(DIALOG_STYLESHEET)
-
-        contentBuilder(dialogBuildApi)
-        val window = scene.window
-        window.onCloseRequest = EventHandler {
-          window.hide()
-        }
-        scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
-      }
-      it.onShown = EventHandler { _ ->
-        it.dialogPane.layout()
-        it.dialogPane.scene.window.sizeToScene()
-      }
-      it.show()
-    }
+  dialogFxBuild(contentBuilder).also {
+    Platform.runLater(it::show)
   }
 }
+
+fun dialogFxBuild(contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
+  Dialog<Unit>().apply {
+    isResizable = true
+    val dialogBuildApi = DialogControllerFx(dialogPane)
+    dialogPane.apply {
+      styleClass.addAll("dlg")
+      stylesheets.addAll(DIALOG_STYLESHEET)
+
+      contentBuilder(dialogBuildApi)
+      val window = scene.window
+      window.onCloseRequest = EventHandler {
+        window.hide()
+      }
+      scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
+    }
+    onShown = EventHandler { _ ->
+      dialogPane.layout()
+      dialogPane.scene.window.sizeToScene()
+    }
+  }
+
 
 fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -> Unit) {
   val jfxPanel = JFXPanel()
@@ -98,6 +103,7 @@ fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -
   Platform.runLater {
     val dialogController = DialogControllerSwing()
     contentBuilder(dialogController)
+
 //++
 //    jfxPanel.scene = Scene(dialogController.build())
 //    SwingUtilities.invokeLater {
@@ -533,6 +539,9 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
     return button
   }
 }
+
+// ----------------------------------------------------------------------------
+// Overlay pane and alert panes
 
 fun createOverlayPane(underlayPane: Node, stackPane: StackPane, overlayBuilder: (BorderPane) -> Unit) : Transition {
   val notificationPane = BorderPane().also(overlayBuilder)

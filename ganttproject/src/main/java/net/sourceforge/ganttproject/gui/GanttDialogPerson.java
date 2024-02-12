@@ -92,7 +92,7 @@ public class GanttDialogPerson {
   public void setVisible(boolean isVisible) {
     if (isVisible) {
       loadFields();
-      Component contentPane = getComponent();
+      JComponent contentPane = getComponent();
       OkAction okAction = new OkAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -124,7 +124,7 @@ public class GanttDialogPerson {
     myTotalLoadField.setValue(person.getTotalLoad());
   }
 
-  private Component getComponent() {
+  private JComponent getComponent() {
     OptionsPageBuilder builder = new OptionsPageBuilder();
     OptionsPageBuilder.I18N i18n = new OptionsPageBuilder.I18N() {
       @Override

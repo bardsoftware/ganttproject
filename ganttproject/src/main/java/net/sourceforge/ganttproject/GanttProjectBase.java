@@ -370,7 +370,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   }
 
   @Override
-  public Dialog createDialog(Component content, Action[] buttonActions, String title) {
+  public Dialog createDialog(JComponent content, Action[] buttonActions, String title) {
     return myUIFacade.createDialog(content, buttonActions, title);
   }
 

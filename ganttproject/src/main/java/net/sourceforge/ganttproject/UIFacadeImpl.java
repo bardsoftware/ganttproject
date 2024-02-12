@@ -71,6 +71,8 @@ import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
 
+import static net.sourceforge.ganttproject.DialogBuilderKt.createDialogFx;
+
 class UIFacadeImpl extends ProgressProvider implements UIFacade {
   //private final JFrame myMainFrame;
   private final ScrollingManager myScrollingManager;
@@ -279,8 +281,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   @Override
-  public Dialog createDialog(Component content, Action[] buttonActions, String title) {
-    return myDialogBuilder.createDialog(content, buttonActions, title);
+  public Dialog createDialog(JComponent content, Action[] buttonActions, String title) {
+    //return myDialogBuilder.createDialog(content, buttonActions, title);
+    return createDialogFx(content, buttonActions, title);
   }
 
   @Override

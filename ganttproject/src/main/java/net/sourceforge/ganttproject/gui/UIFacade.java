@@ -102,7 +102,7 @@ public interface UIFacade {
 
   void showOptionDialog(int messageType, String message, Action[] actions);
 
-  Dialog createDialog(Component content, Action[] buttonActions, String title);
+  Dialog createDialog(JComponent content, Action[] buttonActions, String title);
 
   void setStatusText(String text);
 

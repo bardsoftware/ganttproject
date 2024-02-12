@@ -79,7 +79,7 @@ public class ViewChartOptionsDialogAction extends GPAction {
     }
   }
 
-  private Component createDialogComponent() {
+  private JComponent createDialogComponent() {
     OptionsPageBuilder builder = new OptionsPageBuilder();
     builder.setUiFacade(myUIFacade);
     JComponent comp = builder.buildPage(myChart.getOptionGroups(), "ganttChart");

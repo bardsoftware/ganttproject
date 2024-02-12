@@ -62,7 +62,7 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
   val i18n = RootLocalizer
   val prefixedLocalizer = RootLocalizer.createWithRootKey("print.preview")
 
-  dialog { dlg ->
+  dialogFx { dlg ->
     val previews = Previews(activeChart, preferences, onError = { ex ->
       dlg.showAlert(prefixedLocalizer.create("alert.title"), createAlertBody(ex))
     })
