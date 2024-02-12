@@ -262,3 +262,17 @@ fun GPAction.asMenuItem(): MenuItem =
       it.isDisable = !isEnabled
     }
   }
+
+fun convertMenu(menuBar: JMenuBar): MenuBar {
+  val builder = MenuBarBuilder()
+  for (i in 0 until menuBar.menuCount) {
+    menuBar.getMenu(i).let {jmenu ->
+      val actions = mutableListOf<GPAction?>()
+      for (ii in 0 until jmenu.itemCount) {
+        actions.add(jmenu.getItem(ii)?.action as? GPAction)
+      }
+      builder.addMenu(jmenu.text, actions)
+    }
+  }
+  return builder.build()
+}
