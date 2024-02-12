@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui.view;
 
 import biz.ganttproject.app.ViewPane;
+import javafx.application.Platform;
+import javafx.scene.Node;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -135,9 +137,14 @@ public class ViewManagerImpl implements GPViewManager {
 
   @Override
   public void createView(ViewProvider view, Icon icon) {
-    var fxView = myViewPane.createView(view.getNode(), view.getId());
-    ViewHolder viewHolder = new ViewHolder(this, myTabs, view, icon, fxView);
-    myViews.put(view, viewHolder);
+    Platform.runLater(new Runnable() {
+      @Override
+      public void run() {
+        var fxView = myViewPane.createView(view.getNode(), view.getId());
+        ViewHolder viewHolder = new ViewHolder(ViewManagerImpl.this, myTabs, view, icon, fxView);
+        myViews.put(view, viewHolder);
+      }
+    });
   }
 
   @Override
@@ -145,5 +152,10 @@ public class ViewManagerImpl implements GPViewManager {
     ViewHolder viewHolder = myViews.get(view);
     assert viewHolder != null;
     viewHolder.setVisible(!viewHolder.isVisible());
+  }
+
+  @Override
+  public Node getFxComponent() {
+    return myViewPane.createComponent();
   }
 }

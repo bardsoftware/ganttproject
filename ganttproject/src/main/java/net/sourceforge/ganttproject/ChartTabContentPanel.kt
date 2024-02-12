@@ -240,11 +240,12 @@ internal abstract class ChartTabContentPanel(
 
     myUiFacade = workbenchFacade
     myChart = Preconditions.checkNotNull(chart)
-    myUiFacade.mainFrame.addWindowListener(object : WindowAdapter() {
-      override fun windowOpened(windowEvent: WindowEvent) {
-        updateTimelineHeight()
-      }
-    })
+  //++
+  //    myUiFacade.mainFrame.addWindowListener(object : WindowAdapter() {
+//      override fun windowOpened(windowEvent: WindowEvent) {
+//        updateTimelineHeight()
+//      }
+//    })
   }
 
   fun createNavigationToolbarBuilder() = FXToolbarBuilder().also {

@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.app.FontManager;
 import biz.ganttproject.app.MenuBuilderSwing;
+import biz.ganttproject.app.SimpleBarrier;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.option.FontSpec.Size;
 import biz.ganttproject.core.table.ColumnList;
@@ -29,6 +30,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -70,7 +72,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 class UIFacadeImpl extends ProgressProvider implements UIFacade {
-  private final JFrame myMainFrame;
+  //private final JFrame myMainFrame;
   private final ScrollingManager myScrollingManager;
   private final ZoomManager myZoomManager;
   private final GanttStatusBar myStatusBar;
@@ -125,11 +127,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final IGanttProject myProject;
   private FontSpec myLastFontSpec;
 
-  UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, NotificationManagerImpl notificationManager,
+  UIFacadeImpl(GanttStatusBar statusBar, NotificationManagerImpl notificationManager,
                final IGanttProject project, UIFacade fallbackDelegate) {
-    myMainFrame = mainFrame;
     myProject = project;
-    myDialogBuilder = new DialogBuilder(mainFrame);
+    myDialogBuilder = new DialogBuilder(null);
     myScrollingManager = new ScrollingManagerImpl();
     myZoomManager = new ZoomManager(project.getTimeUnitStack());
     myStatusBar = statusBar;
@@ -243,18 +244,20 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public Choice showConfirmationDialog(String message, String title) {
-    String yes = GanttLanguage.getInstance().getText("yes");
-    String no = GanttLanguage.getInstance().getText("no");
-    String cancel = GanttLanguage.getInstance().getText("cancel");
-    int result = JOptionPane.showOptionDialog(myMainFrame, message, title, JOptionPane.YES_NO_CANCEL_OPTION,
-        JOptionPane.QUESTION_MESSAGE, null, new String[]{yes, no, cancel}, yes);
-    return switch (result) {
-      case JOptionPane.YES_OPTION -> Choice.YES;
-      case JOptionPane.NO_OPTION -> Choice.NO;
-      case JOptionPane.CANCEL_OPTION -> Choice.CANCEL;
-      case JOptionPane.CLOSED_OPTION -> Choice.CANCEL;
-      default -> Choice.CANCEL;
-    };
+    //++
+//    String yes = GanttLanguage.getInstance().getText("yes");
+//    String no = GanttLanguage.getInstance().getText("no");
+//    String cancel = GanttLanguage.getInstance().getText("cancel");
+//    int result = JOptionPane.showOptionDialog(myMainFrame, message, title, JOptionPane.YES_NO_CANCEL_OPTION,
+//        JOptionPane.QUESTION_MESSAGE, null, new String[]{yes, no, cancel}, yes);
+//    return switch (result) {
+//      case JOptionPane.YES_OPTION -> Choice.YES;
+//      case JOptionPane.NO_OPTION -> Choice.NO;
+//      case JOptionPane.CANCEL_OPTION -> Choice.CANCEL;
+//      case JOptionPane.CLOSED_OPTION -> Choice.CANCEL;
+//      default -> Choice.CANCEL;
+//    };
+    return Choice.YES;
   }
 
   @Override
@@ -287,33 +290,34 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public void showOptionDialog(int messageType, String message, Action[] actions) {
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        JOptionPane optionPane = new JOptionPane(message, messageType);
-        Object[] options = new Object[actions.length];
-        Object defaultOption = null;
-        for (int i = 0; i < actions.length; i++) {
-          options[i] = actions[i].getValue(Action.NAME);
-          if (actions[i].getValue(Action.DEFAULT) != null) {
-            defaultOption = options[i];
-          }
-        }
-        optionPane.setOptions(options);
-        if (defaultOption != null) {
-          optionPane.setInitialValue(defaultOption);
-        }
-        JDialog dialog = optionPane.createDialog(myMainFrame, "");
-        dialog.setVisible(true);
-        Object choice = optionPane.getValue();
-        for (Action a : actions) {
-          if (a.getValue(Action.NAME).equals(choice)) {
-            a.actionPerformed(null);
-            break;
-          }
-        }
-      }
-    });
+    //++
+    //    SwingUtilities.invokeLater(new Runnable() {
+//      @Override
+//      public void run() {
+//        JOptionPane optionPane = new JOptionPane(message, messageType);
+//        Object[] options = new Object[actions.length];
+//        Object defaultOption = null;
+//        for (int i = 0; i < actions.length; i++) {
+//          options[i] = actions[i].getValue(Action.NAME);
+//          if (actions[i].getValue(Action.DEFAULT) != null) {
+//            defaultOption = options[i];
+//          }
+//        }
+//        optionPane.setOptions(options);
+//        if (defaultOption != null) {
+//          optionPane.setInitialValue(defaultOption);
+//        }
+//        JDialog dialog = optionPane.createDialog(myMainFrame, "");
+//        dialog.setVisible(true);
+//        Object choice = optionPane.getValue();
+//        for (Action a : actions) {
+//          if (a.getValue(Action.NAME).equals(choice)) {
+//            a.actionPerformed(null);
+//            break;
+//          }
+//        }
+//      }
+//    });
   }
 
   @Override
@@ -431,9 +435,13 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myFallbackDelegate.refresh();
   }
 
+  private SimpleBarrier<Boolean> myWindowOpenedBarrier = new SimpleBarrier<>();
   @Override
-  public Frame getMainFrame() {
-    return myMainFrame;
+  public void onWindowOpened(Runnable code) {
+    myWindowOpenedBarrier.await(value -> {
+      code.run();
+      return Unit.INSTANCE;
+    });
   }
 
   public boolean quitApplication(boolean withSystemExit) {
@@ -459,7 +467,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public void setWorkbenchTitle(String title) {
-    myMainFrame.setTitle(title);
+    //++myMainFrame.setTitle(title);
+
   }
 
   @Override
@@ -574,7 +583,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   private void updateComponentTreeUI() {
-    SwingUtilities.updateComponentTreeUI(myMainFrame);
+    //++SwingUtilities.updateComponentTreeUI(myMainFrame);
     //myMainFrame.pack();
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {

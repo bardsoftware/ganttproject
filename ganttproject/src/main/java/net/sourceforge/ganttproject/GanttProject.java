@@ -91,6 +91,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    * GanttGraphicArea for the calendar with Gantt
    */
   private final GanttGraphicArea area;
+  private final JMenuBar myMenuBar;
 
   /**
    * GanttPeoplePanel to edit person that work on the project
@@ -139,7 +140,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private FXSearchUi mySearchUi;
 
-  public GanttProject(boolean isOnlyViewer) {
+  public JMenuBar getMenuBar() { return myMenuBar; }
+  public GanttProject() {
     LoggerApi<Logger> startupLogger = GPLogger.create("Window.Startup");
     startupLogger.debug("Creating main frame...");
     ToolTipManager.sharedInstance().setInitialDelay(200);
@@ -148,9 +150,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getProjectImpl().getHumanResourceManager().addView(this);
     myCalendar.addListener(GanttProject.this::setModified);
 
-    setFocusable(true);
+//++    setFocusable(true);
     startupLogger.debug("1. loading look'n'feels");
-    options = new GanttOptions(getRoleManager(), getDocumentManager(), isOnlyViewer);
+    options = new GanttOptions(getRoleManager(), getDocumentManager(), false);
     myUIConfiguration = options.getUIConfiguration();
     myUIConfiguration.setChartFontOption(getUiFacadeImpl().getChartFontOption());
     myUIConfiguration.setDpiOption(getUiFacadeImpl().getDpiOption());
@@ -158,7 +160,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     addProjectEventListener(getTaskManager().getProjectListener());
     getActiveCalendar().addListener(getTaskManager().getCalendarListener());
     ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject-logo-512.png"));
-    setIconImage(icon.getImage());
+//++    setIconImage(icon.getImage());
 
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
         myTaskTableChartConnector,
@@ -188,10 +190,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     startupLogger.debug("3. creating menus...");
     ResourceActionSet myResourceActions = getResourcePanel().getResourceActionSet();
     myZoomActions = new ZoomActionSet(getZoomManager());
-    JMenuBar bar = new JMenuBar();
-    setJMenuBar(bar);
+    myMenuBar = new JMenuBar();
+    //setJMenuBar(bar);
     // Allocation of the menus
 
+    var bar = myMenuBar;
     myProjectMenu = new ProjectMenu(this, "project");
     bar.add(myProjectMenu);
 
@@ -228,28 +231,29 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         getUIConfiguration(), myTaskTableSupplier, myTaskActions, myUiInitializationPromise);
 
     getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
-    getViewManager().toggleVisible(myGanttChartTabContent);
+    //getViewManager().toggleVisible(myGanttChartTabContent);
 
     myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(), getResourcePanel(),
         getResourcePanel().area);
     getViewManager().createView(myResourceChartTabContent, new ImageIcon(getClass().getResource("/icons/res_16.gif")));
-    getViewManager().toggleVisible(myResourceChartTabContent);
+    //getViewManager().toggleVisible(myResourceChartTabContent);
 
-    addComponentListener(new ComponentAdapter() {
-      @Override
-      public void componentShown(ComponentEvent e) {
-        SwingUtilities.invokeLater(() -> {
-          getGanttChart().reset();
-          getResourceChart().reset();
-          // This will clear any modifications which might be caused by
-          // adjusting widths of table columns during initial layout process.
-          getProject().setModified(false);
-        });
-      }
-    });
+//++
+//    addComponentListener(new ComponentAdapter() {
+//      @Override
+//      public void componentShown(ComponentEvent e) {
+//        SwingUtilities.invokeLater(() -> {
+//          getGanttChart().reset();
+//          getResourceChart().reset();
+//          // This will clear any modifications which might be caused by
+//          // adjusting widths of table columns during initial layout process.
+//          getProject().setModified(false);
+//        });
+//      }
+//    });
     startupLogger.debug("5. calculating size and packing...");
 
-    FXToolbar fxToolbar = createToolbar();
+    var fxToolbar = createToolbar();
     Platform.runLater(() -> {
       GPCloudStatusBar cloudStatusBar = new GPCloudStatusBar(
           myObservableDocument, getUIFacade(), getProjectUIFacade(), getProject()
@@ -259,7 +263,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       getStatusBar().setLeftScene(statusBarScene);
     });
 
-    createContentPane(fxToolbar.getComponent());
+    createContentPane(fxToolbar);
     //final FXToolbar toolbar = fxToolbar;
     //final List<? extends JComponent> buttons = addButtons(getToolBar());
     // Chart tabs
@@ -273,39 +277,40 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     startupLogger.debug("7. first attempt to restore bounds");
     restoreBounds();
-    addWindowListener(new WindowAdapter() {
-      @Override
-      public void windowClosing(WindowEvent windowEvent) {
-        quitApplication(true);
-      }
-
-      @Override
-      public void windowOpened(WindowEvent e) {
-        boundsLogger.debug("Resizing window...");
-        boundsLogger.debug("Bounds after opening: {}", new Object[]{GanttProject.this.getBounds()}, ImmutableMap.of());
-        restoreBounds();
-        // It is important to run aligners after look and feel is set and font sizes
-        // in the UI manager updated.
-        SwingUtilities.invokeLater(() -> {
-          for (RowHeightAligner aligner : myRowHeightAligners) {
-            aligner.optionsChanged();
-          }
-        });
-        getUiFacadeImpl().getDpiOption()
-            .addChangeValueListener(event -> SwingUtilities.invokeLater(() -> getContentPane().doLayout()));
-        getGanttChart().reset();
-        getResourceChart().reset();
-        // This will clear any modifications which might be caused by
-        // adjusting widths of table columns during initial layout process.
-        getProject().setModified(false);
-      }
-    });
+  //++
+    //    addWindowListener(new WindowAdapter() {
+//      @Override
+//      public void windowClosing(WindowEvent windowEvent) {
+//        quitApplication(true);
+//      }
+//
+//      @Override
+//      public void windowOpened(WindowEvent e) {
+//        boundsLogger.debug("Resizing window...");
+//        boundsLogger.debug("Bounds after opening: {}", new Object[]{GanttProject.this.getBounds()}, ImmutableMap.of());
+//        restoreBounds();
+//        // It is important to run aligners after look and feel is set and font sizes
+//        // in the UI manager updated.
+//        SwingUtilities.invokeLater(() -> {
+//          for (RowHeightAligner aligner : myRowHeightAligners) {
+//            aligner.optionsChanged();
+//          }
+//        });
+//        getUiFacadeImpl().getDpiOption()
+//            .addChangeValueListener(event -> SwingUtilities.invokeLater(() -> getContentPane().doLayout()));
+//        getGanttChart().reset();
+//        getResourceChart().reset();
+//        // This will clear any modifications which might be caused by
+//        // adjusting widths of table columns during initial layout process.
+//        getProject().setModified(false);
+//      }
+//    });
 
     startupLogger.debug("8. finalizing...");
     // applyComponentOrientation(GanttLanguage.getInstance()
     // .getComponentOrientation());
     getTaskManager().addTaskListener(GanttProjectImplKt.createProjectModificationListener(this, getUIFacade()));
-    addMouseListenerToAllContainer(this.getComponents());
+    //++addMouseListenerToAllContainer(this.getComponents());
 
     // Add globally available actions/key strokes
     GPAction viewCycleForwardAction = new ViewCycleAction(getViewManager(), true);
@@ -356,35 +361,36 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
 
   private void restoreBounds() {
-    if (options.isLoaded()) {
-      if (options.isMaximized()) {
-        setExtendedState(getExtendedState() | Frame.MAXIMIZED_BOTH);
-      }
-      Rectangle bounds = new Rectangle(options.getX(), options.getY(), options.getWidth(), options.getHeight());
-      boundsLogger.debug("Bounds stored in the  options: {}", new Object[]{bounds}, ImmutableMap.of());
-
-      UIUtil.MultiscreenFitResult fit = UIUtil.multiscreenFit(bounds);
-      // If more than 1/4 of the rectangle is visible on screen devices then leave it where it is
-      if (fit.totalVisibleArea < 0.25 || Math.max(bounds.width, bounds.height) < 100) {
-        // Otherwise if it is visible on at least one device, try to fit it there
-        if (fit.argmaxVisibleArea != null) {
-          bounds = fitBounds(fit.argmaxVisibleArea, bounds);
-        } else {
-          UIUtil.MultiscreenFitResult currentFit = UIUtil.multiscreenFit(this.getBounds());
-          if (currentFit.argmaxVisibleArea != null) {
-            // If there are no devices where rectangle is visible, fit it on the current device
-            bounds = fitBounds(currentFit.argmaxVisibleArea, bounds);
-          } else {
-            boundsLogger.debug(
-                "We have not found the display corresponding to bounds {}. Leaving the window where it is",
-                new Object[]{bounds}, ImmutableMap.of()
-            );
-            return;
-          }
-        }
-      }
-      setBounds(bounds);
-    }
+    //++
+    //    if (options.isLoaded()) {
+//      if (options.isMaximized()) {
+//        setExtendedState(getExtendedState() | Frame.MAXIMIZED_BOTH);
+//      }
+//      Rectangle bounds = new Rectangle(options.getX(), options.getY(), options.getWidth(), options.getHeight());
+//      boundsLogger.debug("Bounds stored in the  options: {}", new Object[]{bounds}, ImmutableMap.of());
+//
+//      UIUtil.MultiscreenFitResult fit = UIUtil.multiscreenFit(bounds);
+//      // If more than 1/4 of the rectangle is visible on screen devices then leave it where it is
+//      if (fit.totalVisibleArea < 0.25 || Math.max(bounds.width, bounds.height) < 100) {
+//        // Otherwise if it is visible on at least one device, try to fit it there
+//        if (fit.argmaxVisibleArea != null) {
+//          bounds = fitBounds(fit.argmaxVisibleArea, bounds);
+//        } else {
+//          UIUtil.MultiscreenFitResult currentFit = UIUtil.multiscreenFit(this.getBounds());
+//          if (currentFit.argmaxVisibleArea != null) {
+//            // If there are no devices where rectangle is visible, fit it on the current device
+//            bounds = fitBounds(currentFit.argmaxVisibleArea, bounds);
+//          } else {
+//            boundsLogger.debug(
+//                "We have not found the display corresponding to bounds {}. Leaving the window where it is",
+//                new Object[]{bounds}, ImmutableMap.of()
+//            );
+//            return;
+//          }
+//        }
+//      }
+//++      setBounds(bounds);
+//    }
   }
 
   static private Rectangle fitBounds(GraphicsConfiguration display, Rectangle bounds) {
@@ -456,13 +462,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    */
   @Override
   public void languageChanged(Event event) {
-    applyComponentOrientation(language.getComponentOrientation());
+//++    applyComponentOrientation(language.getComponentOrientation());
     area.repaint();
     getResourcePanel().area.repaint();
 
     CustomColumnsStorage.changeLanguage(language);
 
-    applyComponentOrientation(language.getComponentOrientation());
+//++    applyComponentOrientation(language.getComponentOrientation());
   }
 
   /**
@@ -475,7 +481,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   /**
    * Create the button on toolbar
    */
-  private FXToolbar createToolbar() {
+  public FXToolbarBuilder createToolbar() {
     FXToolbarBuilder builder = new FXToolbarBuilder();
     builder.addButton(myProjectMenu.getOpenProjectAction().asToolbarAction())
         .addButton(myProjectMenu.getSaveProjectAction().asToolbarAction())
@@ -507,7 +513,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         () -> getTaskSelectionManager().getSelectedTasks());
     }
 
-    UIUtil.registerActions(getRootPane(), false, newAction, propertiesAction, deleteAction);
+    //++UIUtil.registerActions(getRootPane(), false, newAction, propertiesAction, deleteAction);
     // TODO: it might be necessary to uncomment it
     //UIUtil.registerActions(myGanttChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
     UIUtil.registerActions(myResourceChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
@@ -532,19 +538,19 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     mySearchUi = new FXSearchUi(getProject(), getUIFacade(), myEditMenu.getSearchAction());
     builder.addSearchBox(mySearchUi);
     builder.withClasses("toolbar-common", "toolbar-main", "toolbar-big");
-    builder.withScene();
     //return result;
-    return builder.build();
+    return builder;
   }
 
   void doShow() {
-    setVisible(true);
-    boundsLogger.debug("Bounds after setVisible: {}", new Object[]{getBounds()}, ImmutableMap.of());
+    //++
+    //    setVisible(true);
+//    boundsLogger.debug("Bounds after setVisible: {}", new Object[]{getBounds()}, ImmutableMap.of());
     DesktopIntegration.setup(GanttProject.this);
     getActiveChart().reset();
     getRssFeedChecker().setOptionsVersion(getGanttOptions().getVersion());
     getRssFeedChecker().run();
-    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+//++    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
   }
 
   @Override
@@ -573,13 +579,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getDocumentManager().addToRecentDocuments(document);
     //myMRU.add(document.getPath(), true);
     myObservableDocument.set(document);
-    setTitle(language.getText("appliTitle") + " [" + document.getFileName() + "]");
+    //++ setTitle(language.getText("appliTitle") + " [" + document.getFileName() + "]");
     for (Chart chart : PluginManager.getCharts()) {
       chart.reset();
     }
 
     // myDelayManager.fireDelayObservation(); // it is done in repaint2
-    addMouseListenerToAllContainer(this.getComponents());
+    //++ addMouseListenerToAllContainer(this.getComponents());
 
     getProjectImpl().fireProjectOpened();
   }
@@ -604,19 +610,21 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
     myQuitEntered = true;
     try {
-      options.setWindowPosition(getX(), getY());
-      options.setWindowSize(getWidth(), getHeight(), (getExtendedState() & Frame.MAXIMIZED_BOTH) != 0);
+//++
+      //      options.setWindowPosition(getX(), getY());
+//      options.setWindowSize(getWidth(), getHeight(), (getExtendedState() & Frame.MAXIMIZED_BOTH) != 0);
       options.setUIConfiguration(myUIConfiguration);
       options.save();
       var barrier = getProjectUIFacade().ensureProjectSaved(getProject());
       barrier.await(result -> {
         if (result) {
           getProject().close();
-          setVisible(false);
-          dispose();
+//++
+          //          setVisible(false);
+//          dispose();
           doQuitApplication(withSystemExit);
         } else {
-          setVisible(true);
+          //++setVisible(true);
         }
         return Unit.INSTANCE;
       });
@@ -628,18 +636,19 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   public void setAskForSave(boolean afs) {
     getProjectImpl().fireProjectModified(afs, (ex) -> getUIFacade().showErrorDialog(ex) );
-    String title = getTitle();
-    askForSave = afs;
-    if (System.getProperty("mrj.version") != null) {
-      rootPane.putClientProperty("windowModified", afs);
-      // see http://developer.apple.com/qa/qa2001/qa1146.html
-    } else {
-      if (askForSave) {
-        if (!title.endsWith(" *")) {
-          setTitle(title + " *");
-        }
-      }
-    }
+//++
+    //    String title = getTitle();
+//    askForSave = afs;
+//    if (System.getProperty("mrj.version") != null) {
+//      rootPane.putClientProperty("windowModified", afs);
+//      // see http://developer.apple.com/qa/qa2001/qa1146.html
+//    } else {
+//      if (askForSave) {
+//        if (!title.endsWith(" *")) {
+//          setTitle(title + " *");
+//        }
+//      }
+//    }
   }
 
   public GanttResourcePanel getResourcePanel() {
@@ -769,11 +778,12 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public void setModified(boolean modified) {
     setAskForSave(modified);
 
-    String title = getTitle();
-    if (!modified && title.endsWith(" *")) {
-      // Remove * from title
-      setTitle(title.substring(0, title.length() - 2));
-    }
+    //++
+//    String title = getTitle();
+//    if (!modified && title.endsWith(" *")) {
+//      // Remove * from title
+//      setTitle(title.substring(0, title.length() - 2));
+//    }
   }
 
   @Override
@@ -900,6 +910,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     for (Chart chart : PluginManager.getCharts()) {
       chart.reset();
     }
-    super.repaint();
+    //++super.repaint();
   }
 }

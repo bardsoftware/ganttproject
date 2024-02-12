@@ -98,17 +98,18 @@ fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -
   Platform.runLater {
     val dialogController = DialogControllerSwing()
     contentBuilder(dialogController)
-    jfxPanel.scene = Scene(dialogController.build())
-    SwingUtilities.invokeLater {
-      val dialogBuilder = DialogBuilder(mainWindow.get())
-      dialogBuilder.createDialog(
-          jfxPanel,
-          arrayOf(CancelAction("close").also { it.putValue(GPAction.HAS_DIALOG_BUTTON, false) }),
-          title?.value ?: "").also {
-        swingDialogController.set(it)
-        dialogController.setDialogFrame(it)
-      }
-    }
+//++
+//    jfxPanel.scene = Scene(dialogController.build())
+//    SwingUtilities.invokeLater {
+//      val dialogBuilder = DialogBuilder(mainWindow.get())
+//      dialogBuilder.createDialog(
+//          jfxPanel,
+//          arrayOf(CancelAction("close").also { it.putValue(GPAction.HAS_DIALOG_BUTTON, false) }),
+//          title?.value ?: "").also {
+//        swingDialogController.set(it)
+//        dialogController.setDialogFrame(it)
+//      }
+//    }
   }
 }
 

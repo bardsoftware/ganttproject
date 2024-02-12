@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.gui.view;
 
 import javax.swing.Icon;
 
+import javafx.scene.Node;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
@@ -45,4 +46,6 @@ public interface GPViewManager {
   void activatePrevView();
 
   void toggleVisible(ViewProvider view);
+
+  Node getFxComponent();
 }

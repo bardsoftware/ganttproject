@@ -35,14 +35,14 @@ import java.awt.event.ActionEvent;
  * @author athomas
  */
 public class GanttStatusBar extends JPanel {
-  private JFrame myMainFrame;
+  //private JFrame myMainFrame;
   private JFXPanel panel = new JFXPanel();
 
   private static IProgressMonitor ourMonitor;
 
-  public GanttStatusBar(JFrame mainFrame) {
+  public GanttStatusBar() {
     super(new BorderLayout());
-    myMainFrame = mainFrame;
+    //++myMainFrame = mainFrame;
   }
 
   public void setLeftScene(Scene scene) {
@@ -92,91 +92,92 @@ public class GanttStatusBar extends JPanel {
   public void setSecondText(String text, int milliseconds) {
   }
 
-  private class ProgressBarDialog extends JDialog {
-    private JProgressBar myProgressBar;
-    private JLabel myLabel;
-    private String myTask;
-    private String mySubTask;
-    private IProgressMonitor myProgressMonitor;
-    private int myWorked;
-    private int myTotalWork;
-
-    private ProgressBarDialog(IProgressMonitor progressMonitor) {
-      super(myMainFrame, true);
-      myProgressMonitor = progressMonitor;
-    }
-
-    @Override
-    protected void dialogInit() {
-      super.dialogInit();
-      myProgressBar = new JProgressBar();
-      myProgressBar.setMinimumSize(new Dimension(400, 50));
-      myProgressBar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-      myLabel = new JLabel();
-      myLabel.setFont(Fonts.GENERAL_DIALOG_FONT.deriveFont(14));
-      myLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 5));
-      getContentPane().setLayout(new BorderLayout());
-      getContentPane().add(myProgressBar, BorderLayout.CENTER);
-      JPanel labelAndButton = new JPanel(new BorderLayout());
-      labelAndButton.add(myLabel, BorderLayout.CENTER);
-      JButton cancelButton = new JButton(new CancelAction() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-          myProgressMonitor.setCanceled(true);
-          // System.err.println("\n\n"+Platform.getJobManager().currentJob().getName()+"\n\n");
-          // Platform.getJobManager().currentJob().cancel();
-        }
-      });
-      labelAndButton.add(cancelButton, BorderLayout.EAST);
-      getContentPane().add(labelAndButton, BorderLayout.SOUTH);
-      setResizable(false);
-      this.setUndecorated(true);
-      pack();
-      setSize(400, 60);
-      DialogAligner.center(this, myMainFrame);
-    }
-
-    void start(String task, int totalWork) {
-      myTask = task;
-      myWorked = 0;
-      myTotalWork = totalWork;
-      myProgressBar.setMinimum(0);
-      myProgressBar.setMaximum(totalWork);
-      myLabel.setText(getLabelText());
-      setVisible(true);
-    }
-
-    void setSubTask(String subTask) {
-      mySubTask = subTask;
-      myLabel.setText(getLabelText());
-    }
-
-    void setProgress(int work) {
-      assert myWorked <= myTotalWork;
-      myWorked = work;
-      myProgressBar.setValue(work);
-      myLabel.setText(getLabelText());
-    }
-
-    void done() {
-      // Reset bar to 0, otherwise it is briefly at 100% for a next job
-      myProgressBar.setValue(0);
-      dispose();
-    }
-
-    private String getLabelText() {
-      return "<html><body><b>" + (mySubTask == null ? myTask : mySubTask) + " ... " + myWorked * 100 / myTotalWork
-          + "%</b></body></html>";
-    }
-  }
+  //++
+//  private class ProgressBarDialog extends JDialog {
+//    private JProgressBar myProgressBar;
+//    private JLabel myLabel;
+//    private String myTask;
+//    private String mySubTask;
+//    private IProgressMonitor myProgressMonitor;
+//    private int myWorked;
+//    private int myTotalWork;
+//
+//    private ProgressBarDialog(IProgressMonitor progressMonitor) {
+//      super(myMainFrame, true);
+//      myProgressMonitor = progressMonitor;
+//    }
+//
+//    @Override
+//    protected void dialogInit() {
+//      super.dialogInit();
+//      myProgressBar = new JProgressBar();
+//      myProgressBar.setMinimumSize(new Dimension(400, 50));
+//      myProgressBar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+//      myLabel = new JLabel();
+//      myLabel.setFont(Fonts.GENERAL_DIALOG_FONT.deriveFont(14));
+//      myLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 5));
+//      getContentPane().setLayout(new BorderLayout());
+//      getContentPane().add(myProgressBar, BorderLayout.CENTER);
+//      JPanel labelAndButton = new JPanel(new BorderLayout());
+//      labelAndButton.add(myLabel, BorderLayout.CENTER);
+//      JButton cancelButton = new JButton(new CancelAction() {
+//        @Override
+//        public void actionPerformed(ActionEvent e) {
+//          myProgressMonitor.setCanceled(true);
+//          // System.err.println("\n\n"+Platform.getJobManager().currentJob().getName()+"\n\n");
+//          // Platform.getJobManager().currentJob().cancel();
+//        }
+//      });
+//      labelAndButton.add(cancelButton, BorderLayout.EAST);
+//      getContentPane().add(labelAndButton, BorderLayout.SOUTH);
+//      setResizable(false);
+//      this.setUndecorated(true);
+//      pack();
+//      setSize(400, 60);
+//      DialogAligner.center(this, myMainFrame);
+//    }
+//
+//    void start(String task, int totalWork) {
+//      myTask = task;
+//      myWorked = 0;
+//      myTotalWork = totalWork;
+//      myProgressBar.setMinimum(0);
+//      myProgressBar.setMaximum(totalWork);
+//      myLabel.setText(getLabelText());
+//      setVisible(true);
+//    }
+//
+//    void setSubTask(String subTask) {
+//      mySubTask = subTask;
+//      myLabel.setText(getLabelText());
+//    }
+//
+//    void setProgress(int work) {
+//      assert myWorked <= myTotalWork;
+//      myWorked = work;
+//      myProgressBar.setValue(work);
+//      myLabel.setText(getLabelText());
+//    }
+//
+//    void done() {
+//      // Reset bar to 0, otherwise it is briefly at 100% for a next job
+//      myProgressBar.setValue(0);
+//      dispose();
+//    }
+//
+//    private String getLabelText() {
+//      return "<html><body><b>" + (mySubTask == null ? myTask : mySubTask) + " ... " + myWorked * 100 / myTotalWork
+//          + "%</b></body></html>";
+//    }
+//  }
 
   private class ProgressMonitorImpl implements IProgressMonitor {
     private int myWorked;
-    ProgressBarDialog myProgressDialog;
+    //++ProgressBarDialog myProgressDialog;
     private boolean isCanceled;
 
     ProgressMonitorImpl() {
-      myProgressDialog = new ProgressBarDialog(this);
+      //++myProgressDialog = new ProgressBarDialog(this);
     }
 
     @Override
@@ -184,13 +185,13 @@ public class GanttStatusBar extends JPanel {
       isCanceled = false;
       myWorked = 0;
       GPLogger.log("[ProgressMonitorImpl] begin Task: name=" + name);
-      SwingUtilities.invokeLater(() -> myProgressDialog.start(name, totalWork));
+      //++SwingUtilities.invokeLater(() -> myProgressDialog.start(name, totalWork));
     }
 
     @Override
     public void done() {
       GPLogger.log("[ProgressMonitorImpl] finished Task");
-      SwingUtilities.invokeLater(() -> myProgressDialog.done());
+      //++SwingUtilities.invokeLater(() -> myProgressDialog.done());
     }
 
     @Override
@@ -204,7 +205,7 @@ public class GanttStatusBar extends JPanel {
 
     @Override
     public void setCanceled(boolean value) {
-      myProgressDialog.done();
+      //++myProgressDialog.done();
       isCanceled = value;
     }
 
@@ -219,14 +220,14 @@ public class GanttStatusBar extends JPanel {
       } else {
         GPLogger.log("[ProgressMonitorImpl] begin subTask: name=" + name);
       }
-      SwingUtilities.invokeLater(() -> myProgressDialog.setSubTask(name));
+      //++SwingUtilities.invokeLater(() -> myProgressDialog.setSubTask(name));
     }
 
     @Override
     public void worked(final int work) {
       SwingUtilities.invokeLater(() -> {
         myWorked += work;
-        myProgressDialog.setProgress(myWorked);
+        //++myProgressDialog.setProgress(myWorked);
       });
     }
   }

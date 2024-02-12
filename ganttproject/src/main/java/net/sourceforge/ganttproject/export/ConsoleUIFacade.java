@@ -175,11 +175,10 @@ public class ConsoleUIFacade implements UIFacade {
     // TODO Auto-generated method stub
   }
 
-  @Override
-  public Frame getMainFrame() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+    @Override
+    public void onWindowOpened(Runnable code) {
+
+    }
 
   @Override
   public Image getLogo() {

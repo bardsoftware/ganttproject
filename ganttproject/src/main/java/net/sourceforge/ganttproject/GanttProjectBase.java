@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.app.Barrier;
+import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.app.TwoPhaseBarrierImpl;
 import biz.ganttproject.app.ViewPane;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
@@ -71,7 +72,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.text.View;
 import java.awt.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -90,7 +90,7 @@ import java.util.function.Supplier;
  *
  * @author dbarashev
  */
-abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacade {
+abstract class GanttProjectBase implements IGanttProject, UIFacade {
   protected final static GanttLanguage language = GanttLanguage.getInstance();
   protected final WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
   private final ViewManagerImpl myViewManager;
@@ -201,7 +201,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   protected GanttProjectBase() {
-    super("GanttProject");
+    //++ super("GanttProject");
     var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager);
 
     myProjectDatabase = databaseProxy;
@@ -211,14 +211,14 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager, databaseProxy);
     addProjectEventListener(databaseProxy.createProjectEventListener());
     myTaskManager.addTaskListener(databaseProxy.createTaskEventListener());
-    statusBar = new GanttStatusBar(this);
+    statusBar = new GanttStatusBar();
     myTabPane = new GanttTabbedPane();
     //myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());
     var viewPane = new ViewPane();
     myContentPaneBuilder = new ContentPaneBuilder(viewPane, getStatusBar());
 
     NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
-    myUIFacade = new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
+    myUIFacade = new UIFacadeImpl(statusBar, notificationManager, getProject(), this);
     myUiInitializationPromise = new TwoPhaseBarrierImpl<>(myUIFacade);
 
     GPLogger.setUIFacade(myUIFacade);
@@ -304,10 +304,10 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     return myUIFacade;
   }
 
-  @Override
-  public Frame getMainFrame() {
-    return myUIFacade.getMainFrame();
-  }
+//  @Override
+//  public Frame getMainFrame() {
+//    return myUIFacade.getMainFrame();
+//  }
 
   @Override
   public Image getLogo() {
@@ -453,6 +453,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   @Override
+  public void onWindowOpened(Runnable code) {
+    myUIFacade.onWindowOpened(code);
+  }
+
+  @Override
   public Chart getActiveChart() {
     return myViewManager.getSelectedView().getChart();
   }
@@ -477,15 +482,16 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
   }
 
-  protected void createContentPane(JComponent toolbar) {
-    myContentPaneBuilder.build(toolbar, getContentPane());
-    setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-
-    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    Dimension windowSize = getPreferredSize();
-    // Put the frame at the middle of the screen
-    setLocation(screenSize.width / 2 - (windowSize.width / 2), screenSize.height / 2 - (windowSize.height / 2));
-    pack();
+  protected void createContentPane(FXToolbarBuilder toolbar) {
+    //++myContentPaneBuilder.build(toolbar, getContentPane());
+    //++
+//    setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+//
+//    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+//    Dimension windowSize = getPreferredSize();
+//    // Put the frame at the middle of the screen
+//    setLocation(screenSize.width / 2 - (windowSize.width / 2), screenSize.height / 2 - (windowSize.height / 2));
+//    pack();
   }
 
   public GanttTabbedPane getTabs() {

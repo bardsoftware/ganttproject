@@ -18,15 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.window;
 
+import biz.ganttproject.app.FXToolbarBuilder;
 import biz.ganttproject.app.ViewPane;
+import biz.ganttproject.lib.fx.VBoxBuilder;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.layout.Priority;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.styles.EdgedBalloonStyle;
 import net.sourceforge.ganttproject.gui.GanttStatusBar;
-import net.sourceforge.ganttproject.gui.GanttTabbedPane;
 import net.sourceforge.ganttproject.gui.NotificationComponent;
 import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 
@@ -53,28 +57,38 @@ public class ContentPaneBuilder {
     myViewPane = viewPane;
   }
 
-  public void build(Component toolbar, Container contentPane) {
-    JPanel contentPanel = new JPanel(new BorderLayout());
-    JPanel topPanel = new JPanel(new BorderLayout());
-
-    topPanel.add(myMenuPanel, BorderLayout.NORTH);
-    topPanel.add(toolbar, BorderLayout.CENTER);
-    contentPanel.add(topPanel, BorderLayout.NORTH);
-    //contentPanel.add(myTabbedPane, BorderLayout.CENTER);
+  public void build(FXToolbarBuilder toolbar, Container contentPane) {
     var jfxPanel = new JFXPanel();
+    var vbox = new VBoxBuilder();
+    var menuBar = new MenuBar();
+    var fileMenu = new Menu("File");
+    fileMenu.getItems().add(new MenuItem("Open..."));
+    fileMenu.getItems().add(new MenuItem("New..."));
+    menuBar.getMenus().add(fileMenu);
+    vbox.add(menuBar);
+    vbox.add(toolbar.build().getToolbar$ganttproject());
+    vbox.add(myViewPane.createComponent(), null, Priority.ALWAYS);
+    JPanel contentPanel = new JPanel(new BorderLayout());
+
+//    JPanel topPanel = new JPanel(new BorderLayout());
+//
+//    topPanel.add(myMenuPanel, BorderLayout.NORTH);
+//    topPanel.add(toolbar, BorderLayout.CENTER);
+//    contentPanel.add(topPanel, BorderLayout.NORTH);
+    //contentPanel.add(myTabbedPane, BorderLayout.CENTER);
     Platform.runLater(() -> {
-      var scene = new Scene(myViewPane.createComponent());
+      var scene = new Scene(vbox.getVbox());
       jfxPanel.setScene(scene);
     });
     contentPanel.add(jfxPanel, BorderLayout.CENTER);
-    contentPanel.add(myStatusBar, BorderLayout.SOUTH);
+//    contentPanel.add(myStatusBar, BorderLayout.SOUTH);
     contentPane.add(contentPanel);
   }
 
-  public void setMenu(MenuBar menu) {
-    Scene menuBarScene = new Scene(menu, javafx.scene.paint.Color.TRANSPARENT);
-    myMenuPanel.setScene(menuBarScene);
-  }
+//  public void setMenu(MenuBar menu) {
+//    Scene menuBarScene = new Scene(menu, javafx.scene.paint.Color.TRANSPARENT);
+//    myMenuPanel.setScene(menuBarScene);
+//  }
 
   public class AnimationHostImpl implements AnimationView {
     private BalloonTip myBalloon;

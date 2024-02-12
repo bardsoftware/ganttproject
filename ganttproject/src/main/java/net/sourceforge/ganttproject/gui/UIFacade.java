@@ -141,7 +141,7 @@ public interface UIFacade {
   /** Refreshes the UI (ie repaints all tasks in the chart) */
   void refresh();
 
-  Frame getMainFrame();
+  void onWindowOpened(Runnable code);
 
   Image getLogo();
 
