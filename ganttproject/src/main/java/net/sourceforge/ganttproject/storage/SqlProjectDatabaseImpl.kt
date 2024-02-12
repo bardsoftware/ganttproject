@@ -44,7 +44,11 @@ import java.time.ZoneId
 import java.util.*
 import javax.sql.DataSource
 
-class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDatabase {
+class SqlProjectDatabaseImpl(
+  private val dataSource: DataSource,
+  private val initScript: String = DB_INIT_SCRIPT_PATH,
+  private val initScript2: String = DB_INIT_SCRIPT_PATH2
+  ) : ProjectDatabase {
   companion object Factory {
     fun createInMemoryDatabase(): ProjectDatabase {
       val dataSource = JdbcDataSource()
@@ -160,8 +164,8 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   @Throws(ProjectDatabaseException::class)
   override fun init() {
-    runScript(DB_INIT_SCRIPT_PATH)
-    runScript(DB_INIT_SCRIPT_PATH2)
+    runScript(initScript)
+    runScript(initScript2)
   }
 
   private fun runScript(path: String) {

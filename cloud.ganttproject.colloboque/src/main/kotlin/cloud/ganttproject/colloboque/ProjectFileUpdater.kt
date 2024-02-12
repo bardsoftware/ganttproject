@@ -34,7 +34,7 @@ private var databaseCounter: Long = 0
 private fun createInMemoryDatabase(): ProjectDatabase {
   val dataSource = JdbcDataSource()
   dataSource.setURL("jdbc:h2:mem:update${databaseCounter++};DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true")
-  return SqlProjectDatabaseImpl(dataSource)
+  return SqlProjectDatabaseImpl(dataSource, "/resources/sql/init-project-database.sql", "/resources/sql/init-project-database-step2.sql")
 }
 
 /**
