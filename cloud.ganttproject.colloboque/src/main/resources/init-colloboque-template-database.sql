@@ -157,7 +157,7 @@ BEGIN
 
         FOR column_, default_ IN
         SELECT column_name::text,
-            REPLACE(column_default::text, source_schema, dest_schema)
+            replace_schema_except_types(column_default::text, source_schema, dest_schema)
         FROM information_schema.COLUMNS
         WHERE table_schema = dest_schema
           AND TABLE_NAME = object
@@ -170,7 +170,7 @@ BEGIN
 
     --  add FK constraint
     FOR qry IN
-    SELECT 'ALTER TABLE ' || quote_ident(dest_schema) || '.' || quote_ident(rn.relname) || ' ADD CONSTRAINT ' || quote_ident(ct.conname) || ' ' || replace(pg_get_constraintdef(ct.oid), source_schema, dest_schema) || ';'
+    SELECT 'ALTER TABLE ' || quote_ident(dest_schema) || '.' || quote_ident(rn.relname) || ' ADD CONSTRAINT ' || quote_ident(ct.conname) || ' ' || replace_schema_except_types(pg_get_constraintdef(ct.oid), source_schema, dest_schema) || ';'
     FROM pg_constraint ct
              JOIN pg_class rn ON rn.oid = ct.conrelid
     WHERE connamespace = src_oid
@@ -196,7 +196,7 @@ BEGIN
         WHERE table_schema = quote_ident(source_schema)
           AND table_name = quote_ident(object);
 
-        EXECUTE 'CREATE OR REPLACE VIEW ' || buffer || ' AS ' || replace(v_def, source_schema, dest_schema) || ';' ;
+        EXECUTE 'CREATE OR REPLACE VIEW ' || buffer || ' AS ' || replace_schema_except_types(v_def, source_schema, dest_schema) || ';' ;
 
     END LOOP;
 
@@ -208,7 +208,7 @@ BEGIN
 
     LOOP
         SELECT pg_get_functiondef(func_oid) INTO qry;
-        SELECT replace(qry, source_schema, dest_schema) INTO dest_qry;
+        SELECT replace_schema_except_types(qry, source_schema, dest_schema) INTO dest_qry;
         EXECUTE dest_qry;
     END LOOP;
 
