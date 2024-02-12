@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jooq.meta.jaxb.Property
 
 val kotlinVersion: String by project
-val jooqVersion = "3.19.3"
+val jooqVersion: String by project
 
 plugins {
     id("application")
