@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
+import biz.ganttproject.app.SimpleBarrier;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -142,7 +143,7 @@ public interface UIFacade {
   void refresh();
 
   void onWindowOpened(Runnable code);
-
+  SimpleBarrier<Boolean> getWindowOpenedBarrier();
   Image getLogo();
 
   void setWorkbenchTitle(String title);

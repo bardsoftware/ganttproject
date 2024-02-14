@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.LoggerApi
 import biz.ganttproject.app.*
 import biz.ganttproject.platform.DummyUpdater
@@ -25,6 +26,7 @@ import biz.ganttproject.storage.cloud.GPCloudEnv
 import biz.ganttproject.storage.cloud.getCloudEnv
 import com.beust.jcommander.JCommander
 import javafx.application.Platform
+import javafx.event.EventHandler
 import javafx.stage.Stage
 import net.sourceforge.ganttproject.export.CommandLineExportApplication
 import net.sourceforge.ganttproject.gui.CommandLineProjectOpenStrategy
@@ -76,14 +78,19 @@ fun _startUiApp(configure: (GanttProject) -> Unit = {}) {
 }
 
 fun startUiApp(configure: (GanttProject) -> Unit = {}) {
-  //Platform.setImplicitExit(false)
+  Platform.setImplicitExit(false)
   try {
-    Platform.startup{
+    FXUtil.startup{
+      Thread.setDefaultUncaughtExceptionHandler { t, e ->
+        e.printStackTrace()
+      }
       val ganttFrame = GanttProject()
       configure(ganttFrame)
       val app = GanttProjectFxApp(ganttFrame)
       app.init()
-      app.start(Stage())
+      app.start(Stage().also { it.onShown = EventHandler{
+        ganttFrame.uiFacade.windowOpenedBarrier.resolve(true)
+      } })
     }
     APP_LOGGER.debug("Main frame created")
     //mainWindow.set(ganttFrame)

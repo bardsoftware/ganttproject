@@ -45,7 +45,7 @@ interface View {
 class ViewPane {
   private val tabPane = TabPane()
   private val localizer = RootLocalizer.createWithRootKey("view")
-
+  var onViewCreated: ()->Unit = {}
   val selectedViewId get() = tabPane.selectionModel.selectedItem.id
   fun createComponent(): Parent = tabPane
 
@@ -54,12 +54,11 @@ class ViewPane {
       it.content = viewComponent
       it.text = localizer.formatText("$viewId.label")
       it.id = viewId
+      onViewCreated()
     }
     tabPane.tabs.add(tab)
     return ViewImpl(tabPane, tab)
   }
-
-
 }
 
 private class ViewImpl(private val tabPane: TabPane, private val tab: Tab): View {

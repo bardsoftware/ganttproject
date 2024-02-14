@@ -253,17 +253,15 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 //    });
     startupLogger.debug("5. calculating size and packing...");
 
-    var fxToolbar = createToolbar();
-    Platform.runLater(() -> {
-      GPCloudStatusBar cloudStatusBar = new GPCloudStatusBar(
-          myObservableDocument, getUIFacade(), getProjectUIFacade(), getProject()
-      );
-      Scene statusBarScene = new Scene(cloudStatusBar.getLockPanel(), Color.TRANSPARENT);
-      statusBarScene.getStylesheets().add("biz/ganttproject/app/StatusBar.css");
-      getStatusBar().setLeftScene(statusBarScene);
-    });
+    //var fxToolbar = createToolbar();
+//    Platform.runLater(() -> {
+//      GPCloudStatusBar cloudStatusBar
+//      Scene statusBarScene = new Scene(cloudStatusBar.getLockPanel(), Color.TRANSPARENT);
+//      statusBarScene.getStylesheets().add("biz/ganttproject/app/StatusBar.css");
+//      getStatusBar().setLeftScene(statusBarScene);
+//    });
 
-    createContentPane(fxToolbar);
+    //createContentPane(fxToolbar);
     //final FXToolbar toolbar = fxToolbar;
     //final List<? extends JComponent> buttons = addButtons(getToolBar());
     // Chart tabs
@@ -478,6 +476,13 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     return "<html><body bgcolor=#EAEAEA>" + msg + "</body></html>";
   }
 
+  public GPCloudStatusBar createStatusBar() {
+    var result  = new GPCloudStatusBar(
+      myObservableDocument, getUIFacade(), getProjectUIFacade(), getProject()
+    );
+    result.getLockPanel().getStylesheets().add("biz/ganttproject/app/StatusBar.css");
+    return result;
+  }
   /**
    * Create the button on toolbar
    */
@@ -912,4 +917,5 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     }
     //++super.repaint();
   }
+
 }

@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject.gui.view;
 import biz.ganttproject.app.ViewPane;
 import javafx.application.Platform;
 import javafx.scene.Node;
+import kotlin.Unit;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -137,12 +139,14 @@ public class ViewManagerImpl implements GPViewManager {
 
   @Override
   public void createView(ViewProvider view, Icon icon) {
-    Platform.runLater(new Runnable() {
-      @Override
-      public void run() {
+    Platform.runLater(() -> {
+      var node = view.getNode();
+      if (node != null) {
         var fxView = myViewPane.createView(view.getNode(), view.getId());
         ViewHolder viewHolder = new ViewHolder(ViewManagerImpl.this, myTabs, view, icon, fxView);
         myViews.put(view, viewHolder);
+      } else {
+        GPLogger.log("View provided by " + view + " is null");
       }
     });
   }
@@ -157,5 +161,10 @@ public class ViewManagerImpl implements GPViewManager {
   @Override
   public Node getFxComponent() {
     return myViewPane.createComponent();
+  }
+
+  @Override
+  public void onViewCreated(Runnable callback) {
+    myViewPane.setOnViewCreated(() -> {callback.run(); return Unit.INSTANCE;});
   }
 }

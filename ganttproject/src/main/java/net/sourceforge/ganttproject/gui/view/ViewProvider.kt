@@ -28,7 +28,7 @@ import java.awt.Component
 interface ViewProvider {
   val chart: Chart
   val viewComponent: Component
-  val node: Node
+  val node: Node?
   val id: String
   var persistentAttributes: Map<String, String>
 }

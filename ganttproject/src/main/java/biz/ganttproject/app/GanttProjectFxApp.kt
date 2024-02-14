@@ -27,10 +27,14 @@ import net.sourceforge.ganttproject.GanttProject
 class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() {
   override fun start(stage: Stage) {
     try {
+      ganttProject.viewManager.onViewCreated {
+        stage.scene.window.sizeToScene()
+      }
       val vbox = vbox {
         add(convertMenu(ganttProject.menuBar))
         add(ganttProject.createToolbar().build().toolbar)
         add(ganttProject.viewManager.fxComponent)
+        add(ganttProject.createStatusBar().lockPanel)
       }
       stage.setScene(Scene(vbox))
       stage.show()

@@ -18,10 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.app.Barrier;
-import biz.ganttproject.app.FXToolbarBuilder;
-import biz.ganttproject.app.TwoPhaseBarrierImpl;
-import biz.ganttproject.app.ViewPane;
+import biz.ganttproject.app.*;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
@@ -455,6 +452,11 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   @Override
   public void onWindowOpened(Runnable code) {
     myUIFacade.onWindowOpened(code);
+  }
+
+  @Override
+  public SimpleBarrier<Boolean> getWindowOpenedBarrier() {
+    return myUIFacade.getWindowOpenedBarrier();
   }
 
   @Override

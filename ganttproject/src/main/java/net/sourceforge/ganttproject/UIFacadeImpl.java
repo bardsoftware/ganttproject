@@ -439,12 +439,19 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   private SimpleBarrier<Boolean> myWindowOpenedBarrier = new SimpleBarrier<>();
+
+
   @Override
   public void onWindowOpened(Runnable code) {
     myWindowOpenedBarrier.await(value -> {
       code.run();
       return Unit.INSTANCE;
     });
+  }
+
+  @Override
+  public SimpleBarrier<Boolean> getWindowOpenedBarrier() {
+    return myWindowOpenedBarrier;
   }
 
   public boolean quitApplication(boolean withSystemExit) {

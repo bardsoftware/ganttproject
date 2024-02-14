@@ -48,4 +48,6 @@ public interface GPViewManager {
   void toggleVisible(ViewProvider view);
 
   Node getFxComponent();
+
+  void onViewCreated(Runnable callback);
 }

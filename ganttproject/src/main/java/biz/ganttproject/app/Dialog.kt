@@ -69,9 +69,10 @@ import javax.swing.SwingUtilities
  *   this.dialogApi.showAlert(...)
  * }
  */
-fun dialogFx(contentBuilder: (DialogController) -> Unit) {
-  dialogFxBuild(contentBuilder).also {
-    Platform.runLater(it::show)
+fun dialogFx(title: LocalizedString? = null, contentBuilder: (DialogController) -> Unit) {
+  dialogFxBuild(contentBuilder).also {dlg ->
+    title?.value?.let { dlg.title = it }
+    dlg.show()
   }
 }
 
@@ -90,7 +91,8 @@ fun dialogFxBuild(contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
       }
       scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
     }
-    onShown = EventHandler { _ ->
+
+    dialogBuildApi.onShown = {
       dialogPane.layout()
       dialogPane.scene.window.sizeToScene()
     }
@@ -98,11 +100,18 @@ fun dialogFxBuild(contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
 
 
 fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -> Unit) {
-  val jfxPanel = JFXPanel()
-  val swingDialogController = AtomicReference<UIFacade.Dialog?>(null)
   Platform.runLater {
-    val dialogController = DialogControllerSwing()
-    contentBuilder(dialogController)
+    try {
+      dialogFx(title, contentBuilder)
+    } catch (ex: Exception) {
+      ex.printStackTrace()
+    }
+  }
+//  val jfxPanel = JFXPanel()
+//  val swingDialogController = AtomicReference<UIFacade.Dialog?>(null)
+//  Platform.runLater {
+//    val dialogController = DialogControllerSwing()
+//    contentBuilder(dialogController)
 
 //++
 //    jfxPanel.scene = Scene(dialogController.build())
@@ -116,7 +125,7 @@ fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -
 //        dialogController.setDialogFrame(it)
 //      }
 //    }
-  }
+//  }
 }
 
 interface DialogController {

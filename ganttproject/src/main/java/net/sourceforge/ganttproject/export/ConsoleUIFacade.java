@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
+import biz.ganttproject.app.SimpleBarrier;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
@@ -180,7 +181,12 @@ public class ConsoleUIFacade implements UIFacade {
 
     }
 
-  @Override
+    @Override
+    public SimpleBarrier<Boolean> getWindowOpenedBarrier() {
+        return null;
+    }
+
+    @Override
   public Image getLogo() {
     // TODO Auto-generated method stub
     return null;

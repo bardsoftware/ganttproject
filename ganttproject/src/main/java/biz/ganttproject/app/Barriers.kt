@@ -55,7 +55,7 @@ class SimpleBarrier<T> : Barrier<T> {
   override fun await(code: BarrierExit<T>) {
     value?.let { code(it) } ?: subscribers.add(code)
   }
-  internal fun resolve(value: T) {
+  fun resolve(value: T) {
     subscribers.forEach { it(value) }
     this.value = value
   }

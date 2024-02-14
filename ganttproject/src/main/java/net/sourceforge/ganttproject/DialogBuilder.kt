@@ -27,24 +27,27 @@ import javafx.event.EventHandler
 import javafx.scene.control.Dialog
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.Priority
+import javafx.stage.Screen
+import javafx.stage.Stage
 import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.gui.UIFacade
 import java.awt.BorderLayout
 import java.awt.GridLayout
-import java.awt.event.*
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
 import java.beans.PropertyChangeListener
 import javax.swing.*
+
 
 class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<Action>, private val title: String): UIFacade.Dialog {
   private lateinit var controller: DialogController
   lateinit var dialog: Dialog<Unit>
   private var isCommitted = false
   private var contentPane = JPanel(BorderLayout()).also { it.add(content, BorderLayout.CENTER) }
-
-  init {
-  }
+  private val commandsOnShown = mutableListOf<Runnable>()
+  private val commandsOnHidden = mutableListOf<Runnable>()
 
   private fun addButtons(buttonActions: Array<Action>) {
     var cancelAction: Action? = null
@@ -52,7 +55,7 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
     val buttonBox = JPanel(GridLayout(1, buttonActions.size, 5, 0))
 
     for (action in buttonActions) {
-      var nextButton = when {
+      val nextButton = when {
         action is OkAction -> JButton().also { _btn ->
           val _delegate = action as AbstractAction
           val proxy: OkAction = object : OkAction() {
@@ -64,7 +67,7 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
             // So we wrap original OkAction into proxy which moves focus and schedules "later" command
             // which call the original action. Between them EDT sends out focusLost events.
             val myStep2: Runnable = Runnable {
-              controller.hide()
+              Platform.runLater { controller.hide() }
               isCommitted = true
               action.actionPerformed(null)
               _delegate.removePropertyChangeListener(myDelegateListener)
@@ -164,10 +167,19 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
         }
         SwingUtilities.invokeLater {
           swingNode.content = contentPane
-          layout()
+          Platform.runLater {
+            dialog.dialogPane.let {
+              it.layout()
+              it.scene.window.sizeToScene()
+            }
+          }
         }
       }
       dialog.title = title
+      onShown {
+        commandsOnShown.forEach { it.run() }
+      }
+      onClosed { commandsOnHidden.forEach { it.run() } }
       dialog.show()
     }
   }
@@ -175,26 +187,39 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
   override fun hide() = Platform.runLater(controller::hide)
 
   override fun layout() {
-    dialog.dialogPane.layout()
+    if (this::dialog.isInitialized) {
+      dialog.dialogPane.layout()
+    }
   }
 
-  override fun center(centering: UIFacade.Centering?) {
-    TODO("Not yet implemented")
+  override fun center(centering: UIFacade.Centering) {
+    if (this::dialog.isInitialized) {
+      val stage = dialog.dialogPane.scene.window as Stage
+      centerStage(stage, 600.0, 600.0)
+    }
   }
 
   override fun onShown(onShown: Runnable) {
-    val prevOnShown = dialog.onShown
-    dialog.onShown = EventHandler { evt ->
-      prevOnShown.handle(evt)
-      onShown.run()
+    if (this::dialog.isInitialized) {
+      val prevOnShown = dialog.onShown
+      dialog.onShown = EventHandler { evt ->
+        prevOnShown?.handle(evt)
+        onShown.run()
+      }
+    } else {
+      commandsOnShown += onShown
     }
   }
 
   override fun onClosed(onClosed: Runnable) {
-    val prevOnClosed = dialog.onHidden
-    dialog.onHidden = EventHandler { evt ->
-      prevOnClosed.handle(evt)
-      onClosed.run()
+    if (this::dialog.isInitialized) {
+      val prevOnClosed = dialog.onHidden
+      dialog.onHidden = EventHandler { evt ->
+        prevOnClosed?.handle(evt)
+        onClosed.run()
+      }
+    } else {
+      commandsOnHidden += onClosed
     }
   }
 
@@ -209,3 +234,9 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
 }
 fun createDialogFx(content: JComponent, buttonActions: Array<Action>, title: String): UIFacade.Dialog =
   DialogImplSwingInFx(content, buttonActions, title)
+
+private fun centerStage(stage: Stage, width: Double, height: Double) {
+  val screenBounds = Screen.getPrimary().getVisualBounds()
+  stage.x = (screenBounds.getWidth() - width) / 2
+  stage.y = (screenBounds.getHeight() - height) / 2
+}
