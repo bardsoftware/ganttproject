@@ -252,12 +252,12 @@ class FXToolbarBuilder {
 
   fun build(): FXToolbar {
     val toolbar = FXToolbar()
+    toolbar.toolbar.stylesheets.add("biz/ganttproject/app/Toolbar.css")
     FXUtil.runLater {
       val scene = if (withScene) {
-        Scene(toolbar.toolbar, Color.TRANSPARENT).also {
-          it.stylesheets.add("biz/ganttproject/app/Toolbar.css")
-        }
+        Scene(toolbar.toolbar, Color.TRANSPARENT)
       } else null
+
       toolbar.init { toolbar ->
         visitors.forEach { it(toolbar) }
         toolbar.toolbar.let {

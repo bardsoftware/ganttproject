@@ -110,7 +110,7 @@ fun createViewComponents(
       add(chartToolbarBuilder())
       add(swingNode, null, Priority.ALWAYS)
     }
-    SwingUtilities.invokeLater { swingNode.content = JPanel() }
+    SwingUtilities.invokeLater { swingNode.content = chartBuilder() }
     split.items.add(right)
     split.setDividerPosition(0, 0.5)
   }

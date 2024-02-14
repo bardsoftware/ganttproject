@@ -65,7 +65,6 @@ object FXUtil {
         false
       }
     }
-    isJavaFxAvailable = javafxOk
     if (javafxOk) {
       Platform.runLater(code)
     } else {
