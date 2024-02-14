@@ -2,6 +2,7 @@
 @import "../app/theme";
 @import "../app/typography";
 @import "../app/validation";
+@import "../lib/fx/ToggleSwitch";
 
 .dlg-column-manager {
   -fx-min-height: 400;
@@ -46,6 +47,9 @@
     }
     .property-sheet-box {
       -fx-background-color: whitesmoke;
+      .visibility-pane {
+        -fx-padding: 10 10 30 10;
+      }
       .title {
         -fx-padding: 10 10 10 10;
         -fx-font-size: 110%;

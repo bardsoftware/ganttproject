@@ -56,40 +56,42 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     }
 }
 
-//.btn-regular {
-//    -fx-background-color: $gp-light-gray;
-//    -fx-border-color: transparent;
-//    -fx-border-radius: 0;
-//    -fx-text-fill: $gp-dark-gray;
-//    /*    -fx-font-size: 110%;*/
-//    -fx-padding: 0.75ex 2em;
-//    -fx-cursor: hand;
-//
-//    &.secondary {
-//        -fx-background-color: transparent;
-//        -fx-border-color: $gp-medium-gray;
-//
-//        &:hover, &:focused {
-//            -fx-background-color: derive($gp-light-gray, 10%);
-//        }
-//    }
-//    &:hover, &:focused {
-//        -fx-effect: dropshadow(gaussian, $gp-light-gray, 4, 0, 0, 4);
-//        -fx-background-color: derive($gp-light-gray, 10%);
-//        -fx-text-fill: derive($gp-dark-gray, -10%);
-//    }
-//
-//    &:disabled {
-//        -fx-opacity: 0.5;
-//        -fx-cursor: default;
-//    }
-//
-//    &:pressed {
-//        -fx-effect: none;
-//        -fx-background-color: derive($gp-medium-gray, 10%);
-//        -fx-text-fill: derive($gp-dark-gray, -10%);
-//    }
-//}
+.btn-regular {
+  -fx-background-color: $gp-light-gray;
+  -fx-border-color: transparent;
+  -fx-border-radius: 0;
+  -fx-text-fill: $gp-dark-gray;
+  /*    -fx-font-size: 110%;*/
+  -fx-font-weight: bold;
+  -fx-padding: 0.75ex 2em;
+  -fx-cursor: hand;
+
+  &.secondary {
+    -fx-background-color: transparent;
+    -fx-border-color: $gp-medium-gray;
+
+    &:hover, &:focused {
+      -fx-background-color: derive($gp-light-gray, 10%);
+    }
+  }
+  &:hover, &:focused {
+    -fx-effect: dropshadow(gaussian, $gp-light-gray, 4, 0, 0, 4);
+    -fx-background-color: derive($gp-light-gray, 10%);
+    -fx-text-fill: derive($gp-dark-gray, -10%);
+  }
+
+  &:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+  }
+
+  &:pressed {
+    -fx-effect: none;
+    -fx-background-color: derive($gp-light-gray, 10%);
+    -fx-text-fill: derive($gp-dark-gray, -10%);
+  }
+}
+
 
 .border-etched {
     -fx-border-base: gray;
