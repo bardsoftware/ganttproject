@@ -259,6 +259,9 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       myWorkbenchFacade.getDpiOption()
     );
     setHeaderHeight(() -> taskTable.getHeaderHeightProperty().intValue());
+    taskTable.getColumnList().getTotalWidthProperty().addListener((observable, oldValue, newValue) -> {
+      myViewComponents.initializeDivider(taskTable.getColumnList().getTotalWidth());
+    });
     return myViewComponents.getSplitPane();
   }
 

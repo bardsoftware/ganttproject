@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
+import biz.ganttproject.app.Barrier;
 import biz.ganttproject.app.SimpleBarrier;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
@@ -167,5 +168,5 @@ public interface UIFacade {
 
   void addOnUpdateComponentTreeUi(Runnable callback);
 
-  boolean quitApplication(boolean withSystemExit);
+  Barrier<Boolean> quitApplication(boolean withSystemExit);
 }

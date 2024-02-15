@@ -38,6 +38,7 @@ import com.google.common.base.Suppliers;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -74,6 +75,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -127,6 +129,20 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
 
   protected final ProjectDatabase myProjectDatabase;
 
+  protected final LocalizedString myTitle = new LocalizedString(
+    "appliTitle", InternationalizationKt.getRootLocalizer(), new SimpleStringProperty(), Collections.emptyList());
+  public LocalizedString getTitle() {
+    return myTitle;
+  }
+
+  protected void updateTitle() {
+    var doc = getDocument();
+    if (doc != null) {
+      myTitle.update(isModified() ? "*" : "", 1, getDocument().getFileName());
+    } else {
+      myTitle.update("", 0, "");
+    }
+  }
   @Override
   public @NotNull Map<Task, Task> importProject(
     @NotNull BufferProject bufferProject,
@@ -262,6 +278,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
     myUIFacade.addOptions(myRssChecker.getUiOptions());
+    updateTitle();
   }
 
   protected GanttProjectImpl getProjectImpl() {
@@ -583,7 +600,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   public abstract void close();
 
   @Override
-  public abstract @NotNull Document getDocument();
+  public abstract Document getDocument();
 
   protected GanttStatusBar getStatusBar() {
     return statusBar;

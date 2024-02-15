@@ -30,9 +30,6 @@ import com.beust.jcommander.Parameter;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import javafx.application.Platform;
-import javafx.scene.Scene;
-import javafx.scene.paint.Color;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.action.*;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
@@ -73,10 +70,11 @@ import org.slf4j.Logger;
 import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -141,6 +139,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private FXSearchUi mySearchUi;
 
   public JMenuBar getMenuBar() { return myMenuBar; }
+
   public GanttProject() {
     LoggerApi<Logger> startupLogger = GPLogger.create("Window.Startup");
     startupLogger.debug("Creating main frame...");
@@ -357,6 +356,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     });
   }
 
+  public WindowGeometry getWindowGeometry() {
+    return new WindowGeometry(options.getX(), options.getY(), options.getWidth(), options.getHeight(), options.isMaximized());
+  }
+
+  public void setWindowGeometry(WindowGeometry value) {
+    options.setWindowPosition((int)value.getLeftX(), (int)value.getTopY());
+    options.setWindowSize((int)value.getWidth(), (int)value.getHeight(), value.isMaximized());
+  }
 
   private void restoreBounds() {
     //++
@@ -584,7 +591,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getDocumentManager().addToRecentDocuments(document);
     //myMRU.add(document.getPath(), true);
     myObservableDocument.set(document);
-    //++ setTitle(language.getText("appliTitle") + " [" + document.getFileName() + "]");
+    updateTitle();
     for (Chart chart : PluginManager.getCharts()) {
       chart.reset();
     }
@@ -609,51 +616,33 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    * Quit the application
    */
   @Override
-  public boolean quitApplication(boolean withSystemExit) {
+  public Barrier<Boolean> quitApplication(boolean withSystemExit) {
     if (myQuitEntered) {
-      return false;
+      return new ResolvedBarrier<>(true);
     }
     myQuitEntered = true;
     try {
-//++
-      //      options.setWindowPosition(getX(), getY());
-//      options.setWindowSize(getWidth(), getHeight(), (getExtendedState() & Frame.MAXIMIZED_BOTH) != 0);
       options.setUIConfiguration(myUIConfiguration);
       options.save();
       var barrier = getProjectUIFacade().ensureProjectSaved(getProject());
       barrier.await(result -> {
         if (result) {
           getProject().close();
-//++
-          //          setVisible(false);
-//          dispose();
           doQuitApplication(withSystemExit);
         } else {
           //++setVisible(true);
         }
         return Unit.INSTANCE;
       });
+      return barrier;
     } finally {
       myQuitEntered = false;
     }
-    return true;
   }
 
   public void setAskForSave(boolean afs) {
     getProjectImpl().fireProjectModified(afs, (ex) -> getUIFacade().showErrorDialog(ex) );
-//++
-    //    String title = getTitle();
-//    askForSave = afs;
-//    if (System.getProperty("mrj.version") != null) {
-//      rootPane.putClientProperty("windowModified", afs);
-//      // see http://developer.apple.com/qa/qa2001/qa1146.html
-//    } else {
-//      if (askForSave) {
-//        if (!title.endsWith(" *")) {
-//          setTitle(title + " *");
-//        }
-//      }
-//    }
+    askForSave = afs;
   }
 
   public GanttResourcePanel getResourcePanel() {
@@ -782,13 +771,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   @Override
   public void setModified(boolean modified) {
     setAskForSave(modified);
-
-    //++
-//    String title = getTitle();
-//    if (!modified && title.endsWith(" *")) {
-//      // Remove * from title
-//      setTitle(title.substring(0, title.length() - 2));
-//    }
+    updateTitle();
   }
 
   @Override

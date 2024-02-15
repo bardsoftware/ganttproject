@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.Barrier;
 import biz.ganttproject.app.FontManager;
 import biz.ganttproject.app.MenuBuilderSwing;
 import biz.ganttproject.app.SimpleBarrier;
@@ -454,7 +455,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     return myWindowOpenedBarrier;
   }
 
-  public boolean quitApplication(boolean withSystemExit) {
+  public Barrier<Boolean> quitApplication(boolean withSystemExit) {
     return myFallbackDelegate.quitApplication(withSystemExit);
   }
   private static GanttLanguage getLanguage() {

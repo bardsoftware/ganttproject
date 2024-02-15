@@ -6,6 +6,7 @@ import biz.ganttproject.desktop.DesktopAdapter;
 import biz.ganttproject.desktop.GanttProjectApi;
 import biz.ganttproject.desktop.QuitResponse;
 import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 import net.sourceforge.ganttproject.action.edit.SettingsDialogAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
@@ -41,11 +42,14 @@ public class DesktopIntegration {
 
         @Override
         public void maybeQuit(QuitResponse quitResponse) {
-          if (app.quitApplication(true)) {
-            quitResponse.performQuit();
+          app.quitApplication(true).await((Function1<Boolean, Unit>) result -> {
+            if (result) {
+              quitResponse.performQuit();
           } else {
-            quitResponse.cancelQuit();
-          }
+              quitResponse.cancelQuit();
+            }
+            return Unit.INSTANCE;
+          });
         }
 
         @Override

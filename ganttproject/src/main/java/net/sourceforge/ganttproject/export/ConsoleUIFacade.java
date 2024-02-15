@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
+import biz.ganttproject.app.Barrier;
+import biz.ganttproject.app.ResolvedBarrier;
 import biz.ganttproject.app.SimpleBarrier;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
@@ -273,12 +275,12 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public boolean quitApplication(boolean withSystemExit) {
+  public Barrier<Boolean> quitApplication(boolean withSystemExit) {
     if (withSystemExit) {
       System.exit(0);
-      return true;
+      return new ResolvedBarrier<>(true);
     } else {
-      return false;
+      return new ResolvedBarrier<>(false);
     }
   }
 }

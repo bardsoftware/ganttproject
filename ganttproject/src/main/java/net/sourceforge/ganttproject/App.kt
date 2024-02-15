@@ -26,7 +26,6 @@ import biz.ganttproject.storage.cloud.GPCloudEnv
 import biz.ganttproject.storage.cloud.getCloudEnv
 import com.beust.jcommander.JCommander
 import javafx.application.Platform
-import javafx.event.EventHandler
 import javafx.stage.Stage
 import net.sourceforge.ganttproject.export.CommandLineExportApplication
 import net.sourceforge.ganttproject.gui.CommandLineProjectOpenStrategy
@@ -78,21 +77,20 @@ fun _startUiApp(configure: (GanttProject) -> Unit = {}) {
 }
 
 fun startUiApp(configure: (GanttProject) -> Unit = {}) {
-  Platform.setImplicitExit(false)
+  Platform.setImplicitExit(true)
   try {
     FXUtil.startup{
       Thread.setDefaultUncaughtExceptionHandler { t, e ->
         e.printStackTrace()
       }
-      val ganttFrame = GanttProject()
-      configure(ganttFrame)
-      val app = GanttProjectFxApp(ganttFrame)
+      val ganttProject = GanttProject()
+      configure(ganttProject)
+      val stage = Stage()
+      val app = GanttProjectFxApp(ganttProject)
       app.init()
-      app.start(Stage().also { it.onShown = EventHandler{
-        ganttFrame.uiFacade.windowOpenedBarrier.resolve(true)
-      } })
+      app.start(stage)
+      APP_LOGGER.debug("Main frame created")
     }
-    APP_LOGGER.debug("Main frame created")
     //mainWindow.set(ganttFrame)
   } catch (e: Throwable) {
     APP_LOGGER.error("Failure when launching application", exception = e)

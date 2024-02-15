@@ -20,26 +20,63 @@ package biz.ganttproject.app
 
 import biz.ganttproject.lib.fx.vbox
 import javafx.application.Application
+import javafx.application.Platform
+import javafx.event.EventHandler
 import javafx.scene.Scene
+import javafx.scene.image.Image
+import javafx.scene.layout.Priority
 import javafx.stage.Stage
 import net.sourceforge.ganttproject.GanttProject
 
 class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() {
   override fun start(stage: Stage) {
     try {
-      ganttProject.viewManager.onViewCreated {
-        stage.scene.window.sizeToScene()
-      }
       val vbox = vbox {
         add(convertMenu(ganttProject.menuBar))
         add(ganttProject.createToolbar().build().toolbar)
-        add(ganttProject.viewManager.fxComponent)
+        add(ganttProject.viewManager.fxComponent, null, Priority.ALWAYS)
         add(ganttProject.createStatusBar().lockPanel)
       }
       stage.setScene(Scene(vbox))
+      stage.onShown = EventHandler {
+        ganttProject.uiFacade.windowOpenedBarrier.resolve(true)
+      }
+      stage.onHidden = EventHandler {
+        ganttProject.windowGeometry = WindowGeometry(stage.x, stage.y, stage.width, stage.height, stage.isMaximized)
+        ganttProject.quitApplication(true).await {result ->
+          if (result) {
+            Platform.exit()
+          }
+        }
+      }
+      ganttProject.windowGeometry.let {
+        stage.x = it.leftX
+        stage.y = it.topY
+        stage.width = it.width
+        stage.height = it.height
+        stage.isMaximized = it.isMaximized
+      }
+
+      stage.icons += Image(GanttProjectFxApp::class.java.getResourceAsStream("/icons/ganttproject-logo-512.png"))
+      ganttProject.title.let {
+        stage.title = it.value
+        it.observable.addListener { _, _, newValue ->
+          Platform.runLater {
+            stage.title = newValue
+          }
+        }
+      }
       stage.show()
     } catch (ex: Exception) {
       ex.printStackTrace()
     }
   }
 }
+
+data class WindowGeometry(
+  val leftX: Double = 0.0,
+  val topY: Double = 0.0,
+  val width: Double = 600.0,
+  val height: Double = 600.0,
+  val isMaximized: Boolean = false
+)

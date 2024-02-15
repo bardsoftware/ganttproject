@@ -34,7 +34,6 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.gui.UIFacade
 import javax.swing.JComponent
-import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
 interface View {
@@ -57,6 +56,7 @@ class ViewPane {
       onViewCreated()
     }
     tabPane.tabs.add(tab)
+    tabPane.layout()
     return ViewImpl(tabPane, tab)
   }
 }
@@ -75,7 +75,16 @@ private class ViewImpl(private val tabPane: TabPane, private val tab: Tab): View
     }
 }
 
-data class ViewComponents(val image: Pane, val splitPane: SplitPane)
+data class ViewComponents(val image: Pane, val splitPane: SplitPane, val table: Node) {
+  private var isDividerInitialized = false
+  fun initializeDivider(columnsWidth: Double) {
+    if (!isDividerInitialized) {
+      splitPane.setDividerPosition(0, columnsWidth/splitPane.width)
+      isDividerInitialized = true
+    }
+  }
+}
+
 fun createViewComponents(
   tableToolbarBuilder: ()->Node,
   tableBuilder: ()->Node,
@@ -89,11 +98,13 @@ fun createViewComponents(
   val imageView = ImageView().apply {
     this.image = image
     fitHeight = defaultScaledHeight.toDouble()
-    isPreserveRatio = true
+    //isPreserveRatio = true
     viewport = Rectangle2D(0.0, 0.0, image.width, defaultScaledHeight.toDouble())
-  }
-  val imagePane = Pane(imageView)
 
+  }
+  val imagePane = Pane(imageView).also { it.minHeight = defaultScaledHeight.toDouble() }
+
+  val table = tableBuilder()
   val splitPane = SplitPane().also {split ->
 
     split.orientation = Orientation.HORIZONTAL
@@ -101,7 +112,7 @@ fun createViewComponents(
     val left = vbox {
       add(tableToolbarBuilder())
       add(imagePane)
-      add(tableBuilder(), null, growth = Priority.ALWAYS)
+      add(table, null, growth = Priority.ALWAYS)
     }
     split.items.add(left)
 
@@ -114,5 +125,5 @@ fun createViewComponents(
     split.items.add(right)
     split.setDividerPosition(0, 0.5)
   }
-  return ViewComponents(image = imagePane, splitPane = splitPane)
+  return ViewComponents(image = imagePane, splitPane = splitPane, table = table)
 }
