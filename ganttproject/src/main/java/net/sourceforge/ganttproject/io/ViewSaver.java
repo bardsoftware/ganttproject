@@ -47,17 +47,15 @@ class ViewSaver extends SaverBase {
     AttributesImpl attrs = new AttributesImpl();
     addAttribute("zooming-state", facade.getZoomManager().getZoomState().getPersistentName(), attrs);
     addAttribute("id", "gantt-chart", attrs);
-    ganttViewProvider.getPersistentAttributes().forEach((key, value) -> addAttribute(key, value, attrs));
     startElement("view", attrs, handler);
     writeColumns(taskColumnList, handler);
     new OptionSaver().saveOptionList(handler, facade.getGanttChart().getTaskLabelOptions().getOptions());
-    new OptionSaver().saveOptionList(handler, taskFilterManager.getOptions());
+    new OptionSaver().saveOptionList(handler, facade.getGanttViewProvider().getOptions());
     writeTimelineTasks(facade, handler);
     writeRecentColors(handler);
     endElement("view", handler);
 
     addAttribute("id", "resource-table", attrs);
-    resourceViewProvider.getPersistentAttributes().forEach((key, value) -> addAttribute(key, value, attrs));
     startElement("view", attrs, handler);
     writeColumns(facade.getResourceTree().getVisibleFields(), handler);
 

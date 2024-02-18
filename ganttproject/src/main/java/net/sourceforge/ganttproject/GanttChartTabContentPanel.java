@@ -19,6 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.app.*;
+import biz.ganttproject.core.option.DefaultDoubleOption;
+import biz.ganttproject.core.option.DoubleOption;
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.ganttview.TaskFilterActionSet;
 import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
@@ -29,8 +32,12 @@ import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.action.BaselineDialogAction;
@@ -44,14 +51,13 @@ import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -66,6 +72,8 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private JComponent myComponent;
   private TaskTable taskTable;
   private ViewComponents myViewComponents;
+
+  private DoubleOption myDividerOption = new DefaultDoubleOption("divider", 0.5);
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
                             JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
@@ -83,6 +91,12 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
     myBaselineAction.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY);
 
     setImageHeight(() -> Double.valueOf(myViewComponents.getImage().getHeight()).intValue());
+    myDividerOption.addChangeValueListener(event -> {
+      if (event.getNewValue() != event.getOldValue() && event.getTriggerID() != GanttChartTabContentPanel.this
+        && myViewComponents != null) {
+        myViewComponents.getSplitPane().setDividerPosition(0, myDividerOption.getValue());
+      }
+    });
     //addChartPanel(createSchedulePanel());
     //addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());
   }
@@ -142,22 +156,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
         .addButton(myTaskActions.getUnlinkTasksAction().asToolbarAction())
         .addTail(filterComponent)
         .withClasses("toolbar-common", "toolbar-small", "task-filter");
-  }
-
-  @NotNull
-  @Override
-  public Map<String, String> getPersistentAttributes() {
-    var result = new HashMap<String, String>();
-    result.put("divider", String.valueOf(myViewComponents.getSplitPane().getDividerPositions()[0]));
-    return result;
-  }
-
-  @Override
-  public void setPersistentAttributes(@NotNull Map<String, String> persistentAttributes) {
-    String strDivider = persistentAttributes.get("divider");
-    if (strDivider != null && myViewComponents!= null) {
-      myViewComponents.getSplitPane().setDividerPosition(0, Double.parseDouble(strDivider));
-    }
   }
 
   static class TableButtonAction extends GPAction {
@@ -251,7 +249,9 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       },
       /*chartToolbarBuilder=*/ () -> {
         var chartToolbarBox = new HBox();
-        chartToolbarBox.getChildren().add(createNavigationToolbarBuilder().build().getToolbar$ganttproject());
+        var navigationBar = createNavigationToolbarBuilder().build().getToolbar$ganttproject();
+        chartToolbarBox.getChildren().add(navigationBar);
+        HBox.setHgrow(navigationBar, Priority.ALWAYS);
         chartToolbarBox.getChildren().add(createScheduleToolbar().build().getToolbar$ganttproject());
         return chartToolbarBox;
       },
@@ -259,10 +259,22 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       myWorkbenchFacade.getDpiOption()
     );
     setHeaderHeight(() -> taskTable.getHeaderHeightProperty().intValue());
+    myViewComponents.getSplitPane().getDividers().get(0).positionProperty().addListener((observable, oldValue, newValue) ->
+      myDividerOption.setValue(newValue.doubleValue(), GanttChartTabContentPanel.this)
+    );
     taskTable.getColumnList().getTotalWidthProperty().addListener((observable, oldValue, newValue) -> {
       myViewComponents.initializeDivider(taskTable.getColumnList().getTotalWidth());
     });
     return myViewComponents.getSplitPane();
+  }
+
+  @NotNull
+  @Override
+  public List<GPOption<?>> getOptions() {
+    var options = new ArrayList<GPOption<?>>();
+    options.addAll(getProject().getTaskFilterManager().getOptions());
+    options.add(myDividerOption);
+    return options;
   }
 
   @Override

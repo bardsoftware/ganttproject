@@ -41,11 +41,14 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
       stage.onShown = EventHandler {
         ganttProject.uiFacade.windowOpenedBarrier.resolve(true)
       }
-      stage.onHidden = EventHandler {
+      stage.onCloseRequest = EventHandler {
         ganttProject.windowGeometry = WindowGeometry(stage.x, stage.y, stage.width, stage.height, stage.isMaximized)
-        ganttProject.quitApplication(true).await {result ->
-          if (result) {
-            Platform.exit()
+        if (ganttProject.isModified) {
+          it.consume()
+          ganttProject.quitApplication(true).await {result ->
+            if (result) {
+              Platform.exit()
+            }
           }
         }
       }

@@ -46,6 +46,7 @@ import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.LanguageOption;
@@ -329,6 +330,16 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     return myNotificationManager;
   }
 
+  @Override
+  public ViewProvider getGanttViewProvider() {
+    return myFallbackDelegate.getGanttViewProvider();
+  }
+
+  @Override
+  public ViewProvider getResourceViewProvider() {
+    return myFallbackDelegate.getResourceViewProvider();
+  }
+
   /**
    * Show and log the exception
    */
@@ -417,16 +428,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public void setViewIndex(int viewIndex) {
     myFallbackDelegate.setViewIndex(viewIndex);
-  }
-
-  @Override
-  public void setGanttDividerLocation(int location) {
-    myFallbackDelegate.setGanttDividerLocation(location);
-  }
-
-  @Override
-  public void setResourceDividerLocation(int location) {
-    myFallbackDelegate.setResourceDividerLocation(location);
   }
 
   @Override

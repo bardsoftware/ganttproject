@@ -3,6 +3,7 @@
  */
 package net.sourceforge.ganttproject
 
+import biz.ganttproject.core.option.GPOption
 import javafx.scene.Node
 import javafx.scene.layout.Pane
 import net.sourceforge.ganttproject.action.GPAction
@@ -53,6 +54,9 @@ internal class ResourceChartTabContentPanel(
     return myTreeFacade.treeComponent
   }
 
+  override val options: List<GPOption<*>>
+    get() = emptyList()
+
   override val chart: Chart
     get() = getUiFacade().resourceChart
   override val viewComponent: Component
@@ -61,9 +65,6 @@ internal class ResourceChartTabContentPanel(
     get() = Pane()
   override val id: String
     get() = "resourceChart"
-  override var persistentAttributes: Map<String, String>
-    get() = mapOf()
-    set(value) {}
 
 
   init {

@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.view
 
+import biz.ganttproject.core.option.GPOption
 import javafx.scene.Node
 import net.sourceforge.ganttproject.chart.Chart
 import java.awt.Component
@@ -26,9 +27,9 @@ import java.awt.Component
  * @author dbarashev (Dmitry Barashev)
  */
 interface ViewProvider {
+  val options: List<GPOption<*>>
   val chart: Chart
   val viewComponent: Component
   val node: Node?
   val id: String
-  var persistentAttributes: Map<String, String>
 }

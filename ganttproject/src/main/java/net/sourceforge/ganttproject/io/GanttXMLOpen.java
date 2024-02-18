@@ -123,8 +123,7 @@ public class GanttXMLOpen implements GPParser {
         myUIFacade.getScrollingManager().scrollTo(GanttCalendar.parseXMLDate(viewDate).getTime());
       }
       myUIFacade.setViewIndex(xmlProject.getViewIndex());
-      myUIFacade.setGanttDividerLocation(xmlProject.getGanttDividerLocation());
-      myUIFacade.setResourceDividerLocation(xmlProject.getResourceDividerLocation());
+
       myTaskManager.setZeroMilestones(xmlProject.getTasks().getEmptyMilestones());
     }
   }

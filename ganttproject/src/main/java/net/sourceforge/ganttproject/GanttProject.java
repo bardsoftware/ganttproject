@@ -49,6 +49,7 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.io.GPSaver;
 import net.sourceforge.ganttproject.io.GanttXMLOpen;
 import net.sourceforge.ganttproject.io.GanttXMLSaver;
@@ -559,7 +560,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     //    setVisible(true);
 //    boundsLogger.debug("Bounds after setVisible: {}", new Object[]{getBounds()}, ImmutableMap.of());
     DesktopIntegration.setup(GanttProject.this);
-    getActiveChart().reset();
+    getProject().setModified(false);
+    //getActiveChart().reset();
     getRssFeedChecker().setOptionsVersion(getGanttOptions().getVersion());
     getRssFeedChecker().run();
 //++    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -674,6 +676,16 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   @Override
   public ZoomActionSet getZoomActionSet() {
     return myZoomActions;
+  }
+
+  @Override
+  public ViewProvider getGanttViewProvider() {
+    return myGanttChartTabContent;
+  }
+
+  @Override
+  public ViewProvider getResourceViewProvider() {
+    return myResourceChartTabContent;
   }
 
   public static class Args {
@@ -840,16 +852,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   @Override
-  public void setGanttDividerLocation(int location) {
-    myGanttChartTabContent.setDividerLocation(location);
-  }
-
-  @Override
-  public void setResourceDividerLocation(int location) {
-    myResourceChartTabContent.setDividerLocation(location);
-  }
-
-  @Override
   public ResourceTreeUIFacade getResourceTree() {
     return getResourcePanel();
   }
@@ -857,7 +859,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private class ParserFactoryImpl implements ParserFactory {
     @Override
     public GPParser newParser() {
+
       return new GanttXMLOpen(prjInfos, getTaskManager(), getUIFacade());
+
     }
 
     @Override

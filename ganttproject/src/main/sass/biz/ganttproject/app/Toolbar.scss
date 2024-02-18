@@ -69,6 +69,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
   & *.app-font-huge {
     -fx-font-size: 22px;
   }
+  &.icons-only {
+    Button {
+      -fx-content-display: graphic-only;
+    }
+  }
 
   -fx-padding: 0 5 0 5;
   Button {

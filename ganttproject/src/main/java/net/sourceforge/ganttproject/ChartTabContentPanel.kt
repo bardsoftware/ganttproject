@@ -40,13 +40,10 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 import java.awt.*
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
-import java.util.*
 import javax.swing.*
 
 internal abstract class ChartTabContentPanel(
-    project: IGanttProject, workbenchFacade: UIFacade, chart: TimelineChart) {
+    protected val project: IGanttProject, workbenchFacade: UIFacade, chart: TimelineChart) {
 
   private var zoomingPanel: ZoomingPanel
   private var navigationPanel: NavigationPanel
@@ -160,13 +157,6 @@ internal abstract class ChartTabContentPanel(
 
   protected abstract fun getTreeComponent(): Component
   protected abstract fun createButtonPanel(): Component?
-  open fun getDividerLocation(): Int {
-    return mySplitPane!!.dividerLocation
-  }
-
-  open fun setDividerLocation(location: Int) {
-    mySplitPane!!.dividerLocation = location
-  }
 
   private fun createChartPanels(): JComponent {
     val panelsBox = Box.createHorizontalBox()

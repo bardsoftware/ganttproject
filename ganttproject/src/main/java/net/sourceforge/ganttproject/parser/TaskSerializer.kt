@@ -215,7 +215,14 @@ fun loadDependencyGraph(deps: List<GanttDependStructure>, taskManager: TaskManag
   }
 }
 
-fun loadGanttView(xmlProject: XmlProject, taskManager: TaskManager, taskView: TaskView, zoomManager: ZoomManager, taskColumns: ColumnList, options: List<GPOption<*>>) {
+fun loadGanttView(
+  xmlProject: XmlProject,
+  taskManager: TaskManager,
+  taskView: TaskView,
+  zoomManager: ZoomManager,
+  taskColumns: ColumnList,
+  options: MutableList<out GPOption<*>>
+) {
   val xmlView = xmlProject.views.firstOrNull { "gantt-chart" == it.id } ?: return
   // Load timeline tasks
   xmlView.timeline.let { timelineString ->

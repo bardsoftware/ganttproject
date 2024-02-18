@@ -18,18 +18,17 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.lib.fx.VBoxBuilder
 import com.sandec.mdfx.MDFXNode
 import javafx.animation.FadeTransition
 import javafx.animation.ParallelTransition
 import javafx.animation.Transition
 import javafx.application.Platform
-import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.Parent
-import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.effect.BoxBlur
 import javafx.scene.input.KeyCode
@@ -41,15 +40,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import net.sourceforge.ganttproject.DialogBuilder
-import net.sourceforge.ganttproject.action.CancelAction
-import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIFacade
-import net.sourceforge.ganttproject.mainWindow
-import java.awt.Component
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.atomic.AtomicReference
-import javax.swing.Action
 import javax.swing.SwingUtilities
 
 /**
@@ -79,7 +71,7 @@ fun dialogFx(title: LocalizedString? = null, contentBuilder: (DialogController) 
 fun dialogFxBuild(contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
   Dialog<Unit>().apply {
     isResizable = true
-    val dialogBuildApi = DialogControllerFx(dialogPane)
+    val dialogBuildApi = DialogControllerFx(dialogPane, this)
     dialogPane.apply {
       styleClass.addAll("dlg")
       stylesheets.addAll(DIALOG_STYLESHEET)
@@ -368,13 +360,25 @@ class DialogControllerSwing : DialogController {
 /**
  * This is an implementation of a DialogController on top of JavaFX dialog.
  */
-class DialogControllerFx(private val dialogPane: DialogPane) : DialogController {
+class DialogControllerFx(private val dialogPane: DialogPane, private val dialog: Dialog<Unit>) : DialogController {
   override var beforeShow: () -> Unit = {}
   override var onShown: () -> Unit = {}
+    set(value) {
+      val prevValue = field
+      field = {
+        prevValue()
+        value()
+      }
+    }
   override var onClosed: () -> Unit = {}
   private val stackPane = StackPane().also { it.styleClass.add("layers") }
   private var content: Node = Region()
 
+  init {
+    dialog.onShowing = EventHandler{ beforeShow() }
+    dialog.onShown = EventHandler { onShown() }
+    dialog.onHidden = EventHandler { onClosed() }
+  }
   override fun setContent(content: Node) {
     this.content = content
     content.styleClass.add("content-pane")
@@ -432,8 +436,10 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
   }
 
   override fun setHeader(header: Node) {
-    header.styleClass.add("header")
-    this.dialogPane.header = header
+    FXUtil.runLater {
+      header.styleClass.add("header")
+      this.dialogPane.header = header
+    }
   }
 
   override fun removeButtonBar() {
@@ -441,7 +447,9 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
   }
 
   override fun hide() {
-    this.dialogPane.scene.window.hide()
+    FXUtil.runLater {
+      this.dialogPane.scene.window.hide()
+    }
   }
 
   override fun setButtonPaneNode(content: Node) {

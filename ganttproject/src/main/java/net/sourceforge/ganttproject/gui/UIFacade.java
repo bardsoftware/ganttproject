@@ -32,6 +32,7 @@ import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -124,6 +125,8 @@ public interface UIFacade {
 
   NotificationManager getNotificationManager();
 
+  ViewProvider getGanttViewProvider();
+  ViewProvider getResourceViewProvider();
   GanttChart getGanttChart();
 
   TimelineChart getResourceChart();
@@ -134,10 +137,6 @@ public interface UIFacade {
   int getViewIndex();
 
   void setViewIndex(int viewIndex);
-
-  void setGanttDividerLocation(int location);
-
-  void setResourceDividerLocation(int location);
 
   GPViewManager getViewManager();
   /** Refreshes the UI (ie repaints all tasks in the chart) */

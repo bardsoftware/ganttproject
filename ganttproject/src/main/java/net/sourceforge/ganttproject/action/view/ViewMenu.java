@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.view;
 
 import biz.ganttproject.core.option.FontOption;
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.IntegerOption;
 import javafx.scene.Node;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -85,14 +86,10 @@ public class ViewMenu extends JMenu {
       return null;
     }
 
-    @NotNull
-    @Override
-    public Map<String, String> getPersistentAttributes() {
-      return Collections.emptyMap();
-    }
-
-    @Override
-    public void setPersistentAttributes(@NotNull Map<String, String> stringStringMap) {
-    }
+      @NotNull
+      @Override
+      public List<GPOption<?>> getOptions() {
+          return Collections.emptyList();
+      }
   }
 }
