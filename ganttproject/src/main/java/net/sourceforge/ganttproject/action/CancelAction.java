@@ -18,11 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
+
 import java.awt.event.ActionEvent;
 
 /**
  * Default cancel action for dialogs.
- * {@link UIFacade#createDialog(java.awt.Component, javax.swing.Action[], String)}
  * adds additional/special functionalities for this action
  */
 public class CancelAction extends GPAction {
@@ -44,4 +46,14 @@ public class CancelAction extends GPAction {
   public void actionPerformed(ActionEvent e) {
     // Do nothing, as cancel mostly does nothing
   }
+
+  public static CancelAction create(String key, Function0<Unit> handler) {
+    return new CancelAction(key) {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        handler.invoke();
+      }
+    };
+  }
+
 }

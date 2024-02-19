@@ -84,12 +84,6 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public Choice showConfirmationDialog(String message, String title) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
   }
 

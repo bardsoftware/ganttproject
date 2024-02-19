@@ -97,8 +97,6 @@ public interface UIFacade {
 
   GanttLookAndFeelInfo getLookAndFeel();
 
-  Choice showConfirmationDialog(String message, String title);
-
   void showPopupMenu(Component invoker, Action[] actions, int x, int y);
 
   void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y);

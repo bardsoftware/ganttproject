@@ -214,7 +214,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   }
 
   protected GanttProjectBase() {
-    //++ super("GanttProject");
     var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager);
 
     myProjectDatabase = databaseProxy;
@@ -318,11 +317,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     return myUIFacade;
   }
 
-//  @Override
-//  public Frame getMainFrame() {
-//    return myUIFacade.getMainFrame();
-//  }
-
   @Override
   public Image getLogo() {
     return myUIFacade.getLogo();
@@ -386,11 +380,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   @Override
   public Dialog createDialog(JComponent content, Action[] buttonActions, String title) {
     return myUIFacade.createDialog(content, buttonActions, title);
-  }
-
-  @Override
-  public UIFacade.Choice showConfirmationDialog(String message, String title) {
-    return myUIFacade.showConfirmationDialog(message, title);
   }
 
   @Override
