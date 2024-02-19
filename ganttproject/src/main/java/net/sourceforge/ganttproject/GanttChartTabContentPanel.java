@@ -155,7 +155,10 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
         .addButton(myTaskActions.getLinkTasksAction().asToolbarAction())
         .addButton(myTaskActions.getUnlinkTasksAction().asToolbarAction())
         .addTail(filterComponent)
-        .withClasses("toolbar-common", "toolbar-small", "task-filter");
+      //      it.toolbar.stylesheets.add("/net/sourceforge/ganttproject/ChartTabContentPanel.css")
+//      it.toolbar.styleClass.remove("toolbar-big")
+
+      .withClasses("toolbar-common", "toolbar-small", "task-filter");
   }
 
   static class TableButtonAction extends GPAction {
@@ -242,7 +245,11 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   public Node getNode() {
     myInitializationCompleted.invoke();
     myViewComponents = ViewPaneKt.createViewComponents(
-      /*toolbarBuilder=*/      () -> createToolbarBuilder().build().getToolbar$ganttproject(),
+      /*toolbarBuilder=*/      () -> {
+        var toolbar = createToolbarBuilder().build().getToolbar$ganttproject();
+        toolbar.getStylesheets().add("/net/sourceforge/ganttproject/ChartTabContentPanel.css");
+        return toolbar;
+      },
       /*tableBuilder=*/        () -> {
         taskTable = setupTaskTable();
         return taskTable.getTreeTable();
@@ -250,6 +257,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       /*chartToolbarBuilder=*/ () -> {
         var chartToolbarBox = new HBox();
         var navigationBar = createNavigationToolbarBuilder().build().getToolbar$ganttproject();
+        navigationBar.getStylesheets().add("/net/sourceforge/ganttproject/ChartTabContentPanel.css");
         chartToolbarBox.getChildren().add(navigationBar);
         HBox.setHgrow(navigationBar, Priority.ALWAYS);
         chartToolbarBox.getChildren().add(createScheduleToolbar().build().getToolbar$ganttproject());

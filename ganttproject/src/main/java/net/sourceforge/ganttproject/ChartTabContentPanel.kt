@@ -55,19 +55,6 @@ internal abstract class ChartTabContentPanel(
   protected var headerHeight: () -> Int = { 0 }
   protected var imageHeight: () -> Int = { myImagePanel!!.preferredSize.height }
 
-//  private val toolbar by lazy {
-//    FXToolbarBuilder().run {
-//      val dropdownActions = buildDropdownActions()
-//      addNode(buildDropdown(dropdownActions.firstOrNull(), dropdownActions))
-//      addTail(Pane())
-//      buildToolbarActions().forEach { addButton(it) }
-//      withScene()
-//      build()
-//    }.also {
-//      it.toolbar.stylesheets.add("/net/sourceforge/ganttproject/ChartTabContentPanel.css")
-//      it.toolbar.styleClass.remove("toolbar-big")
-//    }
-//  }
 
   protected open fun buildDropdownActions(): List<GPAction> = emptyList()
   protected open fun buildToolbarActions(): List<GPAction> = emptyList()

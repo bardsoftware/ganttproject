@@ -54,28 +54,6 @@ fun main(args: Array<String>) {
   }.launch()
 }
 
-val mainWindow = AtomicReference<GanttProject?>(null)
-
-/**
- * @author dbarashev@bardsoftware.com
- */
-@JvmOverloads
-fun _startUiApp(configure: (GanttProject) -> Unit = {}) {
-
-  Platform.setImplicitExit(false)
-  SwingUtilities.invokeLater {
-    try {
-      val ganttFrame = GanttProject()
-      configure(ganttFrame)
-      APP_LOGGER.debug("Main frame created")
-      mainWindow.set(ganttFrame)
-    } catch (e: Throwable) {
-      APP_LOGGER.error("Failure when launching application", exception = e)
-    } finally {
-    }
-  }
-}
-
 fun startUiApp(configure: (GanttProject) -> Unit = {}) {
   Platform.setImplicitExit(true)
   try {
@@ -91,7 +69,6 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
       app.start(stage)
       APP_LOGGER.debug("Main frame created")
     }
-    //mainWindow.set(ganttFrame)
   } catch (e: Throwable) {
     APP_LOGGER.error("Failure when launching application", exception = e)
   } finally {
