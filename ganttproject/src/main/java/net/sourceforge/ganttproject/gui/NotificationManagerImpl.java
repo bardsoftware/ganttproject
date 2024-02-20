@@ -31,37 +31,13 @@ import net.sourceforge.ganttproject.action.ShowChannelAction;
 import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
 
 public class NotificationManagerImpl implements NotificationManager {
-  private AnimationView myAnimationView;
   private NotificationChannel myFirstChannel;
 
-  public NotificationManagerImpl(AnimationView animationView) {
-    myAnimationView = animationView;
+  public NotificationManagerImpl() {
   }
 
   @Override
   public void showNotification(final NotificationChannel channel) {
-    if (channel.getItems().isEmpty() && channel.getDefaultNotification() == null) {
-      return;
-    }
-    if (!myAnimationView.isReady()) {
-      if (myFirstChannel == null) {
-        myFirstChannel = channel;
-      }
-      return;
-    }
-    if (myAnimationView.isVisible()) {
-      return;
-    }
-    NotificationComponent nc = new NotificationComponent(channel, myAnimationView);
-    channel.setVisible(true);
-    nc.processItems();
-    myAnimationView.setComponent(nc.getComponent(), channel.getButton(), new Runnable() {
-      @Override
-      public void run() {
-        channel.getButton().setBackground(channel.getNormalColor());
-        channel.setVisible(false);
-      }
-    });
   }
 
   public void showPending() {
@@ -144,13 +120,6 @@ public class NotificationManagerImpl implements NotificationManager {
 
   @Override
   public void hideNotification() {
-    myAnimationView.close();
   }
 
-  @Override
-  public AnimationView setAnimationView(AnimationView view) {
-    AnimationView oldView = myAnimationView;
-    myAnimationView = view;
-    return oldView;
-  }
 }

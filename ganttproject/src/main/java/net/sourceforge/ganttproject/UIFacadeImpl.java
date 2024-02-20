@@ -84,7 +84,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   //private final JFrame myMainFrame;
   private final ScrollingManager myScrollingManager;
   private final ZoomManager myZoomManager;
-  private final GanttStatusBar myStatusBar;
   private final UIFacade myFallbackDelegate;
   private final TaskSelectionManager myTaskSelectionManager;
   private final List<GPOptionGroup> myOptionGroups = Lists.newArrayList();
@@ -92,7 +91,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final DefaultFileOption myLogoOption;
   private final NotificationManagerImpl myNotificationManager;
   private final TaskView myTaskView = new TaskView();
-  private final DialogBuilder myDialogBuilder;
   private final Map<String, Font> myOriginalFonts = Maps.newHashMap();
   private final List<Runnable> myOnUpdateComponentTreeUiCallbacks = Lists.newArrayList();
   private float myLastScale = 0;
@@ -136,14 +134,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final IGanttProject myProject;
   private FontSpec myLastFontSpec;
 
-  UIFacadeImpl(GanttStatusBar statusBar, NotificationManagerImpl notificationManager,
+  UIFacadeImpl(NotificationManagerImpl notificationManager,
                final IGanttProject project, UIFacade fallbackDelegate) {
     myProject = project;
-    myDialogBuilder = new DialogBuilder(null);
     myScrollingManager = new ScrollingManagerImpl();
     myZoomManager = new ZoomManager(project.getTimeUnitStack());
-    myStatusBar = statusBar;
-    myStatusBar.setNotificationManager(notificationManager);
     myFallbackDelegate = fallbackDelegate;
     Job.getJobManager().setProgressProvider(this);
     myTaskSelectionManager = new TaskSelectionManager(project::getTaskManager);
@@ -273,11 +268,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   public Dialog createDialog(JComponent content, Action[] buttonActions, String title) {
     //return myDialogBuilder.createDialog(content, buttonActions, title);
     return createDialogFx(content, buttonActions, title);
-  }
-
-  @Override
-  public void setStatusText(String text) {
-    myStatusBar.setFirstText(text, 2000);
   }
 
   @Override
@@ -486,12 +476,14 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public IProgressMonitor createMonitor(Job job) {
-    return myStatusBar.createProgressMonitor();
+    // TODO: implement progress monitor
+    return null;
   }
 
   @Override
   public IProgressMonitor createProgressGroup() {
-    return myStatusBar.createProgressMonitor();
+    // TODO: implement progress monitor
+    return null;
   }
 
   @Override

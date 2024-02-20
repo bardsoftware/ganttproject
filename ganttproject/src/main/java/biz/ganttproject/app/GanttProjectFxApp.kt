@@ -29,6 +29,7 @@ import javafx.stage.Stage
 import net.sourceforge.ganttproject.GanttProject
 
 class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() {
+
   override fun start(stage: Stage) {
     try {
       val vbox = vbox {

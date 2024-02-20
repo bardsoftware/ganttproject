@@ -105,8 +105,6 @@ public interface UIFacade {
 
   Dialog createDialog(JComponent content, Action[] buttonActions, String title);
 
-  void setStatusText(String text);
-
   void showErrorDialog(String errorMessage);
 
   void showNotificationDialog(NotificationChannel channel, String message);

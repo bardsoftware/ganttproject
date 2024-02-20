@@ -321,7 +321,6 @@ class ProjectUIFacadeImpl(
       if (result) {
         beforeClose()
         project.close()
-        myWorkbenchFacade.setStatusText(i18n.getText("project.new.description"))
         showNewProjectWizard(project)
       }
     }

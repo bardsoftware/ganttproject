@@ -97,10 +97,6 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public void setStatusText(String text) {
-  }
-
-  @Override
   public void showOptionDialog(int messageType, String message, Action[] actions) {
     System.err.println("[ConsoleUIFacade]: " + message);
   }

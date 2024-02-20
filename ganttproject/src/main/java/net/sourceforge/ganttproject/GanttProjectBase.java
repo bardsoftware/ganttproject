@@ -51,7 +51,6 @@ import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.gui.view.ViewManagerImpl;
-import net.sourceforge.ganttproject.gui.window.ContentPaneBuilder;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -94,7 +93,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   protected final WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
   private final ViewManagerImpl myViewManager;
   private final UIFacadeImpl myUIFacade;
-  private final GanttStatusBar statusBar;
   private final TimeUnitStack myTimeUnitStack = new GPTimeUnitStack();
   private final ProjectUIFacadeImpl myProjectUIFacade;
   private final DocumentManager myDocumentManager;
@@ -104,7 +102,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   private final GPUndoManager myUndoManager;
 
   private final RssFeedChecker myRssChecker;
-  protected final ContentPaneBuilder myContentPaneBuilder;
   final TaskManagerConfigImpl myTaskManagerConfig;
   private final TaskManager myTaskManager;
   protected final TwoPhaseBarrierImpl<UIFacade> myUiInitializationPromise;
@@ -223,14 +220,11 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager, databaseProxy);
     addProjectEventListener(databaseProxy.createProjectEventListener());
     myTaskManager.addTaskListener(databaseProxy.createTaskEventListener());
-    statusBar = new GanttStatusBar();
     myTabPane = new GanttTabbedPane();
-    //myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());
     var viewPane = new ViewPane();
-    myContentPaneBuilder = new ContentPaneBuilder(viewPane, getStatusBar());
 
-    NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
-    myUIFacade = new UIFacadeImpl(statusBar, notificationManager, getProject(), this);
+    NotificationManagerImpl notificationManager = new NotificationManagerImpl();
+    myUIFacade = new UIFacadeImpl(notificationManager, getProject(), this);
     myUiInitializationPromise = new TwoPhaseBarrierImpl<>(myUIFacade);
 
     GPLogger.setUIFacade(myUIFacade);
@@ -370,11 +364,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   @Override
   public GPUndoManager getUndoManager() {
     return myUndoManager;
-  }
-
-  @Override
-  public void setStatusText(String text) {
-    myUIFacade.setStatusText(text);
   }
 
   @Override
@@ -590,10 +579,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
 
   @Override
   public abstract Document getDocument();
-
-  protected GanttStatusBar getStatusBar() {
-    return statusBar;
-  }
 
   @Override
   public @NotNull DocumentManager getDocumentManager() {
