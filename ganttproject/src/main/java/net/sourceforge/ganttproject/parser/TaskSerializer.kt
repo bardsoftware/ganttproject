@@ -108,6 +108,7 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
       if (earliestStart != null) {
         task.setThirdDate(GanttCalendar.parseXMLDate(earliestStart))
       }
+      task.thirdDateConstraint = child.thirdDateConstraint ?: 0
 
       child.webLink?.let { it ->
         try {
