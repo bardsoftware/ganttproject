@@ -53,6 +53,8 @@ class DevServerMain : CliktCommand() {
   private val pgSuperAuth by option("--pg-super-auth", help = "Postgres super user password").default("")
 
   init {
+    // TODO: is there a better place for this?
+    localeApi
     context {
       helpFormatter = { MordantHelpFormatter(it, showDefaultValues = true) }
     }
@@ -91,11 +93,19 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
           val baseTxnId = colloboqueServer.getBaseTxnId(it) ?: run {
             colloboqueServer.init(it, PROJECT_XML_TEMPLATE)
           }
+          val transactionLogs = colloboqueServer.getTransactionLogs(it)
+          LOG.debug("transactionLogs = $transactionLogs")
+          LOG.debug("baseTxnId = $baseTxnId")
+          var project = PROJECT_XML_TEMPLATE
+          for (xlog in transactionLogs) {
+            project = updateProjectXml(project, xlog)
+          }
+          LOG.debug("projectXml = $project")
 
-          newFixedLengthResponse(PROJECT_XML_TEMPLATE.toBase64()).also { response ->
+          newFixedLengthResponse(project.toBase64()).also { response ->
             response.addHeader("ETag", "-1")
             response.addHeader("Digest", CRC32().let { hash ->
-              hash.update(PROJECT_XML_TEMPLATE.toByteArray())
+              hash.update(project.toByteArray())
               hash.value.toString()
             })
             response.addHeader("BaseTxnId", baseTxnId)

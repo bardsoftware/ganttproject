@@ -69,8 +69,10 @@ class PostgresConnectionFactory(
     regularDataSource.connection.also { it.schema = getSchema(projectRefid) }
 
   // TODO: escape projectRefid
-  private fun getSchema(projectRefid: String) =
-    "project_${Hashing.murmur3_128().hashBytes(projectRefid.toByteArray(Charsets.UTF_8))}"
+  companion object {
+    fun getSchema(projectRefid: String) =
+      "project_${Hashing.murmur3_128().hashBytes(projectRefid.toByteArray(Charsets.UTF_8))}"
+  }
 }
 
 private val STARTUP_LOG = GPLogger.create("Startup")
