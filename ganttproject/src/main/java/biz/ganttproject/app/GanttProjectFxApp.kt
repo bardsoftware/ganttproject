@@ -64,7 +64,7 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
       stage.icons += Image(GanttProjectFxApp::class.java.getResourceAsStream("/icons/ganttproject-logo-512.png"))
       ganttProject.title.let {
         stage.title = it.value
-        it.observable.addListener { _, _, newValue ->
+        it.addListener { _, _, newValue ->
           Platform.runLater {
             stage.title = newValue
           }

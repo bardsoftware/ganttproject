@@ -126,19 +126,22 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
 
   protected final ProjectDatabase myProjectDatabase;
 
-  protected final LocalizedString myTitle = new LocalizedString(
-    "appliTitle", InternationalizationKt.getRootLocalizer(), new SimpleStringProperty(), Collections.emptyList());
-  public LocalizedString getTitle() {
+  protected final SimpleStringProperty myTitle = new SimpleStringProperty("");
+  public SimpleStringProperty getTitle() {
     return myTitle;
   }
 
   protected void updateTitle() {
+    var builder = new StringBuilder();
+    if (isModified()) {
+      builder.append("* ");
+    }
+    builder.append(InternationalizationKt.getRootLocalizer().formatText("appliTitle"));
     var doc = getDocument();
     if (doc != null) {
-      myTitle.update(isModified() ? "*" : "", 1, getDocument().getFileName());
-    } else {
-      myTitle.update("", 0, "");
+      builder.append("[").append(doc.getFileName()).append("]");
     }
+    myTitle.set(builder.toString());
   }
   @Override
   public @NotNull Map<Task, Task> importProject(
