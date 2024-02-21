@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.gui.view
 import biz.ganttproject.core.option.GPOption
 import javafx.scene.Node
 import net.sourceforge.ganttproject.chart.Chart
-import java.awt.Component
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -29,7 +28,7 @@ import java.awt.Component
 interface ViewProvider {
   val options: List<GPOption<*>>
   val chart: Chart
-  val viewComponent: Component
   val node: Node?
   val id: String
+  val refresh: ()->Unit
 }

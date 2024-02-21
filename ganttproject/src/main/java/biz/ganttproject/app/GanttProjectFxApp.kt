@@ -24,6 +24,9 @@ import javafx.application.Platform
 import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.image.Image
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyCodeCombination
+import javafx.scene.input.KeyEvent
 import javafx.scene.layout.Priority
 import javafx.stage.Stage
 import net.sourceforge.ganttproject.GanttProject
@@ -68,6 +71,15 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
           Platform.runLater {
             stage.title = newValue
           }
+        }
+      }
+
+      val insertTask = KeyCodeCombination(KeyCode.INSERT)
+      stage.addEventHandler(KeyEvent.KEY_PRESSED) {
+        println("event=$it")
+        if (insertTask.match(it)) {
+          println("INSERT pressed")
+          it.consume()
         }
       }
       stage.show()

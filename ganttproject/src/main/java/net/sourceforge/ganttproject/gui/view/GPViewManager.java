@@ -18,8 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.view;
 
-import javax.swing.Icon;
-
+import biz.ganttproject.app.View;
 import javafx.scene.Node;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -29,7 +28,7 @@ import net.sourceforge.ganttproject.chart.ChartSelection;
  * @author bard
  */
 public interface GPViewManager {
-  void createView(ViewProvider view, Icon icon);
+  void createView(ViewProvider view);
 
   GPAction getCopyAction();
 
@@ -45,9 +44,11 @@ public interface GPViewManager {
 
   void activatePrevView();
 
-  void toggleVisible(ViewProvider view);
-
   Node getFxComponent();
 
   void onViewCreated(Runnable callback);
+
+  void refresh();
+
+  View getView(String id);
 }

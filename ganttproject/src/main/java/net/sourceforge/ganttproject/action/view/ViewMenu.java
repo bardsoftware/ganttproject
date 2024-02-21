@@ -19,23 +19,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.view;
 
 import biz.ganttproject.core.option.FontOption;
-import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.IntegerOption;
-import javafx.scene.Node;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.ViewToggleAction;
-import net.sourceforge.ganttproject.chart.Chart;
-import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.plugins.PluginManager;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.*;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Collection of actions present in the view menu
@@ -44,52 +37,15 @@ public class ViewMenu extends JMenu {
   public ViewMenu(final IGanttProject project, GPViewManager viewManager, IntegerOption dpiOption, FontOption chartFontOption, String key) {
     super(GPAction.createVoidAction(key));
 
-    List<Chart> charts = PluginManager.getCharts();
+    List<ViewProvider> charts = PluginManager.getViewProviders();
     if (charts.isEmpty()) {
       setEnabled(false);
     }
-    for (Chart chart : charts) {
-      chart.init(project, dpiOption, chartFontOption);
-      ViewProvider view = new GPViewImpl(chart);
-      viewManager.createView(view, null);
-      add(new JCheckBoxMenuItem(new ViewToggleAction(chart, viewManager, view)));
+    for (ViewProvider viewProvider : charts) {
+      var action = new ViewToggleAction(viewManager, viewProvider);
+      action.updateAction();
+      add(new JCheckBoxMenuItem(action));
     }
     setToolTipText(null);
-  }
-
-  private static class GPViewImpl implements ViewProvider {
-    private final Chart myChart;
-    private Component myComponent;
-
-    GPViewImpl(Chart chart) {
-      myChart = chart;
-      myComponent = (Component) chart.getAdapter(Container.class);
-    }
-
-    @Override
-    public Chart getChart() {
-      return myChart;
-    }
-
-    @Override
-    public Component getViewComponent() {
-      return myComponent;
-    }
-
-    @Override
-    public Node getNode() {
-      return null;
-    }
-
-    @Override
-    public String getId() {
-      return null;
-    }
-
-      @NotNull
-      @Override
-      public List<GPOption<?>> getOptions() {
-          return Collections.emptyList();
-      }
   }
 }

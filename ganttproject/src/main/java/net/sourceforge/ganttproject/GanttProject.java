@@ -150,7 +150,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getProjectImpl().getHumanResourceManager().addView(this);
     myCalendar.addListener(GanttProject.this::setModified);
 
-//++    setFocusable(true);
     startupLogger.debug("1. loading look'n'feels");
     options = new GanttOptions(getRoleManager(), getDocumentManager(), false);
     myUIConfiguration = options.getUIConfiguration();
@@ -159,8 +158,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     addProjectEventListener(getTaskManager().getProjectListener());
     getActiveCalendar().addListener(getTaskManager().getCalendarListener());
-    ImageIcon icon = new ImageIcon(getClass().getResource("/icons/ganttproject-logo-512.png"));
-//++    setIconImage(icon.getImage());
 
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
         myTaskTableChartConnector,
@@ -230,12 +227,12 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         getProject(), getUIFacade(), area.getJComponent(),
         getUIConfiguration(), myTaskTableSupplier, myTaskActions, myUiInitializationPromise);
 
-    getViewManager().createView(myGanttChartTabContent, new ImageIcon(getClass().getResource("/icons/tasks_16.gif")));
+    getViewManager().createView(myGanttChartTabContent);
     //getViewManager().toggleVisible(myGanttChartTabContent);
 
     myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(), getResourcePanel(),
         getResourcePanel().area);
-    getViewManager().createView(myResourceChartTabContent, new ImageIcon(getClass().getResource("/icons/res_16.gif")));
+    getViewManager().createView(myResourceChartTabContent);
     //getViewManager().toggleVisible(myResourceChartTabContent);
 
 //++
@@ -594,9 +591,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     //myMRU.add(document.getPath(), true);
     myObservableDocument.set(document);
     updateTitle();
-    for (Chart chart : PluginManager.getCharts()) {
-      chart.reset();
-    }
+    refresh();
+//    for (Chart chart : PluginManager.getViewProviders()) {
+//      chart.reset();
+//    }
 
     // myDelayManager.fireDelayObservation(); // it is done in repaint2
     //++ addMouseListenerToAllContainer(this.getComponents());
@@ -897,11 +895,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
   @Override
   public void refresh() {
-    getResourcePanel().getResourceTreeTableModel().updateResources();
-    getResourcePanel().getResourceTreeTable().setRowHeight(getResourceChart().getModel().calculateRowHeight());
-    for (Chart chart : PluginManager.getCharts()) {
-      chart.reset();
-    }
+    getViewManager().refresh();
     //++super.repaint();
   }
 

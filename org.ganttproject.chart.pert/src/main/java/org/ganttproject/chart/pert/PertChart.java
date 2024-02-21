@@ -29,6 +29,7 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.ChartSelectionListener;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.task.TaskManager;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -40,7 +41,7 @@ import java.util.Date;
 
 import static net.sourceforge.ganttproject.gui.UIFacade.DEFAULT_DPI;
 
-public abstract class PertChart extends JPanel implements Chart {
+public abstract class PertChart extends JPanel implements Chart, ViewProvider {
   /** Task manager used to build PERT chart. It provides data. */
   TaskManager myTaskManager;
   private IntegerOption myDpi;

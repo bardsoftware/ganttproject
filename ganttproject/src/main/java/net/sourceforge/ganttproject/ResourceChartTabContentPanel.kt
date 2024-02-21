@@ -14,6 +14,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
+import net.sourceforge.ganttproject.chart.TimelineChart
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.view.ViewProvider
@@ -74,8 +75,6 @@ internal class ResourceChartTabContentPanel(
 
   override val chart: Chart
     get() = getUiFacade().resourceChart
-  override val viewComponent: Component
-    get() = component
   override val node: Node
     get() {
       viewComponents = createViewComponents(
@@ -105,6 +104,14 @@ internal class ResourceChartTabContentPanel(
     }
   override val id: String
     get() = "resourceChart"
+  override val refresh: () -> Unit
+    get() = {
+      myTreeFacade.getResourceTreeTableModel().updateResources()
+      (chart as? TimelineChart)?.let {
+        myTreeFacade.getResourceTreeTable().setRowHeight(it.getModel().calculateRowHeight())
+      }
+      chart.reset()
+    }
 
 
   init {

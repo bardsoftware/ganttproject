@@ -55,6 +55,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.ParserFactory;
+import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -74,7 +75,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -270,7 +270,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
       }
     };
 //    myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
-    myViewManager = new ViewManagerImpl(getProject(), myUIFacade, myTabPane, getUndoManager(), viewPane);
+    myViewManager = new ViewManagerImpl(getProject(), myUIFacade, getUndoManager(), viewPane, PluginManager.getViewProviders());
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
     myUIFacade.addOptions(myRssChecker.getUiOptions());

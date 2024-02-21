@@ -103,8 +103,8 @@ public class NotificationManagerImpl implements NotificationManager {
       SwingUtilities.invokeLater(new Runnable() {
         @Override
         public void run() {
-          channel.saveNormalColor();
-          channel.getButton().setBackground(channel.getColor());
+//          channel.saveNormalColor();
+//          channel.getButton().setBackground(channel.getColor());
         }
       });
       if (!hasVisibleChannel) {

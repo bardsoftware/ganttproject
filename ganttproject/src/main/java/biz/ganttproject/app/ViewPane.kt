@@ -18,6 +18,7 @@
  */
 package biz.ganttproject.app
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.core.option.IntegerOption
 import biz.ganttproject.lib.fx.vbox
 import javafx.embed.swing.SwingNode
@@ -32,39 +33,56 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.gui.view.ViewProvider
 import javax.swing.JComponent
 import javax.swing.SwingUtilities
 
 interface View {
+  fun refresh() {
+
+  }
+
   var isVisible: Boolean
   var isActive: Boolean;
+  val chart: Chart
+  val id: String
 }
 
 class ViewPane {
   private val tabPane = TabPane()
-  private val localizer = RootLocalizer.createWithRootKey("view")
   var onViewCreated: ()->Unit = {}
   val selectedViewId get() = tabPane.selectionModel.selectedItem.id
   fun createComponent(): Parent = tabPane
 
-  fun createView(viewComponent: Node, viewId: String): View {
+  fun createView(viewProvider: ViewProvider): View {
+    val node = viewProvider.node
+    val id = viewProvider.id
     val tab = Tab().also {
-      it.content = viewComponent
-      it.text = localizer.formatText("$viewId.label")
-      it.id = viewId
+      it.content = node
+      it.text = viewProvider.getLabel()
+      it.id = id
       onViewCreated()
     }
     tabPane.tabs.add(tab)
     tabPane.layout()
-    return ViewImpl(tabPane, tab)
+    return ViewImpl(tabPane, tab, viewProvider.chart)
   }
 }
 
-private class ViewImpl(private val tabPane: TabPane, private val tab: Tab): View {
-  override var isVisible: Boolean
-    get() = true
-    set(value) {}
+fun ViewProvider.getLabel() = localizer.formatText("${this.id}.label")
+private val localizer = RootLocalizer.createWithRootKey("view")
+
+private class ViewImpl(private val tabPane: TabPane, private val tab: Tab, override val chart: Chart): View {
+  override var isVisible: Boolean = true
+    set(value) {
+      FXUtil.runLater {
+        if (value.not() && field) { tabPane.tabs.remove(tab) }
+        if (value && field.not()) { tabPane.tabs.add(tab) }
+        field = value
+      }
+    }
 
   override var isActive: Boolean
     get() = tab.isSelected
@@ -73,6 +91,22 @@ private class ViewImpl(private val tabPane: TabPane, private val tab: Tab): View
         tabPane.selectionModel.select(tab)
       }
     }
+  override val id: String
+    get() = tab.id
+}
+
+class UninitializedView(private val viewPane: ViewPane, private val viewProvider: ViewProvider): View {
+  override var isVisible: Boolean = false
+    set(value) {
+      FXUtil.runLater {
+        viewPane.createView(viewProvider)
+      }
+    }
+  override var isActive: Boolean = false
+  override val chart: Chart
+    get() = error("Not supposed to be called")
+  override val id = viewProvider.id
+
 }
 
 data class ViewComponents(val image: Pane, val splitPane: SplitPane, val table: Node) {

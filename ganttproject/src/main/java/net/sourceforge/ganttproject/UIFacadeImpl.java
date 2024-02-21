@@ -282,7 +282,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         alert.initStyle(StageStyle.UNDECORATED);
       } else if (messageType == JOptionPane.QUESTION_MESSAGE) {
         alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.initStyle(StageStyle.DECORATED);
+        alert.initStyle(StageStyle.UNDECORATED);
       } else if (messageType == JOptionPane.ERROR_MESSAGE) {
         alert = new Alert(Alert.AlertType.ERROR);
         alert.initStyle(StageStyle.UNDECORATED);

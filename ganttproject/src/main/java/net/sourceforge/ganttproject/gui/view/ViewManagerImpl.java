@@ -18,11 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.view;
 
+import biz.ganttproject.app.UninitializedView;
+import biz.ganttproject.app.View;
 import biz.ganttproject.app.ViewPane;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import kotlin.Unit;
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -31,13 +32,13 @@ import net.sourceforge.ganttproject.action.edit.CutAction;
 import net.sourceforge.ganttproject.action.edit.PasteAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
-import net.sourceforge.ganttproject.gui.GanttTabbedPane;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
-import javax.swing.*;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * View manager implementation based on the tab pane.
@@ -45,18 +46,19 @@ import java.util.Map;
  * @author dbarashev (Dmitry Barashev)
  */
 public class ViewManagerImpl implements GPViewManager {
-  private final GanttTabbedPane myTabs;
-  private final Map<ViewProvider, ViewHolder> myViews = new LinkedHashMap<ViewProvider, ViewHolder>();
+  private final Map<ViewProvider, View> myViews = new LinkedHashMap<>();
   private final ViewPane myViewPane;
   //GPView mySelectedView;
 
   private final CopyAction myCopyAction;
   private final CutAction myCutAction;
   private final PasteAction myPasteAction;
+  private final List<ViewProvider> myViewProviders;
 
-  public ViewManagerImpl(IGanttProject project, UIFacade uiFacade, GanttTabbedPane tabs, GPUndoManager undoManager, ViewPane viewPane) {
+  public ViewManagerImpl(IGanttProject project, UIFacade uiFacade, GPUndoManager undoManager, ViewPane viewPane,
+                         List<ViewProvider> viewProviders) {
+    myViewProviders = viewProviders;
     myViewPane = viewPane;
-    myTabs = tabs;
     project.addProjectEventListener(getProjectEventListener());
     // Create actions
     myCopyAction = new CopyAction(this);
@@ -125,37 +127,24 @@ public class ViewManagerImpl implements GPViewManager {
 
   @Override
   public void activateNextView() {
-    myTabs.setSelectedIndex((myTabs.getSelectedIndex() + 1) % myTabs.getTabCount());
+
   }
 
   @Override
   public void activatePrevView() {
-    myTabs.setSelectedIndex((myTabs.getSelectedIndex() - 1 + myTabs.getTabCount()) % myTabs.getTabCount());
+
   }
 
-  public ViewProvider getSelectedView() {
-    return myViews.keySet().stream().filter(view -> view.getId().equals(myViewPane.getSelectedViewId())).findFirst().get();
+  public View getSelectedView() {
+    return myViews.values().stream().filter(View::isActive).findFirst().orElse(null);
   }
 
   @Override
-  public void createView(ViewProvider view, Icon icon) {
+  public void createView(ViewProvider viewProvider) {
     Platform.runLater(() -> {
-      var node = view.getNode();
-      if (node != null) {
-        var fxView = myViewPane.createView(view.getNode(), view.getId());
-        ViewHolder viewHolder = new ViewHolder(ViewManagerImpl.this, myTabs, view, icon, fxView);
-        myViews.put(view, viewHolder);
-      } else {
-        GPLogger.log("View provided by " + view + " is null");
-      }
+      var fxView = myViewPane.createView(viewProvider);
+      myViews.put(viewProvider, fxView);
     });
-  }
-
-  @Override
-  public void toggleVisible(ViewProvider view) {
-    ViewHolder viewHolder = myViews.get(view);
-    assert viewHolder != null;
-    viewHolder.setVisible(!viewHolder.isVisible());
   }
 
   @Override
@@ -166,5 +155,24 @@ public class ViewManagerImpl implements GPViewManager {
   @Override
   public void onViewCreated(Runnable callback) {
     myViewPane.setOnViewCreated(() -> {callback.run(); return Unit.INSTANCE;});
+  }
+
+  @Override
+  public void refresh() {
+    myViews.values().forEach(View::refresh);
+  }
+
+  @Override
+  public View getView(String id) {
+    var existing = myViews.values().stream().filter(view -> id.equals(view.getId())).findFirst();
+    if (existing.isPresent()) {
+      return existing.get();
+    }
+    var provider = myViewProviders.stream().filter(viewProvider -> id.equals(viewProvider.getId())).findFirst();
+    if (provider.isPresent()) {
+      return new UninitializedView(myViewPane, provider.get());
+    } else {
+      throw new IllegalStateException("Unknown view with ID=" + id + " available views: " + myViews.keySet().stream().map(p -> p.getId()).collect(Collectors.joining()));
+    }
   }
 }

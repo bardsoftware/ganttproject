@@ -161,6 +161,15 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       .withClasses("toolbar-common", "toolbar-small", "task-filter");
   }
 
+  @NotNull
+  @Override
+  public Function0<Unit> getRefresh() {
+    return () -> {
+      getChart().reset();
+      return null;
+    };
+  }
+
   static class TableButtonAction extends GPAction {
     TableButtonAction(String id) {
       super(id);
@@ -236,12 +245,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
     return myWorkbenchFacade.getGanttChart();
   }
 
-  @Override
-  public Component getViewComponent() {
-    return getComponent();
-  }
-
-  @Override
+    @Override
   public Node getNode() {
     myInitializationCompleted.invoke();
     myViewComponents = ViewPaneKt.createViewComponents(

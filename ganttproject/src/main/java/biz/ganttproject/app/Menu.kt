@@ -27,6 +27,7 @@ import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.input.KeyCombination
 import javafx.scene.text.Text
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIUtil
@@ -192,6 +193,7 @@ class MenuBuilderAsList : MenuBuilder {
   fun actions() = actionList.toList()
 }
 
+fun (GPAction).getAccelerator(): KeyStroke? = this.getValue(Action.ACCELERATOR_KEY) as? KeyStroke
 fun (GPAction).getGlyphIcon(): Text? =
     UIUtil.getFontawesomeLabel(this)?.let { iconLabel ->
       when (UIUtil.getFontawesomeIconset(this)) {
@@ -253,6 +255,10 @@ fun GPAction.asMenuItem(): MenuItem =
       }
     }
     val menuItem = CustomMenuItem(node)
+    this.getAccelerator()?.let {
+      menuItem.accelerator = KeyCombination.keyCombination(it.toString().replace("pressed", " ").trim()
+        .split("""\s+""".toRegex()).joinToString(separator = "+"))
+    }
     menuItem.onAction = EventHandler { _ ->
       SwingUtilities.invokeLater {
         this.actionPerformed(null)

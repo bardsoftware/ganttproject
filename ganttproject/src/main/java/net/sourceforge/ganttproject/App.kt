@@ -36,14 +36,13 @@ import org.slf4j.Logger
 import java.io.File
 import java.lang.Thread.UncaughtExceptionHandler
 import java.util.*
-import java.util.concurrent.atomic.AtomicReference
 import javax.swing.SwingUtilities
 
 
 fun main(args: Array<String>) {
   var builder = AppBuilder(args).withLogging().withWindowVisible().runBeforeUi {
     RootLocalizer = SingleTranslationLocalizer(ResourceBundle.getBundle("i18n"))
-    PluginManager.setCharts(listOf())
+    PluginManager.setViewProviders(listOf())
     GanttLanguage.getInstance()
   }
   if (getCloudEnv() == GPCloudEnv.EMULATOR) {

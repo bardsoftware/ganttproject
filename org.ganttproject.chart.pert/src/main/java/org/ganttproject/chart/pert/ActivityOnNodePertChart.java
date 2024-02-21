@@ -18,11 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.chart.pert;
 
+import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.print.PrintChartApi;
+import javafx.embed.swing.SwingNode;
+import javafx.scene.Node;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.StringUtils;
 import org.ganttproject.chart.pert.PertChartAbstraction.TaskGraphNode;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,6 +38,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -734,6 +742,40 @@ public class ActivityOnNodePertChart extends PertChart {
 
   private static int textPaddingY = 0;
 
+  @NotNull
+  @Override
+  public List<GPOption<?>> getOptions() {
+    return Collections.emptyList();
+  }
+
+  @NotNull
+  @Override
+  public Chart getChart() {
+    return this;
+  }
+
+  @Nullable
+  @Override
+  public Node getNode() {
+    var swingNode = new SwingNode();
+    SwingUtilities.invokeLater(() -> swingNode.setContent(this));
+    return swingNode;
+  }
+
+  @NotNull
+  @Override
+  public String getId() {
+    return "pertChart";
+  }
+
+  @NotNull
+  @Override
+  public Function0<Unit> getRefresh() {
+    return () -> {
+      reset();
+      return null;
+    };
+  }
 
 
   /**

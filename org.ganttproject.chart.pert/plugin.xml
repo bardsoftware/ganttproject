@@ -20,7 +20,7 @@
       <import plugin="org.eclipse.core.runtime"/>
    </requires>
    <extension
-         point="net.sourceforge.ganttproject.chart">
+         point="net.sourceforge.ganttproject.gui.view">
          <chart class="org.ganttproject.chart.pert.ActivityOnNodePertChart"/>
    </extension>
 </plugin>
