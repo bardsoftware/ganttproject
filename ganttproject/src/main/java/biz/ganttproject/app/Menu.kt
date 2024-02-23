@@ -253,11 +253,6 @@ fun GPAction.asMenuItem(): MenuItem =
       }
     }
     val menuItem = CustomMenuItem(node)
-    menuItem.onAction = EventHandler { _ ->
-      SwingUtilities.invokeLater {
-        this.actionPerformed(null)
-      }
-    }
     menuItem.also {
       it.isDisable = !isEnabled
     }
