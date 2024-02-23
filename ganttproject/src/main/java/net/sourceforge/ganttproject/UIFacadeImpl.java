@@ -19,10 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.FXUtil;
-import biz.ganttproject.app.Barrier;
-import biz.ganttproject.app.FontManager;
-import biz.ganttproject.app.MenuBuilderSwing;
-import biz.ganttproject.app.SimpleBarrier;
+import biz.ganttproject.app.*;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.option.FontSpec.Size;
 import biz.ganttproject.core.table.ColumnList;
@@ -89,7 +86,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final List<GPOptionGroup> myOptionGroups = Lists.newArrayList();
   private final LafOption myLafOption;
   private final DefaultFileOption myLogoOption;
-  private final NotificationManagerImpl myNotificationManager;
+  private final NotificationManager myNotificationManager;
   private final TaskView myTaskView = new TaskView();
   private final Map<String, Font> myOriginalFonts = Maps.newHashMap();
   private final List<Runnable> myOnUpdateComponentTreeUiCallbacks = Lists.newArrayList();

@@ -18,16 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import java.util.Collection;
+import net.sourceforge.ganttproject.util.BrowserControl;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-
-import net.sourceforge.ganttproject.gui.NotificationComponent.AnimationView;
-import net.sourceforge.ganttproject.util.BrowserControl;
+import java.util.List;
 
 public interface NotificationManager {
-  void addNotifications(NotificationChannel channel, Collection<NotificationItem> notifications);
+  void addNotifications(NotificationChannel channel, List<NotificationItem> notifications);
 
   void showNotification(NotificationChannel channel);
 

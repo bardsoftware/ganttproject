@@ -21,8 +21,8 @@ package net.sourceforge.ganttproject.gui;
 import javax.swing.event.HyperlinkListener;
 
 public class NotificationItem {
-  final String myTitle;
-  final String myBody;
+  public final String myTitle;
+  public final String myBody;
   final HyperlinkListener myHyperlinkListener;
   boolean isRead;
 

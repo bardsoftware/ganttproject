@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.app.*;
+import biz.ganttproject.app.NotificationManagerImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
@@ -126,6 +127,8 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
 
   protected final ProjectDatabase myProjectDatabase;
 
+  private final NotificationManagerImpl myNotificationManager;
+  public NotificationManagerImpl getNotificationManagerImpl() { return myNotificationManager; }
   protected final SimpleStringProperty myTitle = new SimpleStringProperty("");
   public SimpleStringProperty getTitle() {
     return myTitle;
@@ -226,8 +229,8 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     myTabPane = new GanttTabbedPane();
     var viewPane = new ViewPane();
 
-    NotificationManagerImpl notificationManager = new NotificationManagerImpl();
-    myUIFacade = new UIFacadeImpl(notificationManager, getProject(), this);
+    myNotificationManager = new NotificationManagerImpl();
+    myUIFacade = new UIFacadeImpl(myNotificationManager, getProject(), this);
     myUiInitializationPromise = new TwoPhaseBarrierImpl<>(myUIFacade);
 
     GPLogger.setUIFacade(myUIFacade);

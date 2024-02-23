@@ -30,6 +30,9 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.Priority
 import javafx.stage.Stage
 import net.sourceforge.ganttproject.GanttProject
+import net.sourceforge.ganttproject.gui.NotificationChannel
+import net.sourceforge.ganttproject.gui.NotificationItem
+import net.sourceforge.ganttproject.gui.NotificationManager
 
 class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() {
 
@@ -44,6 +47,9 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
       stage.setScene(Scene(vbox))
       stage.onShown = EventHandler {
         ganttProject.uiFacade.windowOpenedBarrier.resolve(true)
+        ganttProject.notificationManager.addNotifications(NotificationChannel.ERROR,
+          listOf(NotificationItem("Something went wrong", "Lorem ipsum dolor sit amet", NotificationManager.DEFAULT_HYPERLINK_LISTENER))
+        )
       }
       stage.onCloseRequest = EventHandler {
         ganttProject.windowGeometry = WindowGeometry(stage.x, stage.y, stage.width, stage.height, stage.isMaximized)

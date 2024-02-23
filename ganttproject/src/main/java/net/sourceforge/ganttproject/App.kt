@@ -64,6 +64,7 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
       configure(ganttProject)
       val stage = Stage()
       val app = GanttProjectFxApp(ganttProject)
+      ganttProject.notificationManagerImpl.setOwner(stage)
       app.init()
       app.start(stage)
       APP_LOGGER.debug("Main frame created")
