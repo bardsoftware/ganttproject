@@ -221,6 +221,15 @@ class TaskTable(
   }
 
   private fun initKeyboardEventHandlers() {
+    treeTable.addEventFilter(KeyEvent.KEY_PRESSED) {event ->
+      if (KeyCombination.keyCombination("ctrl+space").match(event)) {
+        val focusedCell = treeTable.focusModel.focusedCell
+        event.consume()
+        keepSelection(keepFocus = true) {
+          focusedCell.treeItem.isExpanded = focusedCell.treeItem.isExpanded.not()
+        }
+      }
+    }
     treeTable.onKeyPressed = EventHandler { event ->
       taskActions.all().firstOrNull { action ->
         action.triggeredBy(event)
