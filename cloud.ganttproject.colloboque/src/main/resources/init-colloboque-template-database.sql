@@ -219,7 +219,7 @@ BEGIN
     WHERE event_object_schema=source_schema and event_object_table=object
     GROUP BY trigger_name, action_timing, action_orientation, action_statement
     LOOP
-       EXECUTE 'CREATE TRIGGER ' || trigger_name_ || ' ' || trigger_timing_ || ' ' || trigger_events_ || ' ON ' || buffer || ' FOR EACH ' || trigger_orientation_ || ' ' || replace(trigger_action_, source_schema, dest_schema);
+       EXECUTE 'CREATE TRIGGER ' || trigger_name_ || ' ' || trigger_timing_ || ' ' || trigger_events_ || ' ON ' || buffer || ' FOR EACH ' || trigger_orientation_ || ' ' || replace_schema_except_types(trigger_action_, source_schema, dest_schema);
     END LOOP;
 
   RETURN;
