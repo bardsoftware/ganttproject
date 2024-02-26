@@ -27,6 +27,8 @@ import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyEvent
+import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.stage.Stage
 import net.sourceforge.ganttproject.GanttProject
@@ -42,7 +44,17 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
         add(convertMenu(ganttProject.menuBar))
         add(ganttProject.createToolbar().build().toolbar)
         add(ganttProject.viewManager.fxComponent, null, Priority.ALWAYS)
-        add(ganttProject.createStatusBar().lockPanel)
+        add(
+          HBox().also {
+            it.children.add(ganttProject.createStatusBar().lockPanel)
+            val filler = Pane()
+            it.children.add(filler)
+            HBox.setHgrow(filler, Priority.ALWAYS)
+            val notificationBar = ganttProject.notificationManagerImpl.createStatusBarComponent()
+            it.children.add(notificationBar)
+            HBox.setHgrow(notificationBar, Priority.NEVER)
+          }
+        )
       }
       stage.setScene(Scene(vbox))
       stage.onShown = EventHandler {

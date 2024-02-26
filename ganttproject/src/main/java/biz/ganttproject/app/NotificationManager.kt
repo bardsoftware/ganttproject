@@ -18,7 +18,9 @@
  */
 package biz.ganttproject.app
 
-import javafx.scene.control.Button
+import javafx.scene.control.Label
+import javafx.scene.layout.HBox
+import javafx.scene.layout.Priority
 import javafx.stage.Stage
 import javafx.util.Duration
 import net.sourceforge.ganttproject.gui.NotificationChannel
@@ -63,4 +65,11 @@ class NotificationManagerImpl() : NotificationManager {
     TODO("Not yet implemented")
   }
 
+  fun createStatusBarComponent() = HBox().also {
+    it.getStylesheets().add("biz/ganttproject/app/StatusBar.css")
+    it.styleClass.add("statusbar")
+    val label = Label("Notifications")
+    it.children.add(label)
+    HBox.setHgrow(label, Priority.NEVER)
+  }
 }
