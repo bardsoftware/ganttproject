@@ -221,6 +221,34 @@ class TaskTable(
   }
 
   private fun initKeyboardEventHandlers() {
+    treeTable.addEventFilter(KeyEvent.KEY_PRESSED) {event ->
+      event.whenMatches("tree.expand") {
+        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
+        keepSelection(keepFocus = true) {
+          focusedCell.treeItem.isExpanded = focusedCell.treeItem.isExpanded.not()
+        }
+      }
+      event.whenMatches("tree.expandAll") {
+        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
+        keepSelection(keepFocus = true) {
+          focusedCell.treeItem.isExpanded = true
+          focusedCell.treeItem.depthFirstWalk {
+            it.isExpanded = true
+            return@depthFirstWalk true
+          }
+        }
+      }
+      event.whenMatches("tree.collapseAll") {
+        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
+        keepSelection(keepFocus = true) {
+          focusedCell.treeItem.depthFirstWalk {
+            it.isExpanded = false
+            return@depthFirstWalk true
+          }
+          focusedCell.treeItem.isExpanded = false
+        }
+      }
+    }
     treeTable.onKeyPressed = EventHandler { event ->
       taskActions.all().firstOrNull { action ->
         action.triggeredBy(event)
@@ -424,6 +452,12 @@ class TaskTable(
       if (newValue && newValue != oldValue) {
         this.selectionManager.setUserInputConsumer(this@TaskTable)
         this.treeTableSelectionListener.onChanged(null)
+      }
+    }
+    this.treeTable.focusModel.focusedCellProperty().addListener { _, oldValue, newValue ->
+      LOGGER.debug("Focus changed: newValue={}", newValue.row to newValue.column)
+      if (newValue.row >= 0 && newValue.row != lastFocusedInSync) {
+        Exception("Focus changed: newValue=${newValue.row to newValue.column}").printStackTrace()
       }
     }
 
@@ -771,14 +805,17 @@ class TaskTable(
     return result
   }
 
+  private var lastFocusedInSync = -1
   private fun keepSelection(keepFocus: Boolean = false, code: ()->Unit) {
     val body = {
+      LOGGER.debug(">>> keepSelection")
       val selectedTasks =
         treeTable.selectionModel.selectedItems.associate {
           it.value to (it.previousSibling()
             ?: it.parent?.let { parent -> if (parent == treeTable.root) null else parent }
             ?: it.nextSibling())
         }
+      LOGGER.debug("Selected tasks={}", selectedTasks)
       val focusedTask = treeTable.focusModel.focusedItem?.value
       val focusedCell = treeTable.focusModel.focusedCell
 
@@ -796,20 +833,29 @@ class TaskTable(
         .map { task2treeItem[taskManager.getTask(it.key.taskID)] ?: it.value }
         .map { treeTable.getRow(it) }
         .toIntArray()
+      LOGGER.debug("Selected rows={}", selectedRows)
       treeTable.selectionModel.selectIndices(-1, *selectedRows)
 
       // Sometimes we need to keep the focus, e.g. when we move some task in the tree, but sometimes we want to focus
       // some other item. E.g. if a task was added due to user action, the user would expect the new task to be focused.
+      if (keepFocus) {
+        LOGGER.debug("requested to keep focus. Focused task={}", focusedTask)
+      }
       if (keepFocus && focusedTask != null) {
         val liveTask = taskManager.getTask(focusedTask.taskID)
+        LOGGER.debug("live task={}", liveTask)
         task2treeItem[liveTask]?.let { it ->
           val row = treeTable.getRow(it)
-          Platform.runLater {
+          LOGGER.debug("row to focus={}", liveTask)
+          FXUtil.runLater {
+            LOGGER.debug("focusing row={} column={}", row, focusedCell.tableColumn.id)
+            lastFocusedInSync = row
             treeTable.focusModel.focus(TreeTablePosition(treeTable, row, focusedCell.tableColumn))
           }
         }
       }
       treeTable.requestFocus()
+      LOGGER.debug("<<< keepSelection")
     }
     FXUtil.runLater(body)
   }

@@ -1,5 +1,6 @@
 package biz.ganttproject.app
 
+import javafx.scene.input.KeyCombination
 import javafx.scene.input.KeyEvent
 import net.sourceforge.ganttproject.action.GPAction
 import java.awt.event.InputEvent
@@ -18,3 +19,18 @@ fun GPAction.triggeredBy(event: KeyEvent): Boolean =
   GPAction.getAllKeyStrokes(this.id).firstOrNull { keyStroke ->
     event.triggeredBy(keyStroke)
   } != null
+
+fun keyCombinations(actionId: String): List<KeyCombination> {
+  val text = GPAction.getKeyStrokeText(actionId) ?: return emptyList()
+  return text.split(",".toRegex()).dropLastWhile { it.isEmpty() }.map {
+    KeyCombination.keyCombination(it.replace("pressed", " ").trim()
+      .split("""\s+""".toRegex()).joinToString(separator = "+"))
+  }
+}
+
+fun KeyEvent.whenMatches(actionId: String, code: () -> Unit) {
+  if (keyCombinations(actionId).any { it.match(this) }) {
+    this@whenMatches.consume()
+    code()
+  }
+}

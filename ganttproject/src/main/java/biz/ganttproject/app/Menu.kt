@@ -259,11 +259,6 @@ fun GPAction.asMenuItem(): MenuItem =
       menuItem.accelerator = KeyCombination.keyCombination(it.toString().replace("pressed", " ").trim()
         .split("""\s+""".toRegex()).joinToString(separator = "+"))
     }
-    menuItem.onAction = EventHandler { _ ->
-      SwingUtilities.invokeLater {
-        this.actionPerformed(null)
-      }
-    }
     menuItem.also {
       it.isDisable = !isEnabled
     }
