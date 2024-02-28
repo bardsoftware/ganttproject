@@ -222,11 +222,30 @@ class TaskTable(
 
   private fun initKeyboardEventHandlers() {
     treeTable.addEventFilter(KeyEvent.KEY_PRESSED) {event ->
-      if (keyCombinations("tree.expand").any { it.match(event) }) {
-        val focusedCell = treeTable.focusModel.focusedCell
-        event.consume()
+      event.whenMatches("tree.expand") {
+        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
         keepSelection(keepFocus = true) {
           focusedCell.treeItem.isExpanded = focusedCell.treeItem.isExpanded.not()
+        }
+      }
+      event.whenMatches("tree.expandAll") {
+        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
+        keepSelection(keepFocus = true) {
+          focusedCell.treeItem.isExpanded = true
+          focusedCell.treeItem.depthFirstWalk {
+            it.isExpanded = true
+            return@depthFirstWalk true
+          }
+        }
+      }
+      event.whenMatches("tree.collapseAll") {
+        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
+        keepSelection(keepFocus = true) {
+          focusedCell.treeItem.depthFirstWalk {
+            it.isExpanded = false
+            return@depthFirstWalk true
+          }
+          focusedCell.treeItem.isExpanded = false
         }
       }
     }
@@ -437,6 +456,9 @@ class TaskTable(
     }
     this.treeTable.focusModel.focusedCellProperty().addListener { _, oldValue, newValue ->
       LOGGER.debug("Focus changed: newValue={}", newValue.row to newValue.column)
+      if (newValue.row >= 0 && newValue.row != lastFocusedInSync) {
+        Exception("Focus changed: newValue=${newValue.row to newValue.column}").printStackTrace()
+      }
     }
 
     this.selectionManager.addSelectionListener(object : TaskSelectionManager.Listener {
@@ -783,6 +805,7 @@ class TaskTable(
     return result
   }
 
+  private var lastFocusedInSync = -1
   private fun keepSelection(keepFocus: Boolean = false, code: ()->Unit) {
     val body = {
       LOGGER.debug(">>> keepSelection")
@@ -826,6 +849,7 @@ class TaskTable(
           LOGGER.debug("row to focus={}", liveTask)
           FXUtil.runLater {
             LOGGER.debug("focusing row={} column={}", row, focusedCell.tableColumn.id)
+            lastFocusedInSync = row
             treeTable.focusModel.focus(TreeTablePosition(treeTable, row, focusedCell.tableColumn))
           }
         }

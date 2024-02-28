@@ -27,3 +27,10 @@ fun keyCombinations(actionId: String): List<KeyCombination> {
       .split("""\s+""".toRegex()).joinToString(separator = "+"))
   }
 }
+
+fun KeyEvent.whenMatches(actionId: String, code: () -> Unit) {
+  if (keyCombinations(actionId).any { it.match(this) }) {
+    this@whenMatches.consume()
+    code()
+  }
+}
