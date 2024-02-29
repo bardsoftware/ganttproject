@@ -3,7 +3,7 @@ name: Build Packages
 on:
     push:
         branches: ['master', 'BRANCH*']
-        paths: ['ganttproject-builder/VERSION', '.github/workflows/build-packages.yml']
+        paths: ['ganttproject-builder/BUILD-HISTORY-MAJOR']
 env:
     BUILD_NUMBER: 3300
     VERSION: 3.3.3300
