@@ -34,7 +34,3 @@ jobs:
             - name: Build minor update
               run: |
                   build-bin/package-update.sh
-                  cd build/distributions
-                  for f in *; do
-                    gsutil cp $f gs://dl.ganttproject.biz/updates/ && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/updates/$f;
-                  done;

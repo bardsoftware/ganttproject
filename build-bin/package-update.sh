@@ -17,5 +17,6 @@ cd ganttproject-builder/dist-bin/plugins/
 mkdir update-$VERSION
 IFS=','
 for m in $MODULES; do cp -R base/$m update-$VERSION/ ; done
+echo "$VERSION" > update-$VERSION/VERSION
 zip -r "update-$VERSION.zip" "update-$VERSION"
 gsutil cp "update-$VERSION.zip" gs://dl.ganttproject.biz/updates/ && gsutil acl ch -u AllUsers:R "gs://dl.ganttproject.biz/updates/update-$VERSION.zip";
