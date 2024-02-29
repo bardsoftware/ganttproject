@@ -9,7 +9,7 @@ MODULES=$(cat ganttproject-builder/BUILD-HISTORY-MINOR | tail -n 1 | awk '{print
 [[ -z "$MODULES" ]] && exit 1
 echo "Will pick these modules: $MODULES"
 echo "3.3.$VERSION" > ganttproject-builder/VERSION
-gradle clean distbin
+./gradlew clean distbin
 cd ganttproject-builder/dist-bin/plugins/
 mkdir update-$VERSION
 IFS=','
