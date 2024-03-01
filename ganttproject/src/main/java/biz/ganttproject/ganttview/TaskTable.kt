@@ -456,9 +456,6 @@ class TaskTable(
     }
     this.treeTable.focusModel.focusedCellProperty().addListener { _, oldValue, newValue ->
       LOGGER.debug("Focus changed: newValue={}", newValue.row to newValue.column)
-      if (newValue.row >= 0 && newValue.row != lastFocusedInSync) {
-        Exception("Focus changed: newValue=${newValue.row to newValue.column}").printStackTrace()
-      }
     }
 
     this.selectionManager.addSelectionListener(object : TaskSelectionManager.Listener {
