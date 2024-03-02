@@ -1,14 +1,17 @@
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jooq.meta.jaxb.Property
 
 val kotlinVersion: String by project
+val jooqVersion: String by project
 
 plugins {
     id("application")
     id("org.jetbrains.kotlin.jvm") version "1.9.22"
     id("maven-publish")
     id("org.jetbrains.kotlin.plugin.serialization") version "1.7.21"
+    id("nu.studer.jooq") version "9.0"
 }
 
 application {
@@ -43,7 +46,7 @@ dependencies {
     implementation(kotlin("stdlib", version = kotlinVersion))
     implementation(kotlin("reflect", version = kotlinVersion))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("org.jooq:jooq:3.19.1")
+    implementation("org.jooq:jooq:$jooqVersion")
     implementation("com.h2database:h2:2.1.214")
     implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("com.github.ajalt.clikt:clikt:4.+")
@@ -56,9 +59,43 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
+
+    jooqGenerator("org.jooq:jooq-meta-extensions:$jooqVersion")
+}
+
+jooq {
+    version.set(jooqVersion)
+    configurations {
+        create("main") {
+            jooqConfiguration.apply {
+                logging = org.jooq.meta.jaxb.Logging.WARN
+                generator.apply {
+                    name = "org.jooq.codegen.KotlinGenerator"
+                    database.apply {
+                        name = "org.jooq.meta.extensions.ddl.DDLDatabase"
+                        properties.apply {
+                            add(Property().apply {
+                                key = "scripts"
+                                value = "src/main/resources/database-schema-template.sql"
+                            })
+                            add(Property().apply {
+                                key = "defaultNameCase"
+                                value = "lower"
+                            })
+                        }
+                    }
+
+                    target.apply {
+                        packageName = "cloud.ganttproject.colloboque.db"
+                    }
+                }
+            }
+        }
+    }
 }
 
 tasks.getByName<KotlinCompile>("compileKotlin") {
+    dependsOn(":generateJooq")
     kotlinOptions {
         jvmTarget = "17"
     }
@@ -78,6 +115,9 @@ tasks.getByName<Test>("test") {
     dependsOn("copyDbScript")
 }
 
+tasks.getByName<ProcessResources>("processTestResources") {
+    dependsOn("copyDbScript")
+}
 
 group = "cloud.ganttproject"   // Generated output GroupId
 version = "22-SNAPSHOT" // Version in generated output

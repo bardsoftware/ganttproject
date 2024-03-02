@@ -49,8 +49,7 @@ class ColloboqueServerException: Exception {
   constructor(message: String, cause: Throwable): super(message, cause)
 }
 
-val localeApi by lazy {
-  object : CalendarFactory() {
+val localeApi = object : CalendarFactory() {
     init {
       setLocaleApi(object : LocaleApi {
         override fun getLocale(): Locale {
@@ -63,7 +62,7 @@ val localeApi by lazy {
       })
     }
   }
-}
+
 
 class ColloboqueServer(
   private val initProject: (projectRefid: String) -> Unit,
