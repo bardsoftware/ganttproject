@@ -18,6 +18,7 @@
  */
 package biz.ganttproject.app
 
+import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -67,8 +68,8 @@ class NotificationManagerImpl() : NotificationManager {
 
   fun createStatusBarComponent() = HBox().also {
     it.getStylesheets().add("biz/ganttproject/app/StatusBar.css")
-    it.styleClass.add("statusbar")
-    val label = Label("Notifications")
+    it.styleClass.addAll("statusbar", "align_right")
+    val label = Button("Notifications")
     it.children.add(label)
     HBox.setHgrow(label, Priority.NEVER)
   }

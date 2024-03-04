@@ -25,6 +25,9 @@
   -fx-padding: 1ex 24px;
   -fx-alignment: center-left;
   -fx-min-width: 50em;
+  &.align_right {
+    -fx-alignment: center-right;
+  }
 
   Button {
     -fx-min-height: 26px;
