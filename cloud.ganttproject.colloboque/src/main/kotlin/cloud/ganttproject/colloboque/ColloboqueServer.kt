@@ -50,9 +50,9 @@ import java.util.concurrent.Executors
 internal typealias ProjectRefid = String
 internal typealias BaseTxnId = String
 
-internal class TransactionLogTable(val projectRefid: ProjectRefid) : Transactionlog() {
+internal class TransactionLogTable(projectRefid: ProjectRefid) : Transactionlog() {
   private val schemaName = PostgresConnectionFactory.getSchema(projectRefid)
-  override fun getSchema(): Schema? {
+  override fun getSchema(): Schema {
     return SchemaImpl(schemaName)
   }
 }
@@ -93,6 +93,14 @@ class ColloboqueServer(
     }
   }
 
+  private fun <T> txn(projectRefid: ProjectRefid, code: (DSLContext)->T): T {
+    return connectionFactory(projectRefid).use {cxn ->
+      DSL.using(cxn, SQLDialect.POSTGRES)
+        .configuration().deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
+        .dsl().transactionResult { it -> code(it.dsl()) }
+    }
+  }
+
   fun init(projectRefid: ProjectRefid, projectXml: String? = null): BaseTxnId {
     try {
       initProject(projectRefid)
@@ -119,8 +127,8 @@ class ColloboqueServer(
     for (inputXlog in updateInputChannel) {
       LOG.debug("Next xlog: $inputXlog")
       try {
+
         val newBaseTxnId = applyXlog(inputXlog.projectRefid, inputXlog.baseTxnId, inputXlog.transactions[0])
-          ?: continue
         val response = ServerResponse.CommitResponse(
           inputXlog.baseTxnId,
           newBaseTxnId,
@@ -145,39 +153,44 @@ class ColloboqueServer(
    * Performs transaction commit if `baseTxnId` corresponds to the value hold by the server.
    * Returns new baseTxnId on success.
    */
-  private fun applyXlog(projectRefid: ProjectRefid, baseTxnId: String, transaction: XlogRecord): BaseTxnId? {
-    if (transaction.colloboqueOperations.isEmpty()) throw ColloboqueServerException("Empty transactions not allowed")
+  private fun applyXlog(projectRefid: ProjectRefid, baseTxnId: String, xlog: XlogRecord): BaseTxnId {
+    LOG.debug(">> applyXlog project={} baseTxnId={}", projectRefid, baseTxnId)
+    if (xlog.colloboqueOperations.isEmpty()) {
+      throw ColloboqueServerException("Empty transactions are not allowed")
+    }
     val expectedBaseTxnId = getBaseTxnId(projectRefid)
-    if (expectedBaseTxnId != baseTxnId) throw ColloboqueServerException("Invalid transaction id $baseTxnId, expected $expectedBaseTxnId")
-    try {
+    if (expectedBaseTxnId != baseTxnId) {
+      throw ColloboqueServerException("Base txn ID mismatch. Expected: $expectedBaseTxnId. Received: $baseTxnId")
+    }
+    return try {
       val realTransactionLog = TransactionLogTable(projectRefid)
-      connectionFactory(projectRefid).use { connection ->
-        return DSL
-          .using(connection, SQLDialect.POSTGRES)
-          .transactionResult { config ->
-            val context: DSLContext = config.dsl()
-            transaction.colloboqueOperations.forEach { context.execute(generateSqlStatement(context, it)) }
-            val nextTxnId = generateNextTxnId(projectRefid, baseTxnId, transaction)
-            val xlogJson = Json.encodeToString(transaction)
-            LOG.debug("Inserting into $realTransactionLog: ($nextTxnId, $xlogJson)")
-            context
-              .insertInto(realTransactionLog, realTransactionLog.UID, realTransactionLog.LOG)
-              .values(nextTxnId, xlogJson).execute()
-            nextTxnId
-          }.also { refidToBaseTxnId[projectRefid] = it }
+      txn(projectRefid) { context ->
+        xlog.colloboqueOperations.forEach {
+          LOG.debug("... applying operation={}", it)
+          context.execute(generateSqlStatement(context, it))
+        }
+        val nextTxnId = generateNextTxnId(projectRefid, baseTxnId, xlog)
+        val xlogJson = Json.encodeToString(xlog)
+        LOG.debug("... persisting log record={}", xlogJson)
+        context
+          .insertInto(realTransactionLog, realTransactionLog.UID, realTransactionLog.LOG)
+          .values(nextTxnId, xlogJson)
+          .execute()
+        nextTxnId.also { refidToBaseTxnId[projectRefid] = it }
       }
     } catch (e: Exception) {
       throw ColloboqueServerException("Failed to commit transaction", e)
+    } finally {
+      LOG.debug("<< applyXlog")
     }
   }
 
 
-  fun getBaseTxnId(projectRefid: ProjectRefid) = refidToBaseTxnId[projectRefid]
+  private fun getBaseTxnId(projectRefid: ProjectRefid) = refidToBaseTxnId[projectRefid]
 
-  fun getTransactionLogs(projectRefid: ProjectRefid, baseTxnId: BaseTxnId = NULL_TXN_ID): List<XlogRecord> {
-    connectionFactory(projectRefid).use { connection ->
+  private fun getTransactionLogs(projectRefid: ProjectRefid, baseTxnId: BaseTxnId = NULL_TXN_ID): List<XlogRecord> {
+    return txn(projectRefid) { context ->
       val realTransactionLog = TransactionLogTable(projectRefid)
-      val context: DSLContext = DSL.using(connection, SQLDialect.POSTGRES)
       val transactions = if (baseTxnId != NULL_TXN_ID) {
         context
           .select(realTransactionLog.LOG)
@@ -190,11 +203,28 @@ class ColloboqueServer(
           .from(realTransactionLog)
           .orderBy(realTransactionLog.UID).fetch()
       }
-      return transactions.map { result ->
+      transactions.map { result ->
         val stringLog = result[0] as String
         Json.decodeFromString<XlogRecord>(stringLog)
       }
     }
+  }
+
+  data class BuildProjectXmlResult(val projectXml: String, val txnId: BaseTxnId)
+  fun buildProjectXml(projectRefid: ProjectRefid): BuildProjectXmlResult {
+    val baseTxnId = getBaseTxnId(projectRefid) ?: run {
+      init(projectRefid, PROJECT_XML_TEMPLATE)
+    }
+    LOG.debug(">> buildProjectXml refid={} baseTxnId={}", projectRefid, baseTxnId)
+    val transactionLogs = getTransactionLogs(projectRefid)
+    var project = PROJECT_XML_TEMPLATE
+    for (xlog in transactionLogs) {
+      LOG.debug("..applying xlog record={}", xlog)
+      project = updateProjectXml(project, xlog)
+    }
+    LOG.debug("..result: {}", project)
+    LOG.debug("<< buildProjectXml")
+    return BuildProjectXmlResult(project, baseTxnId)
   }
 
   // TODO

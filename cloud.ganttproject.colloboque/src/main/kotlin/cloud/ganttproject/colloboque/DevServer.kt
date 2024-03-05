@@ -89,26 +89,16 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
 
       "/" -> newFixedLengthResponse("Hello")
       "/p/read" -> {
-        session.parameters["projectRefid"]?.firstOrNull()?.let {
-          val baseTxnId = colloboqueServer.getBaseTxnId(it) ?: run {
-            colloboqueServer.init(it, PROJECT_XML_TEMPLATE)
-          }
-          val transactionLogs = colloboqueServer.getTransactionLogs(it)
-          LOG.debug("transactionLogs = $transactionLogs")
-          LOG.debug("baseTxnId = $baseTxnId")
-          var project = PROJECT_XML_TEMPLATE
-          for (xlog in transactionLogs) {
-            project = updateProjectXml(project, xlog)
-          }
-          LOG.debug("projectXml = $project")
+        session.parameters["projectRefid"]?.firstOrNull()?.let {projectRefid ->
 
-          newFixedLengthResponse(project.toBase64()).also { response ->
+          val project = colloboqueServer.buildProjectXml(projectRefid)
+          newFixedLengthResponse(project.projectXml.toBase64()).also { response ->
             response.addHeader("ETag", "-1")
             response.addHeader("Digest", CRC32().let { hash ->
-              hash.update(project.toByteArray())
+              hash.update(project.projectXml.toByteArray())
               hash.value.toString()
             })
-            response.addHeader("BaseTxnId", baseTxnId)
+            response.addHeader("BaseTxnId", project.txnId)
           }
         } ?: newFixedLengthResponse(Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "projectRefid is missing")
       }
@@ -204,12 +194,3 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
 
 private val STARTUP_LOG = GPLogger.create("Startup")
 private val LOG = GPLogger.create("ColloboqueWebServer")
-private val PROJECT_XML_TEMPLATE = """
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">
-  <tasks empty-milestones="true">
-      <task id="0" uid="qwerty" name="Task1" color="#99ccff" meeting="false" start="2022-02-10" duration="25" complete="85" expand="true"/>
-  </tasks>
-</project>
-        """.trimIndent()
-private fun String.toBase64() = Base64.getEncoder().encodeToString(this.toByteArray())
