@@ -28,13 +28,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.parser.TaskLoader
 import net.sourceforge.ganttproject.storage.*
+import net.sourceforge.ganttproject.task.Task
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.Schema
@@ -76,11 +76,16 @@ val localeApi = object : CalendarFactory() {
     }
   }
 
+data class StorageApi(
+  val initProject: (projectRefid: String) -> Unit = {},
+  val getTransactionLogs: (projectRefid: ProjectRefid, baseTxnId: BaseTxnId)->List<XlogRecord> = { _, _ -> error("Not implemented")},
+  val insertTask: (projectRefid: String, task: Task) -> Unit = {_, _ ->}
+)
+
 
 class ColloboqueServer(
-  private val initProject: (projectRefid: String) -> Unit,
   private val connectionFactory: (projectRefid: String) -> Connection,
-  private val initInputChannel: Channel<InitRecord>,
+  private val storageApi: StorageApi,
   private val updateInputChannel: Channel<InputXlog>,
   private val serverResponseChannel: Channel<ServerResponse>) {
   private val refidToBaseTxnId: MutableMap<ProjectRefid, ProjectRefid> = mutableMapOf()
@@ -103,24 +108,30 @@ class ColloboqueServer(
 
   fun init(projectRefid: ProjectRefid, projectXml: String? = null): BaseTxnId {
     try {
-      initProject(projectRefid)
-      connectionFactory(projectRefid).use {
-        if (projectXml != null) {
-          DSL.using(it, SQLDialect.POSTGRES)
-            .configuration()
-            .deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
-            .dsl().let { dsl ->
-              loadProject(projectXml, dsl)
-            }
-        }
-        // TODO: get from the database
-        return NULL_TXN_ID.also {
-          refidToBaseTxnId[projectRefid] = it
-        }
+      storageApi.initProject(projectRefid)
+      if (projectXml != null) {
+        loadProject(projectRefid, projectXml)
+      }
+      // TODO: get from the database
+      return NULL_TXN_ID.also {
+        refidToBaseTxnId[projectRefid] = it
       }
     } catch (e: Exception) {
       throw ColloboqueServerException("Failed to init project $projectRefid", e)
     }
+  }
+
+  private fun loadProject(projectRefid: ProjectRefid, xmlInput: String) {
+    val bufferProject = GanttProjectImpl()
+    val taskLoader = TaskLoader(bufferProject.taskManager, SimpleTreeCollapseView())
+    parseXmlProject(xmlInput).let { xmlProject ->
+      taskLoader.loadTaskCustomPropertyDefinitions(xmlProject)
+      xmlProject.walkTasksDepthFirst { parent: XmlTasks.XmlTask?, child: XmlTasks.XmlTask ->
+        taskLoader.loadTask(parent, child)
+        true
+      }
+    }
+    bufferProject.taskManager.tasks.forEach { task -> storageApi.insertTask(projectRefid, task) }
   }
 
   private suspend fun processUpdatesLoop() {
@@ -188,27 +199,9 @@ class ColloboqueServer(
 
   private fun getBaseTxnId(projectRefid: ProjectRefid) = refidToBaseTxnId[projectRefid]
 
-  private fun getTransactionLogs(projectRefid: ProjectRefid, baseTxnId: BaseTxnId = NULL_TXN_ID): List<XlogRecord> {
-    return txn(projectRefid) { context ->
-      val realTransactionLog = TransactionLogTable(projectRefid)
-      val transactions = if (baseTxnId != NULL_TXN_ID) {
-        context
-          .select(realTransactionLog.LOG)
-          .from(realTransactionLog)
-          .where("DATE(?) > DATE(?)", realTransactionLog.UID, baseTxnId)
-          .orderBy(realTransactionLog.UID).fetch()
-      } else {
-        context
-          .select(realTransactionLog.LOG)
-          .from(realTransactionLog)
-          .orderBy(realTransactionLog.UID).fetch()
-      }
-      transactions.map { result ->
-        val stringLog = result[0] as String
-        Json.decodeFromString<XlogRecord>(stringLog)
-      }
-    }
-  }
+  private fun getTransactionLogs(projectRefid: ProjectRefid, baseTxnId: BaseTxnId = NULL_TXN_ID) =
+    storageApi.getTransactionLogs(projectRefid, baseTxnId)
+
 
   data class BuildProjectXmlResult(val projectXml: String, val txnId: BaseTxnId)
   fun buildProjectXml(projectRefid: ProjectRefid): BuildProjectXmlResult {
@@ -233,22 +226,6 @@ class ColloboqueServer(
   }
 }
 
-
-private fun loadProject(xmlInput: String, dsl: DSLContext) {
-  val bufferProject = GanttProjectImpl()
-  val taskLoader = TaskLoader(bufferProject.taskManager, SimpleTreeCollapseView())
-  parseXmlProject(xmlInput).let { xmlProject ->
-    taskLoader.loadTaskCustomPropertyDefinitions(xmlProject)
-    xmlProject.walkTasksDepthFirst { parent: XmlTasks.XmlTask?, child: XmlTasks.XmlTask ->
-      taskLoader.loadTask(parent, child)
-      true
-    }
-  }
-  bufferProject.taskManager.tasks.forEach { task ->
-    buildInsertTaskQuery(dsl, task).execute()
-  }
-
-}
 
 private val LOG = GPLogger.create("ColloboqueServer")
 private val NULL_TXN_ID = "0"

@@ -58,7 +58,6 @@ fun updateProjectXml(projectXml: String, updates: XlogRecord): String {
   val project = GanttProjectImpl(taskManager, projectDatabase)
   XmlProjectImporter(project).import(projectXml)
   taskManager.tasks.forEach(projectDatabase::insertTask)
-  assert(projectDatabase.readAllTasks().size == 1)
 
   if (updates.colloboqueOperations.isEmpty()) {
     return projectXml

@@ -21,7 +21,15 @@ package cloud.ganttproject.colloboque
 import com.google.common.hash.Hashing
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.storage.XlogRecord
+import net.sourceforge.ganttproject.storage.buildInsertTaskQuery
+import org.jooq.DSLContext
+import org.jooq.SQLDialect
+import org.jooq.conf.RenderNameCase
+import org.jooq.impl.DSL
 import java.sql.Connection
 
 class PostgresConnectionFactory(
@@ -52,21 +60,10 @@ class PostgresConnectionFactory(
     }
   }
 
-  fun initProject(projectRefid: String) {
-    val schema = getSchema(projectRefid)
-    LOG.debug("Project {} mapped to schema {}", projectRefid, schema)
-    superDataSource.connection.use {
-      it.prepareCall("SELECT clone_schema(?, ?, ?)").use { stmt ->
-        stmt.setString(1, "project_template")
-        stmt.setString(2, schema)
-        stmt.setBoolean(3, false)
-        stmt.execute()
-      }
-    }
-  }
-
   fun createConnection(projectRefid: String): Connection =
     regularDataSource.connection.also { it.schema = getSchema(projectRefid) }
+
+  fun createSuperConnection(projectRefid: String) = superDataSource.connection
 
   // TODO: escape projectRefid
   companion object {
@@ -75,5 +72,55 @@ class PostgresConnectionFactory(
   }
 }
 
+typealias ConnectionFactory = (projectRefid: String) -> Connection
+fun createPostgresStorage(factory: ConnectionFactory, superFactory: ConnectionFactory): StorageApi {
+  fun <T> txn(projectRefid: ProjectRefid, code: (DSLContext)->T): T {
+    return factory(projectRefid).use {cxn ->
+      DSL.using(cxn, SQLDialect.POSTGRES)
+        .configuration().deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
+        .dsl().transactionResult { it -> code(it.dsl()) }
+    }
+  }
+
+  return StorageApi(
+    initProject = {projectRefid ->
+      val schema = PostgresConnectionFactory.getSchema(projectRefid)
+      superFactory(projectRefid).use {
+        it.prepareCall("SELECT clone_schema(?, ?, ?)").use { stmt ->
+          stmt.setString(1, "project_template")
+          stmt.setString(2, schema)
+          stmt.setBoolean(3, false)
+          stmt.execute()
+        }
+      }
+    },
+    getTransactionLogs = { projectRefid, baseTxnId ->
+      txn(projectRefid) { context ->
+        val realTransactionLog = TransactionLogTable(projectRefid)
+        val transactions = if (baseTxnId != NULL_TXN_ID) {
+          context
+            .select(realTransactionLog.LOG)
+            .from(realTransactionLog)
+            .where("DATE(?) > DATE(?)", realTransactionLog.UID, baseTxnId)
+            .orderBy(realTransactionLog.UID).fetch()
+        } else {
+          context
+            .select(realTransactionLog.LOG)
+            .from(realTransactionLog)
+            .orderBy(realTransactionLog.UID).fetch()
+        }
+        transactions.map { result ->
+          val stringLog = result[0] as String
+          Json.decodeFromString<XlogRecord>(stringLog)
+        }
+      }
+    },
+    insertTask = { projectRefid, task -> txn(projectRefid) {
+      buildInsertTaskQuery(it, task).execute()
+    }}
+  )
+}
+
+private val NULL_TXN_ID = "0"
 private val STARTUP_LOG = GPLogger.create("Startup")
 private val LOG = GPLogger.create("Postgres")

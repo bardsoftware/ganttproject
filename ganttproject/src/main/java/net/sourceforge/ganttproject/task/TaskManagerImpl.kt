@@ -111,8 +111,8 @@ fun TaskManager.importFromDatabase(records: List<TaskRecord>, hierarchy: Exporte
         .withStartDate(GanttCalendar.parseXMLDate(record.startDate.toString()).time)
         .withDuration(createLength(record.duration.toLong()))
         .withColor(if (color != null) ColorConvertion.determineColor(record.color) else builder.defaultColor)
-        .withCompletion(record.completion)
-        .withPriority(Task.Priority.fromPersistentValue(record.priority))
+        .withCompletion(record.completion ?: 0)
+        .withPriority(Task.Priority.fromPersistentValue(record.priority ?: Task.Priority.NORMAL.persistentValue))
         .withWebLink(record.webLink)
         .withNotes(record.notes)
       if (record.isMilestone) {

@@ -66,8 +66,9 @@ class DevServerMain : CliktCommand() {
     val updateInputChannel = Channel<InputXlog>()
     val serverResponseChannel = Channel<ServerResponse>()
     val connectionFactory = PostgresConnectionFactory(pgHost, pgPort, pgSuperUser, pgSuperAuth)
-    val colloboqueServer = ColloboqueServer(connectionFactory::initProject, connectionFactory::createConnection,
-      initInputChannel, updateInputChannel, serverResponseChannel)
+    val colloboqueServer = ColloboqueServer(connectionFactory::createConnection,
+      createPostgresStorage(connectionFactory::createConnection, connectionFactory::createSuperConnection),
+      updateInputChannel, serverResponseChannel)
     ColloboqueHttpServer(port, colloboqueServer).start(0, false)
     ColloboqueWebSocketServer(wsPort, colloboqueServer, updateInputChannel, serverResponseChannel).start(0, false)
   }
