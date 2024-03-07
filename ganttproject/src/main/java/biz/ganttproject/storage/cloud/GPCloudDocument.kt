@@ -332,7 +332,7 @@ class GPCloudDocument(val teamRefid: String?,
         200 -> {
           val etagValue = resp.header("ETag")
           val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
-          val colloboqueBaseTxnId = resp.header("BaseTxnId")
+          val colloboqueBaseTxnId = resp.header("BaseTxnId")?.toLong() ?: 0
           if (colloboqueBaseTxnId != null) {
             colloboqueClient?.run {
                start(projectRefid!!, colloboqueBaseTxnId)
@@ -443,7 +443,7 @@ class GPCloudDocument(val teamRefid: String?,
         200 -> {
           val etagValue = resp.header("ETag")
           val digestValue = resp.header("Digest")?.substringAfter("crc32c=")
-          val colloboqueBaseTxnId = resp.header("BaseTxnId")
+          val colloboqueBaseTxnId = resp.header("BaseTxnId")?.toLong() ?: 0
           val response = OBJECT_MAPPER.readValue(resp.rawBody, ProjectWriteResponse::class.java)
           this.projectRefid = response.projectRefid
           val fetch = FetchResult(
