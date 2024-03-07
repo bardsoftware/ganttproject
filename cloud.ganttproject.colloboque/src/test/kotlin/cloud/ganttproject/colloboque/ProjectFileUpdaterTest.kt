@@ -18,6 +18,7 @@
  */
 package cloud.ganttproject.colloboque
 
+import cloud.ganttproject.colloboque.db.project_template.tables.records.ProjectfilesnapshotRecord
 import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.storage.*
 import biz.ganttproject.storage.db.Tables.TASK as TaskTable
@@ -72,9 +73,12 @@ class ProjectFileUpdaterTest {
       TaskTable.DURATION.name to "10"
     ))
 
-    val storageApi = StorageApi(getTransactionLogs = { _, _ -> listOf(XlogRecord(listOf(insert1)), XlogRecord(listOf(insert2))) })
+    val storageApi = PluggableStorageApi(getTransactionLogs_ = { _, _ -> listOf(XlogRecord(listOf(insert1)), XlogRecord(listOf(insert2))) })
     val server = ColloboqueServer(connectionFactory = { error("Do not connect") }, storageApi = storageApi, updateInputChannel = Channel(), serverResponseChannel = Channel())
-    val updatedXml = server.buildProjectXml("asdfg").projectXml
+    val updatedXml = server.buildProjectXml("asdfg", baseSnapshot = ProjectfilesnapshotRecord().also {
+      it.baseTxnId = 0L
+      it.projectXml = PROJECT_XML_TEMPLATE
+    }).projectXml
     assertTrue(updatedXml.lines().any { it.matches(""".*<task.*name=.TaskA.*>""".toRegex()) }) {
       """The result of applying updates:
         

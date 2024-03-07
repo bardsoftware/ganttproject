@@ -76,32 +76,29 @@ class DevServerMain : CliktCommand() {
 
 class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueServer) : NanoHTTPD("localhost", port) {
   override fun serve(session: IHTTPSession): Response {
-    LOG.debug("${session.uri}")
+    LOG.debug(session.uri)
     return when (session.uri) {
       "/init" -> {
         session.parameters["projectRefid"]?.firstOrNull()?.let {
-          val projectXml =
-            if (session.parameters["debug_create_project"]?.firstOrNull()?.toBoolean() == true) PROJECT_XML_TEMPLATE
-            else null
-          colloboqueServer.init(it, projectXml)
+          colloboqueServer.init(it, PROJECT_XML_TEMPLATE)
           newFixedLengthResponse("Ok")
-        } ?: newFixedLengthResponse(Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "projectRefid is missing")
+        } ?: newFixedLengthResponse(Status.BAD_REQUEST, MIME_PLAINTEXT, "projectRefid is missing")
       }
 
       "/" -> newFixedLengthResponse("Hello")
       "/p/read" -> {
         session.parameters["projectRefid"]?.firstOrNull()?.let {projectRefid ->
 
-          val project = colloboqueServer.buildProjectXml(projectRefid)
-          newFixedLengthResponse(project.projectXml.toBase64()).also { response ->
+          val snapshot = colloboqueServer.getProjectXml(projectRefid)
+          newFixedLengthResponse(snapshot.projectXml!!.toBase64()).also { response ->
             response.addHeader("ETag", "-1")
             response.addHeader("Digest", CRC32().let { hash ->
-              hash.update(project.projectXml.toByteArray())
+              hash.update(snapshot.projectXml!!.toByteArray())
               hash.value.toString()
             })
-            response.addHeader("BaseTxnId", project.txnId.toString())
+            response.addHeader("BaseTxnId", snapshot.baseTxnId.toString())
           }
-        } ?: newFixedLengthResponse(Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "projectRefid is missing")
+        } ?: newFixedLengthResponse(Status.BAD_REQUEST, MIME_PLAINTEXT, "projectRefid is missing")
       }
 
       else -> newFixedLengthResponse(Status.NOT_FOUND, MIME_PLAINTEXT, "Not Found")
@@ -175,11 +172,6 @@ class ColloboqueWebSocketServer(port: Int, private val colloboqueServer: Collobo
       }
       val inputXlog = parseInputXlog(message.textPayload) ?: return
       LOG.debug("Message received\n {}", inputXlog)
-      if (inputXlog.transactions.size != 1) {
-        // TODO: add multiple transactions support.
-        LOG.error("Only single transaction commit supported")
-        return
-      }
       wsRequestScope.launch {
         updateInputChannel.send(inputXlog)
       }

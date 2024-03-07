@@ -18,23 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package cloud.ganttproject.colloboque
 
-import cloud.ganttproject.colloboque.db.project_template.tables.Transactionlog
-import cloud.ganttproject.colloboque.db.project_template.tables.references.TRANSACTIONLOG
 import com.google.common.hash.Hashing
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.storage.XlogRecord
-import net.sourceforge.ganttproject.storage.buildInsertTaskQuery
-import org.jooq.DSLContext
-import org.jooq.SQLDialect
-import org.jooq.Schema
-import org.jooq.conf.RenderNameCase
-import org.jooq.impl.DSL
-import org.jooq.impl.SchemaImpl
 import java.sql.Connection
 
 class PostgresConnectionFactory(
@@ -79,70 +66,8 @@ class PostgresConnectionFactory(
 
 typealias ConnectionFactory = (projectRefid: String) -> Connection
 fun createPostgresStorage(factory: ConnectionFactory, superFactory: ConnectionFactory): StorageApi {
-  fun <T> txn(projectRefid: ProjectRefid, code: (DSLContext)->T): T {
-    return factory(projectRefid).use {cxn ->
-      DSL.using(cxn, SQLDialect.POSTGRES)
-        .configuration().deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
-        .dsl().transactionResult { it -> code(it.dsl()) }
-    }
-  }
-
-  return StorageApi(
-    initProject = {projectRefid ->
-      val schema = PostgresConnectionFactory.getSchema(projectRefid)
-      superFactory(projectRefid).use {
-        it.prepareCall("SELECT clone_schema(?, ?, ?)").use { stmt ->
-          stmt.setString(1, "project_template")
-          stmt.setString(2, schema)
-          stmt.setBoolean(3, false)
-          stmt.execute()
-        }
-      }
-    },
-    insertXlogs = { projectRefid, baseTxnId, xlogs ->
-      txn(projectRefid) { db ->
-        val logTable = TransactionLogTable(PostgresConnectionFactory.getSchema(projectRefid))
-        xlogs.forEachIndexed { num, xlogRecord ->
-          LOG.debug("Inserting log record with baseTxn={}, num={}, record={}", baseTxnId, num, xlogRecord)
-          db.insertInto(logTable, TRANSACTIONLOG.BASE_TXN_ID, TRANSACTIONLOG.LOG_RECORD_NUM, TRANSACTIONLOG.LOG_RECORD_JSON)
-            .values(baseTxnId, num, Json.encodeToString(xlogRecord))
-            .execute()
-        }
-      }
-    },
-    getTransactionLogs = { projectRefid, baseTxnId ->
-      txn(projectRefid) { db ->
-        val logTable = TransactionLogTable(PostgresConnectionFactory.getSchema(projectRefid))
-        val transactions = if (baseTxnId != NULL_TXN_ID) {
-          db
-            .select(logTable.LOG_RECORD_JSON)
-            .from(logTable)
-            .where(logTable.BASE_TXN_ID.ge(baseTxnId))
-            .orderBy(logTable.BASE_TXN_ID, logTable.LOG_RECORD_NUM).fetch()
-        } else {
-          db
-            .select(logTable.LOG_RECORD_JSON)
-            .from(logTable)
-            .orderBy(logTable.BASE_TXN_ID, logTable.LOG_RECORD_NUM).fetch()
-        }
-        transactions.map { result ->
-          val stringLog = result[0] as String
-          Json.decodeFromString<XlogRecord>(stringLog)
-        }
-      }
-    },
-    insertTask = { projectRefid, task -> txn(projectRefid) {
-      buildInsertTaskQuery(it, task).execute()
-    }}
-  )
+  return PostgreStorageApi(factory, superFactory)
 }
 
-internal class TransactionLogTable(private val schemaName: String) : Transactionlog() {
-  override fun getSchema(): Schema {
-    return SchemaImpl(schemaName)
-  }
-}
-
-private val NULL_TXN_ID = 0L
 private val STARTUP_LOG = GPLogger.create("Startup")
 private val LOG = GPLogger.create("Postgres")
