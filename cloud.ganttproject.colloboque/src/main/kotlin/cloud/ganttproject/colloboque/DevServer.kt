@@ -99,7 +99,7 @@ class ColloboqueHttpServer(port: Int, private val colloboqueServer: ColloboqueSe
               hash.update(project.projectXml.toByteArray())
               hash.value.toString()
             })
-            response.addHeader("BaseTxnId", project.txnId)
+            response.addHeader("BaseTxnId", project.txnId.toString())
           }
         } ?: newFixedLengthResponse(Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "projectRefid is missing")
       }

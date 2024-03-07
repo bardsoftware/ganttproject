@@ -78,7 +78,14 @@ from      TaskName
               LEFT JOIN TaskClassProperties TCLP USING(uid)
 GROUP BY TaskName.uid, TaskDates.uid, TCP.uid, TCLP.uid;
 
+-- This table keeps the logs received from the client.
+-- The logs are built on top of a database state that is identified with the base transaction identifier.
+-- We expect that normally there is just 1 log record that applies to each base state, however,
+-- if a client goes offline, the log records may stack on top of each other and, until they are received and
+-- applied on the server, they refer to the same base txn ID.
 CREATE TABLE TransactionLog(
-                                    uid VARCHAR(128) PRIMARY KEY,
-                                    log VARCHAR(65535)
+    base_txn_id BIGINT,
+    log_record_num INT CHECK(log_record_num >= 0),
+    log_record_json VARCHAR(65535),
+    PRIMARY KEY (base_txn_id, log_record_num)
 );

@@ -23,7 +23,6 @@ import biz.ganttproject.core.io.parseXmlProject
 import biz.ganttproject.core.io.walkTasksDepthFirst
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView
-import cloud.ganttproject.colloboque.db.project_template.tables.Transactionlog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
@@ -33,29 +32,22 @@ import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.parser.TaskLoader
-import net.sourceforge.ganttproject.storage.*
+import net.sourceforge.ganttproject.storage.InputXlog
+import net.sourceforge.ganttproject.storage.ServerResponse
+import net.sourceforge.ganttproject.storage.XlogRecord
+import net.sourceforge.ganttproject.storage.generateSqlStatement
 import net.sourceforge.ganttproject.task.Task
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
-import org.jooq.Schema
 import org.jooq.conf.RenderNameCase
 import org.jooq.impl.DSL
-import org.jooq.impl.SchemaImpl
 import java.sql.Connection
 import java.text.DateFormat
-import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.Executors
 
 internal typealias ProjectRefid = String
-internal typealias BaseTxnId = String
-
-internal class TransactionLogTable(projectRefid: ProjectRefid) : Transactionlog() {
-  private val schemaName = PostgresConnectionFactory.getSchema(projectRefid)
-  override fun getSchema(): Schema {
-    return SchemaImpl(schemaName)
-  }
-}
+internal typealias BaseTxnId = Long
 
 class ColloboqueServerException: Exception {
   constructor(message: String): super(message)
@@ -78,7 +70,11 @@ val localeApi = object : CalendarFactory() {
 
 data class StorageApi(
   val initProject: (projectRefid: String) -> Unit = {},
-  val getTransactionLogs: (projectRefid: ProjectRefid, baseTxnId: BaseTxnId)->List<XlogRecord> = { _, _ -> error("Not implemented")},
+  val getTransactionLogs: (projectRefid: ProjectRefid, baseTxnId: BaseTxnId)->List<XlogRecord> = { _, _ ->
+    error("Not implemented")},
+  val insertXlogs: (projectRefid: ProjectRefid, baseTxnId: BaseTxnId, xlog: List<XlogRecord>) -> Unit = {_, _, _ ->
+    error("Not implemented")
+  },
   val insertTask: (projectRefid: String, task: Task) -> Unit = {_, _ ->}
 )
 
@@ -88,7 +84,7 @@ class ColloboqueServer(
   private val storageApi: StorageApi,
   private val updateInputChannel: Channel<InputXlog>,
   private val serverResponseChannel: Channel<ServerResponse>) {
-  private val refidToBaseTxnId: MutableMap<ProjectRefid, ProjectRefid> = mutableMapOf()
+  private val refidToBaseTxnId: MutableMap<ProjectRefid, BaseTxnId> = mutableMapOf()
 
   private val wsCommunicationScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 
@@ -138,7 +134,7 @@ class ColloboqueServer(
     for (inputXlog in updateInputChannel) {
       LOG.debug("Next xlog: $inputXlog")
       try {
-
+        storageApi.insertXlogs(inputXlog.projectRefid, inputXlog.baseTxnId, inputXlog.transactions)
         val newBaseTxnId = applyXlog(inputXlog.projectRefid, inputXlog.baseTxnId, inputXlog.transactions[0])
         val response = ServerResponse.CommitResponse(
           inputXlog.baseTxnId,
@@ -164,7 +160,7 @@ class ColloboqueServer(
    * Performs transaction commit if `baseTxnId` corresponds to the value hold by the server.
    * Returns new baseTxnId on success.
    */
-  private fun applyXlog(projectRefid: ProjectRefid, baseTxnId: String, xlog: XlogRecord): BaseTxnId {
+  private fun applyXlog(projectRefid: ProjectRefid, baseTxnId: BaseTxnId, xlog: XlogRecord): BaseTxnId {
     LOG.debug(">> applyXlog project={} baseTxnId={}", projectRefid, baseTxnId)
     if (xlog.colloboqueOperations.isEmpty()) {
       throw ColloboqueServerException("Empty transactions are not allowed")
@@ -174,7 +170,6 @@ class ColloboqueServer(
       throw ColloboqueServerException("Base txn ID mismatch. Expected: $expectedBaseTxnId. Received: $baseTxnId")
     }
     return try {
-      val realTransactionLog = TransactionLogTable(projectRefid)
       txn(projectRefid) { context ->
         xlog.colloboqueOperations.forEach {
           LOG.debug("... applying operation={}", it)
@@ -183,10 +178,6 @@ class ColloboqueServer(
         val nextTxnId = generateNextTxnId(projectRefid, baseTxnId, xlog)
         val xlogJson = Json.encodeToString(xlog)
         LOG.debug("... persisting log record={}", xlogJson)
-        context
-          .insertInto(realTransactionLog, realTransactionLog.UID, realTransactionLog.LOG)
-          .values(nextTxnId, xlogJson)
-          .execute()
         nextTxnId.also { refidToBaseTxnId[projectRefid] = it }
       }
     } catch (e: Exception) {
@@ -222,10 +213,10 @@ class ColloboqueServer(
 
   // TODO
   private fun generateNextTxnId(projectRefid: ProjectRefid, oldTxnId: BaseTxnId, transaction: XlogRecord): BaseTxnId {
-    return LocalDateTime.now().toString()
+    return oldTxnId + 1
   }
 }
 
 
 private val LOG = GPLogger.create("ColloboqueServer")
-private val NULL_TXN_ID = "0"
+private val NULL_TXN_ID = 0L

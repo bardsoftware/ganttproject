@@ -53,7 +53,7 @@ fun updateProjectXml(projectXml: String, updates: XlogRecord): String {
     databaseFactory = {  createInMemoryDatabase() },
     taskManager = {taskManager}
   ).also {
-    it.startLog("0")
+    it.startLog(0)
   }
   val project = GanttProjectImpl(taskManager, projectDatabase)
   XmlProjectImporter(project).import(projectXml)
@@ -69,7 +69,7 @@ fun updateProjectXml(projectXml: String, updates: XlogRecord): String {
     val databaseTasks = projectDatabase.readAllTasks()
     taskManager.importFromDatabase(databaseTasks, hierarchy)
   }
-  projectDatabase.applyUpdate(listOf(updates), "0", "1")
+  projectDatabase.applyUpdate(listOf(updates), 0, 1)
   val output = ByteArrayOutputStream()
   GanttXMLSaver(project).save(output)
   return output.toString(Charsets.UTF_8)
