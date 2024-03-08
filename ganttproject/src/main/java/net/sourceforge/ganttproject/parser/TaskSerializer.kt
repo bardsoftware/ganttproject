@@ -72,7 +72,8 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
     if (start.isNotBlank()) {
       builder = builder.withStartDate(GanttCalendar.parseXMLDate(start).time)
     }
-    builder = builder.withDuration(taskManager.createLength(child.duration.toLong()))
+    val duration = child.duration.toLong().let { if (it >= 0) it else 1 }
+    builder = builder.withDuration(taskManager.createLength(duration))
     builder =
       if (parent != null) {
         mapXmlGantt[parent]?.let { parentTask -> builder.withParent(parentTask) } ?: run {

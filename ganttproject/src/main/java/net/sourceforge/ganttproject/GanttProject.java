@@ -889,7 +889,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   @Override
   public void setViewIndex(int viewIndex) {
     if (getTabs().getTabCount() > viewIndex) {
-      getTabs().setSelectedIndex(viewIndex);
+      SwingUtilities.invokeLater(() -> getTabs().setSelectedIndex(viewIndex));
+
     }
   }
 
