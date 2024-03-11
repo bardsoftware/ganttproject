@@ -45,8 +45,8 @@ dependencies {
     implementation files('src/main/resources/resources')
 
     implementation group: 'com.h2database', name: 'h2', version: '2.2.+'
-    implementation 'org.jooq:jooq:3.19.5'
-    jooqGenerator 'org.jooq:jooq-meta-extensions:3.19.5'
+    implementation 'org.jooq:jooq:3.19.6'
+    jooqGenerator 'org.jooq:jooq-meta-extensions:3.19.6'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3'
     implementation 'net.harawata:appdirs:1.2.2'
