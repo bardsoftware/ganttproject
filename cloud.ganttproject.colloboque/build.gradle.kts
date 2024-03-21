@@ -101,10 +101,9 @@ tasks.getByName<KotlinCompile>("compileKotlin") {
     }
 }
 
-tasks.register<Copy>("copyDbScript") {
+tasks.register<Copy>("copyDbScriptMain") {
     from("$rootDir/../ganttproject/src/main/resources/resources/sql/")
-    into("src/test/resources/sql")
-
+    into("src/main/resources/sql")
 }
 
 tasks.getByName<Test>("test") {
@@ -112,11 +111,10 @@ tasks.getByName<Test>("test") {
     testLogging {
         exceptionFormat = TestExceptionFormat.FULL
     }
-    dependsOn("copyDbScript")
 }
 
-tasks.getByName<ProcessResources>("processTestResources") {
-    dependsOn("copyDbScript")
+tasks.getByName<ProcessResources>("processResources") {
+    dependsOn("copyDbScriptMain")
 }
 
 group = "cloud.ganttproject"   // Generated output GroupId

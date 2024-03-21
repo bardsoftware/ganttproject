@@ -52,25 +52,21 @@ class PostgresConnectionFactory(
     }
   }
 
-  fun initProject(projectRefid: String) {
-    val schema = getSchema(projectRefid)
-    LOG.debug("Project {} mapped to schema {}", projectRefid, schema)
-    superDataSource.connection.use {
-      it.prepareCall("SELECT clone_schema(?, ?, ?)").use { stmt ->
-        stmt.setString(1, "project_template")
-        stmt.setString(2, schema)
-        stmt.setBoolean(3, false)
-        stmt.execute()
-      }
-    }
-  }
-
   fun createConnection(projectRefid: String): Connection =
     regularDataSource.connection.also { it.schema = getSchema(projectRefid) }
 
+  fun createSuperConnection(projectRefid: String) = superDataSource.connection
+
   // TODO: escape projectRefid
-  private fun getSchema(projectRefid: String) =
-    "project_${Hashing.murmur3_128().hashBytes(projectRefid.toByteArray(Charsets.UTF_8))}"
+  companion object {
+    fun getSchema(projectRefid: String) =
+      "project_${Hashing.murmur3_128().hashBytes(projectRefid.toByteArray(Charsets.UTF_8))}"
+  }
+}
+
+typealias ConnectionFactory = (projectRefid: String) -> Connection
+fun createPostgresStorage(factory: ConnectionFactory, superFactory: ConnectionFactory): StorageApi {
+  return PostgreStorageApi(factory, superFactory)
 }
 
 private val STARTUP_LOG = GPLogger.create("Startup")

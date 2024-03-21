@@ -34,7 +34,7 @@ class UndoManagerTest {
       it.setURL("jdbc:h2:mem:test$SQL_PROJECT_DATABASE_OPTIONS")
     }
     val projectDatabase = SqlProjectDatabaseImpl(dataSource).also {
-      it.startLog("0")
+      it.startLog(0)
     }
     projectDatabase.init()
 
