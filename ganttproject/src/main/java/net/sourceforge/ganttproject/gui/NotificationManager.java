@@ -25,11 +25,9 @@ import javax.swing.event.HyperlinkListener;
 import java.util.List;
 
 public interface NotificationManager {
-  void addNotifications(NotificationChannel channel, List<NotificationItem> notifications);
+  void addNotifications(List<NotificationItem> notifications);
 
   void showNotification(NotificationChannel channel);
-
-  void hideNotification();
 
   HyperlinkListener DEFAULT_HYPERLINK_LISTENER = new HyperlinkListener() {
     @Override

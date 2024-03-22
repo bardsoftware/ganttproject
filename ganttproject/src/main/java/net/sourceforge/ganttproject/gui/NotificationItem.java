@@ -24,12 +24,14 @@ public class NotificationItem {
   public final String myTitle;
   public final String myBody;
   final HyperlinkListener myHyperlinkListener;
+  private final NotificationChannel myChannel;
   boolean isRead;
 
-  public NotificationItem(String title, String body, HyperlinkListener hyperlinkListener) {
+  public NotificationItem(NotificationChannel channel, String title, String body, HyperlinkListener hyperlinkListener) {
     myTitle = title == null ? "" : title;
     myBody = body == null ? "" : body;
     myHyperlinkListener = hyperlinkListener;
+    myChannel = channel;
   }
 
   public boolean isRead() {
@@ -40,6 +42,9 @@ public class NotificationItem {
     isRead = b;
   }
 
+  public NotificationChannel getChannel() {
+    return myChannel;
+  }
   @Override
   public boolean equals(Object obj) {
     if (obj == this) {
