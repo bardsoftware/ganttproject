@@ -27,11 +27,13 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.storage.XlogRecord
 import net.sourceforge.ganttproject.storage.buildInsertTaskQuery
+import net.sourceforge.ganttproject.storage.generateSqlStatement
 import net.sourceforge.ganttproject.task.Task
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.Schema
 import org.jooq.conf.RenderNameCase
+import org.jooq.conf.Settings
 import org.jooq.impl.DSL
 import org.jooq.impl.SchemaImpl
 import org.slf4j.LoggerFactory
@@ -110,6 +112,35 @@ class PostgreStorageApi(private val factory: ConnectionFactory, private val supe
         .configuration().deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
         .dsl().transactionResult { it -> code(it.dsl()) }
     }
+  }
+
+  fun parallelTransactions(projectRefid: ProjectRefid, baseTxnId: BaseTxnId, clientTransaction: List<XlogRecord>): Boolean {
+    val settings = Settings().withRenderNameCase(RenderNameCase.LOWER).withInterpreterDialect(SQLDialect.POSTGRES)
+    val serverTransaction = getTransactionLogs(projectRefid, baseTxnId)
+    val clientConnection = factory(projectRefid)
+    val serverConnection = factory(projectRefid)
+    val serverDsl = DSL.using(serverConnection, settings)
+    val clientDsl = DSL.using(clientConnection, settings)
+    serverDsl.startTransaction()
+    clientDsl.startTransaction()
+    try {
+      serverTransaction.forEach {
+        it.colloboqueOperations.forEach {
+          LOG.debug("... applying operation={}", it)
+          serverDsl.execute(generateSqlStatement(serverDsl, it))
+        }
+      }
+      clientTransaction.forEach {
+        it.colloboqueOperations.forEach {
+          LOG.debug("... applying operation={}", it)
+          clientDsl.execute(generateSqlStatement(clientDsl, it))
+        }
+      }
+    } catch (e: Exception) {
+      LOG.info("Failed to execute transactions in parallel! Reason: ${e.localizedMessage}")
+      return false
+    }
+    return true
   }
 
   private fun getOrCreateProjectSchema(projectRefid: String): String {
