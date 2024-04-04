@@ -53,6 +53,9 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
         }
     }.exceptionally { ex ->
       GPLogger.log(ex)
+      Platform.runLater {
+        jfxPanel.scene = createScene(emptyList())
+      }
       null
     }
 

@@ -104,7 +104,7 @@ typealias AppRestarter = () -> Unit
 data class PlatformBean(var checkUpdates: Boolean = true, val version: String)
 
 /**
- * UI with the information about the running GanttProject version, the list of available updates amd
+ * UI with the information about the running GanttProject version, the list of available updates and
  * controls to install updates or disable update checking.
  */
 internal class UpdateDialog(
@@ -339,7 +339,7 @@ private fun (UpdateMetadata).sizeAsString(): String {
 /**
  * Encapsulates UI controls which show information and status of individual updates.
  */
-private class UpdateComponentUi(val update: UpdateMetadata) {
+private class UpdateComponentUi(update: UpdateMetadata) {
   val title: Label = Label(ourLocalizer.formatText("bodyItem.title", update.version)).also { l ->
     l.styleClass.add("title")
   }
