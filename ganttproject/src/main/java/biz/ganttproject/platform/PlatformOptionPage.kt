@@ -49,12 +49,12 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
     wrapper.add(jfxPanel, BorderLayout.CENTER)
     Eclipsito.getUpdater().getUpdateMetadata(UpdateOptions.updateUrl.value).thenAccept { updateMetadata ->
         Platform.runLater {
-          jfxPanel.scene = createScene(updateMetadata)
+          jfxPanel.scene = createScene(updateMetadata, null)
         }
     }.exceptionally { ex ->
-      GPLogger.log(ex)
+      GPLogger.logToLogger(ex)
       Platform.runLater {
-        jfxPanel.scene = createScene(emptyList())
+        jfxPanel.scene = createScene(emptyList(), ex)
       }
       null
     }
@@ -64,7 +64,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
   }
 
 
-  private fun createScene(updateMetadata: List<UpdateMetadata>): Scene {
+  private fun createScene(updateMetadata: List<UpdateMetadata>, ex: Throwable?): Scene {
     val runningVersion = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "2900"
     val runningUpdateMetadata = UpdateMetadata(
       runningVersion,
@@ -76,13 +76,11 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
       it.stylesheets.addAll(DIALOG_STYLESHEET)
     }
     val dialogBuildApi = DialogControllerPane(group)
-    val updateUi = UpdateDialog(filteredUpdates, filteredUpdates) {
-      SwingUtilities.invokeLater {
-        uiFacade.quitApplication(false)
-        org.eclipse.core.runtime.Platform.restart()
-      }
+    if (ex != null) {
+      updatesFetchErrorDialog(ex, dialogBuildApi)
+    } else {
+      updatesAvailableDialog(filteredUpdates, filteredUpdates, { uiFacade.quitApplication(false) }, dialogBuildApi)
     }
-    updateUi.addContent(dialogBuildApi)
     return Scene(group)
   }
 
