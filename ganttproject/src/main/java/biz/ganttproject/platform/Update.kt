@@ -49,8 +49,10 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.UIFacade
 import org.controlsfx.control.HyperlinkLabel
 import java.io.File
+import java.net.ConnectException
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 import java.util.concurrent.Executors
 import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
@@ -87,22 +89,32 @@ private fun showUpdateDialog(updates: List<UpdateMetadata>, uiFacade: UIFacade, 
       runningVersion,
       null, null, null, 0, "", false)
     val applyUpdates = updates.filter { it > runningUpdateMetadata }
-    val dlg = UpdateDialog(applyUpdates, visibleUpdates) {
-      SwingUtilities.invokeLater {
-        uiFacade.quitApplication(false)
-        Executors.newSingleThreadExecutor().run {  org.eclipse.core.runtime.Platform.restart() }
-      }
-    }
-    dialog(
-        title = RootLocalizer.create("platform.update.hasUpdates.title"),
-        contentBuilder = dlg::addContent
-    )
+    updatesAvailableDialog(applyUpdates, visibleUpdates, {uiFacade.quitApplication(false)}, null)
   }
 }
 
 typealias AppRestarter = () -> Unit
 data class PlatformBean(var checkUpdates: Boolean = true, val version: String)
 
+fun updatesAvailableDialog(updates: List<UpdateMetadata>, visibleUpdates: List<UpdateMetadata>, quitFunction:()->Unit, dialogController: DialogController?) {
+  val dlg = UpdateDialog(updates, visibleUpdates) {
+    SwingUtilities.invokeLater {
+      quitFunction()
+      Executors.newSingleThreadExecutor().run {  org.eclipse.core.runtime.Platform.restart() }
+    }
+  }
+  dialogController?.let {
+    dlg.addContent(it)
+  } ?: dialog(
+    title = RootLocalizer.create("platform.update.hasUpdates.title"),
+    contentBuilder = dlg::addContent
+  )
+}
+
+fun updatesFetchErrorDialog(ex: Throwable, dialogController: DialogController) {
+  val dlg = UpdateDialog(listOf(), listOf(), {})
+  dlg.addContent(ex, dialogController)
+}
 /**
  * UI with the information about the running GanttProject version, the list of available updates and
  * controls to install updates or disable update checking.
@@ -276,6 +288,62 @@ internal class UpdateDialog(
     }
     dialogApi.setContent(this.createPane(bean))
     dialogApi.setButtonPaneNode(this.progressLabel)
+  }
+
+  internal fun addContent(ex: Throwable, dialogApi: DialogController) {
+    val installedVersion = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "2900"
+    val bean = PlatformBean(true, installedVersion)
+    this.dialogApi = dialogApi
+    dialogApi.addStyleClass("dlg-platform-update")
+    dialogApi.addStyleSheet(
+      "/biz/ganttproject/app/Dialog.css",
+      "/biz/ganttproject/platform/Update.css"
+    )
+
+    dialogApi.setHeader(VBoxBuilder("header").apply {
+      addTitle("Update Error")
+    }.vbox)
+
+    VBoxBuilder("content-pane").also {
+      val props = GridPane().apply {
+        styleClass.add("props")
+        add(Label(ourLocalizer.formatText("installedVersion")).also {
+          GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
+        }, 0, 0)
+        add(Label(bean.version).also {
+          GridPane.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
+        }, 1, 0)
+        add(Label(ourLocalizer.formatText("checkUpdates")).also {
+          GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
+        }, 0, 1)
+        val toggleSwitch = createToggleSwitch().also {
+          it.selectedProperty().value = UpdateOptions.isCheckEnabled.value
+          it.selectedProperty().addListener { _, _, newValue -> UpdateOptions.isCheckEnabled.value = newValue }
+        }
+        add(toggleSwitch, 1, 1)
+        add(HyperlinkLabel(ourLocalizer.formatText("checkUpdates.helpline")).also {
+          it.styleClass.add("helpline")
+          it.onAction = EventHandler { openInBrowser(PRIVACY_URL) }
+        }, 1, 2)
+      }
+      it.add(props)
+
+      dialogApi.setContent(it.vbox)
+      var cause: Throwable? = ex
+      while (cause != null && cause is CompletionException) {
+        cause = cause.cause
+      }
+      val msg = when (cause) {
+        is ConnectException -> {
+          "Can't connect to ${UpdateOptions.updateUrl.value}"
+        }
+        is com.grack.nanojson.JsonParserException -> {
+          "Can't parse the contents of the update data: ${ex.message}"
+        }
+        else -> cause?.message ?: ex.message
+      }
+      dialogApi.showAlert("Update error", Label(msg))
+    }
   }
 
   private fun onRestart() {
