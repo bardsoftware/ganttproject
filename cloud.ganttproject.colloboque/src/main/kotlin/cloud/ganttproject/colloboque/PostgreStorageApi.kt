@@ -117,7 +117,7 @@ class PostgreStorageApi(private val factory: ConnectionFactory, private val supe
     }
   }
 
-  fun parallelTransactions(
+  override fun parallelTransactions(
     projectXml: String,
     baseTxnId: BaseTxnId,
     serverTransaction: List<XlogRecord>,
@@ -160,7 +160,7 @@ class PostgreStorageApi(private val factory: ConnectionFactory, private val supe
     return true
   }
 
-  fun getProjectXml(projectRefid: ProjectRefid, baseTxnId: BaseTxnId): String {
+  override fun getProjectXml(projectRefid: ProjectRefid, baseTxnId: BaseTxnId): String {
     return txn(projectRefid) {db ->
       val projectFileSnapshot = ProjectFileSnapshot(projectRefid)
       db.select(projectFileSnapshot.PROJECT_XML)

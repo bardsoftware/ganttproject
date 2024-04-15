@@ -21,9 +21,8 @@ package cloud.ganttproject.colloboque
 import cloud.ganttproject.colloboque.db.project_template.tables.records.ProjectfilesnapshotRecord
 import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.storage.*
+import org.junit.jupiter.api.Assertions.*
 import biz.ganttproject.storage.db.Tables.TASK as TaskTable
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -92,6 +91,34 @@ class ProjectFileUpdaterTest {
         """.trimIndent()
     }
 
+  }
+
+  @Test
+  fun `parallel transactions fail`() {
+    val clientChanges = XlogRecord(
+      listOf(
+        OperationDto.UpdateOperationDto(
+          "task",
+          updateBinaryConditions = mutableListOf(Triple("uid", BinaryPred.EQ, "qwerty")),
+          updateRangeConditions = mutableListOf(),
+          newValues = mutableMapOf("name" to "ClientTask")
+        )
+      )
+    )
+    val serverChanges = XlogRecord(
+      listOf(
+        OperationDto.UpdateOperationDto(
+          "task",
+          updateBinaryConditions = mutableListOf(Triple("uid", BinaryPred.EQ, "qwerty")),
+          updateRangeConditions = mutableListOf(),
+          newValues = mutableMapOf("name" to "SeverTask")
+        )
+      )
+    )
+
+    val connectionFactory = PostgresConnectionFactory("localhost", 5432, "postgres", "")
+    val storage = createPostgresStorage(connectionFactory::createConnection, connectionFactory::createSuperConnection)
+    assertFalse(storage.parallelTransactions (PROJECT_XML_TEMPLATE, 0, listOf(serverChanges), listOf(clientChanges)))
   }
 }
 

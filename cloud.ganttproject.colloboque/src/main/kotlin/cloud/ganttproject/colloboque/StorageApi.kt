@@ -30,6 +30,15 @@ interface StorageApi {
 
   fun getActualSnapshot(projectRefid: String): ProjectfilesnapshotRecord?
   fun insertActualSnapshot(projectRefid: String, baseTxnId: BaseTxnId, projectXml: String)
+
+  fun parallelTransactions(
+    projectXml: String,
+    baseTxnId: BaseTxnId,
+    serverTransaction: List<XlogRecord>,
+    clientTransaction: List<XlogRecord>
+  ): Boolean
+
+  fun getProjectXml(projectRefid: ProjectRefid, baseTxnId: BaseTxnId): String
 }
 
 class PluggableStorageApi(
@@ -44,7 +53,16 @@ class PluggableStorageApi(
   private val getActualSnapshot_: (projectRefid: String) -> ProjectfilesnapshotRecord? = {
     error("Not implemented")
   },
-  private val insertActualSnapshot_: (projectRefid: String, baseTxnId: BaseTxnId, projectXml: String) -> Unit = {_, _, _ -> }
+  private val insertActualSnapshot_: (projectRefid: String, baseTxnId: BaseTxnId, projectXml: String) -> Unit = {_, _, _ -> },
+  private val parallelTransactions_: (projectXml: String,
+                                    baseTxnId: BaseTxnId,
+                                    serverTransaction: List<XlogRecord>,
+                                    clientTransaction: List<XlogRecord>) -> Boolean = {_, _, _, _->
+    error("Not implemented")
+  },
+  private val getProjectXml_: (rojectRefid: ProjectRefid, baseTxnId: BaseTxnId) -> String = {_, _ ->
+    error("Not implemented")
+  }
 ) : StorageApi {
   override fun initProject(projectRefid: String) = initProject_(projectRefid)
 
@@ -57,4 +75,12 @@ class PluggableStorageApi(
   override fun getActualSnapshot(projectRefid: String) = getActualSnapshot_(projectRefid)
 
   override fun insertActualSnapshot(projectRefid: String, baseTxnId: BaseTxnId, projectXml: String) = insertActualSnapshot_(projectRefid, baseTxnId, projectXml)
+  override fun parallelTransactions(
+    projectXml: String,
+    baseTxnId: BaseTxnId,
+    serverTransaction: List<XlogRecord>,
+    clientTransaction: List<XlogRecord>
+  ): Boolean = parallelTransactions_(projectXml, baseTxnId, serverTransaction, clientTransaction)
+
+  override fun getProjectXml(projectRefid: ProjectRefid, baseTxnId: BaseTxnId): String = getProjectXml_(projectRefid, baseTxnId)
 }
