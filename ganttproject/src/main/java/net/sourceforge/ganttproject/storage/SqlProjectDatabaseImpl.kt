@@ -39,15 +39,14 @@ import org.jooq.impl.DSL
 import org.jooq.impl.DSL.field
 import java.awt.Color
 import java.sql.SQLException
-import java.time.LocalDateTime
-import java.time.ZoneId
 import java.util.*
 import javax.sql.DataSource
 
 class SqlProjectDatabaseImpl(
   private val dataSource: DataSource,
   private val initScript: String = DB_INIT_SCRIPT_PATH,
-  private val initScript2: String = DB_INIT_SCRIPT_PATH2
+  private val initScript2: String = DB_INIT_SCRIPT_PATH2,
+  private val dialect: SQLDialect = SQLDialect.H2
   ) : ProjectDatabase {
   companion object Factory {
     fun createInMemoryDatabase(): ProjectDatabase {
@@ -109,7 +108,7 @@ class SqlProjectDatabaseImpl(
     try {
       dataSource.connection.use { connection ->
         try {
-          val dsl = DSL.using(connection, SQLDialect.H2)
+          val dsl = DSL.using(connection, dialect)
           return body(dsl)
         } catch (e: Exception) {
           throw ProjectDatabaseException(errorMessage(), e)
@@ -149,8 +148,8 @@ class SqlProjectDatabaseImpl(
                       buildUndoQuery: (dsl: DSLContext) -> String,
                       colloboqueOperationDto: OperationDto,
                       colloboqueUndoOperationDto: OperationDto) {
-    val query = SqlQuery(buildQuery(DSL.using(SQLDialect.H2)), colloboqueOperationDto)
-    val undoQuery = SqlQuery(buildUndoQuery(DSL.using(SQLDialect.H2)), colloboqueUndoOperationDto)
+    val query = SqlQuery(buildQuery(DSL.using(dialect)), colloboqueOperationDto)
+    val undoQuery = SqlQuery(buildUndoQuery(DSL.using(dialect)), colloboqueUndoOperationDto)
     currentTxn?.add(query, undoQuery) ?: executeAndLog(listOf(query), localTxnId).also {
       incrementLocalTxnId()
     }
@@ -187,7 +186,7 @@ class SqlProjectDatabaseImpl(
 
   private val isLogStarted get() = localTxnId >= 0
 
-  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task, this::update)
+  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task, this::update, dialect)
 
   @Throws(ProjectDatabaseException::class)
   override fun insertTask(task: Task) {
@@ -411,25 +410,25 @@ class TransactionImpl(private val database: SqlProjectDatabaseImpl, private val 
  * Creates SQL statements for updating custom property records.
  */
 internal class SqlTaskCustomPropertiesUpdateBuilder(
-  private val task: Task, private val onCommit: (List<SqlQuery>, List<SqlUndoQuery>) -> Unit) {
+  private val task: Task, private val onCommit: (List<SqlQuery>, List<SqlUndoQuery>) -> Unit, private val dialect: SQLDialect) {
   internal var commit: () -> Unit = {}
 
   private fun generateStatements(customProperties: CustomPropertyHolder, isUndoOperation: Boolean): List<SqlQuery> {
-    val h2statements = mutableListOf<String>()
+    val statements = mutableListOf<String>()
     val colloboqueUpdateDtos = mutableListOf<OperationDto>()
 
     val generateDeleteFnForH2 = {
-      if (isUndoOperation) generateDeleteStatementAllColumns(DSL.using(SQLDialect.H2)) else generateDeleteStatement(DSL.using(SQLDialect.H2), customProperties)
+      if (isUndoOperation) generateDeleteStatementAllColumns(DSL.using(dialect)) else generateDeleteStatement(DSL.using(dialect), customProperties)
     }
     val generateDeleteFnForColloboque = {
       if (isUndoOperation) generateDeleteDtoAllColumns() else generateDeleteDto(customProperties)
     }
-    h2statements.add(generateDeleteFnForH2())
+    statements.add(generateDeleteFnForH2())
     colloboqueUpdateDtos.add(generateDeleteFnForColloboque())
 
-    h2statements.addAll(generateMergeStatements(customProperties.customProperties) {DSL.using(SQLDialect.H2)})
+    statements.addAll(generateMergeStatements(customProperties.customProperties) { return@generateMergeStatements DSL.using(dialect) })
     colloboqueUpdateDtos.addAll(generateMergeDtos(customProperties.customProperties))
-    return h2statements.zip(colloboqueUpdateDtos).map { SqlQuery(it.first, it.second) }
+    return statements.zip(colloboqueUpdateDtos).map { SqlQuery(it.first, it.second) }
   }
 
   internal fun setCustomProperties(oldCustomProperties: CustomPropertyHolder, newCustomProperties: CustomPropertyHolder) {
@@ -504,24 +503,25 @@ internal class SqlTaskCustomPropertiesUpdateBuilder(
 
 
 class SqlTaskUpdateBuilder(private val task: Task,
-                           private val onCommit: (List<SqlQuery>, List<SqlUndoQuery>) -> Unit): TaskUpdateBuilder {
+                           private val onCommit: (List<SqlQuery>, List<SqlUndoQuery>) -> Unit,
+                           private val dialect: SQLDialect): TaskUpdateBuilder {
   private var lastSetStepH2: UpdateSetMoreStep<TaskRecord>? = null
   private var updateDtoColloboque: OperationDto.UpdateOperationDto? = null
 
   private var lastUndoSetStepH2: UpdateSetMoreStep<TaskRecord>? = null
   private var undoUpdateDtoColloboque: OperationDto.UpdateOperationDto? = null
 
-  private val customPropertiesUpdater = SqlTaskCustomPropertiesUpdateBuilder(task, onCommit)
+  private val customPropertiesUpdater = SqlTaskCustomPropertiesUpdateBuilder(task, onCommit, dialect)
 
   private fun nextStep(stepH2: (lastStep: UpdateSetStep<TaskRecord>) -> UpdateSetMoreStep<TaskRecord>,
                        stepColloboque: (lastStep: OperationDto.UpdateOperationDto) -> OperationDto.UpdateOperationDto) {
-    lastSetStepH2 = stepH2(lastSetStepH2 ?: DSL.using(SQLDialect.H2).update(TASK))
+    lastSetStepH2 = stepH2(lastSetStepH2 ?: DSL.using(dialect).update(TASK))
     updateDtoColloboque = stepColloboque(updateDtoColloboque ?: OperationDto.UpdateOperationDto(TASK.name, mutableListOf(), mutableListOf(), mutableMapOf()))
   }
 
   private fun nextUndoStep(stepH2: (lastStep: UpdateSetStep<TaskRecord>) -> UpdateSetMoreStep<TaskRecord>,
                            stepColloboque: (lastStep: OperationDto.UpdateOperationDto) -> OperationDto.UpdateOperationDto) {
-    lastUndoSetStepH2 = stepH2(lastUndoSetStepH2 ?: DSL.using(SQLDialect.H2).update(TASK))
+    lastUndoSetStepH2 = stepH2(lastUndoSetStepH2 ?: DSL.using(dialect).update(TASK))
     undoUpdateDtoColloboque = stepColloboque(undoUpdateDtoColloboque ?: OperationDto.UpdateOperationDto(TASK.name, mutableListOf(), mutableListOf(), mutableMapOf()))
   }
 

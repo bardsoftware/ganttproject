@@ -75,6 +75,26 @@ fun updateProjectXml(projectXml: String, updates: XlogRecord): String {
   return output.toString(Charsets.UTF_8)
 }
 
+fun projectFromXml(projectXml: String, baseTxnId: BaseTxnId, databaseFactory: () -> ProjectDatabase): ProjectDatabase {
+  val calendar = WeekendCalendarImpl()
+  val humanResourceManager = HumanResourceManager(
+    RoleManager.Access.getInstance().defaultRole,
+    CustomColumnsManager()
+  )
+  val taskManagerConfig = TaskManagerConfigImpl(humanResourceManager, calendar)
+  val taskManager = TaskManagerImpl(null, taskManagerConfig)
+  val projectDatabase = LazyProjectDatabaseProxy(
+    databaseFactory = databaseFactory,
+    taskManager = {taskManager}
+  ).also {
+    it.startLog(baseTxnId)
+  }
+  val project = GanttProjectImpl(taskManager, projectDatabase)
+  XmlProjectImporter(project).import(projectXml)
+  taskManager.tasks.forEach(projectDatabase::insertTask)
+  return projectDatabase
+}
+
 internal val PROJECT_XML_TEMPLATE = """
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">

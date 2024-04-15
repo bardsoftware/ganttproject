@@ -25,6 +25,7 @@ import cloud.ganttproject.colloboque.db.project_template.tables.references.TRANS
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl
 import net.sourceforge.ganttproject.storage.XlogRecord
 import net.sourceforge.ganttproject.storage.buildInsertTaskQuery
 import net.sourceforge.ganttproject.storage.generateSqlStatement
@@ -36,7 +37,9 @@ import org.jooq.conf.RenderNameCase
 import org.jooq.conf.Settings
 import org.jooq.impl.DSL
 import org.jooq.impl.SchemaImpl
+import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
+import kotlin.random.Random
 
 class PostgreStorageApi(private val factory: ConnectionFactory, private val superFactory: ConnectionFactory) : StorageApi {
   override fun initProject(projectRefid: String) {
@@ -114,11 +117,21 @@ class PostgreStorageApi(private val factory: ConnectionFactory, private val supe
     }
   }
 
-  fun parallelTransactions(projectRefid: ProjectRefid, baseTxnId: BaseTxnId, clientTransaction: List<XlogRecord>): Boolean {
-    val settings = Settings().withRenderNameCase(RenderNameCase.LOWER).withInterpreterDialect(SQLDialect.POSTGRES)
-    val serverTransaction = getTransactionLogs(projectRefid, baseTxnId)
-    val clientConnection = factory(projectRefid)
-    val serverConnection = factory(projectRefid)
+  fun parallelTransactions(
+    projectXml: String,
+    baseTxnId: BaseTxnId,
+    serverTransaction: List<XlogRecord>,
+    clientTransaction: List<XlogRecord>
+  ): Boolean {
+    val settings = Settings().withRenderNameCase(RenderNameCase.LOWER)
+      .withInterpreterDialect(SQLDialect.POSTGRES)
+    val jdbcUrl = "jdbc:postgresql://localhost:5432/${baseTxnId}_${Random.nextLong()};DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true"
+    val dataSource = PGSimpleDataSource()
+    dataSource.setURL(jdbcUrl)
+    val database = SqlProjectDatabaseImpl(dataSource, dialect = SQLDialect.POSTGRES)
+    projectFromXml(projectXml, baseTxnId) { database }
+    val clientConnection = dataSource.getConnection("postgres", "")
+    val serverConnection = dataSource.getConnection("postgres", "")
     val serverDsl = DSL.using(serverConnection, settings)
     val clientDsl = DSL.using(clientConnection, settings)
     serverDsl.startTransaction()
@@ -130,17 +143,32 @@ class PostgreStorageApi(private val factory: ConnectionFactory, private val supe
           serverDsl.execute(generateSqlStatement(serverDsl, it))
         }
       }
+      serverDsl.commit()
       clientTransaction.forEach {
         it.colloboqueOperations.forEach {
           LOG.debug("... applying operation={}", it)
           clientDsl.execute(generateSqlStatement(clientDsl, it))
         }
       }
+      clientDsl.commit()
     } catch (e: Exception) {
       LOG.info("Failed to execute transactions in parallel! Reason: ${e.localizedMessage}")
+      database.shutdown()
       return false
     }
+    database.shutdown()
     return true
+  }
+
+  fun getProjectXml(projectRefid: ProjectRefid, baseTxnId: BaseTxnId): String {
+    return txn(projectRefid) {db ->
+      val projectFileSnapshot = ProjectFileSnapshot(projectRefid)
+      db.select(projectFileSnapshot.PROJECT_XML)
+        .from(projectFileSnapshot)
+        .where(projectFileSnapshot.BASE_TXN_ID.eq(baseTxnId))
+        .fetch().getValue(0, projectFileSnapshot.PROJECT_XML)
+      ?: throw RuntimeException("Can't find project xml for $projectRefid with baseTxnId $baseTxnId")
+    }
   }
 
   private fun getOrCreateProjectSchema(projectRefid: String): String {
