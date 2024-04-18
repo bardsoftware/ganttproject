@@ -858,6 +858,7 @@ public class TaskManagerImpl implements TaskManager {
         .withWebLink(that.getWebLink())
         .withPriority(that.getPriority())
         .withParent(root)
+        .withUid(that.getUid())
         .build();
 
       nextImported.setShape(task.getShape());

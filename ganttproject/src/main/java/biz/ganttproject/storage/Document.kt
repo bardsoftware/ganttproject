@@ -31,6 +31,7 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.ProxyDocument
+import net.sourceforge.ganttproject.storage.BaseTxnId
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.FileNotFoundException
@@ -196,7 +197,7 @@ data class FetchResult(val onlineDocument: OnlineDocument,
                        val syncVersion: Long,
                        val actualChecksum: String,
                        val actualVersion: Long,
-                       val baseColloboqueTxnId: String?,
+                       val baseColloboqueTxnId: BaseTxnId?,
                        val body: ByteArray,
                        val updateFxn: (FetchResult) -> Unit = {}) {
   var useMirror: Boolean = false

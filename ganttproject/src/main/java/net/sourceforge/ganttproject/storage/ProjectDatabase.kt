@@ -89,7 +89,7 @@ interface ProjectDatabase {
   fun init()
 
   @Throws(ProjectDatabaseException::class)
-  fun startLog(baseTxnId: String)
+  fun startLog(baseTxnId: BaseTxnId)
 
   fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder
 
@@ -130,7 +130,7 @@ interface ProjectDatabase {
   fun validateColumnConsumer(columnConsumer: ColumnConsumer)
 
   @Throws(ProjectDatabaseException::class)
-  fun applyUpdate(logRecords: List<XlogRecord>, baseTxnId: String, targetTxnId: String)
+  fun applyUpdate(logRecords: List<XlogRecord>, baseTxnId: BaseTxnId, targetTxnId: BaseTxnId)
 
   @Throws(ProjectDatabaseException::class)
   fun readAllTasks(): List<TaskRecord>

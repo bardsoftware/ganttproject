@@ -52,7 +52,7 @@ class SqlStatementsGeneratorTest {
       it.setURL("jdbc:h2:mem:test$SQL_PROJECT_DATABASE_OPTIONS")
     }
     projectDatabase = SqlProjectDatabaseImpl(dataSource).also {
-      it.startLog("0")
+      it.startLog(0)
     }
     val taskManagerBuilder = TestSetupHelper.newTaskManagerBuilder()
     taskManagerBuilder.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }

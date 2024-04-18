@@ -29,6 +29,7 @@ import net.sourceforge.ganttproject.storage.*
 import net.sourceforge.ganttproject.task.*
 import org.h2.jdbcx.JdbcDataSource
 import java.io.ByteArrayOutputStream
+import java.util.*
 
 private var databaseCounter: Long = 0
 private fun createInMemoryDatabase(): ProjectDatabase {
@@ -52,12 +53,11 @@ fun updateProjectXml(projectXml: String, updates: XlogRecord): String {
     databaseFactory = {  createInMemoryDatabase() },
     taskManager = {taskManager}
   ).also {
-    it.startLog("0")
+    it.startLog(0)
   }
   val project = GanttProjectImpl(taskManager, projectDatabase)
   XmlProjectImporter(project).import(projectXml)
   taskManager.tasks.forEach(projectDatabase::insertTask)
-  assert(projectDatabase.readAllTasks().size == 1)
 
   if (updates.colloboqueOperations.isEmpty()) {
     return projectXml
@@ -69,8 +69,18 @@ fun updateProjectXml(projectXml: String, updates: XlogRecord): String {
     val databaseTasks = projectDatabase.readAllTasks()
     taskManager.importFromDatabase(databaseTasks, hierarchy)
   }
-  projectDatabase.applyUpdate(listOf(updates), "0", "1")
+  projectDatabase.applyUpdate(listOf(updates), 0, 1)
   val output = ByteArrayOutputStream()
   GanttXMLSaver(project).save(output)
   return output.toString(Charsets.UTF_8)
 }
+
+internal val PROJECT_XML_TEMPLATE = """
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="" company="" webLink="" view-date="2022-01-01" view-index="0" gantt-divider-location="374" resource-divider-location="322" version="3.0.2906" locale="en">
+  <tasks empty-milestones="true">
+      <task id="0" uid="qwerty" name="Task1" color="#99ccff" meeting="false" start="2022-02-10" duration="25" complete="85" expand="true"/>
+  </tasks>
+</project>
+        """.trimIndent()
+internal fun String.toBase64() = Base64.getEncoder().encodeToString(this.toByteArray())

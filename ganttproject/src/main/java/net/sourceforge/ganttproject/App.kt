@@ -36,6 +36,9 @@ import org.slf4j.Logger
 import java.io.File
 import java.lang.Thread.UncaughtExceptionHandler
 import java.util.*
+import java.util.concurrent.atomic.AtomicReference
+import javax.swing.JFrame
+import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
 
@@ -68,10 +71,19 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
       app.init()
       app.start(stage)
       APP_LOGGER.debug("Main frame created")
+    } catch (e: Throwable) {
+      APP_LOGGER.error("Failure when launching application", exception = e)
+      e.printStackTrace()
+      val msg = """Failed to launch the UI:
+        |${e.message}
+        |
+        |More details in the log file: ${GPLogger.getLogFile()} 
+      """.trimMargin()
+      JOptionPane.showMessageDialog(null, msg, "Failed to launch the UI", JOptionPane.ERROR_MESSAGE)
+      System.exit(1)
+
+    } finally {
     }
-  } catch (e: Throwable) {
-    APP_LOGGER.error("Failure when launching application", exception = e)
-  } finally {
   }
 }
 

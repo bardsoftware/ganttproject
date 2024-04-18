@@ -5,6 +5,27 @@ CREATE DATABASE project_database_template OWNER postgres IS_TEMPLATE=true;
 
 -- DROP FUNCTION clone_schema(text, text);
 
+CREATE OR REPLACE FUNCTION replace_schema_except_types(
+    source_text text,
+    source_schema text,
+    dest_schema text)
+    RETURNS text AS
+$BODY$
+DECLARE
+    end_text         text;
+    typename         text;
+BEGIN
+    end_text := replace(source_text, source_schema, dest_schema);
+    FOREACH typename IN ARRAY ARRAY['taskintpropertyname', 'tasktextpropertyname']
+    LOOP
+        end_text := replace(end_text, dest_schema || '.' || typename, source_schema || '.' || typename);
+    END LOOP;
+    RETURN end_text;
+END;
+$BODY$
+    LANGUAGE plpgsql VOLATILE COST 100;
+
+
 CREATE OR REPLACE FUNCTION clone_schema(
     source_schema text,
     dest_schema text,
@@ -136,7 +157,7 @@ BEGIN
 
         FOR column_, default_ IN
         SELECT column_name::text,
-            REPLACE(column_default::text, source_schema, dest_schema)
+            replace_schema_except_types(column_default::text, source_schema, dest_schema)
         FROM information_schema.COLUMNS
         WHERE table_schema = dest_schema
           AND TABLE_NAME = object
@@ -149,7 +170,7 @@ BEGIN
 
     --  add FK constraint
     FOR qry IN
-    SELECT 'ALTER TABLE ' || quote_ident(dest_schema) || '.' || quote_ident(rn.relname) || ' ADD CONSTRAINT ' || quote_ident(ct.conname) || ' ' || replace(pg_get_constraintdef(ct.oid), source_schema, dest_schema) || ';'
+    SELECT 'ALTER TABLE ' || quote_ident(dest_schema) || '.' || quote_ident(rn.relname) || ' ADD CONSTRAINT ' || quote_ident(ct.conname) || ' ' || replace_schema_except_types(pg_get_constraintdef(ct.oid), source_schema, dest_schema) || ';'
     FROM pg_constraint ct
              JOIN pg_class rn ON rn.oid = ct.conrelid
     WHERE connamespace = src_oid
@@ -175,7 +196,7 @@ BEGIN
         WHERE table_schema = quote_ident(source_schema)
           AND table_name = quote_ident(object);
 
-        EXECUTE 'CREATE OR REPLACE VIEW ' || buffer || ' AS ' || replace(v_def, source_schema, dest_schema) || ';' ;
+        EXECUTE 'CREATE OR REPLACE VIEW ' || buffer || ' AS ' || replace_schema_except_types(v_def, source_schema, dest_schema) || ';' ;
 
     END LOOP;
 
@@ -187,7 +208,7 @@ BEGIN
 
     LOOP
         SELECT pg_get_functiondef(func_oid) INTO qry;
-        SELECT replace(qry, source_schema, dest_schema) INTO dest_qry;
+        SELECT replace_schema_except_types(qry, source_schema, dest_schema) INTO dest_qry;
         EXECUTE dest_qry;
     END LOOP;
 
@@ -198,7 +219,7 @@ BEGIN
     WHERE event_object_schema=source_schema and event_object_table=object
     GROUP BY trigger_name, action_timing, action_orientation, action_statement
     LOOP
-       EXECUTE 'CREATE TRIGGER ' || trigger_name_ || ' ' || trigger_timing_ || ' ' || trigger_events_ || ' ON ' || buffer || ' FOR EACH ' || trigger_orientation_ || ' ' || replace(trigger_action_, source_schema, dest_schema);
+       EXECUTE 'CREATE TRIGGER ' || trigger_name_ || ' ' || trigger_timing_ || ' ' || trigger_events_ || ' ON ' || buffer || ' FOR EACH ' || trigger_orientation_ || ' ' || replace_schema_except_types(trigger_action_, source_schema, dest_schema);
     END LOOP;
 
   RETURN;
@@ -209,97 +230,15 @@ LANGUAGE plpgsql VOLATILE COST 100;
 
 ALTER FUNCTION clone_schema(text, text, boolean) OWNER TO postgres;
 
-CREATE SCHEMA project_model_metadata;
-SET search_path TO project_model_metadata;
-CREATE TYPE TaskIntPropertyName AS ENUM ('completion', 'priority');
-CREATE TYPE TaskTextPropertyName AS ENUM ('priority', 'color', 'shape', 'web_link', 'notes');
+\i database-schema-template.sql
 
-
-----------------------------------------------------------------------------------------------------------------
--- This template schema is cloned for every "branch" of the project.
-
-CREATE SCHEMA project_template;
-SET search_path TO project_template;
-
--- Basic task data
-CREATE TABLE TaskName(
-    uid TEXT PRIMARY KEY,
-    num INT NOT NULL,
-    name TEXT NOT NULL DEFAULT ''
-);
--- Task start date and duration shall be changed as a whole
-CREATE TABLE TaskDates(
-    uid           TEXT PRIMARY KEY REFERENCES TaskName,
-    start_date    DATE NOT NULL,
-    duration_days INT NOT NULL DEFAULT 1,
-    earliest_start_date DATE
-);
-
--- Other task properties can be changed independently, so they are stored in rows, one row corresponds to one
--- instance of the task property value
-
--- Integer valued properties
-CREATE TABLE TaskIntProperties(
-    uid        TEXT REFERENCES TaskName,
-    prop_name  project_model_metadata.TaskIntPropertyName,
-    prop_value INT,
-    PRIMARY KEY(uid, prop_name)
-);
-
--- Text valued properties
-CREATE TABLE TaskTextProperties(
-    uid TEXT REFERENCES TaskName,
-    prop_name project_model_metadata.TaskTextPropertyName,
-    prop_value TEXT,
-    PRIMARY KEY(uid, prop_name)
-);
-
-CREATE TABLE TaskCostProperties(
-    uid TEXT REFERENCES TaskName PRIMARY KEY,
-    is_cost_calculated BOOLEAN,
-    cost_manual_value NUMERIC
-);
-
-CREATE TABLE TaskClassProperties(
-    uid TEXT REFERENCES TaskName PRIMARY KEY,
-    is_milestone BOOLEAN NOT NULL DEFAULT false,
-    is_project_task BOOLEAN NOT NULL DEFAULT false
-);
-
--- Updatable view which collects all task properties in a single row. Inserts and updates are processed
--- with INSTEAD OF triggers.
-CREATE VIEW Task AS
-SELECT uid,
-       num,
-       name,
-       start_date,
-       duration_days AS duration,
-       earliest_start_date,
-       is_cost_calculated,
-       cost_manual_value,
-       is_milestone,
-       is_project_task,
-       MAX(TIP.prop_value) FILTER (WHERE TIP.prop_name = 'completion') AS completion,
-       MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'priority') AS priority,
-       MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'color') AS color,
-       MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'shape') AS shape,
-       MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'web_link') AS web_link,
-       MAX(TTP.prop_value) FILTER (WHERE TTP.prop_name = 'notes') AS notes
-from      TaskName
-JOIN      TaskDates USING(uid)
-LEFT JOIN TaskIntProperties TIP USING(uid)
-LEFT JOIN TaskTextProperties TTP USING(uid)
-LEFT JOIN TaskCostProperties TCP USING(uid)
-LEFT JOIN TaskClassProperties TCLP USING(uid)
-GROUP BY uid, TaskDates.uid, TCP.uid, TCLP.uid;
-
-CREATE OR REPLACE PROCEDURE update_int_task_property(task_uid TEXT, prop_name_ project_model_metadata.TaskIntPropertyName, prop_value_ INT)
+CREATE OR REPLACE PROCEDURE update_int_task_property(task_uid TEXT, prop_name_ TaskIntPropertyName, prop_value_ INT)
 LANGUAGE SQL AS $$
     INSERT INTO project_template.TaskIntProperties(uid, prop_name, prop_value) VALUES(task_uid, prop_name_, prop_value_)
     ON CONFLICT(uid, prop_name) DO UPDATE SET prop_value=prop_value_;
 $$;
 
-CREATE OR REPLACE PROCEDURE update_text_task_property(task_uid TEXT, prop_name_ project_model_metadata.TaskTextPropertyName, prop_value_ TEXT)
+CREATE OR REPLACE PROCEDURE update_text_task_property(task_uid TEXT, prop_name_ TaskTextPropertyName, prop_value_ TEXT)
 LANGUAGE SQL AS $$
     INSERT INTO project_template.TaskTextProperties(uid, prop_name, prop_value) VALUES(task_uid, prop_name_, prop_value_)
     ON CONFLICT(uid, prop_name) DO UPDATE SET prop_value=prop_value_;

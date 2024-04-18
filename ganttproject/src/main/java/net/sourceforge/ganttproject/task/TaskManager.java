@@ -91,6 +91,9 @@ public interface TaskManager {
     }
 
     public TaskBuilder withDuration(TimeDuration duration) {
+      if (duration.getLength() <= 0) {
+        return this;
+      }
       myDuration = duration;
       return this;
     }

@@ -18,13 +18,15 @@
  */
 package cloud.ganttproject.colloboque
 
-import net.sourceforge.ganttproject.storage.BinaryPred
-import net.sourceforge.ganttproject.storage.OperationDto
-import net.sourceforge.ganttproject.storage.XlogRecord
+import cloud.ganttproject.colloboque.db.project_template.tables.records.ProjectfilesnapshotRecord
+import kotlinx.coroutines.channels.Channel
+import net.sourceforge.ganttproject.storage.*
+import biz.ganttproject.storage.db.Tables.TASK as TaskTable
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 class ProjectFileUpdaterTest {
 
@@ -53,6 +55,43 @@ class ProjectFileUpdaterTest {
         $updatedXml
         """.trimIndent()
     }
+  }
+
+  @Test fun `apply persistent log to project xml`() {
+    val insert1 = OperationDto.InsertOperationDto(tableName = TaskTable.name, values = mapOf(
+      TaskTable.NAME.name to "TaskA",
+      TaskTable.NUM.name to "2",
+      TaskTable.UID.name to "qwerty234",
+      TaskTable.START_DATE.name to LocalDate.parse("2024-03-05").toString(),
+      TaskTable.DURATION.name to "1"
+    ))
+    val insert2 = OperationDto.InsertOperationDto(tableName = TaskTable.name, values = mapOf(
+      TaskTable.NAME.name to "TaskB",
+      TaskTable.NUM.name to "2",
+      TaskTable.UID.name to "asdfg",
+      TaskTable.START_DATE.name to LocalDate.parse("2024-03-05").toString(),
+      TaskTable.DURATION.name to "10"
+    ))
+
+    val storageApi = PluggableStorageApi(getTransactionLogs_ = { _, _ -> listOf(XlogRecord(listOf(insert1)), XlogRecord(listOf(insert2))) })
+    val server = ColloboqueServer(connectionFactory = { error("Do not connect") }, storageApi = storageApi, updateInputChannel = Channel(), serverResponseChannel = Channel())
+    val updatedXml = server.buildProjectXml("asdfg", baseSnapshot = ProjectfilesnapshotRecord().also {
+      it.baseTxnId = 0L
+      it.projectXml = PROJECT_XML_TEMPLATE
+    }).projectXml
+    assertTrue(updatedXml.lines().any { it.matches(""".*<task.*name=.TaskA.*>""".toRegex()) }) {
+      """The result of applying updates:
+        
+        $updatedXml
+        """.trimIndent()
+    }
+    assertTrue(updatedXml.lines().any { it.matches(""".*<task.*name=.TaskB.*>""".toRegex()) }) {
+      """The result of applying updates:
+        
+        $updatedXml
+        """.trimIndent()
+    }
+
   }
 }
 

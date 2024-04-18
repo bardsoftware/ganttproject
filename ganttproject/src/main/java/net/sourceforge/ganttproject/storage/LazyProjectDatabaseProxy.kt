@@ -47,7 +47,7 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
     }
   }
 
-  override fun startLog(baseTxnId: String) {
+  override fun startLog(baseTxnId: BaseTxnId) {
     getDatabase().startLog(baseTxnId)
   }
 
@@ -92,7 +92,7 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
     getDatabase().validateColumnConsumer(columnConsumer)
   }
 
-  override fun applyUpdate(logRecords: List<XlogRecord>, baseTxnId: String, targetTxnId: String) {
+  override fun applyUpdate(logRecords: List<XlogRecord>, baseTxnId: BaseTxnId, targetTxnId: BaseTxnId) {
     getDatabase().applyUpdate(logRecords, baseTxnId, targetTxnId)
   }
 

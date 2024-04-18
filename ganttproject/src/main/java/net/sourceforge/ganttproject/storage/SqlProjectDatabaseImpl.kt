@@ -44,7 +44,11 @@ import java.time.ZoneId
 import java.util.*
 import javax.sql.DataSource
 
-class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDatabase {
+class SqlProjectDatabaseImpl(
+  private val dataSource: DataSource,
+  private val initScript: String = DB_INIT_SCRIPT_PATH,
+  private val initScript2: String = DB_INIT_SCRIPT_PATH2
+  ) : ProjectDatabase {
   companion object Factory {
     fun createInMemoryDatabase(): ProjectDatabase {
       val dataSource = JdbcDataSource()
@@ -56,11 +60,11 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
   private var currentTxn: TransactionImpl? = null
   private var localTxnId: Int = -1
-  private var baseTxnId: String = ""
+  private var baseTxnId: BaseTxnId = 0
   /** For a range R of local txn ids [i_1, i_n) which were completed between a transition from a sync point s1 to s2,
    * maps s1 to R.
    */
-  private val syncTxnMap = mutableMapOf<String, IntRange>()
+  private val syncTxnMap = mutableMapOf<BaseTxnId, IntRange>()
   private var areEventsEnabled: Boolean = true
 
   private var externalUpdatesListener: ProjectDatabaseExternalUpdateListener = {}
@@ -73,7 +77,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
    * Applies updates from Colloboque
    */
   @Throws(ProjectDatabaseException::class)
-  override fun applyUpdate(logRecords: List<XlogRecord>, baseTxnId: String, targetTxnId: String) {
+  override fun applyUpdate(logRecords: List<XlogRecord>, baseTxnId: BaseTxnId, targetTxnId: BaseTxnId) {
     withDSL { dsl ->
       dsl.transaction { config ->
         val context = DSL.using(config)
@@ -160,8 +164,8 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
 
   @Throws(ProjectDatabaseException::class)
   override fun init() {
-    runScript(DB_INIT_SCRIPT_PATH)
-    runScript(DB_INIT_SCRIPT_PATH2)
+    runScript(initScript)
+    runScript(initScript2)
   }
 
   private fun runScript(path: String) {
@@ -175,7 +179,7 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
     }
   }
 
-  override fun startLog(baseTxnId: String) {
+  override fun startLog(baseTxnId: BaseTxnId) {
     localTxnId = 0
     this.baseTxnId = baseTxnId
     syncTxnMap[baseTxnId] = 0..0
@@ -283,9 +287,9 @@ class SqlProjectDatabaseImpl(private val dataSource: DataSource) : ProjectDataba
   }
 
   override val outgoingTransactions: List<XlogRecord> get() {
-    if (baseTxnId.isBlank()) {
-      return emptyList()
-    }
+//    if (baseTxnId == 0L) {
+//      return emptyList()
+//    }
     val outgoingRange = syncTxnMap[baseTxnId]!!
     LOG.debug("Outgoing txns: from base txn={} local range={}", baseTxnId, outgoingRange)
     return fetchTransactions(outgoingRange.start, outgoingRange.endInclusive - outgoingRange.start)
