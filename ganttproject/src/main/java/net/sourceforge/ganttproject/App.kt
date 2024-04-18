@@ -58,11 +58,11 @@ fun main(args: Array<String>) {
 
 fun startUiApp(configure: (GanttProject) -> Unit = {}) {
   Platform.setImplicitExit(true)
-  try {
-    FXUtil.startup{
-      Thread.setDefaultUncaughtExceptionHandler { t, e ->
-        e.printStackTrace()
-      }
+  FXUtil.startup{
+    Thread.setDefaultUncaughtExceptionHandler { t, e ->
+      e.printStackTrace()
+    }
+    try {
       val ganttProject = GanttProject()
       configure(ganttProject)
       val stage = Stage()
@@ -81,8 +81,6 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
       """.trimMargin()
       JOptionPane.showMessageDialog(null, msg, "Failed to launch the UI", JOptionPane.ERROR_MESSAGE)
       System.exit(1)
-
-    } finally {
     }
   }
 }

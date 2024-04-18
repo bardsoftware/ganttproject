@@ -29,6 +29,9 @@ import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
+import javafx.scene.Node;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -42,10 +45,14 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 public class ConsoleUIFacade implements UIFacade {
@@ -257,7 +264,7 @@ public class ConsoleUIFacade implements UIFacade {
 
   @Override
   public ViewProvider getGanttViewProvider() {
-    return null;
+    return new ViewProviderStub();
   }
 
   @Override
@@ -273,5 +280,38 @@ public class ConsoleUIFacade implements UIFacade {
     } else {
       return new ResolvedBarrier<>(false);
     }
+  }
+}
+
+class ViewProviderStub implements ViewProvider {
+
+  @NotNull
+  @Override
+  public List<GPOption<?>> getOptions() {
+    return Collections.emptyList();
+  }
+
+  @NotNull
+  @Override
+  public Chart getChart() {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public Node getNode() {
+    return null;
+  }
+
+  @NotNull
+  @Override
+  public String getId() {
+    return "";
+  }
+
+  @NotNull
+  @Override
+  public Function0<Unit> getRefresh() {
+    return () -> null;
   }
 }
