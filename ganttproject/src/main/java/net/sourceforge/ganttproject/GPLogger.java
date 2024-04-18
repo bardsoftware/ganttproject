@@ -142,6 +142,10 @@ public class GPLogger {
     (ourStderr == null ? System.err : ourStderr).printf("The log was written to %s%n", ourLogFileName);
   }
 
+  public static String getLogFile() {
+    return ourLogFileName;
+  }
+
   public static void setLogFile(String logFileName) {
     try {
       Handler fileHandler = new FileHandler(logFileName, true);

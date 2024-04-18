@@ -232,11 +232,8 @@ fun GPAction.asMenuItem(): MenuItem =
         }
         checkBox.contentDisplay = ContentDisplay.GRAPHIC_ONLY
         checkBox.isSelected = isSelected as Boolean
-        checkBox.onAction = EventHandler { _ ->
+        checkBox.onAction = EventHandler { e ->
           this.putValue(Action.SELECTED_KEY, checkBox.isSelected)
-          SwingUtilities.invokeLater {
-            this.actionPerformed(null)
-          }
         }
 
         gpActionListener[this]?.let { this.removePropertyChangeListener(it) }
@@ -253,6 +250,11 @@ fun GPAction.asMenuItem(): MenuItem =
       }
     }
     val menuItem = CustomMenuItem(node)
+    menuItem.onAction = EventHandler { _ ->
+      SwingUtilities.invokeLater {
+        this.actionPerformed(null)
+      }
+    }
     menuItem.also {
       it.isDisable = !isEnabled
     }
