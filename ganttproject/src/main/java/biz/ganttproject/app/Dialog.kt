@@ -412,7 +412,12 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
   }
 
   override fun setEscCloseEnabled(value: Boolean) {
-    TODO("Not implemented yet")
+    this.dialog.dialogPane.scene.addEventFilter(KeyEvent.KEY_PRESSED) { evt ->
+      if (evt.code == KeyCode.ESCAPE) {
+        evt.consume()
+        hide()
+      }
+    }
   }
 
   override fun showAlert(title: LocalizedString, content: Node) {

@@ -59,9 +59,9 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
       stage.setScene(Scene(vbox))
       stage.onShown = EventHandler {
         ganttProject.uiFacade.windowOpenedBarrier.resolve(true)
-        ganttProject.notificationManager.addNotifications(
-          listOf(NotificationItem(NotificationChannel.RSS, "Got some news", "Lorem ipsum dolor sit amet", NotificationManager.DEFAULT_HYPERLINK_LISTENER))
-        )
+//        ganttProject.notificationManager.addNotifications(
+//          listOf(NotificationItem(NotificationChannel.RSS, "Got some news", "Lorem ipsum dolor sit amet", NotificationManager.DEFAULT_HYPERLINK_LISTENER))
+//        )
       }
       stage.onCloseRequest = EventHandler {
         ganttProject.windowGeometry = WindowGeometry(stage.x, stage.y, stage.width, stage.height, stage.isMaximized)

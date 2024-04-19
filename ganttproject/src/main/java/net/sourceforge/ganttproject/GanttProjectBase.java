@@ -229,7 +229,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     myTabPane = new GanttTabbedPane();
     var viewPane = new ViewPane();
 
-    myNotificationManager = new NotificationManagerImpl();
+    myNotificationManager = new NotificationManagerImpl(this::getUIFacade);
     myUIFacade = new UIFacadeImpl(myNotificationManager, getProject(), this);
     myUiInitializationPromise = new TwoPhaseBarrierImpl<>(myUIFacade);
 
