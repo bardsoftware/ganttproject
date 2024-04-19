@@ -25,26 +25,21 @@ import cloud.ganttproject.colloboque.db.project_template.tables.references.TRANS
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl
-import net.sourceforge.ganttproject.storage.XlogRecord
-import net.sourceforge.ganttproject.storage.buildInsertTaskQuery
-import net.sourceforge.ganttproject.storage.generateSqlStatement
+import net.sourceforge.ganttproject.storage.*
 import net.sourceforge.ganttproject.task.Task
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.Schema
 import org.jooq.conf.RenderNameCase
-import org.jooq.conf.Settings
 import org.jooq.impl.DSL
 import org.jooq.impl.SchemaImpl
-import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
-import kotlin.random.Random
+import java.sql.Connection
 
-class PostgreStorageApi(private val factory: ConnectionFactory, private val superFactory: ConnectionFactory) : StorageApi {
+class PostgreStorageApi(private val connectionFactory: PostgresConnectionFactory) : StorageApi {
   override fun initProject(projectRefid: String) {
     val schema = PostgresConnectionFactory.getSchema(projectRefid)
-    superFactory(projectRefid).use {
+    connectionFactory.createSuperConnection(projectRefid).use {
       it.prepareCall("SELECT clone_schema(?, ?, ?)").use { stmt ->
         stmt.setString(1, "project_template")
         stmt.setString(2, schema)
@@ -93,12 +88,17 @@ class PostgreStorageApi(private val factory: ConnectionFactory, private val supe
     }
   }
 
-  override fun getActualSnapshot(projectRefid: String): ProjectfilesnapshotRecord? {
+  override fun getProjectSnapshot(projectRefid: String, baseTxnId: BaseTxnId?): ProjectfilesnapshotRecord? {
     val snapshotTable = ProjectFileSnapshot(getOrCreateProjectSchema(projectRefid))
     return txn(projectRefid) { db ->
-      db.selectFrom(snapshotTable)
-        .where(snapshotTable.BASE_TXN_ID.eq(db.select(DSL.max(snapshotTable.BASE_TXN_ID)).from(snapshotTable)))
-        .fetchOne()
+      val query = baseTxnId?.let {
+        db.selectFrom(snapshotTable).where(snapshotTable.BASE_TXN_ID.eq(it))
+      } ?: run {
+        db.selectFrom(snapshotTable).where(
+          snapshotTable.BASE_TXN_ID.eq(db.select(DSL.max(snapshotTable.BASE_TXN_ID)).from(snapshotTable))
+        )
+      }
+      query.fetchOne()
     }
   }
 
@@ -109,34 +109,30 @@ class PostgreStorageApi(private val factory: ConnectionFactory, private val supe
     }
   }
 
+  fun dsl(cxn: Connection) = DSL.using(cxn, SQLDialect.POSTGRES)
+    .configuration().deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
+    .dsl()
   fun <T> txn(projectRefid: ProjectRefid, code: (DSLContext)->T): T {
-    return factory(projectRefid).use {cxn ->
-      DSL.using(cxn, SQLDialect.POSTGRES)
-        .configuration().deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
-        .dsl().transactionResult { it -> code(it.dsl()) }
+    return connectionFactory.createConnection(projectRefid).use {cxn -> dsl(cxn).transactionResult { it -> code(it.dsl()) }
     }
   }
 
+  fun createProjectSnapshotDatabase(projectXml: String, baseTxnId: BaseTxnId): SqlProjectDatabaseImpl {
+    val database = SqlProjectDatabaseImpl(connectionFactory.createTemporaryDataSource(), dialect = SQLDialect.POSTGRES)
+    projectFromXml(projectXml, baseTxnId) { database }
+    return database
+  }
+
   fun parallelTransactions(
-    projectXml: String,
-    baseTxnId: BaseTxnId,
+    database: SqlProjectDatabaseImpl,
     serverTransaction: List<XlogRecord>,
     clientTransaction: List<XlogRecord>
   ): Boolean {
-    val settings = Settings().withRenderNameCase(RenderNameCase.LOWER)
-      .withInterpreterDialect(SQLDialect.POSTGRES)
-    val jdbcUrl = "jdbc:postgresql://localhost:5432/${baseTxnId}_${Random.nextLong()};DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true"
-    val dataSource = PGSimpleDataSource()
-    dataSource.setURL(jdbcUrl)
-    val database = SqlProjectDatabaseImpl(dataSource, dialect = SQLDialect.POSTGRES)
-    projectFromXml(projectXml, baseTxnId) { database }
-    val clientConnection = dataSource.getConnection("postgres", "")
-    val serverConnection = dataSource.getConnection("postgres", "")
-    val serverDsl = DSL.using(serverConnection, settings)
-    val clientDsl = DSL.using(clientConnection, settings)
+    val serverDsl = dsl(database.createConnection())
+    val clientDsl = dsl(database.createConnection())
     serverDsl.startTransaction()
     clientDsl.startTransaction()
-    try {
+    return try {
       serverTransaction.forEach {
         it.colloboqueOperations.forEach {
           LOG.debug("... applying operation={}", it)
@@ -151,29 +147,18 @@ class PostgreStorageApi(private val factory: ConnectionFactory, private val supe
         }
       }
       clientDsl.commit()
+      true
     } catch (e: Exception) {
       LOG.info("Failed to execute transactions in parallel! Reason: ${e.localizedMessage}")
+      false
+    } finally {
       database.shutdown()
-      return false
-    }
-    database.shutdown()
-    return true
-  }
-
-  fun getProjectXml(projectRefid: ProjectRefid, baseTxnId: BaseTxnId): String {
-    return txn(projectRefid) {db ->
-      val projectFileSnapshot = ProjectFileSnapshot(projectRefid)
-      db.select(projectFileSnapshot.PROJECT_XML)
-        .from(projectFileSnapshot)
-        .where(projectFileSnapshot.BASE_TXN_ID.eq(baseTxnId))
-        .fetch().getValue(0, projectFileSnapshot.PROJECT_XML)
-      ?: throw RuntimeException("Can't find project xml for $projectRefid with baseTxnId $baseTxnId")
     }
   }
 
   private fun getOrCreateProjectSchema(projectRefid: String): String {
     val schemaName = PostgresConnectionFactory.getSchema(projectRefid)
-    val hasSchema = superFactory(projectRefid).use {
+    val hasSchema = connectionFactory.createSuperConnection(projectRefid).use {
       it.prepareCall("SELECT schema_name FROM information_schema.schemata WHERE schema_name=?").use { stmt ->
         stmt.setString(1, schemaName)
         stmt.executeQuery().use { rs ->

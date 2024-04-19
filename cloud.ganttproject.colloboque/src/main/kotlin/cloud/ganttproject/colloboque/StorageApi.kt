@@ -28,7 +28,11 @@ interface StorageApi {
   fun insertXlogs(projectRefid: ProjectRefid, baseTxnId: BaseTxnId, xlog: List<XlogRecord>)
   fun insertTask(projectRefid: String, task: Task)
 
-  fun getActualSnapshot(projectRefid: String): ProjectfilesnapshotRecord?
+  /**
+   * Fetches a snapshot record corresponding to the given project and base transaction identifier. If the latter is null,
+   * returns the latest available snapshot.
+   */
+  fun getProjectSnapshot(projectRefid: String, baseTxnId: BaseTxnId? = null): ProjectfilesnapshotRecord?
   fun insertActualSnapshot(projectRefid: String, baseTxnId: BaseTxnId, projectXml: String)
 }
 
@@ -41,7 +45,7 @@ class PluggableStorageApi(
   },
   private val insertTask_: (projectRefid: String, task: Task) -> Unit = {_, _ ->},
 
-  private val getActualSnapshot_: (projectRefid: String) -> ProjectfilesnapshotRecord? = {
+  private val getProjectSnapshot_: (projectRefid: String, baseTxnId: BaseTxnId?) -> ProjectfilesnapshotRecord? = { _, _ ->
     error("Not implemented")
   },
   private val insertActualSnapshot_: (projectRefid: String, baseTxnId: BaseTxnId, projectXml: String) -> Unit = {_, _, _ -> }
@@ -54,7 +58,7 @@ class PluggableStorageApi(
 
   override fun insertTask(projectRefid: String, task: Task) = insertTask_(projectRefid, task)
 
-  override fun getActualSnapshot(projectRefid: String) = getActualSnapshot_(projectRefid)
+  override fun getProjectSnapshot(projectRefid: String, baseTxnId: BaseTxnId?) = getProjectSnapshot_(projectRefid, baseTxnId)
 
   override fun insertActualSnapshot(projectRefid: String, baseTxnId: BaseTxnId, projectXml: String) = insertActualSnapshot_(projectRefid, baseTxnId, projectXml)
 }

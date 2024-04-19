@@ -120,7 +120,7 @@ class ColloboqueServer(
         val projectRefid = inputXlog.projectRefid
         val baseTxnId = inputXlog.baseTxnId
 
-        val actualSnapshot = storageApi.getActualSnapshot(projectRefid) ?: throw ColloboqueServerException("Project $projectRefid is not yet initialized")
+        val actualSnapshot = storageApi.getProjectSnapshot(projectRefid) ?: throw ColloboqueServerException("Project $projectRefid is not yet initialized")
         val expectedBaseTxnId = actualSnapshot.baseTxnId
         if (expectedBaseTxnId != baseTxnId) {
           throw ColloboqueServerException("Base txn ID mismatch. Expected: $expectedBaseTxnId. Received: $baseTxnId")
@@ -208,7 +208,7 @@ class ColloboqueServer(
   }
 
   fun getProjectXml(projectRefid: String): ProjectfilesnapshotRecord =
-    storageApi.getActualSnapshot(projectRefid) ?: run {
+    storageApi.getProjectSnapshot(projectRefid) ?: run {
       val baseTxnId = init(projectRefid, PROJECT_XML_TEMPLATE)
       ProjectfilesnapshotRecord().apply {
         this.baseTxnId = baseTxnId
