@@ -38,6 +38,7 @@ import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.field
 import java.awt.Color
+import java.sql.Connection
 import java.sql.SQLException
 import java.util.*
 import javax.sql.DataSource
@@ -354,6 +355,8 @@ class SqlProjectDatabaseImpl(
   /** Add update query and save its xlog in the current transaction. */
   @Throws(ProjectDatabaseException::class)
   internal fun update(queries: List<SqlQuery>, undoQueries: List<SqlUndoQuery>) = withLog(queries, undoQueries)
+
+  fun createConnection(): Connection = dataSource.connection
 }
 
 data class SqlQuery(
