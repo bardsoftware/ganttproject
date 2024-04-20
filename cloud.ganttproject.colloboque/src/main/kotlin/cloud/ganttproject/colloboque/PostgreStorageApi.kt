@@ -31,6 +31,7 @@ import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.Schema
 import org.jooq.conf.RenderNameCase
+import org.jooq.conf.Settings
 import org.jooq.impl.DSL
 import org.jooq.impl.SchemaImpl
 import org.slf4j.LoggerFactory
@@ -109,7 +110,7 @@ class PostgreStorageApi(private val connectionFactory: PostgresConnectionFactory
     }
   }
 
-  fun dsl(cxn: Connection) = DSL.using(cxn, SQLDialect.POSTGRES)
+  fun dsl(cxn: Connection): DSLContext = DSL.using(cxn, SQLDialect.POSTGRES)
     .configuration().deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
     .dsl()
   fun <T> txn(projectRefid: ProjectRefid, code: (DSLContext)->T): T {
@@ -118,42 +119,46 @@ class PostgreStorageApi(private val connectionFactory: PostgresConnectionFactory
   }
 
   fun createProjectSnapshotDatabase(projectXml: String, baseTxnId: BaseTxnId): SqlProjectDatabaseImpl {
-    val database = SqlProjectDatabaseImpl(connectionFactory.createTemporaryDataSource(), dialect = SQLDialect.POSTGRES)
+    val database = SqlProjectDatabaseImpl(connectionFactory.createTemporaryDataSource(), dialect = SQLDialect.POSTGRES, initScript2 = null)
     projectFromXml(projectXml, baseTxnId) { database }
     return database
   }
 
-  fun parallelTransactions(
+  override fun tryMergeConcurrentUpdates(
     database: SqlProjectDatabaseImpl,
     serverTransaction: List<XlogRecord>,
     clientTransaction: List<XlogRecord>
   ): Boolean {
-    val serverDsl = dsl(database.createConnection())
-    val clientDsl = dsl(database.createConnection())
-    serverDsl.startTransaction()
-    clientDsl.startTransaction()
-    return try {
+    val serverConnection = database.createConnection()
+    val clientConnection = database.createConnection()
+    serverConnection.transactionIsolation = Connection.TRANSACTION_REPEATABLE_READ
+    clientConnection.transactionIsolation = Connection.TRANSACTION_REPEATABLE_READ
+    val serverDsl = dsl(serverConnection)
+    val clientDsl = dsl(clientConnection)
+    serverDsl.startTransaction().execute()
+    clientDsl.startTransaction().execute()
+    try {
       serverTransaction.forEach {
         it.colloboqueOperations.forEach {
           LOG.debug("... applying operation={}", it)
           serverDsl.execute(generateSqlStatement(serverDsl, it))
         }
       }
-      serverDsl.commit()
       clientTransaction.forEach {
         it.colloboqueOperations.forEach {
           LOG.debug("... applying operation={}", it)
           clientDsl.execute(generateSqlStatement(clientDsl, it))
         }
       }
-      clientDsl.commit()
-      true
+      LOG.debug("... commiting server's transaction")
+      serverDsl.commit().execute()
+      LOG.debug("... commiting client's transaction")
+      clientDsl.commit().execute()
+      return true
     } catch (e: Exception) {
       LOG.info("Failed to execute transactions in parallel! Reason: ${e.localizedMessage}")
-      false
-    } finally {
-      database.shutdown()
     }
+    return false
   }
 
   override fun getProjectXml(projectRefid: ProjectRefid, baseTxnId: BaseTxnId): String {

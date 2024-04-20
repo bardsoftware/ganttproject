@@ -22,12 +22,16 @@ import com.google.common.hash.Hashing
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import net.sourceforge.ganttproject.GPLogger
+import org.jooq.impl.DSL
+import org.jooq.SQLDialect
 import java.sql.Connection
 import javax.sql.DataSource
 
 class PostgresConnectionFactory(
   private val pgHost: String, private val pgPort: Int, private val pgSuperUser: String, private val pgSuperAuth: String
-) {
+): AutoCloseable {
+  private val tempDatabases = mutableSetOf<String>()
+
   // TODO: allow for using one database per project
   private val superConfig = HikariConfig().apply {
     username = pgSuperUser
@@ -58,16 +62,43 @@ class PostgresConnectionFactory(
 
   fun createSuperConnection(projectRefid: String) = superDataSource.connection
 
-  fun createTemporaryDataSource(): DataSource = HikariDataSource(HikariConfig().apply {
+  fun createTemporaryDataSource(): DataSource {
+    val randomDatabase = randomDatabaseName()
+    val dsl = DSL.using(superDataSource.connection)
+    val result = dsl.createDatabase(randomDatabase).execute()
+    if (result == 0) {
+      tempDatabases.add(randomDatabase)
+      LOG.debug("Database $randomDatabase successfully created")
+    } else {
+      LOG.debug("Couldn't create database $randomDatabase")
+    }
+    return HikariDataSource(HikariConfig().apply {
       username = pgSuperUser
       password = pgSuperAuth
-      jdbcUrl = "jdbc:postgresql://$pgHost:$pgPort/${randomDatabaseName()};DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true"
+      jdbcUrl = "jdbc:postgresql://$pgHost:$pgPort/$randomDatabase"
+      addDataSourceProperty("DB_CLOSE_DELAY", "-1")
+      addDataSourceProperty("DATABASE_TO_LOWER", "true")
     })
+  }
+
+  private fun dropTempDatabases() {
+    LOG.debug("Deleting temporary databases: ${tempDatabases.joinToString(", ")}")
+    val dsl = DSL.using(superDataSource.connection)
+    var batch = dsl.batch("DROP DATABASE IF EXISTS ?")
+    tempDatabases.forEach {dbName ->
+      batch = batch.bind(dbName)
+    }
+    batch.execute()
+  }
 
   // TODO: escape projectRefid
   companion object {
     fun getSchema(projectRefid: String) =
       "project_${Hashing.murmur3_128().hashBytes(projectRefid.toByteArray(Charsets.UTF_8))}"
+  }
+
+  override fun close() {
+    dropTempDatabases()
   }
 }
 

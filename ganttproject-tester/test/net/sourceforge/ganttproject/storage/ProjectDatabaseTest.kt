@@ -34,7 +34,7 @@ import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl
 import net.sourceforge.ganttproject.util.ColorConvertion
-import org.h2.jdbcx.JdbcDataSource
+//import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
@@ -48,6 +48,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
+import org.postgresql.ds.PGSimpleDataSource
 
 class ProjectDatabaseTest {
   private lateinit var dataSource: DataSource
@@ -58,16 +59,21 @@ class ProjectDatabaseTest {
   @BeforeEach
   fun init() {
     System.setProperty("colloboque.on", "true")
-    dataSource = JdbcDataSource().also {
-      it.setURL("jdbc:h2:mem:test$SQL_PROJECT_DATABASE_OPTIONS")
-    }
+    val jdbcUrl = "jdbc:postgresql://localhost:5432/colloboque"
+    val dataSource = PGSimpleDataSource()
+    dataSource.setURL(jdbcUrl)
+    dataSource.user = "postgres"
+    dataSource.password = ""
+//    dataSource.setProperty("DB_CLOSE_DELAY", "-1")
+//    dataSource.setProperty("DATABASE_TO_LOWER", "true")
+
     projectDatabase = SqlProjectDatabaseImpl(dataSource).also {
       it.startLog(0)
     }
     val taskManagerBuilder = TestSetupHelper.newTaskManagerBuilder()
     taskManagerBuilder.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }
     taskManager = taskManagerBuilder.build()
-    dsl = DSL.using(dataSource, SQLDialect.H2)
+    dsl = DSL.using(dataSource, SQLDialect.POSTGRES)
   }
 
   @AfterEach

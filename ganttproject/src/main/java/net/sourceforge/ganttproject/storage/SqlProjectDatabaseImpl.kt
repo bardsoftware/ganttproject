@@ -46,7 +46,7 @@ import javax.sql.DataSource
 class SqlProjectDatabaseImpl(
   private val dataSource: DataSource,
   private val initScript: String = DB_INIT_SCRIPT_PATH,
-  private val initScript2: String = DB_INIT_SCRIPT_PATH2,
+  private val initScript2: String? = DB_INIT_SCRIPT_PATH2,
   private val dialect: SQLDialect = SQLDialect.H2
   ) : ProjectDatabase {
   companion object Factory {
@@ -165,7 +165,7 @@ class SqlProjectDatabaseImpl(
   @Throws(ProjectDatabaseException::class)
   override fun init() {
     runScript(initScript)
-    runScript(initScript2)
+    initScript2?.let { runScript(it) }
   }
 
   private fun runScript(path: String) {

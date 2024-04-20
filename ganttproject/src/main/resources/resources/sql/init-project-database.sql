@@ -47,6 +47,7 @@ create table if not exists LogRecord (
   primary key (id)
 );
 
+DROP VIEW if exists TaskViewForComputedColumns;
 CREATE VIEW TaskViewForComputedColumns AS
     SELECT
     uid,
