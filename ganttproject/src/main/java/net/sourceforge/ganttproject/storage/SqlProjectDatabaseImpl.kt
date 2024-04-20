@@ -356,7 +356,7 @@ class SqlProjectDatabaseImpl(
   @Throws(ProjectDatabaseException::class)
   internal fun update(queries: List<SqlQuery>, undoQueries: List<SqlUndoQuery>) = withLog(queries, undoQueries)
 
-  fun createConnection(): Connection = dataSource.connection
+  fun createConnection(): Connection = dataSource.getConnection()
 }
 
 data class SqlQuery(
