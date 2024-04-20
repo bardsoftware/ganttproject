@@ -25,28 +25,22 @@ import org.junit.jupiter.api.Assertions.*
 import biz.ganttproject.storage.db.Tables.TASK as TaskTable
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.postgresql.ds.PGSimpleDataSource
 import java.time.LocalDate
-import kotlin.random.Random
 
 class ProjectFileUpdaterTest {
 
-  @BeforeEach
-  fun setUp() {
+  @BeforeEach fun setUp() {
     localeApi  // This will set a static field in CalendarFactory
   }
 
-  @Test
-  fun `empty xlog`() {
+  @Test fun `empty xlog`() {
     assertEquals(PROJECT_XML_TEMPLATE, updateProjectXml(PROJECT_XML_TEMPLATE, XlogRecord(emptyList())))
   }
 
-  @Test
-  fun `apply task name change`() {
+  @Test fun `apply task name change`() {
     val changes = XlogRecord(
       listOf(
-        OperationDto.UpdateOperationDto(
-          "task",
+        OperationDto.UpdateOperationDto("task",
           updateBinaryConditions = mutableListOf(Triple("uid", BinaryPred.EQ, "qwerty")),
           updateRangeConditions = mutableListOf(),
           newValues = mutableMapOf("name" to "Task2")
@@ -62,26 +56,21 @@ class ProjectFileUpdaterTest {
     }
   }
 
-  @Test
-  fun `apply persistent log to project xml`() {
-    val insert1 = OperationDto.InsertOperationDto(
-      tableName = TaskTable.name, values = mapOf(
-        TaskTable.NAME.name to "TaskA",
-        TaskTable.NUM.name to "2",
-        TaskTable.UID.name to "qwerty234",
-        TaskTable.START_DATE.name to LocalDate.parse("2024-03-05").toString(),
-        TaskTable.DURATION.name to "1"
-      )
-    )
-    val insert2 = OperationDto.InsertOperationDto(
-      tableName = TaskTable.name, values = mapOf(
-        TaskTable.NAME.name to "TaskB",
-        TaskTable.NUM.name to "2",
-        TaskTable.UID.name to "asdfg",
-        TaskTable.START_DATE.name to LocalDate.parse("2024-03-05").toString(),
-        TaskTable.DURATION.name to "10"
-      )
-    )
+  @Test fun `apply persistent log to project xml`() {
+    val insert1 = OperationDto.InsertOperationDto(tableName = TaskTable.name, values = mapOf(
+      TaskTable.NAME.name to "TaskA",
+      TaskTable.NUM.name to "2",
+      TaskTable.UID.name to "qwerty234",
+      TaskTable.START_DATE.name to LocalDate.parse("2024-03-05").toString(),
+      TaskTable.DURATION.name to "1"
+    ))
+    val insert2 = OperationDto.InsertOperationDto(tableName = TaskTable.name, values = mapOf(
+      TaskTable.NAME.name to "TaskB",
+      TaskTable.NUM.name to "2",
+      TaskTable.UID.name to "asdfg",
+      TaskTable.START_DATE.name to LocalDate.parse("2024-03-05").toString(),
+      TaskTable.DURATION.name to "10"
+    ))
 
     val storageApi = PluggableStorageApi(getTransactionLogs_ = { _, _ -> listOf(XlogRecord(listOf(insert1)), XlogRecord(listOf(insert2))) })
     val server = ColloboqueServer(connectionFactory = { error("Do not connect") }, storageApi = storageApi, updateInputChannel = Channel(), serverResponseChannel = Channel())

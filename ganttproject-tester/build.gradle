@@ -26,7 +26,6 @@ dependencies {
 
     testImplementation fileTree(dir: project.projectDir.absolutePath + "/resources")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'org.postgresql:postgresql:42.5.0'
 
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
     testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.10.2'
