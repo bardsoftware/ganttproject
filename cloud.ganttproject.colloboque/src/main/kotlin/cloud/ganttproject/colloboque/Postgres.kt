@@ -23,6 +23,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import net.sourceforge.ganttproject.GPLogger
 import java.sql.Connection
+import javax.sql.DataSource
 
 class PostgresConnectionFactory(
   private val pgHost: String, private val pgPort: Int, private val pgSuperUser: String, private val pgSuperAuth: String
@@ -57,6 +58,12 @@ class PostgresConnectionFactory(
 
   fun createSuperConnection(projectRefid: String) = superDataSource.connection
 
+  fun createTemporaryDataSource(): DataSource = HikariDataSource(HikariConfig().apply {
+      username = pgSuperUser
+      password = pgSuperAuth
+      jdbcUrl = "jdbc:postgresql://$pgHost:$pgPort/${randomDatabaseName()};DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true"
+    })
+
   // TODO: escape projectRefid
   companion object {
     fun getSchema(projectRefid: String) =
@@ -64,10 +71,9 @@ class PostgresConnectionFactory(
   }
 }
 
-typealias ConnectionFactory = (projectRefid: String) -> Connection
-fun createPostgresStorage(factory: ConnectionFactory, superFactory: ConnectionFactory): StorageApi {
-  return PostgreStorageApi(factory, superFactory)
-}
+private val alphabet: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+private fun randomDatabaseName() = List(20) { alphabet.random() }.joinToString("")
+
 
 private val STARTUP_LOG = GPLogger.create("Startup")
 private val LOG = GPLogger.create("Postgres")
