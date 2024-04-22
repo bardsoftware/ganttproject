@@ -43,11 +43,13 @@ import java.sql.SQLException
 import java.util.*
 import javax.sql.DataSource
 
+typealias ShutdownHook = ()->Unit
 class SqlProjectDatabaseImpl(
   private val dataSource: DataSource,
   private val initScript: String = DB_INIT_SCRIPT_PATH,
   private val initScript2: String? = DB_INIT_SCRIPT_PATH2,
-  private val dialect: SQLDialect = SQLDialect.H2
+  private val dialect: SQLDialect = SQLDialect.H2,
+  private val onShutdown: ShutdownHook? = null
   ) : ProjectDatabase {
   companion object Factory {
     fun createInMemoryDatabase(): ProjectDatabase {
@@ -248,7 +250,7 @@ class SqlProjectDatabaseImpl(
 
   @Throws(ProjectDatabaseException::class)
   override fun shutdown() {
-    try {
+    onShutdown?.let { it() } ?: try {
       dataSource.connection.use { it.createStatement().execute("shutdown") }
     } catch (e: Exception) {
       throw ProjectDatabaseException("Failed to shutdown the database", e)
