@@ -22,29 +22,22 @@ import cloud.ganttproject.colloboque.db.project_template.tables.Projectfilesnaps
 import cloud.ganttproject.colloboque.db.project_template.tables.Transactionlog
 import cloud.ganttproject.colloboque.db.project_template.tables.records.ProjectfilesnapshotRecord
 import cloud.ganttproject.colloboque.db.project_template.tables.references.TRANSACTIONLOG
-import kotlinx.coroutines.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl
 import net.sourceforge.ganttproject.storage.XlogRecord
 import net.sourceforge.ganttproject.storage.buildInsertTaskQuery
-import net.sourceforge.ganttproject.storage.generateSqlStatement
 import net.sourceforge.ganttproject.task.Task
 import org.jooq.DSLContext
-import org.jooq.SQLDialect
 import org.jooq.Schema
-import org.jooq.conf.RenderNameCase
 import org.jooq.impl.DSL
 import org.jooq.impl.SchemaImpl
 import org.slf4j.LoggerFactory
-import java.sql.Connection
-import java.util.concurrent.Executors
 
 class PostgreStorageApi(private val connectionFactory: PostgresConnectionFactory) : StorageApi {
   override fun initProject(projectRefid: String) {
     val schema = PostgresConnectionFactory.getSchema(projectRefid)
-    connectionFactory.createSuperConnection(projectRefid).use {
+    connectionFactory.createSuperConnection().use {
       it.prepareCall("SELECT clone_schema(?, ?, ?)").use { stmt ->
         stmt.setString(1, "project_template")
         stmt.setString(2, schema)
@@ -113,91 +106,14 @@ class PostgreStorageApi(private val connectionFactory: PostgresConnectionFactory
       db.insertInto(snapshotTable).columns(snapshotTable.BASE_TXN_ID, snapshotTable.PROJECT_XML).values(baseTxnId, projectXml).execute()
     }
   }
-
-  fun dsl(cxn: Connection): DSLContext = DSL.using(cxn, SQLDialect.POSTGRES)
-    .configuration().deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
-    .dsl()
   fun <T> txn(projectRefid: ProjectRefid, code: (DSLContext)->T): T {
     return connectionFactory.createConnection(projectRefid).use {cxn -> dsl(cxn).transactionResult { it -> code(it.dsl()) }
     }
   }
 
-  fun createProjectSnapshotDatabase(projectXml: String, baseTxnId: BaseTxnId): SqlProjectDatabaseImpl {
-    val tempDataSource = connectionFactory.createTemporaryDataSource()
-    val database = SqlProjectDatabaseImpl(tempDataSource.dataSource, dialect = SQLDialect.POSTGRES, initScript2 = null, onShutdown = {
-      tempDataSource.shutdown()
-    })
-    projectFromXml(projectXml, baseTxnId) { database }
-    return database
-  }
-
-
-  private val mergeScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
-  // How long we will wait until a merge transaction commits. It may block because of waiting for a lock held by the concurrent
-  // transaction, so we use the timeout to detect it.
-  private val MERGE_TXN_TIMEOUT_MS = 1000L
-
-  /**
-   * This
-   */
-  override fun tryMergeConcurrentUpdates(
-    database: SqlProjectDatabaseImpl,
-    serverTransaction: List<XlogRecord>,
-    clientTransaction: List<XlogRecord>
-  ): Boolean {
-    val serverConnection = database.createConnection()
-    val clientConnection = database.createConnection()
-    serverConnection.transactionIsolation = Connection.TRANSACTION_REPEATABLE_READ
-    clientConnection.transactionIsolation = Connection.TRANSACTION_REPEATABLE_READ
-    val serverDsl = dsl(serverConnection)
-    val clientDsl = dsl(clientConnection)
-    serverDsl.startTransaction().execute()
-    clientDsl.startTransaction().execute()
-    try {
-      val serverJob = mergeScope.async {
-        serverTransaction.forEach {
-          it.colloboqueOperations.forEach {
-            LOG.debug("... applying operation={}", it)
-            serverDsl.execute(generateSqlStatement(serverDsl, it).also { println(it) })
-          }
-        }
-      }
-      val clientJob = mergeScope.async {
-        clientTransaction.forEach {
-          it.colloboqueOperations.forEach {
-            LOG.debug("... applying operation={}", it)
-            clientDsl.execute(generateSqlStatement(clientDsl, it).also { println(it) })
-          }
-        }
-      }
-      val readyCommit = try {
-        runBlocking {
-          withTimeout(MERGE_TXN_TIMEOUT_MS) { serverJob.await() }
-          LOG.debug("...server job completed!")
-          withTimeout(MERGE_TXN_TIMEOUT_MS) { clientJob.await() }
-          LOG.debug("...client job completed!")
-          true
-        }
-      } catch (ex: Exception) {
-        LOG.error("Failed to complete one of the transactions", ex)
-        false
-      }
-      if (!readyCommit) {
-        return false
-      }
-      LOG.debug("... committing server's transaction")
-      if (serverDsl.commit().execute() != 0) return false
-      LOG.debug("... committing client's transaction")
-      return clientDsl.commit().execute() == 0
-    } catch (e: Exception) {
-      LOG.info("Failed to execute transactions in parallel! Reason: ${e.localizedMessage}")
-    }
-    return false
-  }
-
-  private fun getOrCreateProjectSchema(projectRefid: String): String {
+  internal fun getOrCreateProjectSchema(projectRefid: String): String {
     val schemaName = PostgresConnectionFactory.getSchema(projectRefid)
-    val hasSchema = connectionFactory.createSuperConnection(projectRefid).use {
+    val hasSchema = connectionFactory.createSuperConnection().use {
       it.prepareCall("SELECT schema_name FROM information_schema.schemata WHERE schema_name=?").use { stmt ->
         stmt.setString(1, schemaName)
         stmt.executeQuery().use { rs ->

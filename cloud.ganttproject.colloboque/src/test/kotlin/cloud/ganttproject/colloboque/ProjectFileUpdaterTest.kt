@@ -21,10 +21,9 @@ package cloud.ganttproject.colloboque
 import cloud.ganttproject.colloboque.db.project_template.tables.records.ProjectfilesnapshotRecord
 import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.storage.*
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import biz.ganttproject.storage.db.Tables.TASK as TaskTable
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class ProjectFileUpdaterTest {
@@ -117,9 +116,48 @@ class ProjectFileUpdaterTest {
     )
 
     val connectionFactory = PostgresConnectionFactory("localhost", 5432, "postgres", "")
-    val storage = PostgreStorageApi(connectionFactory)
-    val database = storage.createProjectSnapshotDatabase(PROJECT_XML_TEMPLATE, 0)
-    assertFalse(storage.tryMergeConcurrentUpdates(database, listOf(serverChanges), listOf(clientChanges)))
+    val schemaName = "merge_wil_fail"
+    PostgreXlogMerger(connectionFactory, schemaName).run {
+      val dataSource = createProjectSnapshotDatabase(PROJECT_XML_TEMPLATE)
+      assertFalse(tryMergeConcurrentUpdates(dataSource, listOf(serverChanges), listOf(clientChanges)).also {
+        dataSource.shutdown()
+      })
+    }
+    connectionFactory.close()
+  }
+
+  @Test
+  fun `merge concurrent updates succeeds with column families`() {
+    val clientChanges = XlogRecord(
+      listOf(
+        OperationDto.UpdateOperationDto(
+          "task",
+          updateBinaryConditions = mutableListOf(Triple(TaskTable.UID.name, BinaryPred.EQ, "qwerty")),
+          updateRangeConditions = mutableListOf(),
+          newValues = mutableMapOf(TaskTable.DURATION.name to "2")
+        )
+      )
+    )
+    val serverChanges = XlogRecord(
+      listOf(
+        OperationDto.UpdateOperationDto(
+          TaskTable.name,
+          updateBinaryConditions = mutableListOf(Triple(TaskTable.UID.name, BinaryPred.EQ, "qwerty")),
+          updateRangeConditions = mutableListOf(),
+          newValues = mutableMapOf(TaskTable.NAME.name to "New Name")
+        )
+      )
+    )
+
+    val connectionFactory = PostgresConnectionFactory("localhost", 5432, "postgres", "")
+    val schemaName = "merge_will_succeed"
+    PostgreXlogMerger(connectionFactory, schemaName).run {
+      val dataSource = createProjectSnapshotDatabase(PROJECT_XML_TEMPLATE)
+      assertTrue(tryMergeConcurrentUpdates(dataSource, listOf(serverChanges), listOf(clientChanges)).also {
+        dataSource.shutdown()
+      })
+    }
+    connectionFactory.close()
   }
 
   @Test
@@ -150,9 +188,14 @@ class ProjectFileUpdaterTest {
     )
 
     val connectionFactory = PostgresConnectionFactory("localhost", 5432, "postgres", "")
-    val storage = PostgreStorageApi(connectionFactory)
-    val database = storage.createProjectSnapshotDatabase(PROJECT_XML_TEMPLATE, 0)
-    assertTrue(storage.tryMergeConcurrentUpdates(database, listOf(serverChanges), listOf(clientChanges)))
+    val schemaName = "merge_will_succeed"
+    PostgreXlogMerger(connectionFactory, schemaName).run {
+      val dataSource = createProjectSnapshotDatabase(PROJECT_XML_TEMPLATE)
+      assertTrue(tryMergeConcurrentUpdates(dataSource, listOf(serverChanges), listOf(clientChanges)).also {
+        dataSource.shutdown()
+      })
+    }
+    connectionFactory.close()
   }
 }
 

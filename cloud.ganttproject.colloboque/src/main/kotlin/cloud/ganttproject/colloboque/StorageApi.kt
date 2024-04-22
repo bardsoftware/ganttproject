@@ -19,7 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package cloud.ganttproject.colloboque
 
 import cloud.ganttproject.colloboque.db.project_template.tables.records.ProjectfilesnapshotRecord
-import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl
 import net.sourceforge.ganttproject.storage.XlogRecord
 import net.sourceforge.ganttproject.task.Task
 
@@ -35,18 +34,6 @@ interface StorageApi {
    */
   fun getProjectSnapshot(projectRefid: String, baseTxnId: BaseTxnId? = null): ProjectfilesnapshotRecord?
   fun insertActualSnapshot(projectRefid: String, baseTxnId: BaseTxnId, projectXml: String)
-
-  /**
-   * This function applies the transaction logs stored on the server and those received from a client.
-   * The logs are executed in two concurrent transactions and if they both complete successfully, we believe that there
-   * are no conflicts, and we can merge the client's changes. Otherwise, client's changes conflict with the server's and must be
-   * rejected.
-   */
-  fun tryMergeConcurrentUpdates(
-    database: SqlProjectDatabaseImpl,
-    serverTransaction: List<XlogRecord>,
-    clientTransaction: List<XlogRecord>
-  ): Boolean
 }
 
 class PluggableStorageApi(
@@ -62,14 +49,6 @@ class PluggableStorageApi(
     error("Not implemented")
   },
   private val insertActualSnapshot_: (projectRefid: String, baseTxnId: BaseTxnId, projectXml: String) -> Unit = {_, _, _ -> },
-  private val tryMergeConcurrentUpdates_: (database: SqlProjectDatabaseImpl,
-                                           serverTransaction: List<XlogRecord>,
-                                           clientTransaction: List<XlogRecord>) -> Boolean = {_, _, _->
-    error("Not implemented")
-  },
-  private val getProjectXml_: (rojectRefid: ProjectRefid, baseTxnId: BaseTxnId) -> String = {_, _ ->
-    error("Not implemented")
-  }
 ) : StorageApi {
   override fun initProject(projectRefid: String) = initProject_(projectRefid)
 
@@ -82,9 +61,4 @@ class PluggableStorageApi(
   override fun getProjectSnapshot(projectRefid: String, baseTxnId: BaseTxnId?) = getProjectSnapshot_(projectRefid, baseTxnId)
 
   override fun insertActualSnapshot(projectRefid: String, baseTxnId: BaseTxnId, projectXml: String) = insertActualSnapshot_(projectRefid, baseTxnId, projectXml)
-  override fun tryMergeConcurrentUpdates(
-    database: SqlProjectDatabaseImpl,
-    serverTransaction: List<XlogRecord>,
-    clientTransaction: List<XlogRecord>
-  ): Boolean = tryMergeConcurrentUpdates_(database, serverTransaction, clientTransaction)
 }

@@ -101,16 +101,7 @@ class ColloboqueServer(
   }
 
   private fun loadProject(projectRefid: ProjectRefid, xmlInput: String) {
-    val bufferProject = GanttProjectImpl()
-    val taskLoader = TaskLoader(bufferProject.taskManager, SimpleTreeCollapseView())
-    parseXmlProject(xmlInput).let { xmlProject ->
-      taskLoader.loadTaskCustomPropertyDefinitions(xmlProject)
-      xmlProject.walkTasksDepthFirst { parent: XmlTasks.XmlTask?, child: XmlTasks.XmlTask ->
-        taskLoader.loadTask(parent, child)
-        true
-      }
-    }
-    bufferProject.taskManager.tasks.forEach { task -> storageApi.insertTask(projectRefid, task) }
+    loadProject(projectRefid, xmlInput, storageApi)
   }
 
   private suspend fun processUpdatesLoop() {
@@ -218,6 +209,19 @@ class ColloboqueServer(
 
 }
 
+
+internal fun loadProject(projectRefid: ProjectRefid, xmlInput: String, storageApi: StorageApi) {
+  val bufferProject = GanttProjectImpl()
+  val taskLoader = TaskLoader(bufferProject.taskManager, SimpleTreeCollapseView())
+  parseXmlProject(xmlInput).let { xmlProject ->
+    taskLoader.loadTaskCustomPropertyDefinitions(xmlProject)
+    xmlProject.walkTasksDepthFirst { parent: XmlTasks.XmlTask?, child: XmlTasks.XmlTask ->
+      taskLoader.loadTask(parent, child)
+      true
+    }
+  }
+  bufferProject.taskManager.tasks.forEach { task -> storageApi.insertTask(projectRefid, task) }
+}
 
 private val LOG = GPLogger.create("ColloboqueServer")
 private val NULL_TXN_ID = 0L
