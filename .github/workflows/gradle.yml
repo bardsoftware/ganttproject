@@ -44,5 +44,7 @@ jobs:
         run: ./gradlew --no-daemon build
       - name: Publish libs
         run: ./gradlew --no-daemon publishToMavenLocal
+      - name: Initialize PostgreSQL
+        run: docker exec -it postgres createdb -U postgres dev_all_projects
       - name: Build Colloboque
         run: cd cloud.ganttproject.colloboque && ./gradlew --no-daemon build
