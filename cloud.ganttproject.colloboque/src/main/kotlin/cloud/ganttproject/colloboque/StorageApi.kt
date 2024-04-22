@@ -36,13 +36,17 @@ interface StorageApi {
   fun getProjectSnapshot(projectRefid: String, baseTxnId: BaseTxnId? = null): ProjectfilesnapshotRecord?
   fun insertActualSnapshot(projectRefid: String, baseTxnId: BaseTxnId, projectXml: String)
 
+  /**
+   * This function applies the transaction logs stored on the server and those received from a client.
+   * The logs are executed in two concurrent transactions and if they both complete successfully, we believe that there
+   * are no conflicts, and we can merge the client's changes. Otherwise, client's changes conflict with the server's and must be
+   * rejected.
+   */
   fun tryMergeConcurrentUpdates(
     database: SqlProjectDatabaseImpl,
     serverTransaction: List<XlogRecord>,
     clientTransaction: List<XlogRecord>
   ): Boolean
-
-  fun getProjectXml(projectRefid: ProjectRefid, baseTxnId: BaseTxnId): String
 }
 
 class PluggableStorageApi(
@@ -83,6 +87,4 @@ class PluggableStorageApi(
     serverTransaction: List<XlogRecord>,
     clientTransaction: List<XlogRecord>
   ): Boolean = tryMergeConcurrentUpdates_(database, serverTransaction, clientTransaction)
-
-  override fun getProjectXml(projectRefid: ProjectRefid, baseTxnId: BaseTxnId): String = getProjectXml_(projectRefid, baseTxnId)
 }

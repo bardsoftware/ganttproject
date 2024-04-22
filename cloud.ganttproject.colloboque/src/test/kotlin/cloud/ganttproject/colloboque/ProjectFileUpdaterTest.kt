@@ -94,7 +94,7 @@ class ProjectFileUpdaterTest {
   }
 
   @Test
-  fun `parallel transactions fail`() {
+  fun `merge concurrent updates fails`() {
     val clientChanges = XlogRecord(
       listOf(
         OperationDto.UpdateOperationDto(
@@ -116,11 +116,43 @@ class ProjectFileUpdaterTest {
       )
     )
 
-    PostgresConnectionFactory("localhost", 5432, "postgres", "").use { connectionFactory ->
-      val storage = PostgreStorageApi(connectionFactory)
-      val database = storage.createProjectSnapshotDatabase(PROJECT_XML_TEMPLATE, 0)
-      assertFalse(storage.tryMergeConcurrentUpdates(database, listOf(serverChanges), listOf(clientChanges)))
-    }
+    val connectionFactory = PostgresConnectionFactory("localhost", 5432, "postgres", "")
+    val storage = PostgreStorageApi(connectionFactory)
+    val database = storage.createProjectSnapshotDatabase(PROJECT_XML_TEMPLATE, 0)
+    assertFalse(storage.tryMergeConcurrentUpdates(database, listOf(serverChanges), listOf(clientChanges)))
+  }
+
+  @Test
+  fun `merge concurrent updates succeeds`() {
+    val clientChanges = XlogRecord(
+      listOf(
+        OperationDto.UpdateOperationDto(
+          "task",
+          updateBinaryConditions = mutableListOf(Triple(TaskTable.UID.name, BinaryPred.EQ, "qwerty")),
+          updateRangeConditions = mutableListOf(),
+          newValues = mutableMapOf(TaskTable.NAME.name to "ClientTask")
+        )
+      )
+    )
+    val serverChanges = XlogRecord(
+      listOf(
+        OperationDto.InsertOperationDto(
+          TaskTable.name,
+          values = mutableMapOf(
+            TaskTable.UID.name to "zxccvb",
+            TaskTable.NAME.name to "SeverTask",
+            TaskTable.NUM.name to "2",
+            TaskTable.START_DATE.name to "2024-04-22",
+            TaskTable.DURATION.name to "3"
+          )
+        )
+      )
+    )
+
+    val connectionFactory = PostgresConnectionFactory("localhost", 5432, "postgres", "")
+    val storage = PostgreStorageApi(connectionFactory)
+    val database = storage.createProjectSnapshotDatabase(PROJECT_XML_TEMPLATE, 0)
+    assertTrue(storage.tryMergeConcurrentUpdates(database, listOf(serverChanges), listOf(clientChanges)))
   }
 }
 
