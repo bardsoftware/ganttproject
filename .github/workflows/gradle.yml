@@ -48,6 +48,6 @@ jobs:
       - name: Initialize PostgreSQL
         run: |
           cd cloud.ganttproject.colloboque/src/main/resources
-          docker run --rm --link postgres:postgres -v $(pwd):/src -w /src postgres psql -h postgres -U postgres -f ./init-colloboque-server.sql
+          docker run --rm --network ${{ job.container.network }} --link postgres:postgres -v $(pwd):/src -w /src postgres psql -h postgres -U postgres -f ./init-colloboque-server.sql
       - name: Build Colloboque
         run: cd cloud.ganttproject.colloboque && ./gradlew --no-daemon build
