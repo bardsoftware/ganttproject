@@ -129,7 +129,9 @@ public class GanttCSVExport {
 
   private List<CustomPropertyDefinition> writeTaskHeaders(SpreadsheetWriter writer) throws IOException {
     List<CustomPropertyDefinition> defs = myTaskCustomPropertyManager.getDefinitions();
-    for (Map.Entry<String, BooleanOption> entry : myCsvOptions.getTaskOptions().entrySet()) {
+
+    var options = myCsvOptions.getTaskOptions().entrySet();
+    for (Map.Entry<String, BooleanOption> entry : options) {
       TaskDefaultColumn defaultColumn = TaskDefaultColumn.find(entry.getKey());
       if (!entry.getValue().isChecked()) {
         continue;
@@ -157,7 +159,8 @@ public class GanttCSVExport {
   private void writeTasks(SpreadsheetWriter writer) throws IOException {
     List<CustomPropertyDefinition> customFields = writeTaskHeaders(writer);
     for (Task task : myTaskManager.getTasks()) {
-      for (Map.Entry<String, BooleanOption> entry : myCsvOptions.getTaskOptions().entrySet()) {
+      var options = myCsvOptions.getTaskOptions().entrySet();
+      for (Map.Entry<String, BooleanOption> entry : options) {
         if (!entry.getValue().isChecked()) {
           continue;
         }
@@ -165,11 +168,6 @@ public class GanttCSVExport {
         if (defaultColumn == null) {
           if ("webLink".equals(entry.getKey())) {
             writer.print(getWebLink((GanttTask) task));
-            continue;
-          }
-          if ("notes".equals(entry.getKey())) {
-            writer.print(task.getNotes());
-            continue;
           }
         } else {
           switch (defaultColumn) {
@@ -216,8 +214,13 @@ public class GanttCSVExport {
                 writer.print("");
               }
               break;
-            case INFO:
+            case NOTES:
+              writer.print(task.getNotes());
+              break;
             case PRIORITY:
+              writer.print(task.getPriority().getPersistentValue());
+              break;
+            case INFO:
             case TYPE:
               break;
           }
