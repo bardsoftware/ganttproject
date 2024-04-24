@@ -29,17 +29,15 @@ import net.sourceforge.ganttproject.storage.XlogRecord
 import net.sourceforge.ganttproject.storage.buildInsertTaskQuery
 import net.sourceforge.ganttproject.task.Task
 import org.jooq.DSLContext
-import org.jooq.SQLDialect
 import org.jooq.Schema
-import org.jooq.conf.RenderNameCase
 import org.jooq.impl.DSL
 import org.jooq.impl.SchemaImpl
 import org.slf4j.LoggerFactory
 
-class PostgreStorageApi(private val factory: ConnectionFactory, private val superFactory: ConnectionFactory) : StorageApi {
+class PostgreStorageApi(private val connectionFactory: PostgresConnectionFactory) : StorageApi {
   override fun initProject(projectRefid: String) {
     val schema = PostgresConnectionFactory.getSchema(projectRefid)
-    superFactory(projectRefid).use {
+    connectionFactory.createSuperConnection().use {
       it.prepareCall("SELECT clone_schema(?, ?, ?)").use { stmt ->
         stmt.setString(1, "project_template")
         stmt.setString(2, schema)
@@ -88,12 +86,17 @@ class PostgreStorageApi(private val factory: ConnectionFactory, private val supe
     }
   }
 
-  override fun getActualSnapshot(projectRefid: String): ProjectfilesnapshotRecord? {
+  override fun getProjectSnapshot(projectRefid: String, baseTxnId: BaseTxnId?): ProjectfilesnapshotRecord? {
     val snapshotTable = ProjectFileSnapshot(getOrCreateProjectSchema(projectRefid))
     return txn(projectRefid) { db ->
-      db.selectFrom(snapshotTable)
-        .where(snapshotTable.BASE_TXN_ID.eq(db.select(DSL.max(snapshotTable.BASE_TXN_ID)).from(snapshotTable)))
-        .fetchOne()
+      val query = baseTxnId?.let {
+        db.selectFrom(snapshotTable).where(snapshotTable.BASE_TXN_ID.eq(it))
+      } ?: run {
+        db.selectFrom(snapshotTable).where(
+          snapshotTable.BASE_TXN_ID.eq(db.select(DSL.max(snapshotTable.BASE_TXN_ID)).from(snapshotTable))
+        )
+      }
+      query.fetchOne()
     }
   }
 
@@ -103,18 +106,14 @@ class PostgreStorageApi(private val factory: ConnectionFactory, private val supe
       db.insertInto(snapshotTable).columns(snapshotTable.BASE_TXN_ID, snapshotTable.PROJECT_XML).values(baseTxnId, projectXml).execute()
     }
   }
-
   fun <T> txn(projectRefid: ProjectRefid, code: (DSLContext)->T): T {
-    return factory(projectRefid).use {cxn ->
-      DSL.using(cxn, SQLDialect.POSTGRES)
-        .configuration().deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
-        .dsl().transactionResult { it -> code(it.dsl()) }
+    return connectionFactory.createConnection(projectRefid).use {cxn -> dsl(cxn).transactionResult { it -> code(it.dsl()) }
     }
   }
 
-  private fun getOrCreateProjectSchema(projectRefid: String): String {
+  internal fun getOrCreateProjectSchema(projectRefid: String): String {
     val schemaName = PostgresConnectionFactory.getSchema(projectRefid)
-    val hasSchema = superFactory(projectRefid).use {
+    val hasSchema = connectionFactory.createSuperConnection().use {
       it.prepareCall("SELECT schema_name FROM information_schema.schemata WHERE schema_name=?").use { stmt ->
         stmt.setString(1, schemaName)
         stmt.executeQuery().use { rs ->

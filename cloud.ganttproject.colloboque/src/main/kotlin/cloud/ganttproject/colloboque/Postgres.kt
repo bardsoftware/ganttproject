@@ -22,23 +22,31 @@ import com.google.common.hash.Hashing
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import net.sourceforge.ganttproject.GPLogger
+import org.jooq.DSLContext
+import org.jooq.SQLDialect
+import org.jooq.conf.RenderNameCase
+import org.jooq.impl.DSL
 import java.sql.Connection
 
 class PostgresConnectionFactory(
-  private val pgHost: String, private val pgPort: Int, private val pgSuperUser: String, private val pgSuperAuth: String
+  private val pgHost: String, private val pgPort: Int, private val pgSuperUser: String, private val pgSuperAuth: String,
+  pgDatabase: String = "dev_all_projects"
 ) {
   // TODO: allow for using one database per project
   private val superConfig = HikariConfig().apply {
     username = pgSuperUser
     password = pgSuperAuth
-    jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/dev_all_projects"
+    jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/${pgDatabase}"
+    maximumPoolSize = 5
   }
   private val superDataSource = HikariDataSource(superConfig)
   // TODO: replace the user
   private val regularConfig = HikariConfig().apply {
     username = pgSuperUser
     password = pgSuperAuth
-    jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/dev_all_projects"
+    jdbcUrl = "jdbc:postgresql://${pgHost}:${pgPort}/${pgDatabase}"
+    transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+    maximumPoolSize = 5
   }
   private val regularDataSource = HikariDataSource(regularConfig)
 
@@ -52,10 +60,35 @@ class PostgresConnectionFactory(
     }
   }
 
+  private fun switchDatabase(database: String) = PostgresConnectionFactory(this.pgHost, this.pgPort, this.pgSuperUser, this.pgSuperAuth, database)
+
   fun createConnection(projectRefid: String): Connection =
     regularDataSource.connection.also { it.schema = getSchema(projectRefid) }
 
-  fun createSuperConnection(projectRefid: String) = superDataSource.connection
+  fun createSuperConnection(): Connection = superDataSource.connection
+
+  data class TemporaryDataSource(val connectionFactory: PostgresConnectionFactory, val shutdown:()->Unit)
+
+  fun close() {
+    superDataSource.close()
+    regularDataSource.close()
+  }
+
+  fun createTemporaryDataSource(): TemporaryDataSource {
+    val randomDatabase = randomDatabaseName().lowercase()
+    val result = superDataSource.connection.use { dsl(it).execute("""
+      CREATE DATABASE $randomDatabase OWNER postgres TEMPLATE project_database_template
+    """.trimIndent())
+    }
+    if (result != 0) {
+      throw RuntimeException("Can't create a temporary database")
+    }
+    val temporaryFactory = this.switchDatabase(randomDatabase)
+    return TemporaryDataSource(connectionFactory = temporaryFactory, shutdown = {
+      temporaryFactory.close()
+      superDataSource.connection.use { dsl(it).dropDatabase(randomDatabase).execute() }
+    })
+  }
 
   // TODO: escape projectRefid
   companion object {
@@ -64,10 +97,13 @@ class PostgresConnectionFactory(
   }
 }
 
-typealias ConnectionFactory = (projectRefid: String) -> Connection
-fun createPostgresStorage(factory: ConnectionFactory, superFactory: ConnectionFactory): StorageApi {
-  return PostgreStorageApi(factory, superFactory)
-}
+fun dsl(cxn: Connection): DSLContext = DSL.using(cxn, SQLDialect.POSTGRES)
+  .configuration().deriveSettings { it.withRenderNameCase(RenderNameCase.LOWER) }
+  .dsl()
+
+private val alphabet: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+private fun randomDatabaseName() = "db" + List(20) { alphabet.random() }.joinToString("")
+
 
 private val STARTUP_LOG = GPLogger.create("Startup")
 private val LOG = GPLogger.create("Postgres")

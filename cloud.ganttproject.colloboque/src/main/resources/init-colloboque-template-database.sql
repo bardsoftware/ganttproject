@@ -244,53 +244,86 @@ LANGUAGE SQL AS $$
     ON CONFLICT(uid, prop_name) DO UPDATE SET prop_value=prop_value_;
 $$;
 
+-- This is a function that triggers on update queries on Task view.
+-- It places different task attributes into different values to minimize conflicts in the process of collaborative editing.
 CREATE OR REPLACE FUNCTION update_task_row() RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO TaskName(uid, num, name) VALUES (NEW.uid, NEW.num, NEW.name)
-    ON CONFLICT(uid) DO UPDATE
-    SET num=NEW.num,
-        name=NEW.name;
+    -- TaskName is the "driving" table. There are no unnamed tasks, so there is always a record in this table for any task
+    -- in the project.
+    IF NEW.name IS DISTINCT FROM OLD.name OR
+       NEW.num  IS DISTINCT FROM OLD.num  THEN
 
-    INSERT INTO TaskDates(uid, start_date, duration_days, earliest_start_date)
-    VALUES(NEW.uid, NEW.start_date, NEW.duration, NEW.earliest_start_date)
-    ON CONFLICT(uid) DO UPDATE
-    SET start_date = NEW.start_date,
-        duration_days = NEW.duration,
-        earliest_start_date=NEW.earliest_start_date;
-
-    INSERT INTO TaskCostProperties(uid, is_cost_calculated, cost_manual_value)
-    VALUES(NEW.uid, NEW.is_cost_calculated, NEW.cost_manual_value)
-    ON CONFLICT(uid) DO UPDATE
-    SET is_cost_calculated = NEW.is_cost_calculated,
-        cost_manual_value = NEW.cost_manual_value;
-
-    INSERT INTO TaskClassProperties(uid, is_milestone, is_project_task)
-    VALUES(NEW.uid, COALESCE(NEW.is_milestone, false), COALESCE(NEW.is_project_task, false))
-    ON CONFLICT(uid) DO UPDATE
-        SET is_milestone = COALESCE(NEW.is_milestone, false),
-            is_project_task = COALESCE(NEW.is_project_task, false);
-
-    IF NEW.completion IS NOT NULL THEN
-      CALL update_int_task_property(NEW.uid, 'completion', NEW.completion);
+        INSERT INTO TaskName(uid, num, name) VALUES (NEW.uid, NEW.num, NEW.name)
+        ON CONFLICT(uid) DO UPDATE
+        SET num=NEW.num,
+            name=NEW.name;
     END IF;
 
-    IF NEW.priority IS NOT NULL THEN
+    -- Task dates must be updated atomically, so they are stored in the same table.
+    IF NEW.start_date          IS DISTINCT FROM OLD.start_date          OR
+       NEW.duration            IS DISTINCT FROM OLD.duration            OR
+       NEW.earliest_start_date IS DISTINCT FROM OLD.earliest_start_date THEN
+
+       INSERT INTO TaskDates(uid, start_date, duration_days, earliest_start_date)
+       VALUES(NEW.uid, NEW.start_date, NEW.duration, NEW.earliest_start_date)
+       ON CONFLICT(uid) DO UPDATE
+       SET start_date          = NEW.start_date,
+           duration_days       = NEW.duration,
+           earliest_start_date = NEW.earliest_start_date;
+    END IF;
+
+    -- Task cost fields are also grouped.
+    IF NEW.is_cost_calculated IS DISTINCT FROM OLD.is_cost_calculated OR
+       NEW.cost_manual_value  IS DISTINCT FROM OLD.cost_manual_value  THEN
+
+       INSERT INTO TaskCostProperties(uid, is_cost_calculated, cost_manual_value)
+       VALUES(NEW.uid, NEW.is_cost_calculated, NEW.cost_manual_value)
+       ON CONFLICT(uid) DO UPDATE
+       SET is_cost_calculated = NEW.is_cost_calculated,
+           cost_manual_value = NEW.cost_manual_value;
+    END IF;
+
+    -- Milestone and project task flags are also dependant, so their update is also atomic.
+    IF NEW.is_milestone    IS DISTINCT FROM OLD.is_milestone    OR
+       NEW.is_project_task IS DISTINCT FROM OLD.is_project_task THEN
+
+       INSERT INTO TaskClassProperties(uid, is_milestone, is_project_task)
+       VALUES(NEW.uid, COALESCE(NEW.is_milestone, false), COALESCE(NEW.is_project_task, false))
+       ON CONFLICT(uid) DO
+       UPDATE
+       SET is_milestone = COALESCE(NEW.is_milestone, false),
+           is_project_task = COALESCE(NEW.is_project_task, false);
+    END IF;
+
+    -- The remaining fields can be updated independently.
+    IF NEW.completion IS DISTINCT FROM OLD.completion THEN
+       CALL update_int_task_property(NEW.uid, 'completion', NEW.completion);
+    END IF;
+
+    IF NEW.priority IS DISTINCT FROM OLD.priority THEN
         CALL update_text_task_property(NEW.uid, 'priority', NEW.priority);
     END IF;
-    IF NEW.color IS NOT NULL THEN
-        CALL update_text_task_property(NEW.uid, 'color', NEW.color);
-    END IF;
-    IF NEW.shape IS NOT NULL THEN
-        CALL update_text_task_property(NEW.uid, 'shape', NEW.shape);
-    END IF;
-    IF NEW.web_link IS NOT NULL THEN
-        CALL update_text_task_property(NEW.uid, 'web_link', NEW.web_link);
-    END IF;
-    IF NEW.notes IS NOT NULL THEN
-        CALL update_text_task_property(NEW.uid, 'notes', NEW.notes);
+
+    IF NEW.color IS DISTINCT FROM OLD.color THEN
+       CALL update_text_task_property(NEW.uid, 'color', NEW.color);
     END IF;
 
-    RETURN NEW;
+    IF NEW.shape IS DISTINCT FROM OLD.shape THEN
+       CALL update_text_task_property(NEW.uid, 'shape', NEW.shape);
+    END IF;
+
+    IF NEW.web_link IS DISTINCT FROM OLD.web_link THEN
+       CALL update_text_task_property(NEW.uid, 'web_link', NEW.web_link);
+    END IF;
+
+    IF NEW.notes IS DISTINCT FROM OLD.notes THEN
+       CALL update_text_task_property(NEW.uid, 'notes', NEW.notes);
+    END IF;
+
+--     IF NEW. IS DISTINCT FROM OLD. THEN
+--     END IF;
+
+RETURN NEW;
 END;
 
 $$ LANGUAGE plpgsql;
