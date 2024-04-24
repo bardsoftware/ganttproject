@@ -19,6 +19,7 @@
 @import "../app/theme";
 @import "../app/dialogs";
 @import "../app/buttons";
+@import "../app/validation";
 
 /* A single item in the list of available updates */
 .body {
@@ -109,6 +110,9 @@
     }
   }
 
+  Label.alert-error {
+    @include validation-error();
+  }
   .props {
     -fx-font-size: 120%;
 
