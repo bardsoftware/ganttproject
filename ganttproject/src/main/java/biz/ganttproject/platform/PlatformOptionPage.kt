@@ -18,7 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.platform
 
-import biz.ganttproject.app.*
+import biz.ganttproject.app.DIALOG_STYLESHEET
+import biz.ganttproject.app.DialogControllerPane
 import biz.ganttproject.core.option.GPOptionGroup
 import com.bardsoftware.eclipsito.update.UpdateMetadata
 import javafx.application.Platform
@@ -30,7 +31,6 @@ import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
 import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.JPanel
-import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
 
 /**

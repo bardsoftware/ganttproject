@@ -146,26 +146,7 @@ internal class UpdateDialog(
 
     // The upper part of the dialog which shows the running version number and a toggle to switch
     // the update checking on and off.
-    val props = GridPane().apply {
-      styleClass.add("props")
-      add(Label(ourLocalizer.formatText("installedVersion")).also {
-        GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
-      }, 0, 0)
-      add(Label(bean.version).also {
-        GridPane.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
-      }, 1, 0)
-      add(Label(ourLocalizer.formatText("checkUpdates")).also {
-        GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
-      }, 0, 1)
-      val toggleSwitch = createToggleSwitch().also {
-        it.selectedProperty().value = UpdateOptions.isCheckEnabled.value
-        it.selectedProperty().addListener { _, _, newValue -> UpdateOptions.isCheckEnabled.value = newValue }
-      }
-      add(toggleSwitch, 1, 1)
-      add(HyperlinkLabel(ourLocalizer.formatText("checkUpdates.helpline")).also {
-        it.styleClass.add("helpline")
-        it.onAction = EventHandler { openInBrowser(PRIVACY_URL) }
-      }, 1, 2)
+    val props = createGridPane(bean).apply {
       if (this@UpdateDialog.majorUpdate == null) {
         add(
           Label(
@@ -301,48 +282,28 @@ internal class UpdateDialog(
     )
 
     dialogApi.setHeader(VBoxBuilder("header").apply {
-      addTitle("Update Error")
+      addTitle(ourLocalizer.formatText("alert.title"))
     }.vbox)
 
-    VBoxBuilder("content-pane").also {
-      val props = GridPane().apply {
-        styleClass.add("props")
-        add(Label(ourLocalizer.formatText("installedVersion")).also {
-          GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
-        }, 0, 0)
-        add(Label(bean.version).also {
-          GridPane.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
-        }, 1, 0)
-        add(Label(ourLocalizer.formatText("checkUpdates")).also {
-          GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
-        }, 0, 1)
-        val toggleSwitch = createToggleSwitch().also {
-          it.selectedProperty().value = UpdateOptions.isCheckEnabled.value
-          it.selectedProperty().addListener { _, _, newValue -> UpdateOptions.isCheckEnabled.value = newValue }
-        }
-        add(toggleSwitch, 1, 1)
-        add(HyperlinkLabel(ourLocalizer.formatText("checkUpdates.helpline")).also {
-          it.styleClass.add("helpline")
-          it.onAction = EventHandler { openInBrowser(PRIVACY_URL) }
-        }, 1, 2)
-      }
-      it.add(props)
+    vbox {
+      addClasses("props")
+      add(createGridPane(bean))
 
-      dialogApi.setContent(it.vbox)
+      dialogApi.setContent(vbox)
       var cause: Throwable? = ex
       while (cause != null && cause is CompletionException) {
         cause = cause.cause
       }
       val msg = when (cause) {
         is ConnectException -> {
-          "Can't connect to ${UpdateOptions.updateUrl.value}"
+          ourLocalizer.formatText("error.cantConnect", UpdateOptions.updateUrl.value)
         }
         is com.grack.nanojson.JsonParserException -> {
-          "Can't parse the contents of the update data: ${ex.message}"
+          ourLocalizer.formatText("error.cantParse", ex.message ?: "")
         }
         else -> cause?.message ?: ex.message
       }
-      dialogApi.showAlert("Update error", Label(msg))
+      dialogApi.showAlert(ourLocalizer.formatText("alert.title"), Label(msg))
     }
   }
 
@@ -382,6 +343,28 @@ internal class UpdateDialog(
       this.dialogApi.showAlert(ourLocalizer.create("alert.title"), createAlertBody(ex.message ?: ""))
       null
     }
+  }
+
+  private fun createGridPane(installedData: PlatformBean) = GridPane().apply {
+    styleClass.add("props")
+    add(Label(ourLocalizer.formatText("installedVersion")).also {
+      GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
+    }, 0, 0)
+    add(Label(installedData.version).also {
+      GridPane.setMargin(it, Insets(5.0, 0.0, 3.0, 0.0))
+    }, 1, 0)
+    add(Label(ourLocalizer.formatText("checkUpdates")).also {
+      GridPane.setMargin(it, Insets(5.0, 10.0, 3.0, 0.0))
+    }, 0, 1)
+    val toggleSwitch = createToggleSwitch().also {
+      it.selectedProperty().value = UpdateOptions.isCheckEnabled.value
+      it.selectedProperty().addListener { _, _, newValue -> UpdateOptions.isCheckEnabled.value = newValue }
+    }
+    add(toggleSwitch, 1, 1)
+    add(HyperlinkLabel(ourLocalizer.formatText("checkUpdates.helpline")).also {
+      it.styleClass.add("helpline")
+      it.onAction = EventHandler { openInBrowser(PRIVACY_URL) }
+    }, 1, 2)
   }
 }
 
