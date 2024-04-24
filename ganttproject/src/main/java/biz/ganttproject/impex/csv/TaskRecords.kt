@@ -156,8 +156,8 @@ class TaskRecords(
       }
     }
 
-    if (record.isSet(TaskDefaultColumn.PRIORITY.name)) {
-      record.get(TaskDefaultColumn.PRIORITY.name)?.let {
+    if (record.isSet(TaskDefaultColumn.PRIORITY.getName())) {
+      record.get(TaskDefaultColumn.PRIORITY.getName())?.let {
         builder = builder.withPriority(Task.Priority.fromPersistentValue(it))
       }
     }
