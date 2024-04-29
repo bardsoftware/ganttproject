@@ -96,6 +96,10 @@ fun initFontProperty(appFontOption: FontOption, rowPaddingOption: DoubleOption) 
       }
     }
   }
+  rowPaddingOption.addChangeValueListener { event ->
+    cellPadding = rowPaddingOption.value
+    calculateMinCellHeight(appFontOption.value)
+  }
 }
 val applicationBackground = SimpleObjectProperty(Color.BLACK)
 val applicationForeground = SimpleObjectProperty<Paint>(Color.BLACK)
