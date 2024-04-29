@@ -202,6 +202,11 @@ class TaskTable(
     treeTable.contextMenuActions = this::contextMenuActions
 
     filterManager.sync = { this.sync() }
+    minCellHeight.addListener { observable, oldValue, newValue ->
+      if (oldValue != newValue) {
+        treeTable.coalescingRefresh()
+      }
+    }
   }
 
   fun loadDefaultColumns() = Platform.runLater {
