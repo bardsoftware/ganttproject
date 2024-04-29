@@ -18,9 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
-import biz.ganttproject.core.option.DefaultDateOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.*;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -69,9 +67,23 @@ public abstract class ExporterBase implements Exporter {
     myExportRangeStart.addChangeValueListener(event -> {
       prefNode.put("export-range-start", myExportRangeStart.getPersistentValue());
     });
+    myExportRangeStart.setValueValidator(date -> {
+      if (date.after(myExportRangeEnd.getValue())) {
+        return new kotlin.Pair(false, "Start date > end date");
+      } else {
+        return new kotlin.Pair(true, "");
+      }
+    });
     myExportRangeEnd = new DefaultDateOption("export.range.end", myGanttChart.getEndDate());
     myExportRangeEnd.loadPersistentValue(prefNode.get(
         "export-range-end", DateParser.getIsoDate(myGanttChart.getEndDate())));
+    myExportRangeEnd.setValueValidator(date -> {
+      if (date.before(myExportRangeStart.getValue())) {
+        return new kotlin.Pair(false, "Start date > end date");
+      } else {
+        return new kotlin.Pair(true, "");
+      }
+    });
     myExportRangeEnd.addChangeValueListener(event -> {
       prefNode.put("export-range-end", myExportRangeEnd.getPersistentValue());
     });
@@ -86,7 +98,7 @@ public abstract class ExporterBase implements Exporter {
   }
 
   protected GPOptionGroup createExportRangeOptionGroup() {
-    return new GPOptionGroup("export.range", new GPOption[] { getExportRangeStartOption(), getExportRangeEndOption() });
+    return new GPOptionGroup("export.range", getExportRangeStartOption(), getExportRangeEndOption());
   }
 
   public UIFacade getUIFacade() {
@@ -143,6 +155,9 @@ public abstract class ExporterBase implements Exporter {
         } catch (InvalidDateException e) {
           GPLogger.log(e);
         }
+      }
+      if (result.getStartDate().after(result.getEndDate())) {
+        GPLogger.log(new ValidationException("In the export range the start date=" + result.getStartDate() + " is after the end date=" + result.getEndDate()));
       }
       result.setCommandLineMode(myRootPreferences.getBoolean("commandLine", false));
       if (myRootPreferences.getBoolean("expandResources", false)) {
