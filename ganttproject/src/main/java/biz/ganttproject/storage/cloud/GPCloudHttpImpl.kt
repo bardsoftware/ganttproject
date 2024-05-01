@@ -45,6 +45,9 @@ import org.apache.http.HttpHost
 import org.apache.http.HttpStatus
 import org.apache.http.client.utils.URIBuilder
 import java.io.IOException
+import java.net.InetSocketAddress
+import java.net.Proxy
+import java.net.URL
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
@@ -487,9 +490,11 @@ interface GPCloudHttpClient {
   fun sendPost(uri: String, parts: Map<String, String?>, encoding: HttpPostEncoding = HttpPostEncoding.MULTIPART): Response
 }
 
+
 class HttpClientOk(
     private val host: String,
     val userId: String = "",
+    val proxy: String = "",
     val authToken: () -> String = {""}) : GPCloudHttpClient {
   private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
       .connectTimeout(10, TimeUnit.SECONDS)
@@ -500,6 +505,28 @@ class HttpClientOk(
         if (userId.isNotBlank() && authToken().isNotBlank()) {
           addInterceptor {
             it.proceed(it.request().newBuilder().header("Authorization", Credentials.basic(userId, authToken())).build())
+          }
+        }
+        if (proxy.isNotBlank()) {
+          try {
+            val proxyUrl = URL(proxy)
+            val host = proxyUrl.host
+            val port = proxyUrl.port
+            if (proxyUrl.protocol.lowercase().startsWith("http")) {
+              this.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress(host, port)))
+            }
+            if (!proxyUrl.userInfo.isNullOrBlank()) {
+              val (username, password) = proxyUrl.userInfo!!.split(":", limit = 2)
+              this.proxyAuthenticator(object : Authenticator {
+                override fun authenticate(route: Route?, response: Response) =
+                  response.request().newBuilder()
+                    .header("Proxy-Authorization", Credentials.basic(username, password))
+                    .build()
+
+              })
+            }
+          } catch(ex: Exception) {
+            LOG.error("Can't build a proxy connection from the url={}", proxy, ex)
           }
         }
       }.build()
@@ -562,7 +589,7 @@ object HttpClientBuilder {
 
   fun buildHttpClientOk(withAuth: Boolean): HttpClientOk {
     return if (withAuth) {
-      HttpClientOk(HOST.toHostString(), GPCloudOptions.userId.value ?: "", { GPCloudOptions.authToken.value ?: "" })
+      HttpClientOk(HOST.toHostString(), GPCloudOptions.userId.value ?: "", GPCloudOptions.proxy.value.trim(), { GPCloudOptions.authToken.value ?: "" })
     } else {
       HttpClientOk(HOST.toHostString())
     }
