@@ -144,13 +144,18 @@ object GPCloudOptions {
       }
     }
   }
+  val proxy: StringOption = object: DefaultStringOption("proxy", "") {
+    override fun loadPersistentValue(value: String?) {
+      super.loadPersistentValue(value)
+    }
+  }
   val websocketAuthToken: String
     get() = Base64.getEncoder().encodeToString(
         "${this.userId.value}:${GPCloudOptions.authToken.value}".toByteArray())
 
   var websocketToken: String? = null
   val cloudFiles = CloudFileOptions()
-  val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, defaultOfflineMode, validity, userId, cloudFiles)
+  val optionGroup: GPOptionGroup = GPOptionGroup("ganttproject-cloud", authToken, defaultOfflineMode, validity, userId, cloudFiles, proxy)
 
   val isTokenValid: Boolean get() = (validity.value.toLongOrNull() ?: 0).let {
     (it == 0L) || (Instant.ofEpochSecond(it).isAfter(Instant.now()))
