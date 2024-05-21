@@ -18,7 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.option;
 
+import kotlin.Pair;
+import kotlin.jvm.functions.Function1;
+
 import java.util.Date;
 
 public interface DateOption extends GPOption<Date> {
+  Function1<Date, Pair<Boolean, String>> getValueValidator();
+  void setValueValidator(Function1<Date, Pair<Boolean, String>> validator);
 }

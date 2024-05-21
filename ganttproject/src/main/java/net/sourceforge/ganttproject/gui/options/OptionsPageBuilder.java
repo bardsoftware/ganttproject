@@ -691,7 +691,7 @@ public class OptionsPageBuilder {
     }
     OptionValueUpdater valueUpdater = new OptionValueUpdater();
     final JXDatePicker result = UIUtil.createDatePicker();
-    UIUtil.setupDatePicker(result, option.getValue(), null, valueUpdater);
+    UIUtil.setupDatePicker(result, option.getValue(), option.getValueValidator(), valueUpdater);
     result.setDate(option.getValue());
     result.getEditor().addPropertyChangeListener("value", valueUpdater);
 
