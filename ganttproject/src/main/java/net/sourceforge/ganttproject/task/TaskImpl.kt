@@ -189,6 +189,10 @@ internal open class MutatorImpl(
     }
     var hasActualDatesChange = false
     try {
+      milestoneChange.ifChanged {
+        taskImpl.isMilestone = it
+        taskUpdateBuilder?.setMilestone(milestoneChange.oldValue, it)
+      }
       myStartChange.ifChanged {
         taskImpl.start = it
       }
@@ -209,10 +213,6 @@ internal open class MutatorImpl(
           taskImpl.setThirdDate(null)
           taskImpl.thirdDateConstraint = 0
         }
-      }
-      milestoneChange.ifChanged {
-        taskImpl.isMilestone = it
-        taskUpdateBuilder?.setMilestone(milestoneChange.oldValue, it)
       }
       if (hasDateFieldsChange) {
         hasActualDatesChange = taskImpl.start != myStartChange.oldValue || taskImpl.duration != myDurationChange.oldValue || taskImpl.third != myThirdChange.oldValue.startDate
