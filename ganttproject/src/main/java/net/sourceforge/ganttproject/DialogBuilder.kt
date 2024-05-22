@@ -24,21 +24,21 @@ import biz.ganttproject.lib.fx.vbox
 import javafx.application.Platform
 import javafx.embed.swing.SwingNode
 import javafx.event.EventHandler
+import javafx.scene.control.ButtonBar
+import javafx.scene.control.ButtonType
 import javafx.scene.control.Dialog
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.Priority
 import javafx.stage.Screen
 import javafx.stage.Stage
 import net.sourceforge.ganttproject.action.CancelAction
-import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.gui.UIFacade
 import java.awt.BorderLayout
-import java.awt.GridLayout
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.beans.PropertyChangeListener
-import javax.swing.*
+import javax.swing.Action
+import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.SwingUtilities
 
 
 class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<Action>, private val title: String): UIFacade.Dialog {
@@ -51,89 +51,114 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
 
   private fun addButtons(buttonActions: Array<Action>) {
     var cancelAction: Action? = null
-    var buttonCount = 0
-    val buttonBox = JPanel(GridLayout(1, buttonActions.size, 5, 0))
-
     for (action in buttonActions) {
-      val nextButton = when {
-        action is OkAction -> JButton().also { _btn ->
-          val _delegate = action as AbstractAction
-          val proxy: OkAction = object : OkAction() {
-            // These two steps handel the case when focus is somewhere in text input
-            // and user hits Ctrl+Enter
-            // First we want to move focus to OK button to allow focus listeners, if any,
-            // to catch focusLost event
-            // Second, we want it to happen before original OkAction runs
-            // So we wrap original OkAction into proxy which moves focus and schedules "later" command
-            // which call the original action. Between them EDT sends out focusLost events.
-            val myStep2: Runnable = Runnable {
-              Platform.runLater { controller.hide() }
-              isCommitted = true
+      when {
+        action is OkAction -> {
+          controller.setupButton(ButtonType.OK) {
+            it.text = "${action.getValue(Action.NAME)}"
+            it.onAction = EventHandler { SwingUtilities.invokeLater {
               action.actionPerformed(null)
-              _delegate.removePropertyChangeListener(myDelegateListener)
-            }
-            val myStep1: Runnable = Runnable {
-              _btn.requestFocus()
-              SwingUtilities.invokeLater(myStep2)
-            }
-
-            override fun actionPerformed(e: ActionEvent) {
-              SwingUtilities.invokeLater(myStep1)
-            }
-
-            private fun copyValues() {
-              for (key in _delegate.keys) {
-                putValue(key.toString(), _delegate.getValue(key.toString()))
-              }
-              isEnabled = _delegate.isEnabled
-            }
-
-            private val myDelegateListener = PropertyChangeListener { copyValues() }
-
-            init {
-              _delegate.addPropertyChangeListener(myDelegateListener)
-              copyValues()
-            }
+            }}
           }
-          _btn.action = proxy
-          //++
-//          if (action.isDefault) {
-//            dlg.rootPane.defaultButton = nextButton
-//          }
-
         }
-
         action is CancelAction -> {
-          cancelAction = action
-          (action.getValue(GPAction.HAS_DIALOG_BUTTON) as? Boolean)?.let {
-            JButton(action).also {
-              it.addActionListener(ActionListener { e: ActionEvent? ->
-                controller.hide()
-                isCommitted = true
-              })
+          controller.setupButton(ButtonType.CANCEL) {
+            it.text = "${action.getValue(Action.NAME)}"
+          }
+        }
+        else -> {
+          controller.setupButton(ButtonType("${action.getValue(Action.NAME)}", ButtonBar.ButtonData.OTHER)) {
+            it.addEventFilter(javafx.event.ActionEvent.ACTION) {
+              it.consume()
+              SwingUtilities.invokeLater {
+                action.actionPerformed(null)
+              }
             }
           }
-          //++
-//          dlg.rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-//            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), action.getValue(Action.NAME)
-//          )
-//          dlg.rootPane.actionMap.put(action.getValue(Action.NAME), object : AbstractAction() {
-//            override fun actionPerformed(e: ActionEvent) {
-//              action.actionPerformed(e)
-//              if (result.isEscCloseEnabled()) {
-//                result.hide()
-//              }
-//            }
-//          })
         }
-
-        else -> JButton(action)
-      }
-      if (nextButton != null) {
-        buttonBox.add(nextButton)
-        buttonCount += 1
       }
     }
+
+//    for (action in buttonActions) {
+//      val nextButton = when {
+//        action is OkAction -> JButton().also { _btn ->
+//          val _delegate = action as AbstractAction
+//          val proxy: OkAction = object : OkAction() {
+//            // These two steps handel the case when focus is somewhere in text input
+//            // and user hits Ctrl+Enter
+//            // First we want to move focus to OK button to allow focus listeners, if any,
+//            // to catch focusLost event
+//            // Second, we want it to happen before original OkAction runs
+//            // So we wrap original OkAction into proxy which moves focus and schedules "later" command
+//            // which call the original action. Between them EDT sends out focusLost events.
+//            val myStep2: Runnable = Runnable {
+//              Platform.runLater { controller.hide() }
+//              isCommitted = true
+//              action.actionPerformed(null)
+//              _delegate.removePropertyChangeListener(myDelegateListener)
+//            }
+//            val myStep1: Runnable = Runnable {
+//              _btn.requestFocus()
+//              SwingUtilities.invokeLater(myStep2)
+//            }
+//
+//            override fun actionPerformed(e: ActionEvent) {
+//              SwingUtilities.invokeLater(myStep1)
+//            }
+//
+//            private fun copyValues() {
+//              for (key in _delegate.keys) {
+//                putValue(key.toString(), _delegate.getValue(key.toString()))
+//              }
+//              isEnabled = _delegate.isEnabled
+//            }
+//
+//            private val myDelegateListener = PropertyChangeListener { copyValues() }
+//
+//            init {
+//              _delegate.addPropertyChangeListener(myDelegateListener)
+//              copyValues()
+//            }
+//          }
+//          _btn.action = proxy
+//          //++
+////          if (action.isDefault) {
+////            dlg.rootPane.defaultButton = nextButton
+////          }
+//
+//        }
+//
+//        action is CancelAction -> {
+//          cancelAction = action
+//          (action.getValue(GPAction.HAS_DIALOG_BUTTON) as? Boolean)?.let {
+//            JButton(action).also {
+//              it.addActionListener(ActionListener { e: ActionEvent? ->
+//                controller.hide()
+//                isCommitted = true
+//              })
+//            }
+//          }
+//          //++
+////          dlg.rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+////            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), action.getValue(Action.NAME)
+////          )
+////          dlg.rootPane.actionMap.put(action.getValue(Action.NAME), object : AbstractAction() {
+////            override fun actionPerformed(e: ActionEvent) {
+////              action.actionPerformed(e)
+////              if (result.isEscCloseEnabled()) {
+////                result.hide()
+////              }
+////            }
+////          })
+//        }
+//
+//        else -> JButton(action)
+//      }
+//      if (nextButton != null) {
+//        buttonBox.add(nextButton)
+//        buttonCount += 1
+//      }
+//    }
 
     cancelAction?.let {cancelAction ->
       controller.onClosed = {
@@ -143,12 +168,12 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
       }
     }
 
-    if (buttonCount > 0) {
-      val buttonPanel = JPanel(BorderLayout())
-      buttonPanel.border = BorderFactory.createEmptyBorder(0, 0, 5, 5)
-      buttonPanel.add(buttonBox, BorderLayout.EAST)
-      contentPane.add(buttonPanel, BorderLayout.SOUTH)
-    }
+//    if (buttonCount > 0) {
+//      val buttonPanel = JPanel(BorderLayout())
+//      buttonPanel.border = BorderFactory.createEmptyBorder(0, 0, 5, 5)
+//      //buttonPanel.add(buttonBox, BorderLayout.EAST)
+//      contentPane.add(buttonPanel, BorderLayout.SOUTH)
+//    }
 
   }
 
