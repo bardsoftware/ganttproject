@@ -26,8 +26,6 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 public class ResourcePropertiesAction extends ResourceAction {
   private final IGanttProject myProject;
@@ -59,6 +57,7 @@ public class ResourcePropertiesAction extends ResourceAction {
       if (dp.result()) {
         myProject.setModified(true);
       }
+      myUIFacade.getActiveChart().focus();
     }
   }
 
@@ -66,12 +65,9 @@ public class ResourcePropertiesAction extends ResourceAction {
   public ResourcePropertiesAction asToolbarAction() {
     final ResourcePropertiesAction result = new ResourcePropertiesAction(myProject, getContext(), myUIFacade);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
-    addPropertyChangeListener(new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        if ("enabled".equals(evt.getPropertyName())) {
-          result.setEnabled(ResourcePropertiesAction.this.isEnabled());
-        }
+    addPropertyChangeListener(evt -> {
+      if ("enabled".equals(evt.getPropertyName())) {
+        result.setEnabled(ResourcePropertiesAction.this.isEnabled());
       }
     });
     return result;

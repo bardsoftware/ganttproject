@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.resource;
 
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -74,6 +73,7 @@ public class ResourceNewAction extends ResourceAction {
           myUIFacade.setViewIndex(UIFacade.RESOURCES_INDEX);
         }
       });
+      myUIFacade.getActiveChart().focus();
     }
   }
 

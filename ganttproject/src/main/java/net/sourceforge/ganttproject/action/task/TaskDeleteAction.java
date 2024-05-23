@@ -49,6 +49,7 @@ public class TaskDeleteAction extends TaskActionBase {
   protected void run(List<Task> selection) throws Exception {
     List<Task> roots = retainRoots(selection);
     roots.forEach((task) -> getTaskManager().deleteTask(task));
+    getUIFacade().getActiveChart().focus();
   }
 
   @Override

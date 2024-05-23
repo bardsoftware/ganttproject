@@ -220,9 +220,11 @@ class TaskTable(
     reload()
   }
 
-  private fun onColumnsChange() = Platform.runLater {
-    columnList.columns().forEach { it.taskDefaultColumn()?.isVisible = it.isVisible }
-    buildColumns(columnList.columns())
+  private fun onColumnsChange()  {
+    FXUtil.runLater {
+      columnList.columns().forEach { it.taskDefaultColumn()?.isVisible = it.isVisible }
+      buildColumns(columnList.columns())
+    }
   }
 
   private fun initKeyboardEventHandlers() {
@@ -330,7 +332,10 @@ class TaskTable(
       )
     }
     taskTableChartConnector.focus = {
-      treeTable.requestFocus()
+      requestSwingFocus()
+      FXUtil.runLater {
+        treeTable.requestFocus()
+      }
     }
   }
 
@@ -338,7 +343,7 @@ class TaskTable(
     project.addProjectEventListener(object : ProjectEventListener.Stub() {
       override fun projectRestoring(completion: Barrier<Document>) {
         completion.await {
-          sync()
+          sync(keepFocus = true)
         }
       }
 
@@ -501,19 +506,54 @@ class TaskTable(
 
   private fun findNameColumn() = treeTable.columns.find { (it.userData as ColumnList.Column).id == TaskDefaultColumn.NAME.stub.id }
 
-  private fun buildColumns(columns: List<ColumnList.Column>) {
-    val tableColumns =
-      columns.mapNotNull { column ->
-        when (val taskDefaultColumn = TaskDefaultColumn.find(column.id)) {
-          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO, TaskDefaultColumn.NOTES -> null
-          null -> createCustomColumn(column)
-          else -> createDefaultColumn(column, taskDefaultColumn)
-        }?.also {
-          it.prefWidth = column.width.toDouble()
+  private fun anyDifference(newColumns: List<ColumnList.Column>, oldColumns: List<ColumnList.Column>): Boolean {
+    if (newColumns.size != oldColumns.size) {
+      LOGGER.debug("anyDifference: columns list sizes are different: new={}, old={}", newColumns.size, oldColumns.size)
+      return true
+    }
+    newColumns.forEach { col ->
+      oldColumns.find { it.id == col.id }?.let {
+        if (it != col) {
+          LOGGER.debug("anyDifference: column {} != old column with the same id={}", col, it)
+          return true
         }
-      }.toList()
-    //(treeTable.lookup(".virtual-flow") as Region).minWidth = columnList.totalWidth.toDouble()
-    treeTable.setColumns(tableColumns)
+      } ?: run {
+        LOGGER.debug("anyDifference: column {} not found in the old columns", col)
+        return true
+      }
+    }
+    oldColumns.forEach { col ->
+      newColumns.find { it.id == col.id }?.let {
+        if (it != col) {
+          LOGGER.debug("anyDifference: column {} != new column with the same id={}", col, it)
+          return true
+        }
+      } ?: run {
+        LOGGER.debug("anyDifference: column {} not found in the new columns", col)
+        return true
+      }
+    }
+    LOGGER.debug("anyDifference: no difference in the column list")
+    return false
+  }
+
+  private val VIRTUAL_COLUMNS = setOf(TaskDefaultColumn.COLOR.stub.id, TaskDefaultColumn.INFO.stub.id, TaskDefaultColumn.NOTES.stub.id)
+  private fun buildColumns(columns: List<ColumnList.Column>) {
+    val filteredColumns = columns.filter { col -> !VIRTUAL_COLUMNS.contains(col.id)  }
+    if (anyDifference(filteredColumns, treeTable.columns.map { it.userData as ColumnList.Column }.toList())) {
+      val tableColumns =
+        columns.mapNotNull { column ->
+          when (val taskDefaultColumn = TaskDefaultColumn.find(column.id)) {
+            TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO, TaskDefaultColumn.NOTES-> null
+            null -> createCustomColumn(column)
+            else -> createDefaultColumn(column, taskDefaultColumn)
+          }?.also {
+            it.prefWidth = column.width.toDouble()
+          }
+        }.toList()
+      //(treeTable.lookup(".virtual-flow") as Region).minWidth = columnList.totalWidth.toDouble()
+      treeTable.setColumns(tableColumns)
+    }
   }
 
   private fun createDefaultColumn(column: ColumnList.Column, taskDefaultColumn: TaskDefaultColumn) =
@@ -1006,6 +1046,7 @@ private class TreeSelectionListenerImpl(
   var disabled: Boolean = false
 
   override fun onChanged(c: ListChangeListener.Change<out TreeItem<Task>>?) {
+    LOGGER.debug("Selection changed: currentSelection={}", selectedItems)
     if (!disabled) {
       copyOf(selectedItems.filterNotNull()).map { it.value }
         .filter { it.manager.taskHierarchy.contains(it) }.also {
