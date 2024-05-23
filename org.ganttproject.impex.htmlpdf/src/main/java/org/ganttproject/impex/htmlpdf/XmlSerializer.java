@@ -24,6 +24,7 @@ import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.customproperty.CustomProperty;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.TaskVisitor;
@@ -47,7 +48,9 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Serializes project data into XML for GanttProject's HTML/FOP stylesheets.
@@ -97,22 +100,27 @@ public class XmlSerializer extends SaverBase {
     return GanttLanguage.getInstance().correctLabel(text);
   }
 
+  private Set<String> IGNORED_COLUMNS = Sets.newHashSet(
+    TaskDefaultColumn.NOTES.getStub().getID(), TaskDefaultColumn.INFO.getStub().getID()
+  );
   protected void writeColumns(ColumnList visibleFields, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
-    int totalWidth = 0;
+    var columns = new ArrayList<ColumnList.Column>();
     for (int i = 0; i < visibleFields.getSize(); i++) {
-      if (visibleFields.getField(i).isVisible()) {
-        totalWidth += visibleFields.getField(i).getWidth();
+      var col = visibleFields.getField(i);
+      if (col.isVisible() && !IGNORED_COLUMNS.contains(col.getID())) {
+        columns.add(col);
       }
     }
-    for (int i = 0; i < visibleFields.getSize(); i++) {
-      ColumnList.Column field = visibleFields.getField(i);
-      if (field.isVisible()) {
-        addAttribute("id", field.getID(), attrs);
-        addAttribute("name", field.getName(), attrs);
-        addAttribute("width", field.getWidth() * 100 / totalWidth, attrs);
-        emptyElement("field", attrs, handler);
-      }
+    int totalWidth = 0;
+    for (var col : columns) {
+      totalWidth += col.getWidth();
+    }
+    for (var col : columns) {
+      addAttribute("id", col.getID(), attrs);
+      addAttribute("name", col.getName(), attrs);
+      addAttribute("width", col.getWidth() * 100 / totalWidth, attrs);
+      emptyElement("field", attrs, handler);
     }
   }
 

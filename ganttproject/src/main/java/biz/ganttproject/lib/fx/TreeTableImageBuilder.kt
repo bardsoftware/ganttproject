@@ -56,7 +56,10 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
   )
   val treeTableSceneBuilder = TreeTableSceneBuilder(sceneBuilderInput)
 
-  val visibleColumns = taskTable.columnList.exportData().filter { it.isVisible && TaskDefaultColumn.COLOR.stub.id != it.id}
+  val visibleColumns = taskTable.columnList.exportData().filter {
+    // We will not print as columns the color and notes columns: they are shown as icons in the table UI.
+    it.isVisible && TaskDefaultColumn.COLOR.stub.id != it.id && TaskDefaultColumn.NOTES.stub.id != it.id
+  }
   val columnMap = visibleColumns.associateWith {
     val defaultColumn = TaskDefaultColumn.find(it.id)
     TableSceneBuilder.Table.Column(
