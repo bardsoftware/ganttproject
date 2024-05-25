@@ -34,8 +34,8 @@ public class EditMenu extends JMenu {
   public EditMenu(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, Runnable searchUi, String key) {
     super(GPAction.createVoidAction(key));
     final GPUndoManager undoManager = uiFacade.getUndoManager();
-    myUndoAction = new UndoAction(undoManager);
-    myRedoAction = new RedoAction(undoManager);
+    myUndoAction = new UndoAction(undoManager, uiFacade);
+    myRedoAction = new RedoAction(undoManager, uiFacade);
     mySearchAction = new SearchDialogAction(searchUi);
 
     add(getUndoAction());
