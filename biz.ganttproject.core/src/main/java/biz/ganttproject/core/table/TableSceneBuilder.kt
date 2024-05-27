@@ -88,11 +88,11 @@ class TableSceneBuilder(
       ).apply {
         style = "timeline.borderBottom"
       }
-//      canvas.createLine(
-//        x + width, state.y, x + width, state.y + height
-//      ).apply {
-//        style = "timeline.borderBottom"
-//      }
+      canvas.createLine(
+        x + width.actual, state.y, x + width.actual, state.y + height
+      ).apply {
+        style = "timeline.borderBottom"
+      }
 
       // TODO: add rectangle borders and color?
       val headerAnchorX = when (config.headerAlignment) {
