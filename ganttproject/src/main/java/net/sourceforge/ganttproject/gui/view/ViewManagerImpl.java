@@ -54,8 +54,8 @@ public class ViewManagerImpl implements GPViewManager {
     myTabs = tabs;
     project.addProjectEventListener(getProjectEventListener());
     // Create actions
-    myCopyAction = new CopyAction(this);
-    myCutAction = new CutAction(this, undoManager);
+    myCopyAction = new CopyAction(this, uiFacade);
+    myCutAction = new CutAction(this, undoManager, uiFacade);
     myPasteAction = new PasteAction(project, uiFacade, this, undoManager);
 
     myTabs.getModel().addChangeListener(e -> {

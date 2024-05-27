@@ -56,7 +56,10 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
   )
   val treeTableSceneBuilder = TreeTableSceneBuilder(sceneBuilderInput)
 
-  val visibleColumns = taskTable.columnList.exportData().filter { it.isVisible && TaskDefaultColumn.COLOR.stub.id != it.id}
+  val visibleColumns = taskTable.columnList.exportData().filter {
+    // We will not print as columns the color and notes columns: they are shown as icons in the table UI.
+    it.isVisible && TaskDefaultColumn.COLOR.stub.id != it.id && TaskDefaultColumn.NOTES.stub.id != it.id && TaskDefaultColumn.INFO.stub.id != it.id
+  }
   val columnMap = visibleColumns.associateWith {
     val defaultColumn = TaskDefaultColumn.find(it.id)
     TableSceneBuilder.Table.Column(
@@ -93,7 +96,12 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
     columns = columnMap.values.toList(),
     items = rootSceneItems
   )
-  val painter = StyledPainterImpl(ChartUIConfiguration( taskTable.project.uIConfiguration))
+  val painter = StyledPainterImpl(ChartUIConfiguration( taskTable.project.uIConfiguration).also {
+    // Use font from the application font settings for the export.
+    val fontsize = applicationFont.value.size.roundToInt()
+    val font = applicationFontSpec.value.asAwtFontOfSize(fontsize)
+    it.setBaseFont(font, fontsize)
+  })
   painter.setGraphics(graphics2D)
 
   graphics2D.setRenderingHint(

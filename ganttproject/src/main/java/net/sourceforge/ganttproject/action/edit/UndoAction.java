@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.edit;
 
 import net.sourceforge.ganttproject.action.GPAction;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
@@ -31,13 +32,15 @@ import java.awt.event.ActionEvent;
  */
 public class UndoAction extends GPAction implements GPUndoListener {
   private final GPUndoManager myUndoManager;
+  private final UIFacade myUiFacade;
 
-  public UndoAction(GPUndoManager undoManager) {
-    this(undoManager, IconSize.MENU);
+  public UndoAction(GPUndoManager undoManager, UIFacade uiFacade) {
+    this(undoManager, uiFacade, IconSize.MENU);
   }
 
-  private UndoAction(GPUndoManager undoManager, IconSize size) {
+  private UndoAction(GPUndoManager undoManager, UIFacade uiFacade, IconSize size) {
     super("undo", size.asString());
+    myUiFacade = uiFacade;
     myUndoManager = undoManager;
     myUndoManager.addUndoableEditListener(this);
     setEnabled(myUndoManager.canUndo());
@@ -50,6 +53,7 @@ public class UndoAction extends GPAction implements GPUndoListener {
     }
 
     myUndoManager.undo();
+    myUiFacade.getActiveChart().focus();
   }
 
   @Override
@@ -85,7 +89,7 @@ public class UndoAction extends GPAction implements GPUndoListener {
 
   @Override
   public UndoAction asToolbarAction() {
-    UndoAction result = new UndoAction(myUndoManager);
+    UndoAction result = new UndoAction(myUndoManager, myUiFacade);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
     return result;
   }
