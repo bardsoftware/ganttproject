@@ -5,8 +5,8 @@ on:
         branches: ['master', 'BRANCH*']
         paths: ['ganttproject-builder/BUILD-HISTORY-MAJOR']
 env:
-    BUILD_NUMBER: 3300
-    VERSION: 3.3.3300
+    BUILD_NUMBER: 3309
+    VERSION: 3.3.3309
     WINDOWS_APP_FOLDER_NAME: GanttProject-3.3
     MAC_APP_NAME: GanttProject 3.3
     MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE }}
@@ -28,7 +28,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.9
+                  java-version: 17.0.11
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
@@ -72,7 +72,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.9
+                  java-version: 17.0.11
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
@@ -143,7 +143,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.9
+                  java-version: 17.0.11
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
@@ -211,7 +211,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.9
+                  java-version: 17.0.11
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
