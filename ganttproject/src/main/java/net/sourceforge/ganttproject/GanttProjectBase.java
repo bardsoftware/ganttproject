@@ -41,6 +41,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.stage.Stage;
 import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -216,7 +217,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     return myProjectDatabase;
   }
 
-  protected GanttProjectBase() {
+  protected GanttProjectBase(Stage stage) {
     var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager);
 
     myProjectDatabase = databaseProxy;
@@ -230,7 +231,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     var viewPane = new ViewPane();
 
     myNotificationManager = new NotificationManagerImpl(this::getUIFacade);
-    myUIFacade = new UIFacadeImpl(myNotificationManager, getProject(), this);
+    myUIFacade = new UIFacadeImpl(stage, myNotificationManager, getProject(), this);
     myUiInitializationPromise = new TwoPhaseBarrierImpl<>(myUIFacade);
 
     GPLogger.setUIFacade(myUIFacade);

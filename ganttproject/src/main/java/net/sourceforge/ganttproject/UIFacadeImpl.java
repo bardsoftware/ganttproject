@@ -31,6 +31,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -90,6 +92,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final TaskView myTaskView = new TaskView();
   private final Map<String, Font> myOriginalFonts = Maps.newHashMap();
   private final List<Runnable> myOnUpdateComponentTreeUiCallbacks = Lists.newArrayList();
+  private final Stage myWindow;
   private float myLastScale = 0;
 
   private static Map<FontSpec.Size, String> getSizeLabels() {
@@ -131,8 +134,9 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final IGanttProject myProject;
   private FontSpec myLastFontSpec;
 
-  UIFacadeImpl(NotificationManagerImpl notificationManager,
+  UIFacadeImpl(Stage stage, NotificationManagerImpl notificationManager,
                final IGanttProject project, UIFacade fallbackDelegate) {
+    myWindow = stage;
     myProject = project;
     myScrollingManager = new ScrollingManagerImpl();
     myZoomManager = new ZoomManager(project.getTimeUnitStack());
@@ -280,6 +284,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       } else if (messageType == JOptionPane.QUESTION_MESSAGE) {
         alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.initStyle(StageStyle.UNDECORATED);
+        alert.initOwner(myWindow);
+        alert.initModality(Modality.APPLICATION_MODAL);
       } else if (messageType == JOptionPane.ERROR_MESSAGE) {
         alert = new Alert(Alert.AlertType.ERROR);
         alert.initStyle(StageStyle.UNDECORATED);

@@ -30,6 +30,7 @@ import com.beust.jcommander.Parameter;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import javafx.stage.Stage;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.action.*;
 import net.sourceforge.ganttproject.action.edit.EditMenu;
@@ -141,7 +142,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   public JMenuBar getMenuBar() { return myMenuBar; }
 
-  public GanttProject() {
+  public GanttProject(Stage stage) {
+    super(stage);
     LoggerApi<Logger> startupLogger = GPLogger.create("Window.Startup");
     startupLogger.debug("Creating main frame...");
     ToolTipManager.sharedInstance().setInitialDelay(200);

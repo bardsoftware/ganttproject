@@ -63,9 +63,9 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
       e.printStackTrace()
     }
     try {
-      val ganttProject = GanttProject()
-      configure(ganttProject)
       val stage = Stage()
+      val ganttProject = GanttProject(stage)
+      configure(ganttProject)
       val app = GanttProjectFxApp(ganttProject)
       ganttProject.notificationManagerImpl.setOwner(stage)
       app.init()
