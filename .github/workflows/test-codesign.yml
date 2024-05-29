@@ -23,4 +23,6 @@ jobs:
                   security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
                   security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
                   security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-                  security dump-keychain build.keychain
+                  echo "Sign me" >> test
+                  /usr/bin/codesign --force -s 10CA57E9AC0EF0A4328B7C1BA14B618E1208DEC1 test -v
+
