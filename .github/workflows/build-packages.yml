@@ -15,188 +15,188 @@ env:
     MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
 
 jobs:
-#    Linux:
-#        runs-on: ubuntu-latest
-#        steps:
-#            - uses: actions/checkout@v3
-#            - name: Checkout submodules
-#              shell: bash
+    Linux:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - name: Checkout submodules
+              shell: bash
+              run: |
+                  git submodule sync --recursive
+                  git submodule update --init --force --recursive --depth=1
+                  echo "$VERSION" > ganttproject-builder/VERSION
+            - uses: actions/setup-java@v3
+              with:
+                  distribution: 'liberica'
+                  java-version: 17.0.11
+                  java-package: jdk+fx
+                  cache: 'gradle'
+            - name: Build GanttProject
+              run: |
+                  ./gradlew distbin distzip
+                  ./gradlew -PwithJavafx distdeb
+                  echo "===== PLUGINS ====="
+                  ls ganttproject-builder/dist-bin/plugins/base
+                  echo "===== DISTRIBUTIONS ====="
+                  ls build/distributions
+
+            - id: 'auth'
+              uses: 'google-github-actions/auth@v1'
+              with:
+                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+            - name: 'Set up Cloud SDK'
+              uses: 'google-github-actions/setup-gcloud@v1'
+
+            - name: 'Use gcloud CLI'
+              run: 'gcloud info'
+
+            - name: Upload Packages
+              run: |
+                  #!/bin/sh
+                  cd build/distributions
+                  for f in *; do
+                    gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
+                  done;
+
+    Windows:
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v3
+            - name: Checkout submodules
+              shell: bash
+              run: |
+                  git submodule sync --recursive
+                  git submodule update --init --force --recursive --depth=1
+                  echo "$VERSION" > ganttproject-builder/VERSION
+            - uses: actions/setup-java@v3
+              with:
+                  distribution: 'liberica'
+                  java-version: 17.0.11
+                  java-package: jdk+fx
+                  cache: 'gradle'
+            - name: Build GanttProject
+              run: |
+                  ./gradlew distbin
+                  echo "===== PLUGINS ====="
+                  ls ganttproject-builder/dist-bin/plugins/base
+            - name: Build MSI installer
+              run: |
+                  build-bin/package-win.bat
+
+            - id: 'auth'
+              uses: 'google-github-actions/auth@v1'
+              with:
+                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+            - name: 'Set up Cloud SDK'
+              uses: 'google-github-actions/setup-gcloud@v1'
+
+            - name: 'Use gcloud CLI'
+              run: 'gcloud info'
+
+            - name: Upload Packages
+              run: |
+                  gsutil cp build\ganttproject-$env:VERSION.msi gs://dl.ganttproject.biz
+                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.msi
+
+            - name: Install NSIS
+              run: |
+                  iwr -useb get.scoop.sh -outfile 'install.ps1'
+                  .\install.ps1 -RunAsAdmin
+                  scoop update
+                  scoop bucket add extras
+                  scoop install nsis
+            - name: Print NSIS version
+              run: makensis -VERSION
+            - name: Print NSIS compile flags
+              run: makensis -HDRINFO
+
+            - name: Prepare files for NSIS
+              run: |
+                  ./gradlew distwin
+                  echo "===== dist-win ====="
+                  ls ganttproject-builder/dist-win
+
+            - name: Build NSIS package
+              run: |
+                  cd ganttproject-builder\dist-win
+                  makensis ganttproject.nsi
+                  dir
+                  mv ganttproject-$env:VERSION.exe ..\..\build
+
+            - name: Upload Packages
+              run: |
+                  gsutil cp build\ganttproject-$env:VERSION.exe gs://dl.ganttproject.biz
+                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.exe
+
+    macOS_silicon:
+        runs-on: macos-latest-xlarge
+        steps:
+            - uses: actions/checkout@v3
+            - name: Checkout submodules
+              shell: bash
+              run: |
+                  git submodule sync --recursive
+                  git submodule update --init --force --recursive --depth=1
+                  echo "$VERSION" > ganttproject-builder/VERSION
+            - uses: actions/setup-java@v3
+              with:
+                  distribution: 'liberica'
+                  java-version: 17.0.11
+                  java-package: jdk+fx
+                  cache: 'gradle'
+            - name: Build GanttProject
+              run: |
+                  ./gradlew distbin
+                  echo "===== PLUGINS ====="
+                  ls ganttproject-builder/dist-bin/plugins/base
+
+            - name: Build GanttProject.app
+              run: |
+                  ./build-bin/package-mac.sh
+                  ./build/GanttProject.app/Contents/MacOS/GanttProject -h || echo "failed to run"
+
+#            - name: Sign GanttProject.app
 #              run: |
-#                  git submodule sync --recursive
-#                  git submodule update --init --force --recursive --depth=1
-#                  echo "$VERSION" > ganttproject-builder/VERSION
-#            - uses: actions/setup-java@v3
+#                  echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+#
+#                  security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+#                  security default-keychain -s build.keychain
+#                  security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+#                  security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+#
+#                  build-bin/notarize.sh $VERSION "$MACOS_CERTIFICATE_NAME" "qwer" sign
+
+            - name: Create temporary DMG for notarization
+              run: |
+                  jpackage --type dmg --app-image build/GanttProject.app -n "ganttproject-silicon-$VERSION" --dest build/
+            #            - uses: actions/setup-python@v4
 #              with:
-#                  distribution: 'liberica'
-#                  java-version: 17.0.11
-#                  java-package: jdk+fx
-#                  cache: 'gradle'
-#            - name: Build GanttProject
+#                python-version: '3.10'
+#            - name: Build DMG
 #              run: |
-#                  ./gradlew distbin distzip
-#                  ./gradlew -PwithJavafx distdeb
-#                  echo "===== PLUGINS ====="
-#                  ls ganttproject-builder/dist-bin/plugins/base
-#                  echo "===== DISTRIBUTIONS ====="
-#                  ls build/distributions
-#
-#            - id: 'auth'
-#              uses: 'google-github-actions/auth@v1'
-#              with:
-#                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-#
-#            - name: 'Set up Cloud SDK'
-#              uses: 'google-github-actions/setup-gcloud@v1'
-#
-#            - name: 'Use gcloud CLI'
-#              run: 'gcloud info'
-#
-#            - name: Upload Packages
-#              run: |
-#                  #!/bin/sh
-#                  cd build/distributions
-#                  for f in *; do
-#                    gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
-#                  done;
-#
-#    Windows:
-#        runs-on: windows-latest
-#        steps:
-#            - uses: actions/checkout@v3
-#            - name: Checkout submodules
-#              shell: bash
-#              run: |
-#                  git submodule sync --recursive
-#                  git submodule update --init --force --recursive --depth=1
-#                  echo "$VERSION" > ganttproject-builder/VERSION
-#            - uses: actions/setup-java@v3
-#              with:
-#                  distribution: 'liberica'
-#                  java-version: 17.0.11
-#                  java-package: jdk+fx
-#                  cache: 'gradle'
-#            - name: Build GanttProject
-#              run: |
-#                  ./gradlew distbin
-#                  echo "===== PLUGINS ====="
-#                  ls ganttproject-builder/dist-bin/plugins/base
-#            - name: Build MSI installer
-#              run: |
-#                  build-bin/package-win.bat
-#
-#            - id: 'auth'
-#              uses: 'google-github-actions/auth@v1'
-#              with:
-#                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-#
-#            - name: 'Set up Cloud SDK'
-#              uses: 'google-github-actions/setup-gcloud@v1'
-#
-#            - name: 'Use gcloud CLI'
-#              run: 'gcloud info'
-#
-#            - name: Upload Packages
-#              run: |
-#                  gsutil cp build\ganttproject-$env:VERSION.msi gs://dl.ganttproject.biz
-#                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.msi
-#
-#            - name: Install NSIS
-#              run: |
-#                  iwr -useb get.scoop.sh -outfile 'install.ps1'
-#                  .\install.ps1 -RunAsAdmin
-#                  scoop update
-#                  scoop bucket add extras
-#                  scoop install nsis
-#            - name: Print NSIS version
-#              run: makensis -VERSION
-#            - name: Print NSIS compile flags
-#              run: makensis -HDRINFO
-#
-#            - name: Prepare files for NSIS
-#              run: |
-#                  ./gradlew distwin
-#                  echo "===== dist-win ====="
-#                  ls ganttproject-builder/dist-win
-#
-#            - name: Build NSIS package
-#              run: |
-#                  cd ganttproject-builder\dist-win
-#                  makensis ganttproject.nsi
-#                  dir
-#                  mv ganttproject-$env:VERSION.exe ..\..\build
-#
-#            - name: Upload Packages
-#              run: |
-#                  gsutil cp build\ganttproject-$env:VERSION.exe gs://dl.ganttproject.biz
-#                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.exe
-#
-#    macOS_silicon:
-#        runs-on: macos-latest-xlarge
-#        steps:
-#            - uses: actions/checkout@v3
-#            - name: Checkout submodules
-#              shell: bash
-#              run: |
-#                  git submodule sync --recursive
-#                  git submodule update --init --force --recursive --depth=1
-#                  echo "$VERSION" > ganttproject-builder/VERSION
-#            - uses: actions/setup-java@v3
-#              with:
-#                  distribution: 'liberica'
-#                  java-version: 17.0.11
-#                  java-package: jdk+fx
-#                  cache: 'gradle'
-#            - name: Build GanttProject
-#              run: |
-#                  ./gradlew distbin
-#                  echo "===== PLUGINS ====="
-#                  ls ganttproject-builder/dist-bin/plugins/base
-#
-#            - name: Build GanttProject.app
-#              run: |
-#                  ./build-bin/package-mac.sh
-#                  ./build/GanttProject.app/Contents/MacOS/GanttProject -h || echo "failed to run"
-#
-##            - name: Sign GanttProject.app
-##              run: |
-##                  echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
-##
-##                  security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-##                  security default-keychain -s build.keychain
-##                  security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-##                  security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
-##
-##                  build-bin/notarize.sh $VERSION "$MACOS_CERTIFICATE_NAME" "qwer" sign
-#
-#            - name: Create temporary DMG for notarization
-#              run: |
-#                  jpackage --type dmg --app-image build/GanttProject.app -n "ganttproject-silicon-$VERSION" --dest build/
-#            #            - uses: actions/setup-python@v4
-##              with:
-##                python-version: '3.10'
-##            - name: Build DMG
-##              run: |
-##                  pip install "dmgbuild"
-##                  dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" build/ganttproject-$VERSION.dmg
-#
-#            - id: 'auth'
-#              uses: 'google-github-actions/auth@v1'
-#              with:
-#                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-#
-#            - name: 'Set up Cloud SDK'
-#              uses: 'google-github-actions/setup-gcloud@v1'
-#
-#            - name: 'Use gcloud CLI'
-#              run: 'gcloud info'
-#
-#            - name: Upload artifacts
-#              run: |
-#                  #!/bin/sh
-#                  cd build
-#                  for f in *.dmg; do
-#                    gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
-#                  done;
+#                  pip install "dmgbuild"
+#                  dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" build/ganttproject-$VERSION.dmg
+
+            - id: 'auth'
+              uses: 'google-github-actions/auth@v1'
+              with:
+                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+            - name: 'Set up Cloud SDK'
+              uses: 'google-github-actions/setup-gcloud@v1'
+
+            - name: 'Use gcloud CLI'
+              run: 'gcloud info'
+
+            - name: Upload artifacts
+              run: |
+                  #!/bin/sh
+                  cd build
+                  for f in *.dmg; do
+                    gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
+                  done;
 
     macOS_intel:
         runs-on: macos-13
