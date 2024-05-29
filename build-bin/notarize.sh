@@ -16,8 +16,7 @@ spctl -a -t exec -vv build/GanttProject.app
 }
 
 do_notarize() {
-xcrun altool --notarize-app --primary-bundle-id com.bardsoftware.ganttproject --file ./ganttproject-$VER.dmg --username contact@bardsoftware.com --password $NOTARIZE_PASSWORD
-xcrun altool --notarization-history 0 -u contact@bardsoftware.com -p $NOTARIZE_PASSWORD
+  xcrun notarytool submit --apple-id contact@bardsoftware.com --team-id QDCH4KTVP7  --password $NOTARIZE_PASSWORD --wait build/ganttproject-1.0.dmg
 }
 
 do_staple() {

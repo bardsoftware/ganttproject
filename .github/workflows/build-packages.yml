@@ -13,6 +13,7 @@ env:
     MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_PWD }}
     MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_NAME }}
     MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
+    MACOS_NOTARIZE_PASSWORD: ${{ secrets.PROD_MACOS_NOTARIZE_PWD }}
 
 jobs:
 #    Linux:
@@ -238,18 +239,12 @@ jobs:
                   echo "------------------ NOW SIGNING ------------------------"
                   
                   build-bin/notarize.sh $VERSION "BarD Software s.r.o" "--" sign build.keychain
-
-
-            - name: Create temporary DMG for notarization
-              run: |
-                  jpackage --type dmg --app-image build/GanttProject.app -n "ganttproject-intel-$VERSION" --dest build/
-            #            - uses: actions/setup-python@v4
-            #              with:
-            #                python-version: '3.10'
-            #            - name: Build DMG
-            #              run: |
-            #                  pip install "dmgbuild"
-            #                  dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" build/ganttproject-$VERSION.dmg
+                  
+                  jpackage --type dmg --app-image build/GanttProject.app -n "ganttproject" --dest build/
+                  build-bin/notarize.sh $VERSION "BarD Software s.r.o" "$MACOS_NOTARIZE_PASSWORD" notarize 
+                  build-bin/notarize.sh $VERSION "BarD Software s.r.o" "--" staple
+                  rm build/*.dmg
+                  jpackage --type dmg --app-image build/GanttProject.app -n "ganttproject-notarized" --dest build/
 
             - id: 'auth'
               uses: 'google-github-actions/auth@v1'
