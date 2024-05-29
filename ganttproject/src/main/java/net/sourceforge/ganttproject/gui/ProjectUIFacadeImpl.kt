@@ -103,6 +103,7 @@ class ProjectUIFacadeImpl(
       ).run()
     } finally {
       isSaving = false
+      myWorkbenchFacade.activeChart.focus()
     }
   }
 

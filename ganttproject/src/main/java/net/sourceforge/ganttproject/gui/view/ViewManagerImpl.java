@@ -61,8 +61,8 @@ public class ViewManagerImpl implements GPViewManager {
     myViewPane = viewPane;
     project.addProjectEventListener(getProjectEventListener());
     // Create actions
-    myCopyAction = new CopyAction(this);
-    myCutAction = new CutAction(this, undoManager);
+    myCopyAction = new CopyAction(this, uiFacade);
+    myCutAction = new CutAction(this, undoManager, uiFacade);
     myPasteAction = new PasteAction(project, uiFacade, this, undoManager);
 
     /*
