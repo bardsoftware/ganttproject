@@ -31,15 +31,14 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.stage.Stage
+import net.sourceforge.ganttproject.APP_LOGGER
 import net.sourceforge.ganttproject.GanttProject
-import net.sourceforge.ganttproject.gui.NotificationChannel
-import net.sourceforge.ganttproject.gui.NotificationItem
-import net.sourceforge.ganttproject.gui.NotificationManager
 
 class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() {
 
   override fun start(stage: Stage) {
     try {
+      APP_LOGGER.debug(">>> start()")
       val vbox = vbox {
         add(convertMenu(ganttProject.menuBar))
         add(ganttProject.createToolbar().build().toolbar)
@@ -57,7 +56,9 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
         )
       }
       stage.setScene(Scene(vbox))
+      APP_LOGGER.debug("... app scene done.")
       stage.onShown = EventHandler {
+        APP_LOGGER.debug("onShown(): resolving the barrier...")
         ganttProject.uiFacade.windowOpenedBarrier.resolve(true)
 //        ganttProject.notificationManager.addNotifications(
 //          listOf(NotificationItem(NotificationChannel.RSS, "Got some news", "Lorem ipsum dolor sit amet", NotificationManager.DEFAULT_HYPERLINK_LISTENER))
@@ -91,7 +92,7 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
           }
         }
       }
-
+      APP_LOGGER.debug("... geometry, icons and title done.")
       val insertTask = KeyCodeCombination(KeyCode.INSERT)
       stage.addEventHandler(KeyEvent.KEY_PRESSED) {
         println("event=$it")
@@ -100,10 +101,13 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
           it.consume()
         }
       }
+      APP_LOGGER.debug("... showing the stage.")
       stage.show()
+      APP_LOGGER.debug("... done.")
     } catch (ex: Exception) {
       ex.printStackTrace()
     }
+    APP_LOGGER.debug("<<< start()")
   }
 }
 

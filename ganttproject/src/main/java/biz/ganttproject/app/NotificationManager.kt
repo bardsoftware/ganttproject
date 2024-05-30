@@ -62,27 +62,28 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
   }
 
   private fun updateUi() {
-    val maxSeverityItem = notifications.filter { it.isRead.not() }.maxByOrNull {
-      when (it.channel) {
-        null, NotificationChannel.RSS -> 1
-        NotificationChannel.WARNING -> 2
-        NotificationChannel.ERROR -> 3
-      }
-    } ?: return
-    val popupBuilder = Notifications.create().owner(owner).title(maxSeverityItem.myTitle).text(maxSeverityItem.myBody)
-    maxUnreadSeverity.set(maxSeverityItem.channel)
-    when (maxSeverityItem.channel) {
-      NotificationChannel.RSS -> {
-        popupBuilder.showInformation()
-      }
-      NotificationChannel.WARNING -> {
-        popupBuilder.showWarning()
-      }
-      NotificationChannel.ERROR -> {
-        popupBuilder.showError()
+    FXUtil.runLater {
+      val maxSeverityItem = notifications.filter { it.isRead.not() }.maxByOrNull {
+        when (it.channel) {
+          null, NotificationChannel.RSS -> 1
+          NotificationChannel.WARNING -> 2
+          NotificationChannel.ERROR -> 3
+        }
+      } ?: return@runLater
+      val popupBuilder = Notifications.create().owner(owner).title(maxSeverityItem.myTitle).text(maxSeverityItem.myBody)
+      maxUnreadSeverity.set(maxSeverityItem.channel)
+      when (maxSeverityItem.channel) {
+        NotificationChannel.RSS -> {
+          popupBuilder.showInformation()
+        }
+        NotificationChannel.WARNING -> {
+          popupBuilder.showWarning()
+        }
+        NotificationChannel.ERROR -> {
+          popupBuilder.showError()
+        }
       }
     }
-
 
   }
   fun createStatusBarComponent() = HBox().also {

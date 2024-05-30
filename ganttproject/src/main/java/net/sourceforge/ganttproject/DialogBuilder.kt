@@ -20,14 +20,20 @@ package net.sourceforge.ganttproject
 
 import biz.ganttproject.app.DialogController
 import biz.ganttproject.app.dialogFxBuild
+import biz.ganttproject.colorFromUiManager
 import biz.ganttproject.lib.fx.vbox
+import biz.ganttproject.walkTree
 import javafx.application.Platform
 import javafx.embed.swing.SwingNode
 import javafx.event.EventHandler
+import javafx.geometry.Insets
 import javafx.scene.control.ButtonBar
 import javafx.scene.control.ButtonType
 import javafx.scene.control.Dialog
 import javafx.scene.input.KeyCombination
+import javafx.scene.layout.Background
+import javafx.scene.layout.BackgroundFill
+import javafx.scene.layout.CornerRadii
 import javafx.scene.layout.Priority
 import javafx.stage.Screen
 import javafx.stage.Stage
@@ -194,6 +200,11 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
           swingNode.content = contentPane
           Platform.runLater {
             dialog.dialogPane.let {
+              it.walkTree { node ->
+                if (node is ButtonBar) {
+                  node.background = Background(BackgroundFill("Panel.background".colorFromUiManager(), CornerRadii.EMPTY, Insets.EMPTY))
+                }
+              }
               it.layout()
               it.scene.window.sizeToScene()
             }

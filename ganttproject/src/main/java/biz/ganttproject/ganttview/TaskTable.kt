@@ -209,7 +209,7 @@ class TaskTable(
     }
   }
 
-  fun loadDefaultColumns() = Platform.runLater {
+  fun loadDefaultColumns() = FXUtil.runLater {
     treeTable.columns.clear()
     columnList.importData(ColumnList.Immutable.fromList(
       TaskDefaultColumn.getColumnStubs().map {
@@ -736,7 +736,7 @@ class TaskTable(
   }
 
   fun reload(termination: OnBarrierReached? = null) {
-    Platform.runLater {
+    FXUtil.runLater {
       treeTable.root.children.clear()
       treeTable.selectionModel.clearSelection()
       sync()

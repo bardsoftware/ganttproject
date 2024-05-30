@@ -57,6 +57,7 @@ fun main(args: Array<String>) {
 }
 
 fun startUiApp(configure: (GanttProject) -> Unit = {}) {
+  APP_LOGGER.debug("Starting the UI.")
   Platform.setImplicitExit(true)
   FXUtil.startup{
     Thread.setDefaultUncaughtExceptionHandler { t, e ->
@@ -118,6 +119,7 @@ class AppBuilder(args: Array<String>) {
         } catch (ex: Exception) {
           println("Failed to write log to file: " + ex.message)
           ex.printStackTrace()
+          System.exit(1)
         }
       }
 
@@ -148,6 +150,7 @@ class AppBuilder(args: Array<String>) {
     val splashCloser = showAsync().get()
     whenWindowOpened {
       try {
+        APP_LOGGER.debug("Closing the splash window")
         splashCloser.run()
       } catch (ex: Exception) {
         ex.printStackTrace()
@@ -201,9 +204,11 @@ class AppBuilder(args: Array<String>) {
     startUiApp { ganttProject: GanttProject ->
       ganttProject.updater = org.eclipse.core.runtime.Platform.getUpdater() ?: DummyUpdater
       ganttProject.uiFacade.onWindowOpened {
+        APP_LOGGER.debug("Window opened. Running afterWindowOpened commands.")
           runAfterWindowOpenedCommands.forEach { cmd -> cmd() }
       }
       ganttProject.uiInitializationPromise.await {
+        APP_LOGGER.debug("UI initialized. Running afterAppInitialized commands.")
         runAfterAppInitializedCommands.forEach { cmd -> cmd(ganttProject) }
       }
     }
