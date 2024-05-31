@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject;
 import biz.ganttproject.LoggerApi;
 import biz.ganttproject.LoggerImpl;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,7 +34,6 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -49,15 +49,18 @@ public class GPLogger {
   private static PrintStream ourStderr;
 
   static {
-    ourHandler = new ConsoleHandler();
-    ourLogger.addHandler(ourHandler);
-    ourLogger.setLevel(Level.ALL);
-    ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
+//    ourHandler = new ConsoleHandler();
+//    ourLogger.addHandler(ourHandler);
+//    ourLogger.setLevel(Level.ALL);
+//    ourHandler.setFormatter(new java.util.logging.SimpleFormatter());
     init();
   }
 
   public static void init() {
     //System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, logbackFilePath);
+    SLF4JBridgeHandler.removeHandlersForRootLogger();
+    SLF4JBridgeHandler.install();
+    Logger.getLogger("").setLevel(Level.FINEST);
     URL logConfig = GanttProject.class.getResource("/logging.properties");
     if (logConfig != null) {
       try {
@@ -110,7 +113,7 @@ public class GPLogger {
 
   public static LoggerApi<org.slf4j.Logger> create(String name) {
     var result = new LoggerImpl(name);
-    getLogger(name); // To initialize handlers
+    //getLogger(name); // To initialize handlers
     return result;
   }
 
@@ -118,7 +121,7 @@ public class GPLogger {
     Logger logger = ourLoggers.get(name);
     if (logger == null) {
       logger = Logger.getLogger(name);
-      logger.addHandler(ourHandler);
+//      logger.addHandler(ourHandler);
       ourLoggers.put(name, logger);
     }
     return logger;
@@ -157,6 +160,10 @@ public class GPLogger {
       var logFile = new File(logFileName);
       ourStderr = System.err;
       System.setErr(new PrintStream(new FileOutputStream(logFile)));
+      ourLoggers.values().forEach(logger -> {
+        logger.removeHandler(ourHandler);
+        logger.addHandler(fileHandler);
+      });
 
 
 //      ourLogbackAppender = new FileAppender();
