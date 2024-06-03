@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.plugins;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.export.Exporter;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -36,11 +37,11 @@ import java.util.List;
  */
 public class PluginManager {
 
-  private static final String EXTENSION_POINT_ID_CHART = "net.sourceforge.ganttproject.chart";
+  private static final String EXTENSION_POINT_ID_VIEW_PROVIDER = "net.sourceforge.ganttproject.gui.view";
 
   private static final String EXTENSION_POINT_ID_EXPORTER = "net.sourceforge.ganttproject.exporter";
 
-  private static List<Chart> myCharts;
+  private static List<ViewProvider> myViewProviders;
 
   private static List<Exporter> myExporters;
 
@@ -61,15 +62,15 @@ public class PluginManager {
     return extensions;
   }
 
-  public static List<Chart> getCharts() {
-    if (myCharts == null) {
-      myCharts = getExtensions(EXTENSION_POINT_ID_CHART, Chart.class);
+  public static List<ViewProvider> getViewProviders() {
+    if (myViewProviders == null) {
+      myViewProviders = getExtensions(EXTENSION_POINT_ID_VIEW_PROVIDER, ViewProvider.class);
     }
-    return myCharts;
+    return myViewProviders;
   }
 
-  public static void setCharts(List<Chart> charts) {
-    myCharts = charts;
+  public static void setViewProviders(List<ViewProvider> providers) {
+    myViewProviders = providers;
   }
   public static List<Exporter> getExporters() {
     if (myExporters == null) {

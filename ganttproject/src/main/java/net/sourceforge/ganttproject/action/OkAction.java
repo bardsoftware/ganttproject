@@ -18,9 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
+
+import java.awt.event.ActionEvent;
+
 /**
  * Default OK/confirm action for dialogs.
- * {@link UIFacade#createDialog(java.awt.Component, javax.swing.Action[], String)}
  * adds additional/special functionalities for this action
  */
 public abstract class OkAction extends GPAction {
@@ -40,5 +44,14 @@ public abstract class OkAction extends GPAction {
 
   protected void setDefault(boolean value) {
     isDefault = value;
+  }
+
+  public static OkAction create(String key, Function0<Unit> handler) {
+    return new OkAction(key) {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        handler.invoke();
+      }
+    };
   }
 }

@@ -28,7 +28,9 @@ import javafx.scene.Parent
 import javafx.scene.control.Dialog
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
+import javafx.scene.paint.Color
 import javafx.util.Duration
+import javax.swing.UIManager
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -53,6 +55,22 @@ object FXUtil {
       }
     } else {
       code()
+    }
+  }
+
+  fun startup(code: () -> Unit) {
+    val javafxOk = isJavaFxAvailable ?: run {
+      try {
+        Platform.runLater {}
+        true
+      } catch (ex: java.lang.IllegalStateException) {
+        false
+      }
+    }
+    if (javafxOk) {
+      Platform.runLater(code)
+    } else {
+      Platform.startup(code)
     }
   }
   /*
@@ -281,3 +299,7 @@ fun Parent.walkTree(code: (Node)->Unit) {
 }
 
 
+fun String.colorFromUiManager(): Color? =
+  UIManager.getColor(this)?.let { swingColor ->
+    Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)
+  }

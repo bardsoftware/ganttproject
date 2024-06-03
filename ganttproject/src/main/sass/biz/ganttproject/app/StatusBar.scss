@@ -25,6 +25,9 @@
   -fx-padding: 1ex 24px;
   -fx-alignment: center-left;
   -fx-min-width: 50em;
+  &.align_right {
+    -fx-alignment: center-right;
+  }
 
   Button {
     -fx-min-height: 26px;
@@ -66,4 +69,24 @@
 .dlg-connect {
   -fx-pref-height: 400;
   -fx-pref-width: 400;
+}
+
+.statusbar.notifications {
+  Button {
+    -fx-opacity: 0.5;
+    &.unread {
+      -fx-opacity: 1.0;
+      -fx-font-weight: bold;
+      -fx-background-color: $gp-dark-gray;
+      -fx-background-radius: 3;
+      -fx-text-fill: white;
+
+      &.error .glyph-icon {
+        -fx-fill: $gp-error;
+      }
+      &.warning .glyph-icon {
+        -fx-fill: $gp-warning;
+      }
+    }
+  }
 }

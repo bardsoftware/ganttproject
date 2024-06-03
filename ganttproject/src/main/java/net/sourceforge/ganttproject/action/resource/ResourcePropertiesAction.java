@@ -51,7 +51,7 @@ public class ResourcePropertiesAction extends ResourceAction {
     if (selectedResources.length > 0) {
       myUIFacade.getResourceTree().stopEditing();
       // TODO Allow to edit multiple resources (instead of [0])
-      GanttDialogPerson dp = new GanttDialogPerson(myProject.getResourceCustomPropertyManager(), myProject.getTaskManager(),
+      GanttDialogPerson dp = new GanttDialogPerson(myProject.getHumanResourceManager(), myProject.getResourceCustomPropertyManager(), myProject.getTaskManager(),
         myProject.getProjectDatabase(), myUIFacade, selectedResources[0]);
       dp.setVisible(true);
       if (dp.result()) {

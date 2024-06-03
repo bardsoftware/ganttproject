@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
+import biz.ganttproject.app.Barrier;
+import biz.ganttproject.app.SimpleBarrier;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -29,6 +31,8 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
@@ -93,17 +97,13 @@ public interface UIFacade {
 
   GanttLookAndFeelInfo getLookAndFeel();
 
-  Choice showConfirmationDialog(String message, String title);
-
   void showPopupMenu(Component invoker, Action[] actions, int x, int y);
 
   void showPopupMenu(Component invoker, Collection<Action> actions, int x, int y);
 
   void showOptionDialog(int messageType, String message, Action[] actions);
 
-  Dialog createDialog(Component content, Action[] buttonActions, String title);
-
-  void setStatusText(String text);
+  Dialog createDialog(JComponent content, Action[] buttonActions, String title);
 
   void showErrorDialog(String errorMessage);
 
@@ -121,6 +121,8 @@ public interface UIFacade {
 
   NotificationManager getNotificationManager();
 
+  ViewProvider getGanttViewProvider();
+  ViewProvider getResourceViewProvider();
   GanttChart getGanttChart();
 
   TimelineChart getResourceChart();
@@ -132,19 +134,12 @@ public interface UIFacade {
 
   void setViewIndex(int viewIndex);
 
-  int getGanttDividerLocation();
-
-  void setGanttDividerLocation(int location);
-
-  int getResourceDividerLocation();
-
-  void setResourceDividerLocation(int location);
-
+  GPViewManager getViewManager();
   /** Refreshes the UI (ie repaints all tasks in the chart) */
   void refresh();
 
-  Frame getMainFrame();
-
+  void onWindowOpened(Runnable code);
+  SimpleBarrier<Boolean> getWindowOpenedBarrier();
   Image getLogo();
 
   void setWorkbenchTitle(String title);
@@ -168,5 +163,5 @@ public interface UIFacade {
 
   void addOnUpdateComponentTreeUi(Runnable callback);
 
-  boolean quitApplication(boolean withSystemExit);
+  Barrier<Boolean> quitApplication(boolean withSystemExit);
 }

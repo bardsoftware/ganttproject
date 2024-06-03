@@ -18,8 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.app.Barrier;
-import biz.ganttproject.app.TwoPhaseBarrierImpl;
+import biz.ganttproject.app.*;
+import biz.ganttproject.app.NotificationManagerImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
@@ -39,7 +39,9 @@ import com.google.common.base.Suppliers;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.stage.Stage;
 import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -51,11 +53,11 @@ import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.gui.view.ViewManagerImpl;
-import net.sourceforge.ganttproject.gui.window.ContentPaneBuilder;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.parser.ParserFactory;
+import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -88,12 +90,11 @@ import java.util.function.Supplier;
  *
  * @author dbarashev
  */
-abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacade {
+abstract class GanttProjectBase implements IGanttProject, UIFacade {
   protected final static GanttLanguage language = GanttLanguage.getInstance();
   protected final WeekendCalendarImpl myCalendar = new WeekendCalendarImpl();
   private final ViewManagerImpl myViewManager;
   private final UIFacadeImpl myUIFacade;
-  private final GanttStatusBar statusBar;
   private final TimeUnitStack myTimeUnitStack = new GPTimeUnitStack();
   private final ProjectUIFacadeImpl myProjectUIFacade;
   private final DocumentManager myDocumentManager;
@@ -103,7 +104,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   private final GPUndoManager myUndoManager;
 
   private final RssFeedChecker myRssChecker;
-  protected final ContentPaneBuilder myContentPaneBuilder;
   final TaskManagerConfigImpl myTaskManagerConfig;
   private final TaskManager myTaskManager;
   protected final TwoPhaseBarrierImpl<UIFacade> myUiInitializationPromise;
@@ -128,6 +128,25 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected final ProjectDatabase myProjectDatabase;
 
+  private final NotificationManagerImpl myNotificationManager;
+  public NotificationManagerImpl getNotificationManagerImpl() { return myNotificationManager; }
+  protected final SimpleStringProperty myTitle = new SimpleStringProperty("");
+  public SimpleStringProperty getTitle() {
+    return myTitle;
+  }
+
+  protected void updateTitle() {
+    var builder = new StringBuilder();
+    if (isModified()) {
+      builder.append("* ");
+    }
+    builder.append(InternationalizationKt.getRootLocalizer().formatText("appliTitle"));
+    var doc = getDocument();
+    if (doc != null) {
+      builder.append("[").append(doc.getFileName()).append("]");
+    }
+    myTitle.set(builder.toString());
+  }
   @Override
   public @NotNull Map<Task, Task> importProject(
     @NotNull BufferProject bufferProject,
@@ -198,8 +217,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     return myProjectDatabase;
   }
 
-  protected GanttProjectBase() {
-    super("GanttProject");
+  protected GanttProjectBase(Stage stage) {
     var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager);
 
     myProjectDatabase = databaseProxy;
@@ -209,12 +227,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager, databaseProxy);
     addProjectEventListener(databaseProxy.createProjectEventListener());
     myTaskManager.addTaskListener(databaseProxy.createTaskEventListener());
-    statusBar = new GanttStatusBar(this);
     myTabPane = new GanttTabbedPane();
-    myContentPaneBuilder = new ContentPaneBuilder(getTabs(), getStatusBar());
+    var viewPane = new ViewPane();
 
-    NotificationManagerImpl notificationManager = new NotificationManagerImpl(myContentPaneBuilder.getAnimationHost());
-    myUIFacade = new UIFacadeImpl(this, statusBar, notificationManager, getProject(), this);
+    myNotificationManager = new NotificationManagerImpl(this::getUIFacade);
+    myUIFacade = new UIFacadeImpl(stage, myNotificationManager, getProject(), this);
     myUiInitializationPromise = new TwoPhaseBarrierImpl<>(myUIFacade);
 
     GPLogger.setUIFacade(myUIFacade);
@@ -257,10 +274,11 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
       }
     };
 //    myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
-    myViewManager = new ViewManagerImpl(getProject(), myUIFacade, myTabPane, getUndoManager());
+    myViewManager = new ViewManagerImpl(getProject(), myUIFacade, getUndoManager(), viewPane, PluginManager.getViewProviders());
     myProjectUIFacade = new ProjectUIFacadeImpl(myUIFacade, myDocumentManager, myUndoManager);
     myRssChecker = new RssFeedChecker((GPTimeUnitStack) getTimeUnitStack(), myUIFacade);
     myUIFacade.addOptions(myRssChecker.getUiOptions());
+    updateTitle();
   }
 
   protected GanttProjectImpl getProjectImpl() {
@@ -298,11 +316,6 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
 
   protected UIFacadeImpl getUiFacadeImpl() {
     return myUIFacade;
-  }
-
-  @Override
-  public Frame getMainFrame() {
-    return myUIFacade.getMainFrame();
   }
 
   @Override
@@ -361,18 +374,8 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   @Override
-  public void setStatusText(String text) {
-    myUIFacade.setStatusText(text);
-  }
-
-  @Override
-  public Dialog createDialog(Component content, Action[] buttonActions, String title) {
+  public Dialog createDialog(JComponent content, Action[] buttonActions, String title) {
     return myUIFacade.createDialog(content, buttonActions, title);
-  }
-
-  @Override
-  public UIFacade.Choice showConfirmationDialog(String message, String title) {
-    return myUIFacade.showConfirmationDialog(message, title);
   }
 
   @Override
@@ -449,6 +452,16 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   }
 
   @Override
+  public void onWindowOpened(Runnable code) {
+    myUIFacade.onWindowOpened(code);
+  }
+
+  @Override
+  public SimpleBarrier<Boolean> getWindowOpenedBarrier() {
+    return myUIFacade.getWindowOpenedBarrier();
+  }
+
+  @Override
   public Chart getActiveChart() {
     return myViewManager.getSelectedView().getChart();
   }
@@ -473,15 +486,16 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
     }
   }
 
-  protected void createContentPane(JComponent toolbar) {
-    myContentPaneBuilder.build(toolbar, getContentPane());
-    setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-
-    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    Dimension windowSize = getPreferredSize();
-    // Put the frame at the middle of the screen
-    setLocation(screenSize.width / 2 - (windowSize.width / 2), screenSize.height / 2 - (windowSize.height / 2));
-    pack();
+  protected void createContentPane(FXToolbarBuilder toolbar) {
+    //++myContentPaneBuilder.build(toolbar, getContentPane());
+    //++
+//    setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+//
+//    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+//    Dimension windowSize = getPreferredSize();
+//    // Put the frame at the middle of the screen
+//    setLocation(screenSize.width / 2 - (windowSize.width / 2), screenSize.height / 2 - (windowSize.height / 2));
+//    pack();
   }
 
   public GanttTabbedPane getTabs() {
@@ -571,11 +585,7 @@ abstract class GanttProjectBase extends JFrame implements IGanttProject, UIFacad
   public abstract void close();
 
   @Override
-  public abstract @NotNull Document getDocument();
-
-  protected GanttStatusBar getStatusBar() {
-    return statusBar;
-  }
+  public abstract Document getDocument();
 
   @Override
   public @NotNull DocumentManager getDocumentManager() {

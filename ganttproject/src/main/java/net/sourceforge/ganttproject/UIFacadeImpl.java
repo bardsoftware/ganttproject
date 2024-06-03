@@ -18,8 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.app.FontManager;
-import biz.ganttproject.app.MenuBuilderSwing;
+import biz.ganttproject.FXUtil;
+import biz.ganttproject.app.*;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.option.FontSpec.Size;
 import biz.ganttproject.core.table.ColumnList;
@@ -29,6 +29,13 @@ import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import kotlin.Unit;
+import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -42,6 +49,8 @@ import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.LanguageOption;
@@ -68,21 +77,22 @@ import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
 
+import static net.sourceforge.ganttproject.DialogBuilderKt.createDialogFx;
+
 class UIFacadeImpl extends ProgressProvider implements UIFacade {
-  private final JFrame myMainFrame;
+  //private final JFrame myMainFrame;
   private final ScrollingManager myScrollingManager;
   private final ZoomManager myZoomManager;
-  private final GanttStatusBar myStatusBar;
   private final UIFacade myFallbackDelegate;
   private final TaskSelectionManager myTaskSelectionManager;
   private final List<GPOptionGroup> myOptionGroups = Lists.newArrayList();
   private final LafOption myLafOption;
   private final DefaultFileOption myLogoOption;
-  private final NotificationManagerImpl myNotificationManager;
+  private final NotificationManager myNotificationManager;
   private final TaskView myTaskView = new TaskView();
-  private final DialogBuilder myDialogBuilder;
   private final Map<String, Font> myOriginalFonts = Maps.newHashMap();
   private final List<Runnable> myOnUpdateComponentTreeUiCallbacks = Lists.newArrayList();
+  private final Stage myWindow;
   private float myLastScale = 0;
 
   private static Map<FontSpec.Size, String> getSizeLabels() {
@@ -124,15 +134,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final IGanttProject myProject;
   private FontSpec myLastFontSpec;
 
-  UIFacadeImpl(JFrame mainFrame, GanttStatusBar statusBar, NotificationManagerImpl notificationManager,
+  UIFacadeImpl(Stage stage, NotificationManagerImpl notificationManager,
                final IGanttProject project, UIFacade fallbackDelegate) {
-    myMainFrame = mainFrame;
+    myWindow = stage;
     myProject = project;
-    myDialogBuilder = new DialogBuilder(mainFrame);
     myScrollingManager = new ScrollingManagerImpl();
     myZoomManager = new ZoomManager(project.getTimeUnitStack());
-    myStatusBar = statusBar;
-    myStatusBar.setNotificationManager(notificationManager);
     myFallbackDelegate = fallbackDelegate;
     Job.getJobManager().setProgressProvider(this);
     myTaskSelectionManager = new TaskSelectionManager(project::getTaskManager);
@@ -241,22 +248,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   @Override
-  public Choice showConfirmationDialog(String message, String title) {
-    String yes = GanttLanguage.getInstance().getText("yes");
-    String no = GanttLanguage.getInstance().getText("no");
-    String cancel = GanttLanguage.getInstance().getText("cancel");
-    int result = JOptionPane.showOptionDialog(myMainFrame, message, title, JOptionPane.YES_NO_CANCEL_OPTION,
-        JOptionPane.QUESTION_MESSAGE, null, new String[]{yes, no, cancel}, yes);
-    return switch (result) {
-      case JOptionPane.YES_OPTION -> Choice.YES;
-      case JOptionPane.NO_OPTION -> Choice.NO;
-      case JOptionPane.CANCEL_OPTION -> Choice.CANCEL;
-      case JOptionPane.CLOSED_OPTION -> Choice.CANCEL;
-      default -> Choice.CANCEL;
-    };
-  }
-
-  @Override
   public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
     showPopupMenu(invoker, Arrays.asList(actions), x, y);
   }
@@ -275,49 +266,72 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   @Override
-  public Dialog createDialog(Component content, Action[] buttonActions, String title) {
-    return myDialogBuilder.createDialog(content, buttonActions, title);
-  }
-
-  @Override
-  public void setStatusText(String text) {
-    myStatusBar.setFirstText(text, 2000);
+  public Dialog createDialog(JComponent content, Action[] buttonActions, String title) {
+    //return myDialogBuilder.createDialog(content, buttonActions, title);
+    return createDialogFx(content, buttonActions, title);
   }
 
   @Override
   public void showOptionDialog(int messageType, String message, Action[] actions) {
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        JOptionPane optionPane = new JOptionPane(message, messageType);
-        Object[] options = new Object[actions.length];
-        Object defaultOption = null;
-        for (int i = 0; i < actions.length; i++) {
-          options[i] = actions[i].getValue(Action.NAME);
-          if (actions[i].getValue(Action.DEFAULT) != null) {
-            defaultOption = options[i];
+    FXUtil.INSTANCE.runLater(() -> {
+      Alert alert = null;
+      if (messageType == JOptionPane.INFORMATION_MESSAGE) {
+        alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.initStyle(StageStyle.UNDECORATED);
+      } else if (messageType == JOptionPane.WARNING_MESSAGE) {
+        alert = new Alert(Alert.AlertType.WARNING);
+        alert.initStyle(StageStyle.UNDECORATED);
+      } else if (messageType == JOptionPane.QUESTION_MESSAGE) {
+        alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.initStyle(StageStyle.UNDECORATED);
+        alert.initOwner(myWindow);
+        alert.initModality(Modality.APPLICATION_MODAL);
+      } else if (messageType == JOptionPane.ERROR_MESSAGE) {
+        alert = new Alert(Alert.AlertType.ERROR);
+        alert.initStyle(StageStyle.UNDECORATED);
+      }
+      assert alert != null;
+
+      alert.setContentText(message);
+      List<ButtonType> buttons = new ArrayList<>();
+      for (Action action : actions) {
+        buttons.add(new ButtonType(action.getValue(Action.NAME).toString()));
+      }
+      alert.getButtonTypes().setAll(buttons);
+      Optional<ButtonType> result = alert.showAndWait();
+      if (!result.isPresent()) {
+        for (Action action : actions) {
+          if (action instanceof CancelAction) {
+            action.actionPerformed(null);
+            return Unit.INSTANCE;
           }
         }
-        optionPane.setOptions(options);
-        if (defaultOption != null) {
-          optionPane.setInitialValue(defaultOption);
-        }
-        JDialog dialog = optionPane.createDialog(myMainFrame, "");
-        dialog.setVisible(true);
-        Object choice = optionPane.getValue();
-        for (Action a : actions) {
-          if (a.getValue(Action.NAME).equals(choice)) {
-            a.actionPerformed(null);
-            break;
+      } else {
+        for (Action action : actions) {
+          if (action.getValue(Action.NAME).equals(result.get().getText())) {
+            action.actionPerformed(null);
+            return Unit.INSTANCE;
           }
         }
       }
+      return Unit.INSTANCE;
     });
   }
+
 
   @Override
   public NotificationManager getNotificationManager() {
     return myNotificationManager;
+  }
+
+  @Override
+  public ViewProvider getGanttViewProvider() {
+    return myFallbackDelegate.getGanttViewProvider();
+  }
+
+  @Override
+  public ViewProvider getResourceViewProvider() {
+    return myFallbackDelegate.getResourceViewProvider();
   }
 
   /**
@@ -351,8 +365,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   public void showNotificationDialog(NotificationChannel channel, String message) {
     String i18nPrefix = channel.name().toLowerCase() + ".channel.";
     getNotificationManager().addNotifications(
-        channel,
-        Collections.singletonList(new NotificationItem(i18n(i18nPrefix + "itemTitle"),
+        Collections.singletonList(new NotificationItem(channel, i18n(i18nPrefix + "itemTitle"),
             GanttLanguage.getInstance().formatText(i18nPrefix + "itemBody", message), new HyperlinkListener() {
           @Override
           public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -411,23 +424,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   @Override
-  public int getGanttDividerLocation() {
-    return myFallbackDelegate.getGanttDividerLocation();
-  }
-
-  @Override
-  public void setGanttDividerLocation(int location) {
-    myFallbackDelegate.setGanttDividerLocation(location);
-  }
-
-  @Override
-  public int getResourceDividerLocation() {
-    return myFallbackDelegate.getResourceDividerLocation();
-  }
-
-  @Override
-  public void setResourceDividerLocation(int location) {
-    myFallbackDelegate.setResourceDividerLocation(location);
+  public GPViewManager getViewManager() {
+    return myFallbackDelegate.getViewManager();
   }
 
   @Override
@@ -435,12 +433,23 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myFallbackDelegate.refresh();
   }
 
+  private SimpleBarrier<Boolean> myWindowOpenedBarrier = new SimpleBarrier<>();
+
+
   @Override
-  public Frame getMainFrame() {
-    return myMainFrame;
+  public void onWindowOpened(Runnable code) {
+    myWindowOpenedBarrier.await(value -> {
+      code.run();
+      return Unit.INSTANCE;
+    });
   }
 
-  public boolean quitApplication(boolean withSystemExit) {
+  @Override
+  public SimpleBarrier<Boolean> getWindowOpenedBarrier() {
+    return myWindowOpenedBarrier;
+  }
+
+  public Barrier<Boolean> quitApplication(boolean withSystemExit) {
     return myFallbackDelegate.quitApplication(withSystemExit);
   }
   private static GanttLanguage getLanguage() {
@@ -463,17 +472,20 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public void setWorkbenchTitle(String title) {
-    myMainFrame.setTitle(title);
+    //++myMainFrame.setTitle(title);
+
   }
 
   @Override
   public IProgressMonitor createMonitor(Job job) {
-    return myStatusBar.createProgressMonitor();
+    // TODO: implement progress monitor
+    return null;
   }
 
   @Override
   public IProgressMonitor createProgressGroup() {
-    return myStatusBar.createProgressMonitor();
+    // TODO: implement progress monitor
+    return null;
   }
 
   @Override
@@ -578,7 +590,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   private void updateComponentTreeUI() {
-    SwingUtilities.updateComponentTreeUI(myMainFrame);
+    //++SwingUtilities.updateComponentTreeUI(myMainFrame);
     //myMainFrame.pack();
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {

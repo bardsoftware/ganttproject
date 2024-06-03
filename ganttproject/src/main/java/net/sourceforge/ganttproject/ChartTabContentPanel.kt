@@ -28,7 +28,6 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.scene.control.MenuItem
 import javafx.scene.control.Skin
 import javafx.scene.control.SplitMenuButton
-import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.scene.text.Text
 import net.sourceforge.ganttproject.action.GPAction
@@ -41,35 +40,21 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 import java.awt.*
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
-import java.util.*
 import javax.swing.*
 
 internal abstract class ChartTabContentPanel(
-    project: IGanttProject, workbenchFacade: UIFacade, chart: TimelineChart) {
+    protected val project: IGanttProject, workbenchFacade: UIFacade, chart: TimelineChart) {
 
+  private var zoomingPanel: ZoomingPanel
+  private var navigationPanel: NavigationPanel
   private val myChart: TimelineChart
   private var mySplitPane: JSplitPane? = null
   private val myPanels: MutableList<Component> = ArrayList()
   private val myUiFacade: UIFacade
-  private var myImageHeight = 0
   private var myImagePanel: GanttImagePanel? = null
-  protected var myHeaderHeight: () -> Int = { 0 }
+  protected var headerHeight: () -> Int = { 0 }
+  protected var imageHeight: () -> Int = { myImagePanel!!.preferredSize.height }
 
-  private val toolbar by lazy {
-    FXToolbarBuilder().run {
-      val dropdownActions = buildDropdownActions()
-      addNode(buildDropdown(dropdownActions.firstOrNull(), dropdownActions))
-      addTail(Pane())
-      buildToolbarActions().forEach { addButton(it) }
-      withScene()
-      build()
-    }.also {
-      it.toolbar.stylesheets.add("/net/sourceforge/ganttproject/ChartTabContentPanel.css")
-      it.toolbar.styleClass.remove("toolbar-big")
-    }
-  }
 
   protected open fun buildDropdownActions(): List<GPAction> = emptyList()
   protected open fun buildToolbarActions(): List<GPAction> = emptyList()
@@ -89,7 +74,6 @@ internal abstract class ChartTabContentPanel(
     val defaultScaledHeight =
       (UIFacade.DEFAULT_LOGO.iconHeight * myUiFacade.dpiOption.value / (1f * UIFacade.DEFAULT_DPI)).toInt()
     myImagePanel = GanttImagePanel(myUiFacade.logo, 300, defaultScaledHeight)
-    myImageHeight = myImagePanel!!.preferredSize.height
     val imageWrapper = JPanel(BorderLayout())
     imageWrapper.add(myImagePanel, BorderLayout.WEST)
     treeHeader.add(imageWrapper)
@@ -128,7 +112,7 @@ internal abstract class ChartTabContentPanel(
       SwingUtilities.invokeLater {
         alignTopPanelHeights(buttonPanel, chartPanels)
         myImagePanel!!.setScale(myUiFacade.dpiOption.value / (1f * UIFacade.DEFAULT_DPI))
-        myImageHeight = myImagePanel!!.height
+        //myImageHeight = myImagePanel!!.height
         updateTimelineHeight()
       }
     }
@@ -155,18 +139,11 @@ internal abstract class ChartTabContentPanel(
   }
   // */
 
-  abstract val chartComponent: Component?
+  abstract val chartComponent: JComponent?
     get
 
   protected abstract fun getTreeComponent(): Component
   protected abstract fun createButtonPanel(): Component?
-  fun getDividerLocation(): Int {
-    return mySplitPane!!.dividerLocation
-  }
-
-  fun setDividerLocation(location: Int) {
-    mySplitPane!!.dividerLocation = location
-  }
 
   private fun createChartPanels(): JComponent {
     val panelsBox = Box.createHorizontalBox()
@@ -188,7 +165,7 @@ internal abstract class ChartTabContentPanel(
   protected fun updateTimelineHeight() {
     //val timelineHeight = toolbar.component.height /* + myImageHeight*/
     SwingUtilities.invokeLater {
-      val timelineHeight = myHeaderHeight() + myImageHeight
+      val timelineHeight = headerHeight() + imageHeight()
       myChart.setTimelineHeight(timelineHeight)
       myChart.reset();
     }
@@ -198,7 +175,7 @@ internal abstract class ChartTabContentPanel(
     mySplitPane?.dividerLocation = width.toInt() + 1
   }
   fun addTableResizeListeners(tableContainer: Component, table: Component) {
-    myHeaderHeight = {
+    headerHeight = {
       if (table.isShowing && tableContainer.isShowing) {
         val tableLocation = table.locationOnScreen
         val containerLocation = tableContainer.locationOnScreen
@@ -224,33 +201,36 @@ internal abstract class ChartTabContentPanel(
     table.addComponentListener(componentListener)
   }
 
-  open fun setActive(active: Boolean) {
-    if (active) {
-      getTreeComponent().requestFocus()
-      updateTimelineHeight()
-    }
-  }
+//  open fun setActive(active: Boolean) {
+//    if (active) {
+//      //getTreeComponent().requestFocus()
+//      updateTimelineHeight()
+//    }
+//  }
 
   //  private GanttImagePanel myImagePanel;
   init {
-    val navigationPanel = NavigationPanel(project, chart, workbenchFacade)
-    val zoomingPanel = ZoomingPanel(workbenchFacade, chart)
+    navigationPanel = NavigationPanel(project, chart, workbenchFacade)
+    zoomingPanel = ZoomingPanel(workbenchFacade, chart)
 
-    addChartPanel(FXToolbarBuilder().also {
-      it.withApplicationFont(applicationFont)
-      zoomingPanel.buildToolbar(it)
-      it.addWhitespace()
-      navigationPanel.buildToolbar(it)
-    }.withClasses("toolbar-common", "toolbar-small", "toolbar-chart").withScene().build().component)
+    addChartPanel(createNavigationToolbarBuilder().withScene().build().component)
 
     myUiFacade = workbenchFacade
     myChart = Preconditions.checkNotNull(chart)
-    myUiFacade.mainFrame.addWindowListener(object : WindowAdapter() {
-      override fun windowOpened(windowEvent: WindowEvent) {
-        updateTimelineHeight()
-      }
-    })
+  //++
+  //    myUiFacade.mainFrame.addWindowListener(object : WindowAdapter() {
+//      override fun windowOpened(windowEvent: WindowEvent) {
+//        updateTimelineHeight()
+//      }
+//    })
   }
+
+  fun createNavigationToolbarBuilder() = FXToolbarBuilder().also {
+    it.withApplicationFont(applicationFont)
+    zoomingPanel.buildToolbar(it)
+    it.addWhitespace()
+    navigationPanel.buildToolbar(it)
+  }.withClasses("toolbar-common", "toolbar-small", "toolbar-chart")
 
   fun buildDropdown(titleAction: GPAction?, actions: List<GPAction>) =
     MyMenuButton().apply {

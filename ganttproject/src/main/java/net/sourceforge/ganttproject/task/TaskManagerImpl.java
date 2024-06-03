@@ -86,8 +86,8 @@ public class TaskManagerImpl implements TaskManager {
     @Override
     public void logDependencyLoop(String title, String message) {
       if (myConfig.getNotificationManager() != null) {
-        myConfig.getNotificationManager().addNotifications(NotificationChannel.WARNING,
-            ImmutableList.of(new NotificationItem("Dependency loop detected", message, NotificationManager.DEFAULT_HYPERLINK_LISTENER)));
+        myConfig.getNotificationManager().addNotifications(
+            ImmutableList.of(new NotificationItem(NotificationChannel.WARNING, "Dependency loop detected", message, NotificationManager.DEFAULT_HYPERLINK_LISTENER)));
       }
       GPLogger.log(title + "\n" + message);
     }

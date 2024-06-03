@@ -18,18 +18,17 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.lib.fx.VBoxBuilder
 import com.sandec.mdfx.MDFXNode
 import javafx.animation.FadeTransition
 import javafx.animation.ParallelTransition
 import javafx.animation.Transition
 import javafx.application.Platform
-import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.Parent
-import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.effect.BoxBlur
 import javafx.scene.input.KeyCode
@@ -41,13 +40,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import net.sourceforge.ganttproject.DialogBuilder
-import net.sourceforge.ganttproject.action.CancelAction
-import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIFacade
-import net.sourceforge.ganttproject.mainWindow
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.atomic.AtomicReference
 import javax.swing.SwingUtilities
 
 /**
@@ -67,47 +61,42 @@ import javax.swing.SwingUtilities
  *   this.dialogApi.showAlert(...)
  * }
  */
-fun dialogFx(contentBuilder: (DialogController) -> Unit) {
-  Platform.runLater {
-    Dialog<Unit>().also {
-      it.isResizable = true
-      val dialogBuildApi = DialogControllerFx(it.dialogPane)
-      it.dialogPane.apply {
-        styleClass.addAll("dlg")
-        stylesheets.addAll(DIALOG_STYLESHEET)
-
-        contentBuilder(dialogBuildApi)
-        val window = scene.window
-        window.onCloseRequest = EventHandler {
-          window.hide()
-        }
-        scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
-      }
-      it.onShown = EventHandler { _ ->
-        it.dialogPane.layout()
-        it.dialogPane.scene.window.sizeToScene()
-      }
-      it.show()
-    }
+fun dialogFx(title: LocalizedString? = null, contentBuilder: (DialogController) -> Unit) {
+  dialogFxBuild(contentBuilder).also {dlg ->
+    title?.value?.let { dlg.title = it }
+    dlg.show()
   }
 }
 
-fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -> Unit) {
-  val jfxPanel = JFXPanel()
-  val swingDialogController = AtomicReference<UIFacade.Dialog?>(null)
-  Platform.runLater {
-    val dialogController = DialogControllerSwing()
-    contentBuilder(dialogController)
-    jfxPanel.scene = Scene(dialogController.build())
-    SwingUtilities.invokeLater {
-      val dialogBuilder = DialogBuilder(mainWindow.get())
-      dialogBuilder.createDialog(
-          jfxPanel,
-          arrayOf(CancelAction("close").also { it.putValue(GPAction.HAS_DIALOG_BUTTON, false) }),
-          title?.value ?: "").also {
-        swingDialogController.set(it)
-        dialogController.setDialogFrame(it)
+fun dialogFxBuild(contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
+  Dialog<Unit>().apply {
+    isResizable = true
+    val dialogBuildApi = DialogControllerFx(dialogPane, this)
+    dialogPane.apply {
+      styleClass.addAll("dlg")
+      stylesheets.addAll(DIALOG_STYLESHEET)
+
+      contentBuilder(dialogBuildApi)
+      val window = scene.window
+      window.onCloseRequest = EventHandler {
+        window.hide()
       }
+      scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
+    }
+
+    dialogBuildApi.onShown = {
+      dialogPane.layout()
+      dialogPane.scene.window.sizeToScene()
+    }
+  }
+
+
+fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -> Unit) {
+  Platform.runLater {
+    try {
+      dialogFx(title, contentBuilder)
+    } catch (ex: Exception) {
+      ex.printStackTrace()
     }
   }
 }
@@ -352,13 +341,25 @@ class DialogControllerSwing : DialogController {
 /**
  * This is an implementation of a DialogController on top of JavaFX dialog.
  */
-class DialogControllerFx(private val dialogPane: DialogPane) : DialogController {
+class DialogControllerFx(private val dialogPane: DialogPane, private val dialog: Dialog<Unit>) : DialogController {
   override var beforeShow: () -> Unit = {}
   override var onShown: () -> Unit = {}
+    set(value) {
+      val prevValue = field
+      field = {
+        prevValue()
+        value()
+      }
+    }
   override var onClosed: () -> Unit = {}
   private val stackPane = StackPane().also { it.styleClass.add("layers") }
   private var content: Node = Region()
 
+  init {
+    dialog.onShowing = EventHandler{ beforeShow() }
+    dialog.onShown = EventHandler { onShown() }
+    dialog.onHidden = EventHandler { onClosed() }
+  }
   override fun setContent(content: Node) {
     this.content = content
     content.styleClass.add("content-pane")
@@ -392,7 +393,12 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
   }
 
   override fun setEscCloseEnabled(value: Boolean) {
-    TODO("Not implemented yet")
+    this.dialog.dialogPane.scene.addEventFilter(KeyEvent.KEY_PRESSED) { evt ->
+      if (evt.code == KeyCode.ESCAPE) {
+        evt.consume()
+        hide()
+      }
+    }
   }
 
   override fun showAlert(title: LocalizedString, content: Node) {
@@ -416,8 +422,10 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
   }
 
   override fun setHeader(header: Node) {
-    header.styleClass.add("header")
-    this.dialogPane.header = header
+    FXUtil.runLater {
+      header.styleClass.add("header")
+      this.dialogPane.header = header
+    }
   }
 
   override fun removeButtonBar() {
@@ -425,7 +433,9 @@ class DialogControllerFx(private val dialogPane: DialogPane) : DialogController 
   }
 
   override fun hide() {
-    this.dialogPane.scene.window.hide()
+    FXUtil.runLater {
+      this.dialogPane.scene.window.hide()
+    }
   }
 
   override fun setButtonPaneNode(content: Node) {
@@ -532,6 +542,9 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
     return button
   }
 }
+
+// ----------------------------------------------------------------------------
+// Overlay pane and alert panes
 
 fun createOverlayPane(underlayPane: Node, stackPane: StackPane, overlayBuilder: (BorderPane) -> Unit) : Transition {
   val notificationPane = BorderPane().also(overlayBuilder)

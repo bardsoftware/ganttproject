@@ -46,7 +46,7 @@ class LocalizedString(
     private val key: String,
     private val i18n: Localizer,
     val observable: SimpleStringProperty = SimpleStringProperty(),
-    private var args: List<String> = emptyList()) : ObservableValue<String> by observable {
+    private var args: List<Any> = emptyList()) : ObservableValue<String> by observable {
   init {
     observable.value = build()
   }
@@ -62,7 +62,7 @@ class LocalizedString(
   }
 
   fun update(vararg args: Any): LocalizedString {
-    this.args = args.map { it.toString() }.toList()
+    this.args = args.toList()
     observable.value = build()
     return this
   }

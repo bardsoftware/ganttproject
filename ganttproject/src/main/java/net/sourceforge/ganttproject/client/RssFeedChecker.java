@@ -83,7 +83,7 @@ public class RssFeedChecker {
   private static final String RSS_URL = "https://www.ganttproject.biz/my/feed";
   protected static final int MAX_ATTEMPTS = 10;
   private final RssParser parser = new RssParser();
-  private final NotificationItem myRssProposalNotification = new NotificationItem("",
+  private final NotificationItem myRssProposalNotification = new NotificationItem(NotificationChannel.RSS, "",
       GanttLanguage.getInstance().formatText("updateRss.question.template",
           GanttLanguage.getInstance().getText("updateRss.question.0"),
           GanttLanguage.getInstance().getText("updateRss.question.1"),
@@ -215,12 +215,12 @@ public class RssFeedChecker {
               createUpdateDialog(item.body);
             }
           } else {
-            items.add(new NotificationItem(item.title, item.body, NotificationManager.DEFAULT_HYPERLINK_LISTENER));
+            items.add(new NotificationItem(NotificationChannel.RSS, item.title, item.body, NotificationManager.DEFAULT_HYPERLINK_LISTENER));
           }
         }
         Collections.reverse(items);
         if (!items.isEmpty()) {
-          getNotificationManager().addNotifications(NotificationChannel.RSS, items);
+          getNotificationManager().addNotifications(items);
         }
         markLastCheck();
       }
@@ -232,7 +232,7 @@ public class RssFeedChecker {
       @Override
       public void run() {
         onYes();
-        getNotificationManager().addNotifications(NotificationChannel.RSS,
+        getNotificationManager().addNotifications(
             Collections.singletonList(myRssProposalNotification));
       }
     };

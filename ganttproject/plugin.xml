@@ -22,7 +22,7 @@
     <extension-point id="l10n" name="LocalizationBundle"/>
     <extension-point id="exporter" name="Exporter"/>
     <extension-point id="importer" name="Importer"/>
-    <extension-point id="chart" name="Chart"/>
+    <extension-point id="gui.view" name="ViewProvider"/>
     <extension-point id="OptionPageProvider" name="OptionPageProvider"/>
     <extension-point id="search" name="SearchService"/>
 

@@ -29,13 +29,13 @@ import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
+import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.storage.ProjectDatabase;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -43,6 +43,7 @@ import java.awt.event.FocusEvent;
 public class GanttDialogPerson {
   private final TaskManager myTaskManager;
   private final ProjectDatabase myProjectDatabase;
+  private final HumanResourceManager myResourceManager;
   private boolean change;
 
   private HumanResource person;
@@ -65,7 +66,13 @@ public class GanttDialogPerson {
   private ResourceAssignmentsPanel myAssignmentsPanel;
 
 
-  public GanttDialogPerson(CustomPropertyManager customPropertyManager, TaskManager taskManager, ProjectDatabase projectDatabase, UIFacade uiFacade, HumanResource person) {
+  public GanttDialogPerson(HumanResourceManager resourceManager,
+                           CustomPropertyManager customPropertyManager,
+                           TaskManager taskManager,
+                           ProjectDatabase projectDatabase,
+                           UIFacade uiFacade,
+                           HumanResource person) {
+    myResourceManager = resourceManager;
     myCustomPropertyManager = customPropertyManager;
     myTaskManager = taskManager;
     myUIFacade = uiFacade;
@@ -92,7 +99,7 @@ public class GanttDialogPerson {
   public void setVisible(boolean isVisible) {
     if (isVisible) {
       loadFields();
-      Component contentPane = getComponent();
+      JComponent contentPane = getComponent();
       OkAction okAction = new OkAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -124,7 +131,7 @@ public class GanttDialogPerson {
     myTotalLoadField.setValue(person.getTotalLoad());
   }
 
-  private Component getComponent() {
+  private JComponent getComponent() {
     OptionsPageBuilder builder = new OptionsPageBuilder();
     OptionsPageBuilder.I18N i18n = new OptionsPageBuilder.I18N() {
       @Override
@@ -147,34 +154,6 @@ public class GanttDialogPerson {
     constructAssignmentsPanel();
     tabbedPane.addTab(language.getText("assignments"), new ImageIcon(getClass().getResource("/icons/copy_16.gif")),
         myAssignmentsPanel.getComponent()); //todo change icon
-    // mainPage.requestDefaultFocus();
-    // final FocusTraversalPolicy defaultPolicy =
-    // mainPage.getFocusTraversalPolicy();
-    // FocusTraversalPolicy customPolicy = new FocusTraversalPolicy() {
-    // public Component getComponentAfter(Container aContainer, Component
-    // aComponent) {
-    // return defaultPolicy.getComponentAfter(aContainer, aComponent);
-    // }
-    //
-    // public Component getComponentBefore(Container aContainer, Component
-    // aComponent) {
-    // return defaultPolicy.getComponentBefore(aContainer, aComponent);
-    // }
-    //
-    // public Component getFirstComponent(Container aContainer) {
-    // return defaultPolicy.getFirstComponent(aContainer);
-    // }
-    //
-    // public Component getLastComponent(Container aContainer) {
-    // return defaultPolicy.getLastComponent(aContainer);
-    // }
-    //
-    // public Component getDefaultComponent(Container aContainer) {
-    // return mainPage;
-    // }
-    // };
-    // //mainPage.setFocusCycleRoot(true);
-    // mainPage.setFocusTraversalPolicy(customPolicy);
     tabbedPane.addFocusListener(new FocusAdapter() {
       boolean isFirstTime = true;
 
@@ -206,7 +185,12 @@ public class GanttDialogPerson {
         }
       });
     } else {
-      applyChanges();
+      myUIFacade.getUndoManager().undoableEdit(GanttLanguage.getInstance().formatText("resource.new.description"), () -> {
+        applyChanges();
+        myResourceManager.add(person);
+        myUIFacade.getResourceTree().setSelected(person, true);
+        myUIFacade.setViewIndex(UIFacade.RESOURCES_INDEX);
+      });
     }
     change = true;
   }

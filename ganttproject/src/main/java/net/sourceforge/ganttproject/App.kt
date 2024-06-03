@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.LoggerApi
 import biz.ganttproject.app.*
 import biz.ganttproject.platform.DummyUpdater
@@ -25,14 +26,13 @@ import biz.ganttproject.storage.cloud.GPCloudEnv
 import biz.ganttproject.storage.cloud.getCloudEnv
 import com.beust.jcommander.JCommander
 import javafx.application.Platform
+import javafx.stage.Stage
 import net.sourceforge.ganttproject.export.CommandLineExportApplication
 import net.sourceforge.ganttproject.gui.CommandLineProjectOpenStrategy
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.plugins.PluginManager
 import net.sourceforge.ganttproject.task.TaskManagerImpl
 import org.slf4j.Logger
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
 import java.io.File
 import java.lang.Thread.UncaughtExceptionHandler
 import java.util.*
@@ -45,7 +45,7 @@ import javax.swing.SwingUtilities
 fun main(args: Array<String>) {
   var builder = AppBuilder(args).withLogging().withWindowVisible().runBeforeUi {
     RootLocalizer = SingleTranslationLocalizer(ResourceBundle.getBundle("i18n"))
-    PluginManager.setCharts(listOf())
+    PluginManager.setViewProviders(listOf())
     GanttLanguage.getInstance()
   }
   if (getCloudEnv() == GPCloudEnv.EMULATOR) {
@@ -56,21 +56,22 @@ fun main(args: Array<String>) {
   }.launch()
 }
 
-val mainWindow = AtomicReference<GanttProject?>(null)
-
-/**
- * @author dbarashev@bardsoftware.com
- */
-@JvmOverloads
 fun startUiApp(configure: (GanttProject) -> Unit = {}) {
-
-  Platform.setImplicitExit(false)
-  SwingUtilities.invokeLater {
+  APP_LOGGER.debug("Starting the UI.")
+  Platform.setImplicitExit(true)
+  FXUtil.startup{
+    Thread.setDefaultUncaughtExceptionHandler { t, e ->
+      e.printStackTrace()
+    }
     try {
-      val ganttFrame = GanttProject(false)
-      configure(ganttFrame)
+      val stage = Stage()
+      val ganttProject = GanttProject(stage)
+      configure(ganttProject)
+      val app = GanttProjectFxApp(ganttProject)
+      ganttProject.notificationManagerImpl.setOwner(stage)
+      app.init()
+      app.start(stage)
       APP_LOGGER.debug("Main frame created")
-      mainWindow.set(ganttFrame)
     } catch (e: Throwable) {
       APP_LOGGER.error("Failure when launching application", exception = e)
       e.printStackTrace()
@@ -81,8 +82,6 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
       """.trimMargin()
       JOptionPane.showMessageDialog(null, msg, "Failed to launch the UI", JOptionPane.ERROR_MESSAGE)
       System.exit(1)
-
-    } finally {
     }
   }
 }
@@ -90,7 +89,7 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
 val APP_LOGGER: LoggerApi<Logger> = GPLogger.create("App")
 
 typealias RunBeforeUi = ()->Unit
-typealias RunAfterWindowOpened = (JFrame) -> Unit
+typealias RunAfterWindowOpened = () -> Unit
 typealias RunAfterAppInitialized = (GanttProject) -> Unit
 typealias RunWhenDocumentReady = (IGanttProject) -> Unit
 
@@ -120,6 +119,7 @@ class AppBuilder(args: Array<String>) {
         } catch (ex: Exception) {
           println("Failed to write log to file: " + ex.message)
           ex.printStackTrace()
+          System.exit(1)
         }
       }
 
@@ -150,6 +150,7 @@ class AppBuilder(args: Array<String>) {
     val splashCloser = showAsync().get()
     whenWindowOpened {
       try {
+        APP_LOGGER.debug("Closing the splash window")
         splashCloser.run()
       } catch (ex: Exception) {
         ex.printStackTrace()
@@ -202,12 +203,12 @@ class AppBuilder(args: Array<String>) {
     runBeforeUiCommands.forEach { cmd -> cmd() }
     startUiApp { ganttProject: GanttProject ->
       ganttProject.updater = org.eclipse.core.runtime.Platform.getUpdater() ?: DummyUpdater
-      ganttProject.addWindowListener(object : WindowAdapter() {
-        override fun windowOpened(e: WindowEvent?) {
-          runAfterWindowOpenedCommands.forEach { cmd -> cmd(ganttProject) }
-        }
-      })
+      ganttProject.uiFacade.onWindowOpened {
+        APP_LOGGER.debug("Window opened. Running afterWindowOpened commands.")
+          runAfterWindowOpenedCommands.forEach { cmd -> cmd() }
+      }
       ganttProject.uiInitializationPromise.await {
+        APP_LOGGER.debug("UI initialized. Running afterAppInitialized commands.")
         runAfterAppInitializedCommands.forEach { cmd -> cmd(ganttProject) }
       }
     }

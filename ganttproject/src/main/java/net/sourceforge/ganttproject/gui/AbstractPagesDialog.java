@@ -90,7 +90,7 @@ public abstract class AbstractPagesDialog {
 
   protected abstract void onOk();
 
-  private Component getComponent() {
+  private JComponent getComponent() {
     final JPanel contentPanel = new JPanel(new CardLayout());
     // Add panels to CardLayout
     for (ListItem li : myItems) {

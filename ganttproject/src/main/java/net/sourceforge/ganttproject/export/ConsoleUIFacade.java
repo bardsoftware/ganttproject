@@ -18,6 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
+import biz.ganttproject.app.Barrier;
+import biz.ganttproject.app.ResolvedBarrier;
+import biz.ganttproject.app.SimpleBarrier;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
@@ -26,21 +29,30 @@ import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
+import javafx.scene.Node;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
+import net.sourceforge.ganttproject.gui.view.GPViewManager;
+import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 public class ConsoleUIFacade implements UIFacade {
@@ -79,12 +91,6 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public Choice showConfirmationDialog(String message, String title) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public void showPopupMenu(Component invoker, Action[] actions, int x, int y) {
   }
 
@@ -93,12 +99,8 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public Dialog createDialog(Component content, Action[] buttonActions, String title) {
+  public Dialog createDialog(JComponent content, Action[] buttonActions, String title) {
     return null;
-  }
-
-  @Override
-  public void setStatusText(String text) {
   }
 
   @Override
@@ -154,40 +156,27 @@ public class ConsoleUIFacade implements UIFacade {
     // TODO Auto-generated method stub
   }
 
-  @Override
-  public int getGanttDividerLocation() {
-    // TODO Auto-generated method stub
-    return 0;
-  }
+    @Override
+    public GPViewManager getViewManager() {
+        return null;
+    }
 
-  @Override
-  public void setGanttDividerLocation(int location) {
-    // TODO Auto-generated method stub
-  }
-
-  @Override
-  public int getResourceDividerLocation() {
-    // TODO Auto-generated method stub
-    return 0;
-  }
-
-  @Override
-  public void setResourceDividerLocation(int location) {
-    // TODO Auto-generated method stub
-  }
-
-  @Override
+    @Override
   public void refresh() {
     // TODO Auto-generated method stub
   }
 
-  @Override
-  public Frame getMainFrame() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+    @Override
+    public void onWindowOpened(Runnable code) {
 
-  @Override
+    }
+
+    @Override
+    public SimpleBarrier<Boolean> getWindowOpenedBarrier() {
+        return null;
+    }
+
+    @Override
   public Image getLogo() {
     // TODO Auto-generated method stub
     return null;
@@ -274,12 +263,55 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public boolean quitApplication(boolean withSystemExit) {
+  public ViewProvider getGanttViewProvider() {
+    return new ViewProviderStub();
+  }
+
+  @Override
+  public ViewProvider getResourceViewProvider() {
+    return null;
+  }
+
+  @Override
+  public Barrier<Boolean> quitApplication(boolean withSystemExit) {
     if (withSystemExit) {
       System.exit(0);
-      return true;
+      return new ResolvedBarrier<>(true);
     } else {
-      return false;
+      return new ResolvedBarrier<>(false);
     }
+  }
+}
+
+class ViewProviderStub implements ViewProvider {
+
+  @NotNull
+  @Override
+  public List<GPOption<?>> getOptions() {
+    return Collections.emptyList();
+  }
+
+  @NotNull
+  @Override
+  public Chart getChart() {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public Node getNode() {
+    return null;
+  }
+
+  @NotNull
+  @Override
+  public String getId() {
+    return "";
+  }
+
+  @NotNull
+  @Override
+  public Function0<Unit> getRefresh() {
+    return () -> null;
   }
 }

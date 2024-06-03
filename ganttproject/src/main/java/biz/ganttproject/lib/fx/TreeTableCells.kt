@@ -23,6 +23,7 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.getModifiers
 import biz.ganttproject.app.getNumberFormat
+import biz.ganttproject.colorFromUiManager
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
@@ -117,11 +118,6 @@ fun initColorProperties() {
   }
   onChange()
 }
-
-private fun String.colorFromUiManager(): Color? =
-  UIManager.getColor(this)?.let { swingColor ->
-    Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)
-  }
 
 val liveCells = mutableListOf<WeakReference<TextCell<*,*>>>()
 val fontListener by lazy {

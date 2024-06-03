@@ -147,8 +147,8 @@ public class AbstractWizard {
     myCardLayout.first(myPagesContainer);
     getCurrentPage().setActive(this);
     adjustButtonState();
-    myDialog.center(Centering.SCREEN);
     myDialog.show();
+    myDialog.center(Centering.SCREEN);
   }
 
   private void adjustButtonState() {

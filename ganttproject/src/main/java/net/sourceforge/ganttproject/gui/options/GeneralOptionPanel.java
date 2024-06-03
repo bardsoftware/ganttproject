@@ -37,8 +37,6 @@ public abstract class GeneralOptionPanel extends JPanel {
 
   private final String myTitle;
 
-  private final String myComment;
-
   private final UIFacade myUiFacade;
 
   public GeneralOptionPanel(UIFacade uiFacade, String title, String comment) {
@@ -47,7 +45,6 @@ public abstract class GeneralOptionPanel extends JPanel {
     setLayout(new BorderLayout());
     add(vb, BorderLayout.CENTER);
     myTitle = title;
-    myComment = comment;
   }
 
   public Component getComponent() {
@@ -65,18 +62,8 @@ public abstract class GeneralOptionPanel extends JPanel {
   /** Initialize the component. */
   public abstract void initialize();
 
-  /** This method asks the user for saving the changes. */
-  public boolean askForApplyChanges() {
-    return (UIFacade.Choice.YES == getUIFacade().showConfirmationDialog(language.getText("msg20"),
-        language.getText("question")));
-  }
-
   public String getTitle() {
     return myTitle;
-  }
-
-  public String getComment() {
-    return myComment;
   }
 
   protected UIFacade getUIFacade() {
