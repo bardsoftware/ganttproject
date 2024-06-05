@@ -70,13 +70,11 @@ fun dialogFx(title: LocalizedString? = null, contentBuilder: (DialogController) 
 
 fun dialogFxBuild(contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
   Dialog<Unit>().apply {
-    isResizable = true
     val dialogBuildApi = DialogControllerFx(dialogPane, this)
     dialogPane.apply {
       styleClass.addAll("dlg")
       stylesheets.addAll(DIALOG_STYLESHEET)
 
-      contentBuilder(dialogBuildApi)
       val window = scene.window
       window.onCloseRequest = EventHandler {
         window.hide()
@@ -85,14 +83,15 @@ fun dialogFxBuild(contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
     }
 
     dialogBuildApi.onShown = {
-      dialogPane.layout()
+      contentBuilder(dialogBuildApi)
       dialogPane.scene.window.sizeToScene()
+      isResizable = true
     }
   }
 
 
 fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -> Unit) {
-  Platform.runLater {
+  FXUtil.runLater {
     try {
       dialogFx(title, contentBuilder)
     } catch (ex: Exception) {
