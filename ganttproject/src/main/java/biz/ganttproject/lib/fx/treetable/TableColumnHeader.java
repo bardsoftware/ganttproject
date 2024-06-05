@@ -25,6 +25,7 @@
 
 package biz.ganttproject.lib.fx.treetable;
 
+import biz.ganttproject.app.FontKt;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import com.sun.javafx.scene.control.LambdaMultiplePropertyChangeListenerHandler;
 import com.sun.javafx.scene.control.Properties;
@@ -34,7 +35,6 @@ import com.sun.javafx.scene.control.skin.Utils;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.WritableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -57,7 +57,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.util.Callback;
 
 import java.util.ArrayList;
@@ -583,7 +582,7 @@ public class TableColumnHeader extends Region {
     // when they change in the settings.
     // Also, there is an attempt to set the background color to the value from Swing LAF, but I am not sure
     // if it is working properly.
-    label.fontProperty().bind(TreeTableCellsKt.getApplicationFont());
+    label.fontProperty().bind(FontKt.getApplicationFont());
     label.textFillProperty().bind(TreeTableCellsKt.getApplicationForeground());
   }
 

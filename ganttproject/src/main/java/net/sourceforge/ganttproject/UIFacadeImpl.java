@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.FXUtil;
+import biz.ganttproject.app.AppearanceManager;
 import biz.ganttproject.app.*;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.option.FontSpec.Size;
@@ -80,7 +81,6 @@ import java.util.logging.Level;
 import static net.sourceforge.ganttproject.DialogBuilderKt.createDialogFx;
 
 class UIFacadeImpl extends ProgressProvider implements UIFacade {
-  //private final JFrame myMainFrame;
   private final ScrollingManager myScrollingManager;
   private final ZoomManager myZoomManager;
   private final UIFacade myFallbackDelegate;
@@ -133,6 +133,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final LanguageOption myLanguageOption;
   private final IGanttProject myProject;
   private FontSpec myLastFontSpec;
+  private final AppearanceManager appearanceManager = new AppearanceManager(myAppFontOption);
 
   UIFacadeImpl(Stage stage, NotificationManagerImpl notificationManager,
                final IGanttProject project, UIFacade fallbackDelegate) {
@@ -204,9 +205,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         dateSampleOption.setValue(shortDateFormatOption.formatDate(new Date()));
       }
     });
-
-//    myFontSizeOption = new DefaultIntegerOption("ui.appFontSize");
-//    myFontSizeOption.setHasUi(false);
 
     GPOption[] options = new GPOption[]{myLafOption, myAppFontOption, myChartFontOption, myRowPaddingOption, myDpiOption, myLanguageOption, dateFormatSwitchOption, shortDateFormatOption,
         dateSampleOption};

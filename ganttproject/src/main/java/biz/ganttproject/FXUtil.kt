@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject
 
+import biz.ganttproject.app.applicationFont
 import javafx.animation.FadeTransition
 import javafx.animation.ScaleTransition
 import javafx.animation.Timeline
@@ -26,6 +27,7 @@ import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.Dialog
+import javafx.scene.control.Labeled
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
 import javafx.scene.paint.Color
@@ -287,7 +289,7 @@ object FXUtil {
 }
 
 fun Node.printCss() {
-  println("class=${styleClass} pseudoclass=${pseudoClassStates}")
+  println("class=${styleClass} pseudoclass=${pseudoClassStates} scene=${this.scene}")
   parent?.printCss()
 }
 
@@ -298,7 +300,17 @@ fun Parent.walkTree(code: (Node)->Unit) {
   }
 }
 
-
+fun Parent.applyApplicationFont() {
+  FXUtil.runLater {
+    this.walkTree {
+      if (it is Labeled) {
+        it.font = applicationFont.value
+        //println("this=$it itfont=${it.font} app font=${applicationFont.value}")
+        //it.style = """-fx-font-family: ${applicationFont.value.family}; -fx-font-size: ${applicationFont.value.size } """
+      }
+    }
+  }
+}
 fun String.colorFromUiManager(): Color? =
   UIManager.getColor(this)?.let { swingColor ->
     Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)

@@ -18,6 +18,7 @@
  */
 package net.sourceforge.ganttproject
 
+import biz.ganttproject.app.DIALOG_STYLESHEET
 import biz.ganttproject.app.DialogController
 import biz.ganttproject.app.dialogFxBuild
 import biz.ganttproject.colorFromUiManager
@@ -47,6 +48,11 @@ import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
 
+// TODO: check the default action and ESC key
+/**
+ * Implementation of a JavaFX dialog with the content UI written in Swing.
+ * This is intended to be used as a temporary solution during the transition of the dialogs from Swing to JavaFX.
+ */
 class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<Action>, private val title: String): UIFacade.Dialog {
   private lateinit var controller: DialogController
   lateinit var dialog: Dialog<Unit>
@@ -61,6 +67,7 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
       when {
         action is OkAction -> {
           controller.setupButton(ButtonType.OK) {
+            it.styleClass.add("btn-attention")
             it.text = "${action.getValue(Action.NAME)}"
             it.onAction = EventHandler { SwingUtilities.invokeLater {
               action.actionPerformed(null)
@@ -69,11 +76,13 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
         }
         action is CancelAction -> {
           controller.setupButton(ButtonType.CANCEL) {
+            it.styleClass.add("btn-regular")
             it.text = "${action.getValue(Action.NAME)}"
           }
         }
         else -> {
           controller.setupButton(ButtonType("${action.getValue(Action.NAME)}", ButtonBar.ButtonData.OTHER)) {
+            it.styleClass.add("btn-regular")
             it.addEventFilter(javafx.event.ActionEvent.ACTION) {
               it.consume()
               SwingUtilities.invokeLater {
@@ -187,6 +196,8 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
     Platform.runLater {
       dialog = dialogFxBuild {
         controller = it
+        it.addStyleSheet(DIALOG_STYLESHEET)
+        it.addStyleClass("dlg")
         val swingNode = SwingNode()
 
         it.setContent(vbox {

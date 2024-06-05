@@ -58,7 +58,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 .btn-regular {
   -fx-background-color: $gp-light-gray;
-  -fx-border-color: transparent;
+  -fx-border-color: $gp-dark-gray;
   -fx-border-radius: 0;
   -fx-text-fill: $gp-dark-gray;
   /*    -fx-font-size: 110%;*/

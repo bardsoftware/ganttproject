@@ -1,5 +1,5 @@
 /*
-Copyright 2014 BarD Software s.r.o
+Copyright 2014-2024 BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -16,77 +16,46 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
-package biz.ganttproject.core.option;
+package biz.ganttproject.core.option
 
-import java.awt.*;
-import java.util.Objects;
-
-import com.google.common.base.Strings;
+import java.awt.Font
 
 /**
  * Font specification object, encapsulating font family and size.
  * It is used in option infrastructure which is meant to be portable to other
- * platforms, which is the reason why we don't use java.awt.Font objects. 
- * 
+ * platforms, which is the reason why we don't use java.awt.Font objects.
+ *
  * @author dbarashev (Dmitry Barashev)
  */
-public class FontSpec {
-  public enum Size {
-    SMALLER(0.75f), NORMAL(1.0f), LARGE(1.25f), LARGER(1.5f), HUGE(2.0f);
-    
-    private final float myFactor;
+class FontSpec(val family: String, val size: Size) {
+  enum class Size(val factor: Float) {
+    SMALLER(0.75f), NORMAL(1.0f), LARGE(1.25f), LARGER(1.5f), HUGE(2.0f)
+  }
 
-    Size(float factor) {
-      myFactor = factor;
+  fun asString(): String {
+    return "$family-$size"
+  }
+
+  override fun equals(obj: Any?): Boolean {
+    if (obj !is FontSpec) {
+      return false
     }
-    
-    public float getFactor() {
-      return myFactor;
-    }
-  }
-  private final String myFamily;
-  private final Size mySize;
-  
-  public FontSpec(String family, Size size) {
-    myFamily = family;
-    mySize = size;
-  }
-  
-  public String getFamily() {
-    return myFamily;
-  }
-  
-  public Size getSize() {
-    return mySize;
+    return family == obj.family && size == obj.size
   }
 
-  public String asString() {
-    return String.format("%s-%s", Strings.nullToEmpty(myFamily), mySize.toString());
+  override fun hashCode(): Int {
+    return family.hashCode()
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof FontSpec that)) {
-      return false;
-    }
-    return Objects.equals(myFamily, that.myFamily) && Objects.equals(mySize, that.mySize);
+  override fun toString(): String {
+    return asString()
   }
 
-  @Override
-  public int hashCode() {
-    return myFamily.hashCode();
+  fun asAwtFont(baseFontSize: Float): Font {
+    return asAwtFontOfSize(Math.round(baseFontSize * size.factor))
   }
 
-  @Override
-  public String toString() {
-    return asString();
-  }
-
-  public Font asAwtFont(float baseFontSize) {
-    return asAwtFontOfSize(Math.round(baseFontSize * mySize.myFactor));
-  }
-
-  public Font asAwtFontOfSize(int exactFontSize) {
-    return new Font(myFamily, Font.PLAIN, exactFontSize);
+  fun asAwtFontOfSize(exactFontSize: Int): Font {
+    return Font(family, Font.PLAIN, exactFontSize)
   }
 }

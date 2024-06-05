@@ -18,6 +18,8 @@
  */
 package biz.ganttproject.lib.fx
 
+import biz.ganttproject.app.applicationFont
+import biz.ganttproject.app.applicationFontSpec
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl
 import biz.ganttproject.core.model.task.TaskDefaultColumn

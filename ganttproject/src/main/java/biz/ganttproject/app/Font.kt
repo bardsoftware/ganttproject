@@ -1,11 +1,35 @@
+/*
+ * Copyright 2024 BarD Software s.r.o., Dmitry Barashev.
+ *
+ * This file is part of GanttProject, an opensource project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package biz.ganttproject.app
 
+import biz.ganttproject.core.option.FontSpec
+import javafx.beans.property.SimpleObjectProperty
 import net.sourceforge.ganttproject.GPLogger
 import java.awt.Font
 import java.awt.GraphicsEnvironment
 import java.io.File
 import java.nio.file.Files
 import javafx.scene.text.Font as FxFont
+
+val applicationFont = SimpleObjectProperty(javafx.scene.text.Font.getDefault())
+val applicationFontSpec = SimpleObjectProperty<FontSpec>(null)
+
 /**
  * @author dbarashev@bardsoftware.com
  */
@@ -55,6 +79,12 @@ object FontManager {
     }
   }
 }
+
+/**
+ * FontSpec does not define the absolute font size, so this function resolves the FontSpec size relative to the default
+ * font size.
+ */
+fun FontSpec.getSizePt() = this.size.factor * javafx.scene.text.Font.getDefault().size
 
 private val LOGGER = GPLogger.create("App.Fonts").delegate()
 private const val FALLBACK_FONT_FILENAME = "DroidSansFallbackFull.ttc"
