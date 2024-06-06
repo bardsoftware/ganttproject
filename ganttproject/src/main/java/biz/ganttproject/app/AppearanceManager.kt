@@ -53,7 +53,14 @@ class AppearanceManager(private val appFontOption: DefaultFontOption) {
 
   fun reloadCustomCss(windows: List<Window>) {
     windows.forEach { w ->
-      w.scene?.let {reloadCustomCss((it.root))}
+      w.scene?.let {
+        it.rootProperty().addListener { observable, oldValue, newValue ->
+          if (newValue != null && newValue != oldValue) {
+            reloadCustomCss(newValue)
+          }
+        }
+        reloadCustomCss(it.root)
+      }
     }
   }
 
@@ -78,6 +85,7 @@ class AppearanceManager(private val appFontOption: DefaultFontOption) {
   private fun reloadCustomCss(node: Parent) {
     val cssUri = "data:text/css;base64," + Base64.getEncoder().encodeToString(buildStylesheet().toString().encodeToByteArray())
     if (node.stylesheets.indexOf(cssUri) >= 0) {
+      node.pseudoClassStateChanged(USER_CUSTOM, true)
       return
     }
     node.stylesheets.removeIf { uri: String -> uri.startsWith("data:text/css") }
@@ -86,7 +94,7 @@ class AppearanceManager(private val appFontOption: DefaultFontOption) {
   }
 
   private fun buildStylesheet() = StringBuilder().let { css ->
-    css.append(""".root: ${USER_CUSTOM.pseudoClassName} {
+    css.append(""".root:${USER_CUSTOM.pseudoClassName} * {
       |${customCSSDeclarations.map { "\t ${it.key}: ${it.value};" }.joinToString(separator = "\n")}
       |}
     """.trimMargin())

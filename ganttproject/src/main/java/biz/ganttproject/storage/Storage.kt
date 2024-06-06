@@ -254,7 +254,9 @@ class StoragePane internal constructor(
       }
     }
     Timer().schedule(1000L) {
-      Platform.runLater { onStorageChange(storageUiPane, initialStorageId) }
+      FXUtil.runLater {
+        onStorageChange(storageUiPane, initialStorageId)
+      }
     }
   }
 

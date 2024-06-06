@@ -147,20 +147,27 @@ class StorageDialogBuilder(
     contentPane.center = Pane()
     val btnSave = Button(GanttLanguage.getInstance().getText("myProjects.save"))
     val btnOpen = Button(GanttLanguage.getInstance().getText("myProjects.open"))
+
+    val onSaveClicked = {
+      showSaveStorageUi(contentPane)
+      btnOpen.styleClass.removeAll("selected")
+      btnSave.styleClass.add("selected")
+    }
+    val onOpenClicked = {
+      showOpenStorageUi(contentPane)
+      btnSave.styleClass.removeAll("selected")
+      btnOpen.styleClass.add("selected")
+    }
     btnSave.apply {
       addEventHandler(ActionEvent.ACTION) {
-        showSaveStorageUi(contentPane)
-        btnOpen.styleClass.removeAll("selected")
-        btnSave.styleClass.add("selected")
+        onSaveClicked()
       }
       maxWidth = Double.MAX_VALUE
       styleClass.add("selected")
     }
     btnOpen.apply {
       addEventHandler(ActionEvent.ACTION) {
-        showOpenStorageUi(contentPane)
-        btnSave.styleClass.removeAll("selected")
-        btnOpen.styleClass.add("selected")
+        onOpenClicked()
       }
       maxWidth = Double.MAX_VALUE
 
@@ -185,13 +192,10 @@ class StorageDialogBuilder(
     titleBox.children.addAll(projectName, buttonBar)
     this.dialogBuildApi.setHeader(titleBox)
     this.dialogBuildApi.setContent(contentPane)
-    this.dialogBuildApi.onShown = {
-      if (mode == Mode.SAVE) {
-        btnSave.fire()
-        btnSave.requestFocus()
-      } else {
-        btnOpen.fire()
-      }
+    if (mode == Mode.SAVE) {
+      onSaveClicked()
+    } else {
+      onOpenClicked()
     }
     if (contentPaneWidth != 0.0 && contentPaneHeight != 0.0) {
       contentPane.prefWidth = contentPaneWidth
@@ -200,18 +204,18 @@ class StorageDialogBuilder(
       contentPane.prefHeight = max(Screen.getPrimary().bounds.height / 2, 500.0)
       contentPane.prefWidth = max(Screen.getPrimary().bounds.width / 2, 500.0)
     }
-    contentPane.widthProperty().addListener { _, _, newValue ->
-      contentPaneWidth = newValue.toDouble()
-      if (contentPane.isVisible && contentPaneWidth > 0) {
-        contentPane.prefWidth = contentPaneWidth
-      }
-    }
-    contentPane.heightProperty().addListener { _, _, newValue ->
-      contentPaneHeight = newValue.toDouble()
-      if (contentPane.isVisible && contentPaneHeight > 0) {
-        contentPane.prefHeight = contentPaneHeight
-      }
-    }
+//    contentPane.widthProperty().addListener { _, _, newValue ->
+//      contentPaneWidth = newValue.toDouble()
+//      if (contentPane.isVisible && contentPaneWidth > 0) {
+//        contentPane.prefWidth = contentPaneWidth
+//      }
+//    }
+//    contentPane.heightProperty().addListener { _, _, newValue ->
+//      contentPaneHeight = newValue.toDouble()
+//      if (contentPane.isVisible && contentPaneHeight > 0) {
+//        contentPane.prefHeight = contentPaneHeight
+//      }
+//    }
   }
 
   private fun showOpenStorageUi(container: BorderPane) {

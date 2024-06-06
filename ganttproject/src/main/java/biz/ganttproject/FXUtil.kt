@@ -20,8 +20,6 @@ package biz.ganttproject
 
 import biz.ganttproject.app.applicationFont
 import javafx.animation.FadeTransition
-import javafx.animation.ScaleTransition
-import javafx.animation.Timeline
 import javafx.application.Platform
 import javafx.event.EventHandler
 import javafx.scene.Node
@@ -134,14 +132,6 @@ object FXUtil {
     });
   }
 */
-  fun createBreathingButton(button: javafx.scene.control.Button) {
-    val animation = ScaleTransition(Duration.seconds(2.0), button)
-    animation.isAutoReverse = true
-    animation.cycleCount = Timeline.INDEFINITE
-    animation.byX = 0.1
-    animation.byY = 0.1
-    animation.play()
-  }
 
   /*
     public static final class WebViewFitContent extends Region {
@@ -236,7 +226,6 @@ object FXUtil {
     if (newCenter == null) { return }
     val replacePane = Runnable {
       borderPane.center = newCenter
-        //resizer()
     }
     if (borderPane.center == null) {
       replacePane.run()
