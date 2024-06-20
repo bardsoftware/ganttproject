@@ -6,7 +6,7 @@ dependencies {
     providedCompile project(':biz.ganttproject.app.libs')
     providedCompile project(':biz.ganttproject.core')
     providedCompile project(':ganttproject')
-    implementation 'org.mnode.ical4j:ical4j:1.+'
+    implementation 'org.mnode.ical4j:ical4j:4.+'
 }
 
 task copyPlugin(dependsOn: jar) {
