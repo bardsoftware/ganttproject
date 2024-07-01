@@ -141,6 +141,7 @@ class StorageDialogBuilder(
     dialogBuildApi.addStyleClass("dlg-storage")
     dialogBuildApi.addStyleSheet("/biz/ganttproject/storage/StorageDialog.css")
     dialogBuildApi.removeButtonBar()
+    dialogBuildApi.setEscCloseEnabled(true)
 
     val contentPane = BorderPane()
     contentPane.styleClass.addAll("body", "pane-storage")
@@ -173,10 +174,10 @@ class StorageDialogBuilder(
     val buttonBar = GridPane().apply {
       maxWidth = Double.MAX_VALUE
       columnConstraints.addAll(
-          ColumnConstraints().apply { percentWidth = 45.0 },
-          ColumnConstraints().apply { percentWidth = 45.0 }
+          ColumnConstraints().apply { percentWidth = 40.0 },
+          ColumnConstraints().apply { percentWidth = 40.0 }
       )
-      hgap = 5.0
+      hgap = 10.0
       styleClass.add("open-save-buttons")
       add(btnSave, 0, 0)
       add(btnOpen, 1, 0)

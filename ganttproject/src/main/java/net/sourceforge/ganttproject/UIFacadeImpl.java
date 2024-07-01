@@ -273,6 +273,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public void showOptionDialog(int messageType, String message, Action[] actions) {
+
     FXUtil.INSTANCE.runLater(() -> {
       Alert alert = null;
       if (messageType == JOptionPane.INFORMATION_MESSAGE) {
@@ -283,9 +284,11 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         alert.initStyle(StageStyle.UNDECORATED);
       } else if (messageType == JOptionPane.QUESTION_MESSAGE) {
         alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.initStyle(StageStyle.UNDECORATED);
-        alert.initOwner(myWindow);
-        alert.initModality(Modality.APPLICATION_MODAL);
+        alert.initStyle(StageStyle.DECORATED);
+        //alert.initOwner(myWindow);
+        alert.initModality(Modality.WINDOW_MODAL);
+//        DialogKt.showOptionDialog(myWindow, messageType, message, actions);
+        //return Unit.INSTANCE;
       } else if (messageType == JOptionPane.ERROR_MESSAGE) {
         alert = new Alert(Alert.AlertType.ERROR);
         alert.initStyle(StageStyle.UNDECORATED);

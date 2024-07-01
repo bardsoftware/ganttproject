@@ -38,6 +38,10 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
 
   override fun start(stage: Stage) {
     try {
+      stage.focusedProperty().addListener { observable, oldValue, newValue ->
+        println("main stage is focused? $newValue")
+        Exception().printStackTrace(System.out)
+      }
       APP_LOGGER.debug(">>> start()")
       val vbox = vbox {
         add(convertMenu(ganttProject.menuBar))

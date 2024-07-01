@@ -76,7 +76,7 @@ webdav-list-cell-button-pane.alert-warning {
 }
 
 .btn-service:hover {
-    -fx-background-color: white;
+    -fx-background-color: whitesmoke;
 }
 
 .btn-service.active {
@@ -331,8 +331,7 @@ HBox.title-integrated Label {
 }
 
 .open-save-buttons .button:hover,.open-save-buttons .button:focused {
-    -fx-border-color: -gp-dark-gray;
-    -fx-border-width: 0 0 1 0;
+    -fx-background-color: whitesmoke;
 }
 .open-save-buttons .button.selected {
     -fx-border-color: transparent;

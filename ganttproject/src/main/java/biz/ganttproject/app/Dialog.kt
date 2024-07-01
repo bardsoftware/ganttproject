@@ -21,6 +21,7 @@ package biz.ganttproject.app
 import biz.ganttproject.FXUtil
 import biz.ganttproject.lib.fx.VBoxBuilder
 import com.sandec.mdfx.MDFXNode
+import com.sun.javafx.stage.WindowHelper
 import javafx.animation.FadeTransition
 import javafx.animation.ParallelTransition
 import javafx.animation.Transition
@@ -35,6 +36,10 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCombination
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.*
+import javafx.stage.Modality
+import javafx.stage.StageStyle
+import javafx.stage.Window
+import javafx.stage.WindowEvent
 import javafx.util.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -42,6 +47,7 @@ import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.gui.UIFacade
 import java.util.concurrent.CountDownLatch
+import javax.swing.Action
 import javax.swing.SwingUtilities
 
 /**
@@ -61,15 +67,21 @@ import javax.swing.SwingUtilities
  *   this.dialogApi.showAlert(...)
  * }
  */
-fun dialogFx(title: LocalizedString? = null, contentBuilder: (DialogController) -> Unit) {
-  dialogFxBuild(contentBuilder).also {dlg ->
+fun dialogFx(title: LocalizedString? = null, owner: Window? = null, contentBuilder: (DialogController) -> Unit) {
+  dialogFxBuild(owner, contentBuilder).also {dlg ->
     title?.value?.let { dlg.title = it }
-    dlg.show()
+    Platform.runLater {
+      dlg.show()
+      WindowHelper.setFocused(owner, false)
+    }
   }
 }
 
-fun dialogFxBuild(contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
+fun dialogFxBuild(owner: Window? = null, contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
   Dialog<Unit>().apply {
+    owner?.let(::initOwner)
+    initModality(Modality.APPLICATION_MODAL)
+    initStyle(StageStyle.DECORATED)
     isResizable = true
     val dialogBuildApi = DialogControllerFx(dialogPane, this)
     dialogPane.apply {
@@ -81,12 +93,17 @@ fun dialogFxBuild(contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
       window.onCloseRequest = EventHandler {
         window.hide()
       }
+      window.focusedProperty().addListener { observable, oldValue, newValue ->
+        println("dialog window focused=$newValue")
+        Exception().printStackTrace(System.out)
+      }
       scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
     }
 
     dialogBuildApi.onShown = {
       dialogPane.layout()
       dialogPane.scene.window.sizeToScene()
+      isResizable = true
     }
   }
 
@@ -94,7 +111,7 @@ fun dialogFxBuild(contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
 fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -> Unit) {
   Platform.runLater {
     try {
-      dialogFx(title, contentBuilder)
+      dialogFx(title, null, contentBuilder)
     } catch (ex: Exception) {
       ex.printStackTrace()
     }
@@ -433,8 +450,9 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
   }
 
   override fun hide() {
-    FXUtil.runLater {
-      this.dialogPane.scene.window.hide()
+    Platform.runLater {
+      this.dialog.hide()
+      //this.dialogPane.scene?.window?.hide()
     }
   }
 
@@ -601,5 +619,21 @@ fun createAlertBody(message: String): Node =
     }
 
 fun createAlertBody(ex: Exception): Node = createAlertBody(ex.message ?: "")
+
+// --------------------------------------------------------------------
+// Option dialogs
+fun showOptionDialog(owner: Window, messageType: Int, message: String, actions: Array<Action>) {
+  dialogFx(RootLocalizer.create("Question"), owner) { dlg ->
+    dlg.setContent(Label(message))
+    actions.forEach { action ->
+      dlg.setupButton(ButtonType("${action.getValue(Action.NAME)}")) { btn ->
+        btn.onAction = EventHandler {
+          dlg.hide()
+          action.actionPerformed(null)
+        }
+      }
+    }
+  }
+}
 const val DIALOG_STYLESHEET = "/biz/ganttproject/app/Dialog.css"
 
