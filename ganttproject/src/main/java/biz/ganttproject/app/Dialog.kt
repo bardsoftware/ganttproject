@@ -21,7 +21,6 @@ package biz.ganttproject.app
 import biz.ganttproject.FXUtil
 import biz.ganttproject.lib.fx.VBoxBuilder
 import com.sandec.mdfx.MDFXNode
-import com.sun.javafx.stage.WindowHelper
 import javafx.animation.FadeTransition
 import javafx.animation.ParallelTransition
 import javafx.animation.Transition
@@ -36,10 +35,8 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCombination
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.*
-import javafx.stage.Modality
-import javafx.stage.StageStyle
-import javafx.stage.Window
-import javafx.stage.WindowEvent
+import javafx.scene.shape.Rectangle
+import javafx.stage.*
 import javafx.util.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -67,51 +64,58 @@ import javax.swing.SwingUtilities
  *   this.dialogApi.showAlert(...)
  * }
  */
-fun dialogFx(title: LocalizedString? = null, owner: Window? = null, contentBuilder: (DialogController) -> Unit) {
-  dialogFxBuild(owner, contentBuilder).also {dlg ->
+fun dialogFx(title: LocalizedString? = null, owner: Window? = null, id: String? = null, contentBuilder: (DialogController) -> Unit) {
+  dialogFxBuild(owner, id,  contentBuilder).also {dlg ->
     title?.value?.let { dlg.title = it }
-    Platform.runLater {
-      dlg.show()
-      WindowHelper.setFocused(owner, false)
-    }
+    dlg.show()
   }
 }
 
-fun dialogFxBuild(owner: Window? = null, contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
+fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
   Dialog<Unit>().apply {
     owner?.let(::initOwner)
     initModality(Modality.APPLICATION_MODAL)
     initStyle(StageStyle.DECORATED)
-    isResizable = true
-    val dialogBuildApi = DialogControllerFx(dialogPane, this)
+
+
+    DialogControllerFx(dialogPane, this).let { dialogBuildApi ->
+      contentBuilder(dialogBuildApi)
+      dialogPane.scene.window.let { window ->
+        window.onShown = EventHandler {
+          if (id == null) {
+            window.sizeToScene()
+          } else {
+            DialogBoundsStore.getBounds(id)?.let {
+              window.x = it.x
+              window.y = it.y
+              window.width = it.width
+              window.height = it.height
+              dialogPane.prefWidth = it.width
+              dialogPane.prefHeight = it.height
+            } ?: run { window.sizeToScene() }
+            window.onHiding = EventHandler {
+              DialogBoundsStore.setBounds(id, Rectangle(window.x, window.y, window.width, window.height))
+            }
+          }
+          window.onCloseRequest = EventHandler {
+            window.hide()
+          }
+          isResizable = true
+        }
+      }
+    }
+
     dialogPane.apply {
       styleClass.addAll("dlg")
       stylesheets.addAll(DIALOG_STYLESHEET)
-
-      contentBuilder(dialogBuildApi)
-      val window = scene.window
-      window.onCloseRequest = EventHandler {
-        window.hide()
-      }
-      window.focusedProperty().addListener { observable, oldValue, newValue ->
-        println("dialog window focused=$newValue")
-        Exception().printStackTrace(System.out)
-      }
-      scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
-    }
-
-    dialogBuildApi.onShown = {
-      dialogPane.layout()
-      dialogPane.scene.window.sizeToScene()
-      isResizable = true
     }
   }
 
 
-fun dialog(title: LocalizedString? = null,  contentBuilder: (DialogController) -> Unit) {
+fun dialog(title: LocalizedString? = null,  id: String? = null, contentBuilder: (DialogController) -> Unit) {
   Platform.runLater {
     try {
-      dialogFx(title, null, contentBuilder)
+      dialogFx(title, null, id, contentBuilder)
     } catch (ex: Exception) {
       ex.printStackTrace()
     }
@@ -380,6 +384,7 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
   override fun setContent(content: Node) {
     this.content = content
     content.styleClass.add("content-pane")
+
     this.stackPane.children.add(content)
     this.dialogPane.content = this.stackPane
   }
@@ -407,6 +412,8 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
   }
 
   override fun resize() {
+    dialogPane.layout()
+    dialogPane.scene.window.sizeToScene()
   }
 
   override fun setEscCloseEnabled(value: Boolean) {
@@ -416,6 +423,7 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
         hide()
       }
     }
+    this.dialog.dialogPane.scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { hide() }
   }
 
   override fun showAlert(title: LocalizedString, content: Node) {
@@ -452,7 +460,7 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
   override fun hide() {
     Platform.runLater {
       this.dialog.hide()
-      //this.dialogPane.scene?.window?.hide()
+      this.dialogPane.scene.window.hide()
     }
   }
 
@@ -633,7 +641,19 @@ fun showOptionDialog(owner: Window, messageType: Int, message: String, actions: 
         }
       }
     }
+
   }
 }
+
+// ----------------------------------------------------------------------------
+// This object keeps the dialog window dimensions and position on the screen.
+object DialogBoundsStore {
+  private val id2bounds = mutableMapOf<String, Rectangle>()
+  fun getBounds(dialogId: String): Rectangle? = id2bounds[dialogId]
+  fun setBounds(dialogId: String, bounds: Rectangle) {
+    id2bounds[dialogId] = bounds
+  }
+}
+
 const val DIALOG_STYLESHEET = "/biz/ganttproject/app/Dialog.css"
 

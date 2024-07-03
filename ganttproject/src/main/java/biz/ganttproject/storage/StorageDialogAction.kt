@@ -60,20 +60,14 @@ class StorageDialogAction(
   }
 
   fun doRun() {
-    Timer().schedule(1000L) {
       Platform.runLater {
-        dialogFx(RootLocalizer.create("myProjects.title"), owner = window) { dialogBuildApi ->
+        dialogFx(RootLocalizer.create("myProjects.title"), owner = window, id = "storage") { dialogBuildApi ->
           val dialogBuilder = StorageDialogBuilder(
             project, projectUiFacade, documentManager, cloudStorageOptions, dialogBuildApi
           )
-          dialogBuildApi.setContent(Button("!!!").also {
-            it.fire()
-            it.requestFocus()
-          })
-          //dialogBuilder.build(mode)
+          dialogBuilder.build(mode)
         }
       }
-    }
   }
 
 

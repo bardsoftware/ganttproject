@@ -300,7 +300,7 @@ public class CalendarEditorPanel {
       @Override
       protected void onAddEvent() {
         LocalizedString title = InternationalizationKt.getRootLocalizer().create("calendar.editor.datePickerDialog.title");
-        DialogKt.dialog(title, controller -> {
+        DialogKt.dialog(title, "calendar.event.add", controller -> {
           controller.addStyleSheet("/biz/ganttproject/app/Dialog.css");
           controller.addStyleSheet("/biz/ganttproject/lib/MultiDatePicker.css");
           controller.addStyleClass("dlg");

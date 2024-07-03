@@ -30,6 +30,11 @@ import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
 import javafx.scene.paint.Color
 import javafx.util.Duration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
 import javax.swing.UIManager
 
 /**
@@ -37,6 +42,12 @@ import javax.swing.UIManager
  */
 object FXUtil {
   private var isJavaFxAvailable: Boolean? = null
+  fun runLater(delayMs: Long, code: ()->Unit) {
+    fxScope.launch {
+      delay(delayMs)
+      runLater { code() }
+    }
+  }
   fun runLater(code: () -> Unit) {
     val javafxOk = isJavaFxAvailable ?: run {
       try {
@@ -234,7 +245,7 @@ object FXUtil {
     if (newCenter == null) { return }
     val replacePane = Runnable {
       borderPane.center = newCenter
-        //resizer()
+      //resizer()
     }
     if (borderPane.center == null) {
       replacePane.run()
@@ -303,3 +314,5 @@ fun String.colorFromUiManager(): Color? =
   UIManager.getColor(this)?.let { swingColor ->
     Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)
   }
+
+private val fxScope = CoroutineScope(Dispatchers.JavaFx)
