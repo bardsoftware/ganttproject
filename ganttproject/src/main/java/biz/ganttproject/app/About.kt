@@ -41,7 +41,7 @@ import java.time.LocalDateTime
  * @author dbarashev@bardsoftware.com
  */
 fun showAboutDialog() {
-  dialog(title = LocalizedString("about.title", RootLocalizer)) { dialogApi ->
+  dialog(title = LocalizedString("about.title", RootLocalizer), id = "about") { dialogApi ->
     val installedVersion = Platform.getUpdater()?.installedUpdateVersions?.maxOrNull() ?: "3.0"
     dialogApi.addStyleClass("dlg-platform-update")
     dialogApi.addStyleSheet(

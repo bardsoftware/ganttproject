@@ -65,6 +65,7 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
     }
     try {
       val stage = Stage()
+      DialogPlacement.applicationWindow = stage
       val ganttProject = GanttProject(stage)
       configure(ganttProject)
       val app = GanttProjectFxApp(ganttProject)

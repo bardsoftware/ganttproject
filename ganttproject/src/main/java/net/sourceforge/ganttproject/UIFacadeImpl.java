@@ -295,6 +295,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       }
       assert alert != null;
 
+      alert.initOwner(myWindow);
       alert.setContentText(message);
       List<ButtonType> buttons = new ArrayList<>();
       for (Action action : actions) {

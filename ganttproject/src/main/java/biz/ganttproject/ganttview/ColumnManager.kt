@@ -578,12 +578,7 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
       columnList, customColumnsManager, CalculationMethodValidator(projectDatabase), ExpressionAutoCompletion()::complete, applyExecutor
     )
     columnManager.escCloseEnabled.addListener { _, _, newValue -> dlg.setEscCloseEnabled(newValue) }
-    val contentPane = BorderPane()
-    dlg.setContent(contentPane)
-    dlg.onShown = {
-      contentPane.center = columnManager.content
-      dlg.resize()
-    }
+    dlg.setContent(columnManager.content)
     dlg.setupButton(ButtonType.APPLY) { btn ->
       btn.text = localizer.formatText("apply")
       btn.styleClass.add("btn-attention")

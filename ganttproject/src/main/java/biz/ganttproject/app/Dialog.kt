@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.app
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.centerOnOwner
 import biz.ganttproject.lib.fx.VBoxBuilder
 import com.sandec.mdfx.MDFXNode
 import javafx.animation.FadeTransition
@@ -44,7 +45,6 @@ import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.gui.UIFacade
 import java.util.concurrent.CountDownLatch
-import javax.swing.Action
 import javax.swing.SwingUtilities
 
 /**
@@ -64,7 +64,7 @@ import javax.swing.SwingUtilities
  *   this.dialogApi.showAlert(...)
  * }
  */
-fun dialogFx(title: LocalizedString? = null, owner: Window? = null, id: String? = null, contentBuilder: (DialogController) -> Unit) {
+fun dialogFx(title: LocalizedString? = null, owner: Window? = DialogPlacement.applicationWindow, id: String? = null, contentBuilder: (DialogController) -> Unit) {
   dialogFxBuild(owner, id,  contentBuilder).also {dlg ->
     title?.value?.let { dlg.title = it }
     dlg.show()
@@ -79,22 +79,25 @@ fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (Di
 
 
     DialogControllerFx(dialogPane, this).let { dialogBuildApi ->
+      dialogBuildApi.setEscCloseEnabled(true)
       contentBuilder(dialogBuildApi)
       dialogPane.scene.window.let { window ->
-        window.onShown = EventHandler {
-          if (id == null) {
-            window.sizeToScene()
-          } else {
-            DialogBoundsStore.getBounds(id)?.let {
-              window.x = it.x
-              window.y = it.y
-              window.width = it.width
-              window.height = it.height
-              dialogPane.prefWidth = it.width
-              dialogPane.prefHeight = it.height
-            } ?: run { window.sizeToScene() }
+        dialogBuildApi.onShown = {
+          id?.let(DialogPlacement::getBounds)?.let {
+            window.x = it.x
+            window.y = it.y
+            window.width = it.width
+            window.height = it.height
+            dialogPane.prefWidth = it.width
+            dialogPane.prefHeight = it.height
+          } ?: run {
+            owner?.let {
+              centerOnOwner(window, it)
+            }
+          }
+          id?.let {
             window.onHiding = EventHandler {
-              DialogBoundsStore.setBounds(id, Rectangle(window.x, window.y, window.width, window.height))
+              DialogPlacement.setBounds(id, Rectangle(window.x, window.y, window.width, window.height))
             }
           }
           window.onCloseRequest = EventHandler {
@@ -109,13 +112,14 @@ fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (Di
       styleClass.addAll("dlg")
       stylesheets.addAll(DIALOG_STYLESHEET)
     }
+
   }
 
 
 fun dialog(title: LocalizedString? = null,  id: String? = null, contentBuilder: (DialogController) -> Unit) {
   Platform.runLater {
     try {
-      dialogFx(title, null, id, contentBuilder)
+      dialogFx(title = title, id = id, contentBuilder = contentBuilder)
     } catch (ex: Exception) {
       ex.printStackTrace()
     }
@@ -384,9 +388,11 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
   override fun setContent(content: Node) {
     this.content = content
     content.styleClass.add("content-pane")
-
-    this.stackPane.children.add(content)
     this.dialogPane.content = this.stackPane
+    this.onShown = {
+      this.stackPane.children.add(content)
+      this.resize()
+    }
   }
 
   override fun setupButton(type: ButtonType, code: (Button) -> Unit): Button? {
@@ -628,31 +634,16 @@ fun createAlertBody(message: String): Node =
 
 fun createAlertBody(ex: Exception): Node = createAlertBody(ex.message ?: "")
 
-// --------------------------------------------------------------------
-// Option dialogs
-fun showOptionDialog(owner: Window, messageType: Int, message: String, actions: Array<Action>) {
-  dialogFx(RootLocalizer.create("Question"), owner) { dlg ->
-    dlg.setContent(Label(message))
-    actions.forEach { action ->
-      dlg.setupButton(ButtonType("${action.getValue(Action.NAME)}")) { btn ->
-        btn.onAction = EventHandler {
-          dlg.hide()
-          action.actionPerformed(null)
-        }
-      }
-    }
-
-  }
-}
-
 // ----------------------------------------------------------------------------
 // This object keeps the dialog window dimensions and position on the screen.
-object DialogBoundsStore {
+object DialogPlacement {
   private val id2bounds = mutableMapOf<String, Rectangle>()
   fun getBounds(dialogId: String): Rectangle? = id2bounds[dialogId]
   fun setBounds(dialogId: String, bounds: Rectangle) {
     id2bounds[dialogId] = bounds
   }
+
+  var applicationWindow: Window? = null
 }
 
 const val DIALOG_STYLESHEET = "/biz/ganttproject/app/Dialog.css"
