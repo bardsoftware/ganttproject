@@ -23,7 +23,6 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.customproperty.*
-import biz.ganttproject.core.option.Completion
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.createToggleSwitch
 import biz.ganttproject.lib.fx.vbox
@@ -36,11 +35,8 @@ import javafx.collections.MapChangeListener
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
 import javafx.geometry.Pos
-import javafx.scene.Node
 import javafx.scene.control.*
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Priority
-import javafx.scene.layout.StackPane
+import javafx.scene.layout.*
 import javafx.util.Callback
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.storage.ProjectDatabase
@@ -91,7 +87,7 @@ class ColumnManager(
         btnApplyController.isDisabled.value = true
       }
     })
-  internal val content: Node
+  internal val content: Region
   private val mergedColumns: MutableList<ColumnList.Column> = mutableListOf()
 
   init {
@@ -119,7 +115,6 @@ class ColumnManager(
       add(errorPane)
     }
     content = HBox().also {
-      it.styleClass.add("content-pane")
       it.children.addAll(listView, propertySheetBox)
       HBox.setHgrow(propertySheetBox, Priority.ALWAYS)
     }
@@ -568,7 +563,7 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
                               localizer: Localizer,
                               projectDatabase: ProjectDatabase,
                               applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
-  dialog { dlg ->
+  dialog(title = RootLocalizer.create("customColumns"), id = "customColumns") { dlg ->
     dlg.addStyleClass("dlg-column-manager")
     dlg.addStyleSheet("/biz/ganttproject/ganttview/ColumnManager.css")
     dlg.setHeader(
@@ -605,7 +600,7 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
       }
       btn.styleClass.addAll("btn-attention", "secondary")
     }
-    dlg.setupButton(ButtonType.NEXT) { btn ->
+    dlg.setupButton(ButtonType.PREVIOUS) { btn ->
       btn.text = localizer.formatText("delete")
       ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP_2)
       btn.disableProperty().bind(columnManager.btnDeleteController.isDisabled)
@@ -615,6 +610,7 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
       }
       btn.styleClass.addAll("btn-regular", "secondary")
     }
+    dlg.setEscCloseEnabled(true)
   }
 }
 

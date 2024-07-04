@@ -23,7 +23,9 @@ package net.sourceforge.ganttproject.action.project
 import biz.ganttproject.print.createPrintAction
 import biz.ganttproject.storage.StorageDialogAction
 import biz.ganttproject.storage.StorageDialogBuilder
+import javafx.stage.Window
 import net.sourceforge.ganttproject.GanttProject
+import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import javax.swing.Action
@@ -33,17 +35,17 @@ import javax.swing.JMenuItem
 /**
  * Collection of actions present in the project menu
  */
-class ProjectMenu(project: GanttProject, key: String) : JMenu(GPAction.createVoidAction(key)) {
+class ProjectMenu(project: GanttProject, window: Window, key: String) : JMenu(GPAction.createVoidAction(key)) {
   private val webdavStorage = project.documentManager.webDavStorageUi as WebDavStorageImpl
 
   private val newProjectAction = NewProjectAction(project)
-  val openProjectAction = StorageDialogAction(
-      project.project, project.projectUIFacade, project.documentManager, webdavStorage.serversOption,
+  val openProjectAction = StorageDialogAction(window,
+      project, project.projectUIFacade, project.documentManager, webdavStorage.serversOption,
       StorageDialogBuilder.Mode.OPEN, "project.open"
   )
   val saveProjectAction = SaveProjectAction(project, project.projectUIFacade)
 
-  private val saveAsProjectAction = StorageDialogAction(
+  private val saveAsProjectAction = StorageDialogAction(window,
       project.project, project.projectUIFacade, project.documentManager, webdavStorage.serversOption,
       StorageDialogBuilder.Mode.SAVE, "project.saveas"
   )

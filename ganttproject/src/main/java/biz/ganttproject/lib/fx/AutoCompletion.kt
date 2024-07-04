@@ -571,9 +571,9 @@ abstract class AutoCompletionBinding<T> protected constructor(
    * @param eventHandler the handler to register
    * @throws NullPointerException if the event type or handler is null
   </E> */
-  fun <E : Event?> addEventHandler(eventType: EventType<E>?, eventHandler: EventHandler<E>?) {
-    eventHandlerManager.addEventHandler(eventType, eventHandler)
-  }
+//  fun <E : Event?> addEventHandler(eventType: EventType<E>?, eventHandler: EventHandler<E>?) {
+//    eventHandlerManager.addEventHandler(eventType, eventHandler)
+//  }
 
   /**
    * Unregisters a previously registered event handler from this EventTarget. One
@@ -586,9 +586,9 @@ abstract class AutoCompletionBinding<T> protected constructor(
    * @param eventHandler the handler to unregister
    * @throws NullPointerException if the event type or handler is null
   </E> */
-  fun <E : Event?> removeEventHandler(eventType: EventType<E>?, eventHandler: EventHandler<E>?) {
-    eventHandlerManager.removeEventHandler(eventType, eventHandler)
-  }
+//  fun <E : Event?> removeEventHandler(eventType: EventType<E>?, eventHandler: EventHandler<E>?) {
+//    eventHandlerManager.removeEventHandler(eventType, eventHandler)
+//  }
 
   /** {@inheritDoc}  */
   override fun buildEventDispatchChain(tail: EventDispatchChain): EventDispatchChain {

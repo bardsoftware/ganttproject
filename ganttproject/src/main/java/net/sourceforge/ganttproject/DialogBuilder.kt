@@ -189,7 +189,7 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
         controller = it
         val swingNode = SwingNode()
 
-        it.setContent(vbox {
+        controller.setContent(vbox {
           add(swingNode, null, Priority.ALWAYS)
         })
 

@@ -19,6 +19,7 @@
 
 package biz.ganttproject.print
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.app.*
 import biz.ganttproject.lib.DateRangePicker
 import biz.ganttproject.lib.DateRangePickerModel
@@ -62,7 +63,7 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
   val i18n = RootLocalizer
   val prefixedLocalizer = RootLocalizer.createWithRootKey("print.preview")
 
-  dialogFx { dlg ->
+  dialogFx(id = "print") { dlg ->
     val previews = Previews(activeChart, preferences, onError = { ex ->
       dlg.showAlert(prefixedLocalizer.create("alert.title"), createAlertBody(ex))
     })
@@ -128,7 +129,7 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
       )
     }
 
-    val contentPane = BorderPane().also {
+    val realContent = BorderPane().also {
       it.styleClass.add("content-pane")
       it.right = BorderPane().apply {
         top = controls
@@ -136,7 +137,8 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
       }
       it.center = ScrollPane(Pane(previews.gridPane).also {p -> p.styleClass.add("all-pages")})
     }
-    dlg.setContent(contentPane)
+    val placeholderContent = BorderPane()
+    dlg.setContent(placeholderContent)
     dlg.setButtonPaneNode(
       HBox().also { hbox ->
         hbox.alignment = Pos.CENTER_LEFT
@@ -184,8 +186,11 @@ fun showPrintDialog(activeChart: Chart, preferences: Preferences) {
       }
     }
     dlg.onShown = {
+      placeholderContent.center = realContent
+      dlg.resize()
       btnApply?.requestFocus()
     }
+    dlg.setEscCloseEnabled(true)
   }
 }
 
@@ -369,7 +374,9 @@ private fun exportPages(pages: List<PrintPage>, project: IGanttProject, dlg: Dia
 
 fun createPrintAction(uiFacade: UIFacade, preferences: Preferences): GPAction {
   return GPAction.create("project.print") {
-    showPrintDialog(uiFacade.activeChart, preferences.node("/configuration/print"))
+    FXUtil.runLater {
+      showPrintDialog(uiFacade.activeChart, preferences.node("/configuration/print"))
+    }
   }
 }
 

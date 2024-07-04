@@ -22,14 +22,17 @@ import javafx.animation.FadeTransition
 import javafx.animation.ScaleTransition
 import javafx.animation.Timeline
 import javafx.application.Platform
-import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.Parent
-import javafx.scene.control.Dialog
-import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
 import javafx.scene.paint.Color
+import javafx.stage.Window
 import javafx.util.Duration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
 import javax.swing.UIManager
 
 /**
@@ -37,6 +40,12 @@ import javax.swing.UIManager
  */
 object FXUtil {
   private var isJavaFxAvailable: Boolean? = null
+  fun runLater(delayMs: Long, code: ()->Unit) {
+    fxScope.launch {
+      delay(delayMs)
+      runLater { code() }
+    }
+  }
   fun runLater(code: () -> Unit) {
     val javafxOk = isJavaFxAvailable ?: run {
       try {
@@ -234,7 +243,7 @@ object FXUtil {
     if (newCenter == null) { return }
     val replacePane = Runnable {
       borderPane.center = newCenter
-        //resizer()
+      //resizer()
     }
     if (borderPane.center == null) {
       replacePane.run()
@@ -260,30 +269,6 @@ object FXUtil {
       }
     }
   }
-
-  fun showDialog(dlg: Dialog<Unit>) {
-    Platform.runLater {
-      dlg.also {
-        it.isResizable = true
-        it.dialogPane.apply {
-          styleClass.addAll("dlg-lock", "dlg-cloud-file-options")
-          stylesheets.addAll("/biz/ganttproject/storage/cloud/GPCloudStorage.css", "/biz/ganttproject/storage/StorageDialog.css")
-
-          val window = scene.window
-          window.onCloseRequest = EventHandler {
-            window.hide()
-          }
-          scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { window.hide() }
-        }
-        it.onShown = EventHandler { _ ->
-          it.dialogPane.layout()
-          it.dialogPane.scene.window.sizeToScene()
-        }
-        it.show()
-      }
-    }
-
-  }
 }
 
 fun Node.printCss() {
@@ -298,8 +283,14 @@ fun Parent.walkTree(code: (Node)->Unit) {
   }
 }
 
-
 fun String.colorFromUiManager(): Color? =
   UIManager.getColor(this)?.let { swingColor ->
     Color.color(swingColor.red / 255.0, swingColor.green / 255.0, swingColor.blue / 255.0)
   }
+
+fun centerOnOwner(child: Window, owner: Window) {
+  child.x = owner.x + owner.width / 2.0 - child.width / 2.0
+  child.y = owner.y + owner.height / 2.0 - child.height / 2.0
+}
+
+private val fxScope = CoroutineScope(Dispatchers.JavaFx)

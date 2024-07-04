@@ -194,7 +194,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // Allocation of the menus
 
     var bar = myMenuBar;
-    myProjectMenu = new ProjectMenu(this, "project");
+    myProjectMenu = new ProjectMenu(this, stage, "project");
     bar.add(myProjectMenu);
 
     myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), () -> mySearchUi.requestFocus(), "edit");

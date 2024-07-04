@@ -33,6 +33,7 @@ import javafx.application.Platform
 import javafx.geometry.Pos
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
+import javafx.stage.Window
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -66,6 +67,7 @@ import javax.swing.SwingUtilities
 
 @ExperimentalCoroutinesApi
 class ProjectUIFacadeImpl(
+    private val window: Window,
     private val myWorkbenchFacade: UIFacade,
     private val documentManager: DocumentManager,
     private val undoManager: GPUndoManager) : ProjectUIFacade {
@@ -129,6 +131,7 @@ class ProjectUIFacadeImpl(
 
   override fun saveProjectAs(project: IGanttProject) {
     StorageDialogAction(
+      window,
       project, this, project.documentManager,
       (project.documentManager.webDavStorageUi as WebDavStorageImpl).serversOption,
       StorageDialogBuilder.Mode.SAVE,

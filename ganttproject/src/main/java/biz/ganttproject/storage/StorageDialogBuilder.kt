@@ -141,6 +141,7 @@ class StorageDialogBuilder(
     dialogBuildApi.addStyleClass("dlg-storage")
     dialogBuildApi.addStyleSheet("/biz/ganttproject/storage/StorageDialog.css")
     dialogBuildApi.removeButtonBar()
+    dialogBuildApi.setEscCloseEnabled(true)
 
     val contentPane = BorderPane()
     contentPane.styleClass.addAll("body", "pane-storage")
@@ -173,10 +174,10 @@ class StorageDialogBuilder(
     val buttonBar = GridPane().apply {
       maxWidth = Double.MAX_VALUE
       columnConstraints.addAll(
-          ColumnConstraints().apply { percentWidth = 45.0 },
-          ColumnConstraints().apply { percentWidth = 45.0 }
+          ColumnConstraints().apply { percentWidth = 40.0 },
+          ColumnConstraints().apply { percentWidth = 40.0 }
       )
-      hgap = 5.0
+      hgap = 10.0
       styleClass.add("open-save-buttons")
       add(btnSave, 0, 0)
       add(btnOpen, 1, 0)
@@ -188,30 +189,31 @@ class StorageDialogBuilder(
     this.dialogBuildApi.onShown = {
       if (mode == Mode.SAVE) {
         btnSave.fire()
-        btnSave.requestFocus()
       } else {
         btnOpen.fire()
       }
     }
-    if (contentPaneWidth != 0.0 && contentPaneHeight != 0.0) {
-      contentPane.prefWidth = contentPaneWidth
-      contentPane.prefHeight = contentPaneHeight
-    } else {
       contentPane.prefHeight = max(Screen.getPrimary().bounds.height / 2, 500.0)
       contentPane.prefWidth = max(Screen.getPrimary().bounds.width / 2, 500.0)
-    }
-    contentPane.widthProperty().addListener { _, _, newValue ->
-      contentPaneWidth = newValue.toDouble()
-      if (contentPane.isVisible && contentPaneWidth > 0) {
-        contentPane.prefWidth = contentPaneWidth
-      }
-    }
-    contentPane.heightProperty().addListener { _, _, newValue ->
-      contentPaneHeight = newValue.toDouble()
-      if (contentPane.isVisible && contentPaneHeight > 0) {
-        contentPane.prefHeight = contentPaneHeight
-      }
-    }
+//    if (contentPaneWidth != 0.0 && contentPaneHeight != 0.0) {
+//      contentPane.prefWidth = contentPaneWidth
+//      contentPane.prefHeight = contentPaneHeight
+//    } else {
+//      contentPane.prefHeight = max(Screen.getPrimary().bounds.height / 2, 500.0)
+//      contentPane.prefWidth = max(Screen.getPrimary().bounds.width / 2, 500.0)
+//    }
+//    contentPane.widthProperty().addListener { _, _, newValue ->
+//      contentPaneWidth = newValue.toDouble()
+//      if (contentPane.isVisible && contentPaneWidth > 0) {
+//        contentPane.prefWidth = contentPaneWidth
+//      }
+//    }
+//    contentPane.heightProperty().addListener { _, _, newValue ->
+//      contentPaneHeight = newValue.toDouble()
+//      if (contentPane.isVisible && contentPaneHeight > 0) {
+//        contentPane.prefHeight = contentPaneHeight
+//      }
+//    }
   }
 
   private fun showOpenStorageUi(container: BorderPane) {
@@ -222,14 +224,20 @@ class StorageDialogBuilder(
       }
       myOpenStorage = myNotificationPane
     }
-    FXUtil.transitionCenterPane(container, myOpenStorage) {}
+      FXUtil.transitionCenterPane(container, myOpenStorage) {
+//      container.scene.window.sizeToScene()
+//      container.requestFocus()
+    }
   }
 
   private fun showSaveStorageUi(container: BorderPane) {
     if (mySaveStorage == null) {
       mySaveStorage = buildStoragePane(Mode.SAVE)
     }
-    FXUtil.transitionCenterPane(container, mySaveStorage) {}
+    FXUtil.transitionCenterPane(container, mySaveStorage) {
+//      container.scene.window.sizeToScene()
+//      container.requestFocus()
+    }
   }
 
   private fun buildStoragePane(mode: Mode): Pane {
@@ -257,12 +265,10 @@ class StorageDialogBuilder(
 
     fun error(e: Throwable) {
       dialogController.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(e.message ?: ""))
-      e.printStackTrace()
     }
 
     fun error(message: String) {
       dialogController.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(message))
-      Thread.dumpStack()
     }
 
     fun message(message: String) {

@@ -197,7 +197,11 @@ class RecentProjects(
   }
 
   override fun focus() {
-    this.paneElements.filenameInput.requestFocus()
+    this.paneElements.filenameInput.sceneProperty().addListener { observable, oldValue, newValue ->
+      if (newValue != null && oldValue == null) {
+        this.paneElements.filenameInput.requestFocus()
+      }
+    }
   }
 
 }

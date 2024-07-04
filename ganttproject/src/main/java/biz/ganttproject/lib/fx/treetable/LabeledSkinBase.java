@@ -26,7 +26,7 @@
 package biz.ganttproject.lib.fx.treetable;
 
 import com.sun.javafx.scene.control.LabeledText;
-import com.sun.javafx.scene.control.behavior.TextBinding;
+import com.sun.javafx.scene.control.behavior.MnemonicInfo;
 import com.sun.javafx.scene.control.skin.Utils;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
@@ -124,7 +124,7 @@ public abstract class LabeledSkinBase<C extends Labeled> extends SkinBase<C> {
   private double wrapWidth;
   private double wrapHeight;
 
-  private TextBinding bindings;
+  private MnemonicInfo bindings;
   private Line mnemonic_underscore;
 
   private boolean containsMnemonic = false;
@@ -1146,7 +1146,7 @@ public abstract class LabeledSkinBase<C extends Labeled> extends SkinBase<C> {
 
     if (sourceText != null && labeled.isMnemonicParsing()) {
       if (bindings == null) {
-        bindings = new TextBinding(sourceText);
+        bindings = new MnemonicInfo(sourceText);
       } else {
         bindings.update(sourceText);
       }
