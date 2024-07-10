@@ -466,7 +466,7 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
   override fun hide() {
     Platform.runLater {
       this.dialog.hide()
-      this.dialogPane.scene.window.hide()
+      this.dialogPane.scene?.window?.hide()
     }
   }
 

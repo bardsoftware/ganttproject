@@ -27,7 +27,9 @@ dependencies {
     implementation "com.vladsch.flexmark:flexmark-ext-tables:0.64.+"
     implementation "com.vladsch.flexmark:flexmark-ext-attributes:0.64.+"
 
+
     exported "com.vladsch.flexmark:flexmark-all:0.64.+"
+    exported "com.sandec:mdfx:0.2.12"
     exported 'commons-codec:commons-codec:1.+'
     exported 'commons-io:commons-io:2.+'
 
@@ -46,6 +48,7 @@ dependencies {
 
     exported 'net.java.balloontip:balloontip:1.2.4.1'
     exported "org.apache.commons:commons-lang3:3.14.0"
+    exported "org.apache.commons:commons-text:1.12.0"
 
     exported "org.apache.httpcomponents:httpclient:4.5.14"
     exported "org.apache.httpcomponents:httpmime:4.5.14"

@@ -21,6 +21,9 @@ allprojects {
     repositories {
         mavenCentral()
         google()
+        maven {
+            url "https://sandec.jfrog.io/artifactory/repo"
+        }
     }
     apply plugin: 'java'
     ext {

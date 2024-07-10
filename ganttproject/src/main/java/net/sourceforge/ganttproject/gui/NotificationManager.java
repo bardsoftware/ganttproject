@@ -25,6 +25,8 @@ import javax.swing.event.HyperlinkListener;
 import java.util.List;
 
 public interface NotificationManager {
+  NotificationItem createNotification(NotificationChannel channel, String title, String body, HyperlinkListener hyperlinkListener);
+
   void addNotifications(List<NotificationItem> notifications);
 
   void showNotification(NotificationChannel channel);

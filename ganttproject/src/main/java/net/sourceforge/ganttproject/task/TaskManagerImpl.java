@@ -85,9 +85,11 @@ public class TaskManagerImpl implements TaskManager {
   private final DependencyGraph myDependencyGraph = new DependencyGraph(myHierarchySupplier, new DependencyGraph.Logger() {
     @Override
     public void logDependencyLoop(String title, String message) {
-      if (myConfig.getNotificationManager() != null) {
-        myConfig.getNotificationManager().addNotifications(
-            ImmutableList.of(new NotificationItem(NotificationChannel.WARNING, "Dependency loop detected", message, NotificationManager.DEFAULT_HYPERLINK_LISTENER)));
+      var notificationManager = myConfig.getNotificationManager();
+      if (notificationManager != null) {
+        notificationManager.addNotifications(Collections.singletonList(
+          notificationManager.createNotification(NotificationChannel.WARNING, "Dependency loop detected", message, NotificationManager.DEFAULT_HYPERLINK_LISTENER)
+        ));
       }
       GPLogger.log(title + "\n" + message);
     }

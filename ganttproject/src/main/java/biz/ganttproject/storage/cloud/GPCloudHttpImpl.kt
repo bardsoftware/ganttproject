@@ -38,6 +38,7 @@ import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.GPVersion
 import net.sourceforge.ganttproject.storage.*
 import okhttp3.*
 import org.apache.commons.codec.binary.Base64InputStream
@@ -537,7 +538,9 @@ class HttpClientOk(
       it.host = host
       it.scheme = GPCLOUD_SCHEME
     }
-    val req = Request.Builder().url(uriBuilder.build().toURL()).build()
+    val req = Request.Builder().url(uriBuilder.build().toURL())
+      .header("User-Agent", "GanttProject " + GPVersion.getCurrentVersionNumber())
+      .build()
     return this.okHttpClient.newCall(req).execute().use {
       ResponseImpl(it)
     }
@@ -553,7 +556,9 @@ class HttpClientOk(
           it.host = host
           it.scheme = GPCLOUD_SCHEME
         }
-        Request.Builder().url(uriBuilder.build().toURL()).post(body).build()
+        Request.Builder().url(uriBuilder.build().toURL()).post(body)
+          .header("User-Agent", "GanttProject " + GPVersion.getCurrentVersionNumber())
+          .build()
       }
       HttpPostEncoding.URLENCODED -> {
         val body = FormBody.Builder().also {
@@ -563,7 +568,9 @@ class HttpClientOk(
           it.host = host
           it.scheme = GPCLOUD_SCHEME
         }
-        Request.Builder().url(uriBuilder.build().toURL()).post(body).build()
+        Request.Builder().url(uriBuilder.build().toURL()).post(body)
+          .header("User-Agent", "GanttProject " + GPVersion.getCurrentVersionNumber())
+          .build()
       }
     }
     return this.okHttpClient.newCall(req).execute().use {

@@ -368,21 +368,21 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public void showNotificationDialog(NotificationChannel channel, String message) {
     String i18nPrefix = channel.name().toLowerCase() + ".channel.";
-    getNotificationManager().addNotifications(
-        Collections.singletonList(new NotificationItem(channel, i18n(i18nPrefix + "itemTitle"),
-            GanttLanguage.getInstance().formatText(i18nPrefix + "itemBody", message), new HyperlinkListener() {
-          @Override
-          public void hyperlinkUpdate(HyperlinkEvent e) {
-            if (e.getEventType() != EventType.ACTIVATED) {
-              return;
-            }
-            if ("localhost".equals(e.getURL().getHost()) && "/log".equals(e.getURL().getPath())) {
-              onViewLog();
-            } else {
-              NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
-            }
-          }
-        })));
+    getNotificationManager().addNotifications(Collections.singletonList(getNotificationManager().createNotification(
+      channel,
+      i18n(i18nPrefix + "itemTitle"),
+      InternationalizationKt.getRootLocalizer().formatText(i18nPrefix + "itemBody", message),
+      e -> {
+        if (e.getEventType() != EventType.ACTIVATED) {
+          return;
+        }
+        if ("localhost".equals(e.getURL().getHost()) && "/log".equals(e.getURL().getPath())) {
+          onViewLog();
+        } else {
+          NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
+        }
+      }
+    )));
   }
 
   @Override

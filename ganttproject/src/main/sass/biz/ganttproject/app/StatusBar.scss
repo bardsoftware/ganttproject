@@ -87,6 +87,9 @@
       &.warning .glyph-icon {
         -fx-fill: $gp-warning;
       }
+      &.news .glyph-icon {
+        -fx-fill: $gp-warning;
+      }
     }
   }
 }
