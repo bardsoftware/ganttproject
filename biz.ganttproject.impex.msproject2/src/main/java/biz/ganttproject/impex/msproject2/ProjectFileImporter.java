@@ -61,7 +61,15 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
 import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -78,6 +86,14 @@ class ProjectFileImporter {
   private ProjectFile myProjectFile;
   private Map<GanttTask, Date> myNativeTask2foreignStart;
   private boolean myPatchMspdi = true;
+  private static DateFormat ourIsoDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+  static Date toJavaDate(LocalDate localDate) {
+    try {
+      return ourIsoDateFormatter.parse(localDate.format(DateTimeFormatter.ISO_DATE));
+    } catch (ParseException e) {
+      throw new RuntimeException("Failure parsing date " + localDate + " from MS Project file", e);
+    }
+  }
 
   private static ProjectReader createReader(File file) {
     int lastDot = file.getName().lastIndexOf('.');
@@ -85,20 +101,23 @@ class ProjectFileImporter {
       return null;
     }
     String fileExt = file.getName().substring(lastDot + 1).toLowerCase();
-    switch (fileExt) {
-      case "mpp":
-        return new MPPReader();
-      case "xml":
-        return new MSPDIReader();
-      case "mpx":
-        return new MPXReader();
-    }
-    return null;
+    return switch (fileExt) {
+      case "mpp" -> new MPPReader();
+      case "xml" -> new MSPDIReader();
+      case "mpx" -> new MPXReader();
+      default -> null;
+    };
   }
 
   private interface HolidayAdder {
+    default void addHoliday(LocalDate date, Optional<String> title) {
+      addHoliday(toJavaDate(date), title);
+    }
     void addHoliday(Date date, Optional<String> title);
 
+    default void addYearlyHoliday(LocalDate date, Optional<String> title) {
+      addYearlyHoliday(toJavaDate(date), title);
+    }
     void addYearlyHoliday(Date date, Optional<String> title);
   }
 
@@ -237,16 +256,16 @@ class ProjectFileImporter {
   }
 
   private void importWeekends(ProjectCalendar calendar) {
-    importDayType(calendar, Day.MONDAY, Calendar.MONDAY);
-    importDayType(calendar, Day.TUESDAY, Calendar.TUESDAY);
-    importDayType(calendar, Day.WEDNESDAY, Calendar.WEDNESDAY);
-    importDayType(calendar, Day.THURSDAY, Calendar.THURSDAY);
-    importDayType(calendar, Day.FRIDAY, Calendar.FRIDAY);
-    importDayType(calendar, Day.SATURDAY, Calendar.SATURDAY);
-    importDayType(calendar, Day.SUNDAY, Calendar.SUNDAY);
+    importDayType(calendar, DayOfWeek.MONDAY, Calendar.MONDAY);
+    importDayType(calendar, DayOfWeek.TUESDAY, Calendar.TUESDAY);
+    importDayType(calendar, DayOfWeek.WEDNESDAY, Calendar.WEDNESDAY);
+    importDayType(calendar, DayOfWeek.THURSDAY, Calendar.THURSDAY);
+    importDayType(calendar, DayOfWeek.FRIDAY, Calendar.FRIDAY);
+    importDayType(calendar, DayOfWeek.SATURDAY, Calendar.SATURDAY);
+    importDayType(calendar, DayOfWeek.SUNDAY, Calendar.SUNDAY);
   }
 
-  private void importDayType(ProjectCalendar foreignCalendar, Day foreignDay, int nativeDay) {
+  private void importDayType(ProjectCalendar foreignCalendar, DayOfWeek foreignDay, int nativeDay) {
     getNativeCalendar().setWeekDayType(nativeDay,
         foreignCalendar.isWorkingDay(foreignDay) ? DayType.WORKING : DayType.WEEKEND);
   }
@@ -294,18 +313,19 @@ class ProjectFileImporter {
   }
 
   private void importHolidays(
-    Date start, int occurrences, Optional<String> title, HolidayAdder adder) {
+    LocalDate start, int occurrences, Optional<String> title, HolidayAdder adder) {
     TimeDuration oneDay = getTaskManager().createLength(GregorianTimeUnitStack.DAY, 1.0f);
-    for (Date dayStart = start; occurrences > 0; occurrences--) {
+    for (Date dayStart = toJavaDate(start); occurrences > 0; occurrences--) {
       adder.addHoliday(dayStart, title);
       dayStart = GPCalendarCalc.PLAIN.shiftDate(dayStart, oneDay);
     }
   }
 
   private void importHolidays(
-    Date start, Date end, Optional<String> title, HolidayAdder adder) {
+    LocalDate start, LocalDate end, Optional<String> title, HolidayAdder adder) {
     TimeDuration oneDay = getTaskManager().createLength(GregorianTimeUnitStack.DAY, 1.0f);
-    for (Date dayStart = start; !dayStart.after(end); ) {
+    var javaEndDate = toJavaDate(end);
+    for (Date dayStart = toJavaDate(start); !dayStart.after(javaEndDate); ) {
       adder.addHoliday(dayStart, title);
       dayStart = GPCalendarCalc.PLAIN.shiftDate(dayStart, oneDay);
     }
@@ -426,7 +446,7 @@ class ProjectFileImporter {
     if (t.getPriority() != null) {
       taskBuilder = taskBuilder.withPriority(convertPriority(t.getPriority()));
     }
-    Date foreignStartDate = convertStartTime(t.getStart());
+    Date foreignStartDate = convertStartTime(toJavaDate(t.getStart().toLocalDate()));
     if (t.getChildTasks().isEmpty()) {
       taskBuilder.withStartDate(foreignStartDate);
       if (t.getPercentageComplete() != null) {
@@ -523,79 +543,49 @@ class ProjectFileImporter {
   }
 
   private String convertDataType(FieldType tf) {
-    switch (tf.getDataType()) {
-      case ACCRUE:
-      case CONSTRAINT:
-      case DURATION:
-      case PRIORITY:
-      case RELATION_LIST:
-      case RESOURCE_TYPE:
-      case STRING:
-      case TASK_TYPE:
-      case UNITS:
-        return CustomPropertyClass.TEXT.name().toLowerCase();
-      case BOOLEAN:
-        return CustomPropertyClass.BOOLEAN.name().toLowerCase();
-      case DATE:
-        return CustomPropertyClass.DATE.name().toLowerCase();
-      case CURRENCY:
-      case NUMERIC:
-      case PERCENTAGE:
-      case RATE:
-        return CustomPropertyClass.DOUBLE.name().toLowerCase();
-    }
-    return null;
+    return switch (tf.getDataType()) {
+      case ACCRUE, CONSTRAINT, DURATION, PRIORITY, RELATION_LIST, RESOURCE_TYPE, STRING, TASK_TYPE, UNITS ->
+        CustomPropertyClass.TEXT.name().toLowerCase();
+      case BOOLEAN -> CustomPropertyClass.BOOLEAN.name().toLowerCase();
+      case DATE -> CustomPropertyClass.DATE.name().toLowerCase();
+      case CURRENCY, NUMERIC, PERCENTAGE, RATE -> CustomPropertyClass.DOUBLE.name().toLowerCase();
+      default -> null;
+    };
   }
 
   private Object convertDataValue(FieldType tf, Object value) {
-    switch (tf.getDataType()) {
-      case ACCRUE:
-      case CONSTRAINT:
-      case DURATION:
-      case PRIORITY:
-      case RELATION_LIST:
-      case RESOURCE_TYPE:
-      case STRING:
-      case TASK_TYPE:
-      case UNITS:
-        return String.valueOf(value);
-      case BOOLEAN:
+    return switch (tf.getDataType()) {
+      case ACCRUE, CONSTRAINT, DURATION, PRIORITY, RELATION_LIST, RESOURCE_TYPE, STRING, TASK_TYPE, UNITS ->
+        String.valueOf(value);
+      case BOOLEAN -> {
         assert value instanceof Boolean;
-        return value;
-      case DATE:
+        yield value;
+      }
+      case DATE -> {
         assert value instanceof Date;
-        return CalendarFactory.createGanttCalendar((Date) value);
-      case CURRENCY:
-      case NUMERIC:
-      case PERCENTAGE:
+        yield CalendarFactory.createGanttCalendar((Date) value);
+      }
+      case CURRENCY, NUMERIC, PERCENTAGE -> {
         assert value instanceof Number;
-        return ((Number) value).doubleValue();
-      case RATE:
+        yield ((Number) value).doubleValue();
+      }
+      case RATE -> {
         assert value instanceof Rate;
-        return ((Rate) value).getAmount();
-    }
-    return null;
+        yield ((Rate) value).getAmount();
+      }
+      default -> null;
+    };
   }
 
   private Priority convertPriority(net.sf.mpxj.Priority priority) {
-    switch (priority.getValue()) {
-      case net.sf.mpxj.Priority.HIGHEST:
-      case net.sf.mpxj.Priority.VERY_HIGH:
-        return Priority.HIGHEST;
-      case net.sf.mpxj.Priority.HIGHER:
-      case net.sf.mpxj.Priority.HIGH:
-        return Priority.HIGH;
-      case net.sf.mpxj.Priority.MEDIUM:
-        return Priority.NORMAL;
-      case net.sf.mpxj.Priority.LOWER:
-      case net.sf.mpxj.Priority.LOW:
-        return Priority.LOW;
-      case net.sf.mpxj.Priority.VERY_LOW:
-      case net.sf.mpxj.Priority.LOWEST:
-        return Priority.LOWEST;
-      default:
-        return Priority.NORMAL;
-    }
+    return switch (priority.getValue()) {
+      case net.sf.mpxj.Priority.HIGHEST, net.sf.mpxj.Priority.VERY_HIGH -> Priority.HIGHEST;
+      case net.sf.mpxj.Priority.HIGHER, net.sf.mpxj.Priority.HIGH -> Priority.HIGH;
+      case net.sf.mpxj.Priority.MEDIUM -> Priority.NORMAL;
+      case net.sf.mpxj.Priority.LOWER, net.sf.mpxj.Priority.LOW -> Priority.LOW;
+      case net.sf.mpxj.Priority.VERY_LOW, net.sf.mpxj.Priority.LOWEST -> Priority.LOWEST;
+      default -> Priority.NORMAL;
+    };
   }
 
   private Pair<TimeDuration, TimeDuration> getDurations(Date start, Date end) {
@@ -614,7 +604,9 @@ class ProjectFileImporter {
           if (t.getMilestone()) {
             return Pair.create(getTaskManager().createLength(1), null);
           }
-          return getDurations(t.getStart(), myNativeProject.getTimeUnitStack().getDefaultTimeUnit().adjustRight(t.getFinish()));
+          return getDurations(
+            toJavaDate(t.getStart().toLocalDate()),
+            myNativeProject.getTimeUnitStack().getDefaultTimeUnit().adjustRight(toJavaDate(t.getFinish().toLocalDate())));
         }
       };
 
@@ -627,8 +619,8 @@ class ProjectFileImporter {
           }
           Duration dayUnits = t.getDuration().convertUnits(TimeUnit.DAYS, myProjectFile.getProjectProperties());
           TimeDuration gpDuration = getTaskManager().createLength(GPTimeUnitStack.DAY, (float) dayUnits.getDuration());
-          Date endDate = getTaskManager().shift(t.getStart(), gpDuration);
-          return getDurations(t.getStart(), endDate);
+          Date endDate = getTaskManager().shift(toJavaDate(t.getStart().toLocalDate()), gpDuration);
+          return getDurations(toJavaDate(t.getStart().toLocalDate()), endDate);
         }
       };
 
@@ -684,18 +676,12 @@ class ProjectFileImporter {
   }
 
   private TaskDependencyConstraint convertConstraint(Relation r) {
-    switch (r.getType()) {
-      case FINISH_FINISH:
-        return new FinishFinishConstraintImpl();
-      case FINISH_START:
-        return new FinishStartConstraintImpl();
-      case START_FINISH:
-        return new StartFinishConstraintImpl();
-      case START_START:
-        return new StartStartConstraintImpl();
-      default:
-        throw new IllegalStateException("Uknown relation type=" + r.getType());
-    }
+    return switch (r.getType()) {
+      case FINISH_FINISH -> new FinishFinishConstraintImpl();
+      case FINISH_START -> new FinishStartConstraintImpl();
+      case START_FINISH -> new StartFinishConstraintImpl();
+      case START_START -> new StartStartConstraintImpl();
+    };
   }
 
   private void importResourceAssignments(ProjectFile pf, Map<Integer, GanttTask> foreignId2nativeTask,
