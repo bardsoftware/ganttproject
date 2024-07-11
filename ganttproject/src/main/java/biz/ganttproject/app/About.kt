@@ -31,7 +31,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import net.sourceforge.ganttproject.GanttProject
-import org.apache.commons.lang3.StringEscapeUtils
+import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.core.runtime.Platform
 import java.time.LocalDateTime
 

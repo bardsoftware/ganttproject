@@ -37,6 +37,7 @@ import com.bardsoftware.eclipsito.update.UpdateProgressMonitor
 import com.bardsoftware.eclipsito.update.Updater
 import com.google.common.base.Strings
 import com.sandec.mdfx.MDFXNode
+import com.sandec.mdfx.MarkdownView
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.event.ActionEvent
@@ -419,7 +420,7 @@ private class MajorUpdateUi(update: UpdateMetadata, hasMinorUpdates: Boolean, pr
   val subtitle = Label(ourLocalizer.formatText("majorUpdate.subtitle", update.version)).apply {
     styleClass.add("subtitle")
   }
-  val text: MDFXNode = MDFXNode(ourLocalizer.formatText("majorUpdate.description", update.description)).also { l ->
+  val text: MarkdownView = MarkdownView(ourLocalizer.formatText("majorUpdate.description", update.description)).also { l ->
     l.styleClass.add("par")
   }
   val btnMinorUpdates = Button(ourLocalizer.formatText("majorUpdate.showBugfixUpdates")).also {

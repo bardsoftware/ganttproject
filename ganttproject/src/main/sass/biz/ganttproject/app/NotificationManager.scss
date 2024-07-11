@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2024 BarD Software s.r.o., Dmitry Barashev.
  *
  * This file is part of GanttProject, an opensource project management tool.
@@ -18,9 +18,34 @@
  */
 @import "theme";
 @import "dialogs";
+@import "typography";
 
 .dlg {
   .header {
     @include dialog-header($gp-orange);
   }
+
+  .column-item-cell {
+    -fx-padding: 10 5;
+    -fx-pref-width: 38em;
+
+    .timestamp {
+      @include text-secondary();
+    }
+    &:disabled {
+      -fx-opacity: 0.5;
+    }
+    &:selected {
+      -fx-background-color: $gp-light-gray;
+      & > * {
+        -fx-fill: $gp-dark-gray;
+        -fx-text-fill: $gp-dark-gray;
+      }
+    }
+  }
 }
+
+.notification {
+  -fx-pref-width: 40em;
+}
+

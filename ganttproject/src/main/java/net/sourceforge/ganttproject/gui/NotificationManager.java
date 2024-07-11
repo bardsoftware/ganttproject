@@ -18,23 +18,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import net.sourceforge.ganttproject.util.BrowserControl;
+import biz.ganttproject.lib.fx.DesktopKt;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import java.util.List;
 
 public interface NotificationManager {
+  NotificationItem createNotification(NotificationChannel channel, String title, String body, HyperlinkListener hyperlinkListener);
+
   void addNotifications(List<NotificationItem> notifications);
 
   void showNotification(NotificationChannel channel);
 
-  HyperlinkListener DEFAULT_HYPERLINK_LISTENER = new HyperlinkListener() {
-    @Override
-    public void hyperlinkUpdate(HyperlinkEvent hyperlinkEvent) {
-      if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-        BrowserControl.displayURL(hyperlinkEvent.getURL().toString());
-      }
+  HyperlinkListener DEFAULT_HYPERLINK_LISTENER = hyperlinkEvent -> {
+    if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+      DesktopKt.openInBrowser(hyperlinkEvent.getURL().toString());
     }
   };
 }

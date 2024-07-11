@@ -39,7 +39,7 @@ import net.sourceforge.ganttproject.task.TaskView
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl
-import org.apache.commons.lang3.StringEscapeUtils
+import org.apache.commons.text.StringEscapeUtils
 import org.w3c.util.DateParser
 import org.w3c.util.InvalidDateException
 import java.awt.Color

@@ -21,7 +21,9 @@ package biz.ganttproject.app
 import biz.ganttproject.FXUtil
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
-import com.sandec.mdfx.MDFXNode
+import com.sandec.mdfx.MarkdownView
+import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
+import com.vladsch.flexmark.util.data.MutableDataSet
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
@@ -30,19 +32,25 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
 import javafx.geometry.Pos
+import javafx.scene.Cursor
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
+import javafx.scene.layout.StackPane
 import javafx.stage.Stage
 import javafx.util.Callback
-import net.sourceforge.ganttproject.gui.NotificationChannel
-import net.sourceforge.ganttproject.gui.NotificationItem
-import net.sourceforge.ganttproject.gui.NotificationManager
-import net.sourceforge.ganttproject.gui.UIFacade
-import net.sourceforge.ganttproject.gui.ViewLogDialog
+import net.sourceforge.ganttproject.gui.*
+import org.apache.commons.text.StringEscapeUtils
 import org.controlsfx.control.Notifications
+import java.net.URI
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.swing.SwingUtilities
+import javax.swing.event.HyperlinkEvent
+import javax.swing.event.HyperlinkListener
+
 
 class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : NotificationManager {
   private lateinit var owner: Stage
@@ -51,9 +59,21 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
   private val maxUnreadSeverity = SimpleObjectProperty<NotificationChannel?>()
 
   fun setOwner(stage: Stage) { owner = stage }
+  override fun createNotification(channel: NotificationChannel, title: String, body: String, hyperlinkListener: HyperlinkListener?) =
+    NotificationItem(channel, title, body, LocalDateTime.now(), hyperlinkListener ?: NotificationManager.DEFAULT_HYPERLINK_LISTENER)
 
   override fun addNotifications(notifications: List<NotificationItem>) {
-    this.notifications.addAll(notifications)
+    if (notifications.isEmpty()) {
+      return
+    }
+    this.notifications.addAll(notifications.map {
+      val body = if (it.isHtml()) {
+        html2md(it.myBody)
+      } else {
+        it.myBody
+      }
+      NotificationItem(it.channel, it.myTitle, body, it.timestamp, it.myHyperlinkListener)
+    })
     updateUi()
   }
 
@@ -69,47 +89,68 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
           NotificationChannel.WARNING -> 2
           NotificationChannel.ERROR -> 3
         }
-      } ?: return@runLater
-      val popupBuilder = Notifications.create().owner(owner).title(maxSeverityItem.myTitle).text(maxSeverityItem.myBody)
+      } ?: run {
+        maxUnreadSeverity.set(null)
+        return@runLater
+      }
+
+      val popupBuilder = Notifications.create().owner(owner)
       maxUnreadSeverity.set(maxSeverityItem.channel)
       when (maxSeverityItem.channel) {
         NotificationChannel.RSS -> {
-          popupBuilder.showInformation()
+          popupBuilder.graphic(StackPane().also {
+            it.stylesheets.add("/biz/ganttproject/app/mdfx.css")
+            it.styleClass.add("notification")
+            it.children.add(maxSeverityItem.asMarkdownView())
+            it.prefWidth = 400.0
+            it.prefHeight = 400.0
+          })
+          popupBuilder.show()
         }
         NotificationChannel.WARNING -> {
+          popupBuilder.title(maxSeverityItem.myTitle).text(maxSeverityItem.myBody)
           popupBuilder.showWarning()
         }
         NotificationChannel.ERROR -> {
+          popupBuilder.title(maxSeverityItem.myTitle).text(maxSeverityItem.myBody)
           popupBuilder.showError()
         }
+        null -> {}
       }
     }
-
   }
+
   fun createStatusBarComponent() = HBox().also {
     it.spacing = 5.0
-    it.getStylesheets().add("biz/ganttproject/app/StatusBar.css")
+    it.stylesheets.add("biz/ganttproject/app/StatusBar.css")
     it.styleClass.addAll("statusbar", "align_right", "notifications")
-    val errorButton = Button("Notifications")
+    val errorButton = Button("--------")
     errorButton.onAction = EventHandler { showErrors() }
-    val rssButton = Button("News", NEWS_ICON)
-    maxUnreadSeverity.addListener { observable, oldValue, newValue ->
+    val rssButton = Button(RootLocalizer.formatText("notification.channel.rss.label"), NEWS_ICON)
+    rssButton.onAction = EventHandler { showNews() }
+    maxUnreadSeverity.addListener { _, _, newValue ->
       FXUtil.runLater {
         when (newValue) {
-          NotificationChannel.WARNING -> {
-            errorButton.text = "Errors"
+          NotificationChannel.ERROR -> {
+            errorButton.text = RootLocalizer.formatText("notification.channel.error.label")
             errorButton.graphic = ERROR_ICON
+            errorButton.styleClass.clear()
             errorButton.styleClass.addAll("unread", "error")
           }
-          NotificationChannel.ERROR -> {
-            errorButton.text = "Warnings"
+          NotificationChannel.WARNING -> {
+            errorButton.text = RootLocalizer.formatText("notification.channel.warning.label")
             errorButton.graphic = WARNING_ICON
+            errorButton.styleClass.clear()
             errorButton.styleClass.addAll("unread", "warning")
           }
           NotificationChannel.RSS -> {
-            rssButton.styleClass.add("unread")
+            rssButton.styleClass.clear()
+            rssButton.styleClass.addAll("unread", "news")
           }
-          null -> {}
+          null -> {
+            rssButton.styleClass.clear()
+            errorButton.styleClass.clear()
+          }
         }
       }
     }
@@ -117,51 +158,75 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
     HBox.setHgrow(errorButton, Priority.NEVER)
   }
 
-  fun showErrors() {
-    dialog {dlg ->
-      dlg.addStyleSheet("/biz/ganttproject/app/mdfx.css", "/biz/ganttproject/app/Dialog.css", "/biz/ganttproject/app/NotificationManager.css")
-      dlg.setEscCloseEnabled(true)
+  private fun showNews() {
+    dialog(id = "newsLog") {dlg ->
+      setupNotificationDialog(dlg, "", notifications.filter { it.channel == NotificationChannel.RSS }.reversed())
+    }
+  }
 
-      dlg.setHeader(
-        VBoxBuilder("header").apply {
-          addTitleString("Errors and Warnings").also { hbox ->
-            hbox.alignment = Pos.CENTER_LEFT
-            hbox.isFillHeight = true
-            hbox.children.add(Region().also { node -> HBox.setHgrow(node, Priority.ALWAYS) })
-          }
-        }.vbox
+  private fun showErrors() {
+    dialog(id = "errorLog") {dlg ->
+      setupNotificationDialog(
+        dlg,
+        RootLocalizer.formatText("viewLog"),
+        notifications.filter { it.channel != NotificationChannel.RSS }.reversed()
       )
-
-      val listView = ListView<NotificationItem>().also {
-        it.items = FXCollections.observableArrayList<NotificationItem>().also {
-          it.addAll(notifications.filter { it.channel != NotificationChannel.RSS })
-        }
-        it.cellFactory = Callback { CellImpl() }
-      }
-
-      dlg.setContent(vbox {
-        add(listView)
-      })
-
       dlg.setupButton(ButtonType.NEXT) {btn ->
         btn.styleClass.add("btn-regular")
-        btn.text = "View Log"
+        btn.text = RootLocalizer.formatText("viewLog")
         btn.onAction = EventHandler {
           SwingUtilities.invokeLater {
             ViewLogDialog.show(getUiFacade())
           }
         }
       }
-      dlg.setupButton(ButtonType.OK) {btn ->
-        btn.styleClass.add("btn-attention")
-      }
     }
   }
 
+  private fun setupNotificationDialog(dlg: DialogController, title: String, notifications: List<NotificationItem>) {
+    dlg.addStyleClass("dlg", "dlg-notification")
+    dlg.addStyleSheet(
+      "/biz/ganttproject/app/mdfx.css",
+      "/biz/ganttproject/app/Dialog.css",
+      "/biz/ganttproject/app/NotificationManager.css"
+    )
+    dlg.setEscCloseEnabled(true)
+
+    dlg.setHeader(
+      VBoxBuilder("header").apply {
+        addTitleString(title).also { hbox ->
+          hbox.alignment = Pos.CENTER_LEFT
+          hbox.isFillHeight = true
+          hbox.children.add(Region().also { node -> HBox.setHgrow(node, Priority.ALWAYS) })
+        }
+      }.vbox
+    )
+
+    val listView = ListView<NotificationItem>().also {
+      it.styleClass.add("notification")
+      it.items = FXCollections.observableArrayList()
+      it.items.addAll(notifications)
+      it.cellFactory = Callback { CellImpl() }
+    }
+
+    dlg.setContent(vbox {
+      add(listView)
+    })
+
+    dlg.setupButton(ButtonType.OK) {btn ->
+      btn.styleClass.add("btn-attention")
+    }
+    dlg.onClosed = {
+      updateUi()
+    }
+  }
 }
+
+
 
 private class CellImpl : ListCell<NotificationItem>() {
   init {
+    stylesheets.add("/biz/ganttproject/app/mdfx.css")
     styleClass.add("column-item-cell")
     alignment = Pos.CENTER_LEFT
   }
@@ -174,14 +239,36 @@ private class CellImpl : ListCell<NotificationItem>() {
       return
     }
     text = null
-    graphic = MDFXNode("""
-      *${item.myTitle}*
-      ----
-      
-      ${item.myBody}
-    """.trimIndent())
+    graphic = vbox {
+      add(Label(item.timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)).also { it.styleClass.add("timestamp") })
+      add(item.asMarkdownView())
+    }
+    item.isRead = true
   }
 }
+
+private fun NotificationItem.asMarkdownView() =
+  object : MarkdownView("""|
+      |**${myTitle}**
+      |
+      |${myBody}
+    """.trimMargin().also(StringEscapeUtils::unescapeJava)) {
+    override fun setLink(node: Node, link: String, description: String?) {
+      node.cursor = Cursor.HAND
+      node.setOnMouseClicked { this@asMarkdownView.myHyperlinkListener?.hyperlinkUpdate(
+        HyperlinkEvent(this, HyperlinkEvent.EventType.ACTIVATED, URI.create(link.trim()).toURL()))
+      }
+    }
+  }
+
+
+private fun NotificationItem.isHtml() =
+  HTML_TAGS.any { myBody.contains(it, ignoreCase = true) }
+
+private fun html2md(html: String) =
+  FlexmarkHtmlConverter.builder(MutableDataSet()).build().convert(html)
+
+private val HTML_TAGS = setOf("<br>", "<br/>", "<html>", "<body>", "<p>")
 private val ERROR_ICON = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_CIRCLE)
 private val WARNING_ICON = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_CIRCLE)
 private val NEWS_ICON = MaterialIconView(MaterialIcon.ANNOUNCEMENT)
