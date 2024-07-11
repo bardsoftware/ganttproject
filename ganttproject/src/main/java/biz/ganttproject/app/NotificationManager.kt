@@ -20,7 +20,6 @@ package biz.ganttproject.app
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.lib.fx.openInBrowser
 import biz.ganttproject.lib.fx.vbox
 import com.sandec.mdfx.MarkdownView
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
@@ -36,7 +35,10 @@ import javafx.geometry.Pos
 import javafx.scene.Cursor
 import javafx.scene.Node
 import javafx.scene.control.*
-import javafx.scene.layout.*
+import javafx.scene.layout.HBox
+import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
+import javafx.scene.layout.StackPane
 import javafx.stage.Stage
 import javafx.util.Callback
 import net.sourceforge.ganttproject.gui.*
@@ -113,19 +115,20 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
           popupBuilder.title(maxSeverityItem.myTitle).text(maxSeverityItem.myBody)
           popupBuilder.showError()
         }
+        null -> {}
       }
     }
   }
 
   fun createStatusBarComponent() = HBox().also {
     it.spacing = 5.0
-    it.getStylesheets().add("biz/ganttproject/app/StatusBar.css")
+    it.stylesheets.add("biz/ganttproject/app/StatusBar.css")
     it.styleClass.addAll("statusbar", "align_right", "notifications")
     val errorButton = Button("--------")
     errorButton.onAction = EventHandler { showErrors() }
     val rssButton = Button(RootLocalizer.formatText("notification.channel.rss.label"), NEWS_ICON)
     rssButton.onAction = EventHandler { showNews() }
-    maxUnreadSeverity.addListener { observable, oldValue, newValue ->
+    maxUnreadSeverity.addListener { _, _, newValue ->
       FXUtil.runLater {
         when (newValue) {
           NotificationChannel.ERROR -> {
@@ -201,9 +204,8 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
 
     val listView = ListView<NotificationItem>().also {
       it.styleClass.add("notification")
-      it.items = FXCollections.observableArrayList<NotificationItem>().also {
-        it.addAll(notifications)
-      }
+      it.items = FXCollections.observableArrayList()
+      it.items.addAll(notifications)
       it.cellFactory = Callback { CellImpl() }
     }
 
