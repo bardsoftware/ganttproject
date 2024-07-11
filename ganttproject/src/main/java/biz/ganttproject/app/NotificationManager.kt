@@ -42,9 +42,11 @@ import javafx.util.Callback
 import net.sourceforge.ganttproject.gui.*
 import org.apache.commons.text.StringEscapeUtils
 import org.controlsfx.control.Notifications
+import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.swing.SwingUtilities
+import javax.swing.event.HyperlinkEvent
 import javax.swing.event.HyperlinkListener
 
 
@@ -62,17 +64,15 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
     if (notifications.isEmpty()) {
       return
     }
-    if (notifications[0].channel == NotificationChannel.RSS) {
-      this.notifications.addAll(notifications.map {
-        val body = if (it.myBody.contains("<br>", ignoreCase = true)) {
-          html2md(it.myBody)
-        } else {
-          it.myBody
-        }
-        NotificationItem(it.channel, it.myTitle, body, it.timestamp, it.myHyperlinkListener)
-      })
-      updateUi()
-    }
+    this.notifications.addAll(notifications.map {
+      val body = if (it.isHtml()) {
+        html2md(it.myBody)
+      } else {
+        it.myBody
+      }
+      NotificationItem(it.channel, it.myTitle, body, it.timestamp, it.myHyperlinkListener)
+    })
+    updateUi()
   }
 
   override fun showNotification(channel: NotificationChannel) {
@@ -87,7 +87,10 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
           NotificationChannel.WARNING -> 2
           NotificationChannel.ERROR -> 3
         }
-      } ?: return@runLater
+      } ?: run {
+        maxUnreadSeverity.set(null)
+        return@runLater
+      }
 
       val popupBuilder = Notifications.create().owner(owner)
       maxUnreadSeverity.set(maxSeverityItem.channel)
@@ -111,7 +114,6 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
           popupBuilder.showError()
         }
       }
-      maxSeverityItem.isRead = true
     }
   }
 
@@ -119,22 +121,21 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
     it.spacing = 5.0
     it.getStylesheets().add("biz/ganttproject/app/StatusBar.css")
     it.styleClass.addAll("statusbar", "align_right", "notifications")
-    val errorButton = Button("Notifications")
+    val errorButton = Button("--------")
     errorButton.onAction = EventHandler { showErrors() }
-    val rssButton = Button("News", NEWS_ICON)
+    val rssButton = Button(RootLocalizer.formatText("notification.channel.rss.label"), NEWS_ICON)
     rssButton.onAction = EventHandler { showNews() }
     maxUnreadSeverity.addListener { observable, oldValue, newValue ->
-      println("max unread change: oldValue = $oldValue, newValue = $newValue")
       FXUtil.runLater {
         when (newValue) {
           NotificationChannel.ERROR -> {
-            errorButton.text = "Errors"
+            errorButton.text = RootLocalizer.formatText("notification.channel.error.label")
             errorButton.graphic = ERROR_ICON
             errorButton.styleClass.clear()
             errorButton.styleClass.addAll("unread", "error")
           }
           NotificationChannel.WARNING -> {
-            errorButton.text = "Warnings"
+            errorButton.text = RootLocalizer.formatText("notification.channel.warning.label")
             errorButton.graphic = WARNING_ICON
             errorButton.styleClass.clear()
             errorButton.styleClass.addAll("unread", "warning")
@@ -143,7 +144,10 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
             rssButton.styleClass.clear()
             rssButton.styleClass.addAll("unread", "news")
           }
-          null -> {}
+          null -> {
+            rssButton.styleClass.clear()
+            errorButton.styleClass.clear()
+          }
         }
       }
     }
@@ -153,16 +157,20 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
 
   private fun showNews() {
     dialog(id = "newsLog") {dlg ->
-      setupNotificationDialog(dlg, "News", notifications.filter { it.channel == NotificationChannel.RSS }.reversed())
+      setupNotificationDialog(dlg, "", notifications.filter { it.channel == NotificationChannel.RSS }.reversed())
     }
   }
 
   private fun showErrors() {
     dialog(id = "errorLog") {dlg ->
-      setupNotificationDialog(dlg, "Errors and Warnings", notifications.filter { it.channel != NotificationChannel.RSS }.reversed())
+      setupNotificationDialog(
+        dlg,
+        RootLocalizer.formatText("viewLog"),
+        notifications.filter { it.channel != NotificationChannel.RSS }.reversed()
+      )
       dlg.setupButton(ButtonType.NEXT) {btn ->
         btn.styleClass.add("btn-regular")
-        btn.text = "View Log"
+        btn.text = RootLocalizer.formatText("viewLog")
         btn.onAction = EventHandler {
           SwingUtilities.invokeLater {
             ViewLogDialog.show(getUiFacade())
@@ -206,6 +214,9 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
     dlg.setupButton(ButtonType.OK) {btn ->
       btn.styleClass.add("btn-attention")
     }
+    dlg.onClosed = {
+      updateUi()
+    }
   }
 }
 
@@ -230,6 +241,7 @@ private class CellImpl : ListCell<NotificationItem>() {
       add(Label(item.timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)).also { it.styleClass.add("timestamp") })
       add(item.asMarkdownView())
     }
+    item.isRead = true
   }
 }
 
@@ -241,12 +253,20 @@ private fun NotificationItem.asMarkdownView() =
     """.trimMargin().also(StringEscapeUtils::unescapeJava)) {
     override fun setLink(node: Node, link: String, description: String?) {
       node.cursor = Cursor.HAND
-      node.setOnMouseClicked { openInBrowser(link.trim()) }
+      node.setOnMouseClicked { this@asMarkdownView.myHyperlinkListener?.hyperlinkUpdate(
+        HyperlinkEvent(this, HyperlinkEvent.EventType.ACTIVATED, URI.create(link.trim()).toURL()))
+      }
     }
   }
+
+
+private fun NotificationItem.isHtml() =
+  HTML_TAGS.any { myBody.contains(it, ignoreCase = true) }
+
 private fun html2md(html: String) =
   FlexmarkHtmlConverter.builder(MutableDataSet()).build().convert(html)
 
+private val HTML_TAGS = setOf("<br>", "<br/>", "<html>", "<body>", "<p>")
 private val ERROR_ICON = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_CIRCLE)
 private val WARNING_ICON = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_CIRCLE)
 private val NEWS_ICON = MaterialIconView(MaterialIcon.ANNOUNCEMENT)
