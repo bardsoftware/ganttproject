@@ -64,9 +64,9 @@ import javax.swing.SwingUtilities
  *   this.dialogApi.showAlert(...)
  * }
  */
-fun dialogFx(title: LocalizedString? = null, owner: Window? = DialogPlacement.applicationWindow, id: String? = null, contentBuilder: (DialogController) -> Unit) {
+fun dialogFx(title: String? = null, owner: Window? = DialogPlacement.applicationWindow, id: String? = null, contentBuilder: (DialogController) -> Unit) {
   dialogFxBuild(owner, id,  contentBuilder).also {dlg ->
-    title?.value?.let { dlg.title = it }
+    title?.let { dlg.title = it }
     dlg.show()
   }
 }
@@ -75,12 +75,15 @@ fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (Di
   Dialog<Unit>().apply {
     owner?.let(::initOwner)
     initModality(Modality.APPLICATION_MODAL)
-    initStyle(StageStyle.DECORATED)
 
 
     DialogControllerFx(dialogPane, this).let { dialogBuildApi ->
       dialogBuildApi.setEscCloseEnabled(true)
       contentBuilder(dialogBuildApi)
+      when (dialogBuildApi.frameStyle) {
+        FrameStyle.NATIVE_FRAME -> initStyle(StageStyle.DECORATED)
+        FrameStyle.NO_FRAME -> initStyle(StageStyle.UNDECORATED)
+      }
       dialogPane.scene.window.let { window ->
         dialogBuildApi.onShown = {
           id?.let(DialogPlacement::getBounds)?.let {
@@ -116,7 +119,7 @@ fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (Di
   }
 
 
-fun dialog(title: LocalizedString? = null,  id: String? = null, contentBuilder: (DialogController) -> Unit) {
+fun dialog(title: String? = null,  id: String? = null, contentBuilder: (DialogController) -> Unit) {
   Platform.runLater {
     try {
       dialogFx(title = title, id = id, contentBuilder = contentBuilder)
@@ -126,11 +129,14 @@ fun dialog(title: LocalizedString? = null,  id: String? = null, contentBuilder: 
   }
 }
 
+enum class FrameStyle {
+  NO_FRAME, NATIVE_FRAME
+}
 interface DialogController {
   fun setContent(content: Node)
   fun setupButton(type: ButtonType, code: (Button) -> Unit = {}): Button?
-  fun showAlert(title: LocalizedString, content: Node)
-  fun showAlert(title: String, content: Node)
+  fun showAlert(title: LocalizedString, content: Region)
+  fun showAlert(title: String, content: Region)
   fun addStyleClass(vararg styleClass: String)
   fun addStyleSheet(vararg stylesheets: String)
   fun setHeader(header: Node)
@@ -141,7 +147,7 @@ interface DialogController {
   fun resize()
 
   fun setEscCloseEnabled(value: Boolean)
-
+  var frameStyle: FrameStyle
   var beforeShow: () -> Unit
   var onShown: () -> Unit
   var onClosed: () -> Unit
@@ -290,13 +296,17 @@ class DialogControllerSwing : DialogController {
     this.dialogFrame.isEscCloseEnabled = value
   }
 
-  override fun showAlert(title: LocalizedString, content: Node) {
+  override var frameStyle: FrameStyle
+    get() = FrameStyle.NATIVE_FRAME
+    set(value) {}
+
+  override fun showAlert(title: LocalizedString, content: Region) {
     Platform.runLater {
       createAlertPane(this.content, this.contentStack, title, content)
     }
   }
 
-  override fun showAlert(title: String, content: Node) {
+  override fun showAlert(title: String, content: Region) {
     Platform.runLater {
       createAlertPane(this.content, this.contentStack, title, content)
     }
@@ -367,6 +377,8 @@ class DialogControllerSwing : DialogController {
  * This is an implementation of a DialogController on top of JavaFX dialog.
  */
 class DialogControllerFx(private val dialogPane: DialogPane, private val dialog: Dialog<Unit>) : DialogController {
+  override var frameStyle: FrameStyle = FrameStyle.NATIVE_FRAME
+
   override var beforeShow: () -> Unit = {}
   override var onShown: () -> Unit = {}
     set(value) {
@@ -419,7 +431,7 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
 
   override fun resize() {
     dialogPane.layout()
-    dialogPane.scene.window.sizeToScene()
+    dialogPane.scene?.window?.sizeToScene()
   }
 
   override fun setEscCloseEnabled(value: Boolean) {
@@ -432,14 +444,14 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
     this.dialog.dialogPane.scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { hide() }
   }
 
-  override fun showAlert(title: LocalizedString, content: Node) {
+  override fun showAlert(title: LocalizedString, content: Region) {
     Platform.runLater {
       createAlertPane(this.content, this.stackPane, title, content)
     }
   }
 
-  override fun showAlert(title: String, content: Node) {
-    Platform.runLater {
+  override fun showAlert(title: String, content: Region) {
+    FXUtil.runLater {
       createAlertPane(this.content, this.stackPane, title, content)
     }
   }
@@ -517,13 +529,13 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
     }
   }
 
-  override fun showAlert(title: LocalizedString, content: Node) {
+  override fun showAlert(title: LocalizedString, content: Region) {
     Platform.runLater {
       createAlertPane(this.contentNode, this.stackPane, title, content)
     }
   }
 
-  override fun showAlert(title: String, content: Node) {
+  override fun showAlert(title: String, content: Region) {
     Platform.runLater {
       createAlertPane(this.contentNode, this.stackPane, title, content)
     }
@@ -563,6 +575,10 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
   override fun setEscCloseEnabled(value: Boolean) {
     TODO("Not yet implemented")
   }
+
+  override var frameStyle: FrameStyle
+    get() = FrameStyle.NATIVE_FRAME
+    set(value) {}
 
   private fun createButton(buttonType: ButtonType): Button {
     val button = Button(buttonType.text)
@@ -626,13 +642,13 @@ private fun doCreateAlertPane(underlayPane: Node, stackPane: StackPane, title: (
   }
 }
 
-fun createAlertBody(message: String): Node =
+fun createAlertBody(message: String): Region =
     ScrollPane(MDFXNode(message)).also { scroll ->
       scroll.isFitToWidth = true
       scroll.isFitToHeight = true
     }
 
-fun createAlertBody(ex: Exception): Node = createAlertBody(ex.message ?: "")
+fun createAlertBody(ex: Exception) = createAlertBody(ex.message ?: "")
 
 // ----------------------------------------------------------------------------
 // This object keeps the dialog window dimensions and position on the screen.

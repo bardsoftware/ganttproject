@@ -176,7 +176,7 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
         btn.text = RootLocalizer.formatText("viewLog")
         btn.onAction = EventHandler {
           SwingUtilities.invokeLater {
-            ViewLogDialog.show(getUiFacade())
+            ViewLogDialog.show()
           }
         }
       }

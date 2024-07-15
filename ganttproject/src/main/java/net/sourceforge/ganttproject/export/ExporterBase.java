@@ -25,11 +25,8 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobManager;
-import org.eclipse.core.runtime.jobs.Job;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.prefs.Preferences;
 import org.w3c.util.DateParser;
@@ -50,8 +47,6 @@ public abstract class ExporterBase implements Exporter {
   private DefaultDateOption myExportRangeEnd;
 
   protected static final GanttLanguage language = GanttLanguage.getInstance();
-
-  static protected Object EXPORT_JOB_FAMILY = "Export job family";
 
   @Override
   public void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs) {
@@ -169,9 +164,10 @@ public abstract class ExporterBase implements Exporter {
 
   @Override
   public void run(final File outputFile, final ExportFinalizationJob finalizationJob) throws Exception {
-    final IJobManager jobManager = Job.getJobManager();
-    final List<File> resultFiles = new ArrayList<File>();
-    final List<ExporterJob> jobs = new ArrayList<ExporterJob>(Arrays.asList(createJobs(outputFile, resultFiles)));
+    //final IJobManager jobManager = Job.getJobManager();
+    final List<File> resultFiles = new ArrayList<>();
+
+    var jobs = new ArrayList<>(Arrays.asList(createJobs(outputFile, resultFiles)));
     jobs.add(new ExporterJob("Finalizing") {
       @Override
       protected IStatus run() {
@@ -179,46 +175,48 @@ public abstract class ExporterBase implements Exporter {
         return Status.OK_STATUS;
       }
     });
-    final IProgressMonitor monitor = jobManager.createProgressGroup();
-    Job driverJob = new Job("Running export") {
-      @Override
-      protected IStatus run(IProgressMonitor monitor) {
-        monitor.beginTask("Running export", jobs.size());
-        for (ExporterJob job : jobs) {
-          if (monitor.isCanceled()) {
-            jobManager.cancel(EXPORT_JOB_FAMILY);
-            return Status.CANCEL_STATUS;
-          }
-          monitor.subTask(job.getName());
-          final IStatus state;
-          try {
-            state = job.run();
-          } catch (Throwable e) {
-            GPLogger.log(new RuntimeException("Export failure. Failed subtask: " + job.getName(), e));
-            monitor.setCanceled(true);
-            continue;
-          }
-
-          if (state.isOK() == false) {
-            GPLogger.log(new RuntimeException("Export failure. Failed subtask: " + job.getName(), state.getException()));
-            monitor.setCanceled(true);
-            continue;
-          }
-          // Sub task for export is finished without problems
-          // So, updated the total amount of work with the current
-          // work performed
-          monitor.worked(1);
-          // and remove the sub task description
-          // (convenient for debugging to know the sub task is
-          // finished properly)
-          monitor.subTask(null);
-        }
-        monitor.done();
-        return Status.OK_STATUS;
-      }
-    };
-    driverJob.setProgressGroup(monitor, 0);
-    driverJob.schedule();
+    ExporterBackgroundJobsKt.export(jobs, new JobMonitorDialogFx<>(this.getFileTypeDescription(), jobs.size()));
+//
+//    final IProgressMonitor monitor = jobManager.createProgressGroup();
+//    Job driverJob = new Job("Running export") {
+//      @Override
+//      protected IStatus run(IProgressMonitor monitor) {
+//        monitor.beginTask("Running export", jobs.size());
+//        for (ExporterJob job : jobs) {
+//          if (monitor.isCanceled()) {
+//            jobManager.cancel(EXPORT_JOB_FAMILY);
+//            return Status.CANCEL_STATUS;
+//          }
+//          monitor.subTask(job.getName());
+//          final IStatus state;
+//          try {
+//            state = job.run();
+//          } catch (Throwable e) {
+//            GPLogger.log(new RuntimeException("Export failure. Failed subtask: " + job.getName(), e));
+//            monitor.setCanceled(true);
+//            continue;
+//          }
+//
+//          if (state.isOK() == false) {
+//            GPLogger.log(new RuntimeException("Export failure. Failed subtask: " + job.getName(), state.getException()));
+//            monitor.setCanceled(true);
+//            continue;
+//          }
+//          // Sub task for export is finished without problems
+//          // So, updated the total amount of work with the current
+//          // work performed
+//          monitor.worked(1);
+//          // and remove the sub task description
+//          // (convenient for debugging to know the sub task is
+//          // finished properly)
+//          monitor.subTask(null);
+//        }
+//        monitor.done();
+//        return Status.OK_STATUS;
+//      }
+//    };
+//    driverJob.setProgressGroup(monitor, 0);
+//    driverJob.schedule();
   }
 
   /** @return a list with {@link ExporterJob}s required to actually export the current format */

@@ -90,7 +90,7 @@ public class HelpMenu {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-      ViewLogDialog.show(myUiFacade);
+      ViewLogDialog.show();
     }
   }
 

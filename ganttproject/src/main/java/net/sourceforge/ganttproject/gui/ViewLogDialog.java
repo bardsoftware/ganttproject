@@ -18,13 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
-import javax.swing.Action;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-
+import biz.ganttproject.app.DialogKt;
+import biz.ganttproject.app.InternationalizationKt;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextArea;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.action.CancelAction;
-import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
 
 /**
  * Small utility to show logs in a dialog.
@@ -32,11 +31,30 @@ import net.sourceforge.ganttproject.gui.UIFacade.Dialog;
  * @author dbarashev (Dmitry Barashev)
  */
 public class ViewLogDialog {
-  public static void show(UIFacade uiFacade) {
-    JTextArea textArea = new JTextArea(GPLogger.readLog(), 20, 80);
-    JScrollPane scrollPane = new JScrollPane(textArea);
-    Dialog dlg = uiFacade.createDialog(scrollPane, new Action[] { CancelAction.CLOSE }, "");
-    dlg.show();
+  public static void show() {
+    DialogKt.dialog(InternationalizationKt.getRootLocalizer().formatText("viewLog"), "viewLog", dlg -> {
+      dlg.addStyleSheet("/biz/ganttproject/app/Dialog.css");
+      dlg.addStyleClass("dlg");
+      var textArea = new TextArea(GPLogger.readLog());
+      textArea.setPrefColumnCount(40);
+      textArea.setPrefRowCount(40);
+      dlg.setContent(textArea);
+      dlg.setOnShown(() -> {
+        dlg.resize();
+        return Unit.INSTANCE;
+      });
+      dlg.setupButton(ButtonType.CLOSE, btn -> {
+        btn.getStyleClass().addAll("btn", "btn-attention");
+        btn.setText(InternationalizationKt.getRootLocalizer().formatText("close"));
+        btn.setOnAction(event -> {
+          dlg.hide();
+        });
+        return Unit.INSTANCE;
+      });
+      return Unit.INSTANCE;
+    });
+//    Dialog dlg = uiFacade.createDialog(scrollPane, new Action[] { CancelAction.CLOSE }, "");
+//    dlg.show();
 
   }
 }
