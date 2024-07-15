@@ -392,7 +392,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   protected void onViewLog() {
-    ViewLogDialog.show(this);
+    ViewLogDialog.show();
   }
 
   private static String i18n(String key) {

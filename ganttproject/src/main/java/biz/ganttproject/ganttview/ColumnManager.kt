@@ -563,7 +563,7 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
                               localizer: Localizer,
                               projectDatabase: ProjectDatabase,
                               applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
-  dialog(title = RootLocalizer.create("customColumns"), id = "customColumns") { dlg ->
+  dialog(title = RootLocalizer.formatText("customColumns"), id = "customColumns") { dlg ->
     dlg.addStyleClass("dlg-column-manager")
     dlg.addStyleSheet("/biz/ganttproject/ganttview/ColumnManager.css")
     dlg.setHeader(

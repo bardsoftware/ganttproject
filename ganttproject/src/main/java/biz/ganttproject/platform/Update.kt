@@ -107,7 +107,7 @@ fun updatesAvailableDialog(updates: List<UpdateMetadata>, visibleUpdates: List<U
   dialogController?.let {
     dlg.addContent(it)
   } ?: dialog(
-    title = RootLocalizer.create("platform.update.hasUpdates.title"),
+    title = RootLocalizer.formatText("platform.update.hasUpdates.title"),
     contentBuilder = dlg::addContent
   )
 }

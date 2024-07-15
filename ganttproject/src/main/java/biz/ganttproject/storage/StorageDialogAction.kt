@@ -61,7 +61,7 @@ class StorageDialogAction(
 
   fun doRun() {
       Platform.runLater {
-        dialogFx(RootLocalizer.create("myProjects.title"), owner = window, id = "storage") { dialogBuildApi ->
+        dialogFx(RootLocalizer.formatText("myProjects.title"), owner = window, id = "storage") { dialogBuildApi ->
           val dialogBuilder = StorageDialogBuilder(
             project, projectUiFacade, documentManager, cloudStorageOptions, dialogBuildApi
           )
