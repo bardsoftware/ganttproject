@@ -299,7 +299,7 @@ public class CalendarEditorPanel {
     AbstractTableAndActionsComponent<CalendarEvent> tableAndActions = new AbstractTableAndActionsComponent<>(table) {
       @Override
       protected void onAddEvent() {
-        LocalizedString title = InternationalizationKt.getRootLocalizer().create("calendar.editor.datePickerDialog.title");
+        var title = InternationalizationKt.getRootLocalizer().formatText("calendar.editor.datePickerDialog.title");
         DialogKt.dialog(title, "calendar.event.add", controller -> {
           controller.addStyleSheet("/biz/ganttproject/app/Dialog.css");
           controller.addStyleSheet("/biz/ganttproject/lib/MultiDatePicker.css");

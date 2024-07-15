@@ -50,7 +50,7 @@ public class ExporterToMsProjectFile extends ExporterBase {
 
   private String myFileFormat = FILE_FORMAT_IDS[0];
 
-  private EnumerationOption myFileFormatOption = new DefaultEnumerationOption<Object>("impex.msproject.fileformat",
+  private final EnumerationOption myFileFormatOption = new DefaultEnumerationOption<Object>("impex.msproject.fileformat",
       FILE_FORMAT_IDS) {
     @Override
     public void commit() {
@@ -59,11 +59,11 @@ public class ExporterToMsProjectFile extends ExporterBase {
     }
   };
 
-  private LocaleOption myLanguageOption = new LocaleOption();
+  private final LocaleOption myLanguageOption = new LocaleOption();
 
-  private GPOptionGroup myOptions = new GPOptionGroup("exporter.msproject", new GPOption[] { myFileFormatOption });
+  private final GPOptionGroup myOptions = new GPOptionGroup("exporter.msproject", new GPOption[] { myFileFormatOption });
 
-  private GPOptionGroup myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] { myLanguageOption });
+  private final GPOptionGroup myMPXOptions = new GPOptionGroup("exporter.msproject.mpx", new GPOption[] { myLanguageOption });
 
   public ExporterToMsProjectFile() {
     myOptions.setTitled(false);
@@ -115,11 +115,11 @@ public class ExporterToMsProjectFile extends ExporterBase {
   protected ExporterJob[] createJobs(final File outputFile, List<File> resultFiles) {
     ExporterJob job = createExportJob(outputFile);
     resultFiles.add(outputFile);
-    return new ExporterJob[] { job };
+    return new ExporterJob[] {  job };
   }
 
   private ExporterJob createExportJob(final File outputFile) {
-    ExporterJob result = new ExporterJob("Export project") {
+    return new ExporterJob("Export project") {
       @Override
       protected IStatus run() {
         ProjectFile outProject;
@@ -137,7 +137,6 @@ public class ExporterToMsProjectFile extends ExporterBase {
         return Status.OK_STATUS;
       }
     };
-    return result;
   }
 
   private ProjectWriter createProjectWriter() {

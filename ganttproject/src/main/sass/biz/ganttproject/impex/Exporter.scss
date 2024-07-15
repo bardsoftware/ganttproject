@@ -1,0 +1,54 @@
+/*!
+ * Copyright 2024 BarD Software s.r.o., Dmitry Barashev.
+ *
+ * This file is part of GanttProject, an opensource project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
+@import "../app/theme";
+@import "../app/dialogs";
+@import "../app/buttons";
+@import "../app/validation";
+
+.dlg-export-progress {
+  -fx-min-height: 200;
+  -fx-min-width: 400;
+
+  .content-pane {
+    -fx-padding: 20 20 20 20;
+
+    .title {
+      -fx-font-weight: bold;
+      -fx-font-size: 130%;
+    }
+    .help {
+      -fx-padding: 0 0 2ex 0;
+    }
+
+    .button-pane {
+      @include dialog-button-pane();
+    }
+
+    .error-label {
+      -fx-text-fill: $gp-error;
+      -fx-font-weight: bold;
+    }
+
+    .progress-error {
+      -fx-accent: $gp-error
+    }
+  }
+
+}
+
