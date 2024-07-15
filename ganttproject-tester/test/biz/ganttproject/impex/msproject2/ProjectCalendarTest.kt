@@ -31,6 +31,7 @@ import java.awt.Color
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.time.ZoneId
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -68,8 +69,8 @@ class ProjectCalendarTest: TestCase() {
     val mpxjProject = ProjectFile()
     val mpxjCalendar = mpxjProject.calendars.addDefaultBaseCalendar()
     ProjectFileExporter.exportHolidays(calendar, mpxjCalendar)
-    assertTrue(mpxjCalendar.isWorkingDate(TestSetupHelper.newSaturday().time))
-    assertFalse(mpxjCalendar.isWorkingDate(TestSetupHelper.newMonday().time))
+    assertTrue(mpxjCalendar.isWorkingDate(TestSetupHelper.newSaturday().time.toLocalDate()))
+    assertFalse(mpxjCalendar.isWorkingDate(TestSetupHelper.newMonday().time.toLocalDate()))
   }
 
   fun testImportCalendarEvents() {
@@ -136,6 +137,7 @@ class ProjectCalendarTest: TestCase() {
       .setDate(2023, 0, 2)
       .build().get(Calendar.WEEK_OF_YEAR))
   }
-
 }
+
+fun Date.toLocalDate() = toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
 

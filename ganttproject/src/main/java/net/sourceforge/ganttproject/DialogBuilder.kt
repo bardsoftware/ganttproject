@@ -200,7 +200,7 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
         it.addStyleClass("dlg")
         val swingNode = SwingNode()
 
-        it.setContent(vbox {
+        controller.setContent(vbox {
           add(swingNode, null, Priority.ALWAYS)
         })
 

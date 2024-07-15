@@ -271,6 +271,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public void showOptionDialog(int messageType, String message, Action[] actions) {
+
     FXUtil.INSTANCE.runLater(() -> {
       Alert alert = null;
       if (messageType == JOptionPane.INFORMATION_MESSAGE) {
@@ -281,15 +282,18 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         alert.initStyle(StageStyle.UNDECORATED);
       } else if (messageType == JOptionPane.QUESTION_MESSAGE) {
         alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.initStyle(StageStyle.UNDECORATED);
-        alert.initOwner(myWindow);
-        alert.initModality(Modality.APPLICATION_MODAL);
+        alert.initStyle(StageStyle.DECORATED);
+        //alert.initOwner(myWindow);
+        alert.initModality(Modality.WINDOW_MODAL);
+//        DialogKt.showOptionDialog(myWindow, messageType, message, actions);
+        //return Unit.INSTANCE;
       } else if (messageType == JOptionPane.ERROR_MESSAGE) {
         alert = new Alert(Alert.AlertType.ERROR);
         alert.initStyle(StageStyle.UNDECORATED);
       }
       assert alert != null;
 
+      alert.initOwner(myWindow);
       alert.setContentText(message);
       List<ButtonType> buttons = new ArrayList<>();
       for (Action action : actions) {
@@ -362,21 +366,21 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public void showNotificationDialog(NotificationChannel channel, String message) {
     String i18nPrefix = channel.name().toLowerCase() + ".channel.";
-    getNotificationManager().addNotifications(
-        Collections.singletonList(new NotificationItem(channel, i18n(i18nPrefix + "itemTitle"),
-            GanttLanguage.getInstance().formatText(i18nPrefix + "itemBody", message), new HyperlinkListener() {
-          @Override
-          public void hyperlinkUpdate(HyperlinkEvent e) {
-            if (e.getEventType() != EventType.ACTIVATED) {
-              return;
-            }
-            if ("localhost".equals(e.getURL().getHost()) && "/log".equals(e.getURL().getPath())) {
-              onViewLog();
-            } else {
-              NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
-            }
-          }
-        })));
+    getNotificationManager().addNotifications(Collections.singletonList(getNotificationManager().createNotification(
+      channel,
+      i18n(i18nPrefix + "itemTitle"),
+      InternationalizationKt.getRootLocalizer().formatText(i18nPrefix + "itemBody", message),
+      e -> {
+        if (e.getEventType() != EventType.ACTIVATED) {
+          return;
+        }
+        if ("localhost".equals(e.getURL().getHost()) && "/log".equals(e.getURL().getPath())) {
+          onViewLog();
+        } else {
+          NotificationManager.DEFAULT_HYPERLINK_LISTENER.hyperlinkUpdate(e);
+        }
+      }
+    )));
   }
 
   @Override

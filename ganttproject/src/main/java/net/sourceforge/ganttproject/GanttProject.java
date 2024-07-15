@@ -194,7 +194,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // Allocation of the menus
 
     var bar = myMenuBar;
-    myProjectMenu = new ProjectMenu(this, "project");
+    myProjectMenu = new ProjectMenu(this, stage, "project");
     bar.add(myProjectMenu);
 
     myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), () -> mySearchUi.requestFocus(), "edit");
@@ -561,7 +561,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     DesktopIntegration.setup(GanttProject.this);
     getProject().setModified(false);
     //getActiveChart().reset();
-    getRssFeedChecker().setOptionsVersion(getGanttOptions().getVersion());
     getRssFeedChecker().run();
 //++    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
   }

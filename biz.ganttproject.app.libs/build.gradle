@@ -27,14 +27,16 @@ dependencies {
     implementation "com.vladsch.flexmark:flexmark-ext-tables:0.64.+"
     implementation "com.vladsch.flexmark:flexmark-ext-attributes:0.64.+"
 
+
     exported "com.vladsch.flexmark:flexmark-all:0.64.+"
+    exported "com.sandec:mdfx:0.2.12"
     exported 'commons-codec:commons-codec:1.+'
     exported 'commons-io:commons-io:2.+'
 
     exported "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2"
     exported "com.evanlennick:retry4j:0.15.0"
-    exported 'com.fasterxml.jackson.core:jackson-core:2.17.1'
-    exported 'com.fasterxml.jackson.core:jackson-databind:2.17.1'
+    exported 'com.fasterxml.jackson.core:jackson-core:2.17.2'
+    exported 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
     exported 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.1'
     exported 'com.jgoodies:jgoodies-common:1.8.+'
     exported "com.jgoodies:jgoodies-looks:2.7.0"
@@ -46,10 +48,11 @@ dependencies {
 
     exported 'net.java.balloontip:balloontip:1.2.4.1'
     exported "org.apache.commons:commons-lang3:3.14.0"
+    exported "org.apache.commons:commons-text:1.12.0"
 
     exported "org.apache.httpcomponents:httpclient:4.5.14"
     exported "org.apache.httpcomponents:httpmime:4.5.14"
-    exported "org.apache.poi:poi:5.2.5"
+    exported "org.apache.poi:poi:5.3.0"
     exported "org.controlsfx:controlsfx:11.2.1"
     exported "org.nanohttpd:nanohttpd:2.3.1"
     exported('org.jdom:jdom') {

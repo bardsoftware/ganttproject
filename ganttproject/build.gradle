@@ -27,7 +27,7 @@ ext {
 }
 
 javafx {
-    version = "17"
+    version = "21"
     modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.swing' ]
 }
 
@@ -45,11 +45,11 @@ dependencies {
     implementation files('src/main/resources/resources')
 
     implementation group: 'com.h2database', name: 'h2', version: '2.2.+'
-    implementation 'org.jooq:jooq:3.19.9'
-    jooqGenerator 'org.jooq:jooq-codegen-gradle:3.19.9'
-    jooqGenerator 'org.jooq:jooq-meta-extensions:3.19.9'
+    implementation 'org.jooq:jooq:3.19.10'
+    jooqGenerator 'org.jooq:jooq-codegen-gradle:3.19.10'
+    jooqGenerator 'org.jooq:jooq-meta-extensions:3.19.10'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1'
     implementation 'net.harawata:appdirs:1.2.2'
 
     testImplementation group: 'org.easymock', name: 'easymock', version: '5.+'
@@ -90,13 +90,13 @@ jooq {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
 }
 
 compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
 }
 

@@ -19,26 +19,29 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.gui;
 
 import javax.swing.event.HyperlinkListener;
+import java.time.LocalDateTime;
 
 public class NotificationItem {
   public final String myTitle;
   public final String myBody;
-  final HyperlinkListener myHyperlinkListener;
+  public final HyperlinkListener myHyperlinkListener;
   private final NotificationChannel myChannel;
+  public final LocalDateTime timestamp;
   boolean isRead;
 
-  public NotificationItem(NotificationChannel channel, String title, String body, HyperlinkListener hyperlinkListener) {
+  public NotificationItem(NotificationChannel channel, String title, String body, LocalDateTime timestamp, HyperlinkListener hyperlinkListener) {
     myTitle = title == null ? "" : title;
     myBody = body == null ? "" : body;
     myHyperlinkListener = hyperlinkListener;
     myChannel = channel;
+    this.timestamp = timestamp;
   }
 
   public boolean isRead() {
     return isRead;
   }
 
-  void setRead(boolean b) {
+  public void setRead(boolean b) {
     isRead = b;
   }
 

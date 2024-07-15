@@ -253,11 +253,7 @@ class StoragePane internal constructor(
         }
       }
     }
-    Timer().schedule(1000L) {
-      FXUtil.runLater {
-        onStorageChange(storageUiPane, initialStorageId)
-      }
-    }
+    Platform.runLater { onStorageChange(storageUiPane, initialStorageId) }
   }
 
   private fun setSelected(pane: Parent) {

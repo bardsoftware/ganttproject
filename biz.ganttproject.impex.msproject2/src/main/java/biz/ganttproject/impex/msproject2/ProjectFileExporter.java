@@ -30,7 +30,8 @@ import biz.ganttproject.customproperty.CustomPropertyClass;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import net.sf.mpxj.*;
 import biz.ganttproject.customproperty.CustomPropertyHolder;
-import net.sf.mpxj.common.DateHelper;
+//import net.sf.mpxj.common.DateHelper;
+import net.sf.mpxj.common.LocalDateTimeHelper;
 import net.sf.mpxj.common.NumberHelper;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTask;
@@ -46,11 +47,17 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 
 import javax.swing.*;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import static biz.ganttproject.impex.msproject2.ProjectFileImporter.toJavaDate;
 
 /**
  * Creates MPXJ ProjectFile from GanttProject's IGanttProject.
@@ -96,19 +103,19 @@ class ProjectFileExporter {
   }
 
   private void exportWeekends(ProjectCalendar calendar) {
-    ProjectCalendarHours workingDayHours = calendar.getCalendarHours(Day.MONDAY);
-    calendar.setWorkingDay(Day.MONDAY, isWorkingDay(Calendar.MONDAY));
-    calendar.setWorkingDay(Day.TUESDAY, isWorkingDay(Calendar.TUESDAY));
-    calendar.setWorkingDay(Day.WEDNESDAY, isWorkingDay(Calendar.WEDNESDAY));
-    calendar.setWorkingDay(Day.THURSDAY, isWorkingDay(Calendar.THURSDAY));
-    calendar.setWorkingDay(Day.FRIDAY, isWorkingDay(Calendar.FRIDAY));
-    calendar.setWorkingDay(Day.SATURDAY, isWorkingDay(Calendar.SATURDAY));
-    if (calendar.isWorkingDay(Day.SATURDAY)) {
-      copyHours(workingDayHours, calendar.addCalendarHours(Day.SATURDAY));
+    ProjectCalendarHours workingDayHours = calendar.getCalendarHours(DayOfWeek.MONDAY);
+    calendar.setWorkingDay(DayOfWeek.MONDAY, isWorkingDay(Calendar.MONDAY));
+    calendar.setWorkingDay(DayOfWeek.TUESDAY, isWorkingDay(Calendar.TUESDAY));
+    calendar.setWorkingDay(DayOfWeek.WEDNESDAY, isWorkingDay(Calendar.WEDNESDAY));
+    calendar.setWorkingDay(DayOfWeek.THURSDAY, isWorkingDay(Calendar.THURSDAY));
+    calendar.setWorkingDay(DayOfWeek.FRIDAY, isWorkingDay(Calendar.FRIDAY));
+    calendar.setWorkingDay(DayOfWeek.SATURDAY, isWorkingDay(Calendar.SATURDAY));
+    if (calendar.isWorkingDay(DayOfWeek.SATURDAY)) {
+      copyHours(workingDayHours, calendar.addCalendarHours(DayOfWeek.SATURDAY));
     }
-    calendar.setWorkingDay(Day.SUNDAY, isWorkingDay(Calendar.SUNDAY));
-    if (calendar.isWorkingDay(Day.SUNDAY)) {
-      copyHours(workingDayHours, calendar.addCalendarHours(Day.SUNDAY));
+    calendar.setWorkingDay(DayOfWeek.SUNDAY, isWorkingDay(Calendar.SUNDAY));
+    if (calendar.isWorkingDay(DayOfWeek.SUNDAY)) {
+      copyHours(workingDayHours, calendar.addCalendarHours(DayOfWeek.SUNDAY));
     }
   }
 
@@ -124,11 +131,11 @@ class ProjectFileExporter {
     for (CalendarEvent h : gpCalendar.getPublicHolidays()) {
       if (!h.isRecurring && h.getType() == CalendarEvent.Type.HOLIDAY) {
         Date d = h.myDate;
-        calendar.addCalendarException(d, d);
+        calendar.addCalendarException(toLocalDate(d), toLocalDate(d));
       }
-      if (!h.isRecurring && h.getType() == CalendarEvent.Type.WORKING_DAY && !calendar.isWorkingDate(h.myDate)) {
+      if (!h.isRecurring && h.getType() == CalendarEvent.Type.WORKING_DAY && !calendar.isWorkingDate(toLocalDate(h.myDate))) {
         Date d = h.myDate;
-        ProjectCalendarException exception = calendar.addCalendarException(d, d);
+        ProjectCalendarException exception = calendar.addCalendarException(toLocalDate(d), toLocalDate(d));
         exception.add(ProjectCalendar.DEFAULT_WORKING_MORNING);
         exception.add(ProjectCalendar.DEFAULT_WORKING_AFTERNOON);
       }
@@ -179,7 +186,7 @@ class ProjectFileExporter {
 
     Task[] nestedTasks = getTaskHierarchy().getNestedTasks(t);
     mpxjTask.setTaskMode(TaskMode.MANUALLY_SCHEDULED);
-    Date startTime = convertStartTime(t.getStart().getTime());
+    var startTime = convertStartTime(t.getStart().getTime());
     mpxjTask.setStart(startTime);
 
     Duration duration = convertDuration(t.getDuration());
@@ -188,7 +195,7 @@ class ProjectFileExporter {
     if (t.isMilestone()) {
       mpxjTask.setFinish(startTime);
     } else {
-      Date finishTime = convertFinishTime(t.getEnd().getTime());
+      var finishTime = convertFinishTime(t.getEnd().getTime());
       mpxjTask.setFinish(finishTime);
     }
     mpxjTask.setCost(t.getCost().getValue());
@@ -213,30 +220,26 @@ class ProjectFileExporter {
 
   }
 
-  private Date convertStartTime(Date gpStartDate) {
-    Date startTime = myOutputProject.getDefaultCalendar().getStartTime(gpStartDate);
+  private LocalDateTime convertStartTime(Date gpStartDate) {
+    var startTime = myOutputProject.getDefaultCalendar().getStartTime(toLocalDate(gpStartDate));
+    LocalDateTime startDateTime;
     if (startTime == null) {
       GPLogger.getLogger(getClass()).warning(String.format("Failed to convert start date=%s to start time in MPXJ project, got null. " +
           "Chances are that task start date is non-working day in MPXJ project calendar. Let's take the start date as is", gpStartDate.toString()));
-      startTime = gpStartDate;
+      startDateTime = toLocalDate(gpStartDate).atStartOfDay();
+    } else {
+      startDateTime = toLocalDate(gpStartDate).atTime(startTime);
     }
-    Calendar c = (Calendar) Calendar.getInstance().clone();
-    c.setTime(gpStartDate);
-    c.set(Calendar.HOUR, startTime.getHours());
-    c.set(Calendar.MINUTE, startTime.getMinutes());
-    return c.getTime();
+    return startDateTime;
   }
 
-  private Date convertFinishTime(Date gpFinishDate) {
-    Calendar c = (Calendar) Calendar.getInstance().clone();
-    c.setTime(gpFinishDate);
-    c.add(Calendar.DAY_OF_YEAR, -1);
-    Date finishTime = myOutputProject.getDefaultCalendar().getFinishTime(c.getTime());
+  private LocalDateTime convertFinishTime(Date gpFinishDate) {
+    var finishDate = toLocalDate(gpFinishDate).minusDays(1);
+    var finishTime = myOutputProject.getDefaultCalendar().getFinishTime(finishDate);
     if (finishTime != null) {
-	    c.set(Calendar.HOUR, finishTime.getHours());
-	    c.set(Calendar.MINUTE, finishTime.getMinutes());
+      return finishDate.atTime(finishTime);
     }
-    return c.getTime();
+    return finishDate.atTime(23, 59);
 
   }
 
@@ -265,7 +268,7 @@ class ProjectFileExporter {
       for (TaskDependency dep : dependencies.toArray()) {
         net.sf.mpxj.Task mpxjPredecessor = id2mpxjTask.get(convertTaskId(dep.getDependee().getTaskID()));
         assert mpxjPredecessor != null : "Can't find mpxj task for id=" + dep.getDependee().getTaskID();
-        mpxjTask.addPredecessor(mpxjPredecessor, convertConstraint(dep), convertLag(dep));
+        mpxjTask.addPredecessor(new Relation.Builder().sourceTask(mpxjPredecessor).lag(convertLag(dep)).type(convertConstraint(dep)));
       }
     }
   }
@@ -353,7 +356,7 @@ class ProjectFileExporter {
     mpxjResource.setCanLevel(false);
     if (hr.getStandardPayRate() != BigDecimal.ZERO) {
       var rate = new Rate(hr.getStandardPayRate(), TimeUnit.DAYS);
-      mpxjResource.getCostRateTable(0).set(0, new CostRateTableEntry(DateHelper.START_DATE_NA, DateHelper.END_DATE_NA, NumberHelper.DOUBLE_ZERO, rate));
+      mpxjResource.getCostRateTable(0).set(0, new CostRateTableEntry(LocalDateTimeHelper.START_DATE_NA, LocalDateTimeHelper.END_DATE_NA, NumberHelper.DOUBLE_ZERO, rate));
       assert rate.equals(mpxjResource.getStandardRate());
     }
 
@@ -400,7 +403,7 @@ class ProjectFileExporter {
       // resourceCalendar.setUniqueID(hr.getId());
       for (int i = 0; i < daysOff.size(); i++) {
         GanttDaysOff dayOff = (GanttDaysOff) daysOff.get(i);
-        resourceCalendar.addCalendarException(dayOff.getStart().getTime(), dayOff.getFinish().getTime());
+        resourceCalendar.addCalendarException(toLocalDate(dayOff.getStart().getTime()), toLocalDate(dayOff.getFinish().getTime()));
       }
     }
   }
@@ -437,5 +440,9 @@ class ProjectFileExporter {
 
   private GPCalendarCalc getCalendar() {
     return getTaskManager().getCalendar();
+  }
+
+  private static LocalDate toLocalDate(Date date) {
+    return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
   }
 }

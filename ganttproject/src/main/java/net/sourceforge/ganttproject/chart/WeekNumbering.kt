@@ -25,7 +25,7 @@ import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.TimeUnit
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.core.time.impl.WeekFramerImpl
-import com.google.common.base.Function
+import java.util.function.Function
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import java.time.temporal.ChronoUnit
@@ -65,7 +65,7 @@ class RelativeWeekNumbering(private val startProjectDate: Date) : Function<Date,
   }
 }
 
-typealias WeekNumberingFunction = java.util.function.Function<Date, Int>
+typealias WeekNumberingFunction = Function<Date, Int>
 const val DEFAULT = "chart.weekNumbering.default"
 const val EUROPEAN = "chart.weekNumbering.european"
 const val US = "chart.weekNumbering.us"

@@ -6,7 +6,9 @@ $mdfx-bg-color-1: #ccc;
 $mdfx-bg-color-2: #ddd;
 $mdfx-bg-color-3: #eee;
 
-
+.markdown-text-bold {
+  -fx-font-weight: bold;
+}
 .markdown-text {
   -fx-font-size: 14;
   -fx-fill: $mdfx-font-color;
@@ -99,6 +101,10 @@ $mdfx-bg-color-3: #eee;
 .markdown-table-table {
   -fx-vgap: -1;
   -fx-hgap: -1;
+}
+
+.markdown-normal-flow {
+  -fx-word-wrap: break-word;
 }
 
 .markdown-table-cell {

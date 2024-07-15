@@ -3,7 +3,6 @@
 @import "../app/theme";
 
 .dlg-print-preview {
-  -fx-min-height: 400;
   .header {
     @include dialog-header($gp-light-gray);
     -fx-font-weight: normal;
@@ -28,6 +27,8 @@
       }
     }
     .scroll-pane {
+      -fx-pref-height: 600;
+      -fx-pref-width: 800;
       -fx-background-color: $gp-control-background;
       & > .viewport {
         -fx-background-color: transparent;

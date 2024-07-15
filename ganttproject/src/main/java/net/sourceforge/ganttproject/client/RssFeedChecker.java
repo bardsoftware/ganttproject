@@ -18,35 +18,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.client;
 
-import biz.ganttproject.core.option.ChangeValueEvent;
-import biz.ganttproject.core.option.ChangeValueListener;
+import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.option.DateOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultDateOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-import com.bardsoftware.eclipsito.update.Updater;
+import biz.ganttproject.storage.cloud.HttpClientOk;
 import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GPVersion;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
 import net.sourceforge.ganttproject.gui.NotificationItem;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.net.MalformedURLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Checks GanttProject RSS news feeds once per day
@@ -54,13 +48,14 @@ import java.util.List;
  * @author dbarashev (Dmitry Barashev)
  */
 public class RssFeedChecker {
+  protected static final int MAX_ATTEMPTS = 10;
+  private static final String RSS_HOST = "www.ganttproject.biz";
+  private static final String RSS_PATH = "/my/feed";
 
-
-  private static enum CheckOption {
+  private enum CheckOption {
     YES, NO, UNDEFINED;
   }
 
-  private Updater myUpdater;
   private final UIFacade myUiFacade;
   private final DefaultEnumerationOption<CheckOption> myCheckRssOption = new DefaultEnumerationOption<CheckOption>(
       "check", CheckOption.values()) {
@@ -74,46 +69,43 @@ public class RssFeedChecker {
       return CheckOption.valueOf(value);
     }
   };
-  private final DefaultBooleanOption myBooleanCheckRssOption = new DefaultBooleanOption("rss.checkUpdates");
+  private final DefaultBooleanOption myBooleanCheckRssOption = new DefaultBooleanOption("rss.checkUpdates") {
+    @Override
+    public String getPersistentValue() {
+      return null;
+    }
+  };
+
   private final DateOption myLastCheckOption = new DefaultDateOption("lastCheck", null);
+  private final Executor httpExecutor = Executors.newSingleThreadExecutor();
+
+  // This is what we save in the settings file: three-state decision option and the time of the last check.
   private final GPOptionGroup myOptionGroup = new GPOptionGroup("updateRss",
       myCheckRssOption, myLastCheckOption);
-  private final GPOptionGroup myUiOptionGroup = new GPOptionGroup("rss", myBooleanCheckRssOption);
-  private GPTimeUnitStack myTimeUnitStack;
-  private static final String RSS_URL = "https://www.ganttproject.biz/my/feed";
-  protected static final int MAX_ATTEMPTS = 10;
-  private final RssParser parser = new RssParser();
-  private final NotificationItem myRssProposalNotification = new NotificationItem(NotificationChannel.RSS, "",
-      GanttLanguage.getInstance().formatText("updateRss.question.template",
-          GanttLanguage.getInstance().getText("updateRss.question.0"),
-          GanttLanguage.getInstance().getText("updateRss.question.1"),
-          GanttLanguage.getInstance().getText("updateRss.question.2")),
-      NotificationManager.DEFAULT_HYPERLINK_LISTENER);
-  private String myOptionsVersion;
 
-  public RssFeedChecker(GPTimeUnitStack timeUnitStack, UIFacade uiFacade) {
+  // This is what we show to the user: boolean check/no check option.
+  private final GPOptionGroup myUiOptionGroup = new GPOptionGroup("rss", myBooleanCheckRssOption);
+  private final RssParser parser = new RssParser();
+
+  public RssFeedChecker(UIFacade uiFacade) {
     myCheckRssOption.setValue(CheckOption.UNDEFINED.toString());
     myUiFacade = uiFacade;
-    myTimeUnitStack = timeUnitStack;
     myBooleanCheckRssOption.setValue(CheckOption.YES.equals(myCheckRssOption.getSelectedValue()));
-    myBooleanCheckRssOption.addChangeValueListener(new ChangeValueListener() {
-      @Override
-      public void changeValue(ChangeValueEvent event) {
-        if (event.getTriggerID() != RssFeedChecker.this) {
-          if (myBooleanCheckRssOption.isChecked()) {
-            myCheckRssOption.setValue(CheckOption.YES.name(), RssFeedChecker.this);
-          } else {
-            myCheckRssOption.setValue(CheckOption.NO.name(), RssFeedChecker.this);
-          }
+
+    // When user changes the option in the UI, we set a certain value of the three-state option.
+    myBooleanCheckRssOption.addChangeValueListener(event -> {
+      if (event.getTriggerID() != RssFeedChecker.this) {
+        if (myBooleanCheckRssOption.isChecked()) {
+          myCheckRssOption.setValue(CheckOption.YES.name(), RssFeedChecker.this);
+        } else {
+          myCheckRssOption.setValue(CheckOption.NO.name(), RssFeedChecker.this);
         }
       }
     });
-    myCheckRssOption.addChangeValueListener(new ChangeValueListener() {
-      @Override
-      public void changeValue(ChangeValueEvent event) {
-        if (event.getID() != RssFeedChecker.this && CheckOption.UNDEFINED != myCheckRssOption.getSelectedValue()) {
-          myBooleanCheckRssOption.setValue(CheckOption.YES == myCheckRssOption.getSelectedValue(), RssFeedChecker.this);
-        }
+    // When we read a stored three-state value from the settings file, we set the user-visible boolean value appropriately.
+    myCheckRssOption.addChangeValueListener(event -> {
+      if (event.getID() != RssFeedChecker.this && CheckOption.UNDEFINED != myCheckRssOption.getSelectedValue()) {
+        myBooleanCheckRssOption.setValue(CheckOption.YES == myCheckRssOption.getSelectedValue(), RssFeedChecker.this);
       }
     });
   }
@@ -131,18 +123,8 @@ public class RssFeedChecker {
   }
 
   public void run() {
-    Runnable command = null;
     CheckOption checkOption = CheckOption.valueOf(myCheckRssOption.getValue());
     if (CheckOption.NO == checkOption) {
-      if (myOptionsVersion == null) {
-        // We used opt-in before GP 2.7; now we use opt-out, and we suggest to
-        // subscribe once again to those who previously chosen not to.
-        checkOption = CheckOption.UNDEFINED;
-        myCheckRssOption.setSelectedValue(checkOption);
-        markLastCheck();
-      } else {
-        NotificationChannel.RSS.setDefaultNotification(myRssProposalNotification);
-      }
       return;
     }
     Date lastCheck = myLastCheckOption.getValue();
@@ -151,72 +133,54 @@ public class RssFeedChecker {
       // subscribing to updates only to
       // those who runs GP at least twice.
       markLastCheck();
-    } else if (wasToday(lastCheck)) {
-      // It is not the first run of GP but it was last run today and RSS
-      // proposal has not been shown yet.
-      // Add it to RSS button but don't promote it, wait until tomorrow.
-      if (CheckOption.UNDEFINED == checkOption) {
-        NotificationChannel.RSS.setDefaultNotification(myRssProposalNotification);
-      }
-    } else {
-      // So it is not the first time and even not the first day we start GP.
-      // If no decision about subscribing, let's proactively suggest it,
-      // otherwise
-      // run check RSS.
-      if (CheckOption.UNDEFINED == checkOption) {
-        command = createRssProposalCommand();
-      } else {
-        command = createRssReadCommand();
-      }
-    }
-    if (command == null) {
       return;
     }
-    new Thread(command).start();
+    if (wasToday(lastCheck)) {
+      // It is not the first run of GP but it was last run today and RSS
+      // proposal has not been shown yet.
+      return;
+    }
+    // So it is not the first time and even not the first day we start GP.
+    // If no decision about subscribing, let's proactively suggest it,
+    // otherwise run check RSS.
+    if (CheckOption.UNDEFINED == checkOption) {
+//      myCheckRssOption.setValue(CheckOption.YES.toString());
+      getNotificationManager().addNotifications(Collections.singletonList(getNotificationManager().createNotification(
+        NotificationChannel.RSS, "News and Updates", InternationalizationKt.getRootLocalizer().formatText("updateRss.message"), NotificationManager.DEFAULT_HYPERLINK_LISTENER
+      )));
+    } else {
+      readRss();
+    }
   }
 
-  private Runnable createRssReadCommand() {
-    return new Runnable() {
+  private void readRss() {
+    var cmd = new Runnable() {
       @Override
       public void run() {
         GPLogger.log("Starting RSS check...");
-        HttpClient httpClient = new DefaultHttpClient();
-        String url = RSS_URL;
-        HttpGet getRssUrl = new HttpGet(url);
-        getRssUrl.addHeader("User-Agent", "GanttProject " + GPVersion.getCurrentVersionNumber());
+        var httpClientOk = new HttpClientOk(RSS_HOST, "", "", ()->"");
         try {
           for (int i = 0; i < MAX_ATTEMPTS; i++) {
-            HttpResponse result = httpClient.execute(getRssUrl);
-            switch (result.getStatusLine().getStatusCode()) {
-              case HttpStatus.SC_OK:
-                processResponse(result.getEntity().getContent());
-                return;
+            var resp = httpClientOk.sendGet(RSS_PATH, Collections.emptyMap());
+            if (resp.getCode() == HttpStatus.SC_OK) {
+              processResponse(new ByteArrayInputStream(resp.getRawBody()));
+              return;
             }
           }
-        } catch (MalformedURLException e) {
-          e.printStackTrace();
-        } catch (IOException e) {
-          e.printStackTrace();
+        } catch (Exception e) {
+          GPLogger.log(new RuntimeException("Failure reading news and updates: " + e.getMessage(), e));
         } finally {
-          getRssUrl.releaseConnection();
-          httpClient.getConnectionManager().shutdown();
           GPLogger.log("RSS check finished");
         }
       }
 
       private void processResponse(InputStream responseStream) {
         RssFeed feed = parser.parse(responseStream, myLastCheckOption.getValue());
-        List<NotificationItem> items = new ArrayList<NotificationItem>();
-        boolean updateDialogShowed = false;
+        List<NotificationItem> items = new ArrayList<>();
         for (RssFeed.Item item : feed.getItems()) {
-          if (item.isUpdate) {
-            if (!updateDialogShowed) {
-              updateDialogShowed = true;
-              createUpdateDialog(item.body);
-            }
-          } else {
-            items.add(new NotificationItem(NotificationChannel.RSS, item.title, item.body, NotificationManager.DEFAULT_HYPERLINK_LISTENER));
-          }
+            items.add(getNotificationManager().createNotification(
+              NotificationChannel.RSS, item.title, item.body, NotificationManager.DEFAULT_HYPERLINK_LISTENER
+            ));
         }
         Collections.reverse(items);
         if (!items.isEmpty()) {
@@ -225,48 +189,15 @@ public class RssFeedChecker {
         markLastCheck();
       }
     };
+    httpExecutor.execute(cmd);
   }
 
-  private Runnable createRssProposalCommand() {
-    return new Runnable() {
-      @Override
-      public void run() {
-        onYes();
-        getNotificationManager().addNotifications(
-            Collections.singletonList(myRssProposalNotification));
-      }
-    };
-  }
-
-  private void createUpdateDialog(String content) {
-//    RssUpdate update = parser.parseUpdate(content);
-//    if (update != null) {
-//      UpdateDialog.show(myUiFacade, update);
-//    }
-  }
-
+  private static SimpleDateFormat ourDateFormat = new SimpleDateFormat("yyyyMMdd");
   private boolean wasToday(Date date) {
-    return myTimeUnitStack.createDuration(GPTimeUnitStack.DAY, date, GPTimeUnitStack.DAY.adjustLeft(new Date())).getLength() == 0;
-  }
-
-  private void onYes() {
-    myCheckRssOption.setValue(CheckOption.YES.toString());
+    return ourDateFormat.format(date).equals(ourDateFormat.format(new Date()));
   }
 
   private void markLastCheck() {
     myLastCheckOption.setValue(new Date());
   }
-
-  public void setOptionsVersion(String version) {
-    myOptionsVersion = version;
-  }
-
-  public void setUpdater(Updater updater) {
-    myUpdater = updater;
-  }
-
-  public Updater getUpdater() {
-    return myUpdater;
-  }
-
 }
