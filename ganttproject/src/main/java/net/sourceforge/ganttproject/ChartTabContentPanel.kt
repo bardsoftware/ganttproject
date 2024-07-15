@@ -21,7 +21,7 @@ package net.sourceforge.ganttproject
 import biz.ganttproject.app.FXToolbarBuilder
 import biz.ganttproject.app.getGlyphIcon
 import biz.ganttproject.core.option.ChangeValueListener
-import biz.ganttproject.lib.fx.applicationFont
+import biz.ganttproject.app.applicationFont
 import com.google.common.base.Preconditions
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView

@@ -24,7 +24,6 @@ import biz.ganttproject.core.option.DoubleOption;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.ganttview.TaskFilterActionSet;
 import biz.ganttproject.ganttview.TaskTable;
-import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.task.TaskActions;
 import com.google.common.base.Suppliers;
 import javafx.application.Platform;
@@ -102,7 +101,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   }
 
   private FXToolbarBuilder createScheduleToolbar() {
-    return new FXToolbarBuilder().withApplicationFont(TreeTableCellsKt.getApplicationFont())
+    return new FXToolbarBuilder().withApplicationFont(FontKt.getApplicationFont())
       .addButton(myCriticalPathAction).addButton(myBaselineAction)
       .withClasses("toolbar-common", "toolbar-small", "toolbar-chart", "align-right");
   }

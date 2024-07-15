@@ -18,12 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject
 
+import biz.ganttproject.app.applicationFont
 import javafx.animation.FadeTransition
-import javafx.animation.ScaleTransition
-import javafx.animation.Timeline
 import javafx.application.Platform
 import javafx.scene.Node
 import javafx.scene.Parent
+import javafx.scene.control.Labeled
 import javafx.scene.layout.BorderPane
 import javafx.scene.paint.Color
 import javafx.stage.Window
@@ -141,14 +141,6 @@ object FXUtil {
     });
   }
 */
-  fun createBreathingButton(button: javafx.scene.control.Button) {
-    val animation = ScaleTransition(Duration.seconds(2.0), button)
-    animation.isAutoReverse = true
-    animation.cycleCount = Timeline.INDEFINITE
-    animation.byX = 0.1
-    animation.byY = 0.1
-    animation.play()
-  }
 
   /*
     public static final class WebViewFitContent extends Region {
@@ -272,7 +264,7 @@ object FXUtil {
 }
 
 fun Node.printCss() {
-  println("class=${styleClass} pseudoclass=${pseudoClassStates}")
+  println("class=${styleClass} pseudoclass=${pseudoClassStates} scene=${this.scene}")
   parent?.printCss()
 }
 
@@ -280,6 +272,18 @@ fun Parent.walkTree(code: (Node)->Unit) {
   code(this)
   childrenUnmodifiable.forEach {
     if (it is Parent) it.walkTree(code) else code(this)
+  }
+}
+
+fun Parent.applyApplicationFont() {
+  FXUtil.runLater {
+    this.walkTree {
+      if (it is Labeled) {
+        it.font = applicationFont.value
+        //println("this=$it itfont=${it.font} app font=${applicationFont.value}")
+        //it.style = """-fx-font-family: ${applicationFont.value.family}; -fx-font-size: ${applicationFont.value.size } """
+      }
+    }
   }
 }
 

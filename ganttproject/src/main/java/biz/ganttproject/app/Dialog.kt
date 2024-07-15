@@ -78,6 +78,8 @@ fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (Di
 
 
     DialogControllerFx(dialogPane, this).let { dialogBuildApi ->
+      dialogPane.styleClass.addAll("dlg")
+      dialogPane.stylesheets.addAll(DIALOG_STYLESHEET)
       dialogBuildApi.setEscCloseEnabled(true)
       contentBuilder(dialogBuildApi)
       when (dialogBuildApi.frameStyle) {

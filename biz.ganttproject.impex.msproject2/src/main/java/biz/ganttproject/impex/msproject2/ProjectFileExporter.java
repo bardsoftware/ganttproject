@@ -268,7 +268,7 @@ class ProjectFileExporter {
       for (TaskDependency dep : dependencies.toArray()) {
         net.sf.mpxj.Task mpxjPredecessor = id2mpxjTask.get(convertTaskId(dep.getDependee().getTaskID()));
         assert mpxjPredecessor != null : "Can't find mpxj task for id=" + dep.getDependee().getTaskID();
-        mpxjTask.addPredecessor(new Relation.Builder().sourceTask(mpxjPredecessor).lag(convertLag(dep)).type(convertConstraint(dep)));
+        mpxjTask.addPredecessor(new Relation.Builder().targetTask(mpxjPredecessor).lag(convertLag(dep)).type(convertConstraint(dep)));
       }
     }
   }

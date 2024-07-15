@@ -20,9 +20,7 @@ package biz.ganttproject.lib.fx
 
 //import javafx.scene.control.skin.TreeTableCellSkin
 import biz.ganttproject.FXUtil
-import biz.ganttproject.app.Localizer
-import biz.ganttproject.app.getModifiers
-import biz.ganttproject.app.getNumberFormat
+import biz.ganttproject.app.*
 import biz.ganttproject.colorFromUiManager
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.time.CalendarFactory
@@ -48,18 +46,9 @@ import javafx.util.StringConverter
 import javafx.util.converter.BigDecimalStringConverter
 import javafx.util.converter.DefaultStringConverter
 import javafx.util.converter.NumberStringConverter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import net.sourceforge.ganttproject.language.GanttLanguage
-import java.lang.ref.WeakReference
 import java.math.BigDecimal
-import java.util.concurrent.Executors
 import javax.swing.UIManager
-import kotlin.time.Duration.Companion.minutes
 
 data class MyStringConverter<S, T>(
   val toString: (cell: TextCell<S, T>, cellValue: T?) -> String?,
@@ -72,13 +61,11 @@ fun <S, T> StringConverter<T>.adapt(): MyStringConverter<S, T> =
     fromString = { _, stringValue -> this.fromString(stringValue) }
   )
 
-val applicationFont = SimpleObjectProperty(Font.getDefault())
-val applicationFontSpec = SimpleObjectProperty<FontSpec>(null)
 val minCellHeight = SimpleDoubleProperty(Font.getDefault().size)
 var cellPadding = 20.0
 fun calculateMinCellHeight(fontSpec: FontSpec) {
   applicationFontSpec.value = fontSpec
-  Font.font(fontSpec.family, fontSpec.size.factor * Font.getDefault().size)?.also { font ->
+  Font.font(fontSpec.family, fontSpec.getSizePt())?.also { font ->
     FXUtil.runLater {
       applicationFont.set(font)
       minCellHeight.value = font.size + cellPadding
@@ -119,28 +106,6 @@ fun initColorProperties() {
   onChange()
 }
 
-val liveCells = mutableListOf<WeakReference<TextCell<*,*>>>()
-val fontListener by lazy {
-  { liveCells.forEach { it.get()?.updateFont() }}.also { listener ->
-    applicationFont.addListener{ _, _, _ -> listener() }
-    flow {
-      while (true) {
-        emit(Unit)
-        delay(1.minutes)
-      }
-    }.onEach {
-      synchronized(liveCells) {
-        liveCells.retainAll { it.get() != null }
-      }
-    }.launchIn(cleanupScope)
-  }
-}
-private fun registerCell(cell: TextCell<*, *>) {
-  synchronized(liveCells) {
-    liveCells.add(WeakReference(cell))
-  }
-  fontListener
-}
 
 class TextCell<S, T>(
   private val converter: MyStringConverter<S, T>
@@ -179,15 +144,7 @@ class TextCell<S, T>(
 
   init {
     styleClass.add("gp-tree-table-cell")
-    registerCell(this)
-    updateFont()
-  }
-
-  internal fun updateFont() {
-      """-fx-font-family: ${applicationFont.value.family}; -fx-font-size: ${applicationFont.value.size } """.let {
-        textField.style = it
-        this.style = it
-      }
+//    registerCell(this)
   }
 
   override fun startEdit() {
@@ -537,5 +494,3 @@ private fun <S> updateCellClasses(cell: TreeTableCell<S, *>, empty: Boolean) {
     }
   }
 }
-
-private val cleanupScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())

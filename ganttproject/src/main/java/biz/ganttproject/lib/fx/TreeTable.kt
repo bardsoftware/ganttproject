@@ -24,7 +24,6 @@ import biz.ganttproject.app.MenuBuilderFx
 import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
 import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
 import biz.ganttproject.lib.fx.treetable.VirtualFlow
-import biz.ganttproject.walkTree
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
@@ -79,7 +78,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
       it.headerHeight.addListener { _, _, _ ->
         headerHeight.value = it.fullHeaderHeight
       }
-      it.bindHeaderFont()
+//      it.bindHeaderFont()
 
     }
   }
@@ -118,7 +117,6 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     val totalPrefWidth = tableColumns.filter { it.isVisible }.sumOf { it.prefWidth }
     prefWidth = totalPrefWidth + vbarWidth()
     columns.setAll(tableColumns)
-    (skin as? GPTreeTableViewSkin<*>)?.let { it.applyHeaderFont() }
   }
 
   fun autosizeColumns() {
@@ -283,25 +281,6 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
       this.table.selectionModel.select(firstCell.treeItem)
     }
   }
-
-  fun applyHeaderFont() {
-    FXUtil.runLater {
-      tableHeaderRow.walkTree {
-        if (it is Labeled) {
-          it.font = applicationFont.value
-          //println("this=$it itfont=${it.font} app font=${applicationFont.value}")
-          //it.style = """-fx-font-family: ${applicationFont.value.family}; -fx-font-size: ${applicationFont.value.size } """
-        }
-      }
-    }
-  }
-  fun bindHeaderFont() {
-    applicationFont.addListener { _, _, newValue ->
-      applyHeaderFont()
-    }
-    applyHeaderFont()
-  }
-
 }
 
 interface TreeCollapseView<T> {

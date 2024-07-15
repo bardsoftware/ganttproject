@@ -20,8 +20,6 @@ package biz.ganttproject.app
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.core.option.FontSpec
-import biz.ganttproject.lib.fx.applicationFont
-import biz.ganttproject.lib.fx.applicationFontSpec
 import biz.ganttproject.walkTree
 import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
