@@ -21,7 +21,7 @@ dependencies {
     testImplementation project(':biz.ganttproject.impex.msproject2')
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
     testImplementation 'org.jooq:jooq:3.19.10'
-    testImplementation "com.h2database:h2:2.2.+"
+    testImplementation "com.h2database:h2:2.3.+"
     testImplementation "org.easymock:easymock:5.3.0"
 
     testImplementation fileTree(dir: project.projectDir.absolutePath + "/resources")
