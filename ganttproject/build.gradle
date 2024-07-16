@@ -44,7 +44,7 @@ dependencies {
     implementation fileTree(dir: project.ext.libDir, include: ['*.jar'])
     implementation files('src/main/resources/resources')
 
-    implementation group: 'com.h2database', name: 'h2', version: '2.2.+'
+    implementation group: 'com.h2database', name: 'h2', version: '2.3.+'
     implementation 'org.jooq:jooq:3.19.10'
     jooqGenerator 'org.jooq:jooq-codegen-gradle:3.19.10'
     jooqGenerator 'org.jooq:jooq-meta-extensions:3.19.10'
