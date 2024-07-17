@@ -27,6 +27,6 @@ interface CustomPropertyDefinition {
     val defaultValue: Any?
     var name: String
     var defaultValueAsString: String?
-    val attributes: Map<String, String>
+    val attributes: MutableMap<String, String>
     var calculationMethod: CalculationMethod?
 }

@@ -54,7 +54,7 @@ public abstract class TaskTestCase extends TestCase {
         return myTaskManager;
     }
 
-    protected void setTaskManager(TaskManager taskManager) {
+    public void setTaskManager(TaskManager taskManager) {
       myTaskManager = taskManager;
     }
 

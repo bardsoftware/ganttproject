@@ -47,10 +47,11 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 
 import javax.swing.*;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -443,6 +444,8 @@ class ProjectFileExporter {
   }
 
   private static LocalDate toLocalDate(Date date) {
-    return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    return LocalDate.parse(ourDateFormat.format(date), DateTimeFormatter.ISO_DATE);
   }
+
+  private static SimpleDateFormat ourDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 }
