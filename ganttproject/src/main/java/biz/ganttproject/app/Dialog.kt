@@ -31,6 +31,7 @@ import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.*
+import javafx.scene.control.ButtonBar.ButtonData
 import javafx.scene.effect.BoxBlur
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCombination
@@ -413,6 +414,7 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
     this.dialogPane.buttonTypes.add(type)
     val btn = this.dialogPane.lookupButton(type)
     if (btn is Button) {
+      btn.font = applicationFont.value
       code(btn)
       return btn
     }
