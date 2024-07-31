@@ -70,7 +70,7 @@ class RecentProjects(
   override fun createUi(): Pane {
     val progressLabel = i18n.create("progress.label")
     val builder = BrowserPaneBuilder(mode, { ex -> GPLogger.log(ex) }) { _, success, busyIndicator ->
-      loadRecentDocs(success, busyIndicator, progressLabel)
+      documentManager.loadRecentDocs(success, busyIndicator, progressLabel)
     }
 
     val actionButtonHandler = object {
@@ -90,14 +90,16 @@ class RecentProjects(
 
       fun onAction() {
         if (mode == StorageDialogBuilder.Mode.OPEN || state.confirmationReceived.value) {
-            selectedItem?.let {
-                it.asDocument()?.let(documentReceiver) ?: run {
-                    LOG.error("File {} seems to be not existing", it)
-                    paneElements.setValidationResult(ValidationResult.fromError(
-                        paneElements.filenameInput, RootLocalizer.formatText("document.storage.error.read.notExists")
-                    ))
-                }
+          selectedItem?.let {
+            it.asDocument()?.let(documentReceiver) ?: run {
+              LOG.error("File {} seems to be not existing", it)
+              paneElements.setValidationResult(
+                ValidationResult.fromError(
+                  paneElements.filenameInput, RootLocalizer.formatText("document.storage.error.read.notExists")
+                )
+              )
             }
+          }
         }
       }
     }
@@ -109,12 +111,12 @@ class RecentProjects(
         actionButtonHandler.button = btn
       }
       withListView(
-          onSelectionChange = actionButtonHandler::onSelectionChange,
-          onLaunch = { actionButtonHandler.onAction() },
-          itemActionFactory = {
-            Collections.emptyMap()
-          },
-          cellFactory = { CellWithBasePath() },
+        onSelectionChange = actionButtonHandler::onSelectionChange,
+        onLaunch = { actionButtonHandler.onAction() },
+        itemActionFactory = {
+          Collections.emptyMap()
+        },
+        cellFactory = { CellWithBasePath() },
         onNameTyped = { filename, matchedItems, _, _ ->
           state.onNameTyped(matchedItems)
         }
@@ -142,58 +144,9 @@ class RecentProjects(
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
         "/biz/ganttproject/storage/FolderViewCells.css"
       )
-      loadRecentDocs(builder.resultConsumer, paneElements.busyIndicator, progressLabel)
+      documentManager.loadRecentDocs(builder.resultConsumer, paneElements.busyIndicator, progressLabel)
     }
 
-  }
-
-  private fun loadRecentDocs(
-    consumer: Consumer<ObservableList<RecentDocAsFolderItem>>,
-    busyIndicator: Consumer<Boolean>,
-    progressLabel: LocalizedString
-  ) {
-    val updateScope = CoroutineScope(Executors.newFixedThreadPool(5).asCoroutineDispatcher())
-    val awaitScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
-    val result = Collections.synchronizedList<RecentDocAsFolderItem>(mutableListOf())
-    busyIndicator.accept(true)
-    progressLabel.update("0", documentManager.recentDocuments.size.toString())
-    val counter = AtomicInteger(0)
-    val asyncs = documentManager.recentDocuments.map { path ->
-      try {
-        val doc = RecentDocAsFolderItem(path, (documentManager.webDavStorageUi as WebDavStorageImpl).serversOption, documentManager)
-        updateScope.async {
-          doc.updateMetadata()
-          result.add(doc)
-          Platform.runLater {
-              progressLabel.update(counter.incrementAndGet().toString(), documentManager.recentDocuments.size.toString())
-          }
-        }
-      } catch (ex: MalformedURLException) {
-        LOG.error("Can't parse this recent document record: {}", path, ex)
-        CompletableDeferred(value = null)
-      }
-    }
-    awaitScope.launch {
-      try {
-        asyncs.awaitAll()
-        documentManager.clearRecentDocuments()
-        val filteredResult = result.mapNotNull {
-            if (it.tags.containsKey(FolderItemTag.UNAVAILABLE)) {
-                null
-            } else {
-                documentManager.addToRecentDocuments(it.asDocument())
-                it
-            }
-        }
-        consumer.accept(FXCollections.observableArrayList(filteredResult))
-      } finally {
-        updateScope.cancel()
-        Platform.runLater {
-          busyIndicator.accept(false)
-          progressLabel.clear()
-        }
-      }
-    }
   }
 
   override fun focus() {
@@ -203,7 +156,55 @@ class RecentProjects(
       }
     }
   }
+}
 
+fun DocumentManager.loadRecentDocs(
+  consumer: Consumer<ObservableList<RecentDocAsFolderItem>>,
+  busyIndicator: Consumer<Boolean>,
+  progressLabel: LocalizedString
+) {
+  val updateScope = CoroutineScope(Executors.newFixedThreadPool(5).asCoroutineDispatcher())
+  val awaitScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+  val result = Collections.synchronizedList<RecentDocAsFolderItem>(mutableListOf())
+  busyIndicator.accept(true)
+  progressLabel.update("0", this.recentDocuments.size.toString())
+  val counter = AtomicInteger(0)
+  val asyncs = this.recentDocuments.map { path ->
+    try {
+      val doc = RecentDocAsFolderItem(path, (this.webDavStorageUi as WebDavStorageImpl).serversOption, this)
+      updateScope.async {
+        doc.updateMetadata()
+        result.add(doc)
+        Platform.runLater {
+          progressLabel.update(counter.incrementAndGet().toString(), this@loadRecentDocs.recentDocuments.size.toString())
+        }
+      }
+    } catch (ex: MalformedURLException) {
+      LOG.error("Can't parse this recent document record: {}", path, ex)
+      CompletableDeferred(value = null)
+    }
+  }
+  awaitScope.launch {
+    try {
+      asyncs.awaitAll()
+      this@loadRecentDocs.clearRecentDocuments()
+      val filteredResult = result.mapNotNull {
+        if (it.tags.containsKey(FolderItemTag.UNAVAILABLE)) {
+          null
+        } else {
+          this@loadRecentDocs.addToRecentDocuments(it.asDocument())
+          it
+        }
+      }
+      consumer.accept(FXCollections.observableArrayList(filteredResult))
+    } finally {
+      updateScope.cancel()
+      Platform.runLater {
+        busyIndicator.accept(false)
+        progressLabel.clear()
+      }
+    }
+  }
 }
 
 /**

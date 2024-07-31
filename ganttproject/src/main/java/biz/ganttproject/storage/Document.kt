@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.DefaultFileOption
 import biz.ganttproject.storage.cloud.GPCloudDocument
 import biz.ganttproject.storage.cloud.GPCloudOptions
@@ -27,10 +28,14 @@ import com.google.common.io.ByteStreams
 import javafx.beans.property.ObjectProperty
 import javafx.beans.value.ObservableBooleanValue
 import javafx.beans.value.ObservableObjectValue
+import javafx.collections.ObservableList
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.ProxyDocument
+import net.sourceforge.ganttproject.gui.ProjectUIFacade
+import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.storage.BaseTxnId
 import org.xml.sax.SAXException
 import java.io.File
@@ -40,6 +45,7 @@ import java.net.URL
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
+import java.util.function.Consumer
 import javax.xml.parsers.DocumentBuilderFactory
 
 
@@ -318,4 +324,19 @@ fun String.asDocumentUrl(): Pair<URL, String> =
     }
   }
 
+fun maybeOpenLastDocument(uiFacade: UIFacade, project: IGanttProject, projectUIFacade: ProjectUIFacade) {
+  uiFacade.windowOpenedBarrier.await {
+    if (!uiFacade.reopenLastFileOption.isChecked) {
+      return@await
+    }
+    val recentDocsConsumer = Consumer<ObservableList<RecentDocAsFolderItem>> { docList ->
+      docList.firstOrNull()?.asDocument()?.let {
+        projectUIFacade.openProject(it, project, null, null)
+      }
+    }
+    val busyIndicator = Consumer<Boolean> {  }
+    val progressLabel = RootLocalizer.create("foo")
+    project.documentManager.loadRecentDocs(recentDocsConsumer, busyIndicator, progressLabel)
+  }
+}
 private val LOG = GPLogger.create("Document")
