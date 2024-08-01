@@ -80,7 +80,6 @@ public interface UIFacade {
 
   IntegerOption getDpiOption();
   GPOption<String> getLafOption();
-  BooleanOption getReopenLastFileOption();
 
   ScrollingManager getScrollingManager();
 

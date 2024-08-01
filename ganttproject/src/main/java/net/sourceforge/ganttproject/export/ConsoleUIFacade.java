@@ -72,11 +72,6 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
     @Override
-    public BooleanOption getReopenLastFileOption() {
-        return null;
-    }
-
-    @Override
   public ScrollingManager getScrollingManager() {
     // TODO Auto-generated method stub
     return null;

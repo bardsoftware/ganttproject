@@ -33,7 +33,6 @@ import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.platform.UpdateKt;
-import biz.ganttproject.storage.DocumentKt;
 import biz.ganttproject.task.TaskActions;
 import com.bardsoftware.eclipsito.update.Updater;
 import com.google.common.base.Suppliers;
@@ -277,7 +276,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
 //    myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
     myViewManager = new ViewManagerImpl(getProject(), myUIFacade, getUndoManager(), viewPane, PluginManager.getViewProviders());
     myProjectUIFacade = new ProjectUIFacadeImpl(stage, myUIFacade, myDocumentManager, myUndoManager);
-    DocumentKt.maybeOpenLastDocument(myUIFacade, getProject(), myProjectUIFacade);
     myRssChecker = new RssFeedChecker(myUIFacade);
     myUIFacade.addOptions(myRssChecker.getUiOptions());
     updateTitle();
@@ -348,11 +346,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   @Override
   public GPOption<String> getLafOption() {
     return myUIFacade.getLafOption();
-  }
-
-  @Override
-  public BooleanOption getReopenLastFileOption() {
-    return myUIFacade.getReopenLastFileOption();
   }
 
   @Override

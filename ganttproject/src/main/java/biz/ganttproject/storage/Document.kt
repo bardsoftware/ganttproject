@@ -19,6 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage
 
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.core.option.BooleanOption
+import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.DefaultFileOption
 import biz.ganttproject.storage.cloud.GPCloudDocument
 import biz.ganttproject.storage.cloud.GPCloudOptions
@@ -264,6 +266,8 @@ fun (ByteArray).checksum(): String {
 }
 
 val defaultLocalFolderOption = DefaultFileOption("defaultDirectory")
+val reopenLastFileOption: BooleanOption = DefaultBooleanOption("reopenLastFile", true)
+
 fun getDefaultLocalFolder(): File {
   if (!defaultLocalFolderOption.value.isNullOrBlank()) {
     val defaultFolder = File(defaultLocalFolderOption.value)
@@ -325,8 +329,8 @@ fun String.asDocumentUrl(): Pair<URL, String> =
   }
 
 
-fun maybeOpenLastDocument(uiFacade: UIFacade, project: IGanttProject, projectUIFacade: ProjectUIFacade) {
-  if (!uiFacade.reopenLastFileOption.isChecked) {
+fun maybeOpenLastDocument(project: IGanttProject, projectUIFacade: ProjectUIFacade) {
+  if (!reopenLastFileOption.isChecked) {
     return
   }
   val recentDocsConsumer = Consumer<ObservableList<RecentDocAsFolderItem>> { docList ->

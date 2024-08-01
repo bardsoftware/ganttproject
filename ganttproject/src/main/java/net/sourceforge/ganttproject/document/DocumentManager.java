@@ -50,7 +50,9 @@ public interface DocumentManager {
 
   DocumentStorageUi getWebDavStorageUi();
 
-  abstract class FTPOptions extends GPOptionGroup {
+    GPOptionGroup getLocalStorageOptions();
+
+    abstract class FTPOptions extends GPOptionGroup {
     public FTPOptions(String id, GPOption<?>[] options) {
       super(id, options);
     }

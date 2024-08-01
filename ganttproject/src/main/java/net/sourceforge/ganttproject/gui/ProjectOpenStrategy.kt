@@ -479,7 +479,7 @@ internal class CommandLineProjectOpenStrategy(
     if (path != null) {
       doOpenStartupDocument(path)
     } else {
-      maybeOpenLastDocument(uiFacade, project, projectUiFacade)
+      maybeOpenLastDocument(project, projectUiFacade)
     }
   }
   private fun doOpenStartupDocument(path: String) {

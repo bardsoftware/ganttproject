@@ -79,7 +79,8 @@ public class InterfaceOptionPageProvider extends OptionPageProviderBase {
   public GPOptionGroup[] getOptionGroups() {
     List<GPOptionGroup> groups = Lists.newArrayList();
     groups.addAll(Arrays.asList(getUiFacade().getOptions()));
-    return groups.toArray(new GPOptionGroup[groups.size()]);
+    groups.add(getProject().getDocumentManager().getLocalStorageOptions());
+    return groups.toArray(new GPOptionGroup[0]);
   }
 
   @Override

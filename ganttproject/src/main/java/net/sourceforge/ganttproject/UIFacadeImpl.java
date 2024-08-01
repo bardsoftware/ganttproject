@@ -66,9 +66,7 @@ import org.eclipse.core.runtime.jobs.ProgressProvider;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
-import javax.swing.event.HyperlinkListener;
 import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.io.File;
@@ -134,9 +132,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final IGanttProject myProject;
   private FontSpec myLastFontSpec;
   private final AppearanceManager appearanceManager = new AppearanceManager(myAppFontOption);
-
-  private final BooleanOption myReopenLastFileOption = new DefaultBooleanOption("storage.reopenLastFile", true);
-  public BooleanOption getReopenLastFileOption() { return myReopenLastFileOption; }
 
   UIFacadeImpl(Stage stage, NotificationManagerImpl notificationManager,
                final IGanttProject project, UIFacade fallbackDelegate) {
@@ -222,9 +217,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     myLogoOptions.setTitled(false);
     addOptions(myOptions);
     addOptions(myLogoOptions);
-
-    var fileOptions = new GPOptionGroup("storage", myReopenLastFileOption);
-    addOptions(fileOptions);
   }
 
   private List<String> getFontFamilies() {
