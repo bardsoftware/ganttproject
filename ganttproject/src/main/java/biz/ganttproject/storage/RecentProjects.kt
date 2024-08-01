@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
-import biz.ganttproject.app.LocalizedString
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.cloud.GPCloudDocument
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
@@ -26,24 +25,18 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
-import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.scene.control.Button
 import javafx.scene.layout.Pane
-import kotlinx.coroutines.*
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor
-import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import org.controlsfx.validation.ValidationResult
 import java.io.File
-import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
-import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 
 /**
@@ -70,7 +63,10 @@ class RecentProjects(
   override fun createUi(): Pane {
     val progressLabel = i18n.create("progress.label")
     val builder = BrowserPaneBuilder(mode, { ex -> GPLogger.log(ex) }) { _, success, busyIndicator ->
-      documentManager.loadRecentDocs(success, busyIndicator, progressLabel)
+      val consumer = Consumer<List<RecentDocAsFolderItem>> {
+        success.accept(FXCollections.observableArrayList(it))
+      }
+      documentManager.loadRecentDocs(consumer, busyIndicator, progressLabel)
     }
 
     val actionButtonHandler = object {
@@ -117,7 +113,7 @@ class RecentProjects(
           Collections.emptyMap()
         },
         cellFactory = { CellWithBasePath() },
-        onNameTyped = { filename, matchedItems, _, _ ->
+        onNameTyped = { _, matchedItems, _, _ ->
           state.onNameTyped(matchedItems)
         }
       )
@@ -144,64 +140,18 @@ class RecentProjects(
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
         "/biz/ganttproject/storage/FolderViewCells.css"
       )
-      documentManager.loadRecentDocs(builder.resultConsumer, paneElements.busyIndicator, progressLabel)
+      val consumer = Consumer<List<RecentDocAsFolderItem>> { list ->
+        builder.resultConsumer.accept(FXCollections.observableArrayList(list))
+      }
+      documentManager.loadRecentDocs(consumer, paneElements.busyIndicator, progressLabel)
     }
 
   }
 
   override fun focus() {
-    this.paneElements.filenameInput.sceneProperty().addListener { observable, oldValue, newValue ->
+    this.paneElements.filenameInput.sceneProperty().addListener { _, oldValue, newValue ->
       if (newValue != null && oldValue == null) {
         this.paneElements.filenameInput.requestFocus()
-      }
-    }
-  }
-}
-
-fun DocumentManager.loadRecentDocs(
-  consumer: Consumer<ObservableList<RecentDocAsFolderItem>>,
-  busyIndicator: Consumer<Boolean>,
-  progressLabel: LocalizedString
-) {
-  val updateScope = CoroutineScope(Executors.newFixedThreadPool(5).asCoroutineDispatcher())
-  val awaitScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
-  val result = Collections.synchronizedList<RecentDocAsFolderItem>(mutableListOf())
-  busyIndicator.accept(true)
-  progressLabel.update("0", this.recentDocuments.size.toString())
-  val counter = AtomicInteger(0)
-  val asyncs = this.recentDocuments.map { path ->
-    try {
-      val doc = RecentDocAsFolderItem(path, (this.webDavStorageUi as WebDavStorageImpl).serversOption, this)
-      updateScope.async {
-        doc.updateMetadata()
-        result.add(doc)
-        Platform.runLater {
-          progressLabel.update(counter.incrementAndGet().toString(), this@loadRecentDocs.recentDocuments.size.toString())
-        }
-      }
-    } catch (ex: MalformedURLException) {
-      LOG.error("Can't parse this recent document record: {}", path, ex)
-      CompletableDeferred(value = null)
-    }
-  }
-  awaitScope.launch {
-    try {
-      asyncs.awaitAll()
-      this@loadRecentDocs.clearRecentDocuments()
-      val filteredResult = result.mapNotNull {
-        if (it.tags.containsKey(FolderItemTag.UNAVAILABLE)) {
-          null
-        } else {
-          this@loadRecentDocs.addToRecentDocuments(it.asDocument())
-          it
-        }
-      }
-      consumer.accept(FXCollections.observableArrayList(filteredResult))
-    } finally {
-      updateScope.cancel()
-      Platform.runLater {
-        busyIndicator.accept(false)
-        progressLabel.clear()
       }
     }
   }
@@ -305,7 +255,7 @@ class RecentDocAsFolderItem(
       else -> ""
     }
 
-  val fullPath: String = this.url.path
+  private val fullPath: String = this.url.path
   override val isDirectory: Boolean = false
 
 }
