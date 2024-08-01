@@ -104,20 +104,27 @@ internal class ProjectOpenStrategy(
   }
 
   private val openScope = CoroutineScope(Executors.newFixedThreadPool(3).asCoroutineDispatcher())
+  private val sendingScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 
   fun open(document: Document, docChannel: Channel<Document>) {
     val localChannel = Channel<Document>()
     openScope.launch {
+      // Here we wait until the document is fetched, either from the cloud or locally.
       try {
         localChannel.receive().also {
           it.checkWellFormed()
+          // If the document was fetched successfully and it is well-formed, it is okay to send it to the document
+          // channel.
           docChannel.send(it)
         }
       } catch (ex: ForbiddenException) {
+        // It is possible that we need to sign into GP Cloud to open a document.
         signin { open(document, docChannel) }
       } catch (ex: PaymentRequiredException) {
+        // Or probably we need to pay.
         docChannel.close(ex)
       } catch (ex: SAXException) {
+        // It is also possible that the document can't be parsed as XML.
         throw Document.DocumentException(
           RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex
         )
@@ -126,10 +133,13 @@ internal class ProjectOpenStrategy(
       }
     }
     openScope.launch {
+      // In this coroutine we check if it is an online document and fetch it.
       val online = document.asOnlineDocument()
       if (online == null) {
+        // It is a local document, just send it to the next stage.
         localChannel.send(document)
       } else {
+        // It is an online document and we fetch it.
         val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
         processFetchResult(currentFetch, document, localChannel)
       }
@@ -187,12 +197,12 @@ internal class ProjectOpenStrategy(
         when (choice) {
           OpenOnlineDocumentChoice.USE_OFFLINE -> {
             fetchResult.useMirror = true
-            GlobalScope.launch {
+            sendingScope.launch {
               successChannel.send(document)
             }
           }
           OpenOnlineDocumentChoice.USE_ONLINE -> {
-            GlobalScope.launch {
+            sendingScope.launch {
               successChannel.send(document)
             }
           }
@@ -221,12 +231,12 @@ internal class ProjectOpenStrategy(
         when (choice) {
           OpenOnlineDocumentChoice.USE_OFFLINE -> {
             fetchResult.useMirror = true
-            GlobalScope.launch {
+            sendingScope.launch {
               successChannel.send(document)
             }
           }
           OpenOnlineDocumentChoice.USE_ONLINE -> {
-            GlobalScope.launch {
+            sendingScope.launch {
               successChannel.send(document)
             }
           }
@@ -465,7 +475,14 @@ internal class CommandLineProjectOpenStrategy(
   private val projectUiFacade: ProjectUIFacade,
   private val preferences: Preferences
 ) {
-  fun openStartupDocument(path: String) {
+  fun openStartupDocument(path: String?) {
+    if (path != null) {
+      doOpenStartupDocument(path)
+    } else {
+      maybeOpenLastDocument(project, projectUiFacade)
+    }
+  }
+  private fun doOpenStartupDocument(path: String) {
     DOCUMENT_LOGGER.debug(">>> openStartupDocument($path)")
     val document: Document = documentManager.getDocument(path)
     val finishChannel = Channel<Boolean>()
@@ -513,5 +530,6 @@ internal class CommandLineProjectOpenStrategy(
     return success
   }
 }
+
 private val DOCUMENT_LOGGER = GPLogger.create("Document.Info")
 private val DOCUMENT_ERROR_LOGGER = GPLogger.create("Document.Error")

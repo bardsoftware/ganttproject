@@ -18,19 +18,29 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import biz.ganttproject.app.LocalizedString
+import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.core.option.BooleanOption
+import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.DefaultFileOption
 import biz.ganttproject.storage.cloud.GPCloudDocument
 import biz.ganttproject.storage.cloud.GPCloudOptions
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.hash.Hashing
 import com.google.common.io.ByteStreams
+import javafx.application.Platform
 import javafx.beans.property.ObjectProperty
 import javafx.beans.value.ObservableBooleanValue
 import javafx.beans.value.ObservableObjectValue
+import kotlinx.coroutines.*
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.ProxyDocument
+import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
+import net.sourceforge.ganttproject.gui.ProjectUIFacade
 import net.sourceforge.ganttproject.storage.BaseTxnId
 import org.xml.sax.SAXException
 import java.io.File
@@ -39,7 +49,11 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.nio.file.Paths
 import java.time.Duration
+import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Consumer
 import javax.xml.parsers.DocumentBuilderFactory
 
 
@@ -258,6 +272,8 @@ fun (ByteArray).checksum(): String {
 }
 
 val defaultLocalFolderOption = DefaultFileOption("defaultDirectory")
+val reopenLastFileOption: BooleanOption = DefaultBooleanOption("reopenLastFile", true)
+
 fun getDefaultLocalFolder(): File {
   if (!defaultLocalFolderOption.value.isNullOrBlank()) {
     val defaultFolder = File(defaultLocalFolderOption.value)
@@ -317,5 +333,70 @@ fun String.asDocumentUrl(): Pair<URL, String> =
       }
     }
   }
+
+// Tries to open the most recent document, if the corresponding option is switched on.
+fun maybeOpenLastDocument(project: IGanttProject, projectUIFacade: ProjectUIFacade) {
+  if (!reopenLastFileOption.isChecked) {
+    return
+  }
+  val recentDocsConsumer = Consumer<List<RecentDocAsFolderItem>> { docList ->
+    docList.firstOrNull()?.asDocument()?.let {
+      projectUIFacade.openProject(project.documentManager.getProxyDocument(it), project, null, null)
+    }
+  }
+  val busyIndicator = Consumer<Boolean> {  }
+  val progressLabel = RootLocalizer.create("foo")
+  project.documentManager.loadRecentDocs(recentDocsConsumer, busyIndicator, progressLabel)
+}
+
+// Loads the list of the recent documents. It
+fun DocumentManager.loadRecentDocs(
+  consumer: Consumer<List<RecentDocAsFolderItem>>,
+  busyIndicator: Consumer<Boolean>,
+  progressLabel: LocalizedString
+) {
+  val updateScope = CoroutineScope(Executors.newFixedThreadPool(5).asCoroutineDispatcher())
+  val awaitScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
+  val result = Collections.synchronizedList<RecentDocAsFolderItem>(mutableListOf())
+  busyIndicator.accept(true)
+  progressLabel.update("0", this.recentDocuments.size.toString())
+  val counter = AtomicInteger(0)
+  val asyncs = this.recentDocuments.map { path ->
+    try {
+      val doc = RecentDocAsFolderItem(path, (this.webDavStorageUi as WebDavStorageImpl).serversOption, this)
+      result.add(doc)
+      updateScope.async {
+        doc.updateMetadata()
+        Platform.runLater {
+          progressLabel.update(counter.incrementAndGet().toString(), this@loadRecentDocs.recentDocuments.size.toString())
+        }
+      }
+    } catch (ex: MalformedURLException) {
+      LOG.error("Can't parse this recent document record: {}", path, ex)
+      CompletableDeferred(value = null)
+    }
+  }
+  awaitScope.launch {
+    try {
+      asyncs.awaitAll()
+      this@loadRecentDocs.clearRecentDocuments()
+      val filteredResult = result.mapNotNull {
+        if (it.tags.containsKey(FolderItemTag.UNAVAILABLE)) {
+          null
+        } else {
+          this@loadRecentDocs.addToRecentDocuments(it.asDocument())
+          it
+        }
+      }
+      consumer.accept(filteredResult)
+    } finally {
+      updateScope.cancel()
+      Platform.runLater {
+        busyIndicator.accept(false)
+        progressLabel.clear()
+      }
+    }
+  }
+}
 
 private val LOG = GPLogger.create("Document")

@@ -95,7 +95,9 @@ public class MainApplication implements IPlatformRunnable {
     }
     var files = appBuilder.getMainArgs().file;
     if (files != null && !files.isEmpty()) {
-      appBuilder.withDocument(files.get(0));
+      appBuilder.withDocument(files.getFirst());
+    } else {
+      appBuilder.withDocument(null);
     }
 
 

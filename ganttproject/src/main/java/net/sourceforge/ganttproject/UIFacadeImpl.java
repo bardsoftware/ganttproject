@@ -66,9 +66,7 @@ import org.eclipse.core.runtime.jobs.ProgressProvider;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
-import javax.swing.event.HyperlinkListener;
 import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.io.File;

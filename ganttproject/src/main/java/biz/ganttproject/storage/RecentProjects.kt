@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
-import biz.ganttproject.app.LocalizedString
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.cloud.GPCloudDocument
 import biz.ganttproject.storage.cloud.GPCloudStorageOptions
@@ -26,24 +25,18 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
-import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.scene.control.Button
 import javafx.scene.layout.Pane
-import kotlinx.coroutines.*
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavServerDescriptor
-import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import org.controlsfx.validation.ValidationResult
 import java.io.File
-import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
-import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 
 /**
@@ -70,7 +63,10 @@ class RecentProjects(
   override fun createUi(): Pane {
     val progressLabel = i18n.create("progress.label")
     val builder = BrowserPaneBuilder(mode, { ex -> GPLogger.log(ex) }) { _, success, busyIndicator ->
-      loadRecentDocs(success, busyIndicator, progressLabel)
+      val consumer = Consumer<List<RecentDocAsFolderItem>> {
+        success.accept(FXCollections.observableArrayList(it))
+      }
+      documentManager.loadRecentDocs(consumer, busyIndicator, progressLabel)
     }
 
     val actionButtonHandler = object {
@@ -90,14 +86,16 @@ class RecentProjects(
 
       fun onAction() {
         if (mode == StorageDialogBuilder.Mode.OPEN || state.confirmationReceived.value) {
-            selectedItem?.let {
-                it.asDocument()?.let(documentReceiver) ?: run {
-                    LOG.error("File {} seems to be not existing", it)
-                    paneElements.setValidationResult(ValidationResult.fromError(
-                        paneElements.filenameInput, RootLocalizer.formatText("document.storage.error.read.notExists")
-                    ))
-                }
+          selectedItem?.let {
+            it.asDocument()?.let(documentReceiver) ?: run {
+              LOG.error("File {} seems to be not existing", it)
+              paneElements.setValidationResult(
+                ValidationResult.fromError(
+                  paneElements.filenameInput, RootLocalizer.formatText("document.storage.error.read.notExists")
+                )
+              )
             }
+          }
         }
       }
     }
@@ -109,13 +107,13 @@ class RecentProjects(
         actionButtonHandler.button = btn
       }
       withListView(
-          onSelectionChange = actionButtonHandler::onSelectionChange,
-          onLaunch = { actionButtonHandler.onAction() },
-          itemActionFactory = {
-            Collections.emptyMap()
-          },
-          cellFactory = { CellWithBasePath() },
-        onNameTyped = { filename, matchedItems, _, _ ->
+        onSelectionChange = actionButtonHandler::onSelectionChange,
+        onLaunch = { actionButtonHandler.onAction() },
+        itemActionFactory = {
+          Collections.emptyMap()
+        },
+        cellFactory = { CellWithBasePath() },
+        onNameTyped = { _, matchedItems, _, _ ->
           state.onNameTyped(matchedItems)
         }
       )
@@ -142,68 +140,21 @@ class RecentProjects(
         "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
         "/biz/ganttproject/storage/FolderViewCells.css"
       )
-      loadRecentDocs(builder.resultConsumer, paneElements.busyIndicator, progressLabel)
+      val consumer = Consumer<List<RecentDocAsFolderItem>> { list ->
+        builder.resultConsumer.accept(FXCollections.observableArrayList(list))
+      }
+      documentManager.loadRecentDocs(consumer, paneElements.busyIndicator, progressLabel)
     }
 
-  }
-
-  private fun loadRecentDocs(
-    consumer: Consumer<ObservableList<RecentDocAsFolderItem>>,
-    busyIndicator: Consumer<Boolean>,
-    progressLabel: LocalizedString
-  ) {
-    val updateScope = CoroutineScope(Executors.newFixedThreadPool(5).asCoroutineDispatcher())
-    val awaitScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
-    val result = Collections.synchronizedList<RecentDocAsFolderItem>(mutableListOf())
-    busyIndicator.accept(true)
-    progressLabel.update("0", documentManager.recentDocuments.size.toString())
-    val counter = AtomicInteger(0)
-    val asyncs = documentManager.recentDocuments.map { path ->
-      try {
-        val doc = RecentDocAsFolderItem(path, (documentManager.webDavStorageUi as WebDavStorageImpl).serversOption, documentManager)
-        updateScope.async {
-          doc.updateMetadata()
-          result.add(doc)
-          Platform.runLater {
-              progressLabel.update(counter.incrementAndGet().toString(), documentManager.recentDocuments.size.toString())
-          }
-        }
-      } catch (ex: MalformedURLException) {
-        LOG.error("Can't parse this recent document record: {}", path, ex)
-        CompletableDeferred(value = null)
-      }
-    }
-    awaitScope.launch {
-      try {
-        asyncs.awaitAll()
-        documentManager.clearRecentDocuments()
-        val filteredResult = result.mapNotNull {
-            if (it.tags.containsKey(FolderItemTag.UNAVAILABLE)) {
-                null
-            } else {
-                documentManager.addToRecentDocuments(it.asDocument())
-                it
-            }
-        }
-        consumer.accept(FXCollections.observableArrayList(filteredResult))
-      } finally {
-        updateScope.cancel()
-        Platform.runLater {
-          busyIndicator.accept(false)
-          progressLabel.clear()
-        }
-      }
-    }
   }
 
   override fun focus() {
-    this.paneElements.filenameInput.sceneProperty().addListener { observable, oldValue, newValue ->
+    this.paneElements.filenameInput.sceneProperty().addListener { _, oldValue, newValue ->
       if (newValue != null && oldValue == null) {
         this.paneElements.filenameInput.requestFocus()
       }
     }
   }
-
 }
 
 /**
@@ -304,7 +255,7 @@ class RecentDocAsFolderItem(
       else -> ""
     }
 
-  val fullPath: String = this.url.path
+  private val fullPath: String = this.url.path
   override val isDirectory: Boolean = false
 
 }

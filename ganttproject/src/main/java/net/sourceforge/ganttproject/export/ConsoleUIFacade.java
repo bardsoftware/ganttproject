@@ -21,14 +21,11 @@ package net.sourceforge.ganttproject.export;
 import biz.ganttproject.app.Barrier;
 import biz.ganttproject.app.ResolvedBarrier;
 import biz.ganttproject.app.SimpleBarrier;
+import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView;
 import biz.ganttproject.lib.fx.TreeCollapseView;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.option.IntegerOption;
 import javafx.scene.Node;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
@@ -74,7 +71,7 @@ public class ConsoleUIFacade implements UIFacade {
     return null;
   }
 
-  @Override
+    @Override
   public ScrollingManager getScrollingManager() {
     // TODO Auto-generated method stub
     return null;

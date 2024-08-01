@@ -65,7 +65,7 @@ public class DocumentCreator implements DocumentManager {
         myWebDavStorage.getLegacyLastWebDAVDocumentOption(),
         myWebDavStorage.getWebDavLockTimeoutOption()
     });
-    myLocalStorageOptions = new GPOptionGroup("localStorage", DocumentKt.getDefaultLocalFolderOption());
+    myLocalStorageOptions = new GPOptionGroup("localStorage", DocumentKt.getDefaultLocalFolderOption(), DocumentKt.getReopenLastFileOption());
     myWebDavOptionGroup = new GPOptionGroup("webdav", new GPOption[] {
         myWebDavStorage.getServersOption(),
         myWebDavStorage.getLastWebDavDocumentOption(),
@@ -229,6 +229,11 @@ public class DocumentCreator implements DocumentManager {
   @Override
   public DocumentStorageUi getWebDavStorageUi() {
     return myWebDavStorage;
+  }
+
+  @Override
+  public GPOptionGroup getLocalStorageOptions() {
+    return myLocalStorageOptions;
   }
 
   private final StringOption myFtpUserOption = new StringOptionImpl("user-name", "ftp", "ftpuser");

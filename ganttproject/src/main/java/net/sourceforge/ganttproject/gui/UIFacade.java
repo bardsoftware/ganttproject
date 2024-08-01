@@ -20,10 +20,7 @@ package net.sourceforge.ganttproject.gui;
 
 import biz.ganttproject.app.Barrier;
 import biz.ganttproject.app.SimpleBarrier;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.lib.fx.TreeCollapseView;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
