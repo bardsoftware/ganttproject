@@ -135,7 +135,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private FontSpec myLastFontSpec;
   private final AppearanceManager appearanceManager = new AppearanceManager(myAppFontOption);
 
-  private final BooleanOption myReopenLastFileOption = new DefaultBooleanOption("reopenLastFile", true);
+  private final BooleanOption myReopenLastFileOption = new DefaultBooleanOption("storage.reopenLastFile", true);
   public BooleanOption getReopenLastFileOption() { return myReopenLastFileOption; }
 
   UIFacadeImpl(Stage stage, NotificationManagerImpl notificationManager,
