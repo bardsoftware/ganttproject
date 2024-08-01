@@ -324,19 +324,18 @@ fun String.asDocumentUrl(): Pair<URL, String> =
     }
   }
 
+
 fun maybeOpenLastDocument(uiFacade: UIFacade, project: IGanttProject, projectUIFacade: ProjectUIFacade) {
-  uiFacade.windowOpenedBarrier.await {
-    if (!uiFacade.reopenLastFileOption.isChecked) {
-      return@await
-    }
-    val recentDocsConsumer = Consumer<ObservableList<RecentDocAsFolderItem>> { docList ->
-      docList.firstOrNull()?.asDocument()?.let {
-        projectUIFacade.openProject(it, project, null, null)
-      }
-    }
-    val busyIndicator = Consumer<Boolean> {  }
-    val progressLabel = RootLocalizer.create("foo")
-    project.documentManager.loadRecentDocs(recentDocsConsumer, busyIndicator, progressLabel)
+  if (!uiFacade.reopenLastFileOption.isChecked) {
+    return
   }
+  val recentDocsConsumer = Consumer<ObservableList<RecentDocAsFolderItem>> { docList ->
+    docList.firstOrNull()?.asDocument()?.let {
+      projectUIFacade.openProject(project.documentManager.getProxyDocument(it), project, null, null)
+    }
+  }
+  val busyIndicator = Consumer<Boolean> {  }
+  val progressLabel = RootLocalizer.create("foo")
+  project.documentManager.loadRecentDocs(recentDocsConsumer, busyIndicator, progressLabel)
 }
 private val LOG = GPLogger.create("Document")

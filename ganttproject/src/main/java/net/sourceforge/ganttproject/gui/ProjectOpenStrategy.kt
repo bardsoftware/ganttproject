@@ -465,7 +465,14 @@ internal class CommandLineProjectOpenStrategy(
   private val projectUiFacade: ProjectUIFacade,
   private val preferences: Preferences
 ) {
-  fun openStartupDocument(path: String) {
+  fun openStartupDocument(path: String?) {
+    if (path != null) {
+      doOpenStartupDocument(path)
+    } else {
+      maybeOpenLastDocument(uiFacade, project, projectUiFacade)
+    }
+  }
+  private fun doOpenStartupDocument(path: String) {
     DOCUMENT_LOGGER.debug(">>> openStartupDocument($path)")
     val document: Document = documentManager.getDocument(path)
     val finishChannel = Channel<Boolean>()

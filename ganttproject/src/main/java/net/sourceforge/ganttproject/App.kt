@@ -36,8 +36,6 @@ import org.slf4j.Logger
 import java.io.File
 import java.lang.Thread.UncaughtExceptionHandler
 import java.util.*
-import java.util.concurrent.atomic.AtomicReference
-import javax.swing.JFrame
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
@@ -166,7 +164,7 @@ class AppBuilder(args: Array<String>) {
     return this
   }
 
-  fun withDocument(path: String): AppBuilder {
+  fun withDocument(path: String?): AppBuilder {
     whenAppInitialized { ganttProject ->
       val strategy = CommandLineProjectOpenStrategy(
         ganttProject.project, ganttProject.documentManager,
