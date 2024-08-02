@@ -20,13 +20,13 @@ dependencies {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "21"
+        jvmTarget = rootProject.java_version
     }
 }
 
 compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "21"
+        jvmTarget = rootProject.java_version
     }
 }
 

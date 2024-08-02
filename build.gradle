@@ -30,6 +30,7 @@ allprojects {
         libDir = 'lib'
         mvnDir = 'lib/mvn'
         kotlin_version = "2.0.0"
+        java_version = "17"
         javaExportOptions = [
             '--add-exports', 'javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED',
             '--add-exports', 'javafx.base/com.sun.javafx.event=ALL-UNNAMED',
@@ -45,10 +46,9 @@ allprojects {
             '--add-opens', 'java.desktop/sun.swing=ALL-UNNAMED',
             '--add-opens', 'java.desktop/sun.awt.X11=ALL-UNNAMED'
         ]
-
     }
-    sourceCompatibility = 21
-    targetCompatibility = 21
+    sourceCompatibility = java_version
+    targetCompatibility = java_version
 
     clean {
         delete += "dist-bin"
