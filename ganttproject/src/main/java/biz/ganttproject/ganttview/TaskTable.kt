@@ -125,8 +125,9 @@ class TaskTable(
     { onColumnsChange() },
     BuiltinColumns(
       isZeroWidth = {
-        when (TaskDefaultColumn.find(it)) {
-          TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO, TaskDefaultColumn.NOTES -> true
+        val defaultColumn = TaskDefaultColumn.find(it)
+        when {
+          defaultColumn.isIconified -> true
           else -> false
         }
       },
@@ -545,9 +546,10 @@ class TaskTable(
     if (anyDifference(filteredColumns, treeTable.columns.map { it.userData as ColumnList.Column }.toList())) {
       val tableColumns =
         columns.mapNotNull { column ->
-          when (val taskDefaultColumn = TaskDefaultColumn.find(column.id)) {
-            TaskDefaultColumn.COLOR, TaskDefaultColumn.INFO, TaskDefaultColumn.NOTES-> null
-            null -> createCustomColumn(column)
+          val taskDefaultColumn = TaskDefaultColumn.find(column.id)
+          when {
+            taskDefaultColumn == null -> createCustomColumn(column)
+            taskDefaultColumn.isIconified -> null
             else -> createDefaultColumn(column, taskDefaultColumn)
           }?.also {
             it.prefWidth = column.width.toDouble()

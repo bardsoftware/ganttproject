@@ -401,7 +401,9 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   private PdfPTable createTableHeader(ColumnList tableHeader, ArrayList<Column> orderedColumns) {
     for (int i = 0; i < tableHeader.getSize(); i++) {
       Column c = tableHeader.getField(i);
-      if (c.isVisible() && !c.getID().equals(TaskDefaultColumn.NOTES.getStub().getID())) {
+      if (c.isVisible()
+        && !c.getID().equals(TaskDefaultColumn.NOTES.getStub().getID())
+        && !c.getID().equals(TaskDefaultColumn.ATTACHMENTS.getStub().getID())) {
         orderedColumns.add(c);
       }
     }
@@ -420,7 +422,10 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
     PdfPTable table = new PdfPTable(widths);
     table.setWidthPercentage(95);
     for (Column field : orderedColumns) {
-      if (field.isVisible() && !field.getID().equals(TaskDefaultColumn.NOTES.getStub().getID())) {
+      if (field.isVisible() &&
+        !field.getID().equals(TaskDefaultColumn.NOTES.getStub().getID()) &&
+        !field.getID().equals(TaskDefaultColumn.ATTACHMENTS.getStub().getID())) {
+
         PdfPCell cell;
         if (field.getID().equals(TaskDefaultColumn.COLOR.getStub().getID())) {
           cell = new PdfPCell();
@@ -461,7 +466,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         if (value == null) {
           value = "";
         }
-        if (TaskDefaultColumn.NOTES.getStub().getID().equals(column.getID())) {
+        if (TaskDefaultColumn.NOTES.getStub().getID().equals(column.getID()) || TaskDefaultColumn.ATTACHMENTS.getStub().getID().equals(column.getID())) {
           continue;
         }
         if (TaskDefaultColumn.COLOR.getStub().getID().equals(column.getID())) {

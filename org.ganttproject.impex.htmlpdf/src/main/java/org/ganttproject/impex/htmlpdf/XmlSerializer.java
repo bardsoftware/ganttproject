@@ -101,7 +101,7 @@ public class XmlSerializer extends SaverBase {
   }
 
   private Set<String> IGNORED_COLUMNS = Sets.newHashSet(
-    TaskDefaultColumn.NOTES.getStub().getID(), TaskDefaultColumn.INFO.getStub().getID()
+    TaskDefaultColumn.NOTES.getStub().getID(), TaskDefaultColumn.INFO.getStub().getID(), TaskDefaultColumn.ATTACHMENTS.getStub().getID()
   );
   protected void writeColumns(ColumnList visibleFields, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();

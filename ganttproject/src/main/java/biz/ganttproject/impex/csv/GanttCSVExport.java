@@ -222,6 +222,8 @@ public class GanttCSVExport {
               break;
             case INFO:
             case TYPE:
+            case ATTACHMENTS:
+            default:
               break;
           }
         }
