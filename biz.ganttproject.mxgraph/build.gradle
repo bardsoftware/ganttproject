@@ -34,7 +34,7 @@ jar {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "21"
+        jvmTarget = rootProject.java_version
     }
 }
 
