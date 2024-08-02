@@ -95,7 +95,7 @@ object PropertyTypeEncoder {
         error("Don't set me")
       }
       override val type: Class<*> = propertyClass.javaClass
-      override val typeAsString: String = propertyClass.id
+      override val typeAsString: String = propertyClass.iD
       override val id = ""
       override val defaultValue = defaultValue
       override var name: String

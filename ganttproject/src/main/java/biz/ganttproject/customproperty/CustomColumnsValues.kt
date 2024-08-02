@@ -105,18 +105,14 @@ class CustomColumnsValues(private val customPropertyManager: CustomPropertyManag
     return CustomPropertyImpl(definition, defStub.defaultValue!!)
   }
 
-  private class CustomPropertyImpl(private val myDefinition: CustomPropertyDefinition, private val myValue: Any) : CustomProperty {
-    override fun getDefinition(): CustomPropertyDefinition {
-      return myDefinition
-    }
+  private class CustomPropertyImpl(private val myDefinition: CustomPropertyDefinition, private val myValue: Any): CustomProperty {
+    override val definition = myDefinition
 
-    override fun getValue(): Any {
-      return myValue
-    }
+    override val value = myValue
 
-    override fun getValueAsString(): String {
-      return getValueAsString(myValue)!!
-    }
+
+    override val valueAsString = getValueAsString(value)!!
+
   }
 
   override fun equals(other: Any?): Boolean {

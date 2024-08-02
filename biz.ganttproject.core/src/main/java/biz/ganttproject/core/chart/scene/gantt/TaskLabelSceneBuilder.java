@@ -68,20 +68,10 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
 
   private final TaskApi<T> myTaskApi;
 
-  private final InputApi myInputApi;
+  private final TaskLabelSceneInput myInputApi;
 
   public interface TaskApi<T> {
     Object getProperty(T task, String propertyID);
-  }
-
-  public interface InputApi {
-    EnumerationOption getTopLabelOption();
-    EnumerationOption getBottomLabelOption();
-    EnumerationOption getLeftLabelOption();
-    EnumerationOption getRightLabelOption();
-
-    int getFontSize();
-    boolean hasBaseline();
   }
 
   static {
@@ -97,7 +87,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
     ourInfoList.add(ID_TASK_PREDECESSORS);
   }
 
-  public TaskLabelSceneBuilder(TaskApi<T> taskApi, InputApi inputApi, Canvas canvas) {
+  public TaskLabelSceneBuilder(TaskApi<T> taskApi, TaskLabelSceneInput inputApi, Canvas canvas) {
     myCanvas = canvas;
     myTaskApi = taskApi;
     myInputApi = inputApi;

@@ -24,6 +24,7 @@ import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
+import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneInput;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
@@ -157,7 +158,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     super(model);
     myModel = model;
     chartRenderer = new GanttChartSceneBuilder(new GanttChartSceneApi(), getPrimitiveContainer());
-    TaskLabelSceneBuilder.InputApi taskLabelSceneApi = chartRenderer.getTaskLabelSceneApi();
+    TaskLabelSceneInput taskLabelSceneApi = chartRenderer.getTaskLabelSceneApi();
     myLabelOptions = new ChartOptionGroup("ganttChartDetails",
         new GPOption[] {
           taskLabelSceneApi.getTopLabelOption(), taskLabelSceneApi.getBottomLabelOption(),

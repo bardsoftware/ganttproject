@@ -153,7 +153,7 @@ public class CustomColumnsPanel {
       case 0:
         return def.getName();
       case 1:
-        return def.getPropertyClass().getDisplayName();
+        return getCustomPropertyClassDisplayName(def.getPropertyClass());
       case 2:
         for (CustomProperty cp : myHolder.getCustomProperties()) {
           if (cp.getDefinition() == def) {
@@ -165,6 +165,10 @@ public class CustomColumnsPanel {
       default:
         throw new IllegalStateException();
       }
+    }
+
+    private String getCustomPropertyClassDisplayName(CustomPropertyClass propertyClass) {
+      return GanttLanguage.getInstance().formatText(propertyClass.getID());
     }
 
     @Override

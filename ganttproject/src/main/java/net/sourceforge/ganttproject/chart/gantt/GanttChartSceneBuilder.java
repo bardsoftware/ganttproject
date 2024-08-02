@@ -26,21 +26,19 @@ import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
+import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneInput;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.EnumerationOption;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.task.*;
 
-import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Renders task rectangles, dependency lines and all task-related text strings
@@ -68,7 +66,7 @@ public class GanttChartSceneBuilder {
 
   private final Canvas canvas;
   private final InputApi input;
-  private final TaskLabelSceneBuilder.InputApi taskLabelSceneApi;
+  private final TaskLabelSceneInput taskLabelSceneApi;
 
   public final TaskLabelSceneBuilder<ITaskSceneTask> myLabelsRenderer;
 
@@ -95,12 +93,12 @@ public class GanttChartSceneBuilder {
     getPrimitiveContainer().newLayer();
     myLabelsLayer = getPrimitiveContainer().newLayer();
 
-    List<String> taskProperties = Lists.newArrayList("", "id", "taskDates", "name", "length", "advancement", "coordinator", "resources", "predecessors");
+    List<String> taskProperties = List.of("", "id", "taskDates", "name", "length", "advancement", "coordinator", "resources", "predecessors");
     final DefaultEnumerationOption<String> topLabelOption = new DefaultEnumerationOption<String>("taskLabelUp", taskProperties);
     final DefaultEnumerationOption<String> bottomLabelOption = new DefaultEnumerationOption<String>("taskLabelDown", taskProperties);
     final DefaultEnumerationOption<String> leftLabelOption = new DefaultEnumerationOption<String>("taskLabelLeft", taskProperties);
     final DefaultEnumerationOption<String> rightLabelOption = new DefaultEnumerationOption<String>("taskLabelRight", taskProperties);
-    taskLabelSceneApi = new TaskLabelSceneBuilder.InputApi() {
+    taskLabelSceneApi = new TaskLabelSceneInput() {
       @Override
       public EnumerationOption getTopLabelOption() {
         return topLabelOption;
@@ -165,7 +163,7 @@ public class GanttChartSceneBuilder {
     return getPrimitiveContainer();
   }
 
-  public TaskLabelSceneBuilder.InputApi getTaskLabelSceneApi() {
+  public TaskLabelSceneInput getTaskLabelSceneApi() {
     return taskLabelSceneApi;
   }
 
@@ -207,7 +205,7 @@ public class GanttChartSceneBuilder {
   }
 
   private void renderVisibleTasks(List<ITaskSceneTask> visibleTasks, OffsetList defaultUnitOffsets) {
-    List<Polygon> boundPolygons = Lists.newArrayList();
+    List<Polygon> boundPolygons = new ArrayList<>();
     int rowNum = 0;
     for (ITaskSceneTask t : visibleTasks) {
       boundPolygons.clear();
@@ -285,17 +283,13 @@ public class GanttChartSceneBuilder {
     }
   }
 
-  private static Predicate<Polygon> REMOVE_SUPERTASK_ENDINGS = new Predicate<Polygon>() {
-    @Override
-    public boolean apply(@Nullable Polygon shape) {
-      return !shape.hasStyle("task.ending");
-    }
-  };
+  private static Predicate<Polygon> REMOVE_SUPERTASK_ENDINGS = shape -> !shape.hasStyle("task.ending");
+
   private List<Polygon> renderActivities(final int rowNum, ITaskSceneTask t, List<ITaskActivity<ITaskSceneTask>> activities,
       OffsetList defaultUnitOffsets, boolean areVisible) {
     List<Polygon> rectangles = myTaskActivityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
     if (areVisible && !myTaskApi.hasNestedTasks(t) && !t.isMilestone() && !t.isProjectTask()) {
-      renderProgressBar(Lists.newArrayList(Iterables.filter(rectangles, REMOVE_SUPERTASK_ENDINGS)));
+      renderProgressBar(rectangles.stream().filter(REMOVE_SUPERTASK_ENDINGS).toList());
     }
     if (areVisible && myTaskApi.hasNotes(t)) {
       Rectangle notes = getPrimitiveContainer().createRectangle(input.getWidth() - 24, rowNum * getRowHeight() + getRowHeight()/2 - 8, 16, 16);
