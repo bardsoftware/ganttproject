@@ -140,8 +140,12 @@ internal class ProjectOpenStrategy(
         localChannel.send(document)
       } else {
         // It is an online document and we fetch it.
-        val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
-        processFetchResult(currentFetch, document, localChannel)
+        try {
+          val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
+          processFetchResult(currentFetch, document, localChannel)
+        } catch (ex: Exception) {
+          localChannel.close(ex)
+        }
       }
     }
   }
