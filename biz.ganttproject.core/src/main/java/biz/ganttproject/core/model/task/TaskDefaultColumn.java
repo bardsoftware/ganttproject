@@ -49,7 +49,8 @@ public enum TaskDefaultColumn {
   COST(new ColumnList.ColumnStub("tpd12", null, false, -1, 20), BigDecimal.class, "tableColCost"),
   RESOURCES(new ColumnList.ColumnStub("tpd13", null, false, -1, 20), String.class, "resources", Functions.NOT_EDITABLE),
   COLOR(new ColumnList.ColumnStub("tpd14", null, false, -1, 20), Color.class, "option.taskDefaultColor.label"),
-  NOTES(new ColumnList.ColumnStub("tpd15", null, true, -1, 20), String.class, "notes");
+  NOTES(new ColumnList.ColumnStub("tpd15", null, true, -1, 20), String.class, "notes"),
+  ATTACHMENTS(new ColumnList.ColumnStub("tpd16", null, false, -1, 20), Icon.class, "webLink");
 
   public interface LocaleApi {
     String i18n(String key);

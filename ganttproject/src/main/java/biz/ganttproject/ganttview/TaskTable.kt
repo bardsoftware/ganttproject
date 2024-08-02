@@ -33,6 +33,8 @@ import com.sun.javafx.scene.control.behavior.CellBehaviorBase
 import de.jensd.fx.glyphs.GlyphIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import de.jensd.fx.glyphs.materialicons.MaterialIcon
+import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.collections.FXCollections
@@ -986,13 +988,31 @@ class TaskTable(
             code(it, btn)
           }
         }
-        if (TaskDefaultColumn.COLOR.stub.isVisible || TaskDefaultColumn.INFO.stub.isVisible || TaskDefaultColumn.NOTES.stub.isVisible) {
+        if (TaskDefaultColumn.ATTACHMENTS.stub.isVisible || TaskDefaultColumn.COLOR.stub.isVisible || TaskDefaultColumn.INFO.stub.isVisible || TaskDefaultColumn.NOTES.stub.isVisible) {
           HBox().also { hbox ->
             hbox.alignment = Pos.CENTER
             hbox.spacing = 3.0
             Region().also {
               hbox.children.add(it)
               HBox.setHgrow(it, Priority.ALWAYS)
+            }
+            if (TaskDefaultColumn.ATTACHMENTS.stub.isVisible) {
+              when (task.attachments.size) {
+                0 -> {}
+                1 -> {
+                  setupIcon(MaterialIconView(MaterialIcon.ATTACH_FILE), scale = 1.5) { stackPane, button ->
+                    hbox.children.add(stackPane)
+                    button.tooltip = Tooltip(task.attachments[0].uri.toString())
+                    button.onAction = EventHandler {
+                      openInBrowser(task.attachments[0].uri.toString())
+                    }
+                    button.styleClass.add("btn-regular")
+                  }
+                }
+                else -> {
+                  TODO("More than one attachment is not yet supported")
+                }
+              }
             }
             if (TaskDefaultColumn.NOTES.stub.isVisible && !task.notes.isNullOrBlank()) {
               setupIcon(FontAwesomeIconView(FontAwesomeIcon.FILE_TEXT_ALT), scale=1.0) {stackPane, btn ->
