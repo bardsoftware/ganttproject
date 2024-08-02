@@ -20,13 +20,13 @@ package biz.ganttproject.core.model.task;
 
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
-import com.google.common.base.Predicate;
 
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Enumeration of built-in task properties.
@@ -36,21 +36,23 @@ import java.util.List;
 public enum TaskDefaultColumn {
   TYPE(new ColumnList.ColumnStub("tpd0", null, false, -1, -1), Icon.class, "tableColType"),
   PRIORITY(new ColumnList.ColumnStub("tpd1", null, false, -1, 50), Icon.class, "tableColPriority"),
-  INFO(new ColumnList.ColumnStub("tpd2", null, false, -1, -1), Icon.class, "tableColInfo", Functions.NOT_EDITABLE),
+  INFO(new ColumnList.ColumnStub("tpd2", null, false, -1, -1), Icon.class, "tableColInfo", Functions.NOT_EDITABLE, true),
   NAME(new ColumnList.ColumnStub("tpd3", null, true, 0, 200), String.class, "tableColName"),
-  BEGIN_DATE(new ColumnList.ColumnStub("tpd4", null, true, 1, 75), GregorianCalendar.class, "tableColBegDate", Functions.ALWAYS_EDITABLE),
-  END_DATE(new ColumnList.ColumnStub("tpd5", null, true, 2, 75), GregorianCalendar.class, "tableColEndDate", Functions.ALWAYS_EDITABLE),
-  DURATION(new ColumnList.ColumnStub("tpd6", null, false, -1, 50), Integer.class, "tableColDuration", null),
+  BEGIN_DATE(new ColumnList.ColumnStub("tpd4", null, true, 1, 75), GregorianCalendar.class, "tableColBegDate", Functions.ALWAYS_EDITABLE, false),
+  END_DATE(new ColumnList.ColumnStub("tpd5", null, true, 2, 75), GregorianCalendar.class, "tableColEndDate", Functions.ALWAYS_EDITABLE, false),
+  DURATION(new ColumnList.ColumnStub("tpd6", null, false, -1, 50), Integer.class, "tableColDuration", null, false),
   COMPLETION(new ColumnList.ColumnStub("tpd7", null, false, -1, 50), Integer.class, "tableColCompletion"),
-  COORDINATOR(new ColumnList.ColumnStub("tpd8", null, false, -1, 200), String.class, "tableColCoordinator", Functions.NOT_EDITABLE),
+  COORDINATOR(new ColumnList.ColumnStub("tpd8", null, false, -1, 200), String.class, "tableColCoordinator", Functions.NOT_EDITABLE, false),
   PREDECESSORS(new ColumnList.ColumnStub("tpd9", null, false, -1, 200), String.class, "tableColPredecessors"),
-  ID(new ColumnList.ColumnStub("tpd10", null, false, -1, 20), Integer.class, "tableColID", Functions.NOT_EDITABLE),
-  OUTLINE_NUMBER(new ColumnList.ColumnStub("tpd11", null, false, 4, 20), String.class, "tableColOutline", Functions.NOT_EDITABLE),
+  ID(new ColumnList.ColumnStub("tpd10", null, false, -1, 20), Integer.class, "tableColID", Functions.NOT_EDITABLE, false),
+  OUTLINE_NUMBER(new ColumnList.ColumnStub("tpd11", null, false, 4, 20), String.class, "tableColOutline", Functions.NOT_EDITABLE, false),
   COST(new ColumnList.ColumnStub("tpd12", null, false, -1, 20), BigDecimal.class, "tableColCost"),
-  RESOURCES(new ColumnList.ColumnStub("tpd13", null, false, -1, 20), String.class, "resources", Functions.NOT_EDITABLE),
-  COLOR(new ColumnList.ColumnStub("tpd14", null, false, -1, 20), Color.class, "option.taskDefaultColor.label"),
-  NOTES(new ColumnList.ColumnStub("tpd15", null, true, -1, 20), String.class, "notes"),
-  ATTACHMENTS(new ColumnList.ColumnStub("tpd16", null, false, -1, 20), Icon.class, "webLink");
+  RESOURCES(new ColumnList.ColumnStub("tpd13", null, false, -1, 20), String.class, "resources", Functions.NOT_EDITABLE, false),
+  COLOR(new ColumnList.ColumnStub("tpd14", null, false, -1, 20), Color.class, "option.taskDefaultColor.label", null, true),
+  NOTES(new ColumnList.ColumnStub("tpd15", null, true, -1, 20), String.class, "notes", null, true),
+  ATTACHMENTS(new ColumnList.ColumnStub("tpd16", null, false, -1, 20), Icon.class, "webLink", null, true);
+
+  private final boolean myIsIconified;
 
   public interface LocaleApi {
     String i18n(String key);
@@ -68,14 +70,15 @@ public enum TaskDefaultColumn {
   private Comparator<?> mySortComparator;
 
   TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey) {
-    this(delegate, valueClass, nameKey, Functions.ALWAYS_EDITABLE);
+    this(delegate, valueClass, nameKey, Functions.ALWAYS_EDITABLE, false);
   }
 
-  TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey, Predicate<? extends Object> isEditable) {
+  TaskDefaultColumn(ColumnList.Column delegate, Class<?> valueClass, String nameKey, Predicate<? extends Object> isEditable, boolean isIconified) {
     myDelegate = delegate;
     myValueClass = valueClass;
     myIsEditablePredicate= isEditable;
     myNameKey = nameKey;
+    myIsIconified = isIconified;
   }
 
   public Comparator<?> getSortComparator() {
@@ -118,7 +121,11 @@ public enum TaskDefaultColumn {
   }
 
   public <T> boolean isEditable(T task) {
-    return myIsEditablePredicate == null ? true : ((Predicate<T>)myIsEditablePredicate).apply(task);
+    return myIsEditablePredicate == null || ((Predicate<T>) myIsEditablePredicate).test(task);
+  }
+
+  public boolean isIconified() {
+    return myIsIconified;
   }
 
   public String getNameKey() {
@@ -131,7 +138,6 @@ public enum TaskDefaultColumn {
 
   public static class Functions {
     static Predicate<Object> NOT_EDITABLE = input -> false;
-
     static Predicate<Object> ALWAYS_EDITABLE = input -> true;
 
     public static Comparator<String> OUTLINE_NUMBER_COMPARATOR = (s1, s2) -> {
