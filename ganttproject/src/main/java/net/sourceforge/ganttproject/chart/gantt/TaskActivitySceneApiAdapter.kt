@@ -63,8 +63,9 @@ internal class ITaskSceneTaskImpl(private val task: Task, private val model: Cha
   override val completionPercentage: Int
     get() = task.completionPercentage
 
-  override fun getProperty(propertyID: String?): Any? {
+  override fun getProperty(propertyID: String?): String? {
     return props.getProperty(task, propertyID)
+    //return propertyID
   }
 
   override fun hashCode() = task.hashCode()

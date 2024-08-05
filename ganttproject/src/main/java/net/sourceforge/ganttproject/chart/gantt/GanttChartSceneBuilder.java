@@ -63,7 +63,7 @@ public class GanttChartSceneBuilder {
 
   private final Canvas canvas;
   private final InputApi input;
-  private final TaskLabelSceneInput taskLabelSceneApi;
+  private final TaskLabelSceneInput<ITaskSceneTask> taskLabelSceneApi;
 
   public final TaskLabelSceneBuilder<ITaskSceneTask> myLabelsRenderer;
 
@@ -95,15 +95,18 @@ public class GanttChartSceneBuilder {
     var bottomLabelOption = new TaskColumnEnumerationOption("taskLabelDown", input.getCustomPropertyManager().getDefinitions());
     var leftLabelOption = new TaskColumnEnumerationOption("taskLabelLeft", input.getCustomPropertyManager().getDefinitions());
     var rightLabelOption = new TaskColumnEnumerationOption("taskLabelRight", input.getCustomPropertyManager().getDefinitions());
+    var allOptions = List.of(topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption);
     input.getCustomPropertyManager().addListener(event -> {
-      List.of(topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption).forEach(option -> option.reload(input.getCustomPropertyManager().getDefinitions()));
+      allOptions.forEach(option -> option.reload(input.getCustomPropertyManager().getDefinitions()));
     });
-    taskLabelSceneApi = new TaskLabelSceneInput(
+
+    taskLabelSceneApi = new TaskLabelSceneInput<>(
       topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption,
-      input.getLabelsFontSize(), input.getBaseline() != null
+      input.getLabelsFontSize(), input.getBaseline() != null,
+      ITaskSceneTask::getProperty
     );
 
-    myLabelsRenderer = new TaskLabelSceneBuilder<>(new TaskLabelSceneTaskApi(), taskLabelSceneApi, myLabelsLayer);
+    myLabelsRenderer = new TaskLabelSceneBuilder<>(taskLabelSceneApi, myLabelsLayer);
     myChartApi = input.getChartApi(myLabelsRenderer);
     this.mySplitter = new TaskActivitySplitter<ITask>(
       input::getStartDate,

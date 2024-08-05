@@ -36,6 +36,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author bard
@@ -49,6 +50,7 @@ public class ExporterToImage extends ExporterBase {
 
     // TODO GPAbstractOption already has this field, why add it again?!
     private String myValue = FileTypeOption.FILE_FORMAT_ID[0];
+    private Function<String, String> myValueLocalizer = null;
 
     FileTypeOption() {
       super("impex.image.fileformat");
@@ -57,6 +59,16 @@ public class ExporterToImage extends ExporterBase {
     @Override
     public String[] getAvailableValues() {
       return FileTypeOption.FILE_FORMAT_ID;
+    }
+
+    @Override
+    public void setValueLocalizer(Function<String, String> localizer) {
+      myValueLocalizer = localizer;
+    }
+
+    @Override
+    public Function<String, String> getValueLocalizer() {
+      return myValueLocalizer;
     }
 
     @Override

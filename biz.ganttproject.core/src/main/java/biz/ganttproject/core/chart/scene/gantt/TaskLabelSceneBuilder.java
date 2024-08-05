@@ -66,9 +66,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
 
   private static List<String> ourInfoList;
 
-  private final TaskApi<T> myTaskApi;
-
-  private final TaskLabelSceneInput myInputApi;
+  private final TaskLabelSceneInput<T> myInputApi;
 
   public interface TaskApi<T> {
     Object getProperty(T task, String propertyID);
@@ -87,9 +85,8 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
     ourInfoList.add(ID_TASK_PREDECESSORS);
   }
 
-  public TaskLabelSceneBuilder(TaskApi<T> taskApi, TaskLabelSceneInput inputApi, Canvas canvas) {
+  public TaskLabelSceneBuilder(TaskLabelSceneInput<T> inputApi, Canvas canvas) {
     myCanvas = canvas;
-    myTaskApi = taskApi;
     myInputApi = inputApi;
 
     myLabelOptions = new EnumerationOption[] { inputApi.getTopLabelOption(), inputApi.getBottomLabelOption(), inputApi.getLeftLabelOption(), inputApi.getRightLabelOption() };
@@ -128,7 +125,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), DOWN);
 
-    if (text.length() > 0) {
+    if (!text.isEmpty()) {
       int xOrigin = rectangle.getRightX();
       int yOrigin = rectangle.getBottomY() + TINY_SPACE;
       Text textPrimitive = processText(xOrigin, yOrigin, text);
@@ -139,7 +136,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
   private void createUpSideText(Polygon rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), UP);
-    if (text.length() > 0) {
+    if (!text.isEmpty()) {
       int xOrigin = rectangle.getRightX();
       int yOrigin = rectangle.getTopY() - TINY_SPACE;
       Text textPrimitive = processText(xOrigin, yOrigin, text);
@@ -171,12 +168,8 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
 
 
   private String getTaskLabel(T task, int position) {
-    StringBuffer result = new StringBuffer();
-    Object property = myTaskApi.getProperty(task, myLabelOptions[position].getValue());
-    if (property != null) {
-      result.append(property);
-    }
-    return result.toString();
+    Object property = myInputApi.getPropertyValue().invoke(task, myLabelOptions[position].getValue());
+    return property == null ? "" : property.toString();
   }
 
   private Canvas getPrimitiveContainer() {

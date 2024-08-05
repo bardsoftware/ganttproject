@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import com.google.common.collect.Lists;
 
@@ -30,6 +31,7 @@ public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implem
   private final List<String> myValues;
   private final Map<String, T> myStringValue_ObjectValue = new LinkedHashMap<String, T>();
   private final List<T> myTypedValues;
+  private Function<String, String> myValueLocalizer = null;
 
   public DefaultEnumerationOption(String id, T[] values) {
     super(id);
@@ -93,5 +95,15 @@ public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implem
 
   protected List<T> getTypedValues() {
     return myTypedValues;
+  }
+
+  @Override
+  public void setValueLocalizer(Function<String, String> localizer) {
+    myValueLocalizer = localizer;
+  }
+
+  @Override
+  public Function<String, String> getValueLocalizer() {
+    return myValueLocalizer;
   }
 }

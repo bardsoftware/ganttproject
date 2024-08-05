@@ -44,7 +44,7 @@ interface ITaskSceneTask : IdentifiableRow {
   val completionPercentage: Int
 
   fun isMilestone(): Boolean
-  fun getProperty(propertyID: String?): Any?
+  fun getProperty(propertyID: String?): String?
 }
 
 class TaskActivityDataImpl<T : IdentifiableRow>(

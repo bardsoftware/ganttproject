@@ -639,7 +639,7 @@ public class OptionsPageBuilder {
     JComboBox comboBox = createEnumerationComponent(familiesOption, new Supplier<EnumerationOptionComboBoxModel>() {
       @Override
       public EnumerationOptionComboBoxModel get() {
-        return new EnumerationOptionComboBoxModel(familiesOption, option.getFontFamilies().toArray(new String[0]));
+        return new EnumerationOptionComboBoxModel(familiesOption, option.getFontFamilies());
       }
     });
     final JSlider slider = new JSlider(0, 4);

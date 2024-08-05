@@ -25,14 +25,16 @@ import biz.ganttproject.core.table.ColumnList.Column
 import biz.ganttproject.core.table.ColumnList.ColumnStub
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 
+typealias PropertyValue<T> = (task: T, id: String) -> String
 
-data class TaskLabelSceneInput(
+data class TaskLabelSceneInput<T>(
   val topLabelOption: EnumerationOption,
   val bottomLabelOption: EnumerationOption,
   val leftLabelOption: EnumerationOption,
   val rightLabelOption: EnumerationOption,
   val fontSize: Int,
-  val baseline: Boolean
+  val baseline: Boolean,
+  val propertyValue: PropertyValue<T>
 )
 
 fun buildOptionValues(customProps: List<CustomPropertyDefinition>): Array<Column> {
@@ -42,12 +44,27 @@ fun buildOptionValues(customProps: List<CustomPropertyDefinition>): Array<Column
 
 class TaskColumnEnumerationOption(id: String, customProps: List<CustomPropertyDefinition>)
   : DefaultEnumerationOption<Column>(id, buildOptionValues(customProps)) {
+    init {
+      setValueLocalizer { id ->
+        stringToObject(id)?.let { obj ->
+          TaskDefaultColumn.entries.find { it.stub.id == obj.id }?.getName() ?: obj.name
+        }
+      }
+    }
   override fun objectToString(obj: Column): String {
-    return TaskDefaultColumn.entries.find { it.stub.id == obj.id }?.getName() ?: obj.name
+    return obj.id
   }
 
   override fun stringToObject(value: String): Column? {
-    return typedValues.firstOrNull { it.name == value }
+    return typedValues.firstOrNull { it.id == value }
+  }
+
+  override fun loadPersistentValue(value: String?) {
+    super.loadPersistentValue(value)
+  }
+
+  override fun setSelectedValue(value: Column?) {
+    super.setSelectedValue(value)
   }
 
   fun reload(customProps: List<CustomPropertyDefinition>) {

@@ -4,6 +4,7 @@
 package net.sourceforge.ganttproject.gui.options;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
@@ -28,7 +29,7 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements ComboB
     this(option, geti18nedValues(option, group));
   }
 
-  public EnumerationOptionComboBoxModel(EnumerationOption option, String[] i18nedValues) {
+  public EnumerationOptionComboBoxModel(EnumerationOption option, List<String> i18nedValues) {
     myOption = option;
     String currentValue = option.getValue();
     Item currentItem = null;
@@ -36,7 +37,7 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements ComboB
 
     myValues = new ArrayList<Item>(ids.length);
     for (int i = 0; i < ids.length; i++) {
-      Item nextItem = new Item(ids[i], i18nedValues[i]);
+      Item nextItem = new Item(ids[i], i18nedValues.get(i));
       myValues.add(nextItem);
       if (ids[i].equals(currentValue)) {
         currentItem = nextItem;
@@ -70,22 +71,24 @@ class EnumerationOptionComboBoxModel extends AbstractListModel implements ComboB
     return myValues.get(index);
   }
 
-  static String[] geti18nedValues(EnumerationOption option, GPOptionGroup group) {
-    String[] ids = option.getAvailableValues();
-    String[] result = new String[ids.length];
-    for (int i = 0; i < ids.length; i++) {
-      String key = OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey(ids[i]);
-      String value = GanttLanguage.getInstance().getText(key);
+  static List<String> geti18nedValues(EnumerationOption option, GPOptionGroup group) {
+    var localizer = option.getValueLocalizer();
+    if (localizer == null) {
+      localizer = id -> {
+        var key = OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey(id);
+        String value = GanttLanguage.getInstance().getText(key);
 
-      if (value == null && group != null) {
-        key = group.getI18Nkey(key);
-        if (key != null) {
-          value = GanttLanguage.getInstance().getText(key);
+        if (value == null && group != null) {
+          key = group.getI18Nkey(key);
+          if (key != null) {
+            value = GanttLanguage.getInstance().getText(key);
+          }
         }
-      }
-      result[i] = value == null ? ids[i] : value;
+        return value == null ? id : value;
+      };
     }
-    return result;
+    final var _localizer = localizer;
+    return Arrays.stream(option.getAvailableValues()).map(_localizer).toList();
   }
 
   public void onValueChange() {

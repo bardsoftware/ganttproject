@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.core.option;
 
+import java.util.function.Function;
+
 /**
  * @author bard
  */
@@ -25,4 +27,8 @@ public interface EnumerationOption extends GPOption<String> {
   String VALUE_SET = "valueSet";
 
   String[] getAvailableValues();
+
+  void setValueLocalizer(Function<String, String> localizer);
+
+  Function<String, String> getValueLocalizer();
 }
