@@ -631,7 +631,7 @@ public class OptionsPageBuilder {
 
   public Component createFontComponent(final FontOption option) {
     final Object CLIENT_ID = new Object();
-    final DefaultEnumerationOption<String> familiesOption = new DefaultEnumerationOption<>("", option.getFontFamilies());
+    final DefaultEnumerationOption<String> familiesOption = new DefaultEnumerationOption<>("", option.getFontFamilies().toArray(new String[0]));
     if (option.getValue() != null) {
       familiesOption.setValue(option.getValue().getFamily());
     }

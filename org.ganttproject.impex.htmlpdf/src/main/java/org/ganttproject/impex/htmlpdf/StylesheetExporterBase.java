@@ -42,7 +42,7 @@ public abstract class StylesheetExporterBase extends ExporterBase {
     for (Stylesheet s : stylesheets) {
       names.add(s.getLocalizedName());
     }
-    EnumerationOption stylesheetOption = new DefaultEnumerationOption<Stylesheet>(optionID, names) {
+    EnumerationOption stylesheetOption = new DefaultEnumerationOption<Stylesheet>(optionID, stylesheets.toArray(new Stylesheet[0])) {
       @Override
       public void commit() {
         super.commit();
@@ -51,6 +51,16 @@ public abstract class StylesheetExporterBase extends ExporterBase {
         if (index >= 0) {
           setSelectedStylesheet(stylesheets.get(index));
         }
+      }
+
+      @Override
+      protected String objectToString(Stylesheet obj) {
+        return obj.getLocalizedName();
+      }
+
+      @Override
+      protected Stylesheet stringToObject(String value) {
+        return getTypedValues().stream().filter(s -> s.getLocalizedName().equals(value)).findFirst().orElse(null);
       }
     };
     return stylesheetOption;

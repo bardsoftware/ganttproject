@@ -49,7 +49,7 @@ enum class CustomPropertyClass(val iD: String, private val myDefaultValue: Strin
   INTEGER("integer", "0", Int::class.java),
   DOUBLE("double", "0.0", Double::class.java),
   DATE("date", null, GregorianCalendar::class.java),
-  BOOLEAN("boolean", "false", Boolean::class.java);
+  BOOLEAN("boolean", "false", java.lang.Boolean::class.java);
 
   override fun toString(): String {
     return iD

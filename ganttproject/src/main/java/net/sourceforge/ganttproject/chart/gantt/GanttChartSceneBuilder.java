@@ -23,14 +23,10 @@ import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
-import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder;
-import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
-import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
-import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneInput;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.chart.scene.gantt.*;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.task.*;
 
@@ -62,6 +58,7 @@ public class GanttChartSceneBuilder {
     Date getStartDate();
     TimeDuration createLength(TimeUnit timeUnit, Date startDate, Date endDate);
     TimeDuration createLength(int duration);
+    CustomPropertyManager getCustomPropertyManager();
   }
 
   private final Canvas canvas;
@@ -94,41 +91,17 @@ public class GanttChartSceneBuilder {
     myLabelsLayer = getPrimitiveContainer().newLayer();
 
     List<String> taskProperties = List.of("", "id", "taskDates", "name", "length", "advancement", "coordinator", "resources", "predecessors");
-    final DefaultEnumerationOption<String> topLabelOption = new DefaultEnumerationOption<String>("taskLabelUp", taskProperties);
-    final DefaultEnumerationOption<String> bottomLabelOption = new DefaultEnumerationOption<String>("taskLabelDown", taskProperties);
-    final DefaultEnumerationOption<String> leftLabelOption = new DefaultEnumerationOption<String>("taskLabelLeft", taskProperties);
-    final DefaultEnumerationOption<String> rightLabelOption = new DefaultEnumerationOption<String>("taskLabelRight", taskProperties);
-    taskLabelSceneApi = new TaskLabelSceneInput() {
-      @Override
-      public EnumerationOption getTopLabelOption() {
-        return topLabelOption;
-      }
-
-      @Override
-      public EnumerationOption getBottomLabelOption() {
-        return bottomLabelOption;
-      }
-
-      @Override
-      public EnumerationOption getLeftLabelOption() {
-        return leftLabelOption;
-      }
-
-      @Override
-      public EnumerationOption getRightLabelOption() {
-        return rightLabelOption;
-      }
-
-      @Override
-      public int getFontSize() {
-        return input.getLabelsFontSize();
-      }
-
-      @Override
-      public boolean hasBaseline() {
-        return input.getBaseline() != null;
-      }
-    };
+    var topLabelOption = new TaskColumnEnumerationOption("taskLabelUp", input.getCustomPropertyManager().getDefinitions());
+    var bottomLabelOption = new TaskColumnEnumerationOption("taskLabelDown", input.getCustomPropertyManager().getDefinitions());
+    var leftLabelOption = new TaskColumnEnumerationOption("taskLabelLeft", input.getCustomPropertyManager().getDefinitions());
+    var rightLabelOption = new TaskColumnEnumerationOption("taskLabelRight", input.getCustomPropertyManager().getDefinitions());
+    input.getCustomPropertyManager().addListener(event -> {
+      List.of(topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption).forEach(option -> option.reload(input.getCustomPropertyManager().getDefinitions()));
+    });
+    taskLabelSceneApi = new TaskLabelSceneInput(
+      topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption,
+      input.getLabelsFontSize(), input.getBaseline() != null
+    );
 
     myLabelsRenderer = new TaskLabelSceneBuilder<>(new TaskLabelSceneTaskApi(), taskLabelSceneApi, myLabelsLayer);
     myChartApi = input.getChartApi(myLabelsRenderer);

@@ -125,11 +125,7 @@ class TaskTable(
     { onColumnsChange() },
     BuiltinColumns(
       isZeroWidth = {
-        val defaultColumn = TaskDefaultColumn.find(it)
-        when {
-          defaultColumn.isIconified -> true
-          else -> false
-        }
+        TaskDefaultColumn.find(it)?.isIconified ?: false
       },
       allColumns = {
         ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs()).copyOf()
@@ -156,7 +152,6 @@ class TaskTable(
   private var projectModified: () -> Unit = { project.isModified = true }
   private val dragAndDropSupport = DragAndDropSupport(selectionManager)
   init {
-    TaskDefaultColumn.setLocaleApi { key -> GanttLanguage.getInstance().getText(key) }
 
     columnList.totalWidthProperty.addListener { _, oldValue, newValue ->
       if (oldValue != newValue) {

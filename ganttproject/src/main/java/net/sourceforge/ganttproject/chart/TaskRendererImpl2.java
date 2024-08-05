@@ -29,6 +29,7 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import com.google.common.collect.ImmutableList;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.chart.gantt.*;
@@ -151,6 +152,11 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     @Override
     public TimeDuration createLength(int duration) {
       return getChartModel().getTaskManager().createLength(duration);
+    }
+
+    @Override
+    public CustomPropertyManager getCustomPropertyManager() {
+      return getChartModel().getTaskManager().getCustomPropertyManager();
     }
   }
 

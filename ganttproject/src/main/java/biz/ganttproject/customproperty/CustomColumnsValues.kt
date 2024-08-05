@@ -45,7 +45,7 @@ class CustomColumnsValues(private val customPropertyManager: CustomPropertyManag
     val c2: Class<*> = value.javaClass
     if (!c1.isAssignableFrom(c2)) {
       throw CustomColumnsException(CustomColumnsException.CLASS_MISMATCH, "Failed to set value=" + value
-          + ". value class=" + c2 + ", column class=" + c1)
+          + "of prop="+ def + ". value class=" + c2 + ", column class=" + c1)
     }
     mapCustomColumnValue[def.id] = value
     eventDispatcher(CustomPropertyValueEventStub((def)))

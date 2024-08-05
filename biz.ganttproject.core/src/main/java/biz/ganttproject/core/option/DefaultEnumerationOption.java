@@ -29,16 +29,12 @@ import com.google.common.collect.Lists;
 public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implements EnumerationOption {
   private final List<String> myValues;
   private final Map<String, T> myStringValue_ObjectValue = new LinkedHashMap<String, T>();
-
-
-  public DefaultEnumerationOption(String id, List<String> values) {
-    super(id);
-    myValues = values;
-  }
+  private final List<T> myTypedValues;
 
   public DefaultEnumerationOption(String id, T[] values) {
     super(id);
     myValues = Lists.newArrayList();
+    myTypedValues = Arrays.stream(values).toList();
     reloadValues(Arrays.asList(values));
   }
 
@@ -93,5 +89,9 @@ public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implem
     if (myStringValue_ObjectValue.containsKey(stringValue)) {
       setValue(stringValue);
     }
+  }
+
+  protected List<T> getTypedValues() {
+    return myTypedValues;
   }
 }

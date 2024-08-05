@@ -197,7 +197,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
 
   public int calculateRowHeight() {
     boolean textUP = isTextUp();
-    boolean textDOWN = isTextDown() || myInputApi.hasBaseline();
+    boolean textDOWN = isTextDown() || myInputApi.getBaseline();
 
     int result;
     if (textUP && textDOWN) {
@@ -217,7 +217,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
    */
   public int getRectMidOffset() {
     boolean textUP = isTextUp();
-    boolean textDOWN = isTextDown() || myInputApi.hasBaseline();
+    boolean textDOWN = isTextDown() || myInputApi.getBaseline();
     if (textUP ^ textDOWN) {
       // if we have text only from one side, the rect middle is different from the whole middle
       if (textUP) {

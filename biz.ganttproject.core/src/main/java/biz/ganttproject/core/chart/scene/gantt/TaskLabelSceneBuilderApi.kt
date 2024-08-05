@@ -18,33 +18,39 @@
  */
 package biz.ganttproject.core.chart.scene.gantt
 
+import biz.ganttproject.core.model.task.TaskDefaultColumn
+import biz.ganttproject.core.option.DefaultEnumerationOption
 import biz.ganttproject.core.option.EnumerationOption
+import biz.ganttproject.core.table.ColumnList.Column
+import biz.ganttproject.core.table.ColumnList.ColumnStub
+import biz.ganttproject.customproperty.CustomPropertyDefinition
 
 
-interface TaskLabelSceneInput {
-  val topLabelOption: EnumerationOption
+data class TaskLabelSceneInput(
+  val topLabelOption: EnumerationOption,
+  val bottomLabelOption: EnumerationOption,
+  val leftLabelOption: EnumerationOption,
+  val rightLabelOption: EnumerationOption,
+  val fontSize: Int,
+  val baseline: Boolean
+)
 
-  val bottomLabelOption: EnumerationOption
-
-  val leftLabelOption: EnumerationOption
-
-  val rightLabelOption: EnumerationOption
-
-  val fontSize: Int
-
-  fun hasBaseline(): Boolean
+fun buildOptionValues(customProps: List<CustomPropertyDefinition>): Array<Column> {
+  val columns: List<Column> = TaskDefaultColumn.entries.map { it.stub } + customProps.map { ColumnStub(it.id, it.name,true, -1, -1) }
+  return columns.toTypedArray()
 }
 
-class TaskLabelSceneInputImpl(override val fontSize: Int, private val _hasBaseline: Boolean) : TaskLabelSceneInput {
-  override val topLabelOption: EnumerationOption
-    get() = TODO("Not yet implemented")
-  override val bottomLabelOption: EnumerationOption
-    get() = TODO("Not yet implemented")
-  override val leftLabelOption: EnumerationOption
-    get() = TODO("Not yet implemented")
-  override val rightLabelOption: EnumerationOption
-    get() = TODO("Not yet implemented")
+class TaskColumnEnumerationOption(id: String, customProps: List<CustomPropertyDefinition>)
+  : DefaultEnumerationOption<Column>(id, buildOptionValues(customProps)) {
+  override fun objectToString(obj: Column): String {
+    return TaskDefaultColumn.entries.find { it.stub.id == obj.id }?.getName() ?: obj.name
+  }
 
-  override fun hasBaseline() = _hasBaseline
+  override fun stringToObject(value: String): Column? {
+    return typedValues.firstOrNull { it.name == value }
+  }
 
+  fun reload(customProps: List<CustomPropertyDefinition>) {
+    reloadValues(buildOptionValues(customProps).toList())
+  }
 }
