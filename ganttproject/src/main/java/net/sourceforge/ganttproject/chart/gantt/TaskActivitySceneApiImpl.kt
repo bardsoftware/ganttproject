@@ -22,7 +22,6 @@ import biz.ganttproject.core.chart.render.ShapeConstants
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.chart.scene.IdentifiableRow
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder
-import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder
 import biz.ganttproject.core.time.*
 import com.google.common.base.Strings
 import java.awt.Color
@@ -30,6 +29,9 @@ import java.util.*
 
 typealias TaskSceneTaskActivity = ITaskActivity<ITaskSceneTask>
 
+/**
+ * Interface of a task object on the chart.
+ */
 interface ITaskSceneTask : IdentifiableRow {
   val isCritical: Boolean
   val isProjectTask: Boolean
@@ -130,11 +132,5 @@ internal class TaskActivitySceneTaskApi : TaskActivitySceneBuilder.TaskApi<ITask
 
   override fun hasNotes(task: ITaskSceneTask): Boolean {
     return !Strings.isNullOrEmpty(task.notes)
-  }
-}
-
-internal class TaskLabelSceneTaskApi : TaskLabelSceneBuilder.TaskApi<ITaskSceneTask> {
-  override fun getProperty(task: ITaskSceneTask, propertyID: String?): Any? {
-    return task.getProperty(propertyID)
   }
 }

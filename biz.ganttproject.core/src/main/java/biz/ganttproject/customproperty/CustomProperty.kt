@@ -45,9 +45,9 @@ interface CalculationMethod {
 }
 
 enum class CustomPropertyClass(val iD: String, private val myDefaultValue: String?, val javaClass: Class<*>) {
-  TEXT("text", "", String::class.java),
-  INTEGER("integer", "0", Int::class.java),
-  DOUBLE("double", "0.0", Double::class.java),
+  TEXT("text", "", java.lang.String::class.java),
+  INTEGER("integer", "0", java.lang.Integer::class.java),
+  DOUBLE("double", "0.0", java.lang.Double::class.java),
   DATE("date", null, GregorianCalendar::class.java),
   BOOLEAN("boolean", "false", java.lang.Boolean::class.java);
 

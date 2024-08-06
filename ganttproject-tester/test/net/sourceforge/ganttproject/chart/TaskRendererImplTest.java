@@ -311,7 +311,7 @@ public class TaskRendererImplTest extends TaskTestCase {
 
     @Nullable
     @Override
-    public Object getProperty(@Nullable String propertyID) {
+    public String getProperty(@Nullable String propertyID) {
       return null;
     }
   }
