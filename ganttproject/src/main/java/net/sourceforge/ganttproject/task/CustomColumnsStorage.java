@@ -82,8 +82,8 @@ public class CustomColumnsStorage {
 
   public void removeCustomColumn(CustomPropertyDefinition column) {
     CustomPropertyEvent event = new CustomPropertyEvent(CustomPropertyEvent.EVENT_REMOVE, column);
-    fireCustomColumnsChange(event);
     mapIdCustomColum.remove(column.getId());
+    fireCustomColumnsChange(event);
   }
 
   public int getCustomColumnCount() {
@@ -104,7 +104,7 @@ public class CustomColumnsStorage {
   }
 
   public Map<CustomPropertyDefinition, CustomPropertyDefinition> importData(CustomColumnsStorage source) {
-    Map<CustomPropertyDefinition, CustomPropertyDefinition> result = new HashMap<CustomPropertyDefinition, CustomPropertyDefinition>();
+    Map<CustomPropertyDefinition, CustomPropertyDefinition> result = new HashMap<>();
     for (CustomColumn thatColumn : source.getCustomColums()) {
       CustomColumn thisColumn = findByName(thatColumn.getName());
       if (thisColumn == null || !thisColumn.getPropertyClass().equals(thatColumn.getPropertyClass())) {
@@ -132,9 +132,7 @@ public class CustomColumnsStorage {
   }
 
   private void fireCustomColumnsChange(CustomPropertyEvent event) {
-    Iterator<CustomPropertyListener> it = myListeners.iterator();
-    while (it.hasNext()) {
-      CustomPropertyListener listener = it.next();
+    for (CustomPropertyListener listener : myListeners) {
       listener.customPropertyChange(event);
     }
   }

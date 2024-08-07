@@ -63,7 +63,7 @@ fun buildOptionValues(customProps: List<CustomPropertyDefinition>): Array<Column
 /**
  * Wraps a list of available task labels as the option class.
  */
-class TaskColumnEnumerationOption(id: String, customProps: List<CustomPropertyDefinition>)
+class TaskColumnEnumerationOption(id: String, var customProps: List<CustomPropertyDefinition>)
   : DefaultEnumerationOption<Column>(id, buildOptionValues(customProps)) {
 
   override fun objectToString(obj: Column): String {
@@ -77,22 +77,29 @@ class TaskColumnEnumerationOption(id: String, customProps: List<CustomPropertyDe
   fun pubStringToObject(value: String): Column?  = stringToObject(value)
 
   override fun loadPersistentValue(value: String) {
-    super.loadPersistentValue(
-      when (value) {
-        ID_TASK_ADVANCEMENT -> TaskDefaultColumn.COMPLETION.stub.id
-        ID_TASK_COORDINATOR -> TaskDefaultColumn.COORDINATOR.stub.id
-        ID_TASK_ID -> TaskDefaultColumn.ID.stub.id
-        ID_TASK_LENGTH -> TaskDefaultColumn.DURATION.stub.id
-        ID_TASK_NAME -> TaskDefaultColumn.NAME.stub.id
-        ID_TASK_PREDECESSORS -> TaskDefaultColumn.PREDECESSORS.stub.id
-        ID_TASK_RESOURCES -> TaskDefaultColumn.RESOURCES.stub.id
-        else -> value
+    val validatedValue = when (value) {
+      ID_TASK_ADVANCEMENT -> TaskDefaultColumn.COMPLETION.stub.id
+      ID_TASK_COORDINATOR -> TaskDefaultColumn.COORDINATOR.stub.id
+      ID_TASK_ID -> TaskDefaultColumn.ID.stub.id
+      ID_TASK_LENGTH -> TaskDefaultColumn.DURATION.stub.id
+      ID_TASK_NAME -> TaskDefaultColumn.NAME.stub.id
+      ID_TASK_PREDECESSORS -> TaskDefaultColumn.PREDECESSORS.stub.id
+      ID_TASK_RESOURCES -> TaskDefaultColumn.RESOURCES.stub.id
+      else -> {
+        if (TaskDefaultColumn.find(value) != null || customProps.find { it.id == value } != null) {
+          value
+        } else null
       }
-    )
+    }
+    if (validatedValue != null) {
+      super.loadPersistentValue(validatedValue)
+    }
   }
 
   fun reload(customProps: List<CustomPropertyDefinition>) {
-    reloadValues(buildOptionValues(customProps).toList())
+    this.customProps = customProps
+    val newValues = buildOptionValues(customProps).toList()
+    reloadValues(newValues)
   }
 }
 
