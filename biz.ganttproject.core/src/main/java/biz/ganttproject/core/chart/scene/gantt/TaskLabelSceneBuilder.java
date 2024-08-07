@@ -27,7 +27,6 @@ import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.option.EnumerationOption;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,46 +59,14 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
 
   public static final int RIGHT = 3;
 
-  private EnumerationOption[] myLabelOptions;
+  private final EnumerationOption[] myLabelOptions;
 
-  private Canvas myCanvas;
+  private final Canvas myCanvas;
 
-  private static List<String> ourInfoList;
+  private final TaskLabelSceneInput<T> myInputApi;
 
-  private final TaskApi<T> myTaskApi;
-
-  private final InputApi myInputApi;
-
-  public interface TaskApi<T> {
-    Object getProperty(T task, String propertyID);
-  }
-
-  public interface InputApi {
-    EnumerationOption getTopLabelOption();
-    EnumerationOption getBottomLabelOption();
-    EnumerationOption getLeftLabelOption();
-    EnumerationOption getRightLabelOption();
-
-    int getFontSize();
-    boolean hasBaseline();
-  }
-
-  static {
-    ourInfoList = new ArrayList<String>();
-    ourInfoList.add("");
-    ourInfoList.add(ID_TASK_ID);
-    ourInfoList.add(ID_TASK_DATES);
-    ourInfoList.add(ID_TASK_NAME);
-    ourInfoList.add(ID_TASK_LENGTH);
-    ourInfoList.add(ID_TASK_ADVANCEMENT);
-    ourInfoList.add(ID_TASK_COORDINATOR);
-    ourInfoList.add(ID_TASK_RESOURCES);
-    ourInfoList.add(ID_TASK_PREDECESSORS);
-  }
-
-  public TaskLabelSceneBuilder(TaskApi<T> taskApi, InputApi inputApi, Canvas canvas) {
+  public TaskLabelSceneBuilder(TaskLabelSceneInput<T> inputApi, Canvas canvas) {
     myCanvas = canvas;
-    myTaskApi = taskApi;
     myInputApi = inputApi;
 
     myLabelOptions = new EnumerationOption[] { inputApi.getTopLabelOption(), inputApi.getBottomLabelOption(), inputApi.getLeftLabelOption(), inputApi.getRightLabelOption() };
@@ -126,7 +93,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
 
     text = getTaskLabel(activity.getOwner(), RIGHT);
 
-    if (text.length() != 0) {
+    if (!text.isEmpty()) {
       xText = rectangle.getRightX() + 9;
       yText = rectangle.getMiddleY();
       Text textPrimitive = processText(xText, yText, text);
@@ -138,7 +105,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), DOWN);
 
-    if (text.length() > 0) {
+    if (!text.isEmpty()) {
       int xOrigin = rectangle.getRightX();
       int yOrigin = rectangle.getBottomY() + TINY_SPACE;
       Text textPrimitive = processText(xOrigin, yOrigin, text);
@@ -149,7 +116,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
   private void createUpSideText(Polygon rectangle) {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), UP);
-    if (text.length() > 0) {
+    if (!text.isEmpty()) {
       int xOrigin = rectangle.getRightX();
       int yOrigin = rectangle.getTopY() - TINY_SPACE;
       Text textPrimitive = processText(xOrigin, yOrigin, text);
@@ -161,7 +128,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), LEFT);
 
-    if (text.length() > 0) {
+    if (!text.isEmpty()) {
       int xOrigin = rectangle.getLeftX() - 9;
       int yOrigin = rectangle.getMiddleY();
       Text textPrimitive = processText(xOrigin, yOrigin, text);
@@ -181,12 +148,8 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
 
 
   private String getTaskLabel(T task, int position) {
-    StringBuffer result = new StringBuffer();
-    Object property = myTaskApi.getProperty(task, myLabelOptions[position].getValue());
-    if (property != null) {
-      result.append(property);
-    }
-    return result.toString();
+    Object property = myInputApi.getPropertyValue().invoke(task, myLabelOptions[position].getValue());
+    return property == null ? "" : property.toString();
   }
 
   private Canvas getPrimitiveContainer() {
@@ -194,11 +157,11 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
   }
 
   public boolean isTextUp() {
-    return myLabelOptions[UP].getValue() != null && myLabelOptions[UP].getValue().length() != 0;
+    return myLabelOptions[UP].getValue() != null && !myLabelOptions[UP].getValue().isEmpty();
   }
 
   public boolean isTextDown() {
-    return myLabelOptions[DOWN].getValue() != null && myLabelOptions[DOWN].getValue().length() != 0;
+    return myLabelOptions[DOWN].getValue() != null && !myLabelOptions[DOWN].getValue().isEmpty();
   }
 
   static final int TINY_SPACE = 2;
@@ -207,7 +170,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
 
   public int calculateRowHeight() {
     boolean textUP = isTextUp();
-    boolean textDOWN = isTextDown() || myInputApi.hasBaseline();
+    boolean textDOWN = isTextDown() || myInputApi.getBaseline();
 
     int result;
     if (textUP && textDOWN) {
@@ -227,7 +190,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
    */
   public int getRectMidOffset() {
     boolean textUP = isTextUp();
-    boolean textDOWN = isTextDown() || myInputApi.hasBaseline();
+    boolean textDOWN = isTextDown() || myInputApi.getBaseline();
     if (textUP ^ textDOWN) {
       // if we have text only from one side, the rect middle is different from the whole middle
       if (textUP) {

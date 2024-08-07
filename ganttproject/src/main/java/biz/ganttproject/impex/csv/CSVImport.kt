@@ -146,7 +146,7 @@ fun readCustomProperties(
         val def = customPropertyMgr.let { mgr ->
           mgr.getCustomPropertyDefinition(fieldName)
             ?: record.getType(header.index)?.let { type ->
-              mgr.createDefinition(fieldName, type.id, fieldName, null)
+              mgr.createDefinition(fieldName, type.iD, fieldName, null)
             }
         }
         if (def == null) {

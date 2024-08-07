@@ -58,8 +58,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static biz.ganttproject.impex.msproject2.ProjectFileImporter.toJavaDate;
-
 /**
  * Creates MPXJ ProjectFile from GanttProject's IGanttProject.
  *

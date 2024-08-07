@@ -78,7 +78,11 @@ public class GPLogger {
         	return true;
         }
       }
-      ourUIFacade.showErrorDialog(e);
+      try {
+        ourUIFacade.showErrorDialog(e);
+      } catch (Throwable t) {
+        return false;
+      }
     }
     return logToLogger(e);
   }

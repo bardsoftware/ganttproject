@@ -5,7 +5,6 @@ import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
-import biz.ganttproject.customproperty.CustomPropertyDefinition
 import com.google.common.base.Joiner
 import com.google.common.base.Predicate
 import com.google.common.base.Supplier
@@ -13,6 +12,7 @@ import com.google.common.collect.Lists
 import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.GPLogger
 import biz.ganttproject.customproperty.CustomColumnsException
+import biz.ganttproject.customproperty.CustomPropertyDefinition
 import net.sourceforge.ganttproject.task.CostStub
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager

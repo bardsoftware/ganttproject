@@ -49,9 +49,9 @@ class ViewSaver extends SaverBase {
     addAttribute("id", "gantt-chart", attrs);
     startElement("view", attrs, handler);
     writeColumns(taskColumnList, handler);
+    writeTimelineTasks(facade, handler);
     new OptionSaver().saveOptionList(handler, facade.getGanttChart().getTaskLabelOptions().getOptions());
     new OptionSaver().saveOptionList(handler, facade.getGanttViewProvider().getOptions());
-    writeTimelineTasks(facade, handler);
     writeRecentColors(handler);
     endElement("view", handler);
 

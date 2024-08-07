@@ -18,22 +18,26 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.chart.gantt
 
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.chart.grid.OffsetList
 import biz.ganttproject.core.chart.render.AlphaRenderingOption
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
+import biz.ganttproject.task.DefaultTaskColumnFormatter
 import net.sourceforge.ganttproject.chart.ChartModel
 import net.sourceforge.ganttproject.chart.ChartModelImpl
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskImpl
-import net.sourceforge.ganttproject.task.TaskProperties
 import java.awt.Color
 import java.util.*
 
+/**
+ * This is an implementation of the task scene object in GanttProject Desktop.
+ */
 internal class ITaskSceneTaskImpl(private val task: Task, private val model: ChartModel) : ITaskSceneTask {
-  private val props = TaskProperties(model.timeUnitStack)
+  private val columnFormatter = DefaultTaskColumnFormatter(RootLocalizer)
 
   override fun getRowId() = task.taskID
   override val isCritical
@@ -63,8 +67,8 @@ internal class ITaskSceneTaskImpl(private val task: Task, private val model: Cha
   override val completionPercentage: Int
     get() = task.completionPercentage
 
-  override fun getProperty(propertyID: String?): Any? {
-    return props.getProperty(task, propertyID)
+  override fun getProperty(propertyID: String?): String? {
+    return if (propertyID == null) null else columnFormatter.formatTaskColumn(task, propertyID)
   }
 
   override fun hashCode() = task.hashCode()

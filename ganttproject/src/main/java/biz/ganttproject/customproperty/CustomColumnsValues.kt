@@ -45,7 +45,7 @@ class CustomColumnsValues(private val customPropertyManager: CustomPropertyManag
     val c2: Class<*> = value.javaClass
     if (!c1.isAssignableFrom(c2)) {
       throw CustomColumnsException(CustomColumnsException.CLASS_MISMATCH, "Failed to set value=" + value
-          + ". value class=" + c2 + ", column class=" + c1)
+          + "of prop="+ def + ". value class=" + c2 + ", column class=" + c1)
     }
     mapCustomColumnValue[def.id] = value
     eventDispatcher(CustomPropertyValueEventStub((def)))
@@ -105,18 +105,14 @@ class CustomColumnsValues(private val customPropertyManager: CustomPropertyManag
     return CustomPropertyImpl(definition, defStub.defaultValue!!)
   }
 
-  private class CustomPropertyImpl(private val myDefinition: CustomPropertyDefinition, private val myValue: Any) : CustomProperty {
-    override fun getDefinition(): CustomPropertyDefinition {
-      return myDefinition
-    }
+  private class CustomPropertyImpl(private val myDefinition: CustomPropertyDefinition, private val myValue: Any): CustomProperty {
+    override val definition = myDefinition
 
-    override fun getValue(): Any {
-      return myValue
-    }
+    override val value = myValue
 
-    override fun getValueAsString(): String {
-      return getValueAsString(myValue)!!
-    }
+
+    override val valueAsString = getValueAsString(value)!!
+
   }
 
   override fun equals(other: Any?): Boolean {

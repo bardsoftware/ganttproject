@@ -18,29 +18,26 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.chart.gantt;
 
+import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
-import biz.ganttproject.core.chart.scene.gantt.DependencySceneBuilder;
-import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder;
-import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder;
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.EnumerationOption;
+import biz.ganttproject.core.chart.scene.gantt.*;
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.task.*;
 
-import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Renders task rectangles, dependency lines and all task-related text strings
@@ -64,11 +61,12 @@ public class GanttChartSceneBuilder {
     Date getStartDate();
     TimeDuration createLength(TimeUnit timeUnit, Date startDate, Date endDate);
     TimeDuration createLength(int duration);
+    CustomPropertyManager getCustomPropertyManager();
   }
 
   private final Canvas canvas;
   private final InputApi input;
-  private final TaskLabelSceneBuilder.InputApi taskLabelSceneApi;
+  private final TaskLabelSceneInput<ITaskSceneTask> taskLabelSceneApi;
 
   public final TaskLabelSceneBuilder<ITaskSceneTask> myLabelsRenderer;
 
@@ -95,44 +93,38 @@ public class GanttChartSceneBuilder {
     getPrimitiveContainer().newLayer();
     myLabelsLayer = getPrimitiveContainer().newLayer();
 
-    List<String> taskProperties = Lists.newArrayList("", "id", "taskDates", "name", "length", "advancement", "coordinator", "resources", "predecessors");
-    final DefaultEnumerationOption<String> topLabelOption = new DefaultEnumerationOption<String>("taskLabelUp", taskProperties);
-    final DefaultEnumerationOption<String> bottomLabelOption = new DefaultEnumerationOption<String>("taskLabelDown", taskProperties);
-    final DefaultEnumerationOption<String> leftLabelOption = new DefaultEnumerationOption<String>("taskLabelLeft", taskProperties);
-    final DefaultEnumerationOption<String> rightLabelOption = new DefaultEnumerationOption<String>("taskLabelRight", taskProperties);
-    taskLabelSceneApi = new TaskLabelSceneBuilder.InputApi() {
-      @Override
-      public EnumerationOption getTopLabelOption() {
-        return topLabelOption;
+    var topLabelOption = new TaskColumnEnumerationOption("taskLabelUp", input.getCustomPropertyManager().getDefinitions());
+    var bottomLabelOption = new TaskColumnEnumerationOption("taskLabelDown", input.getCustomPropertyManager().getDefinitions());
+    var leftLabelOption = new TaskColumnEnumerationOption("taskLabelLeft", input.getCustomPropertyManager().getDefinitions());
+    var rightLabelOption = new TaskColumnEnumerationOption("taskLabelRight", input.getCustomPropertyManager().getDefinitions());
+    var allOptions = List.of(topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption);
+    allOptions.forEach(option -> option.setValueLocalizer(id -> {
+      var column = option.pubStringToObject(id);
+      if (column == null || column.getID().isEmpty()) {
+        return "";
       }
-
-      @Override
-      public EnumerationOption getBottomLabelOption() {
-        return bottomLabelOption;
+      var defaultColumn = TaskDefaultColumn.find(column.getID());
+      if (defaultColumn != null) {
+        return defaultColumn.getName();
       }
-
-      @Override
-      public EnumerationOption getLeftLabelOption() {
-        return leftLabelOption;
+      var customProperty = input.getCustomPropertyManager().getCustomPropertyDefinition(column.getID());
+      if (customProperty != null) {
+        return customProperty.getName();
       }
+      return InternationalizationKt.getRootLocalizer().formatText(OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey(id));
+    }));
 
-      @Override
-      public EnumerationOption getRightLabelOption() {
-        return rightLabelOption;
-      }
+    input.getCustomPropertyManager().addListener(event -> {
+      allOptions.forEach(option -> option.reload(input.getCustomPropertyManager().getDefinitions()));
+    });
 
-      @Override
-      public int getFontSize() {
-        return input.getLabelsFontSize();
-      }
+    taskLabelSceneApi = new TaskLabelSceneInput<>(
+      topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption,
+      input.getLabelsFontSize(), input.getBaseline() != null,
+      ITaskSceneTask::getProperty
+    );
 
-      @Override
-      public boolean hasBaseline() {
-        return input.getBaseline() != null;
-      }
-    };
-
-    myLabelsRenderer = new TaskLabelSceneBuilder<>(new TaskLabelSceneTaskApi(), taskLabelSceneApi, myLabelsLayer);
+    myLabelsRenderer = new TaskLabelSceneBuilder<>(taskLabelSceneApi, myLabelsLayer);
     myChartApi = input.getChartApi(myLabelsRenderer);
     this.mySplitter = new TaskActivitySplitter<ITask>(
       input::getStartDate,
@@ -165,7 +157,7 @@ public class GanttChartSceneBuilder {
     return getPrimitiveContainer();
   }
 
-  public TaskLabelSceneBuilder.InputApi getTaskLabelSceneApi() {
+  public TaskLabelSceneInput getTaskLabelSceneApi() {
     return taskLabelSceneApi;
   }
 
@@ -174,12 +166,7 @@ public class GanttChartSceneBuilder {
   }
 
   private void renderDependencies() {
-    DependencySceneBuilder.ChartApi chartApi = new DependencySceneBuilder.ChartApi() {
-      @Override
-      public int getBarHeight() {
-        return getRectangleHeight();
-      }
-    };
+    DependencySceneBuilder.ChartApi chartApi = () -> getRectangleHeight();
     var taskApi = new DependencySceneTaskApi(input.getVisibleTasks(), mySplitter);
     DependencySceneBuilder<ITask, BarChartConnectorImpl> dependencyRenderer = new DependencySceneBuilder<>(
         getPrimitiveContainer(), getPrimitiveContainer().getLayer(1), taskApi, chartApi);
@@ -207,7 +194,7 @@ public class GanttChartSceneBuilder {
   }
 
   private void renderVisibleTasks(List<ITaskSceneTask> visibleTasks, OffsetList defaultUnitOffsets) {
-    List<Polygon> boundPolygons = Lists.newArrayList();
+    List<Polygon> boundPolygons = new ArrayList<>();
     int rowNum = 0;
     for (ITaskSceneTask t : visibleTasks) {
       boundPolygons.clear();
@@ -285,17 +272,13 @@ public class GanttChartSceneBuilder {
     }
   }
 
-  private static Predicate<Polygon> REMOVE_SUPERTASK_ENDINGS = new Predicate<Polygon>() {
-    @Override
-    public boolean apply(@Nullable Polygon shape) {
-      return !shape.hasStyle("task.ending");
-    }
-  };
+  private static Predicate<Polygon> REMOVE_SUPERTASK_ENDINGS = shape -> !shape.hasStyle("task.ending");
+
   private List<Polygon> renderActivities(final int rowNum, ITaskSceneTask t, List<ITaskActivity<ITaskSceneTask>> activities,
       OffsetList defaultUnitOffsets, boolean areVisible) {
     List<Polygon> rectangles = myTaskActivityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
     if (areVisible && !myTaskApi.hasNestedTasks(t) && !t.isMilestone() && !t.isProjectTask()) {
-      renderProgressBar(Lists.newArrayList(Iterables.filter(rectangles, REMOVE_SUPERTASK_ENDINGS)));
+      renderProgressBar(rectangles.stream().filter(REMOVE_SUPERTASK_ENDINGS).toList());
     }
     if (areVisible && myTaskApi.hasNotes(t)) {
       Rectangle notes = getPrimitiveContainer().createRectangle(input.getWidth() - 24, rowNum * getRowHeight() + getRowHeight()/2 - 8, 16, 16);

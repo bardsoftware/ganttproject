@@ -18,32 +18,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.core.option;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.google.common.collect.Lists;
-
+import java.util.*;
+import java.util.function.Function;
 
 public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implements EnumerationOption {
   private final List<String> myValues;
-  private final Map<String, T> myStringValue_ObjectValue = new LinkedHashMap<String, T>();
-
-
-  public DefaultEnumerationOption(String id, List<String> values) {
-    super(id);
-    myValues = values;
-  }
+  private final Map<String, T> myStringValue_ObjectValue = new LinkedHashMap<>();
+  private Function<String, String> myValueLocalizer = null;
 
   public DefaultEnumerationOption(String id, T[] values) {
     super(id);
-    myValues = Lists.newArrayList();
+    myValues = new ArrayList<>();
     reloadValues(Arrays.asList(values));
   }
 
   protected void reloadValues(List<T> values) {
-    List<String> oldValues = Lists.newArrayList(myValues);
+    List<String> oldValues = new ArrayList<>(myValues);
     myValues.clear();
     myStringValue_ObjectValue.clear();
     for (T value : values) {
@@ -67,7 +57,7 @@ public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implem
 
   @Override
   public String[] getAvailableValues() {
-    return myValues.toArray(new String[myValues.size()]);
+    return myValues.toArray(new String[0]);
   }
 
   @Override
@@ -93,5 +83,19 @@ public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implem
     if (myStringValue_ObjectValue.containsKey(stringValue)) {
       setValue(stringValue);
     }
+  }
+
+  protected List<T> getTypedValues() {
+    return myStringValue_ObjectValue.values().stream().toList();
+  }
+
+  @Override
+  public void setValueLocalizer(Function<String, String> localizer) {
+    myValueLocalizer = localizer;
+  }
+
+  @Override
+  public Function<String, String> getValueLocalizer() {
+    return myValueLocalizer;
   }
 }

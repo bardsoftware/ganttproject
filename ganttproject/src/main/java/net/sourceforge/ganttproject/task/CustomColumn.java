@@ -18,11 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task;
 
-import biz.ganttproject.customproperty.CalculationMethod;
-import biz.ganttproject.customproperty.CustomPropertyClass;
-import biz.ganttproject.customproperty.CustomPropertyDefinition;
-import biz.ganttproject.customproperty.CustomPropertyEvent;
-import biz.ganttproject.customproperty.PropertyTypeEncoder;
+import biz.ganttproject.customproperty.*;
 import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition;
 import org.jetbrains.annotations.Nullable;
 

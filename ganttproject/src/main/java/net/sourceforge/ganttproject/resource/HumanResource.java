@@ -19,16 +19,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.resource;
 
 import biz.ganttproject.core.calendar.GanttDaysOff;
-import biz.ganttproject.customproperty.CustomProperty;
-import biz.ganttproject.customproperty.CustomPropertyDefinition;
-import biz.ganttproject.customproperty.PropertyTypeEncoder;
+import biz.ganttproject.customproperty.*;
 import com.google.common.base.Strings;
-import biz.ganttproject.customproperty.CustomPropertyHolder;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.roles.Role;
-import biz.ganttproject.customproperty.CustomColumnsException;
-import biz.ganttproject.customproperty.CustomColumnsValues;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 

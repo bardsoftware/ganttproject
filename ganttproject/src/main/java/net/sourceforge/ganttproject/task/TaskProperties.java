@@ -79,8 +79,8 @@ public class TaskProperties {
    * @return the task property specified by <code>propertyID</code>. The result
    *         may be <code>null</code>.
    */
-  public Object getProperty(Task task, String propertyID) {
-    Object res = null;
+  public String getProperty(Task task, String propertyID) {
+    String res = null;
     StringBuffer sb = new StringBuffer();
     if (propertyID != null) {
       if (propertyID.equals(ID_TASK_DATES)) {

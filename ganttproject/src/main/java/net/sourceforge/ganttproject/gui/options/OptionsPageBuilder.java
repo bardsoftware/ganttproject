@@ -631,7 +631,7 @@ public class OptionsPageBuilder {
 
   public Component createFontComponent(final FontOption option) {
     final Object CLIENT_ID = new Object();
-    final DefaultEnumerationOption<String> familiesOption = new DefaultEnumerationOption<>("", option.getFontFamilies());
+    final DefaultEnumerationOption<String> familiesOption = new DefaultEnumerationOption<>("", option.getFontFamilies().toArray(new String[0]));
     if (option.getValue() != null) {
       familiesOption.setValue(option.getValue().getFamily());
     }
@@ -639,7 +639,7 @@ public class OptionsPageBuilder {
     JComboBox comboBox = createEnumerationComponent(familiesOption, new Supplier<EnumerationOptionComboBoxModel>() {
       @Override
       public EnumerationOptionComboBoxModel get() {
-        return new EnumerationOptionComboBoxModel(familiesOption, option.getFontFamilies().toArray(new String[0]));
+        return new EnumerationOptionComboBoxModel(familiesOption, option.getFontFamilies());
       }
     });
     final JSlider slider = new JSlider(0, 4);

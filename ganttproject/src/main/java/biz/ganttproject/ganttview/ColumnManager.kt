@@ -485,6 +485,7 @@ internal class ColumnAsListItem(
       expression = customColumn?.calculationMethod?.let {
         when (it) {
           is SimpleSelect -> it.selectExpression
+          else -> null
         }
       } ?: ""
     }

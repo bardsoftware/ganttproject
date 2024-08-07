@@ -23,6 +23,7 @@ import biz.ganttproject.app.NotificationManagerImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.calendar.ImportCalendarOption;
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.time.TimeUnitStack;
@@ -218,6 +219,8 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   }
 
   protected GanttProjectBase(Stage stage) {
+    TaskDefaultColumn.setLocaleApi(key -> GanttLanguage.getInstance().getText(key));
+
     var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager);
 
     myProjectDatabase = databaseProxy;

@@ -82,6 +82,7 @@ data class XmlView(
   @get:JacksonXmlProperty(localName = "field")
   @get:JsonInclude(JsonInclude.Include.NON_NULL)
   var fields: List<XmlField>? = null,
+
   @get:JsonInclude(JsonInclude.Include.NON_NULL)
   @get:JacksonXmlCData
   var timeline: String = "",

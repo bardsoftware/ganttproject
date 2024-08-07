@@ -27,11 +27,11 @@ import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException
 import kotlin.math.min
 
-sealed class CalculationMethod(val propertyId: String, val resultClass: Class<*>)
+sealed class CalculationMethodImpl(override val propertyId: String, override val resultClass: Class<*>): CalculationMethod
 
 class SimpleSelect(propertyId: String,
                    val selectExpression: String = "id",
-                   resultClass: Class<*>) : CalculationMethod(propertyId, resultClass)
+                   resultClass: Class<*>) : CalculationMethodImpl(propertyId, resultClass)
 
 class CalculationMethodValidator(private val projectDatabase: ProjectDatabase) {
   fun validate(calculationMethod: CalculationMethod) {
