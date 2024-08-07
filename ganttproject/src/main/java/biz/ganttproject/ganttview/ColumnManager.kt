@@ -33,6 +33,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.collections.MapChangeListener
 import javafx.collections.ObservableList
+import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
@@ -120,7 +121,9 @@ class ColumnManager(
     }
 
     listView.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-      customPropertyEditor.selectedItem = newValue.clone()
+      if (newValue != null) {
+        customPropertyEditor.selectedItem = newValue.clone()
+      }
     }
     listView.selectionModel.select(0)
 
@@ -136,7 +139,11 @@ class ColumnManager(
       }
       var count = 1
       while (listView.items.any { it.title == title.value.trim() }) {
+        val prevValue = title.value
         title.update(count.toString())
+        if (prevValue == title.value) {
+          break
+        }
         count++
       }
       it.title = title.value.trim()
@@ -302,13 +309,19 @@ internal class CustomPropertyEditor(
 
   private val expressionOption = ObservableString(id ="expression", initValue = "",
     validator = {
-      if (isCalculatedOption.value && it.isNotBlank()) {
-        calculationMethodValidator.validate(
-          // Incomplete instance just for validation purposes
-          SimpleSelect("", it, typeOption.value.getCustomPropertyClass().javaClass)
-        )
-        it
-      } else throw ValidationException(localizer.formatText("expression.validation.empty"))
+      if (!isCalculatedOption.value) {
+        ""
+      } else {
+        if (it.isNotBlank()) {
+          calculationMethodValidator.validate(
+            // Incomplete instance just for validation purposes
+            SimpleSelect("", it, typeOption.value.getCustomPropertyClass().javaClass)
+          )
+          it
+        } else {
+          throw ValidationException(localizer.formatText("expression.validation.empty"))
+        }
+      }
     }
   ).also {
     it.completions = expressionAutoCompletion
@@ -365,7 +378,7 @@ internal class CustomPropertyEditor(
     propertySheet.validationErrors.addListener(MapChangeListener {
       if (propertySheet.validationErrors.isEmpty()) {
         errorUi(null)
-        listItems[listItems.indexOf(selectedItem)] = selectedItem
+        listItems.replaceAll { if (it != selectedItem?.cloneOf) it else selectedItem }
       } else {
         errorUi(propertySheet.validationErrors.values.joinToString(separator = "\n"))
       }
@@ -446,21 +459,6 @@ internal class ColumnAsListItem(
 
   var expression: String = ""
 
-
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (javaClass != other?.javaClass) return false
-
-    other as ColumnAsListItem
-
-    if (title != other.title) return false
-
-    return true
-  }
-
-  override fun hashCode(): Int {
-    return title.hashCode()
-  }
 
   override fun toString(): String {
     return "ColumnAsListItem(title='$title')"
@@ -590,21 +588,21 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
         dlg.hide()
       }
     }
-    dlg.setupButton(ButtonType.NEXT) { btn ->
+    dlg.setupButton(ButtonType(localizer.formatText("add"))) { btn ->
       btn.text = localizer.formatText("add")
       ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP)
       btn.disableProperty().bind(columnManager.btnAddController.isDisabled)
-      btn.setOnAction {
+      btn.styleClass.addAll("btn-attention", "secondary")
+      btn.addEventFilter(ActionEvent.ACTION) {
         it.consume()
         columnManager.btnAddController.onAction()
       }
-      btn.styleClass.addAll("btn-attention", "secondary")
     }
-    dlg.setupButton(ButtonType.PREVIOUS) { btn ->
+    dlg.setupButton(ButtonType(localizer.formatText("delete"))) { btn ->
       btn.text = localizer.formatText("delete")
       ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP_2)
       btn.disableProperty().bind(columnManager.btnDeleteController.isDisabled)
-      btn.setOnAction {
+      btn.addEventFilter(ActionEvent.ACTION) {
         it.consume()
         columnManager.btnDeleteController.onAction()
       }
