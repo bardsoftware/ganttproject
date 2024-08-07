@@ -18,6 +18,7 @@
  */
 package biz.ganttproject.core.chart.scene.gantt
 
+import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder.*
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.DefaultEnumerationOption
 import biz.ganttproject.core.option.EnumerationOption
@@ -27,6 +28,11 @@ import biz.ganttproject.customproperty.CustomPropertyDefinition
 
 typealias PropertyValue<T> = (task: T, id: String) -> String
 
+/**
+ * Input interface for the label scene building. Encapsulates four options that control the placement of labels on the
+ * sides of the task bar, a font size option, an option that indicates if baselines are switched on, and an accessor
+ * to the task property values by their ids.
+ */
 data class TaskLabelSceneInput<T>(
   val topLabelOption: EnumerationOption,
   val bottomLabelOption: EnumerationOption,
@@ -37,20 +43,29 @@ data class TaskLabelSceneInput<T>(
   val propertyValue: PropertyValue<T>
 )
 
+/**
+ * Builds a list of fields that can be shown around the task bars.
+ */
 fun buildOptionValues(customProps: List<CustomPropertyDefinition>): Array<Column> {
-  val columns: List<Column> = TaskDefaultColumn.entries.map { it.stub } + customProps.map { ColumnStub(it.id, it.name,true, -1, -1) }
+  val columns: List<Column> =
+    // Empty label and legacy "both task dates" label
+    listOf(
+      ColumnStub("", "", true, -1 ,-1),
+      ColumnStub(ID_TASK_DATES, ID_TASK_DATES, true, -1 ,-1),
+    ) +
+      // Default columns
+    TaskDefaultColumn.entries.filter { it.canBeShownAsLabel() }.map { it.stub } +
+      // Custom columns
+      customProps.map { ColumnStub(it.id, it.name,true, -1, -1) }
   return columns.toTypedArray()
 }
 
+/**
+ * Wraps a list of available task labels as the option class.
+ */
 class TaskColumnEnumerationOption(id: String, customProps: List<CustomPropertyDefinition>)
   : DefaultEnumerationOption<Column>(id, buildOptionValues(customProps)) {
-    init {
-      setValueLocalizer { id ->
-        stringToObject(id)?.let { obj ->
-          TaskDefaultColumn.entries.find { it.stub.id == obj.id }?.getName() ?: obj.name
-        }
-      }
-    }
+
   override fun objectToString(obj: Column): String {
     return obj.id
   }
@@ -59,15 +74,29 @@ class TaskColumnEnumerationOption(id: String, customProps: List<CustomPropertyDe
     return typedValues.firstOrNull { it.id == value }
   }
 
-  override fun loadPersistentValue(value: String?) {
-    super.loadPersistentValue(value)
-  }
+  fun pubStringToObject(value: String): Column?  = stringToObject(value)
 
-  override fun setSelectedValue(value: Column?) {
-    super.setSelectedValue(value)
+  override fun loadPersistentValue(value: String) {
+    super.loadPersistentValue(
+      when (value) {
+        ID_TASK_ADVANCEMENT -> TaskDefaultColumn.COMPLETION.stub.id
+        ID_TASK_COORDINATOR -> TaskDefaultColumn.COORDINATOR.stub.id
+        ID_TASK_ID -> TaskDefaultColumn.ID.stub.id
+        ID_TASK_LENGTH -> TaskDefaultColumn.DURATION.stub.id
+        ID_TASK_NAME -> TaskDefaultColumn.NAME.stub.id
+        ID_TASK_PREDECESSORS -> TaskDefaultColumn.PREDECESSORS.stub.id
+        ID_TASK_RESOURCES -> TaskDefaultColumn.RESOURCES.stub.id
+        else -> value
+      }
+    )
   }
 
   fun reload(customProps: List<CustomPropertyDefinition>) {
     reloadValues(buildOptionValues(customProps).toList())
   }
+}
+
+fun TaskDefaultColumn.canBeShownAsLabel() = when (this) {
+  TaskDefaultColumn.TYPE, TaskDefaultColumn.INFO, TaskDefaultColumn.COLOR, TaskDefaultColumn.NOTES, TaskDefaultColumn.ATTACHMENTS -> false
+  else -> true
 }

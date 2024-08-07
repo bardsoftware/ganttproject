@@ -52,6 +52,14 @@ class DefaultTaskColumnFormatter(private val localizer: Localizer) {
         TaskDefaultColumn.ATTACHMENTS -> null
       }
     } ?: run {
+      if (columnId == "taskDates") {
+        if (task.isMilestone) {
+          GanttLanguage.getInstance().formatShortDate(task.start)
+        } else {
+          " [ ${GanttLanguage.getInstance().formatShortDate(task.start)} - ${GanttLanguage.getInstance().formatShortDate(task.displayEnd)} ] "
+        }
+      } else null
+    } ?: run {
       task.manager.customPropertyManager.getCustomPropertyDefinition(columnId)?.let {
         def -> task.customValues.getValue(def)?.let { value ->
           if (def.propertyClass.isNumeric) getNumberFormat().format(value) else value.toString()

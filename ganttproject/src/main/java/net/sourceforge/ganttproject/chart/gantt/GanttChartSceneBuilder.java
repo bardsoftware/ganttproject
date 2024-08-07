@@ -18,16 +18,19 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.chart.gantt;
 
+import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
 import biz.ganttproject.core.chart.scene.gantt.*;
+import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.task.*;
 
 import java.awt.*;
@@ -90,12 +93,27 @@ public class GanttChartSceneBuilder {
     getPrimitiveContainer().newLayer();
     myLabelsLayer = getPrimitiveContainer().newLayer();
 
-    List<String> taskProperties = List.of("", "id", "taskDates", "name", "length", "advancement", "coordinator", "resources", "predecessors");
     var topLabelOption = new TaskColumnEnumerationOption("taskLabelUp", input.getCustomPropertyManager().getDefinitions());
     var bottomLabelOption = new TaskColumnEnumerationOption("taskLabelDown", input.getCustomPropertyManager().getDefinitions());
     var leftLabelOption = new TaskColumnEnumerationOption("taskLabelLeft", input.getCustomPropertyManager().getDefinitions());
     var rightLabelOption = new TaskColumnEnumerationOption("taskLabelRight", input.getCustomPropertyManager().getDefinitions());
     var allOptions = List.of(topLabelOption, bottomLabelOption, leftLabelOption, rightLabelOption);
+    allOptions.forEach(option -> option.setValueLocalizer(id -> {
+      var column = option.pubStringToObject(id);
+      if (column == null || column.getID().isEmpty()) {
+        return "";
+      }
+      var defaultColumn = TaskDefaultColumn.find(column.getID());
+      if (defaultColumn != null) {
+        return defaultColumn.getName();
+      }
+      var customProperty = input.getCustomPropertyManager().getCustomPropertyDefinition(column.getID());
+      if (customProperty != null) {
+        return customProperty.getName();
+      }
+      return InternationalizationKt.getRootLocalizer().formatText(OptionsPageBuilder.I18N.getCanonicalOptionValueLabelKey(id));
+    }));
+
     input.getCustomPropertyManager().addListener(event -> {
       allOptions.forEach(option -> option.reload(input.getCustomPropertyManager().getDefinitions()));
     });
@@ -148,12 +166,7 @@ public class GanttChartSceneBuilder {
   }
 
   private void renderDependencies() {
-    DependencySceneBuilder.ChartApi chartApi = new DependencySceneBuilder.ChartApi() {
-      @Override
-      public int getBarHeight() {
-        return getRectangleHeight();
-      }
-    };
+    DependencySceneBuilder.ChartApi chartApi = () -> getRectangleHeight();
     var taskApi = new DependencySceneTaskApi(input.getVisibleTasks(), mySplitter);
     DependencySceneBuilder<ITask, BarChartConnectorImpl> dependencyRenderer = new DependencySceneBuilder<>(
         getPrimitiveContainer(), getPrimitiveContainer().getLayer(1), taskApi, chartApi);

@@ -27,7 +27,6 @@ import biz.ganttproject.core.chart.scene.BarChartActivity;
 import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.option.EnumerationOption;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,30 +59,11 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
 
   public static final int RIGHT = 3;
 
-  private EnumerationOption[] myLabelOptions;
+  private final EnumerationOption[] myLabelOptions;
 
-  private Canvas myCanvas;
-
-  private static List<String> ourInfoList;
+  private final Canvas myCanvas;
 
   private final TaskLabelSceneInput<T> myInputApi;
-
-  public interface TaskApi<T> {
-    Object getProperty(T task, String propertyID);
-  }
-
-  static {
-    ourInfoList = new ArrayList<String>();
-    ourInfoList.add("");
-    ourInfoList.add(ID_TASK_ID);
-    ourInfoList.add(ID_TASK_DATES);
-    ourInfoList.add(ID_TASK_NAME);
-    ourInfoList.add(ID_TASK_LENGTH);
-    ourInfoList.add(ID_TASK_ADVANCEMENT);
-    ourInfoList.add(ID_TASK_COORDINATOR);
-    ourInfoList.add(ID_TASK_RESOURCES);
-    ourInfoList.add(ID_TASK_PREDECESSORS);
-  }
 
   public TaskLabelSceneBuilder(TaskLabelSceneInput<T> inputApi, Canvas canvas) {
     myCanvas = canvas;
@@ -113,7 +93,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
 
     text = getTaskLabel(activity.getOwner(), RIGHT);
 
-    if (text.length() != 0) {
+    if (!text.isEmpty()) {
       xText = rectangle.getRightX() + 9;
       yText = rectangle.getMiddleY();
       Text textPrimitive = processText(xText, yText, text);
@@ -148,7 +128,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
     BarChartActivity<T> activity = (BarChartActivity<T>) rectangle.getModelObject();
     String text = getTaskLabel(activity.getOwner(), LEFT);
 
-    if (text.length() > 0) {
+    if (!text.isEmpty()) {
       int xOrigin = rectangle.getLeftX() - 9;
       int yOrigin = rectangle.getMiddleY();
       Text textPrimitive = processText(xOrigin, yOrigin, text);
@@ -177,11 +157,11 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
   }
 
   public boolean isTextUp() {
-    return myLabelOptions[UP].getValue() != null && myLabelOptions[UP].getValue().length() != 0;
+    return myLabelOptions[UP].getValue() != null && !myLabelOptions[UP].getValue().isEmpty();
   }
 
   public boolean isTextDown() {
-    return myLabelOptions[DOWN].getValue() != null && myLabelOptions[DOWN].getValue().length() != 0;
+    return myLabelOptions[DOWN].getValue() != null && !myLabelOptions[DOWN].getValue().isEmpty();
   }
 
   static final int TINY_SPACE = 2;
