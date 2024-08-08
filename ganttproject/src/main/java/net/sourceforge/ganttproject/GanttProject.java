@@ -398,20 +398,20 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 //    }
   }
 
-  static private Rectangle fitBounds(GraphicsConfiguration display, Rectangle bounds) {
-    Rectangle displayBounds = display.getBounds();
-    Rectangle visibleBounds = bounds.intersection(displayBounds);
-    int fitX = visibleBounds.x;
-    if (fitX + bounds.width > displayBounds.x + displayBounds.width) {
-      fitX = Math.max(displayBounds.x, displayBounds.x + displayBounds.width - bounds.width);
-    }
-    int fitY = visibleBounds.y;
-    if (fitY + bounds.height > displayBounds.y + displayBounds.height) {
-      fitY = Math.max(displayBounds.y, displayBounds.y + displayBounds.height - bounds.height);
-    }
-    return new Rectangle(fitX, fitY, bounds.width, bounds.height);
-
-  }
+//  static private Rectangle fitBounds(GraphicsConfiguration display, Rectangle bounds) {
+//    Rectangle displayBounds = display.getBounds();
+//    Rectangle visibleBounds = bounds.intersection(displayBounds);
+//    int fitX = visibleBounds.x;
+//    if (fitX + bounds.width > displayBounds.x + displayBounds.width) {
+//      fitX = Math.max(displayBounds.x, displayBounds.x + displayBounds.width - bounds.width);
+//    }
+//    int fitY = visibleBounds.y;
+//    if (fitY + bounds.height > displayBounds.y + displayBounds.height) {
+//      fitY = Math.max(displayBounds.y, displayBounds.y + displayBounds.height - bounds.height);
+//    }
+//    return new Rectangle(fitX, fitY, bounds.width, bounds.height);
+//
+//  }
 
 
   private void initOptions() {
@@ -420,40 +420,40 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     myUIConfiguration = options.getUIConfiguration();
   }
 
-  private void addMouseListenerToAllContainer(Component[] containers) {
-    for (Component container : containers) {
-      container.addMouseListener(getStopEditingMouseListener());
-      if (container instanceof Container) {
-        addMouseListenerToAllContainer(((Container) container).getComponents());
-      }
-    }
-  }
+//  private void addMouseListenerToAllContainer(Component[] containers) {
+//    for (Component container : containers) {
+//      container.addMouseListener(getStopEditingMouseListener());
+//      if (container instanceof Container) {
+//        addMouseListenerToAllContainer(((Container) container).getComponents());
+//      }
+//    }
+//  }
 
-  /**
-   * @return A mouseListener that stop the edition in the ganttTreeTable.
-   */
-  private MouseListener getStopEditingMouseListener() {
-    if (myStopEditingMouseListener == null)
-      myStopEditingMouseListener = new MouseAdapter() {
-        // @Override
-        // public void mouseClicked(MouseEvent e) {
-        // if (e.getSource() != bNew && e.getClickCount() == 1) {
-        // tree.stopEditing();
-        // }
-        // if (e.getButton() == MouseEvent.BUTTON1
-        // && !(e.getSource() instanceof JTable)
-        // && !(e.getSource() instanceof AbstractButton)) {
-        // Task taskUnderPointer =
-        // area.getChartImplementation().findTaskUnderPointer(e.getX(),
-        // e.getY());
-        // if (taskUnderPointer == null) {
-        // getTaskSelectionManager().clear();
-        // }
-        // }
-        // }
-      };
-    return myStopEditingMouseListener;
-  }
+//  /**
+//   * @return A mouseListener that stop the edition in the ganttTreeTable.
+//   */
+//  private MouseListener getStopEditingMouseListener() {
+//    if (myStopEditingMouseListener == null)
+//      myStopEditingMouseListener = new MouseAdapter() {
+//        // @Override
+//        // public void mouseClicked(MouseEvent e) {
+//        // if (e.getSource() != bNew && e.getClickCount() == 1) {
+//        // tree.stopEditing();
+//        // }
+//        // if (e.getButton() == MouseEvent.BUTTON1
+//        // && !(e.getSource() instanceof JTable)
+//        // && !(e.getSource() instanceof AbstractButton)) {
+//        // Task taskUnderPointer =
+//        // area.getChartImplementation().findTaskUnderPointer(e.getX(),
+//        // e.getY());
+//        // if (taskUnderPointer == null) {
+//        // getTaskSelectionManager().clear();
+//        // }
+//        // }
+//        // }
+//      };
+//    return myStopEditingMouseListener;
+//  }
 
   /**
    * @return the options of ganttproject.

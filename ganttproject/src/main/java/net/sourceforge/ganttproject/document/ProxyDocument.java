@@ -221,8 +221,11 @@ public class ProxyDocument implements Document {
 
         List<GPOption<?>> optionsToRead = new ArrayList<>(myUIFacade.getGanttViewProvider().getOptions());
         optionsToRead.add(GPColorChooser.getRecentColorsOption());
-        for (var option : myUIFacade.getGanttChart().getTaskLabelOptions().getOptions()) {
-          optionsToRead.add(option);
+        var ganttChart = myUIFacade.getGanttChart();
+        if (ganttChart != null) {
+          for (var option : ganttChart.getTaskLabelOptions().getOptions()) {
+            optionsToRead.add(option);
+          }
         }
         TaskSerializerKt.loadGanttView(xmlProject,
           taskManager,

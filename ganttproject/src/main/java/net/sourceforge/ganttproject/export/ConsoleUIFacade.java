@@ -128,7 +128,7 @@ public class ConsoleUIFacade implements UIFacade {
 
   @Override
   public GanttChart getGanttChart() {
-    return myRealFacade.getGanttChart();
+    return myRealFacade == null ? null : myRealFacade.getGanttChart();
   }
 
   @Override

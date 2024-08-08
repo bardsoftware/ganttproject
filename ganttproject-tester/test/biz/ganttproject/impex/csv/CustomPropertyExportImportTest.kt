@@ -156,11 +156,11 @@ class CustomPropertyExportImportTest : TestCase() {
         customValues.addCustomProperty(def, value)
       }
       for ((id, expectedClass) in expectedTypes) {
-        assertEquals(expectedClass, customPropertyMgr.getCustomPropertyDefinition(id).propertyClass)
+        assertEquals(expectedClass, customPropertyMgr.getCustomPropertyDefinition(id)?.propertyClass)
       }
       GanttLanguage.getInstance().shortDateFormat = SimpleDateFormat("dd/MM/yy")
       for ((id, expectedValue) in expectedValues) {
-        assertEquals(expectedValue, customValues.getValue(customPropertyMgr.getCustomPropertyDefinition(id)))
+        assertEquals(expectedValue, customValues.getValue(customPropertyMgr.getCustomPropertyDefinition(id)!!))
       }
     }
   }

@@ -182,7 +182,7 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
       ("We have " + STANDARD_COLUMN_COUNT + " default properties, and custom property index starts at " + STANDARD_COLUMN_COUNT + ". I've got index #"
           + columnIndex + ". Something must be wrong here")
     }
-    val definitions: List<CustomPropertyDefinition> = customColumnsManager.getDefinitions()
+    val definitions: List<CustomPropertyDefinition> = customColumnsManager.definitions
     columnIndex -= STANDARD_COLUMN_COUNT
     return if (columnIndex < definitions.size) definitions[columnIndex] else null
   }

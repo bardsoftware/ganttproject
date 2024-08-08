@@ -73,3 +73,57 @@ enum class CustomPropertyClass(val iD: String, private val myDefaultValue: Strin
   }
 }
 
+class CustomPropertyEvent {
+  val type: Int
+  var definition: CustomPropertyDefinition
+    private set
+  var oldValue: CustomPropertyDefinition? = null
+    private set
+
+  constructor(type: Int, definition: CustomPropertyDefinition) {
+    this.type = type
+    this.definition = definition
+  }
+
+  constructor(type: Int, def: CustomPropertyDefinition, oldDef: CustomPropertyDefinition?) {
+    this.type = type
+    definition = def
+    oldValue = oldDef
+  }
+
+  companion object {
+    const val EVENT_ADD = 0
+    const val EVENT_REMOVE = 1
+    const val EVENT_REBUILD = 2
+    const val EVENT_NAME_CHANGE = 3
+    const val EVENT_TYPE_CHANGE = 4
+  }
+}
+
+sealed class CustomPropertyValueEvent(val def: CustomPropertyDefinition)
+class CustomPropertyValueEventStub(def: CustomPropertyDefinition): CustomPropertyValueEvent(def)
+
+interface CustomPropertyListener {
+  fun customPropertyChange(event: CustomPropertyEvent)
+}
+
+interface CustomPropertyManager {
+  val definitions: List<CustomPropertyDefinition>
+
+  fun createDefinition(id: String, typeAsString: String, name: String, defaultValueAsString: String?): CustomPropertyDefinition
+
+  fun createDefinition(typeAsString: String, colName: String, defValue: String?): CustomPropertyDefinition
+  fun createDefinition(propertyClass: CustomPropertyClass, colName: String, defValue: String?): CustomPropertyDefinition
+
+  fun getCustomPropertyDefinition(id: String): CustomPropertyDefinition?
+
+  fun deleteDefinition(def: CustomPropertyDefinition)
+
+  fun importData(source: CustomPropertyManager): Map<CustomPropertyDefinition, CustomPropertyDefinition>
+
+  fun addListener(listener: CustomPropertyListener)
+
+  fun reset()
+}
+
+
