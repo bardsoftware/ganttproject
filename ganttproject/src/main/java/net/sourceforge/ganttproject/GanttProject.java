@@ -63,7 +63,6 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.CustomColumnsStorage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.undo.GPUndoListener;
 import org.jetbrains.annotations.NotNull;
@@ -470,8 +469,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 //++    applyComponentOrientation(language.getComponentOrientation());
     area.repaint();
     getResourcePanel().area.repaint();
-
-    CustomColumnsStorage.changeLanguage(language);
 
 //++    applyComponentOrientation(language.getComponentOrientation());
   }
