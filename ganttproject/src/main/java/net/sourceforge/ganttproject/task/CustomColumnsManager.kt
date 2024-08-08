@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.task
 import biz.ganttproject.customproperty.*
 import biz.ganttproject.customproperty.PropertyTypeEncoder.create
 import biz.ganttproject.customproperty.PropertyTypeEncoder.decodeTypeAndDefaultValue
-import net.sourceforge.ganttproject.DefaultCustomPropertyDefinition
 import net.sourceforge.ganttproject.GPLogger
 
 /**
@@ -52,7 +51,7 @@ class CustomColumnsManager : CustomPropertyManager {
   override fun createDefinition(id: String, typeAsString: String, name: String, defaultValueAsString: String?): CustomPropertyDefinition {
     val stub = decodeTypeAndDefaultValue(typeAsString, defaultValueAsString)
     val result = CustomColumn(this, name, stub.propertyClass, stub.defaultValue)
-    result.setId(id)
+    result.id = id
     addNewCustomColumn(result)
     return result
   }
@@ -64,7 +63,7 @@ class CustomColumnsManager : CustomPropertyManager {
   override fun createDefinition(propertyClass: CustomPropertyClass, colName: String, defValue: String?): CustomPropertyDefinition {
     val stub = create(propertyClass, defValue)
     val result = CustomColumn(this, colName, stub.propertyClass, stub.defaultValue)
-    result.setId(createId())
+    result.id = createId()
     addNewCustomColumn(result)
     return result
   }
@@ -75,7 +74,7 @@ class CustomColumnsManager : CustomPropertyManager {
       var thisColumn = findByName(thatColumn.name)
       if (thisColumn == null || thisColumn.propertyClass != thatColumn.propertyClass) {
         thisColumn = CustomColumn(this, thatColumn.name, thatColumn.propertyClass, thatColumn.defaultValue)
-        thisColumn.setId(createId())
+        thisColumn.id = createId()
         thisColumn.attributes.putAll(thatColumn.attributes)
         addNewCustomColumn(thisColumn)
       }
@@ -109,14 +108,8 @@ class CustomColumnsManager : CustomPropertyManager {
     }
   }
 
-  fun fireDefinitionChanged(event: Int, def: CustomPropertyDefinition, oldDef: CustomPropertyDefinition) {
+  fun fireDefinitionChanged(event: Int, def: CustomColumn, oldDef: CustomColumn) {
     val e = CustomPropertyEvent(event, def, oldDef)
-    fireCustomColumnsChange(e)
-  }
-
-  fun fireDefinitionChanged(def: CustomPropertyDefinition, oldName: String) {
-    val oldDef: CustomPropertyDefinition = DefaultCustomPropertyDefinition(oldName, def.id, def)
-    val e = CustomPropertyEvent(CustomPropertyEvent.EVENT_NAME_CHANGE, def, oldDef)
     fireCustomColumnsChange(e)
   }
 

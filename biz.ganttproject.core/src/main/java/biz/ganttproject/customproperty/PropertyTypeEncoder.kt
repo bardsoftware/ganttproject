@@ -58,7 +58,7 @@ object PropertyTypeEncoder {
 
   fun decodeTypeAndDefaultValue(
     typeAsString: String?, valueAsString: String?
-  ): CustomPropertyDefinition {
+  ): CustomPropertyDefinitionStub {
     return when (typeAsString) {
       "text" -> create(CustomPropertyClass.TEXT, valueAsString)
       "boolean" -> create(CustomPropertyClass.BOOLEAN, valueAsString)
@@ -70,7 +70,9 @@ object PropertyTypeEncoder {
     }
   }
 
-  fun create(propertyClass: CustomPropertyClass, valueAsString: String?): CustomPropertyDefinition {
+  data class CustomPropertyDefinitionStub(val propertyClass: CustomPropertyClass, val defaultValue: Any?)
+
+  fun create(propertyClass: CustomPropertyClass, valueAsString: String?): CustomPropertyDefinitionStub {
     val defaultValue = when (propertyClass) {
       CustomPropertyClass.TEXT -> valueAsString
       CustomPropertyClass.BOOLEAN -> if (valueAsString == null) null else java.lang.Boolean.valueOf(valueAsString)
@@ -96,23 +98,6 @@ object PropertyTypeEncoder {
         }
       }
     }
-    return object : CustomPropertyDefinition {
-      override val propertyClass: CustomPropertyClass = propertyClass
-      override fun setPropertyClass(propertyClass: CustomPropertyClass) {
-        error("Don't set me")
-      }
-      override val type: Class<*> = propertyClass.javaClass
-      override val typeAsString: String = propertyClass.iD
-      override val id = ""
-      override val defaultValue = defaultValue
-      override var name: String
-        get() = ""
-        set(_) = error("Don't set me")
-      override var defaultValueAsString
-        get() = valueAsString
-        set(_) = error("Don't set me")
-      override val attributes = emptyMap<String, String>().toMutableMap()
-      override var calculationMethod: CalculationMethod? = null
-    }
+    return CustomPropertyDefinitionStub(propertyClass, defaultValue)
   }
 }

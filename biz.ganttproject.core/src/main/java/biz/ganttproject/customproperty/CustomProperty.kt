@@ -27,13 +27,12 @@ interface CustomProperty {
 }
 
 interface CustomPropertyDefinition {
-  val propertyClass: CustomPropertyClass
-  fun setPropertyClass(propertyClass: CustomPropertyClass)
+  var name: String
+  var propertyClass: CustomPropertyClass
   val type: Class<*>
   val typeAsString: String
   val id: String
   val defaultValue: Any?
-  var name: String
   var defaultValueAsString: String?
   val attributes: MutableMap<String, String>
   var calculationMethod: CalculationMethod?

@@ -236,7 +236,7 @@ public class HumanResource implements CustomPropertyHolder {
 
   @Override
   public CustomProperty addCustomProperty(CustomPropertyDefinition definition, String valueAsString) throws CustomColumnsException {
-    final CustomPropertyDefinition stubDefinition = PropertyTypeEncoder.INSTANCE.decodeTypeAndDefaultValue(
+    final PropertyTypeEncoder.CustomPropertyDefinitionStub stubDefinition = PropertyTypeEncoder.INSTANCE.decodeTypeAndDefaultValue(
         definition.getTypeAsString(), valueAsString);
     setValue(definition, stubDefinition.getDefaultValue());
     return new CustomPropertyImpl(definition, stubDefinition.getDefaultValue());
