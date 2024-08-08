@@ -43,19 +43,16 @@ interface CalculationMethod {
   val resultClass: Class<*>
 }
 
-enum class CustomPropertyClass(val iD: String, private val myDefaultValue: String?, val javaClass: Class<*>) {
-  TEXT("text", "", java.lang.String::class.java),
-  INTEGER("integer", "0", java.lang.Integer::class.java),
-  DOUBLE("double", "0.0", java.lang.Double::class.java),
-  DATE("date", null, GregorianCalendar::class.java),
-  BOOLEAN("boolean", "false", java.lang.Boolean::class.java);
+enum class CustomPropertyClass(val iD: String, val javaClass: Class<*>) {
+  TEXT("text", java.lang.String::class.java),
+  INTEGER("integer", java.lang.Integer::class.java),
+  DOUBLE("double", java.lang.Double::class.java),
+  DATE("date", GregorianCalendar::class.java),
+  BOOLEAN("boolean", java.lang.Boolean::class.java);
 
   override fun toString(): String {
     return iD
   }
-
-  val defaultValueAsString: String?
-    get() = null
 
   val isNumeric: Boolean
     get() = this == INTEGER || this == DOUBLE
@@ -109,10 +106,10 @@ interface CustomPropertyListener {
 interface CustomPropertyManager {
   val definitions: List<CustomPropertyDefinition>
 
-  fun createDefinition(id: String, typeAsString: String, name: String, defaultValueAsString: String?): CustomPropertyDefinition
+  fun createDefinition(id: String, typeAsString: String, name: String, defaultValueAsString: String? = null): CustomPropertyDefinition
 
-  fun createDefinition(typeAsString: String, colName: String, defValue: String?): CustomPropertyDefinition
-  fun createDefinition(propertyClass: CustomPropertyClass, colName: String, defValue: String?): CustomPropertyDefinition
+  fun createDefinition(typeAsString: String, colName: String, defValue: String? = null): CustomPropertyDefinition
+  fun createDefinition(propertyClass: CustomPropertyClass, colName: String, defValue: String? = null): CustomPropertyDefinition
 
   fun getCustomPropertyDefinition(id: String): CustomPropertyDefinition?
 
@@ -121,6 +118,7 @@ interface CustomPropertyManager {
   fun importData(source: CustomPropertyManager): Map<CustomPropertyDefinition, CustomPropertyDefinition>
 
   fun addListener(listener: CustomPropertyListener)
+  fun removeListener(listener: CustomPropertyListener)
 
   fun reset()
 }

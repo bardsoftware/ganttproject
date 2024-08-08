@@ -46,6 +46,10 @@ class CustomColumnsManager : CustomPropertyManager {
     listeners.add(listener)
   }
 
+  override fun removeListener(listener: CustomPropertyListener) {
+    listeners.remove(listener)
+  }
+
   override val definitions: List<CustomPropertyDefinition> get() = mapIdCustomColum.values.toList()
 
   override fun createDefinition(id: String, typeAsString: String, name: String, defaultValueAsString: String?): CustomPropertyDefinition {

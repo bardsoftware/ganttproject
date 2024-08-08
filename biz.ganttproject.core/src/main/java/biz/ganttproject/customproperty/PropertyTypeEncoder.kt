@@ -32,6 +32,7 @@ object PropertyTypeEncoder {
     try {
       DateParser.parse(date)
     } catch (ex: InvalidDateException) {
+      ex.printStackTrace()
       null
     }
   }

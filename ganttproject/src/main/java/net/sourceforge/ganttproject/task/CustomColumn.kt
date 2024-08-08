@@ -46,11 +46,9 @@ class CustomColumn internal constructor(
       if (id.isNotBlank()) {
         val oldValue = this.copyOf()
         field = value
-        defaultValueAsString = defaultValueAsString ?: value.defaultValueAsString
         manager.fireDefinitionChanged(CustomPropertyEvent.EVENT_TYPE_CHANGE, this, oldValue)
       } else {
         field = value
-        defaultValueAsString = defaultValueAsString ?: value.defaultValueAsString
       }
     }
 
@@ -58,6 +56,15 @@ class CustomColumn internal constructor(
 
   override val attributes = mutableMapOf<String, String>()
   override var calculationMethod: CalculationMethod? = null
+    set(value) {
+      if (id.isNotBlank()) {
+        val oldValue = this.copyOf()
+        field = value
+        manager.fireDefinitionChanged(CustomPropertyEvent.EVENT_TYPE_CHANGE, this, oldValue)
+      } else {
+        field = value
+      }
+    }
 
   init {
     name = colName
@@ -95,5 +102,7 @@ class CustomColumn internal constructor(
     return this.id == obj.id
   }
 
-  private fun copyOf() = CustomColumn(this.manager, this.name, this.propertyClass, this.defaultValue)
+  private fun copyOf() = CustomColumn(this.manager, this.name, this.propertyClass, this.defaultValue).also {
+    it.calculationMethod = this.calculationMethod
+  }
 }
