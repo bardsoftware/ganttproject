@@ -27,13 +27,12 @@ interface CustomProperty {
 }
 
 interface CustomPropertyDefinition {
-  val propertyClass: CustomPropertyClass
-  fun setPropertyClass(propertyClass: CustomPropertyClass)
+  var name: String
+  var propertyClass: CustomPropertyClass
   val type: Class<*>
   val typeAsString: String
   val id: String
   val defaultValue: Any?
-  var name: String
   var defaultValueAsString: String?
   val attributes: MutableMap<String, String>
   var calculationMethod: CalculationMethod?
@@ -44,19 +43,16 @@ interface CalculationMethod {
   val resultClass: Class<*>
 }
 
-enum class CustomPropertyClass(val iD: String, private val myDefaultValue: String?, val javaClass: Class<*>) {
-  TEXT("text", "", java.lang.String::class.java),
-  INTEGER("integer", "0", java.lang.Integer::class.java),
-  DOUBLE("double", "0.0", java.lang.Double::class.java),
-  DATE("date", null, GregorianCalendar::class.java),
-  BOOLEAN("boolean", "false", java.lang.Boolean::class.java);
+enum class CustomPropertyClass(val iD: String, val javaClass: Class<*>) {
+  TEXT("text", java.lang.String::class.java),
+  INTEGER("integer", java.lang.Integer::class.java),
+  DOUBLE("double", java.lang.Double::class.java),
+  DATE("date", GregorianCalendar::class.java),
+  BOOLEAN("boolean", java.lang.Boolean::class.java);
 
   override fun toString(): String {
     return iD
   }
-
-  val defaultValueAsString: String?
-    get() = null
 
   val isNumeric: Boolean
     get() = this == INTEGER || this == DOUBLE
@@ -72,4 +68,59 @@ enum class CustomPropertyClass(val iD: String, private val myDefaultValue: Strin
     }
   }
 }
+
+class CustomPropertyEvent {
+  val type: Int
+  var definition: CustomPropertyDefinition
+    private set
+  var oldValue: CustomPropertyDefinition? = null
+    private set
+
+  constructor(type: Int, definition: CustomPropertyDefinition) {
+    this.type = type
+    this.definition = definition
+  }
+
+  constructor(type: Int, def: CustomPropertyDefinition, oldDef: CustomPropertyDefinition?) {
+    this.type = type
+    definition = def
+    oldValue = oldDef
+  }
+
+  companion object {
+    const val EVENT_ADD = 0
+    const val EVENT_REMOVE = 1
+    const val EVENT_REBUILD = 2
+    const val EVENT_NAME_CHANGE = 3
+    const val EVENT_TYPE_CHANGE = 4
+  }
+}
+
+sealed class CustomPropertyValueEvent(val def: CustomPropertyDefinition)
+class CustomPropertyValueEventStub(def: CustomPropertyDefinition): CustomPropertyValueEvent(def)
+
+interface CustomPropertyListener {
+  fun customPropertyChange(event: CustomPropertyEvent)
+}
+
+interface CustomPropertyManager {
+  val definitions: List<CustomPropertyDefinition>
+
+  fun createDefinition(id: String, typeAsString: String, name: String, defaultValueAsString: String? = null): CustomPropertyDefinition
+
+  fun createDefinition(typeAsString: String, colName: String, defValue: String? = null): CustomPropertyDefinition
+  fun createDefinition(propertyClass: CustomPropertyClass, colName: String, defValue: String? = null): CustomPropertyDefinition
+
+  fun getCustomPropertyDefinition(id: String): CustomPropertyDefinition?
+
+  fun deleteDefinition(def: CustomPropertyDefinition)
+
+  fun importData(source: CustomPropertyManager): Map<CustomPropertyDefinition, CustomPropertyDefinition>
+
+  fun addListener(listener: CustomPropertyListener)
+  fun removeListener(listener: CustomPropertyListener)
+
+  fun reset()
+}
+
 

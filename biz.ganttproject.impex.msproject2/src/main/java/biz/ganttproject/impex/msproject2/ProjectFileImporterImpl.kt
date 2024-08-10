@@ -251,21 +251,24 @@ class ProjectFileImporterImpl(private val myProjectFile: ProjectFile, private va
       if (r[rf] == null || isNotCustomField(rf)) {
         continue
       }
-      var def: CustomPropertyDefinition? = myResourceCustomPropertyMapping.get(rf)
-      if (def == null) {
-        val typeAsString = convertDataType(rf)
-        var name = r.parentFile.customFields[rf].alias
-        if (name == null) {
-          name = rf.name
+      var def = myResourceCustomPropertyMapping.get(rf) ?: run {
+        convertDataType(rf)?.let { propertyClass ->
+          var name = r.parentFile.customFields[rf].alias
+          if (name == null) {
+            name = rf.name
+          }
+          myNativeProject.resourceCustomPropertyManager.createDefinition(propertyClass, name, null).also {
+            it.attributes.put(CustomPropertyMapping.MSPROJECT_TYPE, rf.name)
+            myResourceCustomPropertyMapping.put(rf, it)
+          }
         }
-        def = myNativeProject.resourceCustomPropertyManager.createDefinition(typeAsString, name, null)
-        (def.attributes as MutableMap).put(CustomPropertyMapping.MSPROJECT_TYPE, rf.name)
-        myResourceCustomPropertyMapping.put(rf, def)
       }
-      try {
-        nativeResource.setValue(def, convertDataValue(rf, r[rf]))
-      } catch (e: CustomColumnsException) {
-        throw RuntimeException(e)
+      if (def != null) {
+        try {
+          nativeResource.setValue(def, convertDataValue(rf, r[rf]))
+        } catch (e: CustomColumnsException) {
+          throw RuntimeException(e)
+        }
       }
     }
   }
@@ -431,32 +434,35 @@ class ProjectFileImporterImpl(private val myProjectFile: ProjectFile, private va
 
       val mpxjTaskField = ProjectFileImporter.convert(tf)
       val def = myTaskCustomPropertyMapping.getOrElse(mpxjTaskField) {
-        val typeAsString = convertDataType(tf)
-        var name = t.parentFile.customFields[tf].alias
-        if (name == null) {
-          name = mpxjTaskField.name
-        }
+        convertDataType(tf)?.let { propertyClass ->
+          var name = t.parentFile.customFields[tf].alias
+          if (name == null) {
+            name = mpxjTaskField.name
+          }
 
-        val def = myNativeProject.taskCustomColumnManager.createDefinition(typeAsString, name, null)
-        def.attributes[CustomPropertyMapping.MSPROJECT_TYPE] = mpxjTaskField.name
-        myTaskCustomPropertyMapping[mpxjTaskField] = def
-        def
+          val def = myNativeProject.taskCustomColumnManager.createDefinition(propertyClass, name, null)
+          def.attributes[CustomPropertyMapping.MSPROJECT_TYPE] = mpxjTaskField.name
+          myTaskCustomPropertyMapping[mpxjTaskField] = def
+          def
+        }
       }
-      try {
-        val value = convertDataValue(tf, t[tf])
-        if (value != null) {
-          if (!singleValueCustomProperties.containsKey(def.name)) {
-            singleValueCustomProperties[def.name] = value
-          } else {
-            if (value != singleValueCustomProperties[def.name]) {
-              singleValueCustomProperties[def.name] = null
+      if (def != null) {
+        try {
+          val value = convertDataValue(tf, t[tf])
+          if (value != null) {
+            if (!singleValueCustomProperties.containsKey(def.name)) {
+              singleValueCustomProperties[def.name] = value
+            } else {
+              if (value != singleValueCustomProperties[def.name]) {
+                singleValueCustomProperties[def.name] = null
+              }
             }
           }
+          nativeTask.customValues.setValue((def), value)
+        } catch (e: CustomColumnsException) {
+          // TODO Auto-generated catch block
+          e.printStackTrace()
         }
-        nativeTask.customValues.setValue((def), value)
-      } catch (e: CustomColumnsException) {
-        // TODO Auto-generated catch block
-        e.printStackTrace()
       }
     }
   }
@@ -468,17 +474,13 @@ class ProjectFileImporterImpl(private val myProjectFile: ProjectFile, private va
     return (name == null) || !CUSTOM_FIELD_NAME.matcher(name.lowercase(Locale.getDefault())).matches()
   }
 
-  private fun convertDataType(tf: FieldType): String? {
+  private fun convertDataType(tf: FieldType): CustomPropertyClass? {
     return when (tf.dataType) {
-      DataType.ACCRUE, DataType.CONSTRAINT, DataType.DURATION, DataType.PRIORITY, DataType.RELATION_LIST, DataType.RESOURCE_TYPE, DataType.STRING, DataType.TASK_TYPE, DataType.UNITS -> CustomPropertyClass.TEXT.name.lowercase(
-        Locale.getDefault()
-      )
+      DataType.ACCRUE, DataType.CONSTRAINT, DataType.DURATION, DataType.PRIORITY, DataType.RELATION_LIST, DataType.RESOURCE_TYPE, DataType.STRING, DataType.TASK_TYPE, DataType.UNITS -> CustomPropertyClass.TEXT
 
-      DataType.BOOLEAN -> CustomPropertyClass.BOOLEAN.name.lowercase(Locale.getDefault())
-      DataType.DATE -> CustomPropertyClass.DATE.name.lowercase(Locale.getDefault())
-      DataType.CURRENCY, DataType.NUMERIC, DataType.PERCENTAGE, DataType.RATE -> CustomPropertyClass.DOUBLE.name.lowercase(
-        Locale.getDefault()
-      )
+      DataType.BOOLEAN -> CustomPropertyClass.BOOLEAN
+      DataType.DATE -> CustomPropertyClass.DATE
+      DataType.CURRENCY, DataType.NUMERIC, DataType.PERCENTAGE, DataType.RATE -> CustomPropertyClass.DOUBLE
 
       else -> null
     }

@@ -240,7 +240,7 @@ internal fun CustomPropertyDefinition.importColumnItem(item: ColumnAsListItem) {
   if (item.defaultValue.trim().isNotBlank()) {
     this.defaultValueAsString = item.defaultValue
   }
-  this.setPropertyClass(item.type.getCustomPropertyClass())
+  this.propertyClass = item.type.getCustomPropertyClass()
   if (item.isCalculated) {
     this.calculationMethod = SimpleSelect(this.id, item.expression, this.propertyClass.javaClass)
   } else {

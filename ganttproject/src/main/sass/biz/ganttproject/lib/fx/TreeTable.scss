@@ -7,12 +7,15 @@
 .gp-tree-table-view {
   .gp-check-box-tree-table-cell {
     -fx-border-width: 0 0 2 0;
+
     Button {
       -fx-background-color: transparent;
     }
     &:hover {
-      -fx-background-color: derive($gp-light-gray, -15%);
-      -fx-fill: derive($gp-medium-gray, -10%);
+     // -fx-background-color: derive($gp-light-gray, -15%);
+      & .glyph-icon {
+        -fx-fill: derive($gp-medium-gray, -10%);
+      }
     }
     &.focused {
       -fx-border-color: $gp-orange;

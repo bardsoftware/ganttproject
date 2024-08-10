@@ -22,8 +22,12 @@ package net.sourceforge.ganttproject.language;
 import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.option.GPAbstractOption;
 import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.customproperty.PropertyTypeEncoder;
+import kotlin.jvm.functions.Function1;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
+import org.w3c.util.DateParser;
+import org.w3c.util.InvalidDateException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -117,6 +121,13 @@ public class GanttLanguage {
     myCharSetMap = new CharSetMap(charsets);
     setLocale(Locale.getDefault());
     PropertiesUtil.loadProperties(myExtraLocales, "/language/extra.properties");
+    PropertyTypeEncoder.INSTANCE.setDateParser(s -> {
+      try {
+        return DateParser.parse(s);
+      } catch (InvalidDateException ex) {
+        return GanttLanguage.getInstance().parseDate(s);
+      }
+    });
   }
 
   public static GanttLanguage getInstance() {

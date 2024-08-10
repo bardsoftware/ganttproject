@@ -294,29 +294,30 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
   }
 
   private fun setTaskCustomValue(task: Task, property: XmlTasks.XmlTask.XmlCustomProperty) {
-    val propDef = taskCustomColManager.getCustomPropertyDefinition(property.propId)
-    val value = property.value?.let { when (propDef.type) {
-      java.lang.String::class.java -> it
-      java.lang.Boolean::class.java -> it.toBoolean()
-      java.lang.Integer::class.java -> it.toInt()
-      java.lang.Double::class.java -> it.toDouble()
-      else -> if (GregorianCalendar::class.java.isAssignableFrom(propDef.type)) {
-        try {
-          GanttCalendar.parseXMLDate(it)
-        } catch (exception: InvalidDateException) {
-          LOGGER.error("Invalid date in custom type value: $it")
+    taskCustomColManager.getCustomPropertyDefinition(property.propId)?.let { propDef ->
+      val value = property.value?.let { when (propDef.type) {
+        java.lang.String::class.java -> it
+        java.lang.Boolean::class.java -> it.toBoolean()
+        java.lang.Integer::class.java -> it.toInt()
+        java.lang.Double::class.java -> it.toDouble()
+        else -> if (GregorianCalendar::class.java.isAssignableFrom(propDef.type)) {
+          try {
+            GanttCalendar.parseXMLDate(it)
+          } catch (exception: InvalidDateException) {
+            LOGGER.error("Invalid date in custom type value: $it")
+            null
+          }
+        } else {
+          LOGGER.error("Unknown custom value type: ${propDef.typeAsString}")
           null
         }
-      } else {
-        LOGGER.error("Unknown custom value type: ${propDef.typeAsString}")
-        null
-      }
-    } }
+      } }
 
-    try {
-      task.customValues.setValue(propDef, value)
-    } catch (exception: CustomColumnsException) {
-      LOGGER.error("Custom column mismatch for $property")
+      try {
+        task.customValues.setValue(propDef, value)
+      } catch (exception: CustomColumnsException) {
+        LOGGER.error("Custom column mismatch for $property")
+      }
     }
   }
 

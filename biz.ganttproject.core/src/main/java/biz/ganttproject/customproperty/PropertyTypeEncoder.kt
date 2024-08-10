@@ -1,34 +1,46 @@
 /*
-Copyright 2021 BarD Software s.r.o
-
-This file is part of GanttProject, an open-source project management tool.
-
-GanttProject is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
-GanttProject is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * Copyright 2024 BarD Software s.r.o., Dmitry Barashev.
+ *
+ * This file is part of GanttProject, an opensource project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package biz.ganttproject.customproperty
 
 import biz.ganttproject.core.time.CalendarFactory
-import net.sourceforge.ganttproject.language.GanttLanguage
-import net.sourceforge.ganttproject.util.StringUtils
 import org.w3c.util.DateParser
 import org.w3c.util.InvalidDateException
 import java.util.*
 
+typealias DateParserFn = (String) -> Date?
 /**
  * @author dbarashev@bardsoftware.com
  */
 object PropertyTypeEncoder {
+  private var dateParser: DateParserFn = { date ->
+    try {
+      DateParser.parse(date)
+    } catch (ex: InvalidDateException) {
+      ex.printStackTrace()
+      null
+    }
+  }
+
+  fun setDateParser(fn: DateParserFn) {
+    dateParser = fn
+  }
+
   fun encodeFieldType(fieldType: Class<*>): String? {
     var result: String? = null
     if (fieldType == java.lang.String::class.java) {
@@ -47,7 +59,7 @@ object PropertyTypeEncoder {
 
   fun decodeTypeAndDefaultValue(
     typeAsString: String?, valueAsString: String?
-  ): CustomPropertyDefinition {
+  ): CustomPropertyDefinitionStub {
     return when (typeAsString) {
       "text" -> create(CustomPropertyClass.TEXT, valueAsString)
       "boolean" -> create(CustomPropertyClass.BOOLEAN, valueAsString)
@@ -59,7 +71,9 @@ object PropertyTypeEncoder {
     }
   }
 
-  fun create(propertyClass: CustomPropertyClass, valueAsString: String?): CustomPropertyDefinition {
+  data class CustomPropertyDefinitionStub(val propertyClass: CustomPropertyClass, val defaultValue: Any?)
+
+  fun create(propertyClass: CustomPropertyClass, valueAsString: String?): CustomPropertyDefinitionStub {
     val defaultValue = when (propertyClass) {
       CustomPropertyClass.TEXT -> valueAsString
       CustomPropertyClass.BOOLEAN -> if (valueAsString == null) null else java.lang.Boolean.valueOf(valueAsString)
@@ -78,34 +92,13 @@ object PropertyTypeEncoder {
         }
       }
       CustomPropertyClass.DATE -> {
-        if (StringUtils.isEmptyOrNull(valueAsString)) {
+        if (valueAsString.isNullOrBlank()) {
           null
         } else {
-          try {
-            DateParser.parse(valueAsString)
-          } catch (e: InvalidDateException) {
-            GanttLanguage.getInstance().parseDate(valueAsString)
-          }?.let { CalendarFactory.createGanttCalendar(it) }
+          dateParser(valueAsString)?.let { CalendarFactory.createGanttCalendar(it) }
         }
       }
     }
-    return object : CustomPropertyDefinition {
-      override val propertyClass: CustomPropertyClass = propertyClass
-      override fun setPropertyClass(propertyClass: CustomPropertyClass) {
-        error("Don't set me")
-      }
-      override val type: Class<*> = propertyClass.javaClass
-      override val typeAsString: String = propertyClass.iD
-      override val id = ""
-      override val defaultValue = defaultValue
-      override var name: String
-        get() = ""
-        set(_) = error("Don't set me")
-      override var defaultValueAsString
-        get() = valueAsString
-        set(_) = error("Don't set me")
-      override val attributes = emptyMap<String, String>().toMutableMap()
-      override var calculationMethod: CalculationMethod? = null
-    }
+    return CustomPropertyDefinitionStub(propertyClass, defaultValue)
   }
 }
