@@ -330,12 +330,12 @@ class SqlProjectDatabaseImpl(
 
   override fun mapTasks(vararg columnConsumer: ColumnConsumer) {
     withDSL { dsl ->
-      var q: SelectSelectStep<out Record> = dsl.select(TASKVIEWFORCOMPUTEDCOLUMNS.ID)
+      var q: SelectSelectStep<out Record> = dsl.select(TASK.NUM)
       columnConsumer.forEach {
         q = q.select(field(it.first.selectExpression, it.first.resultClass).`as`(it.first.propertyId))
       }
-      q.from(TASKVIEWFORCOMPUTEDCOLUMNS).forEach { row  ->
-        val taskNum = row[TASKVIEWFORCOMPUTEDCOLUMNS.ID]
+      q.from(TASK).forEach { row  ->
+        val taskNum = row[TASK.NUM]
         columnConsumer.forEach {
           it.second(taskNum, row[it.first.propertyId])
         }

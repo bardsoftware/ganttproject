@@ -7,6 +7,7 @@ create table if not exists Task (
     is_milestone            boolean                 not null DEFAULT false,
     is_project_task         boolean                 not null DEFAULT false,
     start_date              date                    not null,
+    end_date                date                        null,
     duration                integer                 not null,
     completion              integer                     null,
     earliest_start_date     date                        null,
@@ -15,12 +16,13 @@ create table if not exists Task (
     cost_manual_value       numeric(1000, 2)          null,
     is_cost_calculated      boolean                     null,
     notes                   varchar                     null,
+    cost                    numeric(1000, 2)            null,
 
     primary key (uid)
 );
 
 create table if not exists TaskCustomColumn(
-    uid varchar not null references Task,
+    uid varchar not null,
     column_id varchar not null,
     column_value varchar,
     primary key (uid, column_id)
@@ -34,8 +36,8 @@ create table if not exists TaskDependency (
     hardness        varchar     not null,
 
     primary key (dependee_uid, dependant_uid),
-    foreign key (dependee_uid)  references Task(uid),
-    foreign key (dependant_uid) references Task(uid),
+--     foreign key (dependee_uid)  references Task(uid),
+--     foreign key (dependant_uid) references Task(uid),
     check (dependee_uid <> dependant_uid)
 );
 

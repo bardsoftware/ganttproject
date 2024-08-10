@@ -27,6 +27,7 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskImpl
 import org.jooq.DSLContext
 import org.jooq.Insert
+import org.jooq.impl.DSL
 import java.math.BigDecimal
 
 fun buildInsertTaskQuery(dsl: DSLContext, task: Task): Insert<TaskRecord> {
@@ -36,7 +37,7 @@ fun buildInsertTaskQuery(dsl: DSLContext, task: Task): Insert<TaskRecord> {
     costManualValue = task.cost.manualValue
     isCostCalculated = task.cost.isCalculated
   }
-  return dsl
+  var q = dsl
     .insertInto(Tables.TASK)
     .set(Tables.TASK.UID, task.uid)
     .set(Tables.TASK.NUM, task.taskID)
@@ -54,7 +55,17 @@ fun buildInsertTaskQuery(dsl: DSLContext, task: Task): Insert<TaskRecord> {
     .set(Tables.TASK.COST_MANUAL_VALUE, costManualValue)
     .set(Tables.TASK.IS_COST_CALCULATED, isCostCalculated)
     .set(Tables.TASK.NOTES, task.externalizedNotes())
+  val customProps = mutableMapOf<Any, Any>()
+  task.manager.customPropertyManager.definitions.forEach { def ->
+    if (def.calculationMethod == null) {
 
+      task.customValues.getValue(def)?.let {
+       customProps[DSL.field(""" "${def.id}" """, def.type)] = it
+      }
+    }
+  }
+  q.set(customProps)
+  return q
 }
 
 fun buildInsertTaskDto(task: Task): OperationDto.InsertOperationDto {
