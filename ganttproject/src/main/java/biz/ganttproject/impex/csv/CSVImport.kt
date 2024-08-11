@@ -123,9 +123,6 @@ internal class CsvRecordImpl(private val myRecord: CSVRecord) : SpreadsheetRecor
     return myRecord.iterator()
   }
 
-  override fun size(): Int {
-    return myRecord.size()
-  }
 }
 
 typealias CustomPropertyReceiver = (CustomPropertyDefinition, String?) -> Unit

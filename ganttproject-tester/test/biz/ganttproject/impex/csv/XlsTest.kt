@@ -24,6 +24,7 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.customproperty.CustomPropertyClass
 import junit.framework.TestCase
+import net.sourceforge.ganttproject.TestSetupHelper
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.w3c.util.DateParser
 import java.io.ByteArrayInputStream
@@ -103,6 +104,21 @@ class XlsTest : TestCase() {
         assertEquals(null, record.getInt("G"))
         assertEquals(null, record.getType("G"))
       }
+    }
+  }
+
+  fun `test_issue_2519`() {
+    val builder = TestSetupHelper.newTaskManagerBuilder()
+    val taskManager = builder.build()
+    val resourceManager = builder.resourceManager
+
+    val importer = GanttCSVOpen(
+      { XlsTest::class.java.getResourceAsStream("/issue2519.xls") }, SpreadsheetFormat.XLS,
+      TaskRecords(taskManager, resourceManager, builder.timeUnitStack)
+    )
+    importer.load()
+    taskManager.tasks.forEach { task ->
+      assertTrue(task.notes.isNotBlank())
     }
   }
 }

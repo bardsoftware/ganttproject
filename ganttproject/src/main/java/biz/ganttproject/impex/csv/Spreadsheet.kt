@@ -62,8 +62,7 @@ interface SpreadsheetRecord {
   fun isEmpty(): Boolean
   fun isMapped(name: String): Boolean
   fun isSet(name: String): Boolean
-  operator fun iterator(): Iterator<String?>
-  fun size(): Int
+  fun iterator(): Iterator<String?>
 
   fun notBlankValues(): List<String> =
     iterator().asSequence().filterNotNull().filter { it.isNotBlank() }.toList()
