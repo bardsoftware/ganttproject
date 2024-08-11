@@ -23,6 +23,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.DateUtil
+import org.apache.poi.ss.usermodel.Row
 import java.lang.IllegalArgumentException
 import java.math.BigDecimal
 import java.util.*
@@ -37,46 +38,43 @@ import java.util.*
  * 2017: initially written in Java by Roman Torkhov
  */
 internal class XlsRecordImpl(
+  private val row: Row,
     private val myValues: List<Cell>,
     private val myMapping: Map<String, Int> = mapOf()) : SpreadsheetRecord {
 
   override fun getType(name: String) = if (isMapped(name)) getType(idx(name)) else null
 
-  override fun getType(idx: Int) = if (idx >= 0 && idx < myValues.size) {
-    myValues[idx]?.let {
-      when (it.cellType) {
-        CellType.STRING -> CustomPropertyClass.TEXT
-        CellType.NUMERIC -> {
-          if (DateUtil.isCellDateFormatted(it)) CustomPropertyClass.DATE
-          else CustomPropertyClass.DOUBLE
-        }
-        CellType.BOOLEAN -> CustomPropertyClass.BOOLEAN
-        else -> null
+  override fun getType(idx: Int) = withCell(idx) {
+    when (it.cellType) {
+      CellType.STRING -> CustomPropertyClass.TEXT
+      CellType.NUMERIC -> {
+        if (DateUtil.isCellDateFormatted(it)) CustomPropertyClass.DATE
+        else CustomPropertyClass.DOUBLE
       }
+      CellType.BOOLEAN -> CustomPropertyClass.BOOLEAN
+      else -> null
     }
-  } else null
+  }
 
   override fun get(name: String): String? =
     if (isMapped(name)) {
       get(idx(name))
     } else null
 
-  override fun get(idx: Int): String? =
-    if (idx >= 0 && idx < myValues.size) {
-      myValues[idx]?.let { cell ->
-        when (cell.cellType) {
-          CellType.STRING -> cell.stringCellValue
-          CellType.NUMERIC -> {
-            if (cell.cellStyle.dataFormat == cell.sheet.workbook.creationHelper.createDataFormat().getFormat("m/d/yy")) cell.dateCellValue.let {
-              GanttLanguage.getInstance().shortDateFormat.format(it)
-            }
-            else cell.numericCellValue.toString()
-          }
-          CellType.BOOLEAN -> cell.booleanCellValue.toString()
-          else -> null
+  override fun get(idx: Int): String? = withCell(idx) { cell -> getString(cell) }
+
+  fun getString(cell: Cell) =
+    when (cell.cellType) {
+      CellType.STRING -> cell.stringCellValue
+      CellType.NUMERIC -> {
+        if (cell.cellStyle.dataFormat == cell.sheet.workbook.creationHelper.createDataFormat().getFormat("m/d/yy")) cell.dateCellValue.let {
+          GanttLanguage.getInstance().shortDateFormat.format(it)
         }
+        else cell.numericCellValue.toString()
       }
-    } else null
+      CellType.BOOLEAN -> cell.booleanCellValue.toString()
+      else -> null
+    }
 
   private fun idx(name: String) =
     myMapping[name] ?: throw IllegalArgumentException(
@@ -88,77 +86,69 @@ internal class XlsRecordImpl(
       getDouble(idx(name))
     } else null
 
-  override fun getDouble(idx: Int): Double? = if (idx >= 0 && idx < myValues.size) {
-    myValues[idx]?.let {
-      when (it.cellType) {
-        CellType.STRING -> it.stringCellValue.toDoubleOrNull()
-        CellType.NUMERIC -> it.numericCellValue
-        else -> null
-      }
+  override fun getDouble(idx: Int): Double? = withCell(idx) {
+    when (it.cellType) {
+      CellType.STRING -> it.stringCellValue.toDoubleOrNull()
+      CellType.NUMERIC -> it.numericCellValue
+      else -> null
     }
-  } else null
+  }
 
   override fun getDate(name: String): Date? =
     if (isMapped(name)) {
       getDate(idx(name))
     } else null
 
-  override fun getDate(idx: Int): Date? = if (idx >= 0 && idx < myValues.size) {
-    myValues[idx]?.let {
-      when (it.cellType) {
-        CellType.STRING -> GanttCSVOpen.language.parseDate(it.stringCellValue)
-        CellType.NUMERIC -> it.dateCellValue
-        else -> null
-      }
+  override fun getDate(idx: Int): Date? = withCell(idx) {
+    when (it.cellType) {
+      CellType.STRING -> if (it.stringCellValue.isNotBlank()) GanttCSVOpen.language.parseDate(it.stringCellValue) else null
+      CellType.NUMERIC -> it.dateCellValue
+      else -> null
     }
-  } else null
+  }
 
   override fun getInt(name: String): Int? =
     if (isMapped(name)) {
       getInt(idx(name))
     } else null
 
-  override fun getInt(idx: Int): Int? = if (idx >= 0 && idx < myValues.size) {
-    myValues[idx]?.let {
+  override fun getInt(idx: Int): Int? = withCell(idx) {
+    row.getCell(idx)?.let {
       when (it.cellType) {
         CellType.STRING -> it.stringCellValue.toIntOrNull()
         CellType.NUMERIC -> it.numericCellValue.toInt()
         else -> null
       }
     }
-  } else null
+  }
 
   override fun getBigDecimal(name: String): BigDecimal? =
     if (isMapped(name)) {
       getBigDecimal(idx(name))
     } else null
 
-  override fun getBigDecimal(idx: Int): BigDecimal? = if (idx >= 0 && idx < myValues.size) {
-    myValues[idx]?.let {
-      when (it.cellType) {
-        CellType.STRING -> it.stringCellValue.toBigDecimalOrNull()
-        CellType.NUMERIC -> it.numericCellValue.toBigDecimal()
-        else -> null
-      }
+  override fun getBigDecimal(idx: Int): BigDecimal? = withCell(idx) {
+    when (it.cellType) {
+      CellType.STRING -> it.stringCellValue.toBigDecimalOrNull()
+      CellType.NUMERIC -> it.numericCellValue.toBigDecimal()
+      else -> null
     }
-  } else null
+  }
 
   override fun getBoolean(name: String): Boolean? =
     if (isMapped(name)) {
       getBoolean(idx(name))
     } else null
 
-  override fun getBoolean(idx: Int): Boolean? = if (idx >= 0 && idx < myValues.size) {
-    myValues[idx]?.let {
-      when (it.cellType) {
-        CellType.STRING -> it.stringCellValue.toBoolean()
-        CellType.BOOLEAN -> it.booleanCellValue
-        else -> null
-      }
+  override fun getBoolean(idx: Int): Boolean? = withCell(idx) {
+    when (it.cellType) {
+      CellType.STRING -> it.stringCellValue.toBoolean()
+      CellType.BOOLEAN -> it.booleanCellValue
+      else -> null
     }
-  } else null
+  }
 
-  override fun isEmpty(): Boolean = myValues.all {
+  override fun isEmpty(): Boolean = row.cellIterator().iterator().asSequence().all {
     it.cellType == CellType.BLANK || it.cellType == CellType.STRING && it.stringCellValue.isBlank()
   }
 
@@ -168,15 +158,19 @@ internal class XlsRecordImpl(
   }
 
   override fun isSet(name: String): Boolean {
-    return isMapped(name) && myMapping[name]!! >= 0 && myMapping[name]!! < myValues.size
+    return myMapping[name]?.let { idx ->
+      row.getCell(idx, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL) != null
+    } ?: false
   }
 
-  override fun iterator(): Iterator<String?> {
-    return myValues.map { it.stringCellValue }.iterator()
-  }
+  override fun iterator(): Iterator<String?> =
+    row.cellIterator().asSequence().mapNotNull { getString(it) }.iterator()
 
-  override fun size(): Int {
-    return myValues.size
-  }
+
+  private fun <T> withCell(idx: Int, code: (Cell)->T): T? =
+    if (myValues.isNotEmpty() && idx >= 0 && idx < row.lastCellNum.toInt()) {
+      row.getCell(idx, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)?.let(code)
+    } else null
+
 }
 

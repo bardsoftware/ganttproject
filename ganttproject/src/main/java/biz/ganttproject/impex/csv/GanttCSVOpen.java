@@ -21,7 +21,6 @@ package biz.ganttproject.impex.csv;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.customproperty.CustomPropertyClass;
 import com.google.common.base.Function;
-import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import biz.ganttproject.customproperty.CustomPropertyManager;
@@ -43,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -118,9 +118,9 @@ public class GanttCSVOpen {
   }
 
   private static boolean isEmpty(SpreadsheetRecord record) {
-    if (record.size() == 0) {
-      return true;
-    }
+//    if (record.size() == 0) {
+//      return true;
+//    }
     return record.isEmpty();
   }
 
@@ -167,10 +167,14 @@ public class GanttCSVOpen {
           }
         }
       }
-      if (currentGroup.doProcess(record)) {
-        searchHeader = false;
-      } else {
-        mySkippedLine++;
+      try {
+        if (currentGroup.doProcess(record)) {
+          searchHeader = false;
+        } else {
+          mySkippedLine++;
+        }
+      } catch (Exception ex) {
+        logger.log(Level.SEVERE, String.format("Can't process row=%s", record), ex);
       }
     }
     return 0;

@@ -50,7 +50,6 @@ internal class ResourceRecords(
     if (!hasMandatoryFields(record)) {
       return false
     }
-    assert(record.size() > 0)
     var role = getOrNull(record, ResourceDefaultColumn.ROLE.toString())
     if (role != null && myRoleManager.getRole(role) == null) {
       val newRole = myRoleManager.projectRoleSet.createRole(role)
