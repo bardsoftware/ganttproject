@@ -18,10 +18,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.core.calendar;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.google.common.collect.Lists;
+import biz.ganttproject.core.calendar.walker.DayTypeScan;
 
 import biz.ganttproject.core.time.DateFrameable;
 import biz.ganttproject.core.time.TimeDuration;
@@ -32,7 +33,7 @@ import biz.ganttproject.core.time.TimeUnit;
  * @author bard
  */
 abstract class GPCalendarBase implements GPCalendarCalc {
-  private final List<GPCalendarListener> myListeners = Lists.newArrayList();
+  private final List<GPCalendarListener> myListeners = new ArrayList<>();
   private String myName;
   private String myId;
   
@@ -98,32 +99,8 @@ abstract class GPCalendarBase implements GPCalendarCalc {
   }
   
   protected Date doFindClosest(Date time, DateFrameable framer, MoveDirection direction, DayType dayType, Date limit) {
-    Date nextUnitStart = direction == GPCalendarCalc.MoveDirection.FORWARD ? framer.adjustRight(time)
-        : framer.jumpLeft(time);
-    int nextUnitMask = getDayMask(nextUnitStart);
-    switch (dayType) {
-    case WORKING:
-      if ((nextUnitMask & DayMask.WORKING) == DayMask.WORKING) {
-        return nextUnitStart;
-      }
-      break;
-    case WEEKEND:
-    case HOLIDAY:
-    case NON_WORKING:
-      if ((nextUnitMask & DayMask.WORKING) == 0) {
-        return nextUnitStart;
-      }
-      break;
-    default:
-      assert false : "Should not be here";
-    }
-    if (limit != null) {
-      if (direction == MoveDirection.FORWARD && nextUnitStart.compareTo(limit) >= 0
-          || direction == MoveDirection.BACKWARD && nextUnitStart.compareTo(limit) <= 0) {
-        return null;
-      }
-    }
-    return doFindClosest(nextUnitStart, framer, direction, dayType, limit);
+    var scanner = new DayTypeScan(this, time, dayType, framer, limit, direction);
+    return scanner.scan();
   }
 
   
