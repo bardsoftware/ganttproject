@@ -206,18 +206,21 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
   val fullHeaderHeight: Double get() = headerHeight.value + tableHeaderRow.boundsInParent.minX
 
   internal fun updateScrollValue() {
-    updateItemCount()
-    var totalCellHeight = 0.0
-    for (idx in 0 until virtualFlow.cellCount) {
-      totalCellHeight += virtualFlow.getCell(idx).height
-    }
-    val result = (totalCellHeight - virtualFlow.height) * virtualFlow.position
-    scrollValue.value = result
+    //updateItemCount()
+//    var totalCellHeight = 0.0
+//    for (idx in 0 until virtualFlow.cellCount) {
+//      totalCellHeight += virtualFlow.getCell(idx).height
+//    }
+//    val result = (totalCellHeight - virtualFlow.height) * virtualFlow.position
+//    scrollValue.value = result
+    scrollValue.value = (virtualFlow.estimatedSize - virtualFlow.height)*virtualFlow.position
+    //scrollValue.value = virtualFlow.absoluteOffset
   }
 
   init {
     this.virtualFlow.positionProperty().addListener { _, _, _ ->
-      FXUtil.runLater { updateScrollValue() }
+      //FXUtil.runLater { updateScrollValue() }
+      updateScrollValue()
     }
 
     table.addEventFilter(KeyEvent.KEY_PRESSED) {event ->
