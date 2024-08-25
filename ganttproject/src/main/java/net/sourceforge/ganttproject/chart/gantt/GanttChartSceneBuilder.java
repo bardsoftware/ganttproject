@@ -199,7 +199,7 @@ public class GanttChartSceneBuilder {
     for (ITaskSceneTask t : visibleTasks) {
       boundPolygons.clear();
       List<ITaskActivity<ITaskSceneTask>> activities = t.getActivities();
-      activities = mySplitter.split(activities);
+      activities = mySplitter.split(activities, Integer.MAX_VALUE);
       List<Polygon> rectangles = renderActivities(rowNum, t, activities, defaultUnitOffsets, true);
       for (Polygon p : rectangles) {
         if (p.getModelObject() != null) {

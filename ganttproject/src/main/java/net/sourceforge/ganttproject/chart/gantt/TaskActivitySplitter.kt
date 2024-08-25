@@ -31,35 +31,33 @@ internal class TaskActivitySplitter<T : IdentifiableRow>(
     private val frameStartDate: () -> Date,
     private val frameEndDate: () -> Date,
     private val durationCalculator: (TimeUnit, Date, Date) -> TimeDuration) : ITaskActivitySplitter<T> {
-  override fun split(activities: List<ITaskActivity<T>>): List<ITaskActivity<T>> {
-    Preconditions.checkArgument(
-      frameEndDate().compareTo(frameStartDate()) >= 0,
-      String.format("Invalid frame: start=%s end=%s", frameStartDate(), frameEndDate())
-    )
-    val result: MutableList<ITaskActivity<T>> = mutableListOf()
+  override fun split(activities: List<ITaskActivity<T>>, limit: Int): List<ITaskActivity<T>> {
+    val frameStartDate = frameStartDate()
+    val frameEndDate = frameEndDate()
+
+    assert(frameEndDate >= frameStartDate) {
+      "Invalid frame: start=$frameStartDate end=$frameEndDate"
+    }
+    val result = mutableListOf<ITaskActivity<T>>()
     val queue: Deque<ITaskActivity<T>> = LinkedList(activities)
-    while (!queue.isEmpty()) {
+    while (!queue.isEmpty() && result.size < limit) {
       val head = queue.pollFirst()
-      if (head.start.compareTo(frameStartDate()) < 0
-        && head.end.compareTo(frameStartDate()) > 0
-      ) {
+      if (head.start < frameStartDate && head.end > frameStartDate) {
 
         // Okay, this activity crosses frame start. Lets add its left part to the result
         // and push back its right part
-        val beforeViewport = TaskActivityPart(head, head.start, frameStartDate(),
-          durationCalculator(head.duration.timeUnit, head.start, frameStartDate()))
-        val remaining = TaskActivityPart(head, frameStartDate(), head.end, durationCalculator(head.duration.timeUnit, frameStartDate(), head.end))
+        val beforeViewport = TaskActivityPart(head, head.start, frameStartDate,
+          durationCalculator(head.duration.timeUnit, head.start, frameStartDate))
+        val remaining = TaskActivityPart(head, frameStartDate, head.end, durationCalculator(head.duration.timeUnit, frameStartDate, head.end))
         result.add(beforeViewport)
         queue.addFirst(remaining)
         continue
       }
-      if (head.start.compareTo(frameEndDate()) < 0
-        && head.end.compareTo(frameEndDate()) > 0
-      ) {
+      if (head.start < frameEndDate && head.end > frameEndDate) {
         // This activity crosses frame end date. Again, lets add its left part to the result
         // and push back the remainder.
-        val insideViewport = TaskActivityPart(head, head.start, frameEndDate(), durationCalculator(head.duration.timeUnit, head.start, frameEndDate()))
-        val remaining = TaskActivityPart(head, frameEndDate(), head.end, durationCalculator(head.duration.timeUnit, frameEndDate(), head.end))
+        val insideViewport = TaskActivityPart(head, head.start, frameEndDate, durationCalculator(head.duration.timeUnit, head.start, frameEndDate))
+        val remaining = TaskActivityPart(head, frameEndDate, head.end, durationCalculator(head.duration.timeUnit, frameEndDate, head.end))
         result.add(insideViewport)
         queue.addFirst(remaining)
         continue

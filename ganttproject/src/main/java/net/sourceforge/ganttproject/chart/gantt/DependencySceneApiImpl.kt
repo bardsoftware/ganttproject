@@ -87,17 +87,18 @@ internal class BarChartConnectorImpl(
 
   override fun getEnd(): BarChartActivity<ITask> {
     val endActivity = dependency.end
-    val splitActivities = splitter.split(listOf(endActivity))
-    assert(splitActivities.size > 0) {
-      String.format(
-        "It is expected that split activities length is >= 1 for dep=%s",
-        dependency.toString()
-      )
-    }
     val type = dependency.constraintType
     return if (type == ConstraintType.finishfinish || type == ConstraintType.finishstart) {
+      val splitActivities = splitter.split(listOf(endActivity), 1)
+      assert(splitActivities.size > 0) {
+        "It is expected that split activities length is >= 1 for dep=$dependency"
+      }
       splitActivities[0]
     } else {
+      val splitActivities = splitter.split(listOf(endActivity))
+      assert(splitActivities.size > 0) {
+        "It is expected that split activities length is >= 1 for dep=$dependency"
+      }
       splitActivities[splitActivities.size - 1]
     }
   }
@@ -122,7 +123,7 @@ internal class BarChartConnectorImpl(
 }
 
 internal interface ITaskActivitySplitter<T : IdentifiableRow> {
-  fun split(activities: List<ITaskActivity<T>>): List<ITaskActivity<T>>
+  fun split(activities: List<ITaskActivity<T>>, limit: Int = Int.MAX_VALUE): List<ITaskActivity<T>>
 }
 
 internal class DependencySceneTaskApi(

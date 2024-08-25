@@ -23,7 +23,9 @@ import biz.ganttproject.core.calendar.GPCalendar.DayMask
 import biz.ganttproject.core.calendar.GPCalendar.DayType
 import biz.ganttproject.core.calendar.GPCalendarCalc.MoveDirection
 import biz.ganttproject.core.time.DateFrameable
+import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.math.abs
 
 /**
  * This class scans the calendar days until it finds a day with the specified day type.
@@ -70,8 +72,10 @@ class DayTypeScan(
         }
       }
       currentDate = nextStepStart
-//      if (ChronoUnit.DAYS.between(currentDate.toInstant(), startDate.toInstant()) > 1000) {
+//      if (abs(ChronoUnit.DAYS.between(currentDate.toInstant(), startDate.toInstant())) > 1000) {
 //        throw RuntimeException("OVERFLOW!!!")
+//      } else {
+//
 //      }
     }
   }

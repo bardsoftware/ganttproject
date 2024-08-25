@@ -204,7 +204,7 @@ public class TaskRendererImpl2 extends ChartRendererBase {
         chartModel::getEndDate,
         (u, s, e) -> chartModel.getTaskManager().createLength(u, s, e)
     );
-    List<ITaskActivity<ITaskSceneTask>> splitOnBounds = splitter.split(originalActivities);
+    List<ITaskActivity<ITaskSceneTask>> splitOnBounds = splitter.split(originalActivities, Integer.MAX_VALUE);
     for (ITaskActivity<ITaskSceneTask> activity : splitOnBounds) {
       assert activity != null : "Got null activity in task="+t;
       Canvas.Shape graphicPrimitive = chartModel.getGraphicPrimitive(activity);
