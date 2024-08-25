@@ -263,6 +263,10 @@ public class VirtualFlow<T extends IndexedCell> extends Region {
    */
   double absoluteOffset = 0d;
 
+  public double getEstimatedSize() {
+    return estimatedSize;
+  }
+
   /**
    * An estimation of the total size (height for vertical, width for horizontal).
    * A value of -1 means that this value is unusable and should not be trusted.
@@ -270,6 +274,7 @@ public class VirtualFlow<T extends IndexedCell> extends Region {
    * invocation is guaranteed to invalidate the current estimation.
    */
   double estimatedSize = -1d;
+
 
   /**
    * A list containing the cached version of the calculated size (height for
