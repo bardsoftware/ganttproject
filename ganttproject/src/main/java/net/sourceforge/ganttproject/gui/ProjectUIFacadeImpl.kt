@@ -38,6 +38,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.OkAction
@@ -67,10 +68,12 @@ import javax.swing.SwingUtilities
 
 @ExperimentalCoroutinesApi
 class ProjectUIFacadeImpl(
-    private val window: Window,
-    private val myWorkbenchFacade: UIFacade,
-    private val documentManager: DocumentManager,
-    private val undoManager: GPUndoManager) : ProjectUIFacade {
+  private val window: Window,
+  private val myWorkbenchFacade: UIFacade,
+  private val documentManager: DocumentManager,
+  private val undoManager: GPUndoManager,
+  private val projectImpl: GanttProjectImpl
+) : ProjectUIFacade {
   private val i18n = GanttLanguage.getInstance()
 
   private val myConverterGroup = GPOptionGroup("convert", ProjectOpenStrategy.milestonesOption)
@@ -325,14 +328,15 @@ class ProjectUIFacadeImpl(
       if (result) {
         beforeClose()
         project.close()
-        showNewProjectWizard(project)
+        NewProjectWizard().createNewProject(project, myWorkbenchFacade).await {
+          val newDocument = documentManager.newUntitledDocument()
+          project.document = newDocument
+          projectImpl.fireProjectCreated()
+          // A new project just got created, so it is not yet modified
+          projectImpl.isModified = false
+        }
       }
     }
-  }
-
-  private fun showNewProjectWizard(project: IGanttProject) {
-    val wizard = NewProjectWizard()
-    wizard.createNewProject(project, myWorkbenchFacade)
   }
 
   override fun getOptionGroups(): Array<GPOptionGroup> {

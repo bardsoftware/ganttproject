@@ -18,21 +18,30 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.gui.projectwizard;
 
+import biz.ganttproject.app.Barrier;
+import biz.ganttproject.app.SimpleBarrier;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.PrjInfos;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.roles.RoleSet;
 
 public class NewProjectWizard {
 
-  public PrjInfos createNewProject(IGanttProject project, UIFacade uiFacade) {
+  public Barrier<Unit> createNewProject(IGanttProject project, UIFacade uiFacade) {
+    final SimpleBarrier<Unit> result = new SimpleBarrier<>();
     RoleSet[] roleSets = project.getRoleManager().getRoleSets();
-    NewProjectWizardWindow newProjectWizard = new NewProjectWizardWindow(project, uiFacade, new I18N());
+    NewProjectWizardWindow newProjectWizard = new NewProjectWizardWindow(project, uiFacade, new I18N()) {
+      @Override
+      protected void onOkPressed() {
+        super.onOkPressed();
+        result.resolve(null);
+      }
+    };
     newProjectWizard.addProjectNamePage(project);
     newProjectWizard.addRoleSetPage(roleSets);
     newProjectWizard.addWeekendConfigurationPage(project);
     newProjectWizard.show();
-    return new PrjInfos();
+    return result;
   }
 
 }
