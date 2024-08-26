@@ -374,6 +374,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
       for (int i = 1; i <= 7; i++) {
         setWeekDayType(i, calendar.getWeekDayType(i));
       }
+      setOnlyShowWeekends(((GPCalendarCalc)calendar).getOnlyShowWeekends());
       return;
     }
     if (ImportCalendarOption.Values.MERGE.equals(importOption.getSelectedValue())) {
@@ -386,5 +387,6 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
         setWeekDayType(i, DayType.WEEKEND);
       }
     }
+    setOnlyShowWeekends(((GPCalendarCalc)calendar).getOnlyShowWeekends());
   }
 }

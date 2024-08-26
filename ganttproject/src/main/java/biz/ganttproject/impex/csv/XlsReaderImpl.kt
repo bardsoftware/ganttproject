@@ -59,12 +59,12 @@ class XlsReaderImpl(`is`: InputStream, columnHeaders: List<String>?) : Spreadshe
       if (lastIdx != -1) {
         if (row.rowNum - lastIdx > 1) {
           repeat(row.rowNum - lastIdx - 1) {
-            result.add(XlsRecordImpl(emptyList()))
+            result.add(XlsRecordImpl(row, emptyList()))
           }
         }
       }
-      result.add(myHeaders?.let { XlsRecordImpl(Lists.newArrayList(row), it) }
-        ?: XlsRecordImpl(Lists.newArrayList(row)))
+      result.add(myHeaders?.let { XlsRecordImpl(row, Lists.newArrayList(row), it) }
+        ?: XlsRecordImpl(row, Lists.newArrayList(row)))
       lastIdx = row.rowNum
 
     }

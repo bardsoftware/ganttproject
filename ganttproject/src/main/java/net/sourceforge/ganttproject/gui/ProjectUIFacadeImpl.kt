@@ -38,6 +38,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.OkAction
@@ -46,7 +47,7 @@ import net.sourceforge.ganttproject.document.Document.DocumentException
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
-import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
+import net.sourceforge.ganttproject.gui.projectwizard.createNewProject
 import net.sourceforge.ganttproject.importer.BufferProject
 import net.sourceforge.ganttproject.importer.asImportBufferProjectApi
 import net.sourceforge.ganttproject.importer.importBufferProject
@@ -67,10 +68,12 @@ import javax.swing.SwingUtilities
 
 @ExperimentalCoroutinesApi
 class ProjectUIFacadeImpl(
-    private val window: Window,
-    private val myWorkbenchFacade: UIFacade,
-    private val documentManager: DocumentManager,
-    private val undoManager: GPUndoManager) : ProjectUIFacade {
+  private val window: Window,
+  private val myWorkbenchFacade: UIFacade,
+  private val documentManager: DocumentManager,
+  private val undoManager: GPUndoManager,
+  private val projectImpl: GanttProjectImpl
+) : ProjectUIFacade {
   private val i18n = GanttLanguage.getInstance()
 
   private val myConverterGroup = GPOptionGroup("convert", ProjectOpenStrategy.milestonesOption)
@@ -325,14 +328,21 @@ class ProjectUIFacadeImpl(
       if (result) {
         beforeClose()
         project.close()
-        showNewProjectWizard(project)
+        createNewProject(project, myWorkbenchFacade).await { projectData ->
+          project.document = documentManager.newUntitledDocument()
+
+          project.projectName = projectData.name
+          project.description = projectData.description
+          project.organization = projectData.organization
+          project.webLink = projectData.webLink
+
+          project.activeCalendar.importCalendar(projectData.calendar, ImportCalendarOption(ImportCalendarOption.Values.REPLACE))
+          projectImpl.fireProjectCreated()
+          // A new project just got created, so it is not yet modified
+          projectImpl.isModified = false
+        }
       }
     }
-  }
-
-  private fun showNewProjectWizard(project: IGanttProject) {
-    val wizard = NewProjectWizard()
-    wizard.createNewProject(project, myWorkbenchFacade)
   }
 
   override fun getOptionGroups(): Array<GPOptionGroup> {

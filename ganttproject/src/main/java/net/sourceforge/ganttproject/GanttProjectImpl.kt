@@ -58,12 +58,13 @@ fun interface ErrorUi {
   fun show(ex: Exception)
 }
 
-open class GanttProjectImpl(taskManager: TaskManagerImpl? = null,
-                            override val projectDatabase: ProjectDatabase = LazyProjectDatabaseProxy(
-                              {error("Not supposed to be called")},
-                              {error("Not supposed to be called")},
-                            ))
-  : IGanttProject {
+open class GanttProjectImpl(
+  taskManager: TaskManagerImpl? = null,
+  override val projectDatabase: ProjectDatabase = LazyProjectDatabaseProxy(
+    {error("Not supposed to be called")},
+    {error("Not supposed to be called")},
+  )) : IGanttProject {
+
   val listeners: MutableList<ProjectEventListener> = mutableListOf()
   override val baselines: MutableList<GanttPreviousState> = ArrayList()
 
@@ -130,12 +131,10 @@ open class GanttProjectImpl(taskManager: TaskManagerImpl? = null,
     }
   }
 
-  protected open fun fireProjectCreated() {
+  open fun fireProjectCreated() {
     for (modifiedStateChangeListener in listeners) {
       modifiedStateChangeListener.projectCreated()
     }
-    // A new project just got created, so it is not yet modified
-    SwingUtilities.invokeLater { isModified = false }
   }
 
   protected open fun fireProjectClosed() {

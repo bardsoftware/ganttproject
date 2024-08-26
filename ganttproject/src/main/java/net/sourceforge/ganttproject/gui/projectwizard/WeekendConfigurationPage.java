@@ -250,6 +250,7 @@ public class WeekendConfigurationPage implements WizardPage {
       myCalendarOption.commit();
       myRenderWeekendOption.commit();
       myRealCalendar.setPublicHolidays(myCalendarEditorPanel.getEvents());
+      myRealCalendar.setOnlyShowWeekends(myRenderWeekendOption.getSelectedValue() == SchedulingEnum.SCHEDULE_ALL);
     }
   }
 

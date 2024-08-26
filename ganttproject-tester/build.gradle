@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '2.0.10'
+    ext.kotlin_version = '2.0.20'
     repositories {
         mavenCentral()
     }
@@ -19,7 +19,7 @@ dependencies {
     testImplementation project(':biz.ganttproject.core')
     testImplementation project(':ganttproject')
     testImplementation project(':biz.ganttproject.impex.msproject2')
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.0'
     testImplementation 'org.jooq:jooq:3.19.10'
     testImplementation "com.h2database:h2:2.3.+"
     testImplementation "org.easymock:easymock:5.4.0"
@@ -27,8 +27,8 @@ dependencies {
     testImplementation fileTree(dir: project.projectDir.absolutePath + "/resources")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.3'
-    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.10.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.0'
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.11.0'
 }
 
 sourceSets {

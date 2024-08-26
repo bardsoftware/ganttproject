@@ -278,7 +278,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     };
 //    myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
     myViewManager = new ViewManagerImpl(getProject(), myUIFacade, getUndoManager(), viewPane, PluginManager.getViewProviders());
-    myProjectUIFacade = new ProjectUIFacadeImpl(stage, myUIFacade, myDocumentManager, myUndoManager);
+    myProjectUIFacade = new ProjectUIFacadeImpl(stage, myUIFacade, myDocumentManager, myUndoManager, myProjectImpl);
     myRssChecker = new RssFeedChecker(myUIFacade);
     myUIFacade.addOptions(myRssChecker.getUiOptions());
     updateTitle();
