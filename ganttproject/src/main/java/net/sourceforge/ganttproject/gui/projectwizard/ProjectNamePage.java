@@ -50,4 +50,21 @@ public class ProjectNamePage implements WizardPage {
       myProjectSettingsPanel.applyChanges(false);
     }
   }
+
+  String getProjectName() {
+    return myProjectSettingsPanel.getProjectName();
+  }
+
+  String getProjectDescription() {
+    return myProjectSettingsPanel.getProjectDescription();
+  }
+
+  String getProjectOrganization() {
+    return myProjectSettingsPanel.getProjectOrganization();
+  }
+
+  String getWebLink() {
+    return myProjectSettingsPanel.getWebLink();
+  }
 }
+

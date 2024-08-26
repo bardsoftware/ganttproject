@@ -47,7 +47,7 @@ import net.sourceforge.ganttproject.document.Document.DocumentException
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
-import net.sourceforge.ganttproject.gui.projectwizard.NewProjectWizard
+import net.sourceforge.ganttproject.gui.projectwizard.createNewProject
 import net.sourceforge.ganttproject.importer.BufferProject
 import net.sourceforge.ganttproject.importer.asImportBufferProjectApi
 import net.sourceforge.ganttproject.importer.importBufferProject
@@ -328,9 +328,15 @@ class ProjectUIFacadeImpl(
       if (result) {
         beforeClose()
         project.close()
-        NewProjectWizard().createNewProject(project, myWorkbenchFacade).await {
-          val newDocument = documentManager.newUntitledDocument()
-          project.document = newDocument
+        createNewProject(project, myWorkbenchFacade).await { projectData ->
+          project.document = documentManager.newUntitledDocument()
+
+          project.projectName = projectData.name
+          project.description = projectData.description
+          project.organization = projectData.organization
+          project.webLink = projectData.webLink
+
+          project.activeCalendar.importCalendar(projectData.calendar, ImportCalendarOption(ImportCalendarOption.Values.REPLACE))
           projectImpl.fireProjectCreated()
           // A new project just got created, so it is not yet modified
           projectImpl.isModified = false
