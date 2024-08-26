@@ -139,7 +139,7 @@ public class TaskRendererImplTest extends TaskTestCase {
       // Split on frame with frame start = task start
       List<ITaskActivity<ITaskSceneTask>> activities = getSplitter(
         TestSetupHelper.newFriday().getTime(), TestSetupHelper.newMonday().getTime()
-      ).split(taskActivities);
+      ).split(taskActivities, Integer.MAX_VALUE);
       assertEquals(2, activities.size());
       assertTrue(activities.get(0).isFirst());
       assertEquals(TestSetupHelper.newFriday().getTime(), activities.get(0).getStart());
@@ -153,7 +153,7 @@ public class TaskRendererImplTest extends TaskTestCase {
       // Task crosses both frame borders
       List<ITaskActivity<ITaskSceneTask>> activities = getSplitter(
         TestSetupHelper.newSaturday().getTime(), TestSetupHelper.newTuesday().getTime()
-      ).split(taskActivities);
+      ).split(taskActivities, Integer.MAX_VALUE);
       assertEquals(3, activities.size());
       assertTrue(activities.get(0).isFirst());
       assertEquals(TestSetupHelper.newFriday().getTime(), activities.get(0).getStart());
@@ -172,7 +172,7 @@ public class TaskRendererImplTest extends TaskTestCase {
       // Split on frame with frame end = task end
       List<ITaskActivity<ITaskSceneTask>> activities = getSplitter(
         TestSetupHelper.newMonday().getTime(), TestSetupHelper.newWendesday().getTime()
-      ).split(taskActivities);
+      ).split(taskActivities, Integer.MAX_VALUE);
       assertEquals(2, activities.size());
       assertTrue(activities.get(0).isFirst());
       assertEquals(TestSetupHelper.newFriday().getTime(), activities.get(0).getStart());

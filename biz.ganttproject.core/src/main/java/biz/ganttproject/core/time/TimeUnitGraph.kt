@@ -16,97 +16,82 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package biz.ganttproject.core.time;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+package biz.ganttproject.core.time
 
 /**
  * Created by IntelliJ IDEA.
- * 
+ *
  * @author bard Date: 01.02.2004
  */
-public class TimeUnitGraph {
-  private Map<TimeUnit, List<Composition>> myUnit2compositions = new HashMap<TimeUnit, List<Composition>>();
+class TimeUnitGraph {
+  private val myUnit2compositions: MutableMap<TimeUnit?, List<Composition>> = HashMap()
 
-  public TimeUnit createAtomTimeUnit(String name) {
-    TimeUnit result = new TimeUnitImpl(name, this, null);
-    List<Composition> compositions = new ArrayList<Composition>();
-    compositions.add(new Composition(result, 1));
-    myUnit2compositions.put(result, compositions);
-    return result;
+  fun createAtomTimeUnit(name: String): TimeUnit {
+    val result: TimeUnit = TimeUnitImpl(name, this, null)
+    val compositions: MutableList<Composition> = ArrayList()
+    compositions.add(Composition(result, 1))
+    myUnit2compositions[result] = compositions
+    return result
   }
 
-  TimeUnit createTimeUnit(String name, TimeUnit atomUnit, int count) {
-    TimeUnit result = new TimeUnitImpl(name, this, atomUnit);
-    registerTimeUnit(result, count);
-    return result;
+  fun createDateFrameableTimeUnit(
+    name: String,
+    atomUnit: TimeUnit,
+    atomCount: Int,
+    framer: DateFrameable,
+    durationCalculator: DurationCalculator? = null
+  ): TimeUnit {
+    val result: TimeUnit = TimeUnitDateFrameableImpl(name, this, atomUnit, framer, durationCalculator)
+    registerTimeUnit(result, atomCount)
+    return result
   }
 
-  public TimeUnit createDateFrameableTimeUnit(String name, TimeUnit atomUnit, int atomCount, DateFrameable framer) {
-    TimeUnit result = new TimeUnitDateFrameableImpl(name, this, atomUnit, framer);
-    registerTimeUnit(result, atomCount);
-    return result;
+  fun createTimeUnitFunctionOfDate(name: String, atomUnit: TimeUnit, framer: DateFrameable): TimeUnitFunctionOfDate {
+    val result: TimeUnitFunctionOfDate = TimeUnitFunctionOfDateImpl(name, this, atomUnit, framer)
+    registerTimeUnit(result, -1)
+    return result
   }
 
-  public TimeUnitFunctionOfDate createTimeUnitFunctionOfDate(String name, TimeUnit atomUnit, DateFrameable framer) {
-    TimeUnitFunctionOfDate result;
-    result = new TimeUnitFunctionOfDateImpl(name, this, atomUnit, framer);
-    registerTimeUnit(result, -1);
-    return result;
-  }
-
-  private void registerTimeUnit(TimeUnit unit, int atomCount) {
-    TimeUnit atomUnit = unit.getDirectAtomUnit();
-    List<Composition> transitiveCompositions = myUnit2compositions.get(atomUnit);
-    if (transitiveCompositions == null) {
-      throw new RuntimeException("Atom unit=" + atomUnit + " is unknown");
+  private fun registerTimeUnit(unit: TimeUnit, atomCount: Int) {
+    val atomUnit = unit.directAtomUnit
+    val transitiveCompositions = myUnit2compositions[atomUnit]
+      ?: throw RuntimeException("Atom unit=$atomUnit is unknown")
+    val compositions: MutableList<Composition> = ArrayList(transitiveCompositions.size + 1)
+    compositions.add(Composition(unit, 1))
+    for (i in transitiveCompositions.indices) {
+      val nextTransitive = transitiveCompositions[i]
+      compositions.add(Composition(nextTransitive, atomCount))
     }
-    List<Composition> compositions = new ArrayList<Composition>(transitiveCompositions.size() + 1);
-    compositions.add(new Composition(unit, 1));
-    for (int i = 0; i < transitiveCompositions.size(); i++) {
-      Composition nextTransitive = transitiveCompositions.get(i);
-      compositions.add(new Composition(nextTransitive, atomCount));
-    }
-    myUnit2compositions.put(unit, compositions);
+    myUnit2compositions[unit] = compositions
   }
 
-  public Composition getComposition(TimeUnitImpl timeUnit, TimeUnit atomUnit) {
-    Composition result = null;
-    List<Composition> compositions = myUnit2compositions.get(timeUnit);
-    if (compositions == null) {
-      throw new RuntimeException("Unit=" + timeUnit + " has no compositions");
-    }
-    for (int i = 0; i < compositions.size(); i++) {
-      Composition next = compositions.get(i);
-      if (next.myAtom.equals(atomUnit)) {
-        result = next;
-        break;
+  fun getComposition(timeUnit: TimeUnitImpl, atomUnit: TimeUnit): Composition? {
+    var result: Composition? = null
+    val compositions = myUnit2compositions[timeUnit]
+      ?: throw RuntimeException("Unit=$timeUnit has no compositions")
+    for (i in compositions.indices) {
+      val next = compositions[i]
+      if (next.myAtom == atomUnit) {
+        result = next
+        break
       }
     }
-    return result;
+    return result
   }
 
-  class Composition {
-    final TimeUnit myAtom;
+  inner class Composition {
+    val myAtom: TimeUnit
 
-    final int myAtomCount;
+    val atomCount: Int
 
-    Composition(TimeUnit atomUnit, int atomCount) {
-      myAtom = atomUnit;
-      myAtomCount = atomCount;
+    constructor(atomUnit: TimeUnit, atomCount: Int) {
+      myAtom = atomUnit
+      this.atomCount = atomCount
     }
 
-    Composition(Composition transitiveComposition, int atomCount) {
-      myAtomCount = atomCount * transitiveComposition.myAtomCount;
-      myAtom = transitiveComposition.myAtom;
-    }
-
-    int getAtomCount() {
-      return myAtomCount;
+    constructor(transitiveComposition: Composition, atomCount: Int) {
+      this.atomCount = atomCount * transitiveComposition.atomCount
+      myAtom = transitiveComposition.myAtom
     }
   }
-
 }

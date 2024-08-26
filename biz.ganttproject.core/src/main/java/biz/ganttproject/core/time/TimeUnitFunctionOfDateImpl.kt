@@ -16,105 +16,93 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package biz.ganttproject.core.time;
+package biz.ganttproject.core.time
 
-import java.util.Date;
+import java.util.*
 
 /**
  * @author bard
  */
-public class TimeUnitFunctionOfDateImpl extends TimeUnitDateFrameableImpl implements TimeUnitFunctionOfDate {
-  private final DateFrameable myDirectFrameable;
+class TimeUnitFunctionOfDateImpl(
+  name: String,
+  graph: TimeUnitGraph,
+  directAtomUnit: TimeUnit,
+  framer: DateFrameable
+) :
+  TimeUnitDateFrameableImpl(name, graph, directAtomUnit, framer), TimeUnitFunctionOfDate {
+  private val myDirectFrameable: DateFrameable = directAtomUnit
 
-  public TimeUnitFunctionOfDateImpl(String name, TimeUnitGraph graph, TimeUnit directAtomUnit, DateFrameable framer) {
-    super(name, graph, directAtomUnit, framer);
-    myDirectFrameable = directAtomUnit;
-  }
-
-  @Override
-  public TimeUnit createTimeUnit(Date date) {
+  override fun createTimeUnit(date: Date): TimeUnit {
     // TODO Only works if myBaseDate is not a TimeUnitFunctiongOfDateImpl!
     // (Quarter -> Month -> Day fails!)
-    return new ParameterizedTimeUnitImpl(date);
+    return ParameterizedTimeUnitImpl(date)
   }
 
-  @Override
-  public int getAtomCount(TimeUnit atomUnit) {
-    throw new UnsupportedOperationException(
-        "This time unit is function of date. Use method createTimeUnit() to create a parameterized instance.");
+  override fun getAtomCount(atomUnit: TimeUnit): Int {
+    throw UnsupportedOperationException(
+      "This time unit is function of date. Use method createTimeUnit() to create a parameterized instance."
+    )
   }
 
-  private class ParameterizedTimeUnitImpl implements TimeUnit {
-    private final Date myRightDate;
+  private inner class ParameterizedTimeUnitImpl(myBaseDate: Date) : TimeUnit {
+    private val myRightDate: Date = this@TimeUnitFunctionOfDateImpl.adjustRight(myBaseDate)
 
-    private final Date myLeftDate;
+    private val myLeftDate: Date = this@TimeUnitFunctionOfDateImpl.adjustLeft(myBaseDate)
 
-    private int myAtomCount = -1;
+    private var myAtomCount = -1
 
-    public ParameterizedTimeUnitImpl(Date myBaseDate) {
-      this.myRightDate = TimeUnitFunctionOfDateImpl.this.adjustRight(myBaseDate);
-      this.myLeftDate = TimeUnitFunctionOfDateImpl.this.adjustLeft(myBaseDate);
+    override val name = this@TimeUnitFunctionOfDateImpl.name
+
+    override fun isConstructedFrom(unit: TimeUnit): Boolean {
+      return this@TimeUnitFunctionOfDateImpl.isConstructedFrom(unit)
     }
 
-    @Override
-    public String getName() {
-      return TimeUnitFunctionOfDateImpl.this.getName();
-    }
-
-    @Override
-    public boolean isConstructedFrom(TimeUnit unit) {
-      return TimeUnitFunctionOfDateImpl.this.isConstructedFrom(unit);
-    }
-
-    @Override
-    public int getAtomCount(TimeUnit atomUnit) {
-      if (atomUnit == TimeUnitFunctionOfDateImpl.this || atomUnit == this) {
-        return 1;
+    override fun getAtomCount(atomUnit: TimeUnit): Int {
+      if (atomUnit === this@TimeUnitFunctionOfDateImpl || atomUnit === this) {
+        return 1
       }
-      int directAtomCount = getDirectAtomCount();
-      return directAtomCount * getDirectAtomUnit().getAtomCount(atomUnit);
+      val directAtomCount: Int = this.directAtomCount
+      return directAtomCount * directAtomUnit!!.getAtomCount(atomUnit)
     }
 
-    private int getDirectAtomCount() {
-      if (myAtomCount == -1) {
-        myAtomCount = 0;
-        for (Date leftDate = TimeUnitFunctionOfDateImpl.this.myDirectFrameable.jumpLeft(myRightDate); leftDate.compareTo(myLeftDate) >= 0; myAtomCount++) {
-
-          leftDate = TimeUnitFunctionOfDateImpl.this.myDirectFrameable.jumpLeft(leftDate);
+    val directAtomCount: Int
+      get() {
+        if (myAtomCount == -1) {
+          myAtomCount = 0
+          var leftDate =
+            myDirectFrameable.jumpLeft(myRightDate)
+          while (leftDate.compareTo(myLeftDate) >= 0) {
+            leftDate = myDirectFrameable.jumpLeft(leftDate)
+            myAtomCount++
+          }
         }
+        return myAtomCount
       }
-      return myAtomCount;
+
+    override val directAtomUnit = this@TimeUnitFunctionOfDateImpl.directAtomUnit!!
+
+    override fun adjustRight(baseDate: Date): Date {
+      return this@TimeUnitFunctionOfDateImpl.adjustRight(baseDate)
     }
 
-    @Override
-    public TimeUnit getDirectAtomUnit() {
-      return TimeUnitFunctionOfDateImpl.this.getDirectAtomUnit();
+    override fun adjustLeft(baseDate: Date): Date {
+      return this@TimeUnitFunctionOfDateImpl.adjustLeft(baseDate)
     }
 
-    @Override
-    public Date adjustRight(Date baseDate) {
-      return TimeUnitFunctionOfDateImpl.this.adjustRight(baseDate);
+    override fun jumpLeft(baseDate: Date): Date {
+      return this@TimeUnitFunctionOfDateImpl.jumpLeft(baseDate)
     }
 
-    @Override
-    public Date adjustLeft(Date baseDate) {
-      return TimeUnitFunctionOfDateImpl.this.adjustLeft(baseDate);
+    override fun duration(startDate: Date, endDate: Date): TimeDuration {
+      return this@TimeUnitFunctionOfDateImpl.duration(startDate, endDate)
     }
 
-    @Override
-    public Date jumpLeft(Date baseDate) {
-      return TimeUnitFunctionOfDateImpl.this.jumpLeft(baseDate);
+    override fun equals(o: Any?): Boolean {
+      return this@TimeUnitFunctionOfDateImpl == o
     }
 
-    @Override
-    public boolean equals(Object o) {
-      return TimeUnitFunctionOfDateImpl.this.equals(o);
+    override fun hashCode(): Int {
+      return super.hashCode()
     }
-
-    @Override
-    public int hashCode() {
-      return super.hashCode();
-    }
-
   }
 }

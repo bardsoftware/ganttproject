@@ -16,85 +16,74 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package biz.ganttproject.core.time;
+package biz.ganttproject.core.time
 
-import java.util.Date;
-
-import biz.ganttproject.core.time.TimeUnitGraph.Composition;
-
+import java.util.*
 
 /**
  * @author bard Date: 01.02.2004
  */
-public class TimeUnitImpl implements TimeUnit {
-  private final String myName;
-
-  private final TimeUnitGraph myGraph;
-
-  private final TimeUnit myDirectAtomUnit;
-
-  public TimeUnitImpl(String name, TimeUnitGraph graph, TimeUnit directAtomUnit) {
-    myName = name;
-    myGraph = graph;
-    myDirectAtomUnit = directAtomUnit;
+open class TimeUnitImpl(
+  override val name: String,
+  private val myGraph: TimeUnitGraph,
+  override val directAtomUnit: TimeUnit?,
+  private val durationCalculator: DurationCalculator? = null
+) :
+  TimeUnit {
+  override fun isConstructedFrom(atomUnit: TimeUnit): Boolean {
+    return myGraph.getComposition(this, atomUnit) != null
   }
 
-  @Override
-  public String getName() {
-    return myName;
+  override fun getAtomCount(atomUnit: TimeUnit): Int {
+    val composition = myGraph.getComposition(this, atomUnit)
+      ?: throw RuntimeException("Failed to find a composition of time unit=$this from time unit=$atomUnit")
+    return composition.atomCount
   }
 
-  @Override
-  public boolean isConstructedFrom(TimeUnit atomUnit) {
-    return myGraph.getComposition(this, atomUnit) != null;
+  override fun toString(): String {
+    return name + " hash=" + hashCode()
   }
 
-  @Override
-  public int getAtomCount(TimeUnit atomUnit) {
-    Composition composition = myGraph.getComposition(this, atomUnit);
-    if (composition == null) {
-      throw new RuntimeException("Failed to find a composition of time unit=" + this + " from time unit=" + atomUnit);
+  override fun adjustRight(baseDate: Date): Date {
+    throw UnsupportedOperationException("Time unit=$this doesnt support this operation")
+  }
+
+  override fun adjustLeft(baseDate: Date): Date {
+    throw UnsupportedOperationException("Time unit=$this doesnt support this operation")
+  }
+
+  override fun jumpLeft(baseDate: Date): Date {
+    throw UnsupportedOperationException("Time unit=$this doesnt support this operation")
+  }
+
+  override fun duration(startDate: Date, endDate: Date): TimeDuration =
+    durationCalculator?.let { it(this, startDate, endDate) } ?: run {
+      var startDate = startDate
+      var endDate = endDate
+      var sign = 1
+      if (endDate.before(startDate)) {
+        sign = -1
+        val temp = endDate
+        endDate = startDate
+        startDate = temp
+      }
+      var unitCount = 0
+      while (startDate.before(endDate)) {
+        startDate = adjustRight(startDate)
+        unitCount++
+      }
+      TimeDurationImpl(this, (unitCount * sign).toLong())
     }
-    return composition.getAtomCount();
-  }
 
-  @Override
-  public TimeUnit getDirectAtomUnit() {
-    return myDirectAtomUnit;
-  }
 
-  @Override
-  public String toString() {
-    return getName() + " hash=" + hashCode();
-  }
-
-  @Override
-  public Date adjustRight(Date baseDate) {
-    throw new UnsupportedOperationException("Time unit=" + this + " doesnt support this operation");
-  }
-
-  @Override
-  public Date adjustLeft(Date baseDate) {
-    throw new UnsupportedOperationException("Time unit=" + this + " doesnt support this operation");
-  }
-
-  @Override
-  public Date jumpLeft(Date baseDate) {
-    throw new UnsupportedOperationException("Time unit=" + this + " doesnt support this operation");
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (false == obj instanceof TimeUnitImpl) {
-      return false;
+  override fun equals(obj: Any?): Boolean {
+    if (false == obj is TimeUnitImpl) {
+      return false
     }
-    TimeUnitImpl that = (TimeUnitImpl) obj;
-    return this.myName.equals(that.myName);
+    return this.name == obj.name
   }
 
-  @Override
-  public int hashCode() {
-    return myName.hashCode();
+  override fun hashCode(): Int {
+    return name.hashCode()
   }
-
 }

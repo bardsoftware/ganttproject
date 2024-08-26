@@ -59,10 +59,10 @@ public class GregorianTimeUnitStack implements TimeUnitStack {
   private static final HashMap<TimeUnit, Integer> ourUnit2field = new HashMap<TimeUnit, Integer>();
   static {
     SECOND = ourGraph.createAtomTimeUnit("second");
-    MINUTE = ourGraph.createDateFrameableTimeUnit("minute", SECOND, 60, MINUTE_FRAMER);
-    HOUR = ourGraph.createDateFrameableTimeUnit("hour", MINUTE, 60, HOUR_FRAMER);
+    MINUTE = ourGraph.createDateFrameableTimeUnit("minute", SECOND, 60, MINUTE_FRAMER, null);
+    HOUR = ourGraph.createDateFrameableTimeUnit("hour", MINUTE, 60, HOUR_FRAMER, null);
 
-    DAY = ourGraph.createDateFrameableTimeUnit("day", HOUR, 24, DAY_FRAMER);
+    DAY = ourGraph.createDateFrameableTimeUnit("day", HOUR, 24, DAY_FRAMER, null);
     MONTH = ourGraph.createTimeUnitFunctionOfDate("month", DAY, MONTH_FRAMER);
     ourUnit2field.put(DAY, Calendar.DAY_OF_MONTH);
     ourUnit2field.put(HOUR, Calendar.HOUR_OF_DAY);

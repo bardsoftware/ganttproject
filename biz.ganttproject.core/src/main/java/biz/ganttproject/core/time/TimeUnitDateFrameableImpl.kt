@@ -16,33 +16,37 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package biz.ganttproject.core.time;
+package biz.ganttproject.core.time
 
-import java.util.Date;
+import java.time.temporal.ChronoUnit
+import java.util.*
 
 /**
  * @author bard
  */
-public class TimeUnitDateFrameableImpl extends TimeUnitImpl {
-  private final DateFrameable myFramer;
-
-  public TimeUnitDateFrameableImpl(String name, TimeUnitGraph timeUnitGraph, TimeUnit atomUnit, DateFrameable framer) {
-    super(name, timeUnitGraph, atomUnit);
-    myFramer = framer;
+open class TimeUnitDateFrameableImpl(
+  name: String,
+  timeUnitGraph: TimeUnitGraph,
+  atomUnit: TimeUnit,
+  private val myFramer: DateFrameable,
+  durationCalculator: DurationCalculator? = null
+) :
+  TimeUnitImpl(name, timeUnitGraph, atomUnit, durationCalculator) {
+  override fun adjustRight(baseDate: Date): Date {
+    return myFramer.adjustRight(baseDate)
   }
 
-  @Override
-  public Date adjustRight(Date baseDate) {
-    return myFramer.adjustRight(baseDate);
+  override fun adjustLeft(baseDate: Date): Date {
+    return myFramer.adjustLeft(baseDate)
   }
 
-  @Override
-  public Date adjustLeft(Date baseDate) {
-    return myFramer.adjustLeft(baseDate);
+  override fun jumpLeft(baseDate: Date): Date {
+    return myFramer.jumpLeft(baseDate)
   }
+}
 
-  @Override
-  public Date jumpLeft(Date baseDate) {
-    return myFramer.jumpLeft(baseDate);
+fun createDayDurationCalculator(): DurationCalculator {
+  return { timeUnit: TimeUnit, startDate: Date, endDate: Date ->
+    TimeDurationImpl(timeUnit, ChronoUnit.DAYS.between(startDate.toInstant(), endDate.toInstant()))
   }
 }

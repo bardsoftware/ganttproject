@@ -22,28 +22,17 @@ import biz.ganttproject.core.calendar.CalendarEvent
 import biz.ganttproject.core.calendar.GPCalendar
 import biz.ganttproject.core.calendar.WeekendCalendarImpl
 import biz.ganttproject.core.time.CalendarFactory
+import biz.ganttproject.core.time.TimeTestHelper.initLocale
+import biz.ganttproject.core.time.TimeTestHelper.newFriday
+import biz.ganttproject.core.time.TimeTestHelper.newMonday
+import biz.ganttproject.core.time.TimeTestHelper.newSaturday
+import biz.ganttproject.core.time.TimeTestHelper.newThursday
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.text.DateFormat
 import java.util.*
-
-fun initLocale() {
-  object : CalendarFactory() {
-    init {
-      setLocaleApi(object : LocaleApi {
-        override fun getLocale(): Locale {
-          return Locale.US
-        }
-
-        override fun getShortDateFormat(): DateFormat {
-          return DateFormat.getDateInstance(DateFormat.SHORT, Locale.US)
-        }
-      })
-    }
-  }
-}
 
 class DayTypeScannerTest {
   @BeforeEach
@@ -91,11 +80,6 @@ class DayTypeScannerTest {
     }
   }
 }
-
-fun newThursday() = CalendarFactory.createGanttCalendar(2004, 9, 14)
-fun newFriday() = CalendarFactory.createGanttCalendar(2004, 9, 15)
-fun newSaturday() = CalendarFactory.createGanttCalendar(2004, 9, 16)
-fun newMonday() = CalendarFactory.createGanttCalendar(2004, 9, 18)
 
 fun createHolidays(year: Int) = listOf(
   CalendarEvent.newEvent(

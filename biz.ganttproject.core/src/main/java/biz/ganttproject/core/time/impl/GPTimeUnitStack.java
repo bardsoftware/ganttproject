@@ -8,19 +8,14 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.TimeDurationImpl;
-import biz.ganttproject.core.time.TimeUnit;
-import biz.ganttproject.core.time.TimeUnitGraph;
-import biz.ganttproject.core.time.TimeUnitPair;
-import biz.ganttproject.core.time.TimeUnitStack;
+import biz.ganttproject.core.time.*;
 
 
 /**
  * @author bard
  */
 public class GPTimeUnitStack implements TimeUnitStack {
-  private static TimeUnitGraph ourGraph = new TimeUnitGraph();
+  private static final TimeUnitGraph ourGraph = new TimeUnitGraph();
 
   private static final TimeUnit HOUR = ourGraph.createAtomTimeUnit("hour");
   public static final TimeUnit DAY;
@@ -37,9 +32,9 @@ public class GPTimeUnitStack implements TimeUnitStack {
 
   static {
     TimeUnit atom = ourGraph.createAtomTimeUnit("atom");
-    DAY = ourGraph.createDateFrameableTimeUnit("day", atom, 1, new FramerImpl(Calendar.DATE));
+    DAY = ourGraph.createDateFrameableTimeUnit("day", atom, 1, new FramerImpl(Calendar.DATE), TimeUnitDateFrameableImplKt.createDayDurationCalculator());
     MONTH = ourGraph.createTimeUnitFunctionOfDate("month", DAY, new FramerImpl(Calendar.MONTH));
-    WEEK = ourGraph.createDateFrameableTimeUnit("week", DAY, 7, new WeekFramerImpl());
+    WEEK = ourGraph.createDateFrameableTimeUnit("week", DAY, 7, new WeekFramerImpl(), null);
     QUARTER = ourGraph.createTimeUnitFunctionOfDate("quarter", MONTH, new FramerImpl(Calendar.MONTH));
     YEAR = ourGraph.createTimeUnitFunctionOfDate("year", DAY, new FramerImpl(Calendar.YEAR));
   }
@@ -141,20 +136,7 @@ public class GPTimeUnitStack implements TimeUnitStack {
 
   @Override
   public TimeDuration createDuration(TimeUnit timeUnit, Date startDate, Date endDate) {
-    TimeDuration result;
-    int sign = 1;
-    if (endDate.before(startDate)) {
-      sign = -1;
-      Date temp = endDate;
-      endDate = startDate;
-      startDate = temp;
-    }
-    int unitCount = 0;
-    for (; startDate.before(endDate); unitCount++) {
-      startDate = timeUnit.adjustRight(startDate);
-    }
-    result = new TimeDurationImpl(timeUnit, unitCount * sign);
-    return result;
+    return timeUnit.duration(startDate, endDate);
   }
 
   @Override
