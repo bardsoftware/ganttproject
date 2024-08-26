@@ -152,10 +152,7 @@ public interface TaskManager {
       return this;
     }
 
-    public TaskBuilder withStartDate(Date startDate) {
-      myStartDate = startDate;
-      return this;
-    }
+    abstract public TaskBuilder withStartDate(Date startDate);
 
     public TaskBuilder withWebLink(String value) {
       myWebLink = value;

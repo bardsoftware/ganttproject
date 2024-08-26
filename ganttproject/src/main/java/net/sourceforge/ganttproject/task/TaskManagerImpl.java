@@ -362,6 +362,12 @@ public class TaskManagerImpl implements TaskManager {
   public TaskBuilder newTaskBuilder() {
     return new TaskBuilder(getConfig().getDefaultColor()) {
       @Override
+      public TaskBuilder withStartDate(Date startDate) {
+        myStartDate = TaskManagerImpl.this.getTimeUnitStack().getDefaultTimeUnit().adjustLeft(startDate);
+        return this;
+      }
+
+      @Override
       public Task build() {
         if (myPrototype != null) {
           myId = myPrototype.getTaskID();
