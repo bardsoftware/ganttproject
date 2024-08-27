@@ -90,7 +90,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
    * GanttGraphicArea for the calendar with Gantt
    */
   private final GanttGraphicArea area;
-  private final JMenuBar myMenuBar;
 
   /**
    * GanttPeoplePanel to edit person that work on the project
@@ -119,8 +118,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private ArrayList<GanttPreviousState> myPreviousStates = new ArrayList<>();
 
-  private MouseListener myStopEditingMouseListener = null;
-
   private final GanttChartTabContentPanel myGanttChartTabContent;
 
   private final ResourceChartTabContentPanel myResourceChartTabContent;
@@ -139,7 +136,38 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private FXSearchUi mySearchUi;
 
-  public JMenuBar getMenuBar() { return myMenuBar; }
+  public JMenuBar getMenuBar() {
+    var bar = new JMenuBar();
+    //setJMenuBar(bar);
+    // Allocation of the menus
+
+    bar.add(myProjectMenu);
+
+    bar.add(myEditMenu);
+
+    ViewMenu viewMenu = new ViewMenu(getProject(), getViewManager(), getUiFacadeImpl().getDpiOption(), getUiFacadeImpl().getChartFontOption(), "view");
+    bar.add(viewMenu);
+
+    JMenu mTask = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("task"));
+    mTask.add(myTaskActions.getCreateAction());
+    mTask.add(myTaskActions.getPropertiesAction());
+    mTask.add(myTaskActions.getDeleteAction());
+    getResourcePanel().setTaskPropertiesAction(myTaskActions.getPropertiesAction());
+    bar.add(mTask);
+
+    JMenu mHuman = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("human"));
+    ResourceActionSet resourceActionSet = getResourcePanel().getResourceActionSet();
+    for (AbstractAction a : resourceActionSet.getActions()) {
+      mHuman.add(a);
+    }
+    mHuman.add(resourceActionSet.getResourceSendMailAction());
+    mHuman.add(resourceActionSet.getCloudResourceList());
+
+    HelpMenu helpMenu = new HelpMenu(getProject(), getUIFacade(), getProjectUIFacade());
+    bar.add(mHuman);
+    bar.add(helpMenu.createMenu());
+    return bar;
+  }
 
   public GanttProject(Stage stage) {
     super(stage);
@@ -186,41 +214,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     scrollingManager.addScrollingListener(getResourcePanel().area.getViewState());
 
     startupLogger.debug("3. creating menus...");
-    ResourceActionSet myResourceActions = getResourcePanel().getResourceActionSet();
     myZoomActions = new ZoomActionSet(getZoomManager());
-    myMenuBar = new JMenuBar();
-    //setJMenuBar(bar);
-    // Allocation of the menus
-
-    var bar = myMenuBar;
     myProjectMenu = new ProjectMenu(this, stage, "project");
-    bar.add(myProjectMenu);
-
     myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), () -> mySearchUi.requestFocus(), "edit");
-    bar.add(myEditMenu);
     getResourcePanel().getTreeTable().setupActionMaps(myEditMenu.getSearchAction());
 
-    ViewMenu viewMenu = new ViewMenu(getProject(), getViewManager(), getUiFacadeImpl().getDpiOption(), getUiFacadeImpl().getChartFontOption(), "view");
-    bar.add(viewMenu);
-
-    {
-      JMenu mTask = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("task"));
-      mTask.add(myTaskActions.getCreateAction());
-      mTask.add(myTaskActions.getPropertiesAction());
-      mTask.add(myTaskActions.getDeleteAction());
-      getResourcePanel().setTaskPropertiesAction(myTaskActions.getPropertiesAction());
-      bar.add(mTask);
-    }
-    JMenu mHuman = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("human"));
-    for (AbstractAction a : myResourceActions.getActions()) {
-      mHuman.add(a);
-    }
-    mHuman.add(myResourceActions.getResourceSendMailAction());
-    mHuman.add(myResourceActions.getCloudResourceList());
-    bar.add(mHuman);
-
-    HelpMenu helpMenu = new HelpMenu(getProject(), getUIFacade(), getProjectUIFacade());
-    bar.add(helpMenu.createMenu());
 
     startupLogger.debug("4. creating views...");
 
