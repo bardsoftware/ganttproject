@@ -26,9 +26,18 @@ class CalculatedPropertyUpdater(
   private val customPropertyManager: CustomPropertyManager,
   private val propertyHolders: ()->Map<Int,CustomPropertyHolder?>) {
 
+  init {
+    customPropertyManager.addListener(object: CustomPropertyListener {
+      override fun customPropertyChange(event: CustomPropertyEvent) {
+        projectDatabase.onCustomColumnChange(customPropertyManager)
+      }
+    })
+
+  }
+
   fun update() {
     val id2values = propertyHolders()
-    val updaters = customPropertyManager.definitions.filterNotNull().mapNotNull {def ->
+    val updaters = customPropertyManager.definitions.mapNotNull { def ->
       when (val calculationMethod = def.calculationMethod) {
         is SimpleSelect -> ColumnConsumer(calculationMethod) { taskNum, value ->
           id2values[taskNum]?.setValue(def, value)

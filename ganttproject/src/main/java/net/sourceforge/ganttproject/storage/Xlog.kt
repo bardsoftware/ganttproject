@@ -61,6 +61,9 @@ sealed class OperationDto {
     val whenMatchedThenUpdate: Map<String, String>,
     val whenNotMatchedThenInsert: Map<String, String>
   ): OperationDto()
+
+  @Serializable
+  data class NoOperationDto(val tableName: String): OperationDto()
 }
 
 @Serializable

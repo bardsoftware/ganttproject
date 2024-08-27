@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.app.Barrier
 import biz.ganttproject.app.BarrierEntrance
+import biz.ganttproject.customproperty.CustomPropertyEvent
+import biz.ganttproject.customproperty.CustomPropertyListener
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
@@ -47,7 +49,10 @@ internal class ProjectEventListenerImpl(
 
   override fun projectOpened(barrierRegistry: BarrierEntrance, barrier: Barrier<IGanttProject>) {
     projectDatabase.shutdown()
-    barrier.await { it.taskManager.tasks.forEach(projectDatabase::insertTask) }
+    barrier.await {
+      projectDatabase.onCustomColumnChange(it.taskCustomColumnManager)
+      it.taskManager.tasks.forEach(projectDatabase::insertTask)
+    }
   }
 
   override fun projectClosed() = withLogger({ "Failed to close project" }) {

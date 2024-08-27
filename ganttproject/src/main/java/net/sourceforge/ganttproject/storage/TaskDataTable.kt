@@ -18,15 +18,18 @@
  */
 package net.sourceforge.ganttproject.storage
 
-import biz.ganttproject.customproperty.CustomPropertyClass
-import biz.ganttproject.customproperty.CustomPropertyManager
-import biz.ganttproject.customproperty.SimpleSelect
+import biz.ganttproject.customproperty.*
 import javax.sql.DataSource
 
 fun rebuildTaskDataTable(dataSource: DataSource, customPropertyManager: CustomPropertyManager) {
+  runStatements(dataSource, createCustomColumnStatements(customPropertyManager))
+}
+
+fun runStatements(dataSource: DataSource, statements: List<String>) {
   val sqlScript = """
-    ${createCustomColumns(customPropertyManager).joinToString(separator = ";")}
+    ${statements.joinToString(separator = ";\n")};
   """.trimIndent()
+  println("Running \n $sqlScript")
   dataSource.connection.use {
     it.prepareStatement(sqlScript).use { stmt ->
       stmt.execute()
@@ -35,7 +38,7 @@ fun rebuildTaskDataTable(dataSource: DataSource, customPropertyManager: CustomPr
   }
 }
 
-fun createCustomColumns(customPropertyManager: CustomPropertyManager): List<String> =
+fun createCustomColumnStatements(customPropertyManager: CustomPropertyManager): List<String> =
   customPropertyManager.definitions.map { def ->
     def.calculationMethod?.let {
       when (it) {
@@ -43,9 +46,26 @@ fun createCustomColumns(customPropertyManager: CustomPropertyManager): List<Stri
         else -> null
       }
     } ?: run {
-      "ALTER TABLE Task ADD COLUMN ${def.id} ${def.propertyClass.asSqlType()};"
+      "ALTER TABLE Task ADD COLUMN ${def.id} ${def.propertyClass.asSqlType()}"
     }
   }
+
+fun createUpdateCustomValuesStatement(taskUid: String, customPropertyManager: CustomPropertyManager, customPropertyHolder: CustomPropertyHolder): String {
+  return customPropertyManager.definitions.mapNotNull { def ->
+    if (def.calculationMethod == null) {
+      val value = customPropertyHolder.customProperties.find { it.definition.id == def.id }?.value
+      "${def.id}=${generateSqlValueLiteral(def, value)}"
+    } else null
+  }.joinToString(separator = ",", prefix = "UPDATE Task SET ", postfix = " WHERE uid='$taskUid';")
+}
+
+fun generateSqlValueLiteral(def: CustomPropertyDefinition, value: Any?): String =
+  value?.let {
+    when (def.propertyClass) {
+      CustomPropertyClass.TEXT -> "'${value}'"
+      else -> "$value"
+    }
+  } ?: "NULL"
 
 fun CustomPropertyClass.asSqlType() = when (this) {
   CustomPropertyClass.TEXT -> "varchar"
