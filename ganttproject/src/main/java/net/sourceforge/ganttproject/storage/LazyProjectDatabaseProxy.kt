@@ -19,6 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import biz.ganttproject.customproperty.CustomPropertyListener
+import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.storage.ProjectDatabase.*
@@ -105,6 +107,10 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
 
   override fun addExternalUpdatesListener(listener: ProjectDatabaseExternalUpdateListener) {
     getDatabase().addExternalUpdatesListener(listener)
+  }
+
+  override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager) {
+    getDatabase().onCustomColumnChange(customPropertyManager)
   }
 
   fun createProjectEventListener(): ProjectEventListener = projectEventListenerImpl

@@ -23,6 +23,7 @@ import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.customproperty.CustomPropertyHolder
+import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.customproperty.SimpleSelect
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.task.Task
@@ -136,4 +137,12 @@ interface ProjectDatabase {
   fun readAllTasks(): List<TaskRecord>
 
   fun addExternalUpdatesListener(listener: ProjectDatabaseExternalUpdateListener)
+
+  /**
+   * This method should be called whenever something changes in the custom properties.
+   * It updates the internal structures and tables for storing custom values as necessary.
+   *
+   * @param customPropertyManager an instance of the CustomPropertyManager with the actual custom property definitions.
+   */
+  fun onCustomColumnChange(customPropertyManager: CustomPropertyManager)
 }

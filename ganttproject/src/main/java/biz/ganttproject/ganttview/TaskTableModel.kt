@@ -156,8 +156,16 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager) {
   }
 
   fun setValue(value: Any, task: Task, column: CustomPropertyDefinition) {
+    if (column.calculationMethod != null) {
+      throw ValidationException("This is a calculated column")
+    }
     try {
-      task.customValues.setValue(column, value)
+      val customValues = task.customValues.copyOf()
+      customValues.setValue(column, value)
+      task.createMutator().let {
+        it.setCustomProperties(customValues)
+        it.commit()
+      }
     } catch (e: CustomColumnsException) {
       if (!GPLogger.log(e)) {
         e.printStackTrace(System.err)

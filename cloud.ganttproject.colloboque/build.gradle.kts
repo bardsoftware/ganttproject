@@ -36,7 +36,9 @@ repositories {
 dependencies {
     implementation("biz.ganttproject:biz.ganttproject.core:24.+")
     implementation("biz.ganttproject:ganttproject:24.+")
-    implementation("ch.qos.logback:logback-classic:1.2.11")
+    implementation("org.slf4j:slf4j-api:2.0.16")
+    implementation("ch.qos.logback:logback-classic:1.5.6")
+    implementation("org.slf4j:jul-to-slf4j:2.0.13")
     implementation("com.google.guava:guava:31.1-jre")
 
     implementation("com.zaxxer:HikariCP:5.0.1")

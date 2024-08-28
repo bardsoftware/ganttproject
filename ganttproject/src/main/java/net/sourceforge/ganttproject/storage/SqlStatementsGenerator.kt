@@ -67,6 +67,9 @@ fun generateSqlStatement(context: DSLContext, operation: OperationDto): String {
         .whenNotMatchedThenInsert().set(operation.whenNotMatchedThenInsert)
         .getSQL(ParamType.INLINED)
     }
+    is OperationDto.NoOperationDto -> {
+      "SELECT 1"
+    }
   }
 }
 

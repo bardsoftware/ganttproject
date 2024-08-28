@@ -1,23 +1,22 @@
 /*
-Copyright 2020 BarD Software s.r.o, Anastasiia Postnikova
-
-This file is part of GanttProject, an opensource project management tool.
-
-GanttProject is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
-GanttProject is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-package net.sourceforge.ganttproject.storage
+ * Copyright 2024 BarD Software s.r.o., Anastasiia Postnikova.
+ *
+ * This file is part of GanttProject, an opensource project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package biz.ganttproject.storage
 
 import biz.ganttproject.core.chart.render.ShapeConstants
 import biz.ganttproject.core.chart.render.ShapePaint
@@ -25,11 +24,11 @@ import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.customproperty.CustomColumnsValues
 import biz.ganttproject.customproperty.CustomPropertyClass
-import biz.ganttproject.storage.db.Tables.TASKDEPENDENCY
-import biz.ganttproject.storage.db.tables.Task.TASK
+import biz.ganttproject.storage.db.Tables
+import biz.ganttproject.storage.db.tables.Task
 import net.sourceforge.ganttproject.TestSetupHelper
+import net.sourceforge.ganttproject.storage.*
 import net.sourceforge.ganttproject.task.CostStub
-import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstraintImpl
@@ -38,11 +37,8 @@ import org.h2.jdbcx.JdbcDataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
-import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.awt.Color
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -81,7 +77,7 @@ class ProjectDatabaseTest {
   @Test
   fun `test init creates tables`() {
     projectDatabase.init()
-    val tasks = dsl.selectFrom(TASK).fetch()
+    val tasks = dsl.selectFrom(Task.TASK).fetch()
     assert(tasks.isEmpty())
   }
 
@@ -100,14 +96,14 @@ class ProjectDatabaseTest {
     task.duration = taskManager.createLength(10)
     task.completionPercentage = 20
     task.setThirdDate(CalendarFactory.createGanttCalendar(2022, 4, 3))
-    task.priority = Task.Priority.HIGH
+    task.priority = net.sourceforge.ganttproject.task.Task.Priority.HIGH
     task.webLink = "love-testing.com"
     task.cost = CostStub(BigDecimal.valueOf(666.7), true)
     task.notes = "abacaba"
 
     projectDatabase.insertTask(task)
 
-    val tasks = dsl.selectFrom(TASK).fetch()
+    val tasks = dsl.selectFrom(Task.TASK).fetch()
     assertEquals(tasks.size, 1)
 
     assertEquals(tasks[0].uid, "someuid")
@@ -121,7 +117,7 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].duration, 10)
     assertEquals(tasks[0].completion, 20)
     assertEquals(tasks[0].earliestStartDate.toIsoNoHours(), task.third.toXMLString())
-    assertEquals(tasks[0].priority, Task.Priority.HIGH.persistentValue)
+    assertEquals(tasks[0].priority, net.sourceforge.ganttproject.task.Task.Priority.HIGH.persistentValue)
     assertEquals(tasks[0].webLink, "love-testing.com")
     assertEquals(tasks[0].costManualValue.toDouble(), 666.7)
     assertEquals(tasks[0].isCostCalculated, true)
@@ -162,7 +158,7 @@ class ProjectDatabaseTest {
     projectDatabase.shutdown()
 
     projectDatabase.init()
-    val tasks = dsl.selectFrom(TASK).fetch()
+    val tasks = dsl.selectFrom(Task.TASK).fetch()
     assert(tasks.isEmpty())
   }
 
@@ -210,7 +206,7 @@ class ProjectDatabaseTest {
     projectDatabase.insertTask(dependee)
     projectDatabase.insertTaskDependency(dependency)
 
-    val deps = dsl.selectFrom(TASKDEPENDENCY).fetch()
+    val deps = dsl.selectFrom(Tables.TASKDEPENDENCY).fetch()
     assertEquals(deps.size, 1)
 
     assertEquals(deps[0].dependantUid, "dependant_uid")
@@ -239,7 +235,7 @@ class ProjectDatabaseTest {
     mutator.setStart(startDateAfter)
     mutator.commit()
 
-    val tasks = dsl.selectFrom(TASK).fetch()
+    val tasks = dsl.selectFrom(Task.TASK).fetch()
     assertEquals(tasks.size, 1)
     assertEquals(tasks[0].uid, "someuid")
     assertEquals(tasks[0].num, 1)
@@ -398,7 +394,8 @@ class ProjectDatabaseTest {
     assertEquals(2, projectDatabase.findTasks("true", taskManager::getTask).size)
   }
 
-  @Test fun `change task end updates duration`() {
+  @Test
+  fun `change task end updates duration`() {
     projectDatabase.init()
 
     val task1 = taskManager
@@ -428,7 +425,8 @@ class ProjectDatabaseTest {
     }
   }
 
-  @Test fun `update task properties`() {
+  @Test
+  fun `update task properties`() {
     projectDatabase.init()
 
     val task1 = taskManager
@@ -448,7 +446,7 @@ class ProjectDatabaseTest {
       it.setExpand(true)
       it.setName("task1")
       it.setShape(ShapeConstants.BACKSLASH)
-      it.setPriority(Task.Priority.HIGH)
+      it.setPriority(net.sourceforge.ganttproject.task.Task.Priority.HIGH)
       it.setProjectTask(true)
       it.commit()
     }
@@ -456,7 +454,10 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(1, txns.size)
 
-    assertEquals(1, txns[0].colloboqueOperations.size) { "Recorded statements: ${txns[0].colloboqueOperations}"}
+    assertEquals(
+      1,
+      txns[0].colloboqueOperations.size
+    ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
     when (val stmt = txns[0].colloboqueOperations[0]) {
       is OperationDto.UpdateOperationDto -> {
         assert(stmt.updateBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
@@ -479,7 +480,8 @@ class ProjectDatabaseTest {
     }
   }
 
-  @Test fun `add custom property`() {
+  @Test
+  fun `add custom property`() {
     projectDatabase.init()
 
     val task1 = taskManager
@@ -491,6 +493,7 @@ class ProjectDatabaseTest {
       .build()
     projectDatabase.insertTask(task1)
     val def = taskManager.customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo", "'")
+    rebuildTaskDataTable(dataSource, taskManager.customPropertyManager)
     val txn = projectDatabase.startTransaction()
     task1.createMutator().let {mutator ->
       mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager, eventDispatcher = {}).also {
@@ -502,7 +505,10 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(startLocalTxnId = 1, limit = 2)
     assertEquals(1, txns.size)
 
-    assertEquals(2, txns[0].colloboqueOperations.size) { "Recorded statements: ${txns[0].colloboqueOperations}"}
+    assertEquals(
+      2,
+      txns[0].colloboqueOperations.filter { it !is OperationDto.NoOperationDto }.size
+    ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
     when (val stmt = txns[0].colloboqueOperations[0]) {
       is OperationDto.DeleteOperationDto -> {
         assertEquals("taskcustomcolumn", stmt.tableName)
@@ -528,7 +534,8 @@ class ProjectDatabaseTest {
     }
   }
 
-  @Test fun `undo custom property addition`() {
+  @Test
+  fun `undo custom property addition`() {
     projectDatabase.init()
 
     val task1 = taskManager
@@ -540,6 +547,7 @@ class ProjectDatabaseTest {
       .build()
     projectDatabase.insertTask(task1)
     val def = taskManager.customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo", "default")
+    rebuildTaskDataTable(dataSource, taskManager.customPropertyManager)
     val txn = projectDatabase.startTransaction()
     task1.createMutator().let { mutator ->
       mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager, eventDispatcher = {}).also {
@@ -563,8 +571,12 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(startLocalTxnId = 3, limit = 3)
     assertEquals(2, txns.size)
 
-    assertEquals(2, txns[0].colloboqueOperations.size) { "Recorded statements: ${txns[0].colloboqueOperations}"}
-    when (val stmt = txns[0].colloboqueOperations[0]) {
+    val ops = txns[0].colloboqueOperations.filter { it !is OperationDto.NoOperationDto }
+    assertEquals(
+      2,
+      ops.size
+    ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
+    when (val stmt = ops[0]) {
       is OperationDto.DeleteOperationDto -> {
         assertEquals("taskcustomcolumn", stmt.tableName)
         assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
@@ -573,7 +585,7 @@ class ProjectDatabaseTest {
         fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
-    when (val stmt = txns[0].colloboqueOperations[1]) {
+    when (val stmt = ops[1]) {
       is OperationDto.MergeOperationDto -> {
         assert(stmt.mergeBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1"))) {"Statement dto $stmt"}
         assert(
@@ -586,20 +598,27 @@ class ProjectDatabaseTest {
         fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
-    assertEquals(1, txns[1].colloboqueOperations.size) { "Recorded statements: ${txns[0].colloboqueOperations}"}
-    when (val stmt = txns[1].colloboqueOperations[0]) {
-      is OperationDto.DeleteOperationDto -> {
-        assertEquals("taskcustomcolumn", stmt.tableName)
-        assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+
+    txns[1].colloboqueOperations.filter { it !is OperationDto.NoOperationDto }.let { ops ->
+      assertEquals(
+        1,
+        ops.size
+      ) { "Recorded statements: $ops" }
+      when (val stmt = ops[0]) {
+        is OperationDto.DeleteOperationDto -> {
+          assertEquals("taskcustomcolumn", stmt.tableName)
+          assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+        }
+        else -> {
+          fail("Wrong type of operation. Operation dto: $stmt")
+        }
       }
-      else -> {
-        fail("Wrong type of operation. Operation dto: $stmt")
-      }
+      // No merge statements as the default value is set.
     }
-    // No merge statements as the default value is set.
   }
 
-  @Test fun `delete last custom property`() {
+  @Test
+  fun `delete last custom property`() {
     projectDatabase.init()
 
     val task1 = taskManager
@@ -611,6 +630,7 @@ class ProjectDatabaseTest {
       .build()
     projectDatabase.insertTask(task1)
     val def = taskManager.customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo", null)
+    rebuildTaskDataTable(dataSource, taskManager.customPropertyManager)
     task1.customValues.addCustomProperty(def, "foovalue")
 
     val txn = projectDatabase.startTransaction()
@@ -622,20 +642,24 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(startLocalTxnId = 1, limit = 2)
     assertEquals(1, txns.size)
 
-    assertEquals(1, txns[0].colloboqueOperations.size) { "Recorded statements: ${txns[0].colloboqueOperations}"}
-    when (val stmt = txns[0].colloboqueOperations[0]) {
-      is OperationDto.DeleteOperationDto -> {
-        assertEquals("taskcustomcolumn", stmt.tableName)
-        assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
-        // TODO: assertFalse(stmt.matches(""".*and.*not.in.*tpc0.*""".toRegex()))
-      }
-      else -> {
-        fail("Wrong type of operation. Operation dto: $stmt")
+    txns[0].colloboqueOperations.filter { it !is OperationDto.NoOperationDto }.let { ops ->
+      assertEquals(1, ops.size) { "Recorded statements: ${txns[0].colloboqueOperations}" }
+
+      when (val stmt = ops[0]) {
+        is OperationDto.DeleteOperationDto -> {
+          assertEquals("taskcustomcolumn", stmt.tableName)
+          assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+          // TODO: assertFalse(stmt.matches(""".*and.*not.in.*tpc0.*""".toRegex()))
+        }
+        else -> {
+          fail("Wrong type of operation. Operation dto: $stmt")
+        }
       }
     }
   }
 
-  @Test fun `shift task`() {
+  @Test
+  fun `shift task`() {
     projectDatabase.init()
 
     val task1 = taskManager
@@ -654,7 +678,10 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(1, txns.size)
 
-    assertEquals(1, txns[0].colloboqueOperations.size) { "Recorded statements: ${txns[0].colloboqueOperations}"}
+    assertEquals(
+      1,
+      txns[0].colloboqueOperations.size
+    ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
     when (val stmt = txns[0].colloboqueOperations[0]) {
       is OperationDto.UpdateOperationDto -> {
         assertTrue(stmt.newValues.containsKey("start_date"))
@@ -666,7 +693,8 @@ class ProjectDatabaseTest {
     }
   }
 
-  @Test fun `task tree shifts in a single transaction`() {
+  @Test
+  fun `task tree shifts in a single transaction`() {
     projectDatabase.init()
 
     val task1 = taskManager
@@ -702,7 +730,10 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(limit = 2)
     assertEquals(1, txns.size)
 
-    assertEquals(3, txns[0].colloboqueOperations.size) { "Recorded statements: ${txns[0].colloboqueOperations}"}
+    assertEquals(
+      3,
+      txns[0].colloboqueOperations.size
+    ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
 
     // Due to the depth-first post-order traversal, the deepmost task updates go first.
     when (val stmt = txns[0].colloboqueOperations[0]) {
@@ -736,14 +767,16 @@ class ProjectDatabaseTest {
     }
   }
 
-  @Test fun `rollback clears current transaction`() {
+  @Test
+  fun `rollback clears current transaction`() {
     projectDatabase.init()
     val txn = projectDatabase.startTransaction()
     txn.rollback()
     projectDatabase.startTransaction()
   }
 
-  @Test fun `no concurrent transactions`() {
+  @Test
+  fun `no concurrent transactions`() {
     projectDatabase.init()
     val txn = projectDatabase.startTransaction()
     assertThrows<ProjectDatabaseException> { projectDatabase.startTransaction() }

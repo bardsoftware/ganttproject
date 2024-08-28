@@ -22,8 +22,8 @@ package net.sourceforge.ganttproject.storage
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
-import biz.ganttproject.customproperty.CustomProperty
 import biz.ganttproject.customproperty.CustomPropertyHolder
+import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.storage.db.Tables.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import kotlinx.serialization.json.Json
@@ -44,6 +44,10 @@ import java.util.*
 import javax.sql.DataSource
 
 typealias ShutdownHook = ()->Unit
+
+/**
+ * This class implements a ProjectDatabase that stores its data in an in-memory H2 relational database.
+ */
 class SqlProjectDatabaseImpl(
   private val dataSource: DataSource,
   private val initScript: String = DB_INIT_SCRIPT_PATH,
@@ -51,6 +55,7 @@ class SqlProjectDatabaseImpl(
   private val dialect: SQLDialect = SQLDialect.H2,
   private val onShutdown: ShutdownHook? = null
   ) : ProjectDatabase {
+
   companion object Factory {
     fun createInMemoryDatabase(): ProjectDatabase {
       val dataSource = JdbcDataSource()
@@ -59,6 +64,7 @@ class SqlProjectDatabaseImpl(
     }
   }
 
+  private val customPropertyStorageManager = SqlCustomPropertyStorageManager(dataSource)
   /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
   private var currentTxn: TransactionImpl? = null
   private var localTxnId: Int = -1
@@ -74,6 +80,9 @@ class SqlProjectDatabaseImpl(
   override fun addExternalUpdatesListener(listener: ProjectDatabaseExternalUpdateListener) {
     externalUpdatesListener = listener
   }
+
+  override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager) =
+    customPropertyStorageManager.onCustomColumnChange(customPropertyManager)
 
   /**
    * Applies updates from Colloboque
@@ -166,19 +175,8 @@ class SqlProjectDatabaseImpl(
 
   @Throws(ProjectDatabaseException::class)
   override fun init() {
-    runScript(initScript)
-    initScript2?.let { runScript(it) }
-  }
-
-  private fun runScript(path: String) {
-    val scriptStream = javaClass.getResourceAsStream(path) ?: throw ProjectDatabaseException("Init script not found")
-    try {
-      val queries = String(scriptStream.readAllBytes(), Charsets.UTF_8)
-
-      dataSource.connection.use { it.createStatement().execute(queries) }
-    } catch (e: Exception) {
-      throw ProjectDatabaseException("Failed to init the database", e)
-    }
+    runScriptFromResource(dataSource, initScript)
+    initScript2?.let { runScriptFromResource(dataSource, it) }
   }
 
   override fun startLog(baseTxnId: BaseTxnId) {
@@ -330,12 +328,12 @@ class SqlProjectDatabaseImpl(
 
   override fun mapTasks(vararg columnConsumer: ColumnConsumer) {
     withDSL { dsl ->
-      var q: SelectSelectStep<out Record> = dsl.select(TASKVIEWFORCOMPUTEDCOLUMNS.ID)
+      var q: SelectSelectStep<out Record> = dsl.select(TASK.NUM)
       columnConsumer.forEach {
         q = q.select(field(it.first.selectExpression, it.first.resultClass).`as`(it.first.propertyId))
       }
-      q.from(TASKVIEWFORCOMPUTEDCOLUMNS).forEach { row  ->
-        val taskNum = row[TASKVIEWFORCOMPUTEDCOLUMNS.ID]
+      q.from(TASK).forEach { row  ->
+        val taskNum = row[TASK.NUM]
         columnConsumer.forEach {
           it.second(taskNum, row[it.first.propertyId])
         }
@@ -347,7 +345,7 @@ class SqlProjectDatabaseImpl(
   override fun validateColumnConsumer(columnConsumer: ColumnConsumer) {
     withDSL { dsl ->
       dsl.select(field(columnConsumer.first.selectExpression).cast(columnConsumer.first.resultClass))
-        .from(TASKVIEWFORCOMPUTEDCOLUMNS)
+        .from(TASK)
         .limit(1).also {
         it.execute()
       }
@@ -410,102 +408,6 @@ class TransactionImpl(private val database: SqlProjectDatabaseImpl, private val 
     return "TransactionImpl(title='$title', statements=$statements)\n\n"
   }
 }
-
-/**
- * Creates SQL statements for updating custom property records.
- */
-internal class SqlTaskCustomPropertiesUpdateBuilder(
-  private val task: Task, private val onCommit: (List<SqlQuery>, List<SqlUndoQuery>) -> Unit, private val dialect: SQLDialect) {
-  internal var commit: () -> Unit = {}
-
-  private fun generateStatements(customProperties: CustomPropertyHolder, isUndoOperation: Boolean): List<SqlQuery> {
-    val statements = mutableListOf<String>()
-    val colloboqueUpdateDtos = mutableListOf<OperationDto>()
-
-    val generateDeleteFnForH2 = {
-      if (isUndoOperation) generateDeleteStatementAllColumns(DSL.using(dialect)) else generateDeleteStatement(DSL.using(dialect), customProperties)
-    }
-    val generateDeleteFnForColloboque = {
-      if (isUndoOperation) generateDeleteDtoAllColumns() else generateDeleteDto(customProperties)
-    }
-    statements.add(generateDeleteFnForH2())
-    colloboqueUpdateDtos.add(generateDeleteFnForColloboque())
-
-    statements.addAll(generateMergeStatements(customProperties.customProperties) { return@generateMergeStatements DSL.using(dialect) })
-    colloboqueUpdateDtos.addAll(generateMergeDtos(customProperties.customProperties))
-    return statements.zip(colloboqueUpdateDtos).map { SqlQuery(it.first, it.second) }
-  }
-
-  internal fun setCustomProperties(oldCustomProperties: CustomPropertyHolder, newCustomProperties: CustomPropertyHolder) {
-    commit = {
-      onCommit(
-        generateStatements(newCustomProperties, isUndoOperation = false),
-        generateStatements(oldCustomProperties, isUndoOperation = true)
-      )
-    }
-  }
-
-  private fun generateDeleteStatement(dsl: DSLContext, customProperties: CustomPropertyHolder): String =
-    dsl.deleteFrom(TASKCUSTOMCOLUMN)
-      .where(TASKCUSTOMCOLUMN.UID.eq(task.uid))
-      .and(TASKCUSTOMCOLUMN.COLUMN_ID.notIn(customProperties.customProperties.map { it.definition.id }))
-      .getSQL(ParamType.INLINED)
-
-  private fun generateDeleteDto(customProperties: CustomPropertyHolder): OperationDto.DeleteOperationDto =
-    OperationDto.DeleteOperationDto(
-      TASKCUSTOMCOLUMN.name.lowercase(),
-      listOf(
-        Triple(TASKCUSTOMCOLUMN.UID.name, BinaryPred.EQ, task.uid),
-      ),
-      listOf(
-        Triple(TASKCUSTOMCOLUMN.COLUMN_ID.name, RangePred.NOT_IN, customProperties.customProperties.map { it.definition.id } )
-      )
-    )
-
-  private fun generateDeleteStatementAllColumns(dsl: DSLContext): String =
-    dsl.deleteFrom(TASKCUSTOMCOLUMN)
-      .where(TASKCUSTOMCOLUMN.UID.eq(task.uid))
-      .getSQL(ParamType.INLINED)
-
-  private fun generateDeleteDtoAllColumns(): OperationDto.DeleteOperationDto =
-    OperationDto.DeleteOperationDto(
-      TASKCUSTOMCOLUMN.name.lowercase(),
-      listOf(
-        Triple(TASKCUSTOMCOLUMN.UID.name, BinaryPred.EQ, task.uid),
-      )
-    )
-
-  private fun generateMergeStatements(customProperties: List<CustomProperty>, dsl: ()->DSLContext) =
-    customProperties.map {
-      dsl().mergeInto(TASKCUSTOMCOLUMN).using(DSL.selectOne())
-        .on(TASKCUSTOMCOLUMN.UID.eq(task.uid)).and(TASKCUSTOMCOLUMN.COLUMN_ID.eq(it.definition.id))
-        .whenMatchedThenUpdate().set(TASKCUSTOMCOLUMN.COLUMN_VALUE, it.valueAsString)
-        .whenNotMatchedThenInsert(TASKCUSTOMCOLUMN.UID, TASKCUSTOMCOLUMN.COLUMN_ID, TASKCUSTOMCOLUMN.COLUMN_VALUE)
-        .values(task.uid, it.definition.id, it.valueAsString)
-        .getSQL(ParamType.INLINED)
-    }
-
-  private fun generateMergeDtos(customProperties: List<CustomProperty>) =
-    customProperties.map {
-      OperationDto.MergeOperationDto(
-        TASKCUSTOMCOLUMN.name.lowercase(),
-        listOf(
-          Triple(TASKCUSTOMCOLUMN.UID.name, BinaryPred.EQ, task.uid),
-          Triple(TASKCUSTOMCOLUMN.COLUMN_ID.name, BinaryPred.EQ, it.definition.id)
-        ),
-        listOf(),
-        mapOf(
-          TASKCUSTOMCOLUMN.COLUMN_VALUE.name to it.valueAsString
-        ),
-        mapOf(
-          TASKCUSTOMCOLUMN.UID.name to task.uid,
-          TASKCUSTOMCOLUMN.COLUMN_ID.name to it.definition.id,
-          TASKCUSTOMCOLUMN.COLUMN_VALUE.name to it.valueAsString
-        )
-      )
-    }
-}
-
 
 class SqlTaskUpdateBuilder(private val task: Task,
                            private val onCommit: (List<SqlQuery>, List<SqlUndoQuery>) -> Unit,

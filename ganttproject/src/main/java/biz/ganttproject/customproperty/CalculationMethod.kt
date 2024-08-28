@@ -29,6 +29,13 @@ import kotlin.math.min
 
 sealed class CalculationMethodImpl(override val propertyId: String, override val resultClass: Class<*>): CalculationMethod
 
+/**
+ * Simple select is a calculation method that uses a simple SQL expression operating only with the property values of
+ * the same task, like those that are usually used in SQL SELECT statement.
+ *
+ * The examples of such expressions:
+ * "duration * 8", "CASE WHEN completion=100 THEN true ELSE false END"
+ */
 class SimpleSelect(propertyId: String,
                    val selectExpression: String = "id",
                    resultClass: Class<*>) : CalculationMethodImpl(propertyId, resultClass)
@@ -53,6 +60,7 @@ private val ourTaskTableFields: List<String> = Tables.TASKVIEWFORCOMPUTEDCOLUMNS
     IS_MILESTONE.name, IS_PROJECT_TASK.name, NAME.name, NOTES.name, ID.name, PRIORITY.name, START_DATE.name, WEB_LINK.name, COST.name, END_DATE.name
   )
 }
+
 class ExpressionAutoCompletion {
   fun complete(text: String, pos: Int): List<Completion> {
     var seekPos = min(pos, text.length - 1)
