@@ -104,7 +104,7 @@ class TaskTable(
   private val treeModel = taskManager.taskHierarchy
   val rootItem = TreeItem(treeModel.rootTask)
   val treeTable = GPTreeTableView<Task>(rootItem)
-  val taskTableModel = TaskTableModel(taskManager, taskManager.customPropertyManager)
+  val taskTableModel = TaskTableModel(taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
 
   val control: Parent get() = treeTable
