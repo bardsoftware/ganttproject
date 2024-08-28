@@ -32,6 +32,8 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.sql.SQLException
 import java.util.*
 import javax.sql.DataSource
 
@@ -110,6 +112,30 @@ class CalculatedPropertyTest{
     assertEquals(2, task.customValues.getValue(bar))
     assertEquals("foo--", task.customValues.getValue(baz))
   }
+
+  @Test
+  fun `column used in a generated column can't be dropped`() {
+    val taskManager = TestSetupHelper.newTaskManagerBuilder().also {
+      it.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }
+    }.build()
+
+
+    val customPropertyManager = taskManager.customPropertyManager
+    val bar = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar").also {
+      it.calculationMethod = SimpleSelect(it.id, "duration + 1", CustomPropertyClass.INTEGER.javaClass)
+    }
+    rebuildTaskDataTable(dataSource, customPropertyManager)
+
+    assertThrows<SQLException> {
+      dataSource.connection.use { conn ->
+        conn.createStatement().use {
+          it.execute("ALTER TABLE Task DROP COLUMN duration;")
+        }
+        conn.commit()
+      }
+    }
+  }
+
 }
 
 fun createPropertyHolders(taskManager: TaskManager) =
