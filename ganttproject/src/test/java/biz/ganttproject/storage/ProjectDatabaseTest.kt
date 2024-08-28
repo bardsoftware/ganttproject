@@ -492,6 +492,7 @@ class ProjectDatabaseTest {
       .build()
     projectDatabase.insertTask(task1)
     val def = taskManager.customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo", "'")
+    rebuildTaskDataTable(dataSource, taskManager.customPropertyManager)
     val txn = projectDatabase.startTransaction()
     task1.createMutator().let {mutator ->
       mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager, eventDispatcher = {}).also {
@@ -505,7 +506,7 @@ class ProjectDatabaseTest {
 
     Assertions.assertEquals(
       2,
-      txns[0].colloboqueOperations.size
+      txns[0].colloboqueOperations.filter { it !is OperationDto.NoOperationDto }.size
     ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
     when (val stmt = txns[0].colloboqueOperations[0]) {
       is OperationDto.DeleteOperationDto -> {
@@ -545,6 +546,7 @@ class ProjectDatabaseTest {
       .build()
     projectDatabase.insertTask(task1)
     val def = taskManager.customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo", "default")
+    rebuildTaskDataTable(dataSource, taskManager.customPropertyManager)
     val txn = projectDatabase.startTransaction()
     task1.createMutator().let { mutator ->
       mutator.setCustomProperties(CustomColumnsValues(taskManager.customPropertyManager, eventDispatcher = {}).also {
@@ -568,11 +570,12 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(startLocalTxnId = 3, limit = 3)
     Assertions.assertEquals(2, txns.size)
 
+    val ops = txns[0].colloboqueOperations.filter { it !is OperationDto.NoOperationDto }
     Assertions.assertEquals(
       2,
-      txns[0].colloboqueOperations.size
+      ops.size
     ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
-    when (val stmt = txns[0].colloboqueOperations[0]) {
+    when (val stmt = ops[0]) {
       is OperationDto.DeleteOperationDto -> {
         Assertions.assertEquals("taskcustomcolumn", stmt.tableName)
         assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
@@ -581,7 +584,7 @@ class ProjectDatabaseTest {
         Assertions.fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
-    when (val stmt = txns[0].colloboqueOperations[1]) {
+    when (val stmt = ops[1]) {
       is OperationDto.MergeOperationDto -> {
         assert(stmt.mergeBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1"))) {"Statement dto $stmt"}
         assert(
@@ -594,20 +597,23 @@ class ProjectDatabaseTest {
         Assertions.fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
-    Assertions.assertEquals(
-      1,
-      txns[1].colloboqueOperations.size
-    ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
-    when (val stmt = txns[1].colloboqueOperations[0]) {
-      is OperationDto.DeleteOperationDto -> {
-        Assertions.assertEquals("taskcustomcolumn", stmt.tableName)
-        assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+
+    txns[1].colloboqueOperations.filter { it !is OperationDto.NoOperationDto }.let { ops ->
+      Assertions.assertEquals(
+        1,
+        ops.size
+      ) { "Recorded statements: $ops" }
+      when (val stmt = ops[0]) {
+        is OperationDto.DeleteOperationDto -> {
+          Assertions.assertEquals("taskcustomcolumn", stmt.tableName)
+          assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+        }
+        else -> {
+          Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        }
       }
-      else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
-      }
+      // No merge statements as the default value is set.
     }
-    // No merge statements as the default value is set.
   }
 
   @Test
@@ -623,6 +629,7 @@ class ProjectDatabaseTest {
       .build()
     projectDatabase.insertTask(task1)
     val def = taskManager.customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo", null)
+    rebuildTaskDataTable(dataSource, taskManager.customPropertyManager)
     task1.customValues.addCustomProperty(def, "foovalue")
 
     val txn = projectDatabase.startTransaction()
@@ -634,18 +641,18 @@ class ProjectDatabaseTest {
     val txns = projectDatabase.fetchTransactions(startLocalTxnId = 1, limit = 2)
     Assertions.assertEquals(1, txns.size)
 
-    Assertions.assertEquals(
-      1,
-      txns[0].colloboqueOperations.size
-    ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
-    when (val stmt = txns[0].colloboqueOperations[0]) {
-      is OperationDto.DeleteOperationDto -> {
-        Assertions.assertEquals("taskcustomcolumn", stmt.tableName)
-        assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
-        // TODO: assertFalse(stmt.matches(""".*and.*not.in.*tpc0.*""".toRegex()))
-      }
-      else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+    txns[0].colloboqueOperations.filter { it !is OperationDto.NoOperationDto }.let { ops ->
+      Assertions.assertEquals(1, ops.size) { "Recorded statements: ${txns[0].colloboqueOperations}" }
+
+      when (val stmt = ops[0]) {
+        is OperationDto.DeleteOperationDto -> {
+          Assertions.assertEquals("taskcustomcolumn", stmt.tableName)
+          assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
+          // TODO: assertFalse(stmt.matches(""".*and.*not.in.*tpc0.*""".toRegex()))
+        }
+        else -> {
+          Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        }
       }
     }
   }
