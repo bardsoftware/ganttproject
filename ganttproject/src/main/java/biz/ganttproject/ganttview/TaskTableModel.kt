@@ -1,87 +1,76 @@
+/*
+ * Copyright 2021-2024 BarD Software s.r.o., Dmitry Barashev.
+ *
+ * This file is part of GanttProject, an opensource project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package biz.ganttproject.ganttview
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
-import com.google.common.base.Joiner
-import com.google.common.base.Predicate
-import com.google.common.base.Supplier
-import com.google.common.collect.Lists
 import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.GPLogger
 import biz.ganttproject.customproperty.CustomColumnsException
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 import net.sourceforge.ganttproject.task.CostStub
 import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskProperties
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
 import java.math.BigDecimal
 import java.text.MessageFormat
-import java.util.*
-import javax.swing.SwingUtilities
+import java.util.function.Predicate
+import java.util.function.Supplier
 
 /**
  * @author dbarashev@bardsoftware.com
  */
-class TaskTableModel(private val taskManager: TaskManager, private val customColumnsManager: CustomPropertyManager) {
-  fun getValueAt(t: Task, defaultColumn: TaskDefaultColumn): Any? {
-    var res: Any? = null
+class TaskTableModel(private val customColumnsManager: CustomPropertyManager) {
+  fun getValueAt(t: Task, defaultColumn: TaskDefaultColumn): Any? =
     when (defaultColumn) {
-      TaskDefaultColumn.PRIORITY -> {
-        res = t.priority
-      }
-      TaskDefaultColumn.INFO -> {
-        res = t.getProgressStatus()
-      }
-      TaskDefaultColumn.NAME -> res = t.name
-      TaskDefaultColumn.BEGIN_DATE -> res = t.start
-      TaskDefaultColumn.END_DATE -> res = t.displayEnd
-      TaskDefaultColumn.DURATION -> res = t.duration
-      TaskDefaultColumn.COMPLETION -> res = t.completionPercentage
-      TaskDefaultColumn.COORDINATOR -> {
-        val tAssign = t.assignments
-        val sb = StringBuffer()
-        var nb = 0
-        var i = 0
-        while (i < tAssign.size) {
-          val resAss = tAssign[i]
-          if (resAss.isCoordinator) {
-            sb.append(if (nb++ == 0) "" else ", ").append(resAss.resource.name)
-          }
-          i++
-        }
-        res = sb.toString()
-      }
-      TaskDefaultColumn.PREDECESSORS -> res = TaskProperties.formatPredecessors(t, ",", true)
-      TaskDefaultColumn.ID -> res = t.taskID
-      TaskDefaultColumn.OUTLINE_NUMBER -> {
-        val outlinePath = t.manager.taskHierarchy.getOutlinePath(t)
-        res = Joiner.on('.').join(outlinePath)
-      }
-      TaskDefaultColumn.COST -> res = t.cost.value
-      TaskDefaultColumn.COLOR -> res = t.color
-      TaskDefaultColumn.RESOURCES -> {
-        val resources = Lists.transform(Arrays.asList(*t.assignments)) { ra ->
-          ra?.resource?.name ?: ""
-        }
-        res = Joiner.on(',').join(resources)
-      }
+      TaskDefaultColumn.PRIORITY       -> t.priority
+      TaskDefaultColumn.INFO           -> t.getProgressStatus()
+      TaskDefaultColumn.NAME           -> t.name
+      TaskDefaultColumn.BEGIN_DATE     -> t.start
+      TaskDefaultColumn.END_DATE       -> t.displayEnd
+      TaskDefaultColumn.DURATION       -> t.duration
+      TaskDefaultColumn.COMPLETION     -> t.completionPercentage
+      TaskDefaultColumn.COORDINATOR    -> t.assignments.joinToString(", ") { it.resource.name }
+      TaskDefaultColumn.PREDECESSORS   -> TaskProperties.formatPredecessors(t, ",", true)
+      TaskDefaultColumn.ID             -> t.taskID
+      TaskDefaultColumn.OUTLINE_NUMBER -> t.manager.taskHierarchy.getOutlinePath(t).joinToString(".")
+      TaskDefaultColumn.COST           -> t.cost.value
+      TaskDefaultColumn.COLOR          -> t.color
+      TaskDefaultColumn.RESOURCES      -> t.assignments.joinToString(",") { it?.resource?.name ?: "" }
       else -> {
+        null
       }
     }
-    // if(tn.getParent()!=null){
-    return res
-  }
 
   fun getValue(t: Task, customProperty: CustomPropertyDefinition): Any? {
     return t.customValues.getValue(customProperty)
   }
 
   fun setValue(value: Any, task: Task, property: TaskDefaultColumn) {
+    fun runInUiThread(code: ()->Unit) = FXUtil.runLater(code)
+
     when (property) {
       TaskDefaultColumn.NAME -> task.createMutator().also {
         it.setName(value.toString())
@@ -91,7 +80,7 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
         val startDate = value as GanttCalendar
         val earliestStart = if (task.thirdDateConstraint == 1) task.third else null
 
-        SwingUtilities.invokeLater {
+        runInUiThread {
           task.createMutatorFixingDuration().let {
             it.setStart(minOf(startDate, earliestStart ?: startDate))
             it.commit()
@@ -99,7 +88,7 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
         }
       }
       TaskDefaultColumn.END_DATE -> {
-        SwingUtilities.invokeLater {
+        runInUiThread {
           task.createMutatorFixingDuration().let {
             it.setEnd(CalendarFactory.createGanttCalendar(
               GPTimeUnitStack.DAY.adjustRight((value as GanttCalendar).time)
@@ -110,7 +99,7 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
       }
       TaskDefaultColumn.DURATION -> {
         val tl = task.duration
-        SwingUtilities.invokeLater {
+        runInUiThread {
           task.createMutator().let {
             it.setDuration(task.manager.createLength(tl.timeUnit, (value as Number).toInt().toFloat()))
             it.commit()
@@ -123,7 +112,7 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
       }
       TaskDefaultColumn.PREDECESSORS -> {
         //List<Integer> newIds = Lists.newArrayList();
-        val specs: MutableList<String> = Lists.newArrayList()
+        val specs: MutableList<String> = mutableListOf()
         for (s in value.toString().split(",".toRegex()).toTypedArray()) {
           if (!s.trim { it <= ' ' }.isEmpty()) {
             specs.add(s.trim { it <= ' ' })
@@ -134,7 +123,7 @@ class TaskTableModel(private val taskManager: TaskManager, private val customCol
           promises = TaskProperties.parseDependencies(
             specs, task
           ) { id -> task.manager.getTask(id!!) }
-          SwingUtilities.invokeLater {
+          runInUiThread {
             try {
               val taskManager = task.manager
               taskManager.algorithmCollection.scheduler.setEnabled(false)
@@ -201,7 +190,7 @@ fun Task.getProgressStatus(): Task.ProgressStatus =
     }
   } else { null } ?: Task.ProgressStatus.NOT_YET
 
-private val STANDARD_COLUMN_COUNT = TaskDefaultColumn.values().size
+private val STANDARD_COLUMN_COUNT = TaskDefaultColumn.entries.size
 
 val NOT_SUPERTASK: Predicate<Task> = Predicate<Task> { task ->
   task?.isSupertask?.not() ?: false
