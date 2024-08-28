@@ -182,19 +182,8 @@ class SqlProjectDatabaseImpl(
 
   @Throws(ProjectDatabaseException::class)
   override fun init() {
-    runScript(initScript)
-    initScript2?.let { runScript(it) }
-  }
-
-  private fun runScript(path: String) {
-    val scriptStream = javaClass.getResourceAsStream(path) ?: throw ProjectDatabaseException("Init script not found")
-    try {
-      val queries = String(scriptStream.readAllBytes(), Charsets.UTF_8)
-
-      dataSource.connection.use { it.createStatement().execute(queries) }
-    } catch (e: Exception) {
-      throw ProjectDatabaseException("Failed to init the database", e)
-    }
+    runScriptFromResource(dataSource, initScript)
+    initScript2?.let { runScriptFromResource(dataSource, it) }
   }
 
   override fun startLog(baseTxnId: BaseTxnId) {

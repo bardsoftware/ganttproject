@@ -25,19 +25,6 @@ fun rebuildTaskDataTable(dataSource: DataSource, customPropertyManager: CustomPr
   runStatements(dataSource, createCustomColumnStatements(customPropertyManager))
 }
 
-fun runStatements(dataSource: DataSource, statements: List<String>) {
-  val sqlScript = """
-    ${statements.joinToString(separator = ";\n")};
-  """.trimIndent()
-  println("Running \n $sqlScript")
-  dataSource.connection.use {
-    it.prepareStatement(sqlScript).use { stmt ->
-      stmt.execute()
-    }
-    it.commit()
-  }
-}
-
 fun createCustomColumnStatements(customPropertyManager: CustomPropertyManager): List<String> =
   customPropertyManager.definitions.map { def ->
     def.calculationMethod?.let {

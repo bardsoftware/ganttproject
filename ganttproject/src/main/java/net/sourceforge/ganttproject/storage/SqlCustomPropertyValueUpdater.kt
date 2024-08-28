@@ -28,11 +28,18 @@ import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 
 /**
- * Creates SQL statements for updating custom property records.
+ * When task custom properties are modified through the UI, we need to propagate the updates to the in-memory database and
+ * to Colloboque. Besides, we also need to generate "undo" statements for both of them.
  */
 internal class SqlTaskCustomPropertiesUpdateBuilder(
-  task: Task, private val onCommit: (List<SqlQuery>, List<SqlUndoQuery>) -> Unit, private val dialect: SQLDialect
+  // The task that is being updated.
+  task: Task,
+  // Code that will apply the constructed statements and DTOs to the database and Colloboque client.
+  private val onCommit: (List<SqlQuery>, List<SqlUndoQuery>) -> Unit,
+  // SQL dialect that shall be used.
+  private val dialect: SQLDialect
 ) {
+
   private val taskUid = task.uid
   private val customPropertyManager = task.manager.customPropertyManager
 

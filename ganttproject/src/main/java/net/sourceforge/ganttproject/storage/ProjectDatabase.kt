@@ -138,5 +138,11 @@ interface ProjectDatabase {
 
   fun addExternalUpdatesListener(listener: ProjectDatabaseExternalUpdateListener)
 
+  /**
+   * This method should be called whenever something changes in the custom properties.
+   * It updates the internal structures and tables for storing custom values as necessary.
+   *
+   * @param customPropertyManager an instance of the CustomPropertyManager with the actual custom property definitions.
+   */
   fun onCustomColumnChange(customPropertyManager: CustomPropertyManager)
 }
