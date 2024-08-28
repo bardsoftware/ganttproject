@@ -21,12 +21,48 @@ package net.sourceforge.ganttproject.storage
 import biz.ganttproject.customproperty.*
 import javax.sql.DataSource
 
+/**
+ * Responsible for the storage of custom properties in the database tables.
+ * Creates and updates table columns appropriately.
+ *
+ * Custom properties are ordered so that "stored" properties go first and calculated properties go last.
+ * This allows for creating and dropping them without errors.
+ */
+class SqlCustomPropertyStorageManager(private val dataSource: DataSource) {
+  // This set caches the SQL statements that build custom columns in the task table. Should anything change in the
+  // custom columns, we will rebuild this set and re-construct the table columns if there are any changes.
+  private val customColumnStatements = mutableSetOf<String>()
+  // This list keeps DROP statements that need to be executed prior to creating new columns.
+  private val dropStatements = mutableListOf<String>()
+
+  /**
+   * This function must be called whenever something changes in the custom property definitions,
+   * e.g. a new one is created or deleted, or the existing one changes.
+   */
+  fun onCustomColumnChange(customPropertyManager: CustomPropertyManager) {
+    val newStatements = createCustomColumnStatements(customPropertyManager)
+    synchronized(customColumnStatements) {
+      if (customColumnStatements != newStatements.toSet()) {
+        runStatements(dataSource, dropStatements)
+        runStatements(dataSource, newStatements)
+
+        customColumnStatements.clear()
+        customColumnStatements.addAll(newStatements)
+        dropStatements.clear()
+        dropStatements.addAll(customPropertyManager.orderedDefinitions().asReversed().map {
+          "ALTER TABLE Task DROP COLUMN ${it.id}"
+        })
+      }
+    }
+  }
+}
+
 fun rebuildTaskDataTable(dataSource: DataSource, customPropertyManager: CustomPropertyManager) {
   runStatements(dataSource, createCustomColumnStatements(customPropertyManager))
 }
 
-fun createCustomColumnStatements(customPropertyManager: CustomPropertyManager): List<String> =
-  customPropertyManager.definitions.map { def ->
+fun createCustomColumnStatements(customPropertyManager: CustomPropertyManager): List<String> {
+  return customPropertyManager.orderedDefinitions().map { def ->
     def.calculationMethod?.let {
       when (it) {
         is SimpleSelect -> "ALTER TABLE Task ADD COLUMN ${def.id} ${def.propertyClass.asSqlType()} GENERATED ALWAYS AS (${it.selectExpression})"
@@ -35,7 +71,8 @@ fun createCustomColumnStatements(customPropertyManager: CustomPropertyManager): 
     } ?: run {
       "ALTER TABLE Task ADD COLUMN ${def.id} ${def.propertyClass.asSqlType()}"
     }
-  }
+  }.toList()
+}
 
 fun createUpdateCustomValuesStatement(taskUid: String, customPropertyManager: CustomPropertyManager, customPropertyHolder: CustomPropertyHolder): String {
   return customPropertyManager.definitions.mapNotNull { def ->
@@ -54,7 +91,18 @@ fun generateSqlValueLiteral(def: CustomPropertyDefinition, value: Any?): String 
     }
   } ?: "NULL"
 
-fun CustomPropertyClass.asSqlType() = when (this) {
+// Orders the definitions so that all stored precede all calculated properties.
+private fun CustomPropertyManager.orderedDefinitions() = this.definitions.sortedWith { o1, o2 ->
+  var result: Int = o1.isCalculated().compareTo(o2.isCalculated())
+  if (result == 0) {
+    result = o1.id.compareTo(o2.id)
+  }
+  result
+}
+
+private fun CustomPropertyDefinition.isCalculated() = this.calculationMethod != null
+
+private fun CustomPropertyClass.asSqlType() = when (this) {
   CustomPropertyClass.TEXT -> "varchar"
   CustomPropertyClass.INTEGER -> "integer"
   CustomPropertyClass.DATE -> "date"

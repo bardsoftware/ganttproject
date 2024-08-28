@@ -20,6 +20,7 @@ package biz.ganttproject.storage
 
 import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.customproperty.CustomPropertyHolder
+import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.customproperty.SimpleSelect
 import biz.ganttproject.storage.db.tables.Task
 import net.sourceforge.ganttproject.TestSetupHelper
@@ -37,9 +38,11 @@ import java.sql.SQLException
 import java.util.*
 import javax.sql.DataSource
 
-class CalculatedPropertyTest{
+class CalculatedPropertyTest {
   private lateinit var dataSource: DataSource
   private lateinit var projectDatabase: ProjectDatabase
+  private lateinit var taskManager: TaskManager
+  private lateinit var customPropertyManager: CustomPropertyManager
 
   @BeforeEach
   fun init() {
@@ -48,6 +51,12 @@ class CalculatedPropertyTest{
     }
     projectDatabase = SqlProjectDatabaseImpl(dataSource)
     projectDatabase.init()
+
+    taskManager = TestSetupHelper.newTaskManagerBuilder().also {
+      it.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }
+    }.build()
+
+    customPropertyManager = taskManager.customPropertyManager
   }
 
   @AfterEach
@@ -59,12 +68,6 @@ class CalculatedPropertyTest{
 
   @Test
   fun `create task data table`() {
-    val taskManager = TestSetupHelper.newTaskManagerBuilder().also {
-      it.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }
-    }.build()
-
-
-    val customPropertyManager = taskManager.customPropertyManager
     customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo")
     customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "bar").also {
       it.calculationMethod = SimpleSelect(it.id, "tpc0 + '--'", CustomPropertyClass.TEXT.javaClass)
@@ -78,12 +81,6 @@ class CalculatedPropertyTest{
 
   @Test
   fun `calculated property value`() {
-    val taskManager = TestSetupHelper.newTaskManagerBuilder().also {
-      it.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }
-    }.build()
-
-
-    val customPropertyManager = taskManager.customPropertyManager
     val foo = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo")
     val bar =customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar").also {
       it.calculationMethod = SimpleSelect(it.id, "duration + 1", CustomPropertyClass.INTEGER.javaClass)
@@ -115,13 +112,7 @@ class CalculatedPropertyTest{
 
   @Test
   fun `column used in a generated column can't be dropped`() {
-    val taskManager = TestSetupHelper.newTaskManagerBuilder().also {
-      it.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }
-    }.build()
-
-
-    val customPropertyManager = taskManager.customPropertyManager
-    val bar = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar").also {
+    customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar").also {
       it.calculationMethod = SimpleSelect(it.id, "duration + 1", CustomPropertyClass.INTEGER.javaClass)
     }
     rebuildTaskDataTable(dataSource, customPropertyManager)
@@ -136,9 +127,24 @@ class CalculatedPropertyTest{
     }
   }
 
+  @Test
+  fun `custom column creation order`() {
+    val manager = SqlCustomPropertyStorageManager(dataSource)
+    customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar").also {
+      it.calculationMethod = SimpleSelect(it.id, "tpc1 + 1", it.type)
+    }
+    customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "foo")
+    // We expect that the stored column tpc1 will be created first.
+    manager.onCustomColumnChange(customPropertyManager)
+
+    customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "baz").also {
+      it.calculationMethod = SimpleSelect(it.id, "'#' || tpc1", it.type)
+    }
+    manager.onCustomColumnChange(customPropertyManager)
+  }
 }
 
-fun createPropertyHolders(taskManager: TaskManager) =
+private fun createPropertyHolders(taskManager: TaskManager) =
   HashMap<Int, CustomPropertyHolder>().also { mapping ->
     for (t in taskManager.getTasks()) {
       mapping[t.taskID] = t.customValues

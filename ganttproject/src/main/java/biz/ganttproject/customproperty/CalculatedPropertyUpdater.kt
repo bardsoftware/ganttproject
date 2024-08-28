@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.customproperty
 
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ColumnConsumer
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 
@@ -36,6 +37,7 @@ class CalculatedPropertyUpdater(
   }
 
   fun update() {
+    LOG.debug(">> updating calculated properties")
     val id2values = propertyHolders()
     val updaters = customPropertyManager.definitions.mapNotNull { def ->
       when (val calculationMethod = def.calculationMethod) {
@@ -46,5 +48,8 @@ class CalculatedPropertyUpdater(
       }
     }
     projectDatabase.mapTasks(*(updaters.toTypedArray()))
+    LOG.debug("<<<")
   }
 }
+
+private val LOG = GPLogger.create("ProjectDatabase.CalculatedProperty")

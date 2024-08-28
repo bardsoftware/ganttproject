@@ -44,6 +44,10 @@ import java.util.*
 import javax.sql.DataSource
 
 typealias ShutdownHook = ()->Unit
+
+/**
+ * This class implements a ProjectDatabase that stores its data in an in-memory H2 relational database.
+ */
 class SqlProjectDatabaseImpl(
   private val dataSource: DataSource,
   private val initScript: String = DB_INIT_SCRIPT_PATH,
@@ -60,6 +64,7 @@ class SqlProjectDatabaseImpl(
     }
   }
 
+  private val customPropertyStorageManager = SqlCustomPropertyStorageManager(dataSource)
   /** Queries which belong to the current transaction. Null if each statement should be committed separately. */
   private var currentTxn: TransactionImpl? = null
   private var localTxnId: Int = -1
@@ -76,20 +81,8 @@ class SqlProjectDatabaseImpl(
     externalUpdatesListener = listener
   }
 
-  // This set caches the SQL statements that build custom columns in the task table. Should anything change in the
-  // custom columns, we will rebuild this set and rebuild the table if there are any changes.
-  private val customColumnStatements = mutableSetOf<String>()
-
-  override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager) {
-    val newStatements = createCustomColumnStatements(customPropertyManager)
-    synchronized(customColumnStatements) {
-      if (customColumnStatements != newStatements.toSet()) {
-        customColumnStatements.clear()
-        customColumnStatements.addAll(newStatements)
-        runStatements(dataSource, newStatements)
-      }
-    }
-  }
+  override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager) =
+    customPropertyStorageManager.onCustomColumnChange(customPropertyManager)
 
   /**
    * Applies updates from Colloboque
