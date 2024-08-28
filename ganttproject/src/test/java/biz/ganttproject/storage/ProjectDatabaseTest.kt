@@ -38,6 +38,7 @@ import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.*
 import java.awt.Color
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -103,28 +104,28 @@ class ProjectDatabaseTest {
     projectDatabase.insertTask(task)
 
     val tasks = dsl.selectFrom(Task.TASK).fetch()
-    Assertions.assertEquals(tasks.size, 1)
+    assertEquals(tasks.size, 1)
 
-    Assertions.assertEquals(tasks[0].uid, "someuid")
-    Assertions.assertEquals(tasks[0].num, 2)
-    Assertions.assertEquals(tasks[0].name, "Task2 name")
-    Assertions.assertEquals(tasks[0].color, ColorConvertion.getColor(Color.CYAN))
-    Assertions.assertEquals(tasks[0].shape, shape.array)
-    Assertions.assertEquals(tasks[0].isMilestone, false)
-    Assertions.assertEquals(tasks[0].isProjectTask, true)
-    Assertions.assertEquals(tasks[0].startDate.toIsoNoHours(), task.start.toXMLString())
-    Assertions.assertEquals(tasks[0].duration, 10)
-    Assertions.assertEquals(tasks[0].completion, 20)
-    Assertions.assertEquals(tasks[0].earliestStartDate.toIsoNoHours(), task.third.toXMLString())
-    Assertions.assertEquals(tasks[0].priority, net.sourceforge.ganttproject.task.Task.Priority.HIGH.persistentValue)
-    Assertions.assertEquals(tasks[0].webLink, "love-testing.com")
-    Assertions.assertEquals(tasks[0].costManualValue.toDouble(), 666.7)
-    Assertions.assertEquals(tasks[0].isCostCalculated, true)
-    Assertions.assertEquals(tasks[0].notes, "abacaba")
+    assertEquals(tasks[0].uid, "someuid")
+    assertEquals(tasks[0].num, 2)
+    assertEquals(tasks[0].name, "Task2 name")
+    assertEquals(tasks[0].color, ColorConvertion.getColor(Color.CYAN))
+    assertEquals(tasks[0].shape, shape.array)
+    assertEquals(tasks[0].isMilestone, false)
+    assertEquals(tasks[0].isProjectTask, true)
+    assertEquals(tasks[0].startDate.toIsoNoHours(), task.start.toXMLString())
+    assertEquals(tasks[0].duration, 10)
+    assertEquals(tasks[0].completion, 20)
+    assertEquals(tasks[0].earliestStartDate.toIsoNoHours(), task.third.toXMLString())
+    assertEquals(tasks[0].priority, net.sourceforge.ganttproject.task.Task.Priority.HIGH.persistentValue)
+    assertEquals(tasks[0].webLink, "love-testing.com")
+    assertEquals(tasks[0].costManualValue.toDouble(), 666.7)
+    assertEquals(tasks[0].isCostCalculated, true)
+    assertEquals(tasks[0].notes, "abacaba")
 
     val txns = projectDatabase.fetchTransactions(limit = 10)
-    Assertions.assertEquals(1, txns.size)
-    Assertions.assertEquals(1, txns[0].colloboqueOperations.size)
+    assertEquals(1, txns.size)
+    assertEquals(1, txns[0].colloboqueOperations.size)
 
     // Verify that executing the log record produces the same task.
     // Importantly, it checks that dates are converted identically.
@@ -206,13 +207,13 @@ class ProjectDatabaseTest {
     projectDatabase.insertTaskDependency(dependency)
 
     val deps = dsl.selectFrom(Tables.TASKDEPENDENCY).fetch()
-    Assertions.assertEquals(deps.size, 1)
+    assertEquals(deps.size, 1)
 
-    Assertions.assertEquals(deps[0].dependantUid, "dependant_uid")
-    Assertions.assertEquals(deps[0].dependeeUid, "dependee_uid")
-    Assertions.assertEquals(deps[0].type, FinishStartConstraintImpl().type.persistentValue)
-    Assertions.assertEquals(deps[0].lag, 10)
-    Assertions.assertEquals(deps[0].hardness, TaskDependency.Hardness.STRONG.identifier)
+    assertEquals(deps[0].dependantUid, "dependant_uid")
+    assertEquals(deps[0].dependeeUid, "dependee_uid")
+    assertEquals(deps[0].type, FinishStartConstraintImpl().type.persistentValue)
+    assertEquals(deps[0].lag, 10)
+    assertEquals(deps[0].hardness, TaskDependency.Hardness.STRONG.identifier)
   }
 
   @Test
@@ -235,17 +236,17 @@ class ProjectDatabaseTest {
     mutator.commit()
 
     val tasks = dsl.selectFrom(Task.TASK).fetch()
-    Assertions.assertEquals(tasks.size, 1)
-    Assertions.assertEquals(tasks[0].uid, "someuid")
-    Assertions.assertEquals(tasks[0].num, 1)
-    Assertions.assertEquals(tasks[0].name, "Name2")
-    Assertions.assertEquals(tasks[0].startDate.toIsoNoHours(), startDateAfter.toXMLString())
-    Assertions.assertNotEquals(tasks[0].startDate.toIsoNoHours(), startDateBefore.toXMLString())
+    assertEquals(tasks.size, 1)
+    assertEquals(tasks[0].uid, "someuid")
+    assertEquals(tasks[0].num, 1)
+    assertEquals(tasks[0].name, "Name2")
+    assertEquals(tasks[0].startDate.toIsoNoHours(), startDateAfter.toXMLString())
+    assertNotEquals(tasks[0].startDate.toIsoNoHours(), startDateBefore.toXMLString())
 
     val txns = projectDatabase.fetchTransactions(limit = 10)
-    Assertions.assertEquals(txns.size, 2)
+    assertEquals(txns.size, 2)
     txns.forEach {
-      Assertions.assertEquals(it.colloboqueOperations.size, 1)
+      assertEquals(it.colloboqueOperations.size, 1)
     }
     assert(txns[0].colloboqueOperations[0] is OperationDto.InsertOperationDto)
     assert(txns[1].colloboqueOperations[0] is OperationDto.UpdateOperationDto)
@@ -277,14 +278,14 @@ class ProjectDatabaseTest {
     txn.commit()
 
     val txns = projectDatabase.fetchTransactions(limit = 2)
-    Assertions.assertEquals(txns.size, 1)
-    Assertions.assertEquals(txns[0].colloboqueOperations.size, 3)
+    assertEquals(txns.size, 1)
+    assertEquals(txns[0].colloboqueOperations.size, 3)
     when (val stmt = txns[0].colloboqueOperations[0]) {
       is OperationDto.InsertOperationDto -> {
         assert(stmt.values.containsValue("Name1"))
       }
       else -> {
-        Assertions.fail("Wrong type of operation! Operation dto: $stmt")
+        fail("Wrong type of operation! Operation dto: $stmt")
       }
     }
     when (val stmt = txns[0].colloboqueOperations[1]) {
@@ -292,7 +293,7 @@ class ProjectDatabaseTest {
         assert(stmt.values.containsValue("Name2"))
       }
       else -> {
-        Assertions.fail("Wrong type of operation! Operation dto: $stmt")
+        fail("Wrong type of operation! Operation dto: $stmt")
       }
     }
     when (val stmt = txns[0].colloboqueOperations[2]) {
@@ -300,7 +301,7 @@ class ProjectDatabaseTest {
         assert(stmt.newValues.containsValue("Name3"))
       }
       else -> {
-        Assertions.fail("Wrong type of operation! Operation dto: $stmt")
+        fail("Wrong type of operation! Operation dto: $stmt")
       }
     }
   }
@@ -332,36 +333,36 @@ class ProjectDatabaseTest {
     txn.undo()
 
     val txns = projectDatabase.fetchTransactions(limit = 10)
-    Assertions.assertEquals(txns.size, 2)
-    Assertions.assertEquals(txns[1].colloboqueOperations.size, 3)
+    assertEquals(txns.size, 2)
+    assertEquals(txns[1].colloboqueOperations.size, 3)
 
     when (val stmt = txns[1].colloboqueOperations[0]) {
       is OperationDto.UpdateOperationDto -> {
-        Assertions.assertEquals("task", stmt.tableName)
+        assertEquals("task", stmt.tableName)
         assert(stmt.newValues.containsKey("name") && stmt.newValues["name"].equals("Name1"))
         assert(stmt.updateBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
     when (val stmt = txns[1].colloboqueOperations[1]) {
       is OperationDto.DeleteOperationDto -> {
-        Assertions.assertEquals("task", stmt.tableName)
+        assertEquals("task", stmt.tableName)
         assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid2")))
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
     when (val stmt = txns[1].colloboqueOperations[2]) {
       is OperationDto.DeleteOperationDto -> {
         val operation = txns[1].colloboqueOperations[2] as OperationDto.DeleteOperationDto
-        Assertions.assertEquals("task", operation.tableName)
+        assertEquals("task", operation.tableName)
         assert(operation.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
   }
@@ -388,9 +389,9 @@ class ProjectDatabaseTest {
     projectDatabase.insertTask(task2)
     txn.commit()
 
-    Assertions.assertEquals(task1, projectDatabase.findTasks("name = 'Name1'", taskManager::getTask)[0])
-    Assertions.assertTrue(projectDatabase.findTasks("completion = 100", taskManager::getTask).isEmpty())
-    Assertions.assertEquals(2, projectDatabase.findTasks("true", taskManager::getTask).size)
+    assertEquals(task1, projectDatabase.findTasks("name = 'Name1'", taskManager::getTask)[0])
+    assertTrue(projectDatabase.findTasks("completion = 100", taskManager::getTask).isEmpty())
+    assertEquals(2, projectDatabase.findTasks("true", taskManager::getTask).size)
   }
 
   @Test
@@ -411,15 +412,15 @@ class ProjectDatabaseTest {
     }
     txn.commit()
     val txns = projectDatabase.fetchTransactions(limit = 2)
-    Assertions.assertEquals(1, txns.size)
+    assertEquals(1, txns.size)
 
-    Assertions.assertEquals(1, txns[0].colloboqueOperations.size)
+    assertEquals(1, txns[0].colloboqueOperations.size)
     when (val stmt = txns[0].colloboqueOperations[0]) {
       is OperationDto.UpdateOperationDto -> {
         assert(stmt.newValues.containsKey("duration")) { "Statement dto is: $stmt" }
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
   }
@@ -451,9 +452,9 @@ class ProjectDatabaseTest {
     }
     txn.commit()
     val txns = projectDatabase.fetchTransactions(limit = 2)
-    Assertions.assertEquals(1, txns.size)
+    assertEquals(1, txns.size)
 
-    Assertions.assertEquals(
+    assertEquals(
       1,
       txns[0].colloboqueOperations.size
     ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
@@ -469,12 +470,12 @@ class ProjectDatabaseTest {
         assert(stmt.newValues.containsKey("completion") && stmt.newValues["completion"] == "50")
         assert(stmt.newValues.containsKey("is_cost_calculated") && stmt.newValues["is_cost_calculated"] == "false")
         assert(stmt.newValues.containsKey("cost_manual_value") && stmt.newValues["cost_manual_value"] == "10")
-        Assertions.assertFalse(stmt.newValues.containsKey("expand"))
-        Assertions.assertFalse(stmt.newValues.containsKey("start_date"))
-        Assertions.assertFalse(stmt.newValues.containsKey("expiration"))
+        assertFalse(stmt.newValues.containsKey("expand"))
+        assertFalse(stmt.newValues.containsKey("start_date"))
+        assertFalse(stmt.newValues.containsKey("expiration"))
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
   }
@@ -502,20 +503,20 @@ class ProjectDatabaseTest {
     }
     txn.commit()
     val txns = projectDatabase.fetchTransactions(startLocalTxnId = 1, limit = 2)
-    Assertions.assertEquals(1, txns.size)
+    assertEquals(1, txns.size)
 
-    Assertions.assertEquals(
+    assertEquals(
       2,
       txns[0].colloboqueOperations.filter { it !is OperationDto.NoOperationDto }.size
     ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
     when (val stmt = txns[0].colloboqueOperations[0]) {
       is OperationDto.DeleteOperationDto -> {
-        Assertions.assertEquals("taskcustomcolumn", stmt.tableName)
+        assertEquals("taskcustomcolumn", stmt.tableName)
         assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1"))) {"Statement dto $stmt"}
         // TODO -- "not in tpc0" field name?
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
     when (val stmt = txns[0].colloboqueOperations[1]) {
@@ -528,7 +529,7 @@ class ProjectDatabaseTest {
         ) {"Statement dto $stmt"}
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
   }
@@ -568,20 +569,20 @@ class ProjectDatabaseTest {
     txn.undo()
 
     val txns = projectDatabase.fetchTransactions(startLocalTxnId = 3, limit = 3)
-    Assertions.assertEquals(2, txns.size)
+    assertEquals(2, txns.size)
 
     val ops = txns[0].colloboqueOperations.filter { it !is OperationDto.NoOperationDto }
-    Assertions.assertEquals(
+    assertEquals(
       2,
       ops.size
     ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
     when (val stmt = ops[0]) {
       is OperationDto.DeleteOperationDto -> {
-        Assertions.assertEquals("taskcustomcolumn", stmt.tableName)
+        assertEquals("taskcustomcolumn", stmt.tableName)
         assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
     when (val stmt = ops[1]) {
@@ -594,22 +595,22 @@ class ProjectDatabaseTest {
         ) {"Statement dto $stmt"}
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
 
     txns[1].colloboqueOperations.filter { it !is OperationDto.NoOperationDto }.let { ops ->
-      Assertions.assertEquals(
+      assertEquals(
         1,
         ops.size
       ) { "Recorded statements: $ops" }
       when (val stmt = ops[0]) {
         is OperationDto.DeleteOperationDto -> {
-          Assertions.assertEquals("taskcustomcolumn", stmt.tableName)
+          assertEquals("taskcustomcolumn", stmt.tableName)
           assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
         }
         else -> {
-          Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+          fail("Wrong type of operation. Operation dto: $stmt")
         }
       }
       // No merge statements as the default value is set.
@@ -639,19 +640,19 @@ class ProjectDatabaseTest {
     }
     txn.commit()
     val txns = projectDatabase.fetchTransactions(startLocalTxnId = 1, limit = 2)
-    Assertions.assertEquals(1, txns.size)
+    assertEquals(1, txns.size)
 
     txns[0].colloboqueOperations.filter { it !is OperationDto.NoOperationDto }.let { ops ->
-      Assertions.assertEquals(1, ops.size) { "Recorded statements: ${txns[0].colloboqueOperations}" }
+      assertEquals(1, ops.size) { "Recorded statements: ${txns[0].colloboqueOperations}" }
 
       when (val stmt = ops[0]) {
         is OperationDto.DeleteOperationDto -> {
-          Assertions.assertEquals("taskcustomcolumn", stmt.tableName)
+          assertEquals("taskcustomcolumn", stmt.tableName)
           assert(stmt.deleteBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
           // TODO: assertFalse(stmt.matches(""".*and.*not.in.*tpc0.*""".toRegex()))
         }
         else -> {
-          Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+          fail("Wrong type of operation. Operation dto: $stmt")
         }
       }
     }
@@ -675,19 +676,19 @@ class ProjectDatabaseTest {
     }
     txn.commit()
     val txns = projectDatabase.fetchTransactions(limit = 2)
-    Assertions.assertEquals(1, txns.size)
+    assertEquals(1, txns.size)
 
-    Assertions.assertEquals(
+    assertEquals(
       1,
       txns[0].colloboqueOperations.size
     ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
     when (val stmt = txns[0].colloboqueOperations[0]) {
       is OperationDto.UpdateOperationDto -> {
-        Assertions.assertTrue(stmt.newValues.containsKey("start_date"))
-        Assertions.assertEquals(TestSetupHelper.newTuesday().toXMLString(), stmt.newValues["start_date"])
+        assertTrue(stmt.newValues.containsKey("start_date"))
+        assertEquals(TestSetupHelper.newTuesday().toXMLString(), stmt.newValues["start_date"])
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
   }
@@ -727,9 +728,9 @@ class ProjectDatabaseTest {
     }
     txn.commit()
     val txns = projectDatabase.fetchTransactions(limit = 2)
-    Assertions.assertEquals(1, txns.size)
+    assertEquals(1, txns.size)
 
-    Assertions.assertEquals(
+    assertEquals(
       3,
       txns[0].colloboqueOperations.size
     ) { "Recorded statements: ${txns[0].colloboqueOperations}" }
@@ -741,7 +742,7 @@ class ProjectDatabaseTest {
         assert(stmt.updateBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid3"))) { "Operation dto: $stmt" }
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
 
@@ -751,7 +752,7 @@ class ProjectDatabaseTest {
         assert(stmt.updateBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid2"))) { "Operation dto: $stmt" }
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
 
@@ -761,7 +762,7 @@ class ProjectDatabaseTest {
         assert(stmt.updateBinaryConditions.contains(Triple("uid", BinaryPred.EQ, "someuid1")))
       }
       else -> {
-        Assertions.fail("Wrong type of operation. Operation dto: $stmt")
+        fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
   }
