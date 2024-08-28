@@ -60,10 +60,6 @@ class CustomColumnsManager : CustomPropertyManager {
     return result
   }
 
-  override fun createDefinition(typeAsString: String, colName: String, defValue: String?): CustomPropertyDefinition {
-    return createDefinition(createId(), typeAsString, colName, defValue)
-  }
-
   override fun createDefinition(propertyClass: CustomPropertyClass, colName: String, defValue: String?): CustomPropertyDefinition {
     val stub = create(propertyClass, defValue)
     val result = CustomColumn(this, colName, stub.propertyClass, stub.defaultValue)
