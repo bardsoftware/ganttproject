@@ -49,7 +49,7 @@ dependencies {
     jooqGenerator 'org.jooq:jooq-codegen-gradle:3.19.11'
     jooqGenerator 'org.jooq:jooq-meta-extensions:3.19.11'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2'
     implementation 'net.harawata:appdirs:1.2.2'
     implementation "com.michael-bull.kotlin-result:kotlin-result:2.0.0"
 
