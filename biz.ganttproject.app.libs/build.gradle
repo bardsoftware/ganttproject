@@ -22,8 +22,8 @@ configurations {
 
 dependencies {
     exported 'org.slf4j:slf4j-api:2.0.16'
-    exported 'ch.qos.logback:logback-classic:1.5.6'
-    exported "org.slf4j:jul-to-slf4j:2.0.13"
+    exported 'ch.qos.logback:logback-classic:1.5.7'
+    exported "org.slf4j:jul-to-slf4j:2.0.16"
     implementation "com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:0.64.+"
     implementation "com.vladsch.flexmark:flexmark-ext-tables:0.64.+"
     implementation "com.vladsch.flexmark:flexmark-ext-attributes:0.64.+"
@@ -48,7 +48,7 @@ dependencies {
     exported "de.jensd:fontawesomefx-materialicons:2.2.0-9.1.2"
 
     exported 'net.java.balloontip:balloontip:1.2.4.1'
-    exported "org.apache.commons:commons-lang3:3.16.0"
+    exported "org.apache.commons:commons-lang3:3.17.0"
     exported "org.apache.commons:commons-text:1.12.0"
 
     exported "org.apache.httpcomponents:httpclient:4.5.14"
