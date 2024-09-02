@@ -18,10 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.view;
 
+import biz.ganttproject.FXUtil;
 import biz.ganttproject.app.UninitializedView;
 import biz.ganttproject.app.View;
 import biz.ganttproject.app.ViewPane;
-import javafx.application.Platform;
 import javafx.scene.Node;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -54,6 +54,7 @@ public class ViewManagerImpl implements GPViewManager {
   private final CutAction myCutAction;
   private final PasteAction myPasteAction;
   private final List<ViewProvider> myViewProviders;
+  private boolean isInitialized = false;
 
   public ViewManagerImpl(IGanttProject project, UIFacade uiFacade, GPUndoManager undoManager, ViewPane viewPane,
                          List<ViewProvider> viewProviders) {
@@ -83,6 +84,14 @@ public class ViewManagerImpl implements GPViewManager {
      */
   }
 
+  public void init(ViewProvider... viewProviders) {
+    if (!isInitialized) {
+      isInitialized = true;
+      for (ViewProvider viewProvider : viewProviders) {
+        createView(viewProvider);
+      }
+    }
+  }
   @Override
   public GPAction getCopyAction() {
     return myCopyAction;
@@ -141,9 +150,10 @@ public class ViewManagerImpl implements GPViewManager {
 
   @Override
   public void createView(ViewProvider viewProvider) {
-    Platform.runLater(() -> {
+    FXUtil.INSTANCE.runLater(() -> {
       var fxView = myViewPane.createView(viewProvider);
       myViews.put(viewProvider, fxView);
+      return null;
     });
   }
 

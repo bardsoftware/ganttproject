@@ -58,6 +58,7 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
       stage.setScene(Scene(vbox))
       APP_LOGGER.debug("... app scene done.")
       stage.onShown = EventHandler {
+        ganttProject.viewManager.init(ganttProject.ganttViewProvider, ganttProject.resourceViewProvider)
         APP_LOGGER.debug("onShown(): resolving the barrier...")
         ganttProject.uiFacade.windowOpenedBarrier.resolve(true)
 //        ganttProject.notificationManager.addNotifications(

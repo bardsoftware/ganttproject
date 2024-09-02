@@ -33,6 +33,7 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.view.ViewProvider
@@ -40,9 +41,7 @@ import javax.swing.JComponent
 import javax.swing.SwingUtilities
 
 interface View {
-  fun refresh() {
-
-  }
+  fun refresh() {}
 
   var isVisible: Boolean
   var isActive: Boolean;
@@ -58,6 +57,7 @@ class ViewPane {
 
   fun createView(viewProvider: ViewProvider): View {
     val node = viewProvider.node
+
     val id = viewProvider.id
     val tab = Tab().also {
       it.content = node
@@ -109,12 +109,30 @@ class UninitializedView(private val viewPane: ViewPane, private val viewProvider
 
 }
 
+/**
+ * Components included into the view: image, split pane, a table node.
+ */
 data class ViewComponents(val image: Pane, val splitPane: SplitPane, val table: Node) {
+  // Indicates if the split divider was initialized successfully.
   private var isDividerInitialized = false
+
   fun initializeDivider(columnsWidth: Double) {
+    // We need to initialize the split pane divider to fit all table columns.
+    // For that, we need to know the split pane width. Unfortunately, when the split pane is being inserted into the
+    // node tree, it is zero until something happens. This hack adds a one-off listener to the split pane width to
+    // initialize it when it changes from zero to something meaningful.
     if (!isDividerInitialized) {
-      splitPane.setDividerPosition(0, columnsWidth/splitPane.width)
-      isDividerInitialized = true
+      if (splitPane.width != 0.0) {
+        splitPane.setDividerPosition(0, columnsWidth / splitPane.width)
+        isDividerInitialized = true
+      } else {
+        splitPane.widthProperty().addListener { _, oldValue, newValue ->
+          if (oldValue == 0.0 && newValue != 0.0) {
+            splitPane.setDividerPosition(0, columnsWidth / splitPane.width)
+            isDividerInitialized = true
+          }
+        }
+      }
     }
   }
 }
@@ -140,15 +158,12 @@ fun createViewComponents(
 
   val table = tableBuilder()
   val splitPane = SplitPane().also {split ->
-
     split.orientation = Orientation.HORIZONTAL
-
-    val left = vbox {
+    split.items.add(vbox {
       add(tableToolbarBuilder())
       add(imagePane)
       add(table, null, growth = Priority.ALWAYS)
-    }
-    split.items.add(left)
+    })
 
     val swingNode = SwingNode()
     val right = vbox {

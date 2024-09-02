@@ -51,4 +51,6 @@ public interface GPViewManager {
   void refresh();
 
   View getView(String id);
+
+  void init(ViewProvider... viewProviders);
 }

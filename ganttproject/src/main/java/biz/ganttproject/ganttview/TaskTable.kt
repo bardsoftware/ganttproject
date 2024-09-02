@@ -535,9 +535,8 @@ class TaskTable(
     return false
   }
 
-  private val VIRTUAL_COLUMNS = setOf(TaskDefaultColumn.COLOR.stub.id, TaskDefaultColumn.INFO.stub.id, TaskDefaultColumn.NOTES.stub.id)
   private fun buildColumns(columns: List<ColumnList.Column>) {
-    val filteredColumns = columns.filter { col -> !VIRTUAL_COLUMNS.contains(col.id)  }
+    val filteredColumns = columns.filter { col -> (TaskDefaultColumn.find(col.id)?.isIconified ?: false).not()  }
     if (anyDifference(filteredColumns, treeTable.columns.map { it.userData as ColumnList.Column }.toList())) {
       val tableColumns =
         columns.mapNotNull { column ->
@@ -730,7 +729,6 @@ class TaskTable(
       it.isVisible = column.isVisible
       it.userData = column
       it.prefWidth = column.width.toDouble()
-      it.minWidth = column.width.toDouble()
     }
   }
 

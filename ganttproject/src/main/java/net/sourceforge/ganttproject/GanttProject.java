@@ -226,12 +226,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         getProject(), getUIFacade(), area.getJComponent(),
         getUIConfiguration(), myTaskTableSupplier, myTaskActions, myUiInitializationPromise);
 
-    getViewManager().createView(myGanttChartTabContent);
     //getViewManager().toggleVisible(myGanttChartTabContent);
 
     myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(), getResourcePanel(),
         getResourcePanel().area);
-    getViewManager().createView(myResourceChartTabContent);
     //getViewManager().toggleVisible(myResourceChartTabContent);
 
 //++

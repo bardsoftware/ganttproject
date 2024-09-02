@@ -46,7 +46,6 @@ import kotlin.math.round
  * @author dbarashev@bardsoftware.com
  */
 class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
-  internal val tableMenu = ContextMenu()
   var contextMenuActions: (MenuBuilder) -> Unit = { }
   var onProperties: () -> Unit = {}
   var onColumnResize: () -> Unit = {}
@@ -117,6 +116,7 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     val totalPrefWidth = tableColumns.filter { it.isVisible }.sumOf { it.prefWidth }
     prefWidth = totalPrefWidth + vbarWidth()
     columns.setAll(tableColumns)
+    resizePolicy.resizeTable(this.width)
   }
 
   fun autosizeColumns() {
@@ -345,7 +345,7 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
     return true
   }
 
-  private fun resizeTable(newValue: Double) {
+  internal fun resizeTable(newValue: Double) {
     val visibleColumns = table.columns.filter { it.isVisible }
     if (visibleColumns.isEmpty()) {
       return

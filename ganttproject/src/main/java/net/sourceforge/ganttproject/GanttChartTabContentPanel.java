@@ -217,7 +217,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private TaskTable setupTaskTable() {
     var taskTable = myTaskTableSupplier.get();
     taskTable.getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> updateTimelineHeight());
-    taskTable.loadDefaultColumns();
     taskTable.getFilterManager().getHiddenTaskCount().addListener((obs,  oldValue,  newValue) -> Platform.runLater(() -> {
       if (newValue.intValue() != 0) {
         filterTaskLabel.setText(GanttLanguage.getInstance().formatText("taskTable.toolbar.tasksHidden", newValue.intValue()));
@@ -246,7 +245,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
 
     @Override
   public Node getNode() {
-    myInitializationCompleted.invoke();
     myViewComponents = ViewPaneKt.createViewComponents(
       /*toolbarBuilder=*/      () -> {
         var toolbar = createToolbarBuilder().build().getToolbar$ganttproject();
@@ -269,13 +267,16 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       /*chartBuilder=*/        this::getChartComponent,
       myWorkbenchFacade.getDpiOption()
     );
+
     setHeaderHeight(() -> taskTable.getHeaderHeightProperty().intValue());
     myViewComponents.getSplitPane().getDividers().get(0).positionProperty().addListener((observable, oldValue, newValue) ->
       myDividerOption.setValue(newValue.doubleValue(), GanttChartTabContentPanel.this)
     );
-    taskTable.getColumnList().getTotalWidthProperty().addListener((observable, oldValue, newValue) -> {
+    taskTable.getColumnListWidthProperty().addListener((observable, oldValue, newValue) -> {
       myViewComponents.initializeDivider(taskTable.getColumnList().getTotalWidth());
     });
+    taskTable.loadDefaultColumns();
+    myInitializationCompleted.invoke();
     return myViewComponents.getSplitPane();
   }
 
