@@ -230,6 +230,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager, databaseProxy);
     addProjectEventListener(databaseProxy.createProjectEventListener());
     myTaskManager.addTaskListener(databaseProxy.createTaskEventListener());
+    myTaskManager.getCustomPropertyManager().addListener(databaseProxy.createTaskCustomPropertyListener());
     myTabPane = new GanttTabbedPane();
     var viewPane = new ViewPane();
 
@@ -276,7 +277,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
         return GanttProjectBase.this.getParserFactory();
       }
     };
-//    myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
+    myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
     myViewManager = new ViewManagerImpl(getProject(), myUIFacade, getUndoManager(), viewPane, PluginManager.getViewProviders());
     myProjectUIFacade = new ProjectUIFacadeImpl(stage, myUIFacade, myDocumentManager, myUndoManager, myProjectImpl);
     myRssChecker = new RssFeedChecker(myUIFacade);

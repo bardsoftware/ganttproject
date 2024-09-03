@@ -24,22 +24,13 @@ import net.sourceforge.ganttproject.storage.ProjectDatabase
 
 class CalculatedPropertyUpdater(
   private val projectDatabase: ProjectDatabase,
-  private val customPropertyManager: CustomPropertyManager,
+  private val customPropertyManager: ()->CustomPropertyManager,
   private val propertyHolders: ()->Map<Int,CustomPropertyHolder?>) {
-
-  init {
-    customPropertyManager.addListener(object: CustomPropertyListener {
-      override fun customPropertyChange(event: CustomPropertyEvent) {
-        projectDatabase.onCustomColumnChange(customPropertyManager)
-      }
-    })
-
-  }
 
   fun update() {
     LOG.debug(">> updating calculated properties")
     val id2values = propertyHolders()
-    val updaters = customPropertyManager.definitions.mapNotNull { def ->
+    val updaters = customPropertyManager().definitions.mapNotNull { def ->
       when (val calculationMethod = def.calculationMethod) {
         is SimpleSelect -> ColumnConsumer(calculationMethod) { taskNum, value ->
           id2values[taskNum]?.setValue(def, value)

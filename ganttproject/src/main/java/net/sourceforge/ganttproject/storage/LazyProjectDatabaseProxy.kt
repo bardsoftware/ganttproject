@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import biz.ganttproject.customproperty.CalculatedPropertyUpdater
 import biz.ganttproject.customproperty.CustomPropertyListener
 import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.storage.db.tables.records.TaskRecord
@@ -37,7 +38,15 @@ import net.sourceforge.ganttproject.undo.GPUndoListener
  */
 class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabase, private val taskManager: () -> TaskManager): ProjectDatabase {
   private var lazyProjectDatabase: ProjectDatabase? = null
-  private val projectEventListenerImpl by lazy { ProjectEventListenerImpl(this, taskManager) }
+  private val calculatedPropertyUpdater by lazy { CalculatedPropertyUpdater(this,
+    { taskManager().customPropertyManager },
+    {
+      taskManager().tasks.map {
+        it.taskID to it.customValues
+      }.toMap()
+    }
+  ) }
+  private val projectEventListenerImpl by lazy { ProjectEventListenerImpl(this, taskManager, calculatedPropertyUpdater) }
 
   private fun isInitialized(): Boolean = lazyProjectDatabase != null
 
@@ -115,5 +124,7 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
 
   fun createProjectEventListener(): ProjectEventListener = projectEventListenerImpl
   fun createTaskEventListener(): TaskListener = projectEventListenerImpl
+
   fun createUndoListener(): GPUndoListener = projectEventListenerImpl
+  fun createTaskCustomPropertyListener(): CustomPropertyListener  = projectEventListenerImpl
 }

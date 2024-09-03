@@ -20,11 +20,13 @@ package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.app.Barrier
 import biz.ganttproject.app.BarrierEntrance
+import biz.ganttproject.customproperty.CalculatedPropertyUpdater
 import biz.ganttproject.customproperty.CustomPropertyEvent
 import biz.ganttproject.customproperty.CustomPropertyListener
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
+import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.*
 import net.sourceforge.ganttproject.undo.GPUndoListener
@@ -36,8 +38,9 @@ import javax.swing.event.UndoableEditEvent
  * @param projectDatabase - database which holds the current project state.
  */
 internal class ProjectEventListenerImpl(
-  private val projectDatabase: ProjectDatabase, private val taskManagerSupplier: ()-> TaskManager)
-  : TaskListener, ProjectEventListener.Stub(), GPUndoListener {
+  private val projectDatabase: ProjectDatabase, private val taskManagerSupplier: ()->TaskManager,
+  private val calculatedPropertyUpdater: CalculatedPropertyUpdater)
+  : TaskListener, ProjectEventListener.Stub(), GPUndoListener, CustomPropertyListener {
 
   private fun withLogger(errorMessage: () -> String, body: () -> Unit) {
     try {
@@ -52,6 +55,7 @@ internal class ProjectEventListenerImpl(
     barrier.await {
       projectDatabase.onCustomColumnChange(it.taskCustomColumnManager)
       it.taskManager.tasks.forEach(projectDatabase::insertTask)
+      calculatedPropertyUpdater.update();
     }
   }
 
@@ -101,14 +105,26 @@ internal class ProjectEventListenerImpl(
   }
 
   override fun undoableEditHappened(e: UndoableEditEvent?) {
+    calculatedPropertyUpdater.update()
   }
 
   override fun undoOrRedoHappened() {
-    projectDatabase.shutdown()
-    taskManagerSupplier().tasks.forEach(projectDatabase::insertTask)
+  }
+
+  override fun projectRestoring(completion: Barrier<Document?>) {
+    completion.await {
+      projectDatabase.shutdown()
+      projectDatabase.onCustomColumnChange(taskManagerSupplier().customPropertyManager)
+      taskManagerSupplier().tasks.forEach(projectDatabase::insertTask)
+      calculatedPropertyUpdater.update();
+    }
   }
 
   override fun undoReset() {
+  }
+
+  override fun customPropertyChange(event: CustomPropertyEvent) {
+    projectDatabase.onCustomColumnChange(taskManagerSupplier().customPropertyManager)
   }
 }
 

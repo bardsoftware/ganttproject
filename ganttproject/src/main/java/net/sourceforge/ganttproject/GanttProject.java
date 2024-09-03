@@ -20,8 +20,6 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.LoggerApi;
 import biz.ganttproject.app.*;
-import biz.ganttproject.customproperty.CalculatedPropertyUpdater;
-import biz.ganttproject.customproperty.CustomPropertyHolder;
 import biz.ganttproject.lib.fx.TreeTableCellsKt;
 import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
@@ -40,7 +38,6 @@ import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.action.view.ViewCycleAction;
 import net.sourceforge.ganttproject.action.view.ViewMenu;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
-import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.document.Document;
@@ -58,21 +55,14 @@ import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.GanttLanguage.Event;
 import net.sourceforge.ganttproject.parser.GPParser;
 import net.sourceforge.ganttproject.parser.ParserFactory;
-import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceEvent;
 import net.sourceforge.ganttproject.resource.ResourceView;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.undo.GPUndoListener;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.swing.*;
-import javax.swing.event.UndoableEditEvent;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
@@ -316,39 +306,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     } catch (IOException e) {
       gpLogger.error(Arrays.toString(e.getStackTrace()), new Object[]{}, ImmutableMap.of(), e);
     }
-    var calculatedPropertyUpdater = new CalculatedPropertyUpdater(myProjectDatabase, getTaskCustomColumnManager(),
-      () -> {
-        var mapping = new HashMap<Integer, CustomPropertyHolder>();
-        for (Task t : getTaskManager().getTasks()) {
-          mapping.put(t.getTaskID(), t.getCustomValues());
-        }
-        return mapping;
-      });
-    getProjectImpl().addProjectEventListener(new ProjectEventListener.Stub() {
-      @Override
-      public void projectOpened(BarrierEntrance barrierRegistry, Barrier<IGanttProject> barrier) {
-        barrier.await(iGanttProject -> {
-          calculatedPropertyUpdater.update();
-          return Unit.INSTANCE;
-        });
-      }
-    });
-    getUndoManager().addUndoableEditListener(new GPUndoListener() {
-      @Override
-      public void undoOrRedoHappened() {
-
-      }
-
-      @Override
-      public void undoReset() {
-
-      }
-
-      @Override
-      public void undoableEditHappened(UndoableEditEvent e) {
-        calculatedPropertyUpdater.update();
-      }
-    });
   }
 
   public WindowGeometry getWindowGeometry() {
