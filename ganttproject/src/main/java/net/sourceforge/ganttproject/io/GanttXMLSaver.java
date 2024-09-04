@@ -90,7 +90,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
         addAttribute("view-date", CalendarFactory.createGanttCalendar(area.getStartDate()).toXMLString(), attrs);
       }
       if (myUIFacade != null) {
-        addAttribute("view-index", "" + myUIFacade.getViewIndex(), attrs);
+        addAttribute("view-index", myUIFacade.getViewManager().getActiveView().getId(), attrs);
         // TODO for GP 2.0: move view configurations into <view> tag (see
         // ViewSaver)
 //        addAttribute("gantt-divider-location", "" + myUIFacade.getGanttDividerLocation(), attrs);

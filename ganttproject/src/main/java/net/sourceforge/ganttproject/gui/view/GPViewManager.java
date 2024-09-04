@@ -38,6 +38,7 @@ public interface GPViewManager {
 
   ChartSelection getSelectedArtefacts();
 
+  View getActiveView();
   Chart getActiveChart();
 
   void activateNextView();

@@ -294,7 +294,7 @@ internal fun createProjectModificationListener(project: IGanttProject, uiFacade:
   }).also {
       it.taskAddedHandler = {
         project.setModified()
-        uiFacade.viewIndex = UIFacade.GANTT_INDEX
+        uiFacade.viewManager.getView(UIFacade.GANTT_INDEX.toString()).isActive = true
         uiFacade.refresh()
       }
     }

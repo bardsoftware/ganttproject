@@ -189,7 +189,7 @@ public class GanttDialogPerson {
         applyChanges();
         myResourceManager.add(person);
         myUIFacade.getResourceTree().setSelected(person, true);
-        myUIFacade.setViewIndex(UIFacade.RESOURCES_INDEX);
+        myUIFacade.getViewManager().getView(String.valueOf(UIFacade.RESOURCES_INDEX)).setActive(true);
       });
     }
     change = true;

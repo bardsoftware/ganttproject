@@ -101,7 +101,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   private final DocumentManager myDocumentManager;
   protected final SimpleObjectProperty<Document> myObservableDocument = new SimpleObjectProperty<>();
   /** The tabbed pane with the different parts of the project */
-  private final GanttTabbedPane myTabPane;
   private final GPUndoManager myUndoManager;
 
   private final RssFeedChecker myRssChecker;
@@ -214,7 +213,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   }
 
   @Override
-  public ProjectDatabase getProjectDatabase() {
+  public @NotNull ProjectDatabase getProjectDatabase() {
     return myProjectDatabase;
   }
 
@@ -231,7 +230,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     addProjectEventListener(databaseProxy.createProjectEventListener());
     myTaskManager.addTaskListener(databaseProxy.createTaskEventListener());
     myTaskManager.getCustomPropertyManager().addListener(databaseProxy.createTaskCustomPropertyListener());
-    myTabPane = new GanttTabbedPane();
     var viewPane = new ViewPane();
 
     myNotificationManager = new NotificationManagerImpl(this::getUIFacade);
@@ -488,22 +486,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
       model.fireTableStructureChanged();
       myTreeView.updateUI();
     }
-  }
-
-  protected void createContentPane(FXToolbarBuilder toolbar) {
-    //++myContentPaneBuilder.build(toolbar, getContentPane());
-    //++
-//    setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-//
-//    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-//    Dimension windowSize = getPreferredSize();
-//    // Put the frame at the middle of the screen
-//    setLocation(screenSize.width / 2 - (windowSize.width / 2), screenSize.height / 2 - (windowSize.height / 2));
-//    pack();
-  }
-
-  public GanttTabbedPane getTabs() {
-    return myTabPane;
   }
 
   public IGanttProject getProject() {

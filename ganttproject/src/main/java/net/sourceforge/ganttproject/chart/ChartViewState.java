@@ -29,6 +29,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager.ZoomState;
 
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @author bard
@@ -67,7 +68,8 @@ public class ChartViewState implements ScrollingListener, ZoomListener {
   public void zoomChanged(ZoomEvent e) {
     myCurrentZoomState = e.getNewZoomState();
     Date date;
-    if (myUIFacade.getViewIndex() == UIFacade.GANTT_INDEX) {
+    var activeView = myUIFacade.getViewManager().getActiveView();
+    if (activeView != null && Objects.equals(activeView.getId(), String.valueOf(UIFacade.GANTT_INDEX))) {
       date = myUIFacade.getTaskSelectionManager().getSelectedTasks().stream()
           .map(t -> t.getStart().getTime())
           .min(Comparator.naturalOrder()).orElse(myChart.getStartDate());

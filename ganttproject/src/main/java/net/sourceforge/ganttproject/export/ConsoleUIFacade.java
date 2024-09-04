@@ -29,6 +29,7 @@ import biz.ganttproject.lib.fx.TreeCollapseView;
 import javafx.scene.Node;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -143,17 +144,6 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public int getViewIndex() {
-    // TODO Auto-generated method stub
-    return 0;
-  }
-
-  @Override
-  public void setViewIndex(int viewIndex) {
-    // TODO Auto-generated method stub
-  }
-
-    @Override
     public GPViewManager getViewManager() {
         return null;
     }
@@ -310,5 +300,15 @@ class ViewProviderStub implements ViewProvider {
   @Override
   public Function0<Unit> getRefresh() {
     return () -> null;
+  }
+
+  @Override
+  public @NotNull GPAction getCreateAction() {
+    return null;
+  }
+
+  @Override
+  public @NotNull GPAction getDeleteAction() {
+    return null;
   }
 }

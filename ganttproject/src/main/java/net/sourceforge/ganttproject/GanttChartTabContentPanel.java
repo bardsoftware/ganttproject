@@ -291,6 +291,17 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
 
   @Override
   public String getId() {
-    return "ganttChart";
+    return String.valueOf(UIFacade.GANTT_INDEX);
   }
+
+  @Override
+  public @NotNull GPAction getCreateAction() {
+    return myTaskActions.getCreateAction();
+  }
+
+  @Override
+  public @NotNull GPAction getDeleteAction() {
+    return myTaskActions.getDeleteAction();
+  }
+
 }

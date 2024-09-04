@@ -126,11 +126,6 @@ public interface UIFacade {
 
   Chart getActiveChart();
 
-  /** @return the index of the displayed tab. */
-  int getViewIndex();
-
-  void setViewIndex(int viewIndex);
-
   GPViewManager getViewManager();
   /** Refreshes the UI (ie repaints all tasks in the chart) */
   void refresh();

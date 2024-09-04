@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.gui.view
 
 import biz.ganttproject.core.option.GPOption
 import javafx.scene.Node
+import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
 
 /**
@@ -31,4 +32,6 @@ interface ViewProvider {
   val node: Node?
   val id: String
   val refresh: ()->Unit
+  val createAction: GPAction
+  val deleteAction: GPAction
 }

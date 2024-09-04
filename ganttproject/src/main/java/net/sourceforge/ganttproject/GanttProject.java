@@ -35,7 +35,6 @@ import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
-import net.sourceforge.ganttproject.action.view.ViewCycleAction;
 import net.sourceforge.ganttproject.action.view.ViewMenu;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -44,7 +43,6 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
-import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.view.ViewProvider;
@@ -128,11 +126,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   public JMenuBar getMenuBar() {
     var bar = new JMenuBar();
-    //setJMenuBar(bar);
-    // Allocation of the menus
 
     bar.add(myProjectMenu);
-
     bar.add(myEditMenu);
 
     ViewMenu viewMenu = new ViewMenu(getProject(), getViewManager(), getUiFacadeImpl().getDpiOption(), getUiFacadeImpl().getChartFontOption(), "view");
@@ -216,12 +211,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         getProject(), getUIFacade(), area.getJComponent(),
         getUIConfiguration(), myTaskTableSupplier, myTaskActions, myUiInitializationPromise);
 
-    //getViewManager().toggleVisible(myGanttChartTabContent);
-
     myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(), getResourcePanel(),
         getResourcePanel().area);
-    //getViewManager().toggleVisible(myResourceChartTabContent);
-
 //++
 //    addComponentListener(new ComponentAdapter() {
 //      @Override
@@ -237,20 +228,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 //    });
     startupLogger.debug("5. calculating size and packing...");
 
-    //var fxToolbar = createToolbar();
-//    Platform.runLater(() -> {
-//      GPCloudStatusBar cloudStatusBar
-//      Scene statusBarScene = new Scene(cloudStatusBar.getLockPanel(), Color.TRANSPARENT);
-//      statusBarScene.getStylesheets().add("biz/ganttproject/app/StatusBar.css");
-//      getStatusBar().setLeftScene(statusBarScene);
-//    });
-
-    //createContentPane(fxToolbar);
-    //final FXToolbar toolbar = fxToolbar;
-    //final List<? extends JComponent> buttons = addButtons(getToolBar());
-    // Chart tabs
-    //getTabs().setSelectedIndex(0);
-
     startupLogger.debug("6. changing language ...");
     languageChanged(null);
     // Add Listener after language update (to be sure that it is not updated
@@ -258,7 +235,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     language.addListener(this);
 
     startupLogger.debug("7. first attempt to restore bounds");
-    restoreBounds();
   //++
     //    addWindowListener(new WindowAdapter() {
 //      @Override
@@ -295,11 +271,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     //++addMouseListenerToAllContainer(this.getComponents());
 
     // Add globally available actions/key strokes
-    GPAction viewCycleForwardAction = new ViewCycleAction(getViewManager(), true);
-    UIUtil.pushAction(getTabs(), true, viewCycleForwardAction.getKeyStroke(), viewCycleForwardAction);
-
-    GPAction viewCycleBackwardAction = new ViewCycleAction(getViewManager(), false);
-    UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
+//    GPAction viewCycleForwardAction = new ViewCycleAction(getViewManager(), true);
+//    UIUtil.pushAction(getTabs(), true, viewCycleForwardAction.getKeyStroke(), viewCycleForwardAction);
+//
+//    GPAction viewCycleBackwardAction = new ViewCycleAction(getViewManager(), false);
+//    UIUtil.pushAction(getTabs(), true, viewCycleBackwardAction.getKeyStroke(), viewCycleBackwardAction);
 
     try {
       myObservableDocument.set(getDocumentManager().newUntitledDocument());
@@ -453,7 +429,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     {
       final GPAction taskNewAction = myTaskActions.getCreateAction().asToolbarAction();
       final GPAction resourceNewAction = getResourceTree().getNewAction().asToolbarAction();
-      newAction = new ArtefactNewAction(() -> getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskNewAction : resourceNewAction, new Action[]{taskNewAction, resourceNewAction});
+      newAction = new ArtefactNewAction(
+        () -> getViewManager().getActiveView().getCreateAction(),
+        new Action[]{taskNewAction, resourceNewAction}
+      );
       builder.addButton(taskNewAction).addButton(resourceNewAction);
     }
 
@@ -461,7 +440,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     {
       final GPAction taskDeleteAction = myTaskActions.getDeleteAction();
       final GPAction resourceDeleteAction = getResourceTree().getDeleteAction().asToolbarAction();
-      deleteAction = new ArtefactDeleteAction(() -> getTabs().getSelectedIndex() == UIFacade.GANTT_INDEX ? taskDeleteAction : resourceDeleteAction, new Action[]{taskDeleteAction, resourceDeleteAction});
+      deleteAction = new ArtefactDeleteAction(
+        () -> getViewManager().getActiveView().getDeleteAction(),
+        new Action[]{taskDeleteAction, resourceDeleteAction}
+      );
     }
     builder.setArtefactActions(newAction, deleteAction);
 
@@ -471,7 +453,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       final GPAction resourcePropertiesAction = getResourceTree().getPropertiesAction().asToolbarAction();
       propertiesAction = new TaskResourcePropertiesAction(
         taskPropertiesAction, resourcePropertiesAction,
-        () -> getTabs().getSelectedIndex(),
+        () -> Integer.valueOf(getViewManager().getActiveView().getId()),
         () -> getTaskSelectionManager().getSelectedTasks());
     }
 
@@ -479,14 +461,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // TODO: it might be necessary to uncomment it
     //UIUtil.registerActions(myGanttChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
     UIUtil.registerActions(myResourceChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
-    getTabs().getModel().addChangeListener(e -> {
-      // Tell artefact actions that the active provider changed, so they
-      // are able to update their state according to the current delegate
-      newAction.actionStateChanged();
-      propertiesAction.actionStateChanged();
-      deleteAction.actionStateChanged();
-      getTabs().getSelectedComponent().requestFocus();
-    });
+//    getTabs().getModel().addChangeListener(e -> {
+//      // Tell artefact actions that the active provider changed, so they
+//      // are able to update their state according to the current delegate
+//      newAction.actionStateChanged();
+//      propertiesAction.actionStateChanged();
+//      deleteAction.actionStateChanged();
+//      getTabs().getSelectedComponent().requestFocus();
+//    });
 
     builder.addButton(deleteAction)
         .addWhitespace()
@@ -501,6 +483,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     builder.addSearchBox(mySearchUi);
     builder.withClasses("toolbar-common", "toolbar-main", "toolbar-big");
     //return result;
+    getWindowOpenedBarrier().await(opened -> {
+      if (opened) {
+        newAction.init();
+        deleteAction.init();
+        propertiesAction.init();
+      }
+      return Unit.INSTANCE;
+    });
     return builder;
   }
 
@@ -811,22 +801,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         myGanttChartTabContent,
         myResourceChartTabContent,
         () -> myTaskTableSupplier.get().getColumnList(), () -> myTaskFilterManager);
-    }
-  }
-
-  @Override
-  public int getViewIndex() {
-    if (getTabs() == null) {
-      return -1;
-    }
-    return getTabs().getSelectedIndex();
-  }
-
-  @Override
-  public void setViewIndex(int viewIndex) {
-    if (getTabs().getTabCount() > viewIndex) {
-      SwingUtilities.invokeLater(() -> getTabs().setSelectedIndex(viewIndex));
-
     }
   }
 

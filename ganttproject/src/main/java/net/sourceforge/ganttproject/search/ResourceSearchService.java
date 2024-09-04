@@ -61,7 +61,7 @@ public class ResourceSearchService extends SearchServiceBase<ResourceSearchServi
       myTreeUiFacade.setSelected(r.getObject(), false);
       myTreeUiFacade.makeVisible(r.getObject());
     }
-    myUiFacade.setViewIndex(myViewIndex);
+    myUiFacade.getViewManager().getView(String.valueOf(UIFacade.RESOURCES_INDEX)).setActive(true);
     myTreeUiFacade.getTreeComponent().requestFocusInWindow();
   }
 

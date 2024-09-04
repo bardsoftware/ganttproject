@@ -33,7 +33,7 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
+import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.view.ViewProvider
@@ -47,12 +47,14 @@ interface View {
   var isActive: Boolean;
   val chart: Chart
   val id: String
+
+  val createAction: GPAction
+  val deleteAction: GPAction
 }
 
 class ViewPane {
   private val tabPane = TabPane()
   var onViewCreated: ()->Unit = {}
-  val selectedViewId get() = tabPane.selectionModel.selectedItem.id
   fun createComponent(): Parent = tabPane
 
   fun createView(viewProvider: ViewProvider): View {
@@ -67,14 +69,20 @@ class ViewPane {
     }
     tabPane.tabs.add(tab)
     tabPane.layout()
-    return ViewImpl(tabPane, tab, viewProvider.chart)
+    return ViewImpl(tabPane, tab, viewProvider.chart, viewProvider.createAction, viewProvider.deleteAction)
   }
 }
 
 fun ViewProvider.getLabel() = localizer.formatText("${this.id}.label")
 private val localizer = RootLocalizer.createWithRootKey("view")
 
-private class ViewImpl(private val tabPane: TabPane, private val tab: Tab, override val chart: Chart): View {
+private class ViewImpl(
+  private val tabPane: TabPane,
+  private val tab: Tab,
+  override val chart: Chart,
+  override val createAction: GPAction,
+  override val deleteAction: GPAction): View {
+
   override var isVisible: Boolean = true
     set(value) {
       FXUtil.runLater {
@@ -88,7 +96,9 @@ private class ViewImpl(private val tabPane: TabPane, private val tab: Tab, overr
     get() = tab.isSelected
     set(value) {
       if (value) {
-        tabPane.selectionModel.select(tab)
+        FXUtil.runLater {
+          tabPane.selectionModel.select(tab)
+        }
       }
     }
   override val id: String
@@ -106,6 +116,10 @@ class UninitializedView(private val viewPane: ViewPane, private val viewProvider
   override val chart: Chart
     get() = error("Not supposed to be called")
   override val id = viewProvider.id
+  override val createAction: GPAction
+    get() = TODO("Not yet implemented")
+  override val deleteAction: GPAction
+    get() = TODO("Not yet implemented")
 
 }
 

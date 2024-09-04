@@ -31,7 +31,6 @@ import java.beans.PropertyChangeListener;
  */
 public class ArtefactAction extends GPAction implements ActionStateChangedListener {
   private final ActiveActionProvider myProvider;
-  private final Action[] myDelegates;
 
   public ArtefactAction(String name, IconSize iconSize, ActiveActionProvider provider, Action[] delegates) {
     super(name, iconSize.asString());
@@ -46,10 +45,6 @@ public class ArtefactAction extends GPAction implements ActionStateChangedListen
         }
       });
     }
-    myDelegates = delegates;
-    setFontAwesomeLabel(UIUtil.getFontawesomeLabel(this));
-    // Make action state equal to active delegate action state
-    actionStateChanged();
   }
 
   @Override
@@ -93,5 +88,11 @@ public class ArtefactAction extends GPAction implements ActionStateChangedListen
       }
       updateTooltip();
     }
+  }
+
+  public void init() {
+    setFontAwesomeLabel(UIUtil.getFontawesomeLabel(this));
+    // Make action state equal to active delegate action state
+    actionStateChanged();
   }
 }

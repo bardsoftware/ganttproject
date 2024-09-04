@@ -414,16 +414,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   @Override
-  public int getViewIndex() {
-    return myFallbackDelegate.getViewIndex();
-  }
-
-  @Override
-  public void setViewIndex(int viewIndex) {
-    myFallbackDelegate.setViewIndex(viewIndex);
-  }
-
-  @Override
   public GPViewManager getViewManager() {
     return myFallbackDelegate.getViewManager();
   }

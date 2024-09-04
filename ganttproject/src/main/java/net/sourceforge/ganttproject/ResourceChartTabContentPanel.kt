@@ -102,17 +102,17 @@ internal class ResourceChartTabContentPanel(
       return viewComponents.splitPane
 
     }
-  override val id: String
-    get() = "resourceChart"
+  override val id: String = UIFacade.RESOURCES_INDEX.toString()
   override val refresh: () -> Unit
     get() = {
-      myTreeFacade.getResourceTreeTableModel().updateResources()
+      myTreeFacade.resourceTreeTableModel.updateResources()
       (chart as? TimelineChart)?.let {
-        myTreeFacade.getResourceTreeTable().setRowHeight(it.getModel().calculateRowHeight())
+        myTreeFacade.resourceTreeTable.setRowHeight(it.getModel().calculateRowHeight())
       }
       chart.reset()
     }
-
+  override val createAction: GPAction = myTreeFacade.resourceActionSet.resourceNewAction
+  override val deleteAction: GPAction = myTreeFacade.resourceActionSet.resourceDeleteAction
 
   init {
     addTableResizeListeners(myTreeFacade.treeComponent, myTreeFacade.treeTable.scrollPane.viewport)

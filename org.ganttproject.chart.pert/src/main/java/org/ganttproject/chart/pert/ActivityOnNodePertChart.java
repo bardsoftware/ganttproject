@@ -24,6 +24,7 @@ import javafx.embed.swing.SwingNode;
 import javafx.scene.Node;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.StringUtils;
@@ -777,6 +778,15 @@ public class ActivityOnNodePertChart extends PertChart {
     };
   }
 
+  @Override
+  public @NotNull GPAction getCreateAction() {
+    return null;
+  }
+
+  @Override
+  public @NotNull GPAction getDeleteAction() {
+    return null;
+  }
 
   /**
    * Graphical node that is rendered on graphics.

@@ -112,6 +112,11 @@ public class ViewManagerImpl implements GPViewManager {
     return getSelectedView().getChart().getSelection();
   }
 
+  @Override
+  public View getActiveView() {
+    return getSelectedView();
+  }
+
   ProjectEventListener getProjectEventListener() {
     return new ProjectEventListener.Stub() {
       @Override
@@ -145,7 +150,8 @@ public class ViewManagerImpl implements GPViewManager {
   }
 
   public View getSelectedView() {
-    return myViews.values().stream().filter(View::isActive).findFirst().orElse(null);
+    var views = myViews.values().stream();
+    return views.filter(View::isActive).findFirst().orElseGet(() -> myViews.values().stream().findFirst().orElse(null));
   }
 
   @Override
