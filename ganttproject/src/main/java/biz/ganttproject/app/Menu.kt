@@ -45,9 +45,7 @@ class MenuBarBuilder {
       menuBar.menus.add(menu)
 
       actions.forEach {
-        val menuItem = it?.let {action ->
-          action.asMenuItem()
-        } ?: SeparatorMenuItem()
+        val menuItem = it?.asMenuItem() ?: SeparatorMenuItem()
         menu.items.add(menuItem)
       }
     }

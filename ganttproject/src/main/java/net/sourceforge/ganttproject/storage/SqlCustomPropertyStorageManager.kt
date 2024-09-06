@@ -100,8 +100,6 @@ private fun CustomPropertyManager.orderedDefinitions() = this.definitions.sorted
   result
 }
 
-private fun CustomPropertyDefinition.isCalculated() = this.calculationMethod != null
-
 private fun CustomPropertyClass.asSqlType() = when (this) {
   CustomPropertyClass.TEXT -> "varchar"
   CustomPropertyClass.INTEGER -> "integer"

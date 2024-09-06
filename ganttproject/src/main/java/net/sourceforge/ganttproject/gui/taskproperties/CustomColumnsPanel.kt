@@ -1,5 +1,5 @@
 /*
-Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+Copyright 2003-2024 Dmitry Barashev, BarD Software s.r.o.
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -16,176 +16,215 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.gui.taskproperties;
+package net.sourceforge.ganttproject.gui.taskproperties
 
-import biz.ganttproject.core.table.ColumnList;
-import biz.ganttproject.customproperty.*;
-import biz.ganttproject.ganttview.ApplyExecutorType;
-import biz.ganttproject.ganttview.ColumnManagerKt;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.storage.ProjectDatabase;
-import net.sourceforge.ganttproject.task.TaskMutator;
-import net.sourceforge.ganttproject.undo.GPUndoManager;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.HashMap;
-import java.util.Map;
+import biz.ganttproject.FXUtil
+import biz.ganttproject.core.table.ColumnList
+import biz.ganttproject.createButton
+import biz.ganttproject.customproperty.CustomColumnsException
+import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyDefinition
+import biz.ganttproject.customproperty.CustomPropertyHolder
+import biz.ganttproject.customproperty.CustomPropertyManager
+import biz.ganttproject.ganttview.ApplyExecutorType
+import biz.ganttproject.ganttview.showResourceColumnManager
+import biz.ganttproject.ganttview.showTaskColumnManager
+import biz.ganttproject.lib.fx.vbox
+import javafx.beans.property.BooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.StringProperty
+import javafx.beans.value.ObservableValue
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
+import javafx.embed.swing.JFXPanel
+import javafx.event.EventHandler
+import javafx.scene.Scene
+import javafx.scene.control.ContentDisplay
+import javafx.scene.control.SelectionMode
+import javafx.scene.control.TableCell
+import javafx.scene.control.TableColumn
+import javafx.scene.control.TableColumn.CellDataFeatures
+import javafx.scene.control.cell.TextFieldTableCell
+import javafx.scene.layout.BorderPane
+import javafx.scene.layout.HBox
+import javafx.util.Callback
+import javafx.util.converter.DefaultStringConverter
+import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.language.GanttLanguage
+import net.sourceforge.ganttproject.storage.ProjectDatabase
+import net.sourceforge.ganttproject.task.TaskMutator
+import net.sourceforge.ganttproject.undo.GPUndoManager
+import org.controlsfx.control.tableview2.TableColumn2
+import org.controlsfx.control.tableview2.TableView2
+import java.awt.event.ActionEvent
+import java.lang.RuntimeException
+import javax.swing.JComponent
 
 /**
  * This class implements a UI component for editing custom properties.
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public class CustomColumnsPanel {
-  private final Type myType;
-  private final GPUndoManager myUndoManager;
-  private final ProjectDatabase myProjectDatabase;
+class CustomColumnsPanel(
+  manager: CustomPropertyManager,
+  projectDatabase: ProjectDatabase,
+  type: Type,
+  undoManager: GPUndoManager,
+  customPropertyHolder: CustomPropertyHolder,
+  tableHeaderFacade: ColumnList
+) {
+  private val myType: Type = type
+  private val myUndoManager: GPUndoManager = undoManager
+  private val myProjectDatabase: ProjectDatabase = projectDatabase
 
-  public enum Type { TASK, RESOURCE }
-  private static final Map<Integer, Integer> ourColumnWidth = new HashMap<>();
-  private static final GanttLanguage language = GanttLanguage.getInstance();
-  private static final String[] COLUMN_NAMES = new String[] { CustomColumnsPanel.language.getText("name"),
-    CustomColumnsPanel.language.getText("typeClass"), CustomColumnsPanel.language.getText("value") };
-
-  private final CustomPropertyManager myCustomPropertyManager;
-
-  private CustomColumnTableModel myModel;
-
-  private JTable myTable;
-
-  private final CustomPropertyHolder myHolder;
-
-  private final ColumnList myTableHeaderFacade;
-
-  public CustomColumnsPanel(
-    CustomPropertyManager manager, ProjectDatabase projectDatabase, Type type, GPUndoManager undoManager, CustomPropertyHolder customPropertyHolder, ColumnList tableHeaderFacade) {
-    assert manager != null;
-    myCustomPropertyManager = manager;
-    myHolder = customPropertyHolder;
-    myTableHeaderFacade = tableHeaderFacade;
-    myType = type;
-    myUndoManager = undoManager;
-    myProjectDatabase = projectDatabase;
+  enum class Type {
+    TASK, RESOURCE
   }
 
-  public JComponent getComponent() {
-    myModel = new CustomColumnTableModel();
-    myTable = new JTable(myModel);
+  private val myCustomPropertyManager: CustomPropertyManager = manager
 
-    UIUtil.setupTableUI(myTable);
-    JPanel buttonPanel = new JPanel(new BorderLayout());
-    buttonPanel.add(new JButton(new GPAction("columns.manage.label") {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        switch (myType) {
-          case TASK:
-            ColumnManagerKt.showTaskColumnManager(myTableHeaderFacade, myCustomPropertyManager, myUndoManager, myProjectDatabase, ApplyExecutorType.SWING);
-            break;
-          case RESOURCE:
-            ColumnManagerKt.showResourceColumnManager(myTableHeaderFacade, myCustomPropertyManager, myUndoManager, myProjectDatabase, ApplyExecutorType.SWING);
-            break;
+  private val myHolder: CustomPropertyHolder = customPropertyHolder
 
-        }
-        myModel.fireTableStructureChanged();
+  private val myTableHeaderFacade: ColumnList = tableHeaderFacade
+
+  private val actionShowManager = object : GPAction("columns.manage.label") {
+    override fun actionPerformed(e: ActionEvent?) {
+      when (myType) {
+        Type.TASK -> showTaskColumnManager(
+          myTableHeaderFacade,
+          myCustomPropertyManager,
+          myUndoManager,
+          myProjectDatabase,
+          ApplyExecutorType.DIRECT
+        )
+
+        Type.RESOURCE -> showResourceColumnManager(
+          myTableHeaderFacade,
+          myCustomPropertyManager,
+          myUndoManager,
+          myProjectDatabase,
+          ApplyExecutorType.SWING
+        )
       }
-    }), BorderLayout.WEST);
-    SwingUtilities.invokeLater(() -> CommonPanel.loadColumnWidth(myTable, ourColumnWidth));
-    return CommonPanel.createTableAndActions(myTable, buttonPanel);
+    }
+  }.also {
+    it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
   }
 
-  public void commit(TaskMutator mutator) {
-    if (myTable.isEditing()) {
-      myTable.getCellEditor().stopCellEditing();
+  private val tableItems: ObservableList<TableViewRow> = FXCollections.observableArrayList(myHolder.customProperties.map {
+    TableViewRow(
+      SimpleStringProperty(it.definition.name),
+      SimpleStringProperty(it.valueAsString),
+      SimpleBooleanProperty(it.definition.calculationMethod != null),
+      it.definition
+    )
+  }.sortedWith(Comparator<TableViewRow> { o1, o2 ->
+    var result: Int = o1.def.isCalculated().compareTo(o2.def.isCalculated())
+    if (result == 0) {
+      result = o1.def.name.compareTo(o2.def.name)
     }
-    CommonPanel.saveColumnWidths(myTable, ourColumnWidth);
-    try {
-      mutator.setCustomProperties(myHolder);
-    } catch (CustomColumnsException e) {
-      throw new RuntimeException(e);
-    }
-  }
+    result
+  }))
 
-  class CustomColumnTableModel extends DefaultTableModel {
-    public CustomColumnTableModel() {
+  fun getFxNode() = BorderPane().apply {
+    stylesheets.add("/biz/ganttproject/app/tables.css")
+    this.top = vbox {
+      add(HBox().also {
+        it.children.add(createButton(actionShowManager, onlyIcon = false).also { btn ->
+          btn?.styleClass?.addAll("btn", "btn-regular", "secondary", "small")
+        })
+      })
+      add(HBox().also {
+        it.styleClass.add("medskip")
+      })
     }
-
-    public void reload() {
-      fireTableDataChanged();
-    }
-
-    @Override
-    public String getColumnName(int column) {
-      return COLUMN_NAMES[column];
-    }
-
-    @Override
-    public Class<?> getColumnClass(int column) {
-      return String.class;
-    }
-
-    @Override
-    public boolean isCellEditable(int row, int col) {
-      return col == 2;
-    }
-
-    @Override
-    public int getColumnCount() {
-      return COLUMN_NAMES.length;
-    }
-
-    @Override
-    public int getRowCount() {
-      return myCustomPropertyManager.getDefinitions().size();
-    }
-
-    @Override
-    public Object getValueAt(int row, int col) {
-      if (row < 0 || row >= myCustomPropertyManager.getDefinitions().size()) {
-        return null;
-      }
-      CustomPropertyDefinition def = myCustomPropertyManager.getDefinitions().get(row);
-      switch (col) {
-      case 0:
-        return def.getName();
-      case 1:
-        return getCustomPropertyClassDisplayName(def.getPropertyClass());
-      case 2:
-        for (CustomProperty cp : myHolder.getCustomProperties()) {
-          if (cp.getDefinition() == def) {
-            return cp.getValueAsString();
+    this.center = TableView2<TableViewRow>().also { table ->
+      table.isEditable = true
+      val nameColumn = TableColumn2<TableViewRow, String>(GanttLanguage.getInstance().getText("name")).also {
+        it.cellValueFactory = object : Callback<CellDataFeatures<TableViewRow, String>, ObservableValue<String>> {
+          override fun call(param: CellDataFeatures<TableViewRow, String>): ObservableValue<String> {
+            return param.value.name
           }
         }
-        var defValue = def.getDefaultValue();
-        return defValue == null ? "" : defValue;
-      default:
-        throw new IllegalStateException();
+        it.cellFactory = createCellFactory {
+          false to (it.def.calculationMethod != null)
+        }
+        it.isResizable = true
       }
-    }
+      val valueColumn = TableColumn2<TableViewRow, String>(GanttLanguage.getInstance().getText("value")).also {
+        it.cellValueFactory = object : Callback<CellDataFeatures<TableViewRow, String>, ObservableValue<String>> {
+          override fun call(param: CellDataFeatures<TableViewRow, String>): ObservableValue<String> {
+            return param.value.value
+          }
+        }
+        it.cellFactory = createCellFactory {
+          (it.def.calculationMethod != null).let { !it to it }
+        }
 
-    private String getCustomPropertyClassDisplayName(CustomPropertyClass propertyClass) {
-      return GanttLanguage.getInstance().formatText(propertyClass.getID());
-    }
+        it.isResizable = true
+        it.isEditable = true
+      }
 
-    @Override
-    public void setValueAt(Object o, int row, int col) {
-      if (row < 0 || row >= myCustomPropertyManager.getDefinitions().size()) {
-        return;
+      valueColumn.onEditCommit = EventHandler { evt ->
+        val tableViewRow = evt.tableView.items.get(evt.tablePosition.row)
+        tableViewRow.value.set(evt.newValue)
       }
-      if (col != 2) {
-        throw new IllegalArgumentException();
+
+      table.columns.setAll(listOf(nameColumn, valueColumn))
+      table.selectionModel.selectionMode = SelectionMode.SINGLE
+      table.items = tableItems
+      table.widthProperty().addListener { _, oldValue, newValue ->
+        if (oldValue == 0.0 && newValue != 0.0) {
+          nameColumn.prefWidth = newValue.toDouble()/2.0
+          valueColumn.prefWidth= newValue.toDouble()/2.0
+        }
       }
-      try {
-        myHolder.addCustomProperty(myCustomPropertyManager.getDefinitions().get(row), String.valueOf(o));
-      } catch (CustomColumnsException ex) {
-        throw new RuntimeException(ex);
-      }
-      // myHolder.addCustomProperty(def,
-      // DateParser.getIsoDate(GanttLanguage.getInstance().parseDate(String.valueOf(o))));
     }
   }
+
+  private fun createCellFactory(isEditable: (TableViewRow)-> Pair<Boolean, Boolean>): ValueCellFactory {
+    return object : ValueCellFactory {
+      override fun call(param: TableColumn<TableViewRow, String>?): TableCell<TableViewRow, String>? {
+        val result = object : TextFieldTableCell<TableViewRow, String>(DefaultStringConverter()) {
+          override fun updateItem(item: String?, empty: Boolean) {
+            super.updateItem(item, empty)
+            val isEditable = this.tableRow?.item?.let(isEditable) ?: false to false
+            this.isEditable = isEditable.first
+            this.isDisable = isEditable.second
+          }
+        }
+        return result
+      }
+    }
+  }
+
+  fun getComponent(): JComponent {
+    return JFXPanel().also { jfxPanel ->
+      FXUtil.run {
+        jfxPanel.scene = Scene(getFxNode())
+      }
+    }
+  }
+
+  fun commit(mutator: TaskMutator) {
+//    CommonPanel.saveColumnWidths(myTable, ourColumnWidth)
+    tableItems.forEach {
+      if (it.def.calculationMethod == null) {
+        myHolder.addCustomProperty(it.def, it.value.get())
+      }
+    }
+
+    try {
+      mutator.setCustomProperties(myHolder)
+    } catch (e: CustomColumnsException) {
+      throw RuntimeException(e)
+    }
+  }
+}
+
+typealias ValueCellFactory = Callback<TableColumn<TableViewRow, String>, TableCell<TableViewRow, String>>
+data class TableViewRow(var name: StringProperty, var value: StringProperty, var isCalculated: BooleanProperty, val def: CustomPropertyDefinition)
+private fun getCustomPropertyClassDisplayName(propertyClass: CustomPropertyClass): String? {
+  return GanttLanguage.getInstance().formatText(propertyClass.iD)
 }
