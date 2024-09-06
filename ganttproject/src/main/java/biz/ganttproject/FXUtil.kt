@@ -19,10 +19,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject
 
 import biz.ganttproject.app.applicationFont
+import biz.ganttproject.app.getGlyphIcon
 import javafx.animation.FadeTransition
 import javafx.application.Platform
+import javafx.event.ActionEvent
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.Parent
+import javafx.scene.control.Button
+import javafx.scene.control.ContentDisplay
 import javafx.scene.control.Labeled
 import javafx.scene.layout.BorderPane
 import javafx.scene.paint.Color
@@ -33,6 +38,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
+import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.gui.ActionUtil
+import javax.swing.SwingUtilities
 import javax.swing.UIManager
 
 /**
@@ -295,6 +303,37 @@ fun String.colorFromUiManager(): Color? =
 fun centerOnOwner(child: Window, owner: Window) {
   child.x = owner.x + owner.width / 2.0 - child.width / 2.0
   child.y = owner.y + owner.height / 2.0 - child.height / 2.0
+}
+
+fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
+  val icon = action.getGlyphIcon()
+  val contentDisplay = action.getValue(GPAction.TEXT_DISPLAY) as? ContentDisplay ?: if (onlyIcon) ContentDisplay.GRAPHIC_ONLY else ContentDisplay.RIGHT
+  if (icon == null && contentDisplay != ContentDisplay.TEXT_ONLY) {
+    return null
+  }
+  val hasAutoRepeat = action.getValue(GPAction.HAS_AUTO_REPEAT) as? Boolean ?: false
+  return Button("", icon).apply {
+    this.contentDisplay = contentDisplay
+    this.alignment = Pos.CENTER_LEFT
+    if (contentDisplay != ContentDisplay.GRAPHIC_ONLY) {
+      this.textProperty().bind(action.localizedNameObservable)
+    } else {
+      this.styleClass.add("graphic-only")
+    }
+    this.addEventHandler(ActionEvent.ACTION) {
+      SwingUtilities.invokeLater {
+        action.actionPerformed(null)
+      }
+    }
+    this.isDisable = !action.isEnabled
+    action.addPropertyChangeListener {
+      this.isDisable = !action.isEnabled
+    }
+    if (hasAutoRepeat) {
+      ActionUtil.setupAutoRepeat(this, action, 200);
+    }
+    //applyFontStyle(this)
+  }
 }
 
 private val fxScope = CoroutineScope(Dispatchers.JavaFx)

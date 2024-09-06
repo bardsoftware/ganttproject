@@ -1,0 +1,74 @@
+/*!
+ * Copyright 2024 BarD Software s.r.o., Dmitry Barashev.
+ *
+ * This file is part of GanttProject, an opensource project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
+@import "theme";
+
+.tab {
+  -fx-background-color: transparent;
+  -fx-border-width: 0 0 3 0;
+  -fx-border-color: transparent;
+  -fx-border-radius: 0;
+  -fx-padding: 1ex 1em;
+
+  &:hover, .dlg-lock .tab:focused {
+    -fx-border-color: $gp-light-gray;
+    -fx-cursor: hand;
+  }
+
+  &:selected {
+    -fx-border-color: $gp-orange;
+
+    .tab-label {
+      -fx-text-fill: $gp-dark-gray;
+    }
+  }
+  .tab-label {
+    -fx-text-fill: $gp-medium-gray;
+    -fx-font-weight: bold;
+  }
+}
+
+.tab-pane {
+  -fx-background-insets: 0;
+  -fx-border-insets: 0;
+  -fx-padding: 0;
+
+  .tab-header-area {
+    -fx-padding: 1ex 0 0 0;
+    -fx-background-color: #eee;
+    -fx-pref-width: 100%;
+
+    .tab-header-background {
+      -fx-background-color: transparent;
+    }
+  }
+
+  .focus-indicator {
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+  }
+}
+
+.tab-contents {
+  -fx-padding: 3ex 2em 1ex 2em;
+
+  .pane-buttons {
+    -fx-padding: 1ex 0;
+  }
+}
+

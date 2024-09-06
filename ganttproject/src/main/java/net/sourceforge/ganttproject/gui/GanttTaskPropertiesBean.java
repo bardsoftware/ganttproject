@@ -54,8 +54,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 
 /**
  * Real panel for editing task properties
@@ -79,11 +77,11 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   // items
 
-  private JPanel generalPanel;
+  JPanel generalPanel;
 
-  private JComponent predecessorsPanel;
+  JComponent predecessorsPanel;
 
-  private JPanel resourcesPanel;
+  JPanel resourcesPanel;
 
   private JPanel notesPanel;
 
@@ -132,7 +130,7 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private final TaskScheduleDatesPanel myTaskScheduleDates;
 
-  private CustomColumnsPanel myCustomColumnPanel = null;
+  CustomColumnsPanel myCustomColumnPanel = null;
 
   private TaskDependenciesPanel myDependenciesPanel;
 
@@ -330,47 +328,10 @@ public class GanttTaskPropertiesBean extends JPanel {
   private void init() {
     constructNotesPanel();
 
-    // TabbedPane that includes the following four
-    JTabbedPane tabbedPane = new JTabbedPane() {
-      @Override
-      public void addTab(String title, Icon icon, Component component) {
-        super.addTab(title, icon, UIUtil.contentPaneBorder((JComponent) component));
-      }
-    };
     constructGeneralPanel();
-
-    tabbedPane.addTab(language.getText("general"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
-        generalPanel);
-
     constructPredecessorsPanel();
-    tabbedPane.addTab(language.getText("predecessors"), new ImageIcon(getClass().getResource("/icons/relashion.gif")),
-        predecessorsPanel);
-
     constructResourcesPanel();
-
-    tabbedPane.addTab(language.getCorrectedLabel("human"), new ImageIcon(getClass().getResource("/icons/res_16.gif")),
-        resourcesPanel);
-
-    setLayout(new BorderLayout());
-
-    add(tabbedPane, BorderLayout.CENTER);
-
     constructCustomColumnPanel();
-    tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(getClass().getResource("/icons/custom.gif")),
-        myCustomColumnPanel.getComponent());
-    tabbedPane.addFocusListener(new FocusAdapter() {
-      private boolean isFirstFocusGain = true;
-
-      @Override
-      public void focusGained(FocusEvent e) {
-        super.focusGained(e);
-        if (isFirstFocusGain) {
-          nameField1.requestFocus();
-          isFirstFocusGain = false;
-        }
-      }
-    });
-    tabbedPane.setBorder(BorderFactory.createEmptyBorder(2, 0, 5, 0));
   }
 
   /** Apply the modified properties to the selected Tasks */

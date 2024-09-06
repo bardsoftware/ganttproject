@@ -79,6 +79,8 @@ interface CustomPropertyDefinition {
    * Returns null is this property is stored.
    */
   var calculationMethod: CalculationMethod?
+
+  fun isCalculated(): Boolean  = this.calculationMethod != null
 }
 
 interface CalculationMethod {

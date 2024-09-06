@@ -66,6 +66,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
   -fx-padding: 0.75ex 2em;
   -fx-cursor: hand;
 
+  &.small {
+    -fx-padding: 0.4ex 1em;
+    -fx-font-size: 75%;
+  }
   &.secondary {
     -fx-background-color: transparent;
     -fx-border-color: $gp-medium-gray;
@@ -91,7 +95,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-text-fill: derive($gp-dark-gray, -10%);
   }
 }
-
 
 .border-etched {
     -fx-border-base: gray;

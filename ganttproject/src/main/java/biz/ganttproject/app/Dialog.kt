@@ -21,6 +21,7 @@ package biz.ganttproject.app
 import biz.ganttproject.FXUtil
 import biz.ganttproject.centerOnOwner
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.walkTree
 import com.sandec.mdfx.MDFXNode
 import javafx.animation.FadeTransition
 import javafx.animation.ParallelTransition
@@ -31,7 +32,6 @@ import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.*
-import javafx.scene.control.ButtonBar.ButtonData
 import javafx.scene.effect.BoxBlur
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCombination
@@ -44,6 +44,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
+import net.sourceforge.ganttproject.action.CancelAction
+import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.gui.UIFacade
 import java.util.concurrent.CountDownLatch
 import javax.swing.SwingUtilities
@@ -138,6 +141,7 @@ enum class FrameStyle {
 interface DialogController {
   fun setContent(content: Node)
   fun setupButton(type: ButtonType, code: (Button) -> Unit = {}): Button?
+  fun setupButton(action: GPAction, code: (Button) -> Unit = {}): Button?
   fun showAlert(title: LocalizedString, content: Region)
   fun showAlert(title: String, content: Region)
   fun addStyleClass(vararg styleClass: String)
@@ -150,6 +154,7 @@ interface DialogController {
   fun resize()
 
   fun setEscCloseEnabled(value: Boolean)
+  fun walkTree(walker: (Node)->Unit)
   var frameStyle: FrameStyle
   var beforeShow: () -> Unit
   var onShown: () -> Unit
@@ -257,6 +262,10 @@ class DialogControllerSwing : DialogController {
 //    }
   }
 
+  override fun setupButton(action: GPAction, code: (Button)->Unit): Button? {
+    TODO("Not yet implemented")
+  }
+
   override fun toggleProgress(shown: Boolean): () -> Unit {
     val countDown = CountDownLatch(2)
     GlobalScope.launch(Dispatchers.JavaFx) {
@@ -297,6 +306,10 @@ class DialogControllerSwing : DialogController {
 
   override fun setEscCloseEnabled(value: Boolean) {
     this.dialogFrame.isEscCloseEnabled = value
+  }
+
+  override fun walkTree(walker: (Node) -> Unit) {
+    TODO("Not yet implemented")
   }
 
   override var frameStyle: FrameStyle
@@ -421,6 +434,26 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
     return null
   }
 
+  override fun setupButton(action: GPAction, code: (Button) -> Unit): Button? {
+    val buttonType = when (action) {
+      is OkAction -> ButtonType.OK
+      is CancelAction -> ButtonType.CANCEL
+      else -> ButtonType(action.name)
+    }
+    return setupButton(buttonType) { btn ->
+      btn.text = action.name
+      btn.onAction = EventHandler {
+        action.actionPerformed(null)
+      }
+      btn.styleClass.add("btn")
+      when (buttonType) {
+        ButtonType.OK -> btn.styleClass.add("btn-attention")
+        ButtonType.CANCEL -> btn.styleClass.addAll("btn-regular", "secondary")
+      }
+      code(btn)
+    }
+  }
+
   override fun toggleProgress(shown: Boolean): () -> Unit {
     Platform.runLater {
       createOverlayPane(this.content, this.stackPane) {pane ->
@@ -446,6 +479,10 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
       }
     }
     this.dialog.dialogPane.scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { hide() }
+  }
+
+  override fun walkTree(walker: (Node) -> Unit) {
+    this.dialogPane.walkTree(walker)
   }
 
   override fun showAlert(title: LocalizedString, content: Region) {
@@ -533,6 +570,10 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
     }
   }
 
+  override fun setupButton(action: GPAction, code: (Button)->Unit): Button? {
+    TODO("Not yet implemented")
+  }
+
   override fun showAlert(title: LocalizedString, content: Region) {
     Platform.runLater {
       createAlertPane(this.contentNode, this.stackPane, title, content)
@@ -577,6 +618,10 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
   }
 
   override fun setEscCloseEnabled(value: Boolean) {
+    TODO("Not yet implemented")
+  }
+
+  override fun walkTree(walker: (Node) -> Unit) {
     TODO("Not yet implemented")
   }
 

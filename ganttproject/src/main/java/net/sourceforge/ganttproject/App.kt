@@ -59,7 +59,7 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
   Platform.setImplicitExit(true)
   FXUtil.startup{
     Thread.setDefaultUncaughtExceptionHandler { t, e ->
-      e.printStackTrace()
+      APP_LOGGER.error("Uncaught exception", e)
     }
     try {
       val stage = Stage()
