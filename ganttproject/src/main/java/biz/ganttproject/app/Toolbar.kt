@@ -263,7 +263,7 @@ class FXToolbarBuilder {
           it.addEventHandler(javafx.scene.input.KeyEvent.KEY_PRESSED) {evt ->
             if (!evt.isConsumed) {
               when (evt.code.code) {
-                insertAction?.keyStroke?.keyCode -> SwingUtilities.invokeLater { insertAction?.actionPerformed(null) }
+                //insertAction?.keyStroke?.keyCode -> SwingUtilities.invokeLater { insertAction?.actionPerformed(null) }
                 deleteAction?.keyStroke?.keyCode -> SwingUtilities.invokeLater { deleteAction?.actionPerformed(null) }
               }
             }

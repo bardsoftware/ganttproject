@@ -187,6 +187,15 @@ fun createViewComponents(
     SwingUtilities.invokeLater { swingNode.content = chartBuilder() }
     split.items.add(right)
     split.setDividerPosition(0, 0.5)
+//    split.addEventHandler(KeyEvent.KEY_PRESSED) { evt ->
+//      println("split: evt=$evt")
+//      println("accelerators=${DialogPlacement.applicationWindow?.scene?.accelerators}")
+//      DialogPlacement.applicationWindow?.scene?.accelerators?.entries?.forEach {
+//        if (it.key.match(evt)) {
+//          it.value.run()
+//        }
+//      }
+//    }
   }
   return ViewComponents(image = imagePane, splitPane = splitPane, table = table)
 }

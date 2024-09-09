@@ -25,6 +25,7 @@ import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.GPCloudOptions;
 import biz.ganttproject.storage.cloud.GPCloudStatusBar;
 import com.beust.jcommander.Parameter;
+import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -123,6 +124,24 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   };
 
   private FXSearchUi mySearchUi;
+
+  private final Supplier<GPAction> taskNewAction = Suppliers.memoize(myTaskActions::getCreateAction);
+  private final Supplier<GPAction> resourceNewAction = Suppliers.memoize(()->getResourceTree().getNewAction());
+  private final Supplier<ArtefactAction> insertAction = Suppliers.memoize(() ->
+    new ArtefactNewAction(
+      () -> getViewManager().getActiveView().getCreateAction(),
+      new Action[]{taskNewAction.get().asToolbarAction(), resourceNewAction.get().asToolbarAction()}
+    )
+  );
+
+  private final Supplier<GPAction> taskDeleteAction = Suppliers.memoize(myTaskActions::getDeleteAction);
+  private final Supplier<GPAction> resourceDeleteAction = Suppliers.memoize(() -> getResourceTree().getDeleteAction());
+  private final Supplier<ArtefactAction> deleteAction = Suppliers.memoize(() ->
+    new ArtefactDeleteAction(
+        () -> getViewManager().getActiveView().getDeleteAction(),
+        new Action[]{taskDeleteAction.get(), resourceDeleteAction.get()}
+    )
+  );
 
   public JMenuBar getMenuBar() {
     var bar = new JMenuBar();
@@ -293,6 +312,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.setWindowSize((int)value.getWidth(), (int)value.getHeight(), value.isMaximized());
   }
 
+  public List<GPAction> getAppLevelActions() {
+    return List.of(insertAction.get(), deleteAction.get());
+  }
   private void restoreBounds() {
     //++
     //    if (options.isLoaded()) {
@@ -425,27 +447,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         .addButton(myProjectMenu.getSaveProjectAction().asToolbarAction())
         .addWhitespace();
 
-    final ArtefactAction newAction;
-    {
-      final GPAction taskNewAction = myTaskActions.getCreateAction().asToolbarAction();
-      final GPAction resourceNewAction = getResourceTree().getNewAction().asToolbarAction();
-      newAction = new ArtefactNewAction(
-        () -> getViewManager().getActiveView().getCreateAction(),
-        new Action[]{taskNewAction, resourceNewAction}
-      );
-      builder.addButton(taskNewAction).addButton(resourceNewAction);
-    }
-
-    final ArtefactAction deleteAction;
-    {
-      final GPAction taskDeleteAction = myTaskActions.getDeleteAction();
-      final GPAction resourceDeleteAction = getResourceTree().getDeleteAction().asToolbarAction();
-      deleteAction = new ArtefactDeleteAction(
-        () -> getViewManager().getActiveView().getDeleteAction(),
-        new Action[]{taskDeleteAction, resourceDeleteAction}
-      );
-    }
-    builder.setArtefactActions(newAction, deleteAction);
+    builder.addButton(taskNewAction.get().asToolbarAction()).addButton(resourceNewAction.get().asToolbarAction());
+    builder.addButton(deleteAction.get().asToolbarAction());
 
     final ArtefactAction propertiesAction;
     {
@@ -460,7 +463,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     //++UIUtil.registerActions(getRootPane(), false, newAction, propertiesAction, deleteAction);
     // TODO: it might be necessary to uncomment it
     //UIUtil.registerActions(myGanttChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
-    UIUtil.registerActions(myResourceChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
+    UIUtil.registerActions(myResourceChartTabContent.getComponent(), true, insertAction.get(), propertiesAction, deleteAction.get());
 //    getTabs().getModel().addChangeListener(e -> {
 //      // Tell artefact actions that the active provider changed, so they
 //      // are able to update their state according to the current delegate
@@ -470,7 +473,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 //      getTabs().getSelectedComponent().requestFocus();
 //    });
 
-    builder.addButton(deleteAction)
+    builder
         .addWhitespace()
         .addButton(propertiesAction)
         .addButton(getCutAction().asToolbarAction())
@@ -485,8 +488,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     //return result;
     getWindowOpenedBarrier().await(opened -> {
       if (opened) {
-        newAction.init();
-        deleteAction.init();
+        insertAction.get().init();
+        deleteAction.get().init();
         propertiesAction.init();
       }
       return Unit.INSTANCE;
@@ -818,3 +821,4 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
 }
+

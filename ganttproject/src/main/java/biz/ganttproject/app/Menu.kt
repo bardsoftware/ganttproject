@@ -259,6 +259,10 @@ fun GPAction.asMenuItem(): MenuItem =
       }
     }
 
+    this.addPropertyChangeListener(PropertyChangeListener {
+      menuItem.isDisable = !this.isEnabled
+    })
+
     menuItem.also {
       it.isDisable = !isEnabled
     }

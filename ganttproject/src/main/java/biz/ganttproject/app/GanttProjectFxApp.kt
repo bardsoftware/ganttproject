@@ -18,14 +18,13 @@
  */
 package biz.ganttproject.app
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.lib.fx.vbox
 import javafx.application.Application
 import javafx.application.Platform
 import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.image.Image
-import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
@@ -55,7 +54,8 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
           }
         )
       }
-      stage.setScene(Scene(vbox))
+      val appScene = Scene(vbox)
+      stage.setScene(appScene)
       APP_LOGGER.debug("... app scene done.")
       stage.onShown = EventHandler {
         ganttProject.viewManager.init(ganttProject.ganttViewProvider, ganttProject.resourceViewProvider)
@@ -88,20 +88,18 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
       ganttProject.title.let {
         stage.title = it.value
         it.addListener { _, _, newValue ->
-          Platform.runLater {
+          FXUtil.runLater {
             stage.title = newValue
           }
         }
       }
       APP_LOGGER.debug("... geometry, icons and title done.")
-      val insertTask = KeyCodeCombination(KeyCode.INSERT)
-      stage.addEventHandler(KeyEvent.KEY_PRESSED) {
-        println("event=$it")
-        if (insertTask.match(it)) {
-          println("INSERT pressed")
-          it.consume()
+      ganttProject.appLevelActions.forEach {
+        appScene.accelerators.put(it.keyCombination) {
+          it.actionPerformed(null)
         }
       }
+
       APP_LOGGER.debug("... showing the stage.")
       stage.show()
       APP_LOGGER.debug("... done.")

@@ -23,6 +23,7 @@ import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.app.LocalizedString;
 import com.google.common.base.Strings;
 import javafx.event.EventHandler;
+import javafx.scene.input.KeyCombination;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.DesktopIntegration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -123,6 +124,10 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
 
   public KeyStroke getKeyStroke() {
     return myKeyStroke;
+  }
+
+  public KeyCombination getKeyCombination() {
+    return KeyCombination.valueOf(getKeyStrokeText(myName));
   }
 
   private void updateIcon(String iconSize) {
