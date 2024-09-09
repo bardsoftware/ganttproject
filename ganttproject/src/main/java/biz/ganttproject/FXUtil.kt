@@ -283,6 +283,17 @@ fun Parent.walkTree(code: (Node)->Unit) {
   }
 }
 
+fun Node.findDescendant(predicate: (Node) -> Boolean): Node? {
+  if (predicate(this)) return this
+  if (this is Parent) {
+    childrenUnmodifiable.forEach {
+      val descendantNode = it.findDescendant(predicate)
+      if (descendantNode != null) { return descendantNode }
+    }
+  }
+  return null
+}
+
 fun Parent.applyApplicationFont() {
   FXUtil.runLater {
     this.walkTree {

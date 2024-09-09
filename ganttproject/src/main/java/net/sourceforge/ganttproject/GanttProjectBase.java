@@ -232,7 +232,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     myTaskManager.getCustomPropertyManager().addListener(databaseProxy.createTaskCustomPropertyListener());
     var viewPane = new ViewPane();
 
-    myNotificationManager = new NotificationManagerImpl(this::getUIFacade);
+    myNotificationManager = new NotificationManagerImpl();
     myUIFacade = new UIFacadeImpl(stage, myNotificationManager, getProject(), this);
     myUiInitializationPromise = new TwoPhaseBarrierImpl<>(myUIFacade);
 

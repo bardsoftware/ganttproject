@@ -19,6 +19,7 @@
 package biz.ganttproject.app
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.findDescendant
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
 import com.sandec.mdfx.MarkdownView
@@ -30,16 +31,20 @@ import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Cursor
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.image.ImageView
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.layout.StackPane
+import javafx.stage.Popup
 import javafx.stage.Stage
+import javafx.stage.Window
 import javafx.util.Callback
 import net.sourceforge.ganttproject.gui.*
 import org.apache.commons.text.StringEscapeUtils
@@ -52,13 +57,31 @@ import javax.swing.event.HyperlinkEvent
 import javax.swing.event.HyperlinkListener
 
 
-class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : NotificationManager {
+class NotificationManagerImpl : NotificationManager {
   private lateinit var owner: Stage
 
   private val notifications = mutableListOf<NotificationItem>()
   private val maxUnreadSeverity = SimpleObjectProperty<NotificationChannel?>()
 
   fun setOwner(stage: Stage) { owner = stage }
+
+  init {
+    // Notifications API does not provide any way to listen on the popup events, so we use a workaround:
+    // listen to all windows and find the one that is a notification popup.
+    Window.getWindows().addListener { c: ListChangeListener.Change<out Window?> ->
+      c.list.firstOrNull { it.isNotificationPopup() }?.let {
+        it.onHiding = EventHandler { evt ->
+          val notificationItem = it.scene.root.findDescendant {
+            it.userData is NotificationItem
+          }?.userData as? NotificationItem
+
+          notificationItem?.isRead = true
+          updateUi()
+        }
+      }
+    }
+  }
+
   override fun createNotification(channel: NotificationChannel, title: String, body: String, hyperlinkListener: HyperlinkListener?) =
     NotificationItem(channel, title, body, LocalDateTime.now(), hyperlinkListener ?: NotificationManager.DEFAULT_HYPERLINK_LISTENER)
 
@@ -104,16 +127,27 @@ class NotificationManagerImpl(private val getUiFacade: ()->UIFacade) : Notificat
             it.children.add(maxSeverityItem.asMarkdownView())
             it.prefWidth = 400.0
             it.prefHeight = 400.0
+            it.userData = maxSeverityItem
           })
           popupBuilder.show()
         }
         NotificationChannel.WARNING -> {
           popupBuilder.title(maxSeverityItem.myTitle).text(maxSeverityItem.myBody)
-          popupBuilder.showWarning()
+          popupBuilder.graphic(
+            ImageView(Notifications::class.java.getResource("/org/controlsfx/dialog/dialog-warning.png")?.toExternalForm()).also {
+              it.userData = maxSeverityItem
+            }
+          )
+          popupBuilder.show()
         }
         NotificationChannel.ERROR -> {
           popupBuilder.title(maxSeverityItem.myTitle).text(maxSeverityItem.myBody)
-          popupBuilder.showError()
+          popupBuilder.graphic(
+            ImageView(Notifications::class.java.getResource("/org/controlsfx/dialog/dialog-error.png")?.toExternalForm()).also {
+              it.userData = maxSeverityItem
+            }
+          )
+          popupBuilder.show()
         }
         null -> {}
       }
@@ -267,6 +301,13 @@ private fun NotificationItem.isHtml() =
 
 private fun html2md(html: String) =
   FlexmarkHtmlConverter.builder(MutableDataSet()).build().convert(html)
+
+private fun Window.isNotificationPopup() =
+  this is Popup && run {
+    this.scene.root.findDescendant {
+      it.styleClass.contains("notification-bar")
+    }
+  } != null
 
 private val HTML_TAGS = setOf("<br>", "<br/>", "<html>", "<body>", "<p>")
 private val ERROR_ICON = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_CIRCLE)
