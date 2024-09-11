@@ -23,17 +23,11 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.customproperty.*
-import biz.ganttproject.lib.fx.VBoxBuilder
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.collections.MapChangeListener
 import javafx.collections.ObservableList
-import javafx.event.ActionEvent
-import javafx.geometry.Pos
-import javafx.scene.control.*
-import javafx.scene.layout.*
-import javafx.util.Callback
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
@@ -51,29 +45,26 @@ class ColumnManager(
   private val applyExecutor: ApplyExecutorType
 ) {
 
-  internal val btnAddController = BtnController(onAction = this::onAddColumn)
-  internal val btnDeleteController = BtnController(onAction = this::onDeleteColumn)
-  internal val btnApplyController = BtnController(onAction = this::onApply)
   internal val escCloseEnabled = SimpleBooleanProperty(true)
 
   private val listItems = FXCollections.observableArrayList<ColumnAsListItem>()
-  private val listView: ListView<ColumnAsListItem> = ListView()
-  private val errorLabel = Label().also {
-    it.styleClass.addAll("hint", "hint-validation")
-  }
-  private val errorPane = HBox().also {
-    it.styleClass.addAll("hint-validation-pane", "noerror")
-    it.children.add(errorLabel)
-  }
-  private val selectedItem = ObservableObject<ColumnAsListItem?>("", null).also {
-    it.addWatcher { evt ->
-      if (evt.trigger != listView && evt.newValue != null) {
-        listItems.replaceAll { if (it.title == evt.newValue?.cloneOf?.title) { evt.newValue } else { it } }
-      }
-    }
-  }
+  private val selectedItem = ObservableObject<ColumnAsListItem?>("", null)
 
-  private val customPropertyEditor = CustomPropertyEditor(selectedItemProperty = selectedItem, btnDeleteController = btnDeleteController, escCloseEnabled = escCloseEnabled, listItems = listItems,
+  internal val dialogModel: ItemListDialogModel<ColumnAsListItem> = ItemListDialogModel<ColumnAsListItem>(
+    listItems,
+    newItemFactory = {
+      ColumnAsListItem(null, isVisible = true, isCustom = true, customColumnsManager, {customPropertyEditor.updateVisibility(it)})
+    },
+    selection = {
+      dialogPane.listView.selectionModel.selectedItems
+    }
+  )
+
+  private val customPropertyEditor: CustomPropertyEditor = CustomPropertyEditor(
+    selectedItemProperty = selectedItem,
+    btnDeleteController = dialogModel.btnDeleteController,
+    escCloseEnabled = escCloseEnabled,
+    listItems = listItems,
     model = EditorModel(
       calculationMethodValidator = calculationMethodValidator,
       expressionAutoCompletion = expressionAutoCompletion,
@@ -82,25 +73,17 @@ class ColumnManager(
       },
       localizer = ourEditorLocalizer
     ),
-    errorUi = {
-      if (it == null) {
-        errorPane.isVisible = false
-        if (!errorPane.styleClass.contains("noerror")) {
-          errorPane.styleClass.add("noerror")
-        }
-        errorLabel.text = ""
-        btnApplyController.isDisabled.value = false
-      }
-      else {
-        errorLabel.text = it
-        errorPane.isVisible = true
-        errorPane.styleClass.remove("noerror")
-        btnApplyController.isDisabled.value = true
-      }
-    })
-  internal val content: Region
-  private val mergedColumns: MutableList<ColumnList.Column> = mutableListOf()
+    errorUi = { dialogPane.onError(it) })
 
+  private val mergedColumns: MutableList<ColumnList.Column> = mutableListOf()
+  internal val dialogPane = ItemListDialogPane<ColumnAsListItem>(
+    listItems = listItems,
+    selectedItem = selectedItem,
+    listItemConverter = { ShowHideListItem(it.title, it.isVisibleProperty) },
+    dialogModel = dialogModel,
+    editor = customPropertyEditor,
+    localizer = ourEditorLocalizer
+  )
   init {
     mergedColumns.addAll(currentTableColumns.exportData())
     // First go columns which are shown in the table now
@@ -116,59 +99,16 @@ class ColumnManager(
         listItems.add(ColumnAsListItem(columnStub, columnStub.isVisible, true, customColumnsManager, customPropertyEditor::updateVisibility))
       }
     }
-    listView.items = listItems
-    listView.cellFactory = Callback { ShowHideListCell { columnItem ->
-      ShowHideListItem(columnItem.title, columnItem.isVisibleProperty)
-    } }
-    content = HBox().also {
-      it.children.addAll(listView, customPropertyEditor.node)
-      HBox.setHgrow(customPropertyEditor.node, Priority.ALWAYS)
-    }
-
-    listView.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-      if (newValue != null) {
-        selectedItem.set(newValue.clone(), trigger = listView)
-      }
-    }
-    listView.selectionModel.select(0)
 
   }
 
-  private fun onAddColumn() {
-    val item = ColumnAsListItem(
-      null,
-      isVisible = true, isCustom = true, customColumnsManager, customPropertyEditor::updateVisibility
-    ).also {
-      val title = RootLocalizer.create("addCustomColumn").also {
-        it.update("")
-      }
-      var count = 1
-      while (listView.items.any { it.title == title.value.trim() }) {
-        val prevValue = title.value
-        title.update(count.toString())
-        if (prevValue == title.value) {
-          break
-        }
-        count++
-      }
-      it.title = title.value.trim()
-    }
-    listItems.add(item)
-    listView.scrollTo(item)
-    listView.selectionModel.select(item)
-    customPropertyEditor.focus()
-  }
-
-  private fun onDeleteColumn() {
-    listItems.removeAll(listView.selectionModel.selectedItems)
-  }
-
-  private fun onApply() {
+  internal fun onApply() {
     when (applyExecutor) {
       ApplyExecutorType.DIRECT -> applyChanges()
       ApplyExecutorType.SWING -> SwingUtilities.invokeLater { applyChanges() }
     }
   }
+
   fun applyChanges() {
     // First we remove custom columns which were removed from the list.
     mergedColumns.forEach { existing ->
@@ -201,10 +141,7 @@ class ColumnManager(
   }
 }
 
-internal data class BtnController(
-  val isDisabled: SimpleBooleanProperty = SimpleBooleanProperty(false),
-  val onAction: () -> Unit
-)
+
 internal enum class PropertyType(private val displayName: String) {
   STRING("text"),
   INTEGER("integer"),
@@ -320,7 +257,7 @@ internal class EditorModel(
 internal class CustomPropertyEditor(
   private val model: EditorModel,
   private val selectedItemProperty: ObservableProperty<ColumnAsListItem?>,
-  private val btnDeleteController: BtnController,
+  private val btnDeleteController: BtnController<Unit>,
   escCloseEnabled: BooleanProperty,
   private val listItems: ObservableList<ColumnAsListItem>,
   private val errorUi: (String?) -> Unit
@@ -390,7 +327,7 @@ internal class CustomPropertyEditor(
     }
 
   }
-  private fun onEdit() {
+  override fun onEdit() {
     if (!isPropertyChangeIgnored) {
       selectedItem?.clone()?.let {selected ->
         selected.isVisible = visibilityToggle.isSelected
@@ -404,11 +341,6 @@ internal class CustomPropertyEditor(
     }
   }
 
-  fun focus() {
-    propertySheet.requestFocus()
-    //editors["title"]?.editor?.requestFocus()
-    onEdit()
-  }
 }
 
 /**
@@ -419,20 +351,20 @@ internal class ColumnAsListItem(
   isVisible: Boolean,
   val isCustom: Boolean,
   val customColumnsManager: CustomPropertyManager,
-  val changeListener: (ColumnAsListItem)->Unit
-) {
+  val changeListener: (ColumnAsListItem)->Unit,
+  override val cloneOf: ColumnAsListItem? = null
+): Item<ColumnAsListItem> {
+
   constructor(cloneOf: ColumnAsListItem): this(
     cloneOf.column, cloneOf.isVisible, cloneOf.isCustom, cloneOf.customColumnsManager,
-    cloneOf.changeListener) {
+    cloneOf.changeListener, cloneOf) {
 
-    this.cloneOf = cloneOf
     this.title = cloneOf.title
     this.type = cloneOf.type
     this.defaultValue = cloneOf.defaultValue
     this.isCalculated = cloneOf.isCalculated
     this.expression = cloneOf.expression
   }
-  internal var cloneOf: ColumnAsListItem? = null
 
   val isVisibleProperty = ObservableBoolean("", isVisible).also {
     it.addWatcher { changeListener(this@ColumnAsListItem) }
@@ -447,7 +379,7 @@ internal class ColumnAsListItem(
     }
     get() = isVisibleProperty.value
 
-  var title: String = ""
+  override var title: String = ""
 
   var type: PropertyType = PropertyType.STRING
 
@@ -462,7 +394,7 @@ internal class ColumnAsListItem(
     return "ColumnAsListItem(title='$title')"
   }
 
-  fun clone(): ColumnAsListItem = ColumnAsListItem(this)
+  override fun clone(): ColumnAsListItem = ColumnAsListItem(this)
 
   init {
     this.isVisible = isVisible
@@ -514,53 +446,18 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
                               projectDatabase: ProjectDatabase,
                               applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
   dialog(title = RootLocalizer.formatText("customColumns"), id = "customColumns") { dlg ->
-    dlg.addStyleClass("dlg-list-view-editor")
-    dlg.addStyleSheet("/biz/ganttproject/ganttview/ListViewEditorDialog.css")
-    dlg.setHeader(
-      VBoxBuilder("header").apply {
-        addTitle(localizer.create("title")).also { hbox ->
-          hbox.alignment = Pos.CENTER_LEFT
-          hbox.isFillHeight = true
-        }
-      }.vbox
-    )
     val columnManager = ColumnManager(
       columnList, customColumnsManager, CalculationMethodValidator(projectDatabase), ExpressionAutoCompletion()::complete, applyExecutor
     )
     columnManager.escCloseEnabled.addListener { _, _, newValue -> dlg.setEscCloseEnabled(newValue) }
-    dlg.setContent(columnManager.content)
-    dlg.setupButton(ButtonType.APPLY) { btn ->
-      btn.text = localizer.formatText("apply")
-      btn.styleClass.add("btn-attention")
-      btn.disableProperty().bind(columnManager.btnApplyController.isDisabled)
-      btn.setOnAction {
-        undoManager.undoableEdit(ourLocalizer.formatText("undoableEdit.title")) {
-          columnManager.btnApplyController.onAction()
-        }
-        dlg.hide()
+    columnManager.dialogPane.build(dlg)
+
+    columnManager.dialogModel.btnApplyController.onAction = {
+      undoManager.undoableEdit(ourLocalizer.formatText("undoableEdit.title")) {
+        columnManager.onApply()
       }
     }
-    dlg.setupButton(ButtonType(localizer.formatText("add"))) { btn ->
-      btn.text = localizer.formatText("add")
-      ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP)
-      btn.disableProperty().bind(columnManager.btnAddController.isDisabled)
-      btn.styleClass.addAll("btn-attention", "secondary")
-      btn.addEventFilter(ActionEvent.ACTION) {
-        it.consume()
-        columnManager.btnAddController.onAction()
-      }
-    }
-    dlg.setupButton(ButtonType(localizer.formatText("delete"))) { btn ->
-      btn.text = localizer.formatText("delete")
-      ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP_2)
-      btn.disableProperty().bind(columnManager.btnDeleteController.isDisabled)
-      btn.addEventFilter(ActionEvent.ACTION) {
-        it.consume()
-        columnManager.btnDeleteController.onAction()
-      }
-      btn.styleClass.addAll("btn-regular", "secondary")
-    }
-    dlg.setEscCloseEnabled(true)
+
   }
 }
 

@@ -75,12 +75,14 @@ fun showFilterDialog(filterManager: TaskFilterManager) {
 
 internal class FilterEditorModel(editItem: ObservableObject<TaskFilter?>) {
   val nameField = ObservableString("name", "")
+  val descriptionField = ObservableString("description", "")
   val fields = listOf(nameField)
 
   init {
     editItem.addWatcher {
       if (it.trigger != this) {
         nameField.set(it.newValue?.title)
+        descriptionField.set(it.newValue?.description)
       }
     }
   }
