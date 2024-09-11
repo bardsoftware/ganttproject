@@ -30,13 +30,13 @@ class TaskFilterAction(
   actionName: String,
   private val filterManager: TaskFilterManager,
   private val taskFilterOption: DefaultBooleanOption,
-  private val taskFilter: TaskFilter
+  private val taskFilterFxn: TaskFilterFxn
 ) : GPAction(actionName) {
 
   init {
-    putValue(SELECTED_KEY, filterManager.activeFilter == taskFilter)
+    putValue(SELECTED_KEY, filterManager.activeFilter == taskFilterFxn)
     filterManager.filterListeners.add { filter ->
-      if (taskFilter != filter) {
+      if (taskFilterFxn != filter) {
         putValue(SELECTED_KEY, false)
       }
     }
@@ -73,9 +73,9 @@ class TaskFilterAction(
   internal fun setChecked(value: Boolean) {
     putValue(SELECTED_KEY, value)
     if (value) {
-      filterManager.activeFilter = taskFilter
+      filterManager.activeFilter = taskFilterFxn
     } else {
-      if (filterManager.activeFilter == taskFilter) {
+      if (filterManager.activeFilter == taskFilterFxn) {
         filterManager.activeFilter = VOID_FILTER
       }
     }
@@ -92,7 +92,9 @@ class TaskFilterActionSet(taskFilterManager: TaskFilterManager) {
     taskFilterManager, taskFilterManager.filterOverdueOption, taskFilterManager.overdueFilter)
   private val filterInProgressTodayTasksAction = TaskFilterAction("taskTable.filter.inProgressTodayTasks",
     taskFilterManager, taskFilterManager.filterInProgressTodayOption, taskFilterManager.inProgressTodayFilter)
-
+  private val filterDialogAction = GPAction.create("taskTable.filter.dialog.action") {
+    showFilterDialog(taskFilterManager)
+  }
 
 
   fun tableFilterActions(builder: MenuBuilder) {
@@ -102,6 +104,7 @@ class TaskFilterActionSet(taskFilterManager: TaskFilterManager) {
         filterDueTodayTasksAction,
         filterOverdueTasksAction,
         filterInProgressTodayTasksAction,
+        filterDialogAction
       )
     }
   }

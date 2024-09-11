@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.ganttview
 
 import biz.ganttproject.core.option.DefaultBooleanOption
+import biz.ganttproject.core.option.GPObservable
 import biz.ganttproject.core.option.GPOption
 import biz.ganttproject.core.time.CalendarFactory
 import javafx.beans.property.SimpleIntegerProperty
@@ -26,8 +27,11 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 
-typealias TaskFilter = (parent: Task, child: Task?) -> Boolean
-typealias FilterChangedListener = (filter: TaskFilter?) -> Unit
+data class TaskFilter(val title: String, val isEnabledProperty: GPObservable<Boolean>, val filterFxn: TaskFilterFxn) {
+}
+
+typealias TaskFilterFxn = (parent: Task, child: Task?) -> Boolean
+typealias FilterChangedListener = (filter: TaskFilterFxn?) -> Unit
 
 class TaskFilterManager(val taskManager: TaskManager) {
   internal val filterCompletedTasksOption = DefaultBooleanOption("filter.completedTasks", false)
@@ -42,22 +46,22 @@ class TaskFilterManager(val taskManager: TaskManager) {
 
   val filterListeners = mutableListOf<FilterChangedListener>()
 
-  val completedTasksFilter: TaskFilter = { _, child ->
+  val completedTasksFilter: TaskFilterFxn = { _, child ->
     child?.completionPercentage?.let { it < 100 } ?: true
   }
 
-  val dueTodayFilter: TaskFilter  = { _, child ->
+  val dueTodayFilter: TaskFilterFxn  = { _, child ->
     child?.let {
       it.completionPercentage < 100 && it.endsToday()
     } ?: true
   }
 
-  val overdueFilter: TaskFilter  = { _, child ->
+  val overdueFilter: TaskFilterFxn  = { _, child ->
     child?.let { it.completionPercentage < 100 && it.endsBeforeToday()
     } ?: true
   }
 
-  val inProgressTodayFilter: TaskFilter  = { _, child ->
+  val inProgressTodayFilter: TaskFilterFxn  = { _, child ->
     child?.let {
       it.completionPercentage < 100 && it.runsToday()
     } ?: true
@@ -72,14 +76,20 @@ class TaskFilterManager(val taskManager: TaskManager) {
     })
   }
 
-  var activeFilter: TaskFilter = VOID_FILTER
+  var activeFilter: TaskFilterFxn = VOID_FILTER
     set(value) {
       field = value
       fireFilterChanged(value)
       sync()
     }
 
-  private fun fireFilterChanged(value: TaskFilter) {
+  val filters: List<TaskFilter> get() = listOf(
+    TaskFilter("filter.completedTasks", filterCompletedTasksOption.asObservableValue(), completedTasksFilter),
+    TaskFilter("filter.dueTodayTasks", filterDueTodayOption.asObservableValue(), dueTodayFilter),
+    TaskFilter("filter.overdueTasks", filterOverdueOption.asObservableValue(), overdueFilter),
+    TaskFilter("filter.inProgressTodayTasks", filterInProgressTodayOption.asObservableValue(), inProgressTodayFilter),
+  )
+  private fun fireFilterChanged(value: TaskFilterFxn) {
     filterListeners.forEach { it(value) }
   }
 
@@ -90,4 +100,4 @@ private fun today() = CalendarFactory.createGanttCalendar(CalendarFactory.newCal
 private fun Task.endsToday() = this.end.displayValue == today()
 private fun Task.endsBeforeToday() = this.end.displayValue < today()
 private fun Task.runsToday() = today().let { this.end.displayValue >= it && this.start <= it }
-val VOID_FILTER: TaskFilter = { _, _ -> true }
+val VOID_FILTER: TaskFilterFxn = { _, _ -> true }
