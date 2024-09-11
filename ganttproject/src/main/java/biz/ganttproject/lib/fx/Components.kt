@@ -93,7 +93,7 @@ class VBoxBuilder(vararg classes: String) {
     vbox.styleClass.addAll(classes)
   }
 
-  fun addTitle(i18nKey: String, vararg args: String): Node {
+  fun addTitle(i18nKey: String, vararg args: String): HBox {
     return addTitle(i18n.create(i18nKey).update(*args))
   }
 

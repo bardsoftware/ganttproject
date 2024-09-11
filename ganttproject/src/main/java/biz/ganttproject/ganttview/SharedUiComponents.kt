@@ -26,7 +26,6 @@ import biz.ganttproject.lib.fx.createToggleSwitch
 import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
-import javafx.beans.property.BooleanProperty
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Node
@@ -89,10 +88,13 @@ internal class ShowHideListCell<T>(private val converter: (T)-> ShowHideListItem
   }
 }
 
-open internal class ItemEditorPane(
-  private val allOptions: List<ObservableProperty<*>>,
-  private val escCloseEnabled: BooleanProperty,
-  private val localizer: Localizer) {
+/**
+ * UI for editing properties of the selected list item.
+ */
+open internal class ItemEditorPane<T>(
+  private val editItem: ObservableProperty<T>,
+  fields: List<ObservableProperty<*>>,
+  localizer: Localizer) {
 
   val node: Node by lazy {
     vbox {
@@ -113,9 +115,7 @@ open internal class ItemEditorPane(
   internal val propertySheetLabel = Label().also {
     it.styleClass.add("title")
   }
-  internal val propertySheet = PropertySheetBuilder(localizer).createPropertySheet(allOptions).also {
-    escCloseEnabled.bind(it.isEscCloseEnabled)
-  }
+  internal val propertySheet = PropertySheetBuilder(localizer).createPropertySheet(fields)
   private val errorLabel = Label().also {
     it.styleClass.addAll("hint", "hint-validation")
   }
@@ -123,5 +123,4 @@ open internal class ItemEditorPane(
     it.styleClass.addAll("hint-validation-pane", "noerror")
     it.children.add(errorLabel)
   }
-
 }

@@ -24,17 +24,12 @@ import biz.ganttproject.core.option.*
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.customproperty.*
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.lib.fx.createToggleSwitch
-import biz.ganttproject.lib.fx.vbox
-import de.jensd.fx.glyphs.materialicons.MaterialIcon
-import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.collections.MapChangeListener
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
-import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.layout.*
@@ -70,7 +65,13 @@ class ColumnManager(
     it.styleClass.addAll("hint-validation-pane", "noerror")
     it.children.add(errorLabel)
   }
-  private val selectedItem = ObservableObject<ColumnAsListItem?>("", null)
+  private val selectedItem = ObservableObject<ColumnAsListItem?>("", null).also {
+    it.addWatcher { evt ->
+      if (evt.trigger != listView && evt.newValue != null) {
+        listItems.replaceAll { if (it.title == evt.newValue?.cloneOf?.title) { evt.newValue } else { it } }
+      }
+    }
+  }
 
   private val customPropertyEditor = CustomPropertyEditor(selectedItemProperty = selectedItem, btnDeleteController = btnDeleteController, escCloseEnabled = escCloseEnabled, listItems = listItems,
     model = EditorModel(
@@ -126,7 +127,7 @@ class ColumnManager(
 
     listView.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
       if (newValue != null) {
-        customPropertyEditor.selectedItem = newValue.clone()
+        selectedItem.set(newValue.clone(), trigger = listView)
       }
     }
     listView.selectionModel.select(0)
@@ -323,26 +324,34 @@ internal class CustomPropertyEditor(
   escCloseEnabled: BooleanProperty,
   private val listItems: ObservableList<ColumnAsListItem>,
   private val errorUi: (String?) -> Unit
-) : ItemEditorPane(model.allOptions, escCloseEnabled, ourEditorLocalizer) {
+) : ItemEditorPane<ColumnAsListItem?>(selectedItemProperty, model.allOptions, ourEditorLocalizer) {
+
+  init {
+    escCloseEnabled.bind(propertySheet.isEscCloseEnabled)
+    selectedItemProperty.addWatcher {
+      if (it.trigger != this) {
+        selectedItem = it.newValue
+      }
+    }
+  }
 
   private var isPropertyChangeIgnored = false
-  var selectedItem: ColumnAsListItem?
+  private var selectedItem: ColumnAsListItem?
     get() = selectedItemProperty.value
-  set(selectedItem) {
+  set(value) {
     isPropertyChangeIgnored = true
-    selectedItemProperty.set(selectedItem, this)
-    if (selectedItem != null) {
-      model.nameOption.set(selectedItem.title)
-      model.typeOption.set(selectedItem.type)
-      model.defaultValueOption.set(selectedItem.defaultValue)
-      visibilityToggle.isSelected = selectedItem.isVisible
+    if (value != null) {
+      model.nameOption.set(value.title)
+      model.typeOption.set(value.type)
+      model.defaultValueOption.set(value.defaultValue)
+      visibilityToggle.isSelected = value.isVisible
 
-      if (selectedItem.isCustom) {
+      if (value.isCustom) {
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.custom")
         propertySheet.isDisable = false
         btnDeleteController.isDisabled.value = false
-        model.isCalculatedOption.set(selectedItem.isCalculated)
-        model.expressionOption.set(selectedItem.expression)
+        model.isCalculatedOption.set(value.isCalculated)
+        model.expressionOption.set(value.expression)
       } else {
         btnDeleteController.isDisabled.value = true
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.builtin")
@@ -383,15 +392,14 @@ internal class CustomPropertyEditor(
   }
   private fun onEdit() {
     if (!isPropertyChangeIgnored) {
-      selectedItem?.let {selected ->
+      selectedItem?.clone()?.let {selected ->
         selected.isVisible = visibilityToggle.isSelected
         selected.title = model.nameOption.value ?: ""
         selected.type = model.typeOption.value
         selected.defaultValue = model.defaultValueOption.value ?: ""
         selected.isCalculated = model.isCalculatedOption.value
         selected.expression = model.expressionOption.value ?: ""
-        listItems.replaceAll { if (it.title == selected.cloneOf?.title) { selected } else { it } }
-        selectedItem = selected.clone()
+        selectedItemProperty.set(selected, trigger = this)
       }
     }
   }
@@ -506,8 +514,8 @@ private fun showColumnManager(columnList: ColumnList, customColumnsManager: Cust
                               projectDatabase: ProjectDatabase,
                               applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
   dialog(title = RootLocalizer.formatText("customColumns"), id = "customColumns") { dlg ->
-    dlg.addStyleClass("dlg-column-manager")
-    dlg.addStyleSheet("/biz/ganttproject/ganttview/ColumnManager.css")
+    dlg.addStyleClass("dlg-list-view-editor")
+    dlg.addStyleSheet("/biz/ganttproject/ganttview/ListViewEditorDialog.css")
     dlg.setHeader(
       VBoxBuilder("header").apply {
         addTitle(localizer.create("title")).also { hbox ->
@@ -564,7 +572,7 @@ private fun columnsOrder(col1: ColumnList.Column, col2: ColumnList.Column): Int 
   }
 private val ourLocalizer = RootLocalizer.createWithRootKey(
   rootKey = "taskTable.columnManager", baseLocalizer = RootLocalizer)
-private val ourEditorLocalizer = run {
+internal val ourEditorLocalizer = run {
   val fallback1 = MappingLocalizer(mapOf()) {
     when {
       it.endsWith(".label") -> {

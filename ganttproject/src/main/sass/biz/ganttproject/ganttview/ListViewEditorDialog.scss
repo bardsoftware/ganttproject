@@ -4,7 +4,7 @@
 @import "../app/validation";
 @import "../lib/fx/ToggleSwitch";
 
-.dlg-column-manager {
+.dlg-list-view-editor {
   .header {
     @include dialog-header($gp-orange);
   }
