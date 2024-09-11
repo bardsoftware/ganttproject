@@ -56,7 +56,11 @@ import javax.swing.SwingUtilities
 import javax.swing.event.HyperlinkEvent
 import javax.swing.event.HyperlinkListener
 
-
+/**
+ * Implements notifications as popup bubbles in the bottom-right corner of the application window.
+ * Besides, adds notification indicators to the status bar and shows a more detailed notification dialog on clicking
+ * the buttons.
+ */
 class NotificationManagerImpl : NotificationManager {
   private lateinit var owner: Stage
 
