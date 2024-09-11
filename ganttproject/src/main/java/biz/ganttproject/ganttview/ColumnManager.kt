@@ -70,8 +70,17 @@ class ColumnManager(
     it.styleClass.addAll("hint-validation-pane", "noerror")
     it.children.add(errorLabel)
   }
+  private val selectedItem = ObservableObject<ColumnAsListItem?>("", null)
 
-  private val customPropertyEditor = CustomPropertyEditor(calculationMethodValidator, expressionAutoCompletion, btnDeleteController, escCloseEnabled, listItems,
+  private val customPropertyEditor = CustomPropertyEditor(selectedItemProperty = selectedItem, btnDeleteController = btnDeleteController, escCloseEnabled = escCloseEnabled, listItems = listItems,
+    model = EditorModel(
+      calculationMethodValidator = calculationMethodValidator,
+      expressionAutoCompletion = expressionAutoCompletion,
+      nameClash = { tryName ->
+        listItems.find { it.title == tryName && it != selectedItem.value?.cloneOf } != null
+      },
+      localizer = ourEditorLocalizer
+    ),
     errorUi = {
       if (it == null) {
         errorPane.isVisible = false
@@ -107,17 +116,12 @@ class ColumnManager(
       }
     }
     listView.items = listItems
-    listView.cellFactory = Callback { CellImpl() }
-    val propertySheetBox = vbox {
-      addClasses("property-sheet-box")
-      add(customPropertyEditor.visibilityTogglePane)
-      add(customPropertyEditor.propertySheetLabel, Pos.CENTER_LEFT, Priority.NEVER)
-      add(customPropertyEditor.propertySheet.node, Pos.CENTER, Priority.ALWAYS)
-      add(errorPane)
-    }
+    listView.cellFactory = Callback { ShowHideListCell { columnItem ->
+      ShowHideListItem(columnItem.title, columnItem.isVisibleProperty)
+    } }
     content = HBox().also {
-      it.children.addAll(listView, propertySheetBox)
-      HBox.setHgrow(propertySheetBox, Priority.ALWAYS)
+      it.children.addAll(listView, customPropertyEditor.node)
+      HBox.setHgrow(customPropertyEditor.node, Priority.ALWAYS)
     }
 
     listView.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
@@ -256,45 +260,25 @@ internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {
 }
 
 /**
- * Editor component shown to the right of the property list.
+ * This the model of the property editor. It encapsulates the values that are being edited and their validators.
  */
-internal class CustomPropertyEditor(
+internal class EditorModel(
   private val calculationMethodValidator: CalculationMethodValidator,
   private val expressionAutoCompletion: (String, Int) -> List<Completion>,
-  private val btnDeleteController: BtnController,
-  private val escCloseEnabled: BooleanProperty,
-  private val listItems: ObservableList<ColumnAsListItem>,
-  private val errorUi: (String?) -> Unit
+  private val nameClash: (String)-> Boolean,
+  private val localizer: Localizer,
 ) {
-  private val localizer = run {
-    val fallback1 = MappingLocalizer(mapOf()) {
-      when {
-        it.endsWith(".label") -> {
-          val key = it.split('.', limit = 2)[0]
-          RootLocalizer.create(key)
-        }
-        it == "columnExists" -> RootLocalizer.create(it)
-        else -> null
-      }
-    }
-    val fallback2 = RootLocalizer.createWithRootKey("option.taskProperties.customColumn", fallback1)
-    val fallback3 = RootLocalizer.createWithRootKey("option.customPropertyDialog", fallback2)
-    RootLocalizer.createWithRootKey("", fallback3)
-  }
-
-  private val nameOption = ObservableString(id = "name", validator = {value ->
-    listItems.find { it.title == value }?.let {
-      if (it != selectedItem?.cloneOf) {
-        throw ValidationException(localizer.formatText("columnExists", value))
-      }
+  val nameOption = ObservableString(id = "name", validator = { value ->
+    if (nameClash(value)) {
+      throw ValidationException(localizer.formatText("columnExists", value))
     }
     if (value.isBlank()) {
       throw ValidationException(localizer.formatText("name.validation.empty"))
     }
     value
   })
-  private val typeOption = ObservableEnum(id ="type", initValue = PropertyType.STRING, allValues = PropertyType.values())
-  private val defaultValueOption = ObservableString(
+  val typeOption = ObservableEnum(id ="type", initValue = PropertyType.STRING, allValues = PropertyType.values())
+  val defaultValueOption = ObservableString(
     id = "defaultValue",
     initValue = "",
     validator = {
@@ -303,11 +287,11 @@ internal class CustomPropertyEditor(
       } else it
     })
 
-  private val isCalculatedOption: ObservableBoolean = ObservableBoolean(id = "isCalculated").also {
+  val isCalculatedOption: ObservableBoolean = ObservableBoolean(id = "isCalculated").also {
     it.addWatcher { evt -> expressionOption.setWritable(evt.newValue) }
   }
 
-  private val expressionOption = ObservableString(id ="expression", initValue = "",
+  val expressionOption = ObservableString(id ="expression", initValue = "",
     validator = {
       if (!isCalculatedOption.value) {
         ""
@@ -327,50 +311,51 @@ internal class CustomPropertyEditor(
     it.completions = expressionAutoCompletion
   }
 
-  private val allOptions = listOf(nameOption, typeOption, defaultValueOption, isCalculatedOption, expressionOption)
+  val allOptions = listOf(nameOption, typeOption, defaultValueOption, isCalculatedOption, expressionOption)
+}
+/**
+ * Editor component shown to the right of the property list.
+ */
+internal class CustomPropertyEditor(
+  private val model: EditorModel,
+  private val selectedItemProperty: ObservableProperty<ColumnAsListItem?>,
+  private val btnDeleteController: BtnController,
+  escCloseEnabled: BooleanProperty,
+  private val listItems: ObservableList<ColumnAsListItem>,
+  private val errorUi: (String?) -> Unit
+) : ItemEditorPane(model.allOptions, escCloseEnabled, ourEditorLocalizer) {
 
-  internal val propertySheet = PropertySheetBuilder(localizer).createPropertySheet(allOptions).also {
-    escCloseEnabled.bind(it.isEscCloseEnabled)
-  }
-  internal val propertySheetLabel = Label().also {
-    it.styleClass.add("title")
-  }
-  private val visibilityToggle = createToggleSwitch()
-  internal val visibilityTogglePane = HBox().also {
-    it.styleClass.add("visibility-pane")
-    it.children.add(visibilityToggle)
-    it.children.add(Label(localizer.formatText("customPropertyDialog.visibility.label")))
-  }
   private var isPropertyChangeIgnored = false
-  var selectedItem: ColumnAsListItem? = null
+  var selectedItem: ColumnAsListItem?
+    get() = selectedItemProperty.value
   set(selectedItem) {
     isPropertyChangeIgnored = true
-    field = selectedItem
+    selectedItemProperty.set(selectedItem, this)
     if (selectedItem != null) {
-      nameOption.set(selectedItem.title)
-      typeOption.set(selectedItem.type)
-      defaultValueOption.set(selectedItem.defaultValue)
+      model.nameOption.set(selectedItem.title)
+      model.typeOption.set(selectedItem.type)
+      model.defaultValueOption.set(selectedItem.defaultValue)
       visibilityToggle.isSelected = selectedItem.isVisible
 
       if (selectedItem.isCustom) {
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.custom")
         propertySheet.isDisable = false
         btnDeleteController.isDisabled.value = false
-        isCalculatedOption.set(selectedItem.isCalculated)
-        expressionOption.set(selectedItem.expression)
+        model.isCalculatedOption.set(selectedItem.isCalculated)
+        model.expressionOption.set(selectedItem.expression)
       } else {
         btnDeleteController.isDisabled.value = true
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.builtin")
         propertySheet.isDisable = true
-        isCalculatedOption.set(false)
-        expressionOption.set("")
+        model.isCalculatedOption.set(false)
+        model.expressionOption.set("")
       }
     }
     isPropertyChangeIgnored = false
   }
 
   init {
-    allOptions.forEach { it.addWatcher { onEdit() } }
+    model.allOptions.forEach { it.addWatcher { onEdit() } }
 
     visibilityToggle.selectedProperty().addListener { _, _, _ ->
       onEdit()
@@ -400,11 +385,11 @@ internal class CustomPropertyEditor(
     if (!isPropertyChangeIgnored) {
       selectedItem?.let {selected ->
         selected.isVisible = visibilityToggle.isSelected
-        selected.title = nameOption.value ?: ""
-        selected.type = typeOption.value
-        selected.defaultValue = defaultValueOption.value ?: ""
-        selected.isCalculated = isCalculatedOption.value
-        selected.expression = expressionOption.value ?: ""
+        selected.title = model.nameOption.value ?: ""
+        selected.type = model.typeOption.value
+        selected.defaultValue = model.defaultValueOption.value ?: ""
+        selected.isCalculated = model.isCalculatedOption.value
+        selected.expression = model.expressionOption.value ?: ""
         listItems.replaceAll { if (it.title == selected.cloneOf?.title) { selected } else { it } }
         selectedItem = selected.clone()
       }
@@ -441,13 +426,18 @@ internal class ColumnAsListItem(
   }
   internal var cloneOf: ColumnAsListItem? = null
 
-  var isVisible: Boolean = false
+  val isVisibleProperty = ObservableBoolean("", isVisible).also {
+    it.addWatcher { changeListener(this@ColumnAsListItem) }
+  }
+
+  var isVisible: Boolean
     set(value) {
-      if (field != value) {
-        field = value
+      if (isVisibleProperty.value != value) {
+        isVisibleProperty.set(value)
         changeListener(this)
       }
     }
+    get() = isVisibleProperty.value
 
   var title: String = ""
 
@@ -488,53 +478,6 @@ internal class ColumnAsListItem(
           else -> null
         }
       } ?: ""
-    }
-  }
-}
-
-/**
- * UI components that render columns in the list view.
- */
-private class CellImpl : ListCell<ColumnAsListItem>() {
-  private val iconVisible = MaterialIconView(MaterialIcon.VISIBILITY)
-  private val iconHidden = MaterialIconView(MaterialIcon.VISIBILITY_OFF)
-  private val iconPane = StackPane().also {
-    it.onMouseClicked = EventHandler { _ ->
-      item.isVisible = !item.isVisible
-      updateItem(item, false)
-    }
-    //it.children.addAll(iconVisible, iconHidden)
-  }
-
-  init {
-    styleClass.add("column-item-cell")
-    alignment = Pos.CENTER_LEFT
-  }
-
-  override fun updateItem(item: ColumnAsListItem?, empty: Boolean) {
-    super.updateItem(item, empty)
-    if (item == null || empty) {
-      text = ""
-      graphic = null
-      return
-    }
-    text = item.title
-    if (text.isEmpty()) {
-      text = " "
-    }
-    if (graphic == null) {
-      graphic = iconPane
-    }
-    if (item.isVisible) {
-      styleClass.add("is-visible")
-      styleClass.remove("is-hidden")
-      iconPane.children.setAll(iconVisible)
-    } else {
-      if (!styleClass.contains("is-hidden")) {
-        styleClass.remove("is-visible")
-        styleClass.add("is-hidden")
-        iconPane.children.setAll(iconHidden)
-      }
     }
   }
 }
@@ -621,3 +564,18 @@ private fun columnsOrder(col1: ColumnList.Column, col2: ColumnList.Column): Int 
   }
 private val ourLocalizer = RootLocalizer.createWithRootKey(
   rootKey = "taskTable.columnManager", baseLocalizer = RootLocalizer)
+private val ourEditorLocalizer = run {
+  val fallback1 = MappingLocalizer(mapOf()) {
+    when {
+      it.endsWith(".label") -> {
+        val key = it.split('.', limit = 2)[0]
+        RootLocalizer.create(key)
+      }
+      it == "columnExists" -> RootLocalizer.create(it)
+      else -> null
+    }
+  }
+  val fallback2 = RootLocalizer.createWithRootKey("option.taskProperties.customColumn", fallback1)
+  val fallback3 = RootLocalizer.createWithRootKey("option.customPropertyDialog", fallback2)
+  RootLocalizer.createWithRootKey("", fallback3)
+}
