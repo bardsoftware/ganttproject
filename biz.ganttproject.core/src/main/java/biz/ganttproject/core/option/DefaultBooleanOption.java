@@ -18,7 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.option;
 
-public class DefaultBooleanOption extends GPAbstractOption<Boolean> implements BooleanOption {
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+import org.jetbrains.annotations.NotNull;
+
+public class DefaultBooleanOption extends GPAbstractOption<Boolean> implements BooleanOption, GPObservable<Boolean> {
 
   public DefaultBooleanOption(String id) {
     super(id);
@@ -39,6 +43,11 @@ public class DefaultBooleanOption extends GPAbstractOption<Boolean> implements B
   }
 
   @Override
+  public void setValue(Boolean value) {
+    super.setValue(value);
+  }
+
+  @Override
   public void toggle() {
     setValue(!getValue());
   }
@@ -53,4 +62,14 @@ public class DefaultBooleanOption extends GPAbstractOption<Boolean> implements B
     resetValue(Boolean.valueOf(value).booleanValue(), true);
   }
 
+  public GPObservable<Boolean> asObservableValue() {
+    return this;
+  }
+
+  @Override
+  public void addWatcher(@NotNull Function1<? super @NotNull ObservableEvent<Boolean>, @NotNull Unit> watcher) {
+    super.addChangeValueListener(event -> {
+      watcher.invoke(new ObservableEvent<>((Boolean) event.getOldValue(), (Boolean) event.getNewValue(), event.getTriggerID()));
+    });
+  }
 }

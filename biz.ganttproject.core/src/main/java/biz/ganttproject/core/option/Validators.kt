@@ -102,7 +102,9 @@ class ValidatedObservable<T>(observableValue: ObservableString, private val vali
 
   private var parsedValue: T? = null
   private val watchers: MutableList<ObservableWatcher<T?>> by lazy { mutableListOf() }
-  override val value: T? get() = parsedValue
+  override var value: T?
+    get() = parsedValue
+    set(value) = TODO("Not yet implemented")
   val validationMessage = ObservableString("")
 
   init {

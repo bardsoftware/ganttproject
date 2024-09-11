@@ -22,7 +22,7 @@ package biz.ganttproject.core.option
 data class Completion(val posStart: Int, val posEnd: Int, val text: String)
 
 interface GPObservable<T> {
-  val value: T
+  var value: T
   fun addWatcher(watcher: ObservableWatcher<T>)
 }
 
@@ -38,7 +38,9 @@ class ObservableImpl<T>(initValue: T): GPObservable<T> {
     firePropertyChanged(oldValue, newValue, trigger)
   }
 
-  override val value: T get() = mutableValue
+  override var value: T
+    get() = mutableValue
+    set(value) {set(value, null)}
 
   override fun addWatcher(watcher: ObservableWatcher<T>) {
     watchers.add(watcher)
