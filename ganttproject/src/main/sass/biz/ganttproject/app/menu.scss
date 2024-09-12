@@ -2,6 +2,7 @@
 
 @mixin context-menu() {
   .menu-item {
+    -fx-padding: 0.5ex 1em;
     -fx-text-fill: $gp-dark-gray;
 
     .custom-checkbox-menu-item {

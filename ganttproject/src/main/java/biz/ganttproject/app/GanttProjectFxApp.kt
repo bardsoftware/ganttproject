@@ -55,6 +55,7 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
         )
       }
       val appScene = Scene(vbox)
+      appScene.stylesheets.add("/biz/ganttproject/app/Main.css")
       stage.setScene(appScene)
       APP_LOGGER.debug("... app scene done.")
       stage.onShown = EventHandler {
