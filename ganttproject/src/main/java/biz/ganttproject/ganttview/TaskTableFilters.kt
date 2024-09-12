@@ -28,10 +28,18 @@ import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 
 data class TaskFilter(
-  val title: String,
-  val description: String,
+  override var title: String,
+  var description: String,
   val isEnabledProperty: GPObservable<Boolean>,
-  val filterFxn: TaskFilterFxn) {
+  val filterFxn: TaskFilterFxn,
+  var expression: String? = null,
+  val isBuiltIn: Boolean = false,
+  override val cloneOf: TaskFilter? = null
+  ): Item<TaskFilter> {
+
+  override fun clone(): TaskFilter = TaskFilter(
+    this.title, this.description, this.isEnabledProperty, this.filterFxn, this.expression, this.isBuiltIn, this
+  )
 }
 
 typealias TaskFilterFxn = (parent: Task, child: Task?) -> Boolean
@@ -88,10 +96,10 @@ class TaskFilterManager(val taskManager: TaskManager) {
     }
 
   val filters: List<TaskFilter> get() = listOf(
-    TaskFilter("filter.completedTasks", "", filterCompletedTasksOption.asObservableValue(), completedTasksFilter),
-    TaskFilter("filter.dueTodayTasks", "", filterDueTodayOption.asObservableValue(), dueTodayFilter),
-    TaskFilter("filter.overdueTasks", "", filterOverdueOption.asObservableValue(), overdueFilter),
-    TaskFilter("filter.inProgressTodayTasks", "", filterInProgressTodayOption.asObservableValue(), inProgressTodayFilter),
+    TaskFilter("filter.completedTasks", "", filterCompletedTasksOption.asObservableValue(), completedTasksFilter, isBuiltIn = true),
+    TaskFilter("filter.dueTodayTasks", "", filterDueTodayOption.asObservableValue(), dueTodayFilter, isBuiltIn = true),
+    TaskFilter("filter.overdueTasks", "", filterOverdueOption.asObservableValue(), overdueFilter, isBuiltIn = true),
+    TaskFilter("filter.inProgressTodayTasks", "", filterInProgressTodayOption.asObservableValue(), inProgressTodayFilter, isBuiltIn = true),
   )
   private fun fireFilterChanged(value: TaskFilterFxn) {
     filterListeners.forEach { it(value) }

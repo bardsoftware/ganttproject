@@ -18,76 +18,113 @@
  */
 package biz.ganttproject.ganttview
 
+import biz.ganttproject.app.MappingLocalizer
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
+import biz.ganttproject.core.option.Completion
+import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.ObservableObject
-import biz.ganttproject.core.option.ObservableProperty
 import biz.ganttproject.core.option.ObservableString
-import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.core.option.ValidationException
+import biz.ganttproject.customproperty.CalculationMethodValidator
+import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.ExpressionAutoCompletion
+import biz.ganttproject.customproperty.SimpleSelect
 import javafx.collections.FXCollections
-import javafx.geometry.Pos
-import javafx.scene.control.ListView
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Priority
-import javafx.util.Callback
-import net.sourceforge.ganttproject.action.CancelAction
-import net.sourceforge.ganttproject.action.OkAction
+import net.sourceforge.ganttproject.storage.ProjectDatabase
 
-fun showFilterDialog(filterManager: TaskFilterManager) {
-  dialog(title = "Filter Dialog") { dlg ->
-    dlg.addStyleClass("dlg-list-view-editor")
-    dlg.addStyleSheet("/biz/ganttproject/ganttview/ListViewEditorDialog.css")
-    dlg.setHeader(
-      VBoxBuilder("header").apply {
-        addTitle("Task Filters").also { hbox ->
-          hbox.alignment = Pos.CENTER_LEFT
-          hbox.isFillHeight = true
-        }
-      }.vbox
-    )
-
+/**
+ * Shows a dialog that allows for creating custom task filters.
+ */
+fun showFilterDialog(filterManager: TaskFilterManager, projectDatabase: ProjectDatabase) {
+  dialog(title = i18n.formatText("title")) { dlg ->
+    val listItems = FXCollections.observableArrayList(filterManager.filters)
     val editItem = ObservableObject<TaskFilter?>("", null)
-    val model = FilterEditorModel(editItem)
-    val editor = FilterEditor(editItem, model.fields)
+    val editorModel = FilterEditorModel(editItem, CalculationMethodValidator(projectDatabase), ExpressionAutoCompletion()::complete)
+    val dialogModel = ItemListDialogModel<TaskFilter>(
+      listItems,
+      newItemFactory = {
+        TaskFilter("", "", DefaultBooleanOption("", false), { _, _ -> false})
+      },
+    )
+    val editor = FilterEditor(editorModel, editItem, dialogModel)
+    val dialogPane = ItemListDialogPane<TaskFilter>(
+      listItems,
+      editItem,
+      { filter -> ShowHideListItem(filter.title, filter.isEnabledProperty) },
+      dialogModel,
+      editor,
+      i18n
+    )
+    dialogPane.build(dlg)
+  }
+}
 
-    val listView = ListView<TaskFilter>().apply {
-      cellFactory = Callback { ShowHideListCell { filter ->
-        ShowHideListItem(filter.title, filter.isEnabledProperty)
-      } }
-      items = FXCollections.observableArrayList(filterManager.filters)
-      selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-        if (newValue != null) {
-          editItem.set(newValue, this@apply)
+internal class FilterEditorModel(
+  editItem: ObservableObject<TaskFilter?>,
+  calculationMethodValidator: CalculationMethodValidator,
+  expressionAutoCompletion: (String, Int) -> List<Completion>) {
+
+  val nameField = ObservableString(id="name", "")
+  val descriptionField = ObservableString(id="description", "")
+  val expressionField = ObservableString(id="expression", initValue = "",
+    validator = {
+      if (editItem.value?.isBuiltIn == true) {
+        ""
+      } else {
+        if (it.isNotBlank()) {
+          calculationMethodValidator.validate(
+            // Incomplete instance just for validation purposes
+            SimpleSelect("", it, CustomPropertyClass.BOOLEAN.javaClass)
+          )
+          it
+        } else {
+          throw ValidationException(i18n.formatText("expression.validation.empty"))
         }
       }
-      selectionModel.select(0)
     }
+  ).also {
+    it.completions = expressionAutoCompletion
+  }
 
-    val content = HBox().also {
-      it.children.addAll(listView, editor.node)
-      HBox.setHgrow(editor.node, Priority.ALWAYS)
+  val fields = listOf(nameField, descriptionField, expressionField)
+}
+
+internal class FilterEditor(
+  private val editorModel: FilterEditorModel, editItem: ObservableObject<TaskFilter?>, model: ItemListDialogModel<TaskFilter>)
+  : ItemEditorPane<TaskFilter>(
+  editorModel.fields, editItem, model, i18n
+) {
+  override fun loadData(item: TaskFilter?) {
+    if (item != null) {
+      editorModel.nameField.set(item.title)
+      editorModel.descriptionField.set(item.description)
+      editorModel.expressionField.set(item.expression)
+      propertySheet.isDisable = item.isBuiltIn
+    } else {
+      editorModel.nameField.set("")
+      editorModel.descriptionField.set("")
+      editorModel.expressionField.set("")
     }
-    dlg.setContent(content)
+  }
 
-    dlg.setupButton(OkAction.create("ok") {})
-    dlg.setupButton(CancelAction.create("cancel") {})
+  override fun saveData(item: TaskFilter) {
+    item.title = editorModel.nameField.value ?: ""
+    item.description = editorModel.descriptionField.value ?: ""
   }
 }
 
-internal class FilterEditorModel(editItem: ObservableObject<TaskFilter?>) {
-  val nameField = ObservableString("name", "")
-  val descriptionField = ObservableString("description", "")
-  val fields = listOf(nameField)
-
-  init {
-    editItem.addWatcher {
-      if (it.trigger != this) {
-        nameField.set(it.newValue?.title)
-        descriptionField.set(it.newValue?.description)
+private val i18n = run {
+  val fallback1 = MappingLocalizer(mapOf()) {
+    when {
+      it.endsWith(".label") -> {
+        val key = it.split('.', limit = 2)[0]
+        RootLocalizer.create(key)
       }
+      it == "columnExists" -> RootLocalizer.create(it)
+      else -> null
     }
   }
-
+  val fallback2 = RootLocalizer.createWithRootKey("taskTable.filterDialog", fallback1)
+  RootLocalizer.createWithRootKey("", fallback2)
 }
-internal class FilterEditor(editItem: ObservableProperty<TaskFilter?>, fields: List<ObservableProperty<*>>): ItemEditorPane<TaskFilter?>(
-  editItem = editItem, fields = fields, ourEditorLocalizer
-)

@@ -21,6 +21,7 @@ package biz.ganttproject.ganttview
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.core.option.DefaultBooleanOption
 import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.storage.ProjectDatabase
 import java.awt.event.ActionEvent
 
 /**
@@ -82,7 +83,7 @@ class TaskFilterAction(
   }
 }
 
-class TaskFilterActionSet(taskFilterManager: TaskFilterManager) {
+class TaskFilterActionSet(taskFilterManager: TaskFilterManager, projectDatabase: ProjectDatabase) {
   // Task filters -> actions
   private val filterCompletedTasksAction = TaskFilterAction("taskTable.filter.uncompletedTasks",
     taskFilterManager, taskFilterManager.filterCompletedTasksOption, taskFilterManager.completedTasksFilter)
@@ -92,8 +93,8 @@ class TaskFilterActionSet(taskFilterManager: TaskFilterManager) {
     taskFilterManager, taskFilterManager.filterOverdueOption, taskFilterManager.overdueFilter)
   private val filterInProgressTodayTasksAction = TaskFilterAction("taskTable.filter.inProgressTodayTasks",
     taskFilterManager, taskFilterManager.filterInProgressTodayOption, taskFilterManager.inProgressTodayFilter)
-  private val filterDialogAction = GPAction.create("taskTable.filter.dialog.action") {
-    showFilterDialog(taskFilterManager)
+  private val filterDialogAction = GPAction.create("taskTable.filterDialog.action") {
+    showFilterDialog(taskFilterManager, projectDatabase)
   }
 
 

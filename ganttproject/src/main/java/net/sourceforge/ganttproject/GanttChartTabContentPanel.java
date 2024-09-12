@@ -120,7 +120,9 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
 
   private final Label filterTaskLabel = new Label();
 
-  private Supplier<TaskFilterActionSet> filterActions = Suppliers.memoize(() -> new TaskFilterActionSet(taskTable.getFilterManager()));
+  private Supplier<TaskFilterActionSet> filterActions = Suppliers.memoize(() ->
+    new TaskFilterActionSet(taskTable.getFilterManager(), getProject().getProjectDatabase())
+  );
   //private final TaskFilterActionSet
   @Override
   protected Component createButtonPanel() {

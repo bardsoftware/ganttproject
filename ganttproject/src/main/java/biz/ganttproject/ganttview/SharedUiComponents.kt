@@ -30,6 +30,7 @@ import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.collections.MapChangeListener
 import javafx.collections.ObservableList
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -45,10 +46,13 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.StackPane
 import javafx.util.Callback
 
+/**
+ * This is an object that is rendered in a list view.
+ */
 data class ShowHideListItem(val text: String, val isVisible: GPObservable<Boolean>)
 
 /**
- * UI components that render columns in the list view.
+ * A list cell is a UI component that renders items in a list view. It adds a show/hide icon to the item title.
  */
 internal class ShowHideListCell<T>(private val converter: (T)-> ShowHideListItem) : ListCell<T>() {
   private val iconVisible = MaterialIconView(MaterialIcon.VISIBILITY)
@@ -101,18 +105,16 @@ internal class ShowHideListCell<T>(private val converter: (T)-> ShowHideListItem
 /**
  * UI for editing properties of the selected list item.
  */
-open internal class ItemEditorPane<T>(
-  private val editItem: ObservableProperty<T>,
+internal open class ItemEditorPane<T: Item<T>>(
+  // Fields that need to be shown in the UI.
   fields: List<ObservableProperty<*>>,
+  protected val editItem: ObservableProperty<T?>,
+  // The whole dialog model.
+  private val dialogModel: ItemListDialogModel<T>,
+  // i18n
   localizer: Localizer) {
 
-  fun focus() {
-    propertySheet.requestFocus()
-    //editors["title"]?.editor?.requestFocus()
-    onEdit()
-  }
-
-  protected open fun onEdit() {}
+  private var isEditIgnored = false
 
   val node: Node by lazy {
     vbox {
@@ -141,6 +143,64 @@ open internal class ItemEditorPane<T>(
     it.styleClass.addAll("hint-validation-pane", "noerror")
     it.children.add(errorLabel)
   }
+
+  init {
+    fields.forEach { it.addWatcher { onEdit() } }
+    editItem.addWatcher {
+      if (it.trigger != this) {
+        isEditIgnored = true
+        loadData(it.newValue)
+        isEditIgnored = false
+      }
+    }
+    propertySheet.validationErrors.addListener(MapChangeListener {
+      if (propertySheet.validationErrors.isEmpty()) {
+        onError(null)
+      } else {
+        onError(propertySheet.validationErrors.values.joinToString(separator = "\n"))
+      }
+    })
+  }
+
+  /**
+   * This is called when we need to save data from the UI controls into the model item.
+   */
+  protected open fun saveData(item: T) {}
+
+  /**
+   * This is called when we need to load data from the model item into the UI controls.
+   */
+  protected open fun loadData(item: T?) {}
+
+  internal fun onEdit() {
+    if (isEditIgnored) return
+    editItem.value?.clone()?.let {
+      saveData(it)
+      editItem.set(it, trigger = this)
+    }
+  }
+
+  internal fun focus() {
+    propertySheet.requestFocus()
+    onEdit()
+  }
+
+  private fun onError(it: String?) {
+    if (it == null) {
+      errorPane.isVisible = false
+      if (!errorPane.styleClass.contains("noerror")) {
+        errorPane.styleClass.add("noerror")
+      }
+      errorLabel.text = ""
+      dialogModel.btnApplyController.isDisabled.value = false
+    }
+    else {
+      errorLabel.text = it
+      errorPane.isVisible = true
+      errorPane.styleClass.remove("noerror")
+      dialogModel.btnApplyController.isDisabled.value = true
+    }
+  }
 }
 
 interface Item<T> {
@@ -154,14 +214,17 @@ data class BtnController<T>(
   var onAction: () -> T? = { null }
 )
 
+/**
+ * The dialog model object connects the list view with the actions to add/delete items and the validation logic.
+ */
 internal class ItemListDialogModel<T: Item<T>>(
   private val listItems: ObservableList<T>,
-  private val newItemFactory: ()->T,
-  private val selection: ()->Collection<T>
+  private val newItemFactory: ()->T
 ) {
   val btnAddController = BtnController(onAction = this::onAddColumn)
   val btnDeleteController = BtnController(onAction = this::onDeleteColumn)
   val btnApplyController = BtnController(onAction = {})
+  internal var selection: ()-> Collection<T> = { emptyList() }
 
   fun onAddColumn(): T {
     val item = newItemFactory()
@@ -185,26 +248,26 @@ internal class ItemListDialogModel<T: Item<T>>(
   fun onDeleteColumn() {
     listItems.removeAll(selection())
   }
-
 }
 
+/**
+ * The whole user interface.
+ */
 internal class ItemListDialogPane<T: Item<T>>(
+  // The list of items being shown.
   val listItems: ObservableList<T>,
+  // The item that is currently selected and being edited.
   val selectedItem: ObservableProperty<T?>,
+  // Converter from the application model objects to the list view objects.
   val listItemConverter: (T) -> ShowHideListItem,
+  // The dialog model.
   private val dialogModel: ItemListDialogModel<T>,
-  val editor: ItemEditorPane<T?>,
+  // The editor pane UI.
+  val editor: ItemEditorPane<T>,
+  // i18n.
   private val localizer: Localizer) {
 
-  val listView: ListView<T> = ListView()
-  private val errorLabel = Label().also {
-    it.styleClass.addAll("hint", "hint-validation")
-  }
-  private val errorPane = HBox().also {
-    it.styleClass.addAll("hint-validation-pane", "noerror")
-    it.children.add(errorLabel)
-  }
-
+  internal val listView: ListView<T> = ListView()
 
   init {
     selectedItem.addWatcher { evt ->
@@ -212,16 +275,17 @@ internal class ItemListDialogPane<T: Item<T>>(
         listItems.replaceAll { if (it.title == evt.newValue?.cloneOf?.title) { evt.newValue } else { it } }
       }
     }
-    listView.items = listItems
-    listView.cellFactory = Callback { ShowHideListCell(listItemConverter)}
-//
-    listView.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-      if (newValue != null) {
-        selectedItem.set(newValue.clone(), trigger = listView)
+    listView.apply {
+      this@ItemListDialogPane.dialogModel.selection = { selectionModel.selectedItems }
+      items = listItems
+      cellFactory = Callback { ShowHideListCell(listItemConverter)}
+      selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+        if (newValue != null) {
+          selectedItem.set(newValue.clone(), trigger = this)
+        }
       }
+      selectionModel.select(0)
     }
-    listView.selectionModel.select(0)
-
   }
 
   fun build(dlg: DialogController) {
@@ -278,22 +342,5 @@ internal class ItemListDialogPane<T: Item<T>>(
     }
 
     dlg.setEscCloseEnabled(true)
-  }
-
-  fun onError(it: String?) {
-    if (it == null) {
-      errorPane.isVisible = false
-      if (!errorPane.styleClass.contains("noerror")) {
-        errorPane.styleClass.add("noerror")
-      }
-      errorLabel.text = ""
-      dialogModel.btnApplyController.isDisabled.value = false
-    }
-    else {
-      errorLabel.text = it
-      errorPane.isVisible = true
-      errorPane.styleClass.remove("noerror")
-      dialogModel.btnApplyController.isDisabled.value = true
-    }
   }
 }
