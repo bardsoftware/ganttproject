@@ -26,8 +26,6 @@ import biz.ganttproject.customproperty.*
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
-import javafx.collections.MapChangeListener
-import javafx.collections.ObservableList
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
@@ -55,16 +53,13 @@ class ColumnManager(
     newItemFactory = {
       ColumnAsListItem(null, isVisible = true, isCustom = true, customColumnsManager, {customPropertyEditor.updateVisibility(it)})
     },
-    selection = {
-      dialogPane.listView.selectionModel.selectedItems
-    }
+    ourLocalizer
   )
 
   private val customPropertyEditor: CustomPropertyEditor = CustomPropertyEditor(
     selectedItemProperty = selectedItem,
     btnDeleteController = dialogModel.btnDeleteController,
     escCloseEnabled = escCloseEnabled,
-    listItems = listItems,
     model = EditorModel(
       calculationMethodValidator = calculationMethodValidator,
       expressionAutoCompletion = expressionAutoCompletion,
@@ -73,7 +68,8 @@ class ColumnManager(
       },
       localizer = ourEditorLocalizer
     ),
-    errorUi = { dialogPane.onError(it) })
+    dialogModel = dialogModel
+  )
 
   private val mergedColumns: MutableList<ColumnList.Column> = mutableListOf()
   internal val dialogPane = ItemListDialogPane<ColumnAsListItem>(
@@ -99,7 +95,6 @@ class ColumnManager(
         listItems.add(ColumnAsListItem(columnStub, columnStub.isVisible, true, customColumnsManager, customPropertyEditor::updateVisibility))
       }
     }
-
   }
 
   internal fun onApply() {
@@ -131,7 +126,7 @@ class ColumnManager(
           mergedColumns.add(ColumnList.ColumnStub(def.id, def.name, true, mergedColumns.size, 50))
         }
         if (columnItem.isCalculated) {
-          def.calculationMethod = SimpleSelect(def.id, columnItem.expression, def.propertyClass.javaClass)
+          def.calculationMethod = SimpleSelect(propertyId = def.id, selectExpression = columnItem.expression, resultClass = def.propertyClass.javaClass)
         }
       }
     }
@@ -184,7 +179,7 @@ internal fun CustomPropertyDefinition.importColumnItem(item: ColumnAsListItem) {
   }
   this.propertyClass = item.type.getCustomPropertyClass()
   if (item.isCalculated) {
-    this.calculationMethod = SimpleSelect(this.id, item.expression, this.propertyClass.javaClass)
+    this.calculationMethod = SimpleSelect(propertyId = this.id, selectExpression = item.expression, resultClass = this.propertyClass.javaClass)
   } else {
     this.calculationMethod = null
   }
@@ -215,7 +210,7 @@ internal class EditorModel(
     }
     value
   })
-  val typeOption = ObservableEnum(id ="type", initValue = PropertyType.STRING, allValues = PropertyType.values())
+  val typeOption = ObservableEnum(id = "type", initValue = PropertyType.STRING, allValues = PropertyType.values())
   val defaultValueOption = ObservableString(
     id = "defaultValue",
     initValue = "",
@@ -237,7 +232,7 @@ internal class EditorModel(
         if (it.isNotBlank()) {
           calculationMethodValidator.validate(
             // Incomplete instance just for validation purposes
-            SimpleSelect("", it, typeOption.value.getCustomPropertyClass().javaClass)
+            SimpleSelect(propertyId = "", selectExpression = it, resultClass = typeOption.value.getCustomPropertyClass().javaClass)
           )
           it
         } else {
@@ -256,39 +251,29 @@ internal class EditorModel(
  */
 internal class CustomPropertyEditor(
   private val model: EditorModel,
-  private val selectedItemProperty: ObservableProperty<ColumnAsListItem?>,
+  dialogModel: ItemListDialogModel<ColumnAsListItem>,
+  selectedItemProperty: ObservableProperty<ColumnAsListItem?>,
   private val btnDeleteController: BtnController<Unit>,
   escCloseEnabled: BooleanProperty,
-  private val listItems: ObservableList<ColumnAsListItem>,
-  private val errorUi: (String?) -> Unit
-) : ItemEditorPane<ColumnAsListItem?>(selectedItemProperty, model.allOptions, ourEditorLocalizer) {
+) : ItemEditorPane<ColumnAsListItem>(model.allOptions, selectedItemProperty, dialogModel, ourEditorLocalizer) {
 
   init {
     escCloseEnabled.bind(propertySheet.isEscCloseEnabled)
-    selectedItemProperty.addWatcher {
-      if (it.trigger != this) {
-        selectedItem = it.newValue
-      }
-    }
   }
 
-  private var isPropertyChangeIgnored = false
-  private var selectedItem: ColumnAsListItem?
-    get() = selectedItemProperty.value
-  set(value) {
-    isPropertyChangeIgnored = true
-    if (value != null) {
-      model.nameOption.set(value.title)
-      model.typeOption.set(value.type)
-      model.defaultValueOption.set(value.defaultValue)
-      visibilityToggle.isSelected = value.isVisible
+  override fun loadData(item: ColumnAsListItem?) {
+    if (item != null) {
+      model.nameOption.set(item.title)
+      model.typeOption.set(item.type)
+      model.defaultValueOption.set(item.defaultValue)
+      visibilityToggle.isSelected = item.isVisible
 
-      if (value.isCustom) {
+      if (item.isCustom) {
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.custom")
         propertySheet.isDisable = false
         btnDeleteController.isDisabled.value = false
-        model.isCalculatedOption.set(value.isCalculated)
-        model.expressionOption.set(value.expression)
+        model.isCalculatedOption.set(item.isCalculated)
+        model.expressionOption.set(item.expression)
       } else {
         btnDeleteController.isDisabled.value = true
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.builtin")
@@ -297,7 +282,15 @@ internal class CustomPropertyEditor(
         model.expressionOption.set("")
       }
     }
-    isPropertyChangeIgnored = false
+  }
+
+  override fun saveData(item: ColumnAsListItem) {
+    item.isVisible = visibilityToggle.isSelected
+    item.title = model.nameOption.value ?: ""
+    item.type = model.typeOption.value
+    item.defaultValue = model.defaultValueOption.value ?: ""
+    item.isCalculated = model.isCalculatedOption.value
+    item.expression = model.expressionOption.value ?: ""
   }
 
   init {
@@ -306,37 +299,13 @@ internal class CustomPropertyEditor(
     visibilityToggle.selectedProperty().addListener { _, _, _ ->
       onEdit()
     }
-    propertySheet.validationErrors.addListener(MapChangeListener {
-      if (propertySheet.validationErrors.isEmpty()) {
-        errorUi(null)
-        listItems.replaceAll { if (it != selectedItem?.cloneOf) it else selectedItem }
-      } else {
-        errorUi(propertySheet.validationErrors.values.joinToString(separator = "\n"))
-      }
-    })
   }
 
   internal fun updateVisibility(item: ColumnAsListItem) {
-    selectedItem?.let {
-      if (it.column?.id == item.column?.id) {
-        if (it.isVisible != item.isVisible) {
-          it.isVisible = item.isVisible
-          visibilityToggle.isSelected = item.isVisible
-        }
-      }
-    }
-
-  }
-  override fun onEdit() {
-    if (!isPropertyChangeIgnored) {
-      selectedItem?.clone()?.let {selected ->
-        selected.isVisible = visibilityToggle.isSelected
-        selected.title = model.nameOption.value ?: ""
-        selected.type = model.typeOption.value
-        selected.defaultValue = model.defaultValueOption.value ?: ""
-        selected.isCalculated = model.isCalculatedOption.value
-        selected.expression = model.expressionOption.value ?: ""
-        selectedItemProperty.set(selected, trigger = this)
+    editItem.value?.let {
+      if (it.column?.id == item.column?.id && it.isVisible != item.isVisible) {
+        it.isVisible = item.isVisible
+        visibilityToggle.isSelected = item.isVisible
       }
     }
   }
@@ -477,6 +446,7 @@ internal val ourEditorLocalizer = run {
         RootLocalizer.create(key)
       }
       it == "columnExists" -> RootLocalizer.create(it)
+      it == "addItem" -> RootLocalizer.create("addCustomColumn")
       else -> null
     }
   }

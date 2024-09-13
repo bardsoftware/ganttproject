@@ -332,23 +332,32 @@ class SqlProjectDatabaseImpl(
       columnConsumer.forEach {
         q = q.select(field(it.first.selectExpression, it.first.resultClass).`as`(it.first.propertyId))
       }
-      q.from(TASK).forEach { row  ->
+      var q1 = q.from(TASK).where("true")
+      columnConsumer.forEach {
+        if (it.first.whereExpression != null) {
+          q1 = q1.and(it.first.whereExpression)
+        }
+      }
+      q1.forEach { row  ->
         val taskNum = row[TASK.NUM]
         columnConsumer.forEach {
           it.second(taskNum, row[it.first.propertyId])
         }
       }
-
     }
   }
 
   override fun validateColumnConsumer(columnConsumer: ColumnConsumer) {
     withDSL { dsl ->
-      dsl.select(field(columnConsumer.first.selectExpression).cast(columnConsumer.first.resultClass))
+      val selectFrom = dsl.select(field(columnConsumer.first.selectExpression).cast(columnConsumer.first.resultClass))
         .from(TASK)
-        .limit(1).also {
-        it.execute()
+      val q = if (columnConsumer.first.whereExpression != null) {
+        selectFrom.where(columnConsumer.first.whereExpression)
+      } else {
+        selectFrom
       }
+
+      q.limit(1).execute()
     }
   }
 

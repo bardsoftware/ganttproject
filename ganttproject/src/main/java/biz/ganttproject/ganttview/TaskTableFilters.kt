@@ -28,10 +28,16 @@ import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 
 data class TaskFilter(
-  val title: String,
-  val description: String,
+  override var title: String,
+  var description: String,
   val isEnabledProperty: GPObservable<Boolean>,
-  val filterFxn: TaskFilterFxn) {
+  val filterFxn: TaskFilterFxn,
+  var expression: String? = null,
+  val isBuiltIn: Boolean = false,
+  override val cloneOf: TaskFilter? = null
+  ): Item<TaskFilter> {
+
+  override fun clone(): TaskFilter = copy(cloneOf = this)
 }
 
 typealias TaskFilterFxn = (parent: Task, child: Task?) -> Boolean
@@ -87,14 +93,23 @@ class TaskFilterManager(val taskManager: TaskManager) {
       sync()
     }
 
-  val filters: List<TaskFilter> get() = listOf(
-    TaskFilter("filter.completedTasks", "", filterCompletedTasksOption.asObservableValue(), completedTasksFilter),
-    TaskFilter("filter.dueTodayTasks", "", filterDueTodayOption.asObservableValue(), dueTodayFilter),
-    TaskFilter("filter.overdueTasks", "", filterOverdueOption.asObservableValue(), overdueFilter),
-    TaskFilter("filter.inProgressTodayTasks", "", filterInProgressTodayOption.asObservableValue(), inProgressTodayFilter),
+  val builtInFilters: List<TaskFilter> get() = listOf(
+    TaskFilter("filter.completedTasks", "", filterCompletedTasksOption.asObservableValue(), completedTasksFilter, isBuiltIn = true),
+    TaskFilter("filter.dueTodayTasks", "", filterDueTodayOption.asObservableValue(), dueTodayFilter, isBuiltIn = true),
+    TaskFilter("filter.overdueTasks", "", filterOverdueOption.asObservableValue(), overdueFilter, isBuiltIn = true),
+    TaskFilter("filter.inProgressTodayTasks", "", filterInProgressTodayOption.asObservableValue(), inProgressTodayFilter, isBuiltIn = true),
   )
+
+  val customFilters: MutableList<TaskFilter> = mutableListOf()
+  val filters get() = builtInFilters + customFilters
+
   private fun fireFilterChanged(value: TaskFilterFxn) {
     filterListeners.forEach { it(value) }
+  }
+
+  fun importFilters(filters: List<TaskFilter>) {
+    customFilters.clear()
+    customFilters.addAll(filters.filter { !it.isBuiltIn })
   }
 
   internal var sync: ()->Unit = {}

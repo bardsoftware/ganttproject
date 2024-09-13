@@ -97,7 +97,7 @@ class AutoCompletionTextFieldBinding<T: Completion>(
   private val textChangeListener: ChangeListener<String> =
     ChangeListener<String> { obs, oldText, newText ->
       if (completionTarget.isFocused) {
-        setUserInput(newText)
+        setUserInput(newText ?: "")
       }
     }
   private val focusChangedListener: ChangeListener<Boolean> =
