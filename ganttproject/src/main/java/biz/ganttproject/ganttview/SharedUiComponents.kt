@@ -219,7 +219,8 @@ data class BtnController<T>(
  */
 internal class ItemListDialogModel<T: Item<T>>(
   private val listItems: ObservableList<T>,
-  private val newItemFactory: ()->T
+  private val newItemFactory: ()->T,
+  private val i18n: Localizer,
 ) {
   val btnAddController = BtnController(onAction = this::onAddColumn)
   val btnDeleteController = BtnController(onAction = this::onDeleteColumn)
@@ -228,7 +229,7 @@ internal class ItemListDialogModel<T: Item<T>>(
 
   fun onAddColumn(): T {
     val item = newItemFactory()
-    val title = RootLocalizer.create("addCustomColumn").also {
+    val title = i18n.create("addItem").also {
       it.update("")
     }
     var count = 1

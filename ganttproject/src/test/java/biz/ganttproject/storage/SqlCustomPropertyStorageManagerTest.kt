@@ -70,7 +70,7 @@ class CalculatedPropertyTest {
   fun `create task data table`() {
     customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo")
     customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "bar").also {
-      it.calculationMethod = SimpleSelect(it.id, "tpc0 + '--'", CustomPropertyClass.TEXT.javaClass)
+      it.calculationMethod = SimpleSelect(it.id, "tpc0 + '--'", resultClass = CustomPropertyClass.TEXT.javaClass)
     }
     rebuildTaskDataTable(dataSource, customPropertyManager)
 
@@ -83,10 +83,10 @@ class CalculatedPropertyTest {
   fun `calculated property value`() {
     val foo = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo")
     val bar =customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar").also {
-      it.calculationMethod = SimpleSelect(it.id, "duration + 1", CustomPropertyClass.INTEGER.javaClass)
+      it.calculationMethod = SimpleSelect(it.id, "duration + 1", resultClass = CustomPropertyClass.INTEGER.javaClass)
     }
     val baz = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "baz").also {
-      it.calculationMethod = SimpleSelect(it.id, "tpc0 || '--'", CustomPropertyClass.TEXT.javaClass)
+      it.calculationMethod = SimpleSelect(it.id, "tpc0 || '--'", resultClass = CustomPropertyClass.TEXT.javaClass)
     }
     rebuildTaskDataTable(dataSource, customPropertyManager)
 
@@ -100,7 +100,7 @@ class CalculatedPropertyTest {
 
     val propertyHolders = createPropertyHolders(taskManager)
     val updaters = customPropertyManager.definitions.map {def ->
-        ColumnConsumer(SimpleSelect(def.id, def.id, def.type)) { taskNum, value ->
+        ColumnConsumer(SimpleSelect(def.id, def.id, resultClass = def.type)) { taskNum, value ->
           propertyHolders[taskNum]?.setValue(def, value)
       }
     }.toList()
@@ -113,7 +113,7 @@ class CalculatedPropertyTest {
   @Test
   fun `column used in a generated column can't be dropped`() {
     customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar").also {
-      it.calculationMethod = SimpleSelect(it.id, "duration + 1", CustomPropertyClass.INTEGER.javaClass)
+      it.calculationMethod = SimpleSelect(it.id, "duration + 1", resultClass = CustomPropertyClass.INTEGER.javaClass)
     }
     rebuildTaskDataTable(dataSource, customPropertyManager)
 
@@ -131,14 +131,14 @@ class CalculatedPropertyTest {
   fun `custom column creation order`() {
     val manager = SqlCustomPropertyStorageManager(dataSource)
     customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar").also {
-      it.calculationMethod = SimpleSelect(it.id, "tpc1 + 1", it.type)
+      it.calculationMethod = SimpleSelect(it.id, "tpc1 + 1", resultClass = it.type)
     }
     customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "foo")
     // We expect that the stored column tpc1 will be created first.
     manager.onCustomColumnChange(customPropertyManager)
 
     customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "baz").also {
-      it.calculationMethod = SimpleSelect(it.id, "'#' || tpc1", it.type)
+      it.calculationMethod = SimpleSelect(it.id, "'#' || tpc1", resultClass = it.type)
     }
     manager.onCustomColumnChange(customPropertyManager)
   }

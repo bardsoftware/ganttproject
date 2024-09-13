@@ -58,7 +58,7 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
       val def = taskManager.customPropertyManager.createDefinition(
         xmlTaskProperty.id, xmlTaskProperty.valuetype, xmlTaskProperty.name, xmlTaskProperty.defaultvalue)
       xmlTaskProperty.simpleSelect?.let {
-        def.calculationMethod = SimpleSelect(xmlTaskProperty.id, StringEscapeUtils.unescapeXml(it.select), def.propertyClass.javaClass)
+        def.calculationMethod = SimpleSelect(propertyId = xmlTaskProperty.id, selectExpression = StringEscapeUtils.unescapeXml(it.select), resultClass = def.propertyClass.javaClass)
       }
     }
   }

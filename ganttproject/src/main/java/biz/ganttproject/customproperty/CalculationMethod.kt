@@ -22,6 +22,7 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.option.Completion
 import biz.ganttproject.storage.db.Tables
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ColumnConsumer
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException
@@ -38,6 +39,7 @@ sealed class CalculationMethodImpl(override val propertyId: String, override val
  */
 class SimpleSelect(propertyId: String,
                    val selectExpression: String = "id",
+                   val whereExpression: String? = null,
                    resultClass: Class<*>) : CalculationMethodImpl(propertyId, resultClass)
 
 class CalculationMethodValidator(private val projectDatabase: ProjectDatabase) {
@@ -47,6 +49,7 @@ class CalculationMethodValidator(private val projectDatabase: ProjectDatabase) {
         try {
           projectDatabase.validateColumnConsumer(ColumnConsumer(calculationMethod) {_,_->})
         } catch (ex: ProjectDatabaseException) {
+          //GPLogger.create("ProjectDatabase").error("calculation method validation failed: ${ex.message}", ex)
           throw ValidationException(RootLocalizer.formatText("option.customPropertyDialog.expression.validation.syntax"))
         }
       }

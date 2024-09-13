@@ -37,9 +37,7 @@ data class TaskFilter(
   override val cloneOf: TaskFilter? = null
   ): Item<TaskFilter> {
 
-  override fun clone(): TaskFilter = TaskFilter(
-    this.title, this.description, this.isEnabledProperty, this.filterFxn, this.expression, this.isBuiltIn, this
-  )
+  override fun clone(): TaskFilter = copy(cloneOf = this)
 }
 
 typealias TaskFilterFxn = (parent: Task, child: Task?) -> Boolean
@@ -95,14 +93,23 @@ class TaskFilterManager(val taskManager: TaskManager) {
       sync()
     }
 
-  val filters: List<TaskFilter> get() = listOf(
+  val builtInFilters: List<TaskFilter> get() = listOf(
     TaskFilter("filter.completedTasks", "", filterCompletedTasksOption.asObservableValue(), completedTasksFilter, isBuiltIn = true),
     TaskFilter("filter.dueTodayTasks", "", filterDueTodayOption.asObservableValue(), dueTodayFilter, isBuiltIn = true),
     TaskFilter("filter.overdueTasks", "", filterOverdueOption.asObservableValue(), overdueFilter, isBuiltIn = true),
     TaskFilter("filter.inProgressTodayTasks", "", filterInProgressTodayOption.asObservableValue(), inProgressTodayFilter, isBuiltIn = true),
   )
+
+  val customFilters: MutableList<TaskFilter> = mutableListOf()
+  val filters get() = builtInFilters + customFilters
+
   private fun fireFilterChanged(value: TaskFilterFxn) {
     filterListeners.forEach { it(value) }
+  }
+
+  fun importFilters(filters: List<TaskFilter>) {
+    customFilters.clear()
+    customFilters.addAll(filters.filter { !it.isBuiltIn })
   }
 
   internal var sync: ()->Unit = {}

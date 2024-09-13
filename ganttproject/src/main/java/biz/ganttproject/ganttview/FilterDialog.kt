@@ -46,7 +46,11 @@ fun showFilterDialog(filterManager: TaskFilterManager, projectDatabase: ProjectD
       newItemFactory = {
         TaskFilter("", "", DefaultBooleanOption("", false), { _, _ -> false})
       },
+      i18n
     )
+    dialogModel.btnApplyController.onAction = {
+      filterManager.importFilters(listItems)
+    }
     val editor = FilterEditor(editorModel, editItem, dialogModel)
     val dialogPane = ItemListDialogPane<TaskFilter>(
       listItems,
@@ -75,7 +79,7 @@ internal class FilterEditorModel(
         if (it.isNotBlank()) {
           calculationMethodValidator.validate(
             // Incomplete instance just for validation purposes
-            SimpleSelect("", it, CustomPropertyClass.BOOLEAN.javaClass)
+            SimpleSelect("", "num", whereExpression = it, CustomPropertyClass.INTEGER.javaClass)
           )
           it
         } else {
@@ -111,6 +115,7 @@ internal class FilterEditor(
   override fun saveData(item: TaskFilter) {
     item.title = editorModel.nameField.value ?: ""
     item.description = editorModel.descriptionField.value ?: ""
+    item.expression = editorModel.expressionField.value ?: ""
   }
 }
 

@@ -26,8 +26,6 @@ import biz.ganttproject.customproperty.*
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
-import javafx.collections.MapChangeListener
-import javafx.collections.ObservableList
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
@@ -54,7 +52,8 @@ class ColumnManager(
     listItems,
     newItemFactory = {
       ColumnAsListItem(null, isVisible = true, isCustom = true, customColumnsManager, {customPropertyEditor.updateVisibility(it)})
-    }
+    },
+    ourLocalizer
   )
 
   private val customPropertyEditor: CustomPropertyEditor = CustomPropertyEditor(
@@ -127,7 +126,7 @@ class ColumnManager(
           mergedColumns.add(ColumnList.ColumnStub(def.id, def.name, true, mergedColumns.size, 50))
         }
         if (columnItem.isCalculated) {
-          def.calculationMethod = SimpleSelect(def.id, columnItem.expression, def.propertyClass.javaClass)
+          def.calculationMethod = SimpleSelect(propertyId = def.id, selectExpression = columnItem.expression, resultClass = def.propertyClass.javaClass)
         }
       }
     }
@@ -180,7 +179,7 @@ internal fun CustomPropertyDefinition.importColumnItem(item: ColumnAsListItem) {
   }
   this.propertyClass = item.type.getCustomPropertyClass()
   if (item.isCalculated) {
-    this.calculationMethod = SimpleSelect(this.id, item.expression, this.propertyClass.javaClass)
+    this.calculationMethod = SimpleSelect(propertyId = this.id, selectExpression = item.expression, resultClass = this.propertyClass.javaClass)
   } else {
     this.calculationMethod = null
   }
@@ -233,7 +232,7 @@ internal class EditorModel(
         if (it.isNotBlank()) {
           calculationMethodValidator.validate(
             // Incomplete instance just for validation purposes
-            SimpleSelect("", it, typeOption.value.getCustomPropertyClass().javaClass)
+            SimpleSelect(propertyId = "", selectExpression = it, resultClass = typeOption.value.getCustomPropertyClass().javaClass)
           )
           it
         } else {
@@ -447,6 +446,7 @@ internal val ourEditorLocalizer = run {
         RootLocalizer.create(key)
       }
       it == "columnExists" -> RootLocalizer.create(it)
+      it == "addItem" -> RootLocalizer.create("addCustomColumn")
       else -> null
     }
   }
