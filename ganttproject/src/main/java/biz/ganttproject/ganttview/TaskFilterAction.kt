@@ -31,13 +31,13 @@ class TaskFilterAction(
   actionName: String,
   private val filterManager: TaskFilterManager,
   private val taskFilterOption: DefaultBooleanOption,
-  private val taskFilterFxn: TaskFilterFxn
+  private val taskFilter: TaskFilter
 ) : GPAction(actionName) {
 
   init {
-    putValue(SELECTED_KEY, filterManager.activeFilter == taskFilterFxn)
+    putValue(SELECTED_KEY, filterManager.activeFilter == taskFilter)
     filterManager.filterListeners.add { filter ->
-      if (taskFilterFxn != filter) {
+      if (taskFilter != filter) {
         putValue(SELECTED_KEY, false)
       }
     }
@@ -74,9 +74,9 @@ class TaskFilterAction(
   internal fun setChecked(value: Boolean) {
     putValue(SELECTED_KEY, value)
     if (value) {
-      filterManager.activeFilter = taskFilterFxn
+      filterManager.activeFilter = taskFilter
     } else {
-      if (filterManager.activeFilter == taskFilterFxn) {
+      if (filterManager.activeFilter == taskFilter) {
         filterManager.activeFilter = VOID_FILTER
       }
     }

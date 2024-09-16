@@ -803,7 +803,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       return new GanttXMLSaver(GanttProject.this, getArea(), getUIFacade(),
         myGanttChartTabContent,
         myResourceChartTabContent,
-        () -> myTaskTableSupplier.get().getColumnList(), () -> myTaskFilterManager);
+        () -> myTaskTableSupplier.get().getColumnList(), GanttProject.this::getTaskFilterManager);
     }
   }
 

@@ -124,8 +124,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   private final TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
   protected final Supplier<TaskTable> myTaskTableSupplier;
 
-  protected final TaskFilterManager myTaskFilterManager;
-
   protected final ProjectDatabase myProjectDatabase;
 
   private final NotificationManagerImpl myNotificationManager;
@@ -248,10 +246,9 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
         return myTaskTableSupplier.get().getActionConnector();
       }
     }, newTaskActor, myProjectDatabase);
-    myTaskFilterManager = new TaskFilterManager(getTaskManager());
     myTaskTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(() ->
       new TaskTable(getProject(), getTaskManager(), myTaskTableChartConnector, myTaskCollapseView,
-        getTaskSelectionManager(), myTaskActions, getUndoManager(), myTaskFilterManager, myUiInitializationPromise, newTaskActor)
+        getTaskSelectionManager(), myTaskActions, getUndoManager(), getTaskFilterManager(), myUiInitializationPromise, newTaskActor)
     ));
     myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
       @Override
@@ -276,6 +273,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
       }
     };
     myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
+    myUndoManager.addUndoableEditListener(getTaskFilterManager().getUndoListener());
     myViewManager = new ViewManagerImpl(getProject(), myUIFacade, getUndoManager(), viewPane, PluginManager.getViewProviders());
     myProjectUIFacade = new ProjectUIFacadeImpl(stage, myUIFacade, myDocumentManager, myUndoManager, myProjectImpl);
     myRssChecker = new RssFeedChecker(myUIFacade);
@@ -580,6 +578,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
 
   protected abstract ParserFactory getParserFactory();
   public @NotNull TaskFilterManager getTaskFilterManager() {
-    return myTaskFilterManager;
+    return myProjectImpl.getTaskFilterManager();
   }
 }
