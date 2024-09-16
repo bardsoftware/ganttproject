@@ -2,7 +2,7 @@ CREATE ALIAS IF NOT EXISTS TASK_COST FOR "net.sourceforge.ganttproject.storage.H
 CREATE ALIAS IF NOT EXISTS TASK_END_DATE FOR "net.sourceforge.ganttproject.storage.H2FunctionsKt.taskEndDate";
 
 DROP VIEW TaskViewForComputedColumns;
-DROP TABLE Task;
+DROP TABLE Task CASCADE ;
 create table if not exists Task (
     uid                     varchar                 not null,
     num                     integer                 not null,
@@ -26,5 +26,5 @@ create table if not exists Task (
     primary key (uid)
 );
 
-ALTER TABLE TaskDependency ADD CONSTRAINT dependee_fk FOREIGN KEY (dependee_uid) REFERENCES Task;
-ALTER TABLE TaskDependency ADD CONSTRAINT dependant_fk FOREIGN KEY (dependant_uid) REFERENCES Task;
+ALTER TABLE TaskDependency ADD CONSTRAINT dependee_fk FOREIGN KEY (dependee_uid) REFERENCES Task ON DELETE CASCADE ;
+ALTER TABLE TaskDependency ADD CONSTRAINT dependant_fk FOREIGN KEY (dependant_uid) REFERENCES Task ON DELETE CASCADE ;

@@ -21,89 +21,112 @@ package net.sourceforge.ganttproject.test.task
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.ganttview.TaskFilterManager
 import net.sourceforge.ganttproject.TestSetupHelper
+import net.sourceforge.ganttproject.storage.ProjectDatabase
+import net.sourceforge.ganttproject.storage.SQL_PROJECT_DATABASE_OPTIONS
+import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskManager
+import org.h2.jdbcx.JdbcDataSource
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.*
+import javax.sql.DataSource
 
 class TaskFiltersTestCase {
-  private val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
-  private val taskFilterManager = TaskFilterManager(taskManager)
+  private lateinit var dataSource: DataSource
+  private lateinit var projectDatabase: ProjectDatabase
+  private lateinit var taskManager: TaskManager
+  private lateinit var taskFilterManager: TaskFilterManager
   private fun createTask() = taskManager.createTask()
+
+  @BeforeEach
+  fun init() {
+    dataSource = JdbcDataSource().also {
+      it.setURL("jdbc:h2:mem:test$SQL_PROJECT_DATABASE_OPTIONS")
+    }
+    projectDatabase = SqlProjectDatabaseImpl(dataSource)
+    projectDatabase.init()
+
+    taskManager = TestSetupHelper.newTaskManagerBuilder().also {
+      it.setTaskUpdateBuilderFactory { task -> projectDatabase.createTaskUpdateBuilder(task) }
+    }.build()
+    taskFilterManager = TaskFilterManager(taskManager, projectDatabase)
+  }
 
   @Test
   fun `Filter completed tasks`() {
     val child = createTask()
     child.completionPercentage = 100
-    assertFalse(taskFilterManager.completedTasksFilter(taskManager.rootTask, child))
+    assertFalse(taskFilterManager.completedTasksFilter.filterFxn(taskManager.rootTask, child))
 
     child.completionPercentage = 50
-    assert(taskFilterManager.completedTasksFilter(taskManager.rootTask, child))
+    assert(taskFilterManager.completedTasksFilter.filterFxn(taskManager.rootTask, child))
    }
 
   @Test
   fun `Filter due today`() {
     val child = createTask()
     // display value will be today
-    assert(taskFilterManager.dueTodayFilter(taskManager.rootTask, child))
+    assert(taskFilterManager.dueTodayFilter.filterFxn(taskManager.rootTask, child))
 
     child.completionPercentage = 100
-    assertFalse(taskFilterManager.dueTodayFilter(taskManager.rootTask, child))
+    assertFalse(taskFilterManager.dueTodayFilter.filterFxn(taskManager.rootTask, child))
 
     child.completionPercentage = 99
-    assert(taskFilterManager.dueTodayFilter(taskManager.rootTask, child))
+    assert(taskFilterManager.dueTodayFilter.filterFxn(taskManager.rootTask, child))
 
     child.shiftTask(1)
-    assertFalse(taskFilterManager.dueTodayFilter(taskManager.rootTask, child))
+    assertFalse(taskFilterManager.dueTodayFilter.filterFxn(taskManager.rootTask, child))
 
     child.shiftTask(-3)
-    assertFalse(taskFilterManager.dueTodayFilter(taskManager.rootTask, child))
+    assertFalse(taskFilterManager.dueTodayFilter.filterFxn(taskManager.rootTask, child))
   }
 
   @Test
   fun `Filter overdue today`() {
     val child = createTask()
     child.end.add(Calendar.DATE, -1)
-    assert(taskFilterManager.overdueFilter(taskManager.rootTask, child))
+    assert(taskFilterManager.overdueFilter.filterFxn(taskManager.rootTask, child))
 
     child.completionPercentage = 100
-    assertFalse(taskFilterManager.overdueFilter(taskManager.rootTask, child))
+    assertFalse(taskFilterManager.overdueFilter.filterFxn(taskManager.rootTask, child))
 
     child.completionPercentage = 99
-    assert(taskFilterManager.overdueFilter(taskManager.rootTask, child))
+    assert(taskFilterManager.overdueFilter.filterFxn(taskManager.rootTask, child))
 
     child.shiftTask(1)
-    assertFalse(taskFilterManager.overdueFilter(taskManager.rootTask, child))
+    assertFalse(taskFilterManager.overdueFilter.filterFxn(taskManager.rootTask, child))
 
     child.shiftTask(-3)
-    assert(taskFilterManager.overdueFilter(taskManager.rootTask, child))
+    assert(taskFilterManager.overdueFilter.filterFxn(taskManager.rootTask, child))
   }
 
   @Test
   fun `Filter in progress today`() {
     var child = createTask()
-    assert(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
+    assert(taskFilterManager.inProgressTodayFilter.filterFxn(taskManager.rootTask, child))
 
     child.completionPercentage = 100
-    assertFalse(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
+    assertFalse(taskFilterManager.inProgressTodayFilter.filterFxn(taskManager.rootTask, child))
 
     child.completionPercentage = 99
-    assert(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
+    assert(taskFilterManager.inProgressTodayFilter.filterFxn(taskManager.rootTask, child))
 
     child = createTask()
     child.start.add(Calendar.DATE, -1)
     child.end.add(Calendar.DATE, 1)
-    assert(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
+    assert(taskFilterManager.inProgressTodayFilter.filterFxn(taskManager.rootTask, child))
 
     child = createTask()
     child.start.add(Calendar.DATE, 1)
     child.end.add(Calendar.DATE, 2)
-    assertFalse(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
+    assertFalse(taskFilterManager.inProgressTodayFilter.filterFxn(taskManager.rootTask, child))
 
     child = createTask()
     child.start.add(Calendar.DATE, -2)
     child.end.add(Calendar.DATE, -1)
-    assertFalse(taskFilterManager.inProgressTodayFilter(taskManager.rootTask, child))
+    assertFalse(taskFilterManager.inProgressTodayFilter.filterFxn(taskManager.rootTask, child))
   }
 
   private fun Task.shiftTask(days: Int) {

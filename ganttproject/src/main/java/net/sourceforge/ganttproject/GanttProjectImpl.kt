@@ -84,7 +84,7 @@ open class GanttProjectImpl(
   final override val taskManager: TaskManagerImpl = taskManager ?: TaskManagerImpl(null, myTaskManagerConfig)
   override val uIConfiguration = UIConfiguration(Color.BLUE, true)
   override val taskCustomColumnManager: CustomPropertyManager get() = taskManager.customPropertyManager
-  override val taskFilterManager = TaskFilterManager(this.taskManager)
+  override val taskFilterManager = TaskFilterManager(this.taskManager, this.projectDatabase)
   override val roleManager: RoleManager
     get() = RoleManager.Access.getInstance()
 

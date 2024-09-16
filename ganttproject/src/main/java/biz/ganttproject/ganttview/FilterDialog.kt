@@ -44,7 +44,9 @@ fun showFilterDialog(filterManager: TaskFilterManager, projectDatabase: ProjectD
     val dialogModel = ItemListDialogModel<TaskFilter>(
       listItems,
       newItemFactory = {
-        TaskFilter("", "", DefaultBooleanOption("", false), { _, _ -> false})
+        TaskFilter("", "", DefaultBooleanOption("", false),
+          filterFxn = { parent, child -> filterManager.customFilterFxn(parent, child)}
+        )
       },
       i18n
     )
@@ -64,6 +66,9 @@ fun showFilterDialog(filterManager: TaskFilterManager, projectDatabase: ProjectD
   }
 }
 
+/**
+ * The editor pane model class.
+ */
 internal class FilterEditorModel(
   editItem: ObservableObject<TaskFilter?>,
   calculationMethodValidator: CalculationMethodValidator,
@@ -94,6 +99,9 @@ internal class FilterEditorModel(
   val fields = listOf(nameField, descriptionField, expressionField)
 }
 
+/**
+ * Editor pane for editing the selected filter properties.
+ */
 internal class FilterEditor(
   private val editorModel: FilterEditorModel, editItem: ObservableObject<TaskFilter?>, model: ItemListDialogModel<TaskFilter>)
   : ItemEditorPane<TaskFilter>(

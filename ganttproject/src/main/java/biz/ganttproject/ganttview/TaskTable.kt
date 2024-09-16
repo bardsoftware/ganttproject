@@ -62,7 +62,6 @@ import net.sourceforge.ganttproject.chart.export.TreeTableApi
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
 import net.sourceforge.ganttproject.document.Document
-import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskSelectionManager
@@ -741,7 +740,17 @@ class TaskTable(
     }
   }
 
+
   fun sync(keepFocus: Boolean = false) {
+    keepSelection(keepFocus) {
+      try {
+        doSync(keepFocus)
+      } catch (ex: Exception) {
+        LOGGER.error("Failure when syncing the task table", exception = ex)
+      }
+    }
+  }
+  private fun doSync(keepFocus: Boolean) {
     keepSelection(keepFocus) {
       LOGGER.debug("Sync >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
       val treeModel = taskManager.taskHierarchy
@@ -749,12 +758,20 @@ class TaskTable(
       task2treeItem[treeModel.rootTask] = rootItem
 
       var filteredCount = 0
-      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx, _ ->
+      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx, level ->
         LOGGER.debug(">>> [walk] parent={} child={} idx={}", parent, child, idx)
+        if (level == 0 && child == null) {
+          // This is just the root task itself.
+          return@depthFirstWalk true
+        }
         val parentItem = task2treeItem[parent]!!
-        val result = if (!this.filterManager.activeFilter(parent, child)) {
+        val result = if (!this.filterManager.activeFilter.filterFxn(parent, child)) {
           LOGGER.debug("...child={} is filtered out", child)
-          parentItem.children.remove(idx, parentItem.children.size)
+          if (idx < parentItem.children.size) {
+            parentItem.children.remove(idx, parentItem.children.size)
+          } else {
+            LOGGER.debug("It seemed to be removed before, because its sibling was filtered, so we just skip it here")
+          }
           LOGGER.debug("...now parentItem.children={}", parentItem.children)
           filteredCount++
           false
