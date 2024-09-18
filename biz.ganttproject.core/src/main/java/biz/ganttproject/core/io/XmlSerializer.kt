@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.io
 
+import biz.ganttproject.core.io.XmlTasks.XmlCalculationSimpleSelect
 import com.fasterxml.jackson.annotation.*
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -89,7 +90,12 @@ data class XmlView(
   @get:JacksonXmlElementWrapper(useWrapping = false)
   @get:JacksonXmlProperty(localName = "option")
   @get:JsonInclude(JsonInclude.Include.NON_NULL)
-  var options: List<XmlOption>? = null
+  var options: List<XmlOption>? = null,
+
+  @get:JacksonXmlElementWrapper(localName = "filters")
+  @get:JacksonXmlProperty(localName = "filter")
+  @get:JsonInclude(JsonInclude.Include.NON_NULL)
+  var filters: List<XmlFilter>? = null
 ) {
   data class XmlField(
     @get:JacksonXmlProperty(isAttribute = true) var id: String = "",
@@ -104,6 +110,25 @@ data class XmlView(
     @get:JacksonXmlText @get:JacksonXmlCData var text: String? = null
   )
 }
+
+data class XmlFilter(
+  @get:JacksonXmlProperty(isAttribute = true)
+  var title: String = "",
+
+  @get:JacksonXmlProperty(isAttribute = true)
+  var isBuiltIn: Boolean = false,
+
+  @get:JacksonXmlProperty(isAttribute = true)
+  var description: String = "",
+
+  @get:JacksonXmlProperty(isAttribute = true)
+  var isEnabled: Boolean = false,
+
+  @get:JsonInclude(JsonInclude.Include.NON_NULL)
+  @get:JacksonXmlProperty(localName = "simple-select")
+  var simpleSelect: XmlCalculationSimpleSelect? = null
+)
+
 
 data class XmlCalendars(
   @get:JacksonXmlProperty(localName = "base-id", isAttribute = true)
@@ -187,6 +212,7 @@ data class XmlTasks(
 
   data class XmlCalculationSimpleSelect(
     @get:JacksonXmlProperty(isAttribute = true) var select: String = "",
+    @get:JacksonXmlProperty(isAttribute = true) var where: String? = null,
   )
 
   @JsonPropertyOrder(

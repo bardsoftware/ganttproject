@@ -23,13 +23,18 @@ import biz.ganttproject.core.io.XmlProject
 import biz.ganttproject.core.io.XmlTasks.XmlTask
 import biz.ganttproject.core.model.task.ConstraintType
 import biz.ganttproject.core.option.GPOption
+import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.customproperty.CustomColumnsException
 import biz.ganttproject.customproperty.SimpleSelect
+import biz.ganttproject.ganttview.BuiltInFilters
+import biz.ganttproject.ganttview.TaskFilter
+import biz.ganttproject.ganttview.TaskFilterManager
 import biz.ganttproject.lib.fx.TreeCollapseView
 import com.google.common.base.Charsets
+import com.google.common.xml.XmlEscapers
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager
 import net.sourceforge.ganttproject.task.CostStub
@@ -220,6 +225,7 @@ fun loadDependencyGraph(deps: List<GanttDependStructure>, taskManager: TaskManag
 fun loadGanttView(
   xmlProject: XmlProject,
   taskManager: TaskManager,
+  taskFilterManager: TaskFilterManager,
   taskView: TaskView,
   zoomManager: ZoomManager,
   taskColumns: ColumnList,
@@ -239,6 +245,21 @@ fun loadGanttView(
     )
   }
   loadView(xmlView, zoomManager, taskColumns)
+  xmlView.filters?.mapNotNull { xmlFilter ->
+    val result = if (xmlFilter.isBuiltIn) {
+      BuiltInFilters.allFilters.find { it.title == xmlFilter.title }
+    } else {
+      taskFilterManager.createCustomFilter().also {
+        it.title = xmlFilter.title
+        it.description = xmlFilter.description
+        xmlFilter.simpleSelect?.where?.let { whereExpression ->
+          it.expression = StringEscapeUtils.unescapeXml(whereExpression)
+        }
+      }
+    }
+    result?.isEnabledProperty?.value = xmlFilter.isEnabled
+    result
+  }?.toList()?.let(taskFilterManager::importFilters)
 }
 
 private val LOG = GPLogger.create("Project.IO.Load.Task")
