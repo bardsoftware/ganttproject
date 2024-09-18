@@ -43,11 +43,7 @@ fun showFilterDialog(filterManager: TaskFilterManager, projectDatabase: ProjectD
     val editorModel = FilterEditorModel(editItem, CalculationMethodValidator(projectDatabase), ExpressionAutoCompletion()::complete)
     val dialogModel = ItemListDialogModel<TaskFilter>(
       listItems,
-      newItemFactory = {
-        TaskFilter("", "", DefaultBooleanOption("", false),
-          filterFxn = { parent, child -> filterManager.customFilterFxn(parent, child)}
-        )
-      },
+      newItemFactory = filterManager::createCustomFilter,
       i18n
     )
     dialogModel.btnApplyController.onAction = {

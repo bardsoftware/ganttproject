@@ -229,6 +229,7 @@ public class ProxyDocument implements Document {
         }
         TaskSerializerKt.loadGanttView(xmlProject,
           taskManager,
+          myProject.getTaskFilterManager(),
           myUIFacade.getCurrentTaskView(), myUIFacade.getZoomManager(), myTaskVisibleFields, optionsToRead);
 
         opener.getDefaultTagHandler().process(xmlProject);

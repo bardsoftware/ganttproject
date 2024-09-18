@@ -54,23 +54,11 @@ data class TaskFilter(
 typealias TaskFilterFxn = (parent: Task, child: Task?) -> Boolean
 typealias FilterChangedListener = (filter: TaskFilter?) -> Unit
 
-class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: ProjectDatabase) {
+object BuiltInFilters {
   internal val filterCompletedTasksOption = DefaultBooleanOption("filter.completedTasks", false)
   internal val filterDueTodayOption = DefaultBooleanOption("filter.dueTodayTasks", false)
   internal val filterOverdueOption = DefaultBooleanOption("filter.overdueTasks", false)
   internal val filterInProgressTodayOption = DefaultBooleanOption("filter.inProgressTodayTasks", false)
-  private val customFilterResults: MutableSet<Int> = mutableSetOf()
-  internal val customFilterFxn: TaskFilterFxn = { _, child ->
-    child?.taskID?.let { customFilterResults.contains(it) } != false
-  }
-
-  val options: List<GPOption<*>> = listOf(
-    filterCompletedTasksOption,
-    filterDueTodayOption,
-    filterOverdueOption,
-    filterInProgressTodayOption)
-
-  val filterListeners = mutableListOf<FilterChangedListener>()
 
   // ----------------------------
   private val completedTasksFilterFxn: TaskFilterFxn = { _, child ->
@@ -105,6 +93,30 @@ class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: Proje
   val inProgressTodayFilter = TaskFilter(
     "filter.inProgressTodayTasks", "", filterInProgressTodayOption.asObservableValue(), inProgressTodayFilterFxn, isBuiltIn = true
   )
+
+  val allFilters: List<TaskFilter> get() = listOf(
+    completedTasksFilter,
+    dueTodayFilter,
+    overdueFilter,
+    inProgressTodayFilter,
+  )
+}
+
+class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: ProjectDatabase) {
+  private val customFilterResults: MutableSet<Int> = mutableSetOf()
+  private val customFilterFxn: TaskFilterFxn = { _, child ->
+    child?.taskID?.let { customFilterResults.contains(it) } != false
+  }
+
+  val options: List<GPOption<*>> = listOf(
+    BuiltInFilters.filterCompletedTasksOption,
+    BuiltInFilters.filterDueTodayOption,
+    BuiltInFilters.filterOverdueOption,
+    BuiltInFilters.filterInProgressTodayOption)
+
+  val filterListeners = mutableListOf<FilterChangedListener>()
+  private val customFilters: MutableList<TaskFilter> = mutableListOf()
+
   // ----------------------------
   // How many tasks are filtered out.
   val hiddenTaskCount = SimpleIntegerProperty(0)
@@ -121,13 +133,6 @@ class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: Proje
     }
   }
 
-  init {
-    taskManager.addTaskListener(TaskListenerAdapter().also {
-      it.taskProgressChangedHandler = { _ -> if (activeFilter != VOID_FILTER) sync() }
-      it.taskScheduleChangedHandler = { _ -> if (activeFilter != VOID_FILTER) sync() }
-    })
-  }
-
   var activeFilter: TaskFilter = VOID_FILTER
     set(value) {
       field = value
@@ -138,15 +143,19 @@ class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: Proje
       sync()
     }
 
-  val builtInFilters: List<TaskFilter> get() = listOf(
-    completedTasksFilter,
-    dueTodayFilter,
-    overdueFilter,
-    inProgressTodayFilter,
-  )
+  val filters get() = BuiltInFilters.allFilters + customFilters
 
-  val customFilters: MutableList<TaskFilter> = mutableListOf()
-  val filters get() = builtInFilters + customFilters
+  init {
+    taskManager.addTaskListener(TaskListenerAdapter().also {
+      it.taskProgressChangedHandler = { _ -> if (activeFilter != VOID_FILTER) sync() }
+      it.taskScheduleChangedHandler = { _ -> if (activeFilter != VOID_FILTER) sync() }
+    })
+  }
+
+  fun createCustomFilter() = TaskFilter("", "", DefaultBooleanOption("", false),
+    filterFxn = { parent, child -> customFilterFxn(parent, child)},
+    isBuiltIn = false
+  )
 
   private fun fireFilterChanged(value: TaskFilter) {
     filterListeners.forEach { it(value) }

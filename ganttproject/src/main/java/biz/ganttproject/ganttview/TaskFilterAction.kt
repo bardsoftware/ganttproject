@@ -86,13 +86,13 @@ class TaskFilterAction(
 class TaskFilterActionSet(taskFilterManager: TaskFilterManager, projectDatabase: ProjectDatabase) {
   // Task filters -> actions
   private val filterCompletedTasksAction = TaskFilterAction("taskTable.filter.uncompletedTasks",
-    taskFilterManager, taskFilterManager.filterCompletedTasksOption, taskFilterManager.completedTasksFilter)
+    taskFilterManager, BuiltInFilters.filterCompletedTasksOption, BuiltInFilters.completedTasksFilter)
   private val filterDueTodayTasksAction = TaskFilterAction("taskTable.filter.dueTodayTasks",
-    taskFilterManager, taskFilterManager.filterDueTodayOption, taskFilterManager.dueTodayFilter)
+    taskFilterManager, BuiltInFilters.filterDueTodayOption, BuiltInFilters.dueTodayFilter)
   private val filterOverdueTasksAction = TaskFilterAction("taskTable.filter.overdueTasks",
-    taskFilterManager, taskFilterManager.filterOverdueOption, taskFilterManager.overdueFilter)
+    taskFilterManager, BuiltInFilters.filterOverdueOption, BuiltInFilters.overdueFilter)
   private val filterInProgressTodayTasksAction = TaskFilterAction("taskTable.filter.inProgressTodayTasks",
-    taskFilterManager, taskFilterManager.filterInProgressTodayOption, taskFilterManager.inProgressTodayFilter)
+    taskFilterManager, BuiltInFilters.filterInProgressTodayOption, BuiltInFilters.inProgressTodayFilter)
   private val filterDialogAction = GPAction.create("taskTable.filterDialog.action") {
     showFilterDialog(taskFilterManager, projectDatabase)
   }

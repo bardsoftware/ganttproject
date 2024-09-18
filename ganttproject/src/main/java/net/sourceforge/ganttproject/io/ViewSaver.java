@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.gui.GPColorChooser;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.task.Task;
+import org.apache.commons.text.StringEscapeUtils;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -51,7 +52,8 @@ class ViewSaver extends SaverBase {
     writeColumns(taskColumnList, handler);
     writeTimelineTasks(facade, handler);
     new OptionSaver().saveOptionList(handler, facade.getGanttChart().getTaskLabelOptions().getOptions());
-    new OptionSaver().saveOptionList(handler, facade.getGanttViewProvider().getOptions());
+    new OptionSaver().saveOptionList(handler, ganttViewProvider.getOptions());
+    writeFilters(handler, taskFilterManager);
     writeRecentColors(handler);
     endElement("view", handler);
 
@@ -97,5 +99,29 @@ class ViewSaver extends SaverBase {
         emptyElement("field", attrs, handler);
       }
     }
+  }
+
+  private void writeFilters(TransformerHandler handler, TaskFilterManager taskFilterManager) throws SAXException {
+    startElement("filters", new AttributesImpl(), handler);
+    taskFilterManager.getFilters().forEach(filter -> {
+      var attrs = new AttributesImpl();
+      addAttribute("title", filter.getTitle(), attrs);
+      addAttribute("description", filter.getDescription(), attrs);
+      addAttribute("isBuiltIn", filter.isBuiltIn(), attrs);
+      addAttribute("isEnabled", filter.isEnabledProperty().getValue(), attrs);
+      try {
+        startElement("filter", attrs, handler);
+        if (filter.getExpression() != null) {
+          var expressionAttrs = new AttributesImpl();
+          addAttribute("where", StringEscapeUtils.escapeXml11(filter.getExpression()), expressionAttrs);
+          emptyElement("simple-select", expressionAttrs, handler);
+        }
+        endElement("filter", handler);
+      } catch (SAXException e) {
+        throw new RuntimeException(e);
+      }
+
+    });
+    endElement("filters", handler);
   }
 }
