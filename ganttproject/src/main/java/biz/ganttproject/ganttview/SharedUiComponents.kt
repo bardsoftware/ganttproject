@@ -23,12 +23,14 @@ import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.PropertySheetBuilder
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.GPObservable
+import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.option.ObservableProperty
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.createToggleSwitch
 import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
+import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.MapChangeListener
 import javafx.collections.ObservableList
@@ -45,12 +47,14 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.StackPane
 import javafx.util.Callback
+import java.util.WeakHashMap
 
 /**
  * This is an object that is rendered in a list view.
  */
-data class ShowHideListItem(val text: String, val isVisible: GPObservable<Boolean>)
+data class ShowHideListItem(val text: ()->String, val isVisible: ()->Boolean, val toggleVisible: ()->Unit)
 
+private val ourCells = WeakHashMap<ShowHideListCell<*>, Boolean>()
 /**
  * A list cell is a UI component that renders items in a list view. It adds a show/hide icon to the item title.
  */
@@ -59,7 +63,7 @@ internal class ShowHideListCell<T>(private val converter: (T)-> ShowHideListItem
   private val iconHidden = MaterialIconView(MaterialIcon.VISIBILITY_OFF)
   private val iconPane = StackPane().also {
     it.onMouseClicked = EventHandler { _ ->
-      theItem.isVisible.value = !theItem.isVisible.value
+      theItem.toggleVisible()
       updateTheItem(theItem)
     }
   }
@@ -68,6 +72,7 @@ internal class ShowHideListCell<T>(private val converter: (T)-> ShowHideListItem
   init {
     styleClass.add("column-item-cell")
     alignment = Pos.CENTER_LEFT
+    ourCells.put(this, true)
   }
 
   override fun updateItem(item: T?, empty: Boolean) {
@@ -81,14 +86,14 @@ internal class ShowHideListCell<T>(private val converter: (T)-> ShowHideListItem
   }
 
   private fun updateTheItem(item: ShowHideListItem) {
-    text = item.text
+    text = item.text()
     if (text.isEmpty()) {
       text = " "
     }
     if (graphic == null) {
       graphic = iconPane
     }
-    if (item.isVisible.value) {
+    if (item.isVisible()) {
       styleClass.add("is-visible")
       styleClass.remove("is-hidden")
       iconPane.children.setAll(iconVisible)
@@ -98,6 +103,12 @@ internal class ShowHideListCell<T>(private val converter: (T)-> ShowHideListItem
         styleClass.add("is-hidden")
         iconPane.children.setAll(iconHidden)
       }
+    }
+  }
+
+  fun refresh() {
+    if (item != null) {
+      updateTheItem(converter(item))
     }
   }
 }
@@ -146,10 +157,18 @@ internal open class ItemEditorPane<T: Item<T>>(
 
   init {
     fields.forEach { it.addWatcher { onEdit() } }
-    editItem.addWatcher {
-      if (it.trigger != this) {
+    visibilityToggle.selectedProperty().subscribe { oldValue, newValue ->
+      onEdit()
+    }
+    editItem.addWatcher {evt ->
+      if (evt.trigger != this) {
         isEditIgnored = true
-        loadData(it.newValue)
+        evt.newValue?.isEnabledProperty?.addListener { source, oldValue, newValue ->
+          if (oldValue != newValue && source == editItem.value?.isEnabledProperty) {
+            visibilityToggle.isSelected = newValue
+          }
+        }
+        loadData(evt.newValue)
         isEditIgnored = false
       }
     }
@@ -174,10 +193,11 @@ internal open class ItemEditorPane<T: Item<T>>(
 
   internal fun onEdit() {
     if (isEditIgnored) return
-    editItem.value?.clone()?.let {
+    editItem.value?.let {
       saveData(it)
-      editItem.set(it, trigger = this)
+      //editItem.set(it, trigger = this)
     }
+    dialogModel.requireRefresh.set(true)
   }
 
   internal fun focus() {
@@ -205,8 +225,9 @@ internal open class ItemEditorPane<T: Item<T>>(
 
 interface Item<T> {
   var title: String
+  val isEnabledProperty: BooleanProperty
   val cloneOf: T?
-  fun clone(): T
+  fun clone(forEditing: Boolean): T
 }
 
 data class BtnController<T>(
@@ -226,6 +247,7 @@ internal class ItemListDialogModel<T: Item<T>>(
   val btnDeleteController = BtnController(onAction = this::onDeleteColumn)
   val btnApplyController = BtnController(onAction = {})
   internal var selection: ()-> Collection<T> = { emptyList() }
+  val requireRefresh = SimpleBooleanProperty(false)
 
   fun onAddColumn(): T {
     val item = newItemFactory()
@@ -271,21 +293,30 @@ internal class ItemListDialogPane<T: Item<T>>(
   internal val listView: ListView<T> = ListView()
 
   init {
-    selectedItem.addWatcher { evt ->
-      if (evt.trigger != listView && evt.newValue != null) {
-        listItems.replaceAll { if (it.title == evt.newValue?.cloneOf?.title) { evt.newValue } else { it } }
-      }
-    }
+//    selectedItem.addWatcher { evt ->
+//      if (evt.trigger != listView && evt.newValue != null) {
+//        listItems.replaceAll { if (it == evt.newValue?.cloneOf) { evt.newValue?.clone(forEditing = false) } else { it } }
+//      }
+//    }
     listView.apply {
       this@ItemListDialogPane.dialogModel.selection = { selectionModel.selectedItems }
       items = listItems
       cellFactory = Callback { ShowHideListCell(listItemConverter)}
       selectionModel.selectedItemProperty().addListener { _, _, newValue ->
         if (newValue != null) {
-          selectedItem.set(newValue.clone(), trigger = this)
+          selectedItem.set(newValue, trigger = this)
         }
       }
       selectionModel.select(0)
+    }
+    dialogModel.requireRefresh.subscribe { oldValue, newValue ->
+      if (newValue == true && oldValue == false) {
+//        listView.refresh()
+        ourCells.keys.forEach {
+          it.refresh()
+        }
+        dialogModel.requireRefresh.set(false)
+      }
     }
   }
 

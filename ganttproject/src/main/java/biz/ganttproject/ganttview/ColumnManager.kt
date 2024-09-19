@@ -51,7 +51,7 @@ class ColumnManager(
   internal val dialogModel: ItemListDialogModel<ColumnAsListItem> = ItemListDialogModel<ColumnAsListItem>(
     listItems,
     newItemFactory = {
-      ColumnAsListItem(null, isVisible = true, isCustom = true, customColumnsManager, {customPropertyEditor.updateVisibility(it)})
+      ColumnAsListItem(null, isVisible = true, isCustom = true, customColumnsManager)
     },
     ourLocalizer
   )
@@ -64,7 +64,7 @@ class ColumnManager(
       calculationMethodValidator = calculationMethodValidator,
       expressionAutoCompletion = expressionAutoCompletion,
       nameClash = { tryName ->
-        listItems.find { it.title == tryName && it != selectedItem.value?.cloneOf } != null
+        listItems.find { it.title == tryName && it != selectedItem.value } != null
       },
       localizer = ourEditorLocalizer
     ),
@@ -75,7 +75,7 @@ class ColumnManager(
   internal val dialogPane = ItemListDialogPane<ColumnAsListItem>(
     listItems = listItems,
     selectedItem = selectedItem,
-    listItemConverter = { ShowHideListItem(it.title, it.isVisibleProperty) },
+    listItemConverter = { ShowHideListItem( {it.title}, {it.isEnabledProperty.value}, {it.isEnabledProperty.set(!it.isEnabledProperty.value)}) },
     dialogModel = dialogModel,
     editor = customPropertyEditor,
     localizer = ourEditorLocalizer
@@ -86,13 +86,13 @@ class ColumnManager(
     // and they are ordered the same way are shown in the table.
     listItems.setAll(mergedColumns.sortedWith { col1, col2 -> columnsOrder(col1, col2) }.map { col ->
       val isCustom = customColumnsManager.definitions.find { it.id == col.id } != null
-      ColumnAsListItem(col, col.isVisible, isCustom, customColumnsManager, customPropertyEditor::updateVisibility)
+      ColumnAsListItem(col, col.isVisible, isCustom, customColumnsManager)
     })
     customColumnsManager.definitions.forEach { def ->
       if (mergedColumns.find { it.id == def.id } == null) {
         val columnStub = ColumnList.ColumnStub(def.id, def.name, false, -1, -1)
         mergedColumns.add(columnStub)
-        listItems.add(ColumnAsListItem(columnStub, columnStub.isVisible, true, customColumnsManager, customPropertyEditor::updateVisibility))
+        listItems.add(ColumnAsListItem(columnStub, columnStub.isVisible, true, customColumnsManager))
       }
     }
   }
@@ -115,14 +115,14 @@ class ColumnManager(
     listItems.forEach { columnItem ->
       columnItem.column?.let {
         // Apply changes made in the columns which has existed before.
-        it.isVisible = columnItem.isVisible
+        it.isVisible = columnItem.isEnabledProperty.value
         if (columnItem.isCustom) {
           customColumnsManager.definitions.find { def -> def.id == it.id }?.importColumnItem(columnItem)
         }
       } ?: run {
         // Create custom columns which were added in the dialog
         val def = customColumnsManager.createDefinition(columnItem.type.getCustomPropertyClass(), columnItem.title, columnItem.defaultValue)
-        if (columnItem.isVisible) {
+        if (columnItem.isEnabledProperty.value) {
           mergedColumns.add(ColumnList.ColumnStub(def.id, def.name, true, mergedColumns.size, 50))
         }
         if (columnItem.isCalculated) {
@@ -251,7 +251,7 @@ internal class EditorModel(
  */
 internal class CustomPropertyEditor(
   private val model: EditorModel,
-  dialogModel: ItemListDialogModel<ColumnAsListItem>,
+  private val dialogModel: ItemListDialogModel<ColumnAsListItem>,
   selectedItemProperty: ObservableProperty<ColumnAsListItem?>,
   private val btnDeleteController: BtnController<Unit>,
   escCloseEnabled: BooleanProperty,
@@ -263,10 +263,11 @@ internal class CustomPropertyEditor(
 
   override fun loadData(item: ColumnAsListItem?) {
     if (item != null) {
+      //visibilityToggle.selectedProperty().unbind()
       model.nameOption.set(item.title)
       model.typeOption.set(item.type)
       model.defaultValueOption.set(item.defaultValue)
-      visibilityToggle.isSelected = item.isVisible
+      visibilityToggle.isSelected = item.isEnabledProperty.value
 
       if (item.isCustom) {
         propertySheetLabel.text = ourLocalizer.formatText("propertyPane.title.custom")
@@ -285,29 +286,30 @@ internal class CustomPropertyEditor(
   }
 
   override fun saveData(item: ColumnAsListItem) {
-    item.isVisible = visibilityToggle.isSelected
+    item.isEnabledProperty.set(visibilityToggle.isSelected)
     item.title = model.nameOption.value ?: ""
     item.type = model.typeOption.value
     item.defaultValue = model.defaultValueOption.value ?: ""
     item.isCalculated = model.isCalculatedOption.value
     item.expression = model.expressionOption.value ?: ""
+    dialogModel.requireRefresh.set(true)
   }
 
   init {
     model.allOptions.forEach { it.addWatcher { onEdit() } }
 
-    visibilityToggle.selectedProperty().addListener { _, _, _ ->
-      onEdit()
-    }
+//    visibilityToggle.selectedProperty().addListener { _, _, _ ->
+//      onEdit()
+//    }
   }
 
   internal fun updateVisibility(item: ColumnAsListItem) {
-    editItem.value?.let {
-      if (it.column?.id == item.column?.id && it.isVisible != item.isVisible) {
-        it.isVisible = item.isVisible
-        visibilityToggle.isSelected = item.isVisible
-      }
-    }
+//    editItem.value?.let {
+//      if (it.column?.id == item.column?.id && it.isVisible != item.isVisible) {
+//        it.isVisible = item.isVisible
+//        visibilityToggle.isSelected = item.isVisible
+//      }
+//    }
   }
 
 }
@@ -320,13 +322,13 @@ internal class ColumnAsListItem(
   isVisible: Boolean,
   val isCustom: Boolean,
   val customColumnsManager: CustomPropertyManager,
-  val changeListener: (ColumnAsListItem)->Unit,
   override val cloneOf: ColumnAsListItem? = null
 ): Item<ColumnAsListItem> {
 
+  override val isEnabledProperty: BooleanProperty = SimpleBooleanProperty(isVisible)
+
   constructor(cloneOf: ColumnAsListItem): this(
-    cloneOf.column, cloneOf.isVisible, cloneOf.isCustom, cloneOf.customColumnsManager,
-    cloneOf.changeListener, cloneOf) {
+    cloneOf.column, cloneOf.isEnabledProperty.value, cloneOf.isCustom, cloneOf.customColumnsManager, cloneOf) {
 
     this.title = cloneOf.title
     this.type = cloneOf.type
@@ -334,19 +336,6 @@ internal class ColumnAsListItem(
     this.isCalculated = cloneOf.isCalculated
     this.expression = cloneOf.expression
   }
-
-  val isVisibleProperty = ObservableBoolean("", isVisible).also {
-    it.addWatcher { changeListener(this@ColumnAsListItem) }
-  }
-
-  var isVisible: Boolean
-    set(value) {
-      if (isVisibleProperty.value != value) {
-        isVisibleProperty.set(value)
-        changeListener(this)
-      }
-    }
-    get() = isVisibleProperty.value
 
   override var title: String = ""
 
@@ -363,10 +352,10 @@ internal class ColumnAsListItem(
     return "ColumnAsListItem(title='$title')"
   }
 
-  override fun clone(): ColumnAsListItem = ColumnAsListItem(this)
+  override fun clone(forEditing: Boolean): ColumnAsListItem = ColumnAsListItem(this)
 
   init {
-    this.isVisible = isVisible
+//    this.isVisible = isVisible
     if (column != null) {
       title = column.name
       val customColumn = customColumnsManager.definitions.find { it.id == column.id }

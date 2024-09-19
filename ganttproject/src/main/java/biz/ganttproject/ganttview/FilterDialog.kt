@@ -22,7 +22,6 @@ import biz.ganttproject.app.MappingLocalizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.core.option.Completion
-import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.ObservableObject
 import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.core.option.ValidationException
@@ -53,7 +52,7 @@ fun showFilterDialog(filterManager: TaskFilterManager, projectDatabase: ProjectD
     val dialogPane = ItemListDialogPane<TaskFilter>(
       listItems,
       editItem,
-      { filter -> ShowHideListItem(filter.title, filter.isEnabledProperty) },
+      { filter -> ShowHideListItem({filter.title}, {filter.isEnabledProperty.value}, {filter.isEnabledProperty.set(!filter.isEnabledProperty.get())}) },
       dialogModel,
       editor,
       i18n
