@@ -731,7 +731,6 @@ class TaskTable(
       it.isVisible = column.isVisible
       it.userData = column
       it.prefWidth = column.width.toDouble()
-      it.minWidth = column.width.toDouble()
     }
   }
 
