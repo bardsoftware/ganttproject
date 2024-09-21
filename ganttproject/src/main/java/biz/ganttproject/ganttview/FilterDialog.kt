@@ -48,7 +48,7 @@ fun showFilterDialog(filterManager: TaskFilterManager, projectDatabase: ProjectD
     dialogModel.btnApplyController.onAction = {
       filterManager.importFilters(listItems)
     }
-    val editor = FilterEditor(editorModel, editItem, dialogModel)
+    val editor = FilterEditor(dialogModel, editorModel, editItem, dialogModel)
     val dialogPane = ItemListDialogPane<TaskFilter>(
       listItems,
       editItem,
@@ -98,7 +98,11 @@ internal class FilterEditorModel(
  * Editor pane for editing the selected filter properties.
  */
 internal class FilterEditor(
-  private val editorModel: FilterEditorModel, editItem: ObservableObject<TaskFilter?>, model: ItemListDialogModel<TaskFilter>)
+  private val dialogModel: ItemListDialogModel<TaskFilter>,
+  private val editorModel: FilterEditorModel,
+  editItem: ObservableObject<TaskFilter?>,
+  model: ItemListDialogModel<TaskFilter>
+)
   : ItemEditorPane<TaskFilter>(
   editorModel.fields, editItem, model, i18n
 ) {
@@ -108,10 +112,13 @@ internal class FilterEditor(
       editorModel.descriptionField.set(item.description)
       editorModel.expressionField.set(item.expression)
       propertySheet.isDisable = item.isBuiltIn
+      dialogModel.btnDeleteController.isDisabled.set(item.isBuiltIn)
     } else {
       editorModel.nameField.set("")
       editorModel.descriptionField.set("")
       editorModel.expressionField.set("")
+      propertySheet.isDisable = true
+      dialogModel.btnDeleteController.isDisabled.set(true)
     }
   }
 

@@ -72,14 +72,7 @@ class ColumnManager(
   )
 
   private val mergedColumns: MutableList<ColumnList.Column> = mutableListOf()
-  internal val dialogPane = ItemListDialogPane<ColumnAsListItem>(
-    listItems = listItems,
-    selectedItem = selectedItem,
-    listItemConverter = { ShowHideListItem( {it.title}, {it.isEnabledProperty.value}, {it.isEnabledProperty.set(!it.isEnabledProperty.value)}) },
-    dialogModel = dialogModel,
-    editor = customPropertyEditor,
-    localizer = ourEditorLocalizer
-  )
+
   init {
     mergedColumns.addAll(currentTableColumns.exportData())
     // First go columns which are shown in the table now
@@ -96,6 +89,15 @@ class ColumnManager(
       }
     }
   }
+
+  internal val dialogPane = ItemListDialogPane<ColumnAsListItem>(
+    listItems = listItems,
+    selectedItem = selectedItem,
+    listItemConverter = { ShowHideListItem( {it.title}, {it.isEnabledProperty.value}, {it.isEnabledProperty.set(!it.isEnabledProperty.value)}) },
+    dialogModel = dialogModel,
+    editor = customPropertyEditor,
+    localizer = ourEditorLocalizer
+  )
 
   internal fun onApply() {
     when (applyExecutor) {
@@ -376,5 +378,6 @@ internal val ourEditorLocalizer = run {
   }
   val fallback2 = RootLocalizer.createWithRootKey("option.taskProperties.customColumn", fallback1)
   val fallback3 = RootLocalizer.createWithRootKey("option.customPropertyDialog", fallback2)
-  RootLocalizer.createWithRootKey("", fallback3)
+  val fallback4 = RootLocalizer.createWithRootKey("customPropertyDialog", fallback3)
+  RootLocalizer.createWithRootKey("", fallback4)
 }

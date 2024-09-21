@@ -141,7 +141,7 @@ internal open class ItemEditorPane<T: Item<T>>(
   internal val visibilityTogglePane = HBox().also {
     it.styleClass.add("visibility-pane")
     it.children.add(visibilityToggle)
-    it.children.add(Label(localizer.formatText("customPropertyDialog.visibility.label")))
+    it.children.add(Label(localizer.formatText("visibility.label")))
   }
   internal val propertySheetLabel = Label().also {
     it.styleClass.add("title")
