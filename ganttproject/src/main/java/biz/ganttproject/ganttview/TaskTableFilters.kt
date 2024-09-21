@@ -19,9 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.ganttview
 
 import biz.ganttproject.core.option.DefaultBooleanOption
-import biz.ganttproject.core.option.GPObservable
 import biz.ganttproject.core.option.GPOption
-import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.customproperty.SimpleSelect
@@ -35,7 +33,6 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
 import net.sourceforge.ganttproject.undo.GPUndoListener
-import javax.swing.event.ChangeListener
 import javax.swing.event.UndoableEditEvent
 
 /**
@@ -48,11 +45,7 @@ data class TaskFilter(
   val filterFxn: TaskFilterFxn,
   var expression: String? = null,
   val isBuiltIn: Boolean = false,
-  override val cloneOf: TaskFilter? = null
-  ): Item<TaskFilter> {
-
-  override fun clone(forEditing: Boolean): TaskFilter = copy(cloneOf = this)
-}
+  ): Item<TaskFilter>
 
 typealias TaskFilterFxn = (parent: Task, child: Task?) -> Boolean
 typealias FilterChangedListener = (filter: TaskFilter?) -> Unit

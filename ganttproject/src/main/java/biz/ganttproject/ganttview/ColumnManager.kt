@@ -121,7 +121,7 @@ class ColumnManager(
         }
       } ?: run {
         // Create custom columns which were added in the dialog
-        val def = customColumnsManager.createDefinition(columnItem.type.getCustomPropertyClass(), columnItem.title, columnItem.defaultValue)
+        val def = customColumnsManager.createDefinition(columnItem.type, columnItem.title, columnItem.defaultValue)
         if (columnItem.isEnabledProperty.value) {
           mergedColumns.add(ColumnList.ColumnStub(def.id, def.name, true, mergedColumns.size, 50))
         }
@@ -136,37 +136,10 @@ class ColumnManager(
   }
 }
 
-
-internal enum class PropertyType(private val displayName: String) {
-  STRING("text"),
-  INTEGER("integer"),
-  DATE("date"),
-  DECIMAL("double"),
-  BOOLEAN("boolean");
-
-  override fun toString() = this.displayName
-}
-
-internal fun CustomPropertyDefinition.getPropertyType(): PropertyType = when (this.propertyClass) {
-  CustomPropertyClass.TEXT -> PropertyType.STRING
-  CustomPropertyClass.DATE -> PropertyType.DATE
-  CustomPropertyClass.INTEGER -> PropertyType.INTEGER
-  CustomPropertyClass.DOUBLE -> PropertyType.DECIMAL
-  CustomPropertyClass.BOOLEAN -> PropertyType.BOOLEAN
-}
-
-internal fun PropertyType.getCustomPropertyClass(): CustomPropertyClass = when (this) {
-  PropertyType.STRING -> CustomPropertyClass.TEXT
-  PropertyType.INTEGER -> CustomPropertyClass.INTEGER
-  PropertyType.DATE -> CustomPropertyClass.DATE
-  PropertyType.BOOLEAN -> CustomPropertyClass.BOOLEAN
-  PropertyType.DECIMAL -> CustomPropertyClass.DOUBLE
-}
-
-internal fun PropertyType.createValidator(): ValueValidator<*> = when (this) {
-  PropertyType.INTEGER -> integerValidator
-  PropertyType.DECIMAL -> doubleValidator
-  PropertyType.DATE -> createStringDateValidator {
+internal fun CustomPropertyClass.createValidator(): ValueValidator<*> = when (this) {
+  CustomPropertyClass.INTEGER -> integerValidator
+  CustomPropertyClass.DOUBLE -> doubleValidator
+  CustomPropertyClass.DATE -> createStringDateValidator {
     listOf(GanttLanguage.getInstance().shortDateFormat, GanttLanguage.getInstance().mediumDateFormat)
   }
   else -> voidValidator
@@ -177,19 +150,12 @@ internal fun CustomPropertyDefinition.importColumnItem(item: ColumnAsListItem) {
   if (item.defaultValue.trim().isNotBlank()) {
     this.defaultValueAsString = item.defaultValue
   }
-  this.propertyClass = item.type.getCustomPropertyClass()
+  this.propertyClass = item.type
   if (item.isCalculated) {
     this.calculationMethod = SimpleSelect(propertyId = this.id, selectExpression = item.expression, resultClass = this.propertyClass.javaClass)
   } else {
     this.calculationMethod = null
   }
-}
-
-internal fun TaskDefaultColumn.getPropertyType(): PropertyType = when (this) {
-  TaskDefaultColumn.ID, TaskDefaultColumn.DURATION, TaskDefaultColumn.COMPLETION -> PropertyType.INTEGER
-  TaskDefaultColumn.BEGIN_DATE, TaskDefaultColumn.END_DATE -> PropertyType.DATE
-  TaskDefaultColumn.COST -> PropertyType.DECIMAL
-  else -> PropertyType.STRING
 }
 
 /**
@@ -210,7 +176,7 @@ internal class EditorModel(
     }
     value
   })
-  val typeOption = ObservableEnum(id = "type", initValue = PropertyType.STRING, allValues = PropertyType.values())
+  val typeOption = ObservableEnum(id = "type", initValue = CustomPropertyClass.TEXT, allValues = CustomPropertyClass.entries.toTypedArray())
   val defaultValueOption = ObservableString(
     id = "defaultValue",
     initValue = "",
@@ -232,7 +198,7 @@ internal class EditorModel(
         if (it.isNotBlank()) {
           calculationMethodValidator.validate(
             // Incomplete instance just for validation purposes
-            SimpleSelect(propertyId = "", selectExpression = it, resultClass = typeOption.value.getCustomPropertyClass().javaClass)
+            SimpleSelect(propertyId = "", selectExpression = it, resultClass = typeOption.value.javaClass)
           )
           it
         } else {
@@ -263,7 +229,6 @@ internal class CustomPropertyEditor(
 
   override fun loadData(item: ColumnAsListItem?) {
     if (item != null) {
-      //visibilityToggle.selectedProperty().unbind()
       model.nameOption.set(item.title)
       model.typeOption.set(item.type)
       model.defaultValueOption.set(item.defaultValue)
@@ -297,21 +262,7 @@ internal class CustomPropertyEditor(
 
   init {
     model.allOptions.forEach { it.addWatcher { onEdit() } }
-
-//    visibilityToggle.selectedProperty().addListener { _, _, _ ->
-//      onEdit()
-//    }
   }
-
-  internal fun updateVisibility(item: ColumnAsListItem) {
-//    editItem.value?.let {
-//      if (it.column?.id == item.column?.id && it.isVisible != item.isVisible) {
-//        it.isVisible = item.isVisible
-//        visibilityToggle.isSelected = item.isVisible
-//      }
-//    }
-  }
-
 }
 
 /**
@@ -322,24 +273,13 @@ internal class ColumnAsListItem(
   isVisible: Boolean,
   val isCustom: Boolean,
   val customColumnsManager: CustomPropertyManager,
-  override val cloneOf: ColumnAsListItem? = null
 ): Item<ColumnAsListItem> {
 
   override val isEnabledProperty: BooleanProperty = SimpleBooleanProperty(isVisible)
 
-  constructor(cloneOf: ColumnAsListItem): this(
-    cloneOf.column, cloneOf.isEnabledProperty.value, cloneOf.isCustom, cloneOf.customColumnsManager, cloneOf) {
-
-    this.title = cloneOf.title
-    this.type = cloneOf.type
-    this.defaultValue = cloneOf.defaultValue
-    this.isCalculated = cloneOf.isCalculated
-    this.expression = cloneOf.expression
-  }
-
   override var title: String = ""
 
-  var type: PropertyType = PropertyType.STRING
+  var type: CustomPropertyClass = CustomPropertyClass.TEXT
 
   var defaultValue: String = ""
 
@@ -352,20 +292,17 @@ internal class ColumnAsListItem(
     return "ColumnAsListItem(title='$title')"
   }
 
-  override fun clone(forEditing: Boolean): ColumnAsListItem = ColumnAsListItem(this)
-
   init {
-//    this.isVisible = isVisible
     if (column != null) {
       title = column.name
       val customColumn = customColumnsManager.definitions.find { it.id == column.id }
       type = run {
         if (isCustom) {
-          customColumn?.getPropertyType()
+          customColumn?.propertyClass
         } else {
-          TaskDefaultColumn.find(column?.id)?.getPropertyType()
+          TaskDefaultColumn.find(column?.id)?.customPropertyClass
         }
-      } ?: PropertyType.STRING
+      } ?: CustomPropertyClass.TEXT
       defaultValue =
         if (!isCustom) ""
         else customColumn?.defaultValueAsString ?: ""

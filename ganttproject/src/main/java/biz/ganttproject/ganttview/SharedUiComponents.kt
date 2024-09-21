@@ -226,8 +226,6 @@ internal open class ItemEditorPane<T: Item<T>>(
 interface Item<T> {
   var title: String
   val isEnabledProperty: BooleanProperty
-  val cloneOf: T?
-  fun clone(forEditing: Boolean): T
 }
 
 data class BtnController<T>(
