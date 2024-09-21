@@ -147,10 +147,8 @@ internal fun CustomPropertyClass.createValidator(): ValueValidator<*> = when (th
 
 internal fun CustomPropertyDefinition.importColumnItem(item: ColumnAsListItem) {
   this.name = item.title
-  if (item.defaultValue.trim().isNotBlank()) {
-    this.defaultValueAsString = item.defaultValue
-  }
   this.propertyClass = item.type
+  this.defaultValueAsString = item.defaultValue.trim().ifBlank { null }
   if (item.isCalculated) {
     this.calculationMethod = SimpleSelect(propertyId = this.id, selectExpression = item.expression, resultClass = this.propertyClass.javaClass)
   } else {
