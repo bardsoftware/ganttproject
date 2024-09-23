@@ -107,8 +107,8 @@ class ViewSaver extends SaverBase {
       var attrs = new AttributesImpl();
       addAttribute("title", filter.getTitle(), attrs);
       addAttribute("description", filter.getDescription(), attrs);
-      addAttribute("isBuiltIn", filter.isBuiltIn(), attrs);
-      addAttribute("isEnabled", filter.isEnabledProperty().getValue(), attrs);
+      addAttribute("is-built-in", filter.isBuiltIn(), attrs);
+      addAttribute("is-enabled", filter.isEnabledProperty().getValue(), attrs);
       try {
         startElement("filter", attrs, handler);
         if (filter.getExpression() != null) {

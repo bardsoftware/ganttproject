@@ -20,6 +20,7 @@ package biz.ganttproject.core.model.task;
 
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
+import biz.ganttproject.customproperty.CustomPropertyClass;
 
 import javax.swing.*;
 import java.awt.*;
@@ -136,6 +137,18 @@ public enum TaskDefaultColumn {
     return ourLocaleApi == null ? getNameKey() : ourLocaleApi.i18n(getNameKey());
   }
 
+  public CustomPropertyClass getCustomPropertyClass() {
+    if (myValueClass == Integer.class) {
+      return CustomPropertyClass.INTEGER;
+    }
+    if (myValueClass == BigDecimal.class) {
+      return CustomPropertyClass.DOUBLE;
+    }
+    if (myValueClass == GregorianCalendar.class) {
+      return CustomPropertyClass.DATE;
+    }
+    return CustomPropertyClass.TEXT;
+  }
   public static class Functions {
     static Predicate<Object> NOT_EDITABLE = input -> false;
     static Predicate<Object> ALWAYS_EDITABLE = input -> true;

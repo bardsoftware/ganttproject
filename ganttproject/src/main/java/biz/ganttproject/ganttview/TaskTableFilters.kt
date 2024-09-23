@@ -19,12 +19,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.ganttview
 
 import biz.ganttproject.core.option.DefaultBooleanOption
-import biz.ganttproject.core.option.GPObservable
 import biz.ganttproject.core.option.GPOption
-import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.customproperty.SimpleSelect
+import javafx.beans.property.BooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ColumnConsumer
@@ -41,15 +41,11 @@ import javax.swing.event.UndoableEditEvent
 data class TaskFilter(
   override var title: String,
   var description: String,
-  val isEnabledProperty: GPObservable<Boolean>,
+  override val isEnabledProperty: BooleanProperty = SimpleBooleanProperty(false),
   val filterFxn: TaskFilterFxn,
   var expression: String? = null,
   val isBuiltIn: Boolean = false,
-  override val cloneOf: TaskFilter? = null
-  ): Item<TaskFilter> {
-
-  override fun clone(): TaskFilter = copy(cloneOf = this)
-}
+  ): Item<TaskFilter>
 
 typealias TaskFilterFxn = (parent: Task, child: Task?) -> Boolean
 typealias FilterChangedListener = (filter: TaskFilter?) -> Unit
@@ -65,7 +61,7 @@ object BuiltInFilters {
     child?.completionPercentage?.let { it < 100 } != false
   }
   val completedTasksFilter = TaskFilter(
-    "filter.completedTasks", "", filterCompletedTasksOption.asObservableValue(), completedTasksFilterFxn, isBuiltIn = true
+    "filter.completedTasks", "", filterCompletedTasksOption.asJavafxProperty(), completedTasksFilterFxn, isBuiltIn = true
   )
   // ----------------------------
   private val dueTodayFilterFxn: TaskFilterFxn  = { _, child ->
@@ -74,7 +70,7 @@ object BuiltInFilters {
     } != false
   }
   val dueTodayFilter = TaskFilter(
-    "filter.dueTodayTasks", "", filterDueTodayOption.asObservableValue(), dueTodayFilterFxn, isBuiltIn = true
+    "filter.dueTodayTasks", "", filterDueTodayOption.asJavafxProperty(), dueTodayFilterFxn, isBuiltIn = true
   )
   // ----------------------------
   private val overdueFilterFxn: TaskFilterFxn  = { _, child ->
@@ -82,7 +78,7 @@ object BuiltInFilters {
     } != false
   }
   val overdueFilter = TaskFilter(
-    "filter.overdueTasks", "", filterOverdueOption.asObservableValue(), overdueFilterFxn, isBuiltIn = true
+    "filter.overdueTasks", "", filterOverdueOption.asJavafxProperty(), overdueFilterFxn, isBuiltIn = true
   )
   // ----------------------------
   private val inProgressTodayFilterFxn: TaskFilterFxn  = { _, child ->
@@ -91,7 +87,7 @@ object BuiltInFilters {
     } != false
   }
   val inProgressTodayFilter = TaskFilter(
-    "filter.inProgressTodayTasks", "", filterInProgressTodayOption.asObservableValue(), inProgressTodayFilterFxn, isBuiltIn = true
+    "filter.inProgressTodayTasks", "", filterInProgressTodayOption.asJavafxProperty(), inProgressTodayFilterFxn, isBuiltIn = true
   )
 
   val allFilters: List<TaskFilter> get() = listOf(
@@ -152,7 +148,7 @@ class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: Proje
     })
   }
 
-  fun createCustomFilter() = TaskFilter("", "", DefaultBooleanOption("", false),
+  fun createCustomFilter() = TaskFilter("", "",
     filterFxn = { parent, child -> customFilterFxn(parent, child)},
     isBuiltIn = false
   )
@@ -187,10 +183,22 @@ class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: Proje
   internal var sync: ()->Unit = {}
 }
 
+private fun DefaultBooleanOption.asJavafxProperty() = SimpleBooleanProperty(this.value).also {
+  it.subscribe { oldValue, newValue ->
+    if (newValue != oldValue) {
+      this.setValue(newValue, it)
+    }
+  }
+  this.asObservableValue().addWatcher { evt ->
+    if (evt.newValue != evt.oldValue && evt.trigger != it) {
+      it.value = evt.newValue
+    }
+  }
+}
 private fun today() = CalendarFactory.createGanttCalendar(CalendarFactory.newCalendar().time)
 private fun Task.endsToday() = this.end.displayValue == today()
 private fun Task.endsBeforeToday() = this.end.displayValue < today()
 private fun Task.runsToday() = today().let { this.end.displayValue >= it && this.start <= it }
 val VOID_FILTER_FXN: TaskFilterFxn = { _, _ -> true }
-val VOID_FILTER: TaskFilter = TaskFilter("filter.void", "", ObservableBoolean("", false), isBuiltIn = true, filterFxn = VOID_FILTER_FXN)
+val VOID_FILTER: TaskFilter = TaskFilter("filter.void", "", isBuiltIn = true, filterFxn = VOID_FILTER_FXN)
 private val LOGGER = GPLogger.create("TaskTable.Filters")

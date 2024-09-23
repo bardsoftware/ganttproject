@@ -22,7 +22,6 @@ import biz.ganttproject.app.MappingLocalizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.core.option.Completion
-import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.ObservableObject
 import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.core.option.ValidationException
@@ -49,11 +48,11 @@ fun showFilterDialog(filterManager: TaskFilterManager, projectDatabase: ProjectD
     dialogModel.btnApplyController.onAction = {
       filterManager.importFilters(listItems)
     }
-    val editor = FilterEditor(editorModel, editItem, dialogModel)
+    val editor = FilterEditor(dialogModel, editorModel, editItem, dialogModel)
     val dialogPane = ItemListDialogPane<TaskFilter>(
       listItems,
       editItem,
-      { filter -> ShowHideListItem(filter.title, filter.isEnabledProperty) },
+      { filter -> ShowHideListItem({filter.title}, {filter.isEnabledProperty.value}, {filter.isEnabledProperty.set(!filter.isEnabledProperty.get())}) },
       dialogModel,
       editor,
       i18n
@@ -99,7 +98,11 @@ internal class FilterEditorModel(
  * Editor pane for editing the selected filter properties.
  */
 internal class FilterEditor(
-  private val editorModel: FilterEditorModel, editItem: ObservableObject<TaskFilter?>, model: ItemListDialogModel<TaskFilter>)
+  private val dialogModel: ItemListDialogModel<TaskFilter>,
+  private val editorModel: FilterEditorModel,
+  editItem: ObservableObject<TaskFilter?>,
+  model: ItemListDialogModel<TaskFilter>
+)
   : ItemEditorPane<TaskFilter>(
   editorModel.fields, editItem, model, i18n
 ) {
@@ -109,10 +112,13 @@ internal class FilterEditor(
       editorModel.descriptionField.set(item.description)
       editorModel.expressionField.set(item.expression)
       propertySheet.isDisable = item.isBuiltIn
+      dialogModel.btnDeleteController.isDisabled.set(item.isBuiltIn)
     } else {
       editorModel.nameField.set("")
       editorModel.descriptionField.set("")
       editorModel.expressionField.set("")
+      propertySheet.isDisable = true
+      dialogModel.btnDeleteController.isDisabled.set(true)
     }
   }
 

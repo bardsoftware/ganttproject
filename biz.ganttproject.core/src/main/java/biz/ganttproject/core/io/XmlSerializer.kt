@@ -111,17 +111,20 @@ data class XmlView(
   )
 }
 
+/**
+ * Task filter serialization.
+ */
 data class XmlFilter(
   @get:JacksonXmlProperty(isAttribute = true)
   var title: String = "",
 
-  @get:JacksonXmlProperty(isAttribute = true)
+  @get:JacksonXmlProperty(isAttribute = true, localName = "is-built-in")
   var isBuiltIn: Boolean = false,
 
   @get:JacksonXmlProperty(isAttribute = true)
   var description: String = "",
 
-  @get:JacksonXmlProperty(isAttribute = true)
+  @get:JacksonXmlProperty(isAttribute = true, localName = "is-enabled")
   var isEnabled: Boolean = false,
 
   @get:JsonInclude(JsonInclude.Include.NON_NULL)
