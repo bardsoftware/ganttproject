@@ -113,6 +113,7 @@ internal class FilterEditor(
       editorModel.expressionField.set(item.expression)
       propertySheet.isDisable = item.isBuiltIn
       dialogModel.btnDeleteController.isDisabled.set(item.isBuiltIn)
+      visibilityToggle.isSelected = item.isEnabledProperty.get()
     } else {
       editorModel.nameField.set("")
       editorModel.descriptionField.set("")
@@ -126,6 +127,7 @@ internal class FilterEditor(
     item.title = editorModel.nameField.value ?: ""
     item.description = editorModel.descriptionField.value ?: ""
     item.expression = editorModel.expressionField.value ?: ""
+    item.isEnabledProperty.set(visibilityToggle.isSelected)
   }
 }
 

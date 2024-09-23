@@ -24,9 +24,11 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.event.EventHandler
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.KeyCombination
+import javafx.scene.layout.HBox
 import javafx.scene.text.Text
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIUtil
@@ -208,45 +210,72 @@ fun (GPAction).getGlyphIcon(): Text? =
 
 fun GPAction.getHelpText(): String? = RootLocalizer.formatTextOrNull("${this.id}.help")
 
+private class CheckBoxMenuItemNode(private val action: GPAction, initiallySelected: Boolean): Button() {
+  private var isSelected: Boolean = initiallySelected
+    set(value) {
+      field = value
+      iconView.setIcon(if (value) MaterialIcon.CHECK else MaterialIcon.CHECK_BOX_OUTLINE_BLANK)
+    }
+
+  private var iconView = MaterialIconView(
+    if (isSelected) MaterialIcon.CHECK else MaterialIcon.CHECK_BOX_OUTLINE_BLANK
+  ).also {
+    it.styleClass.add("box")
+
+  }
+
+  init {
+    this.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+    this.styleClass.add("check-box")
+    this.graphic = HBox().also {hbox ->
+      hbox.styleClass.add("box")
+      hbox.alignment = Pos.CENTER
+      hbox.children.add(iconView)
+      hbox.children.add(vbox {
+        val helpText = action.getHelpText()
+        addClasses("custom-checkbox-menu-item")
+        add(Label(action.name).also {
+          if (helpText != null) {
+            it.styleClass.add("title")
+          }
+        })
+        helpText?.let {
+          add(Label(it).also {
+            it.styleClass.add("help")
+          })
+        }
+      })
+    }
+    this.onAction = EventHandler { e ->
+      isSelected = !isSelected
+      action.putValue(Action.SELECTED_KEY, isSelected)
+
+    }
+
+    gpActionListener[action]?.let { action.removePropertyChangeListener(it) }
+    PropertyChangeListener {
+      isSelected = (action.getValue(Action.SELECTED_KEY) as? java.lang.Boolean)?.booleanValue() ?: false
+    }.also {
+      action.addPropertyChangeListener(it)
+      gpActionListener[action] = it
+    }
+  }
+}
+
 private val gpActionListener = WeakHashMap<GPAction, PropertyChangeListener>()
 fun GPAction.asMenuItem(): MenuItem =
   if (this == GPAction.SEPARATOR) {
     SeparatorMenuItem()
   } else {
     val node: Node = getValue(Action.SELECTED_KEY)?.let { isSelected ->
-      CheckBox(name).also { checkBox ->
-        checkBox.graphic = vbox {
-          val helpText = this@asMenuItem.getHelpText()
-          addClasses("custom-checkbox-menu-item")
-          add(Label(name).also {
-            if (helpText != null) {
-              it.styleClass.add("title")
-            }
-          })
-          helpText?.let {
-            add(Label(it).also {
-              it.styleClass.add("help")
-            })
-          }
-        }
-        checkBox.contentDisplay = ContentDisplay.GRAPHIC_ONLY
-        checkBox.isSelected = isSelected as Boolean
-        checkBox.onAction = EventHandler { e ->
-          this.putValue(Action.SELECTED_KEY, checkBox.isSelected)
-        }
-
-        gpActionListener[this]?.let { this.removePropertyChangeListener(it) }
-        PropertyChangeListener {
-          checkBox.isSelected = (this.getValue(Action.SELECTED_KEY) as? java.lang.Boolean)?.booleanValue() ?: false
-        }.also {
-          this.addPropertyChangeListener(it)
-          gpActionListener[this] = it
-        }
-      }
+      CheckBoxMenuItemNode(this, isSelected as Boolean)
     } ?: Label(name).also {label ->
+      label.styleClass.add("custom-label-menu-item")
       getGlyphIcon()?.let { icon ->
         label.graphic = icon
-      }
+      } ?: run { label.graphic = MaterialIconView(MaterialIcon.SPACE_BAR).also {
+        it.styleClass.add("box")
+      } }
     }
     val menuItem = CustomMenuItem(node)
     this.getAccelerator()?.let {

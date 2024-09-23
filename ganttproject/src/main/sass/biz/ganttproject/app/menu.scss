@@ -5,6 +5,19 @@
     -fx-padding: 0.5ex 1em;
     -fx-text-fill: $gp-dark-gray;
 
+    .check-box {
+      -fx-padding: 0;
+      -fx-background-color: transparent;
+
+      .box {
+        -fx-padding: 0;
+        -fx-background-color: transparent;
+        .glyph-icon {
+          -fx-padding: 2;
+          -glyph-size: 30px;
+        }
+      }
+    }
     .custom-checkbox-menu-item {
       -fx-padding: 2 5 2 5;
 
@@ -14,14 +27,22 @@
       .title {
         -fx-font-weight: bold;
         -fx-text-fill: $gp-dark-gray;
+        -fx-padding: 0;
       }
 
       .help {
         -fx-font-size: 80%;
         -fx-text-fill: dimgray;
+        -fx-padding: 0;
       }
     }
 
+    .custom-label-menu-item {
+      .glyph-icon {
+        -glyph-size: 30px;
+        -fx-fill: transparent;
+      }
+    }
     &:focused {
       -fx-background: -fx-accent;
       -fx-background-color: $gp-light-gray;
