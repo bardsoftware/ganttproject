@@ -149,6 +149,7 @@ internal open class ItemEditorPane<T: Item<T>>(
   internal val propertySheet = PropertySheetBuilder(localizer).createPropertySheet(fields)
   private val errorLabel = Label().also {
     it.styleClass.addAll("hint", "hint-validation")
+    it.isWrapText = true
   }
   private val errorPane = HBox().also {
     it.styleClass.addAll("hint-validation-pane", "noerror")
@@ -291,11 +292,6 @@ internal class ItemListDialogPane<T: Item<T>>(
   internal val listView: ListView<T> = ListView()
 
   init {
-//    selectedItem.addWatcher { evt ->
-//      if (evt.trigger != listView && evt.newValue != null) {
-//        listItems.replaceAll { if (it == evt.newValue?.cloneOf) { evt.newValue?.clone(forEditing = false) } else { it } }
-//      }
-//    }
     listView.apply {
       this@ItemListDialogPane.dialogModel.selection = { selectionModel.selectedItems }
       items = listItems

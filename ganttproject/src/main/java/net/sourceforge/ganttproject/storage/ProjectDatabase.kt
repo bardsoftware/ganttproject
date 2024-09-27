@@ -28,11 +28,32 @@ import biz.ganttproject.customproperty.SimpleSelect
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
+import org.h2.jdbc.JdbcException
 import java.awt.Color
 
+private val SYNTAX_ERROR_PREFIX = """Syntax error in SQL statement """"
 open class ProjectDatabaseException: Exception {
   constructor(message: String): super(message)
   constructor(message: String, cause: Throwable): super(message, cause)
+
+  val reason: String get() =
+    this.cause?.let {
+      if (it.cause is JdbcException) {
+        var message = (it.cause as Throwable).message!!
+        val hasSqlStatement = message.indexOf("; SQL statement:")
+        if (hasSqlStatement != -1) {
+          return message.substring(0 until hasSqlStatement)
+        }
+        if (message.startsWith(SYNTAX_ERROR_PREFIX)) {
+          val posMarker = message.indexOf("[*]")
+          if (posMarker != -1) {
+            return message.substring(SYNTAX_ERROR_PREFIX.length until posMarker)
+          }
+        }
+        message
+      } else null
+    } ?: this.message ?: ""
+
 }
 
 interface ProjectDatabaseTxn {
