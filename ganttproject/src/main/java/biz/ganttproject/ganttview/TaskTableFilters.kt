@@ -50,6 +50,9 @@ data class TaskFilter(
 typealias TaskFilterFxn = (parent: Task, child: Task?) -> Boolean
 typealias FilterChangedListener = (filter: TaskFilter?) -> Unit
 
+/**
+ * A few built-in task filters that do not use a database.
+ */
 object BuiltInFilters {
   internal val filterCompletedTasksOption = DefaultBooleanOption("filter.completedTasks", false)
   internal val filterDueTodayOption = DefaultBooleanOption("filter.dueTodayTasks", false)
@@ -98,6 +101,9 @@ object BuiltInFilters {
   )
 }
 
+/**
+ * Manages the filters, both built-in and custom.
+ */
 class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: ProjectDatabase) {
   private val customFilterResults: MutableSet<Int> = mutableSetOf()
   private val customFilterFxn: TaskFilterFxn = { _, child ->
@@ -129,9 +135,15 @@ class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: Proje
     }
   }
 
+  // This is the filter that is currently active.
   var activeFilter: TaskFilter = VOID_FILTER
     set(value) {
       field = value
+      if (value != VOID_FILTER) {
+        recentFilterList.remove(value)
+        recentFilterList.add(0, value)
+        while (recentFilterList.size > 5) { recentFilterList.removeLast() }
+      }
       if (!value.isBuiltIn) {
         refreshCustomFilterResults()
       }
@@ -139,8 +151,13 @@ class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: Proje
       sync()
     }
 
+  // All available filters.
   val filters get() = BuiltInFilters.allFilters + customFilters
-  val recentFilters get() = filters
+
+  private val recentFilterList = mutableListOf<TaskFilter>().also { it.addAll(BuiltInFilters.allFilters) }
+  // The recent filters that are shown in the popup menu.
+  val recentFilters: List<TaskFilter> get() = recentFilterList
+
   init {
     taskManager.addTaskListener(TaskListenerAdapter().also {
       it.taskProgressChangedHandler = { _ -> if (activeFilter != VOID_FILTER) sync() }
