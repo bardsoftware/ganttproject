@@ -69,10 +69,15 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
   private static final String ICON_FILE_DIRECTORY = "/icons";
 
   public static final String HAS_DIALOG_BUTTON = "has_dialog_button";
+
+  // ContentDisplay value.
   public static final String TEXT_DISPLAY = "text_display";
   public static final String IS_SUBMENU = "is_submenu";
 
   public static final String HAS_AUTO_REPEAT = "has_auto_repeat";
+
+  // Text that may be shown somewhere close to the task title, explaining the action.
+  public static final String HELP_TEXT = "help_text";
   private boolean iconVisible = true;
 
   private final String myName;

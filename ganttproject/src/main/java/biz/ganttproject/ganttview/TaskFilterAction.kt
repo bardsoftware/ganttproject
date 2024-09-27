@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.ganttview
 
 import biz.ganttproject.app.MenuBuilder
-import biz.ganttproject.core.option.DefaultBooleanOption
+import biz.ganttproject.app.RootLocalizer
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import java.awt.event.ActionEvent
@@ -28,14 +28,15 @@ import java.awt.event.ActionEvent
  * @author apopov77@gmail.com
  */
 class TaskFilterAction(
-  actionName: String,
   private val filterManager: TaskFilterManager,
-  private val taskFilterOption: DefaultBooleanOption,
   private val taskFilter: TaskFilter
-) : GPAction(actionName) {
+) : GPAction(taskFilter.title) {
 
   init {
     putValue(SELECTED_KEY, filterManager.activeFilter == taskFilter)
+    putValue(NAME, taskFilter.getLocalizedTitle())
+    putValue(HELP_TEXT, taskFilter.getLocalizedDescription())
+
     filterManager.filterListeners.add { filter ->
       if (taskFilter != filter) {
         putValue(SELECTED_KEY, false)
@@ -44,9 +45,9 @@ class TaskFilterAction(
 
     // An option can be saved and changed when a project will be open
     // or undo\redo
-    taskFilterOption.addChangeValueListener { evt ->
-      (evt.newValue as? Boolean)?.let {
-        if (evt.newValue != evt.oldValue) {
+    taskFilter.isEnabledProperty.subscribe { oldValue, newValue ->
+      newValue?.let {
+        if (newValue != oldValue) {
           setChecked(it)
         }
       }
@@ -63,7 +64,7 @@ class TaskFilterAction(
   override fun putValue(key: String?, newValue: Any?) {
     if (SELECTED_KEY == key) {
       if (newValue is Boolean) {
-        taskFilterOption.value = newValue
+        taskFilter.isEnabledProperty.value = newValue
         super.putValue(key, if (newValue) java.lang.Boolean.TRUE else java.lang.Boolean.FALSE)
       }
     } else {
@@ -83,31 +84,31 @@ class TaskFilterAction(
   }
 }
 
-class TaskFilterActionSet(taskFilterManager: TaskFilterManager, projectDatabase: ProjectDatabase) {
+class TaskFilterActionSet(private val taskFilterManager: TaskFilterManager, projectDatabase: ProjectDatabase) {
   // Task filters -> actions
-  private val filterCompletedTasksAction = TaskFilterAction("taskTable.filter.uncompletedTasks",
-    taskFilterManager, BuiltInFilters.filterCompletedTasksOption, BuiltInFilters.completedTasksFilter)
-  private val filterDueTodayTasksAction = TaskFilterAction("taskTable.filter.dueTodayTasks",
-    taskFilterManager, BuiltInFilters.filterDueTodayOption, BuiltInFilters.dueTodayFilter)
-  private val filterOverdueTasksAction = TaskFilterAction("taskTable.filter.overdueTasks",
-    taskFilterManager, BuiltInFilters.filterOverdueOption, BuiltInFilters.overdueFilter)
-  private val filterInProgressTodayTasksAction = TaskFilterAction("taskTable.filter.inProgressTodayTasks",
-    taskFilterManager, BuiltInFilters.filterInProgressTodayOption, BuiltInFilters.inProgressTodayFilter)
   private val filterDialogAction = GPAction.create("taskTable.filterDialog.action") {
     showFilterDialog(taskFilterManager, projectDatabase)
   }
 
 
   fun tableFilterActions(builder: MenuBuilder) {
+    val recentFilters = taskFilterManager.recentFilters.map { filter ->
+      TaskFilterAction(taskFilterManager, filter)
+    }
     builder.apply {
-      items(
-        filterCompletedTasksAction,
-        filterDueTodayTasksAction,
-        filterOverdueTasksAction,
-        filterInProgressTodayTasksAction,
-        filterDialogAction
-      )
+      items(recentFilters + listOf(filterDialogAction))
     }
   }
-
 }
+
+internal fun TaskFilter.getLocalizedTitle(): String =
+  if (this.isBuiltIn) {
+    val suffix = if (this.title == "filter.completedTasks") "filter.uncompletedTasks" else this.title
+    RootLocalizer.createWithRootKey("taskTable", RootLocalizer).formatText(suffix)
+  } else this.title
+
+internal fun TaskFilter.getLocalizedDescription(): String =
+  if (this.isBuiltIn) {
+    val suffix = if (this.title == "filter.completedTasks") "filter.uncompletedTasks" else this.title
+    RootLocalizer.createWithRootKey("taskTable", RootLocalizer).formatText("$suffix.help")
+  } else this.description

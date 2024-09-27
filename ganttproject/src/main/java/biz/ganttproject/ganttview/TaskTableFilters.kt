@@ -36,7 +36,7 @@ import net.sourceforge.ganttproject.undo.GPUndoListener
 import javax.swing.event.UndoableEditEvent
 
 /**
- *
+ * Encapsulates the task filter properties.
  */
 data class TaskFilter(
   override var title: String,
@@ -140,7 +140,7 @@ class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: Proje
     }
 
   val filters get() = BuiltInFilters.allFilters + customFilters
-
+  val recentFilters get() = filters
   init {
     taskManager.addTaskListener(TaskListenerAdapter().also {
       it.taskProgressChangedHandler = { _ -> if (activeFilter != VOID_FILTER) sync() }

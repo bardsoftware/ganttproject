@@ -208,7 +208,7 @@ fun (GPAction).getGlyphIcon(): Text? =
       }
     }
 
-fun GPAction.getHelpText(): String? = RootLocalizer.formatTextOrNull("${this.id}.help")
+fun GPAction.getHelpText(): String? = this.getValue(GPAction.HELP_TEXT)?.toString() ?: RootLocalizer.formatTextOrNull("${this.id}.help")
 
 private class CheckBoxMenuItemNode(private val action: GPAction, initiallySelected: Boolean): Button() {
   private var isSelected: Boolean = initiallySelected

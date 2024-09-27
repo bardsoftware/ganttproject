@@ -52,7 +52,7 @@ fun showFilterDialog(filterManager: TaskFilterManager, projectDatabase: ProjectD
     val dialogPane = ItemListDialogPane<TaskFilter>(
       listItems,
       editItem,
-      { filter -> ShowHideListItem({filter.title}, {filter.isEnabledProperty.value}, {filter.isEnabledProperty.set(!filter.isEnabledProperty.get())}) },
+      { filter -> ShowHideListItem({filter.getLocalizedTitle()}, {filter.isEnabledProperty.value}, {filter.isEnabledProperty.set(!filter.isEnabledProperty.get())}) },
       dialogModel,
       editor,
       i18n
@@ -108,8 +108,8 @@ internal class FilterEditor(
 ) {
   override fun loadData(item: TaskFilter?) {
     if (item != null) {
-      editorModel.nameField.set(item.title)
-      editorModel.descriptionField.set(item.description)
+      editorModel.nameField.set(item.getLocalizedTitle())
+      editorModel.descriptionField.set(item.getLocalizedDescription())
       editorModel.expressionField.set(item.expression)
       propertySheet.isDisable = item.isBuiltIn
       dialogModel.btnDeleteController.isDisabled.set(item.isBuiltIn)
