@@ -51,7 +51,8 @@ fun updateProjectXml(projectXml: String, updates: XlogRecord): String {
   val taskManager = TaskManagerImpl(null, taskManagerConfig)
   val projectDatabase = LazyProjectDatabaseProxy(
     databaseFactory = {  createInMemoryDatabase() },
-    taskManager = {taskManager}
+    taskManager = {taskManager},
+    filterUpdater = {}
   ).also {
     it.startLog(0)
   }
@@ -85,7 +86,8 @@ fun projectFromXml(projectXml: String, baseTxnId: BaseTxnId, databaseFactory: ()
   val taskManager = TaskManagerImpl(null, taskManagerConfig)
   val projectDatabase = LazyProjectDatabaseProxy(
     databaseFactory = databaseFactory,
-    taskManager = {taskManager}
+    taskManager = {taskManager},
+    filterUpdater = {}
   ).also {
     it.startLog(baseTxnId)
   }
