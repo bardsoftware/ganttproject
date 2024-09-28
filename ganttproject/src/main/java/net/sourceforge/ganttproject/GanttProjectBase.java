@@ -218,7 +218,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   protected GanttProjectBase(Stage stage) {
     TaskDefaultColumn.setLocaleApi(key -> GanttLanguage.getInstance().getText(key));
 
-    var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager);
+    var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager, this::getTaskFilterManager);
 
     myProjectDatabase = databaseProxy;
     myTaskManagerConfig = new TaskManagerConfigImpl();

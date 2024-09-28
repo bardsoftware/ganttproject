@@ -23,6 +23,7 @@ import biz.ganttproject.app.BarrierEntrance
 import biz.ganttproject.customproperty.CalculatedPropertyUpdater
 import biz.ganttproject.customproperty.CustomPropertyEvent
 import biz.ganttproject.customproperty.CustomPropertyListener
+import biz.ganttproject.ganttview.TaskFilterManager
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
@@ -38,8 +39,10 @@ import javax.swing.event.UndoableEditEvent
  * @param projectDatabase - database which holds the current project state.
  */
 internal class ProjectEventListenerImpl(
-  private val projectDatabase: ProjectDatabase, private val taskManagerSupplier: ()->TaskManager,
-  private val calculatedPropertyUpdater: CalculatedPropertyUpdater)
+  private val projectDatabase: ProjectDatabase,
+  private val taskManagerSupplier: ()->TaskManager,
+  private val calculatedPropertyUpdater: CalculatedPropertyUpdater,
+  private val taskFilterManager: ()->TaskFilterManager)
   : TaskListener, ProjectEventListener.Stub(), GPUndoListener, CustomPropertyListener {
 
   private fun withLogger(errorMessage: () -> String, body: () -> Unit) {
@@ -55,7 +58,8 @@ internal class ProjectEventListenerImpl(
     barrier.await {
       projectDatabase.onCustomColumnChange(it.taskCustomColumnManager)
       it.taskManager.tasks.forEach(projectDatabase::insertTask)
-      calculatedPropertyUpdater.update();
+      calculatedPropertyUpdater.update()
+      taskFilterManager().refresh()
     }
   }
 

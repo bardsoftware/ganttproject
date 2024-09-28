@@ -63,6 +63,7 @@ open class GanttProjectImpl(
   override val projectDatabase: ProjectDatabase = LazyProjectDatabaseProxy(
     {error("Not supposed to be called")},
     {error("Not supposed to be called")},
+    {error("Not supposed to be called")},
   )) : IGanttProject {
 
   val listeners: MutableList<ProjectEventListener> = mutableListOf()

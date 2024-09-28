@@ -27,6 +27,7 @@ import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.storage.ColumnConsumer
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.task.Task
@@ -104,7 +105,7 @@ object BuiltInFilters {
 /**
  * Manages the filters, both built-in and custom.
  */
-class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: ProjectDatabase) {
+class TaskFilterManager(taskManager: TaskManager, private val projectDatabase: ProjectDatabase) {
   private val customFilterResults: MutableSet<Int> = mutableSetOf()
   private val customFilterFxn: TaskFilterFxn = { _, child ->
     child?.taskID?.let { customFilterResults.contains(it) } != false
@@ -142,7 +143,7 @@ class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: Proje
       if (value != VOID_FILTER) {
         recentFilterList.remove(value)
         recentFilterList.add(0, value)
-        while (recentFilterList.size > 5) { recentFilterList.removeLast() }
+        while (recentFilterList.size > RECENT_FILTER_LIST_SIZE) { recentFilterList.removeLast() }
       }
       if (!value.isBuiltIn) {
         refreshCustomFilterResults()
@@ -182,10 +183,13 @@ class TaskFilterManager(val taskManager: TaskManager, val projectDatabase: Proje
     }
   }
 
+  fun refresh() = refreshCustomFilterResults()
+
   private fun refreshCustomFilterResults() {
     customFilterResults.clear()
     if (!activeFilter.isBuiltIn) {
       LOGGER.debug(">>> refreshCustomFilterResults()")
+      LOGGER.debug("... active filter={}", activeFilter)
       projectDatabase.mapTasks(
         ColumnConsumer(SimpleSelect("uid", "num", whereExpression = activeFilter.expression, CustomPropertyClass.INTEGER.javaClass)) { taskNum, value ->
           LOGGER.debug("... adding task={} to the results", taskNum)
@@ -218,4 +222,5 @@ private fun Task.endsBeforeToday() = this.end.displayValue < today()
 private fun Task.runsToday() = today().let { this.end.displayValue >= it && this.start <= it }
 val VOID_FILTER_FXN: TaskFilterFxn = { _, _ -> true }
 val VOID_FILTER: TaskFilter = TaskFilter("filter.void", "", isBuiltIn = true, filterFxn = VOID_FILTER_FXN)
+private const val RECENT_FILTER_LIST_SIZE = 5
 private val LOGGER = GPLogger.create("TaskTable.Filters")

@@ -22,6 +22,7 @@ package net.sourceforge.ganttproject.storage
 import biz.ganttproject.customproperty.CalculatedPropertyUpdater
 import biz.ganttproject.customproperty.CustomPropertyListener
 import biz.ganttproject.customproperty.CustomPropertyManager
+import biz.ganttproject.ganttview.TaskFilterManager
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.storage.ProjectDatabase.*
@@ -36,7 +37,11 @@ import net.sourceforge.ganttproject.undo.GPUndoListener
  *
  * @param databaseFactory - factory for generating a project state database.
  */
-class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabase, private val taskManager: () -> TaskManager): ProjectDatabase {
+class LazyProjectDatabaseProxy(
+  private val databaseFactory: () -> ProjectDatabase,
+  private val taskManager: () -> TaskManager,
+  private val taskFilterManager: () -> TaskFilterManager): ProjectDatabase {
+
   private var lazyProjectDatabase: ProjectDatabase? = null
   private val calculatedPropertyUpdater by lazy { CalculatedPropertyUpdater(this,
     { taskManager().customPropertyManager },
@@ -46,7 +51,7 @@ class LazyProjectDatabaseProxy(private val databaseFactory: () -> ProjectDatabas
       }.toMap()
     }
   ) }
-  private val projectEventListenerImpl by lazy { ProjectEventListenerImpl(this, taskManager, calculatedPropertyUpdater) }
+  private val projectEventListenerImpl by lazy { ProjectEventListenerImpl(this, taskManager, calculatedPropertyUpdater, taskFilterManager) }
 
   private fun isInitialized(): Boolean = lazyProjectDatabase != null
 
