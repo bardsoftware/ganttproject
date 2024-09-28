@@ -75,8 +75,17 @@ class TwoPhaseBarrierImpl<T>(private val value: T) : Barrier<T>, BarrierEntrance
   private val counter = AtomicInteger(0)
   private val exits = mutableListOf<BarrierExit<T>>()
   private val activities = mutableMapOf<String, OnBarrierReached>()
+
+  var isActive: Boolean = false
+    set(value) {
+      field = value
+      if (value && counter.get() == 0) {
+        exits.forEach { it(this.value) }
+      }
+    }
+
   override fun await(code: BarrierExit<T>) {
-    if (counter.get() == 0) {
+    if (isActive && counter.get() == 0) {
       code(value)
     } else {
       exits.add(code)
@@ -84,23 +93,22 @@ class TwoPhaseBarrierImpl<T>(private val value: T) : Barrier<T>, BarrierEntrance
   }
 
   override fun register(activity: String): OnBarrierReached {
+    assert(!isActive) {
+      "You need to register barrier activities before it gets active"
+    }
     return {
       if (counter.get() > 0) {
         BARRIER_LOGGER.debug("Barrier reached: $activity")
         //println("Barrier reached: $activity")
         activities.remove(activity)
-        tick()
+        counter.decrementAndGet()
+        isActive = true
       }
     }.also {
       BARRIER_LOGGER.debug("Barrier waiting: $activity")
       //println("Barrier waiting: $activity")
       activities[activity] = it
       counter.incrementAndGet()
-    }
-  }
-  private fun tick() {
-    if (counter.decrementAndGet() == 0) {
-      exits.forEach { it(value) }
     }
   }
 }
