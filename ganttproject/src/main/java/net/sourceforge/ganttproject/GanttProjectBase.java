@@ -43,6 +43,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.stage.Stage;
+import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
@@ -218,7 +219,8 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   protected GanttProjectBase(Stage stage) {
     TaskDefaultColumn.setLocaleApi(key -> GanttLanguage.getInstance().getText(key));
 
-    var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager, this::getTaskFilterManager);
+    var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager,
+      () -> { getTaskFilterManager().refresh(); return Unit.INSTANCE; });
 
     myProjectDatabase = databaseProxy;
     myTaskManagerConfig = new TaskManagerConfigImpl();

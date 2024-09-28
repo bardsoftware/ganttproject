@@ -42,7 +42,7 @@ internal class ProjectEventListenerImpl(
   private val projectDatabase: ProjectDatabase,
   private val taskManagerSupplier: ()->TaskManager,
   private val calculatedPropertyUpdater: CalculatedPropertyUpdater,
-  private val taskFilterManager: ()->TaskFilterManager)
+  private val filterUpdater: ()->Unit)
   : TaskListener, ProjectEventListener.Stub(), GPUndoListener, CustomPropertyListener {
 
   private fun withLogger(errorMessage: () -> String, body: () -> Unit) {
@@ -59,7 +59,7 @@ internal class ProjectEventListenerImpl(
       projectDatabase.onCustomColumnChange(it.taskCustomColumnManager)
       it.taskManager.tasks.forEach(projectDatabase::insertTask)
       calculatedPropertyUpdater.update()
-      taskFilterManager().refresh()
+      filterUpdater()
     }
   }
 
