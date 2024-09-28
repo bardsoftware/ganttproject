@@ -28,7 +28,7 @@ import java.io.IOException
 typealias AuthenticationFlow = (()->Unit)->Unit
 
 interface ProjectUIFacade {
-  fun saveProject(project: IGanttProject, onFinish: Channel<Boolean>?)
+  fun saveProject(project: IGanttProject): Barrier<Boolean>
   fun saveProjectAs(project: IGanttProject)
   fun ensureProjectSaved(project: IGanttProject): Barrier<Boolean>
 

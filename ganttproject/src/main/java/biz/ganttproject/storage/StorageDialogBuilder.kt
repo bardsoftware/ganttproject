@@ -105,34 +105,33 @@ class StorageDialogBuilder(
     // This will be called when user saves a project.
     myDocumentUpdater = Consumer { document ->
       val killProgress = myDialogUi.toggleProgress(true)
-      val onFinish = Channel<Boolean>()
       documentManager.getProxyDocument(document).also {
         it.createContents()
         myProject.document = it
       }
-      GlobalScope.launch(Dispatchers.IO) {
-        try {
-          if (document.isLocal) {
-            document.asLocalDocument()?.create()
-          }
-          projectUi.saveProject(myProject, onFinish)
-          if (onFinish.receive()) {
+
+      try {
+        if (document.isLocal) {
+          document.asLocalDocument()?.create()
+        }
+        projectUi.saveProject(myProject).await { success ->
+          if (success) {
             document.asOnlineDocument()?.let {
               if (it is GPCloudDocument) {
                 it.onboard(documentManager, webSocket)
               }
             }
           }
-          myDialogUi.toggleProgress(false)
-          myDialogUi.close()
-        } catch (e: Exception) {
-          killProgress()
-          if (e is PaymentRequiredException) {
-            println(e.message)
-          }
-          myDialogUi.error(e.message ?: "")
-          LOG.error("Failed to save document {}", document.uri, exception = e)
         }
+        myDialogUi.toggleProgress(false)
+        myDialogUi.close()
+      } catch (e: Exception) {
+        killProgress()
+        if (e is PaymentRequiredException) {
+          println(e.message)
+        }
+        myDialogUi.error(e.message ?: "")
+        LOG.error("Failed to save document {}", document.uri, exception = e)
       }
     }
   }

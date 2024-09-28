@@ -47,7 +47,7 @@ class SaveProjectAction private constructor(
     if (calledFromAppleScreenMenu(e)) {
       return
     }
-    myProjectUiFacade.saveProject(myProject, null)
+    myProjectUiFacade.saveProject(myProject)
   }
 
   override fun projectModified() {

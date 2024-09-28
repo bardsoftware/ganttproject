@@ -35,7 +35,6 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.stage.Window
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.GanttProjectImpl
@@ -54,7 +53,6 @@ import net.sourceforge.ganttproject.importer.importBufferProject
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.resource.HumanResourceMerger
 import net.sourceforge.ganttproject.resource.HumanResourceMerger.MergeResourcesOption.BY_ID
-import net.sourceforge.ganttproject.task.event.*
 import net.sourceforge.ganttproject.task.export
 import net.sourceforge.ganttproject.task.importFromDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
@@ -66,7 +64,6 @@ import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
 
-@ExperimentalCoroutinesApi
 class ProjectUIFacadeImpl(
   private val window: Window,
   private val myWorkbenchFacade: UIFacade,
@@ -79,29 +76,17 @@ class ProjectUIFacadeImpl(
   private val myConverterGroup = GPOptionGroup("convert", ProjectOpenStrategy.milestonesOption)
   private var isSaving = false
 
-  override fun saveProject(project: IGanttProject, onFinish: Channel<Boolean>?) {
+  override fun saveProject(project: IGanttProject): Barrier<Boolean> {
     if (isSaving) {
       GPLogger.logToLogger("We're saving the project now. This save request was rejected")
     }
+    val saveBarrier = SimpleBarrier<Boolean>()
     isSaving = true
     try {
-      val broadcastWaitScope = CoroutineScope(Executors.newFixedThreadPool(2).asCoroutineDispatcher())
-      val broadcastChannel = BroadcastChannel<Boolean>(1)
-      broadcastChannel.openSubscription().let { channel ->
-        broadcastWaitScope.launch {
-          if (channel.receive()) {
-            afterSaveProject(project)
-            channel.cancel()
-          }
-        }
+      saveBarrier.await {
+        afterSaveProject(project)
       }
-      onFinish?.let {
-        broadcastChannel.openSubscription().let { channel -> broadcastWaitScope.launch {
-          it.send(channel.receive())
-          channel.cancel()
-        }}
-      }
-      ProjectSaveFlow(project = project, onFinish = broadcastChannel,
+      ProjectSaveFlow(project = project, onFinish = saveBarrier,
         signin = this::signin,
         error = this::onError,
         saveAs = { saveProjectAs(project) }
@@ -110,6 +95,7 @@ class ProjectUIFacadeImpl(
       isSaving = false
       myWorkbenchFacade.activeChart.focus()
     }
+    return saveBarrier
   }
 
   fun onError(ex: Exception) {
@@ -212,17 +198,9 @@ class ProjectUIFacadeImpl(
         result.resolve(false)
       },
       OkAction.create("yes") {
-        val onFinish = Channel<Boolean>()
-        CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
-          try {
-            if (onFinish.receive()) {
-              result.resolve(true)
-            }
-          } catch (e: Exception) {
-            myWorkbenchFacade.showErrorDialog(e)
-          }
+        saveProject(project).await { success ->
+          result.resolve(success)
         }
-        saveProject(project, onFinish)
       },
       OkAction.create("no") {
         result.resolve(true)
@@ -350,20 +328,15 @@ class ProjectUIFacadeImpl(
   }
 }
 
-@ExperimentalCoroutinesApi
 class ProjectSaveFlow(
-    private val project: IGanttProject,
-    private val onFinish: BroadcastChannel<Boolean>,
-    private val signin: (()->Unit) -> Unit,
-    private val error: (Exception) -> Unit,
-    private val saveAs: () -> Unit) {
+  private val project: IGanttProject,
+  private val onFinish: SimpleBarrier<Boolean>,
+  private val signin: (()->Unit) -> Unit,
+  private val error: (Exception) -> Unit,
+  private val saveAs: () -> Unit) {
 
-  private val doneScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
   private fun done(success: Boolean) {
-    doneScope.launch {
-      onFinish.send(success)
-      onFinish.close()
-    }
+    onFinish.resolve(success)
   }
 
   fun run() {
