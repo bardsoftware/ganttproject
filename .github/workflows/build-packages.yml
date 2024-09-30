@@ -158,16 +158,16 @@ jobs:
 #                  ./build-bin/package-mac.sh
 #                  ./build/GanttProject.app/Contents/MacOS/GanttProject -h || echo "failed to run"
 #
-#            - id: 'auth'
-#              uses: 'google-github-actions/auth@v1'
-#              with:
-#                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-#
-#            - name: 'Set up Cloud SDK'
-#              uses: 'google-github-actions/setup-gcloud@v1'
-#
-#            - name: 'Use gcloud CLI'
-#              run: 'gcloud info'
+            - id: 'auth'
+              uses: 'google-github-actions/auth@v1'
+              with:
+                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+            - name: 'Set up Cloud SDK'
+              uses: 'google-github-actions/setup-gcloud@v1'
+
+            - name: 'Use gcloud CLI'
+              run: 'gcloud info'
 #
 #            - name: Sign GanttProject.app
 #              run: |
