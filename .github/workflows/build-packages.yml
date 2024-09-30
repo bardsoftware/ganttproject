@@ -189,10 +189,10 @@ jobs:
 #                  build-bin/notarize.sh $VERSION "BarD Software s.r.o" "--" staple
 #                  rm build/*.dmg
 #
-            - name: 'Build DMG package'
             - uses: actions/setup-python@v5
               with:
                 python-version: '3.10'
+            - name: 'Build DMG package'
             - run: |
                   mkdir -p build
                   curl -o build/GanttProject.zip https://storage.googleapis.com/dl.ganttproject.biz/GanttProject.zip
