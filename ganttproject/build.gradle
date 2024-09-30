@@ -50,7 +50,9 @@ dependencies {
     jooqGenerator 'org.jooq:jooq-meta-extensions:3.19.11'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2'
-    implementation 'net.harawata:appdirs:1.2.2'
+    implementation('net.harawata:appdirs:1.2.1') {
+        exclude group: 'net.java.dev.jna', module: 'jna'
+    }
     implementation "com.michael-bull.kotlin-result:kotlin-result:2.0.0"
 
 
