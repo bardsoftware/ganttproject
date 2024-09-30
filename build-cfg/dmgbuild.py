@@ -17,9 +17,10 @@
 files = ['build/GanttProject.app', 'ganttproject-builder/HouseBuildingSample.gan', 'LICENSE']
 symlinks = { "Applications": "/Applications" }
 badge_icon = "build-cfg/ganttproject.icns"
-background = "build-cfg/dmg-background.png"
-window_rect = ((100, 100), (512, 512))
+background = "build-cfg/bg4.png"
+window_rect = ((100, 100), (800, 800))
 icon_size=96
+text_size=14
 icon_locations = {
-  "GanttProject.app": (0, 200), "Applications": (275, 200), "HouseBuildingSample.gan": (256, 0), "LICENSE": (100, 0)
+  "GanttProject.app": (150, 420), "Applications": (660, 420), "HouseBuildingSample.gan": (150, 670), "LICENSE": (300, 670)
 }
