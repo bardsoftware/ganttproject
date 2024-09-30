@@ -189,13 +189,14 @@ jobs:
 #                  build-bin/notarize.sh $VERSION "BarD Software s.r.o" "--" staple
 #                  rm build/*.dmg
 #
+            - name: 'Build DMG package'
             - uses: actions/setup-python@v5
               with:
                 python-version: '3.10'
             - run: |
                   mkdir -p build
                   curl -o build/GanttProject.zip https://storage.googleapis.com/dl.ganttproject.biz/GanttProject.zip
-                  cd build && unzip GanttProject.zip & cd ..
+                  cd build && unzip GanttProject.zip && cd ..
                   pip install dmgbuild
                   dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" ./ganttproject-$VERSION-silicon.dmg
                   gsutil cp ./ganttproject-$VERSION-silicon.dmg gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$VERSION-silicon.dmg;
