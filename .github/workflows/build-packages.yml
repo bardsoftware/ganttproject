@@ -197,7 +197,7 @@ jobs:
                   curl -o build/GanttProject.zip https://storage.googleapis.com/dl.ganttproject.biz/GanttProject.zip
                   cd build && unzip GanttProject.zip & cd ..
                   pip install dmgbuild
-                  dmgbuild -s dmgbuild.py "$MAC_APP_NAME" ./ganttproject-$VERSION-silicon.dmg
+                  dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" ./ganttproject-$VERSION-silicon.dmg
                   gsutil cp ./ganttproject-$VERSION-silicon.dmg gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$VERSION-silicon.dmg;
 
 #    macOS_intel:
