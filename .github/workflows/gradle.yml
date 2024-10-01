@@ -48,9 +48,9 @@ jobs:
         if: always()
         with:
           files: |
-            test-results/**/*.xml
-            test-results/**/*.trx
-            test-results/**/*.json
+            **/test-results/**/*.xml
+            **/test-results/**/*.trx
+            **/test-results/**/*.json
       - name: Publish libs
         run: ./gradlew --no-daemon publishToMavenLocal
       - name: Initialize PostgreSQL
