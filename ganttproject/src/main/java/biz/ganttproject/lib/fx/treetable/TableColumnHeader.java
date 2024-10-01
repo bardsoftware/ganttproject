@@ -582,7 +582,7 @@ public class TableColumnHeader extends Region {
     // when they change in the settings.
     // Also, there is an attempt to set the background color to the value from Swing LAF, but I am not sure
     // if it is working properly.
-    label.fontProperty().bind(FontKt.getApplicationFont());
+    //label.fontProperty().bind(FontKt.getApplicationFont());
     label.textFillProperty().bind(TreeTableCellsKt.getApplicationForeground());
   }
 

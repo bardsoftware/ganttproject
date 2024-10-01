@@ -21,6 +21,7 @@ package biz.ganttproject.app
 import biz.ganttproject.FXUtil
 import biz.ganttproject.core.option.IntegerOption
 import biz.ganttproject.lib.fx.vbox
+import javafx.beans.property.SimpleDoubleProperty
 import javafx.embed.swing.SwingNode
 import javafx.geometry.Orientation
 import javafx.geometry.Rectangle2D
@@ -33,6 +34,7 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.gui.UIFacade
@@ -152,9 +154,9 @@ data class ViewComponents(val image: Pane, val splitPane: SplitPane, val table: 
 }
 
 fun createViewComponents(
-  tableToolbarBuilder: ()->Node,
+  tableToolbarBuilder: ()-> Region,
   tableBuilder: ()->Node,
-  chartToolbarBuilder: ()->Node,
+  chartToolbarBuilder: ()-> Region,
   chartBuilder: ()-> JComponent,
   dpiOption: IntegerOption): ViewComponents {
 
@@ -172,16 +174,31 @@ fun createViewComponents(
 
   val table = tableBuilder()
   val splitPane = SplitPane().also {split ->
+    var maxToolbarHeight = SimpleDoubleProperty(0.0)
     split.orientation = Orientation.HORIZONTAL
     split.items.add(vbox {
-      add(tableToolbarBuilder())
+      add(tableToolbarBuilder().also {
+        it.heightProperty().subscribe { v ->
+          if (v.toDouble() > maxToolbarHeight.value) {
+            maxToolbarHeight.value = v.toDouble()
+          }
+        }
+        it.prefHeightProperty().bind(maxToolbarHeight)
+      })
       add(imagePane)
       add(table, null, growth = Priority.ALWAYS)
     })
 
     val swingNode = SwingNode()
     val right = vbox {
-      add(chartToolbarBuilder())
+      add(chartToolbarBuilder().also {
+        it.heightProperty().subscribe { v ->
+          if (v.toDouble() > maxToolbarHeight.value) {
+            maxToolbarHeight.value = v.toDouble()
+          }
+        }
+        it.prefHeightProperty().bind(maxToolbarHeight)
+      })
       add(swingNode, null, Priority.ALWAYS)
     }
     SwingUtilities.invokeLater { swingNode.content = chartBuilder() }
