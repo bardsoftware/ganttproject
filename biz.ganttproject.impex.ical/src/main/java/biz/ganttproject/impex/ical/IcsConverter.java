@@ -53,7 +53,7 @@ public class IcsConverter {
     }
     CalendarBuilder builder = new CalendarBuilder();
     Calendar c = builder.build(new UnfoldingReader(new FileReader(mainArgs.file.get(0))));
-    for (Component comp : (List<Component>)c.getComponents()) {
+    for (Component comp : c.getComponents()) {
       System.err.println(comp);
     }
   }

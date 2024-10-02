@@ -30,26 +30,30 @@ import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.data.UnfoldingReader;
 import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.Component;
-import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.Recur;
+import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.DateProperty;
 import net.fortuna.ical4j.model.property.RRule;
 import net.fortuna.ical4j.model.property.Summary;
+import net.fortuna.ical4j.transform.recurrence.Frequency;
 import net.fortuna.ical4j.util.CompatibilityHints;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
 import net.sourceforge.ganttproject.importer.ImporterBase;
 import net.sourceforge.ganttproject.wizard.AbstractWizard;
 import net.sourceforge.ganttproject.wizard.WizardPage;
+import org.w3c.util.DateParser;
 
 import javax.swing.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.*;
+import java.time.temporal.Temporal;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Implements an import wizard plugin responsible for importing ICS files.
@@ -157,31 +161,35 @@ public class IcsFileImporter extends ImporterBase {
       CalendarBuilder builder = new CalendarBuilder();
       List<CalendarEvent> gpEvents = Lists.newArrayList();
       Calendar c = builder.build(new UnfoldingReader(new FileReader(f)));
-      for (Component comp : (List<Component>)c.getComponents()) {
+      for (CalendarComponent comp : c.getComponents()) {
         if (comp instanceof VEvent) {
           VEvent event = (VEvent) comp;
-          if (event.getStartDate() == null) {
+
+          if (event.getDateTimeStart().isEmpty()) {
             LOGGER.debug("No start date found, ignoring. Event={}", new Object[] {event}, Collections.emptyMap());
             continue;
           }
-          Date eventStartDate = event.getStartDate().getDate();
-          if (event.getEndDate() == null) {
+          var eventStartDate = event.getDateTimeStart().get().getDate();
+          if (event.getDateTimeEnd().isEmpty()) {
             LOGGER.debug("No end date found, using start date instead. Event={}", new Object[] {event}, Collections.emptyMap());
           }
-          Date eventEndDate = event.getEndDate() == null ? eventStartDate : event.getEndDate().getDate();
+          var eventEndDate = event.getDateTimeEnd().map(DateProperty::getDate).orElse(eventStartDate);
           TimeDuration oneDay = GPTimeUnitStack.createLength(GPTimeUnitStack.DAY, 1);
           if (eventEndDate != null) {
-            java.util.Date startDate = GPTimeUnitStack.DAY.adjustLeft(eventStartDate);
-            java.util.Date endDate = GPTimeUnitStack.DAY.adjustLeft(eventEndDate);
-            RRule recurrenceRule = (RRule) event.getProperty(Property.RRULE);
-            boolean recursYearly = false;
-            if (recurrenceRule != null) {
-              recursYearly = Recur.YEARLY.equals(recurrenceRule.getRecur().getFrequency()) && 1 == recurrenceRule.getRecur().getInterval();
-            }
+            java.util.Date startDate = GPTimeUnitStack.DAY.adjustLeft(getDate(eventStartDate));
+            java.util.Date endDate = GPTimeUnitStack.DAY.adjustLeft(getDate(eventEndDate));
+            var recursYearly = new AtomicBoolean(false);
+            event.getProperty(Property.RRULE).ifPresent(it -> {
+              if (it instanceof RRule<?> recurrenceRule) {
+                var frequency = recurrenceRule.getRecur().getFrequency();
+                var interval = recurrenceRule.getRecur().getInterval();
+                recursYearly.set(frequency == Frequency.YEARLY && interval == 1);
+              }
+            });
             while (startDate.compareTo(endDate) < 0) {
-              Summary summary = event.getSummary();
+              Summary summary = event.getSummary().orElse(null);
               gpEvents.add(CalendarEvent.newEvent(
-                  startDate, recursYearly, CalendarEvent.Type.HOLIDAY,
+                  startDate, recursYearly.get(), CalendarEvent.Type.HOLIDAY,
                   summary == null ? "" : summary.getValue(),
                   null));
               startDate = GPCalendarCalc.PLAIN.shiftDate(startDate, oneDay);
@@ -194,5 +202,24 @@ public class IcsFileImporter extends ImporterBase {
       GPLogger.log(e);
       return null;
     }
+  }
+
+  private static java.util.Date getDate(Temporal t) {
+    if (t instanceof LocalDate localDate) {
+      return DateParser.toJavaDate(localDate);
+    }
+    if (t instanceof Instant instant) {
+      return java.util.Date.from(instant);
+    }
+    if (t instanceof LocalDateTime localDateTime) {
+      return DateParser.toJavaDate(localDateTime.toLocalDate());
+    }
+    if (t instanceof ZonedDateTime zonedDateTime) {
+      return DateParser.toJavaDate(zonedDateTime.toLocalDate());
+    }
+    if (t instanceof OffsetDateTime offsetDateTime) {
+      return DateParser.toJavaDate(offsetDateTime.toLocalDate());
+    }
+    throw new IllegalArgumentException("Unsupported temporal type: " + t.getClass());
   }
 }

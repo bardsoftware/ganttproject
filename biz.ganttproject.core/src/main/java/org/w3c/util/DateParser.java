@@ -4,6 +4,11 @@
 // Please first read the full copyright statement in file COPYRIGHT.html
 package org.w3c.util;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -276,5 +281,15 @@ public class DateParser {
         test("1997");
         test(new Date());
     }
+
+  private static final DateFormat ourIsoDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+
+  public static Date toJavaDate(LocalDate localDate) {
+    try {
+      return ourIsoDateFormatter.parse(localDate.format(DateTimeFormatter.ISO_DATE));
+    } catch (ParseException e) {
+      throw new RuntimeException("Failure parsing date " + localDate + " from MS Project file", e);
+    }
+  }
 
 }
