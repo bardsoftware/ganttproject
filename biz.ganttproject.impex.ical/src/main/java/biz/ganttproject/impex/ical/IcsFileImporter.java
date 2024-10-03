@@ -46,9 +46,7 @@ import net.sourceforge.ganttproject.wizard.WizardPage;
 import org.w3c.util.DateParser;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.Collections;
@@ -155,12 +153,20 @@ public class IcsFileImporter extends ImporterBase {
    * Reads calendar events from file
    * @return a list of events if file was parsed successfully or null otherwise
    */
-  private static List<CalendarEvent> readEvents(File f) {
+  static List<CalendarEvent> readEvents(File f) {
     try {
+      return readEvents(new FileInputStream(f));
+    } catch (IOException | ParserException e) {
+      GPLogger.log(e);
+      return null;
+    }
+  }
+
+  static List<CalendarEvent> readEvents(InputStream input) throws ParserException, IOException {
       CompatibilityHints.setHintEnabled(CompatibilityHints.KEY_RELAXED_PARSING, true);
       CalendarBuilder builder = new CalendarBuilder();
       List<CalendarEvent> gpEvents = Lists.newArrayList();
-      Calendar c = builder.build(new UnfoldingReader(new FileReader(f)));
+      Calendar c = builder.build(new UnfoldingReader(new InputStreamReader(input)));
       for (CalendarComponent comp : c.getComponents()) {
         if (comp instanceof VEvent) {
           VEvent event = (VEvent) comp;
@@ -187,10 +193,11 @@ public class IcsFileImporter extends ImporterBase {
               }
             });
             while (startDate.compareTo(endDate) < 0) {
-              Summary summary = event.getSummary().orElse(null);
+              var summary = event.getSummary().map(Summary::getValue).orElse("");
+
               gpEvents.add(CalendarEvent.newEvent(
                   startDate, recursYearly.get(), CalendarEvent.Type.HOLIDAY,
-                  summary == null ? "" : summary.getValue(),
+                  summary.trim(),
                   null));
               startDate = GPCalendarCalc.PLAIN.shiftDate(startDate, oneDay);
             }
@@ -198,10 +205,7 @@ public class IcsFileImporter extends ImporterBase {
         }
       }
       return gpEvents;
-    } catch (IOException | ParserException e) {
-      GPLogger.log(e);
-      return null;
-    }
+
   }
 
   private static java.util.Date getDate(Temporal t) {
