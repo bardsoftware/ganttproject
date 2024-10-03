@@ -19,12 +19,34 @@
 package biz.ganttproject.impex.ical
 
 import biz.ganttproject.core.calendar.CalendarEvent
+import biz.ganttproject.core.time.CalendarFactory
+import biz.ganttproject.core.time.CalendarFactory.LocaleApi
+import biz.ganttproject.core.time.CalendarFactory.setLocaleApi
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.w3c.util.DateParser
+import java.text.DateFormat
+import java.util.Locale
 
 class IcsFileImporterTest {
+  @BeforeEach
+  fun setUp() {
+    object : CalendarFactory() {
+      init {
+        setLocaleApi(object : LocaleApi {
+          override fun getLocale(): Locale {
+            return Locale.US
+          }
+
+          override fun getShortDateFormat(): DateFormat {
+            return DateFormat.getDateInstance(DateFormat.SHORT, Locale.US)
+          }
+        })
+      }
+    }
+  }
   @Test
   fun `basic smoke test`() {
     val events = IcsImport.readEvents(IcsFileImporterTest::class.java.getResourceAsStream("/test.ics")!!)
