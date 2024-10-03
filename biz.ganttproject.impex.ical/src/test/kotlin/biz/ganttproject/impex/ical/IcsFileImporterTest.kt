@@ -27,7 +27,7 @@ import org.w3c.util.DateParser
 class IcsFileImporterTest {
   @Test
   fun `basic smoke test`() {
-    val events = IcsFileImporter.readEvents(IcsFileImporterTest::class.java.getResourceAsStream("/test.ics")!!)
+    val events = IcsImport.readEvents(IcsFileImporterTest::class.java.getResourceAsStream("/test.ics")!!)
     assertFalse(events.isEmpty())
     assertEquals(DateParser.parse("2023-12-07"), events[0].date)
     assertEquals("Chanukah: 1 Candle", events[0].title)
