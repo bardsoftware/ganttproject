@@ -1,0 +1,27 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//hebcal.com/NONSGML Hebcal Calendar v15.0.6//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-LOTUS-CHARSET:UTF-8
+X-PUBLISHED-TTL:PT14D
+X-WR-CALNAME:Jewish Holidays ✡️
+X-WR-CALDESC:Major Jewish holidays for the Diaspora from Hebcal.com
+X-APPLE-CALENDAR-COLOR:#800002
+BEGIN:VEVENT
+DTSTAMP:20240501T202041Z
+CATEGORIES:Holiday
+SUMMARY: Chanukah: 1 Candle
+DTSTART;VALUE=DATE:20231207
+DTEND;VALUE=DATE:20231208
+UID:hebcal-20231207-1c6fa26d
+TRANSP:TRANSPARENT
+X-MICROSOFT-CDO-BUSYSTATUS:FREE
+X-MICROSOFT-CDO-ALLDAYEVENT:TRUE
+CLASS:PUBLIC
+DESCRIPTION:Hanukkah\, the Jewish festival of rededication. Also known as 
+ the Festival of Lights\, the eight-day festival is observed by lighting th
+ e candles of a hanukkiah (menorah)\n\nhttps://hebcal.com/h/chanukah-2023?u
+ c=ical-jewish-holidays-v2
+END:VEVENT
+END:VCALENDAR

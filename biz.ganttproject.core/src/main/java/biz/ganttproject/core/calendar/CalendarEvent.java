@@ -57,6 +57,7 @@ public class CalendarEvent {
     myColor = color;
   }
 
+  public Date getDate() { return myDate; }
   public String getTitle() {
     return myTitle;
   }

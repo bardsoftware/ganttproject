@@ -27,17 +27,14 @@ import net.sf.mpxj.mspdi.MSPDIReader;
 import net.sf.mpxj.reader.ProjectReader;
 import net.sourceforge.ganttproject.*;
 import net.sourceforge.ganttproject.util.collect.Pair;
+import org.w3c.util.DateParser;
 
 import javax.xml.transform.*;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -49,13 +46,8 @@ class ProjectFileImporter {
   private final List<Pair<Level, String>> myErrors = Lists.newArrayList();
   private final Map<GanttTask, Date> myNativeTask2foreignStart = new HashMap<>();
   private boolean myPatchMspdi = true;
-  private static final DateFormat ourIsoDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
   static Date toJavaDate(LocalDate localDate) {
-    try {
-      return ourIsoDateFormatter.parse(localDate.format(DateTimeFormatter.ISO_DATE));
-    } catch (ParseException e) {
-      throw new RuntimeException("Failure parsing date " + localDate + " from MS Project file", e);
-    }
+    return DateParser.toJavaDate(localDate);
   }
 
   private static ProjectReader createReader(File file) {

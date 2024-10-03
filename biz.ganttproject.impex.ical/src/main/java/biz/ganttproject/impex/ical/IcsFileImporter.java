@@ -22,22 +22,7 @@ import biz.ganttproject.LoggerApi;
 import biz.ganttproject.app.DefaultLocalizer;
 import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.calendar.CalendarEvent;
-import biz.ganttproject.core.calendar.GPCalendarCalc;
-import biz.ganttproject.core.time.TimeDuration;
-import biz.ganttproject.core.time.impl.GPTimeUnitStack;
-import com.google.common.collect.Lists;
-import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
-import net.fortuna.ical4j.data.UnfoldingReader;
-import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.Component;
-import net.fortuna.ical4j.model.Date;
-import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.Recur;
-import net.fortuna.ical4j.model.component.VEvent;
-import net.fortuna.ical4j.model.property.RRule;
-import net.fortuna.ical4j.model.property.Summary;
-import net.fortuna.ical4j.util.CompatibilityHints;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
 import net.sourceforge.ganttproject.importer.ImporterBase;
@@ -45,9 +30,7 @@ import net.sourceforge.ganttproject.wizard.AbstractWizard;
 import net.sourceforge.ganttproject.wizard.WizardPage;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Collections;
 import java.util.List;
 
@@ -59,7 +42,7 @@ import java.util.List;
  */
 public class IcsFileImporter extends ImporterBase {
   private static final LoggerApi LOGGER = GPLogger.create("Import.Ics");
-  private static DefaultLocalizer ourLocalizer = InternationalizationKt.getRootLocalizer();
+  private static final DefaultLocalizer ourLocalizer = InternationalizationKt.getRootLocalizer();
   private final CalendarEditorPage myEditorPage;
 
   public IcsFileImporter() {
@@ -110,7 +93,7 @@ public class IcsFileImporter extends ImporterBase {
    */
   static class CalendarEditorPage implements WizardPage {
     private File myFile;
-    private JPanel myPanel = new JPanel();
+    private final JPanel myPanel = new JPanel();
     private List<CalendarEvent> myEvents;
     private void setFile(File f) {
       myFile = f;
@@ -151,48 +134,14 @@ public class IcsFileImporter extends ImporterBase {
    * Reads calendar events from file
    * @return a list of events if file was parsed successfully or null otherwise
    */
-  private static List<CalendarEvent> readEvents(File f) {
+  static List<CalendarEvent> readEvents(File f) {
     try {
-      CompatibilityHints.setHintEnabled(CompatibilityHints.KEY_RELAXED_PARSING, true);
-      CalendarBuilder builder = new CalendarBuilder();
-      List<CalendarEvent> gpEvents = Lists.newArrayList();
-      Calendar c = builder.build(new UnfoldingReader(new FileReader(f)));
-      for (Component comp : (List<Component>)c.getComponents()) {
-        if (comp instanceof VEvent) {
-          VEvent event = (VEvent) comp;
-          if (event.getStartDate() == null) {
-            LOGGER.debug("No start date found, ignoring. Event={}", new Object[] {event}, Collections.emptyMap());
-            continue;
-          }
-          Date eventStartDate = event.getStartDate().getDate();
-          if (event.getEndDate() == null) {
-            LOGGER.debug("No end date found, using start date instead. Event={}", new Object[] {event}, Collections.emptyMap());
-          }
-          Date eventEndDate = event.getEndDate() == null ? eventStartDate : event.getEndDate().getDate();
-          TimeDuration oneDay = GPTimeUnitStack.createLength(GPTimeUnitStack.DAY, 1);
-          if (eventEndDate != null) {
-            java.util.Date startDate = GPTimeUnitStack.DAY.adjustLeft(eventStartDate);
-            java.util.Date endDate = GPTimeUnitStack.DAY.adjustLeft(eventEndDate);
-            RRule recurrenceRule = (RRule) event.getProperty(Property.RRULE);
-            boolean recursYearly = false;
-            if (recurrenceRule != null) {
-              recursYearly = Recur.YEARLY.equals(recurrenceRule.getRecur().getFrequency()) && 1 == recurrenceRule.getRecur().getInterval();
-            }
-            while (startDate.compareTo(endDate) < 0) {
-              Summary summary = event.getSummary();
-              gpEvents.add(CalendarEvent.newEvent(
-                  startDate, recursYearly, CalendarEvent.Type.HOLIDAY,
-                  summary == null ? "" : summary.getValue(),
-                  null));
-              startDate = GPCalendarCalc.PLAIN.shiftDate(startDate, oneDay);
-            }
-          }
-        }
-      }
-      return gpEvents;
+      return IcsImport.readEvents(new FileInputStream(f));
     } catch (IOException | ParserException e) {
       GPLogger.log(e);
       return null;
     }
   }
+
+
 }
