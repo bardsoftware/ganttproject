@@ -170,12 +170,6 @@ mainClassName = "net.sourceforge.ganttproject.AppKt"
 application {
     applicationDefaultJvmArgs = project.ext.javaExportOptions + ["-Dorg.jooq.no-logo=true"] + (project.hasProperty("gpcloud") ? ["-Dgpcloud=${project.property("gpcloud")}"] : [])
 }
-test {
-    useJUnitPlatform()
-    testLogging {
-        exceptionFormat = 'full'
-    }
-}
 
 addPublishing(project)
 publishing {
