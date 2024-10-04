@@ -119,12 +119,12 @@ enum class CustomPropertyClass(val iD: String, val javaClass: Class<*>) {
 
 class CustomPropertyEvent {
   val type: Int
-  var definition: CustomPropertyDefinition
+  var definition: CustomPropertyDefinition? = null
     private set
   var oldValue: CustomPropertyDefinition? = null
     private set
 
-  constructor(type: Int, definition: CustomPropertyDefinition) {
+  constructor(type: Int, definition: CustomPropertyDefinition?) {
     this.type = type
     this.definition = definition
   }
