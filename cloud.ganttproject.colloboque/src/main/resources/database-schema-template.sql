@@ -17,6 +17,7 @@ CREATE TABLE TaskDates(
                           uid           VARCHAR(128) PRIMARY KEY REFERENCES TaskName,
                           start_date    DATE NOT NULL,
                           duration_days INT NOT NULL DEFAULT 1,
+                          end_date      DATE,
                           earliest_start_date DATE
 );
 
@@ -42,7 +43,8 @@ CREATE TABLE TaskTextProperties(
 CREATE TABLE TaskCostProperties(
                                    uid VARCHAR(128) REFERENCES TaskName PRIMARY KEY,
                                    is_cost_calculated BOOLEAN,
-                                   cost_manual_value NUMERIC
+                                   cost_manual_value NUMERIC,
+                                   cost NUMERIC
 );
 
 CREATE TABLE TaskClassProperties(
@@ -58,10 +60,12 @@ SELECT TaskName.uid,
        num,
        name,
        start_date,
+       end_date,
        duration_days AS duration,
        earliest_start_date,
        is_cost_calculated,
        cost_manual_value,
+       cost,
        is_milestone,
        is_project_task,
        MAX(TIP.prop_value) FILTER (WHERE TIP.prop_name = 'completion') AS completion,
