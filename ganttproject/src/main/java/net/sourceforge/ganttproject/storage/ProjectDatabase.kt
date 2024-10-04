@@ -99,6 +99,7 @@ interface ProjectDatabase {
     fun setProjectTask(oldValue: Boolean, newValue: Boolean)
     fun setShape(oldValue: ShapePaint?, newValue: ShapePaint?)
     fun setStart(oldValue: GanttCalendar, newValue: GanttCalendar)
+    fun setEnd(oldValue: GanttCalendar?, newValue: GanttCalendar)
     fun setWebLink(oldValue: String?, newValue: String?)
 
     fun interface Factory {

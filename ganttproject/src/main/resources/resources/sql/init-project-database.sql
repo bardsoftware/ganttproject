@@ -36,8 +36,8 @@ create table if not exists TaskDependency (
     hardness        varchar     not null,
 
     primary key (dependee_uid, dependant_uid),
---     foreign key (dependee_uid)  references Task(uid),
---     foreign key (dependant_uid) references Task(uid),
+    foreign key (dependee_uid)  references Task(uid),
+    foreign key (dependant_uid) references Task(uid),
     check (dependee_uid <> dependant_uid)
 );
 

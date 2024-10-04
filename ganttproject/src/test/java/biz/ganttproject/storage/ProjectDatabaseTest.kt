@@ -114,6 +114,7 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].isMilestone, false)
     assertEquals(tasks[0].isProjectTask, true)
     assertEquals(tasks[0].startDate.toIsoNoHours(), task.start.toXMLString())
+    assertEquals(tasks[0].endDate.toIsoNoHours(), task.end.toXMLString())
     assertEquals(tasks[0].duration, 10)
     assertEquals(tasks[0].completion, 20)
     assertEquals(tasks[0].earliestStartDate.toIsoNoHours(), task.third.toXMLString())
@@ -121,6 +122,7 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].webLink, "love-testing.com")
     assertEquals(tasks[0].costManualValue.toDouble(), 666.7)
     assertEquals(tasks[0].isCostCalculated, true)
+    assertEquals(tasks[0].cost, BigDecimal.valueOf(0.0).setScale(2))
     assertEquals(tasks[0].notes, "abacaba")
 
     val txns = projectDatabase.fetchTransactions(limit = 10)
@@ -221,6 +223,7 @@ class ProjectDatabaseTest {
     projectDatabase.init()
     val startDateBefore = CalendarFactory.createGanttCalendar(2022, 4, 3)
     val startDateAfter = CalendarFactory.createGanttCalendar(2025, 7, 13)
+    val endDateAfter = CalendarFactory.createGanttCalendar(2025, 7, 14)
     val task = taskManager
       .newTaskBuilder()
       .withUid("someuid")
@@ -241,6 +244,7 @@ class ProjectDatabaseTest {
     assertEquals(tasks[0].num, 1)
     assertEquals(tasks[0].name, "Name2")
     assertEquals(tasks[0].startDate.toIsoNoHours(), startDateAfter.toXMLString())
+    assertEquals(tasks[0].endDate.toIsoNoHours(), endDateAfter.toXMLString())
     assertNotEquals(tasks[0].startDate.toIsoNoHours(), startDateBefore.toXMLString())
 
     val txns = projectDatabase.fetchTransactions(limit = 10)
@@ -418,6 +422,7 @@ class ProjectDatabaseTest {
     when (val stmt = txns[0].colloboqueOperations[0]) {
       is OperationDto.UpdateOperationDto -> {
         assert(stmt.newValues.containsKey("duration")) { "Statement dto is: $stmt" }
+        assert(stmt.newValues.containsKey("end_date")) { "Statement dto is: $stmt" }
       }
       else -> {
         fail("Wrong type of operation. Operation dto: $stmt")
@@ -470,6 +475,7 @@ class ProjectDatabaseTest {
         assert(stmt.newValues.containsKey("completion") && stmt.newValues["completion"] == "50")
         assert(stmt.newValues.containsKey("is_cost_calculated") && stmt.newValues["is_cost_calculated"] == "false")
         assert(stmt.newValues.containsKey("cost_manual_value") && stmt.newValues["cost_manual_value"] == "10")
+        assert(stmt.newValues.containsKey("cost") && stmt.newValues["cost"] == "10")
         assertFalse(stmt.newValues.containsKey("expand"))
         assertFalse(stmt.newValues.containsKey("start_date"))
         assertFalse(stmt.newValues.containsKey("expiration"))
