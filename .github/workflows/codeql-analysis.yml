@@ -38,7 +38,7 @@ jobs:
     - uses: actions/setup-java@v3
       with:
         distribution: 'liberica'
-        java-version: 17.0.5
+        java-version: 21.0.4
         java-package: jdk+fx
         cache: 'gradle'
     # Initializes the CodeQL tools for scanning.
