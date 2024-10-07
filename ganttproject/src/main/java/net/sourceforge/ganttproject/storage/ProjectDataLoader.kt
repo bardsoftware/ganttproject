@@ -88,6 +88,7 @@ fun buildInsertTaskDto(task: Task): OperationDto.InsertOperationDto {
       Tables.TASK.IS_MILESTONE.name to task.isLegacyMilestone.toString(),
       Tables.TASK.IS_PROJECT_TASK.name to task.isProjectTask.toString(),
       Tables.TASK.START_DATE.name to task.start.toLocalDate().toString(),
+      Tables.TASK.END_DATE.name to task.end.toLocalDate().toString(),
       Tables.TASK.DURATION.name to task.duration.length.toString(),
       Tables.TASK.COMPLETION.name to task.completionPercentage.toString(),
       Tables.TASK.EARLIEST_START_DATE.name to (task.third?.toLocalDate()?.toString()),
@@ -95,6 +96,7 @@ fun buildInsertTaskDto(task: Task): OperationDto.InsertOperationDto {
       Tables.TASK.WEB_LINK.name to task.externalizedWebLink(),
       Tables.TASK.COST_MANUAL_VALUE.name to (costManualValue?.toString()),
       Tables.TASK.IS_COST_CALCULATED.name to (isCostCalculated?.toString()),
+      Tables.TASK.COST.name to task.cost.value?.toString(),
       Tables.TASK.NOTES.name to task.externalizedNotes(),
     )
   )
