@@ -223,6 +223,9 @@ internal open class MutatorImpl(
           if (taskImpl.duration != myDurationChange.oldValue) {
             taskUpdateBuilder.setDuration(myDurationChange.oldValue, taskImpl.duration)
           }
+          if (taskImpl.end != myEndChange.oldValue) {
+            taskUpdateBuilder.setEnd(myEndChange.oldValue, taskImpl.end)
+          }
         }
       }
 

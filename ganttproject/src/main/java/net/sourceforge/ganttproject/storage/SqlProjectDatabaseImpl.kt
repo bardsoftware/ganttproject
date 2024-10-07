@@ -489,6 +489,10 @@ class SqlTaskUpdateBuilder(private val task: Task,
   override fun setStart(oldValue: GanttCalendar, newValue: GanttCalendar) =
     appendUpdate(TASK.START_DATE, oldValue.toLocalDate(), newValue.toLocalDate())
 
+  override fun setEnd(oldValue: GanttCalendar?, newValue: GanttCalendar) {
+    appendUpdate(TASK.END_DATE, oldValue?.toLocalDate(), newValue.toLocalDate())
+  }
+
   override fun setDuration(oldValue: TimeDuration, newValue: TimeDuration) =
     appendUpdate(TASK.DURATION, oldValue.length, newValue.length)
 
@@ -504,6 +508,7 @@ class SqlTaskUpdateBuilder(private val task: Task,
   override fun setCost(oldValue: Task.Cost, newValue: Task.Cost) {
     appendUpdate(TASK.IS_COST_CALCULATED, oldValue.isCalculated, newValue.isCalculated)
     appendUpdate(TASK.COST_MANUAL_VALUE, oldValue.manualValue, newValue.manualValue)
+    appendUpdate(TASK.COST, oldValue.value, newValue.value)
   }
 
   override fun setCustomProperties(

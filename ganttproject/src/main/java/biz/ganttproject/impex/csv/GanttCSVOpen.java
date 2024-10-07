@@ -107,12 +107,6 @@ public class GanttCSVOpen {
     return new TaskRecords(taskManager, resourceManager, timeUnitStack);
   }
 
-  protected static void createCustomProperties(Collection<String> customFields, CustomPropertyManager customPropertyManager) {
-    for (String name : customFields) {
-      customPropertyManager.createDefinition(name, CustomPropertyClass.TEXT.getID(), name, null);
-    }
-  }
-
   private static RecordGroup createResourceRecordGroup(HumanResourceManager resourceManager, RoleManager roleManager) {
     return resourceManager == null ? null : new ResourceRecords(resourceManager, roleManager);
   }

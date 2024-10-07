@@ -38,6 +38,7 @@ import com.google.common.xml.XmlEscapers
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager
 import net.sourceforge.ganttproject.task.CostStub
+import net.sourceforge.ganttproject.task.CustomColumnsManager
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskView
@@ -59,13 +60,15 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
   private val mapXmlGantt = mutableMapOf<XmlTask, Task>()
 
   fun loadTaskCustomPropertyDefinitions(xmlProject: XmlProject) {
+    val bufferCustomPropertyManager = CustomColumnsManager()
     xmlProject.tasks.taskproperties?.filter { it.type == "custom" }?.forEach { xmlTaskProperty ->
-      val def = taskManager.customPropertyManager.createDefinition(
+      val def = bufferCustomPropertyManager.createDefinition(
         xmlTaskProperty.id, xmlTaskProperty.valuetype, xmlTaskProperty.name, xmlTaskProperty.defaultvalue)
       xmlTaskProperty.simpleSelect?.let {
         def.calculationMethod = SimpleSelect(propertyId = xmlTaskProperty.id, selectExpression = StringEscapeUtils.unescapeXml(it.select), resultClass = def.propertyClass.javaClass)
       }
     }
+    taskManager.customPropertyManager.importData(bufferCustomPropertyManager)
   }
 
   fun loadTask(parent: XmlTask?, child: XmlTask): Task {

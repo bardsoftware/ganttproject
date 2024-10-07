@@ -32,14 +32,17 @@ class CustomColumnsManager : CustomPropertyManager {
   private val listeners = mutableListOf<CustomPropertyListener>()
   private val mapIdCustomColum = mutableMapOf<String, CustomColumn>()
   private var nextId = 0
+  private var isImporting = false
 
-  private fun addNewCustomColumn(customColumn: CustomColumn) {
+  private fun addNewCustomColumn(customColumn: CustomColumn, fireChange: Boolean) {
     if (mapIdCustomColum[customColumn.id] != null) {
       throw CustomColumnsException(CustomColumnsException.ALREADY_EXIST, "Column with ID=${customColumn.id} is already registered")
     }
     mapIdCustomColum[customColumn.id] = customColumn
-    val event = CustomPropertyEvent(CustomPropertyEvent.EVENT_ADD, customColumn)
-    fireCustomColumnsChange(event)
+    if (fireChange) {
+      val event = CustomPropertyEvent(CustomPropertyEvent.EVENT_ADD, customColumn)
+      fireCustomColumnsChange(event)
+    }
   }
 
   override fun addListener(listener: CustomPropertyListener) {
@@ -56,7 +59,7 @@ class CustomColumnsManager : CustomPropertyManager {
     val stub = decodeTypeAndDefaultValue(typeAsString, defaultValueAsString)
     val result = CustomColumn(this, name, stub.propertyClass, stub.defaultValue)
     result.id = id
-    addNewCustomColumn(result)
+    addNewCustomColumn(result, true)
     return result
   }
 
@@ -64,24 +67,32 @@ class CustomColumnsManager : CustomPropertyManager {
     val stub = create(propertyClass, defValue)
     val result = CustomColumn(this, colName, stub.propertyClass, stub.defaultValue)
     result.id = createId()
-    addNewCustomColumn(result)
+    addNewCustomColumn(result, true)
     return result
   }
 
-  override fun importData(source: CustomPropertyManager): Map<CustomPropertyDefinition, CustomPropertyDefinition> {
-    val result = mutableMapOf<CustomPropertyDefinition, CustomPropertyDefinition>()
-    for (thatColumn in source.definitions) {
-      var thisColumn = findByName(thatColumn.name)
-      if (thisColumn == null || thisColumn.propertyClass != thatColumn.propertyClass) {
-        thisColumn = CustomColumn(this, thatColumn.name, thatColumn.propertyClass, thatColumn.defaultValue)
-        thisColumn.id = createId()
-        thisColumn.attributes.putAll(thatColumn.attributes)
-        addNewCustomColumn(thisColumn)
+  override fun importData(source: CustomPropertyManager): Map<CustomPropertyDefinition, CustomPropertyDefinition> =
+    try {
+      isImporting = true
+      val result = mutableMapOf<CustomPropertyDefinition, CustomPropertyDefinition>()
+      for (thatColumn in source.definitions) {
+        var thisColumn = findByName(thatColumn.name)
+        if (thisColumn == null || thisColumn.propertyClass != thatColumn.propertyClass) {
+          thisColumn = CustomColumn(this, thatColumn.name, thatColumn.propertyClass, thatColumn.defaultValue)
+          thisColumn.id = findById(thatColumn.id)?.let { createId() } ?: thatColumn.id
+          thisColumn.attributes.putAll(thatColumn.attributes)
+          thisColumn.calculationMethod = thatColumn.calculationMethod
+          addNewCustomColumn(thisColumn, false)
+        }
+        result[thatColumn] = thisColumn
       }
-      result[thatColumn] = thisColumn
+      result
+    } finally {
+      isImporting = false
+      val event = CustomPropertyEvent(CustomPropertyEvent.EVENT_REBUILD, null)
+      fireCustomColumnsChange(event)
     }
-    return result
-  }
+
 
   override fun getCustomPropertyDefinition(id: String): CustomPropertyDefinition? {
     return mapIdCustomColum[id]
@@ -99,21 +110,26 @@ class CustomColumnsManager : CustomPropertyManager {
   }
 
   private fun fireCustomColumnsChange(event: CustomPropertyEvent) {
-    listeners.forEach {
-      try {
-        it.customPropertyChange(event)
-      } catch (ex: Exception) {
-        LOG.error("Failure when processing custom columns event", exception = ex)
+    if (!isImporting) {
+      listeners.forEach {
+        try {
+          it.customPropertyChange(event)
+        } catch (ex: Exception) {
+          LOG.error("Failure when processing custom columns event", exception = ex)
+        }
       }
     }
   }
 
   fun fireDefinitionChanged(event: Int, def: CustomColumn, oldDef: CustomColumn) {
-    val e = CustomPropertyEvent(event, def, oldDef)
-    fireCustomColumnsChange(e)
+    if (!isImporting) {
+      val e = CustomPropertyEvent(event, def, oldDef)
+      fireCustomColumnsChange(e)
+    }
   }
 
   private fun findByName(name: String) = mapIdCustomColum.values.find { it.name == name }
+  private fun findById(id: String) = mapIdCustomColum.values.find { it.id == id }
   private fun createId(): String {
     while (true) {
       val id = "$ID_PREFIX${nextId++}"

@@ -47,12 +47,14 @@ fun buildInsertTaskQuery(dsl: DSLContext, task: Task): Insert<TaskRecord> {
     .set(Tables.TASK.IS_MILESTONE, task.isLegacyMilestone)
     .set(Tables.TASK.IS_PROJECT_TASK, task.isProjectTask)
     .set(Tables.TASK.START_DATE, task.start.toLocalDate())
+    .set(Tables.TASK.END_DATE, task.end.toLocalDate())
     .set(Tables.TASK.DURATION, task.duration.length)
     .set(Tables.TASK.COMPLETION, task.completionPercentage)
     .set(Tables.TASK.EARLIEST_START_DATE, task.third?.toLocalDate())
     .set(Tables.TASK.PRIORITY, task.priority.persistentValue)
     .set(Tables.TASK.WEB_LINK, task.externalizedWebLink())
     .set(Tables.TASK.COST_MANUAL_VALUE, costManualValue)
+    .set(Tables.TASK.COST, task.cost.value)
     .set(Tables.TASK.IS_COST_CALCULATED, isCostCalculated)
     .set(Tables.TASK.NOTES, task.externalizedNotes())
   val customProps = mutableMapOf<Any, Any>()
@@ -86,6 +88,7 @@ fun buildInsertTaskDto(task: Task): OperationDto.InsertOperationDto {
       Tables.TASK.IS_MILESTONE.name to task.isLegacyMilestone.toString(),
       Tables.TASK.IS_PROJECT_TASK.name to task.isProjectTask.toString(),
       Tables.TASK.START_DATE.name to task.start.toLocalDate().toString(),
+      Tables.TASK.END_DATE.name to task.end.toLocalDate().toString(),
       Tables.TASK.DURATION.name to task.duration.length.toString(),
       Tables.TASK.COMPLETION.name to task.completionPercentage.toString(),
       Tables.TASK.EARLIEST_START_DATE.name to (task.third?.toLocalDate()?.toString()),
@@ -93,6 +96,7 @@ fun buildInsertTaskDto(task: Task): OperationDto.InsertOperationDto {
       Tables.TASK.WEB_LINK.name to task.externalizedWebLink(),
       Tables.TASK.COST_MANUAL_VALUE.name to (costManualValue?.toString()),
       Tables.TASK.IS_COST_CALCULATED.name to (isCostCalculated?.toString()),
+      Tables.TASK.COST.name to task.cost.value?.toString(),
       Tables.TASK.NOTES.name to task.externalizedNotes(),
     )
   )
