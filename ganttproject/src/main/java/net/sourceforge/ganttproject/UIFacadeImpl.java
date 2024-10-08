@@ -263,7 +263,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public Dialog createDialog(JComponent content, Action[] buttonActions, String title) {
-    //return myDialogBuilder.createDialog(content, buttonActions, title);
+    //return new DialogBuilder(null).createDialog(content, buttonActions, title);
     return createDialogFx(content, buttonActions, title);
   }
 

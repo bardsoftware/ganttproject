@@ -94,7 +94,7 @@ class AppearanceManager(private val appFontOption: DefaultFontOption) {
   }
 
   private fun buildStylesheet() = StringBuilder().let { css ->
-    css.append(""".root:${USER_CUSTOM.pseudoClassName} * {
+    css.append(""".root:${USER_CUSTOM.pseudoClassName}  {
       |${customCSSDeclarations.map { "\t ${it.key}: ${it.value};" }.joinToString(separator = "\n")}
       |}
     """.trimMargin())

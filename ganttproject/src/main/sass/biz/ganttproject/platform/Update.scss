@@ -35,12 +35,19 @@
   .content-pane {
     -fx-padding: 20 20 20 20;
 
+    .label-updates {
+      -fx-padding: 2ex 0 0.3ex 0;
+      -fx-font-size: 150%;
+      -fx-border-width: 0 0 2 0;
+      -fx-border-color: $gp-light-gray;
+      -fx-border-insets: 0 0 20 0;
+    }
+
     .help {
       -fx-padding: 0 0 2ex 0;
     }
 
     .scroll-pane {
-      -fx-padding: 20 1em;
       -fx-border-color: transparent;
       -fx-background-color: $gp-control-background;
       & > .viewport {
@@ -54,41 +61,42 @@
         @include scroll-bar(15);
       }
 
-      .body {
+      .scroll-body {
         -fx-background-color: transparent;
 
         .major-update {
+          -fx-padding: 40 0;
           .title {
-            -fx-fill: $gp-dark-gray;
-            -fx-font-size: 140%;
+            -fx-font-weight: bold;
+            -fx-font-size: 125%;
           }
           .subtitle {
-            -fx-fill: $gp-medium-gray;
-            -fx-font-size: 100%;
+            -fx-text-fill: $gp-medium-gray;
+            -fx-font-size: 80%;
             -fx-font-weight: normal;
           }
           .par {
             -fx-fill: $gp-medium-gray;
             -fx-padding: 2ex 0 0.5ex 0;
+            -mdfx-font-color: $gp-medium-gray;
           }
         }
 
         .minor-update {
           -fx-background-color: transparent;
           .title {
-            -fx-fill: $gp-dark-gray;
-            -fx-font-size: 110%;
+            -fx-font-weight: bold;
+            -fx-font-size: 125%;
           }
-
           .subtitle {
-            -fx-fill: $gp-medium-gray;
+            -fx-text-fill: $gp-medium-gray;
             -fx-font-size: 80%;
             -fx-font-weight: normal;
           }
 
           .par {
             -fx-fill: $gp-medium-gray;
-            -fx-padding: 0.5ex 0 0.5ex 0;
+            -fx-padding: 2ex 0 0.5ex 0;
           }
 
           .progress {
@@ -100,14 +108,6 @@
       }
     }
 
-  }
-
-  Label.no-updates {
-    -fx-font-size: 200%;
-
-    .glyph-icon {
-      -glyph-size: 40px;
-    }
   }
 
   Label.alert-error {

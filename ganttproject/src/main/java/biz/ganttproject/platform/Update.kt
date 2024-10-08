@@ -31,6 +31,7 @@ import biz.ganttproject.lib.fx.createToggleSwitch
 import biz.ganttproject.lib.fx.openInBrowser
 import biz.ganttproject.lib.fx.vbox
 import biz.ganttproject.platform.PgpUtil.verifyFile
+import biz.ganttproject.walkTree
 import com.bardsoftware.eclipsito.update.UpdateIntegrityChecker
 import com.bardsoftware.eclipsito.update.UpdateMetadata
 import com.bardsoftware.eclipsito.update.UpdateProgressMonitor
@@ -44,8 +45,10 @@ import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Insets
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.*
 import javafx.scene.layout.*
+import javafx.stage.FileChooser
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.UIFacade
 import org.controlsfx.control.HyperlinkLabel
@@ -105,10 +108,10 @@ fun updatesAvailableDialog(updates: List<UpdateMetadata>, visibleUpdates: List<U
     }
   }
   dialogController?.let {
-    dlg.addContent(it)
+    dlg.addContent(it, withSkipOption = false)
   } ?: dialog(
     title = RootLocalizer.formatText("platform.update.hasUpdates.title"),
-    contentBuilder = dlg::addContent
+    contentBuilder = { dlg.addContent(it, withSkipOption = true) },
   )
 }
 
@@ -147,19 +150,25 @@ internal class UpdateDialog(
 
     // The upper part of the dialog which shows the running version number and a toggle to switch
     // the update checking on and off.
-    val props = createGridPane(bean).apply {
-      if (this@UpdateDialog.majorUpdate == null) {
-        add(
-          Label(
-            if (this@UpdateDialog.hasUpdates) ourLocalizer.formatText("availableUpdates")
-            else ourLocalizer.formatText("noUpdates.title")
-          ).also {
-            GridPane.setMargin(it, Insets(30.0, 0.0, 5.0, 0.0))
-          },
-          0, 3)
-      }
-    }
+    val props = createGridPane(bean)
     bodyBuilder.add(props)
+    if (this@UpdateDialog.majorUpdate == null) {
+      bodyBuilder.add(
+        HBox().apply {
+          children.add(Label().also {
+            //GridPane.setMargin(it, Insets(40.0, 0.0, 5.0, 0.0))
+            if (this@UpdateDialog.hasUpdates) {
+              it.text = ourLocalizer.formatText("availableUpdates")
+              it.styleClass.add("availableUpdates")
+            } else {
+              it.text = ourLocalizer.formatText("noUpdates.title")
+            }
+          })
+          styleClass.add("label-updates")
+        }
+      )
+    }
+
 
     if (this.hasUpdates) {
 
@@ -194,7 +203,7 @@ internal class UpdateDialog(
       } ?: minorUpdatesUi
 
       bodyBuilder.add(ScrollPane(wrapperPane.also {
-        it.styleClass.add("body")
+        it.styleClass.add("scroll-body")
       }).also {
         it.isFitToWidth = true
         it.hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
@@ -204,7 +213,7 @@ internal class UpdateDialog(
     return bodyBuilder.vbox
   }
 
-  fun addContent(dialogApi: DialogController) {
+  fun addContent(dialogApi: DialogController, withSkipOption: Boolean) {
     val installedVersion = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "2900"
     val bean = PlatformBean(true, installedVersion)
     this.dialogApi = dialogApi
@@ -250,22 +259,35 @@ internal class UpdateDialog(
         }
       }
     }
-    dialogApi.setupButton(ButtonType.CLOSE) { btn ->
-      ButtonBar.setButtonUniformSize(btn, false)
-      btn.maxWidth = Double.MAX_VALUE
-      btn.styleClass.add("btn")
-      btn.text = ourLocalizer.formatText("button.close_skip")
-      btn.addEventFilter(ActionEvent.ACTION) {
-        UpdateOptions.latestShownVersion.value = this.updates.first().version
-        dialogApi.hide()
-      }
-      downloadCompleted.addListener { _, _, newValue ->
-        if (newValue) {
-          Platform.runLater {
-            btn.text = RootLocalizer.formatText("close")
-            dialogApi.resize()
+    if (withSkipOption) {
+      dialogApi.setupButton(ButtonType.CLOSE) { btn ->
+        ButtonBar.setButtonUniformSize(btn, false)
+        btn.maxWidth = Double.MAX_VALUE
+        btn.styleClass.add("btn")
+        btn.text = ourLocalizer.formatText("button.close_skip")
+        btn.addEventFilter(ActionEvent.ACTION) {
+          UpdateOptions.latestShownVersion.value = this.updates.first().version
+          dialogApi.hide()
+        }
+        downloadCompleted.addListener { _, _, newValue ->
+          if (newValue) {
+            Platform.runLater {
+              btn.text = RootLocalizer.formatText("close")
+              dialogApi.resize()
+            }
           }
         }
+      }
+    }
+    dialogApi.setupButton(ButtonType("ZIP")) { btn ->
+      ButtonBar.setButtonUniformSize(btn, false)
+      btn.maxWidth = Double.MAX_VALUE
+      btn.text = "Install from ZIP"
+      btn.styleClass.add("btn")
+      btn.addEventFilter(ActionEvent.ACTION) {
+        val fileChooser = FileChooser();
+        fileChooser.title = "Choose a ZIP file";
+        fileChooser.showOpenDialog(null);
       }
     }
     dialogApi.setContent(this.createPane(bean))
@@ -414,14 +436,21 @@ private class UpdateComponentUi(update: UpdateMetadata) {
  * User interface for the major update record.
  */
 private class MajorUpdateUi(update: UpdateMetadata, hasMinorUpdates: Boolean, private val onShowMinorUpdates: ()->Unit) {
-  val title: Label = Label(ourLocalizer.formatText("majorUpdate.title", update.version)).also { l ->
-    l.styleClass.add("title",)
+  val title = Label(ourLocalizer.formatText("majorUpdate.title", update.version)).apply {
+    styleClass.add("title")
   }
   val subtitle = Label(ourLocalizer.formatText("majorUpdate.subtitle", update.version)).apply {
-    styleClass.add("subtitle")
+    styleClass.setAll("subtitle")
   }
-  val text: MarkdownView = MarkdownView(ourLocalizer.formatText("majorUpdate.description", update.description)).also { l ->
+  val text: MarkdownView = MarkdownView().also { l ->
+    l.stylesheets.add("/biz/ganttproject/app/mdfx.css")
     l.styleClass.add("par")
+    l.mdString = ourLocalizer.formatText("majorUpdate.description", update.description)
+    l.children.forEach {
+      if (it is Parent) {
+        it.walkTree { println(it.styleClass) }
+      }
+    }
   }
   val btnMinorUpdates = Button(ourLocalizer.formatText("majorUpdate.showBugfixUpdates")).also {
     it.styleClass.addAll("btn", "btn-attention", "secondary")
@@ -435,7 +464,7 @@ private class MajorUpdateUi(update: UpdateMetadata, hasMinorUpdates: Boolean, pr
   }
   val component = vbox {
     addClasses("major-update")
-    addStylesheets("/biz/ganttproject/app/Dialog.css")
+    addStylesheets("/biz/ganttproject/platform/Update.css")
     add(title)
     add(subtitle)
     add(text)

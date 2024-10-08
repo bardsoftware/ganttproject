@@ -6,47 +6,62 @@ $mdfx-bg-color-1: #ccc;
 $mdfx-bg-color-2: #ddd;
 $mdfx-bg-color-3: #eee;
 
+* {
+  -fx-font-family: "DejaVu Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  .markdown-italic {
+    -fx-font-style: italic;
+  }
+  .markdown-bold {
+    -fx-font-weight: bold;
+  }
+}
+
 .markdown-text-bold {
   -fx-font-weight: bold;
 }
 .markdown-text {
-  -fx-font-size: 14;
-  -fx-fill: $mdfx-font-color;
+//  -fx-font-size: 14;
+  //-fx-fill: $mdfx-font-color;
 }
 
 .markdown-normal-flow {
+  -fx-font-size: normal;
   -fx-line-spacing: 4;
 }
 
 .markdown-heading .markdown-text {
   /*-fx-line-spacing: 100;*/
-  -fx-fill: $mdfx-font-color;
+//  -fx-fill: $mdfx-font-color;
 }
-.markdown-heading-1 { -fx-padding: 14 0 14 0;}
-.markdown-heading-2 { -fx-padding: 10 0 10 0;}
+.markdown-heading-1 {
+  -fx-padding: 0 0 0.5ex 0;
+}
+.markdown-heading-2 {
+  -fx-padding: 0 0 0.4ex 0;
+}
 .markdown-heading-3 { -fx-padding: 8 0 8 0; }
 .markdown-heading-4 { -fx-padding: 6 0 6 0; }
 .markdown-heading-5 { -fx-padding: 4 0 4 0; }
 
 .markdown-heading-1 .markdown-text {
-  -fx-font-size: 26;
+  -fx-font-size: 125%;
 }
 
 .markdown-heading-2 .markdown-text {
-  -fx-font-size: 24;
+  -fx-font-size: 120%;
 }
 
 
 .markdown-heading-3 .markdown-text {
-  -fx-font-size: 22;
+  -fx-font-size: 115%;
 }
 
 .markdown-heading-4 .markdown-text {
-  -fx-font-size: 20;
+  -fx-font-size: 110%;
 }
 
 .markdown-heading-5 .markdown-text {
-  -fx-font-size: 18;
+  -fx-font-size: 105%;
 }
 
 .markdown-link {
@@ -56,10 +71,8 @@ $mdfx-bg-color-3: #eee;
   -fx-underline: true;
 }
 
-
-
 .markdown-paragraph-list {
-  -fx-spacing: 14;
+  -fx-spacing: 8;
 }
 .markdown-listitem-dot {
   -fx-font-size: 14;

@@ -29,6 +29,7 @@ import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.Labeled
+import javafx.scene.control.ScrollPane
 import javafx.scene.layout.BorderPane
 import javafx.scene.paint.Color
 import javafx.stage.Window
@@ -279,7 +280,15 @@ fun Node.printCss() {
 fun Parent.walkTree(code: (Node)->Unit) {
   code(this)
   childrenUnmodifiable.forEach {
-    if (it is Parent) it.walkTree(code) else code(this)
+    when {
+      it is ScrollPane -> it.content.let {
+        if (it is Parent) {
+          it.walkTree(code)
+        }
+      }
+      it is Parent -> it.walkTree(code)
+      else -> code(this)
+    }
   }
 }
 
