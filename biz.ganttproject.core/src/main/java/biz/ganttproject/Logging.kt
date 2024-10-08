@@ -57,5 +57,6 @@ class LoggerImpl(name: String) : LoggerApi<Logger> {
   }
 
   override fun delegate() = delegate
-
 }
+
+fun createLogger(name: String): LoggerApi<Logger> = LoggerImpl(name)

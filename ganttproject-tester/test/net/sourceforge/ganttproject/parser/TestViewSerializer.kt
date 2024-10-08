@@ -26,7 +26,7 @@ import biz.ganttproject.lib.fx.BuiltinColumns
 import biz.ganttproject.lib.fx.ColumnListImpl
 import biz.ganttproject.lib.fx.copyOf
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager
-import net.sourceforge.ganttproject.task.CustomColumnsManager
+import biz.ganttproject.customproperty.CustomColumnsManager
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

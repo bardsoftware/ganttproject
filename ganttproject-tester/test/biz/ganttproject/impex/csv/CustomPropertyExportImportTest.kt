@@ -26,7 +26,7 @@ import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.customproperty.CustomPropertyClass
 import junit.framework.TestCase
 import net.sourceforge.ganttproject.language.GanttLanguage
-import net.sourceforge.ganttproject.task.CustomColumnsManager
+import biz.ganttproject.customproperty.CustomColumnsManager
 import biz.ganttproject.customproperty.CustomColumnsValues
 import org.apache.commons.csv.CSVFormat
 import org.w3c.util.DateParser

@@ -18,6 +18,7 @@
  */
 package biz.ganttproject.customproperty
 
+import java.lang.Exception
 import java.util.*
 
 /**
@@ -203,4 +204,30 @@ interface CustomPropertyManager {
   fun reset()
 }
 
+/**
+ */
+class CustomColumnsException : Exception {
+  /**
+   * Exception type.
+   */
+  private var type = -1
+
+  constructor(type: Int, message: String?) : super(message) {
+    this.type = type
+  }
+
+  constructor(cause: Throwable?) : super(cause)
+
+  fun getType(): Int {
+    return type
+  }
+
+  companion object {
+    const val ALREADY_EXIST: Int = 0
+
+    const val DO_NOT_EXIST: Int = 1
+
+    const val CLASS_MISMATCH: Int = 2
+  }
+}
 

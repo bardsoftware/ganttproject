@@ -38,7 +38,7 @@ import com.google.common.xml.XmlEscapers
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager
 import net.sourceforge.ganttproject.task.CostStub
-import net.sourceforge.ganttproject.task.CustomColumnsManager
+import biz.ganttproject.customproperty.CustomColumnsManager
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskView

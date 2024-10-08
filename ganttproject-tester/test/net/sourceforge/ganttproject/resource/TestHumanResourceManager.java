@@ -19,7 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.resource;
 
 import junit.framework.TestCase;
-import net.sourceforge.ganttproject.task.CustomColumnsManager;
+import biz.ganttproject.customproperty.CustomColumnsManager;
 
 public class TestHumanResourceManager extends TestCase {
   public void testUpResource() {

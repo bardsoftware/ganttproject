@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.LoggerApi;
 import biz.ganttproject.LoggerImpl;
+import biz.ganttproject.LoggingKt;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -116,9 +117,7 @@ public class GPLogger {
   }
 
   public static LoggerApi<org.slf4j.Logger> create(String name) {
-    var result = new LoggerImpl(name);
-    //getLogger(name); // To initialize handlers
-    return result;
+    return LoggingKt.createLogger(name);
   }
 
   public static Logger getLogger(String name) {

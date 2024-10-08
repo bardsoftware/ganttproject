@@ -21,7 +21,7 @@ package net.sourceforge.ganttproject.customProperty
 import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.customproperty.CustomPropertyEvent
 import biz.ganttproject.customproperty.CustomPropertyListener
-import net.sourceforge.ganttproject.task.CustomColumnsManager
+import biz.ganttproject.customproperty.CustomColumnsManager
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

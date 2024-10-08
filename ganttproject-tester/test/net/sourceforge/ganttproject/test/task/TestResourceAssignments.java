@@ -7,6 +7,7 @@ import biz.ganttproject.core.option.ColorOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
+import biz.ganttproject.customproperty.CustomColumnsManager;
 import junit.framework.TestCase;
 import net.sourceforge.ganttproject.gui.NotificationManager;
 import net.sourceforge.ganttproject.resource.HumanResource;

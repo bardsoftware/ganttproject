@@ -5,7 +5,7 @@ import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.lib.fx.BuiltinColumns
 import biz.ganttproject.lib.fx.ColumnListImpl
 import biz.ganttproject.lib.fx.copyOf
-import net.sourceforge.ganttproject.task.CustomColumnsManager
+import biz.ganttproject.customproperty.CustomColumnsManager
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

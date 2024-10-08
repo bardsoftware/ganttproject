@@ -1,7 +1,7 @@
 package net.sourceforge.ganttproject.resource;
 
 import net.sourceforge.ganttproject.resource.HumanResourceMerger.MergeResourcesOption;
-import net.sourceforge.ganttproject.task.CustomColumnsManager;
+import biz.ganttproject.customproperty.CustomColumnsManager;
 import junit.framework.TestCase;
 
 import java.util.Collections;

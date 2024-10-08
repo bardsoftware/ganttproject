@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject.customProperty
 
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.customproperty.*
-import net.sourceforge.ganttproject.task.CustomColumnsManager
+import biz.ganttproject.customproperty.CustomColumnsManager
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
