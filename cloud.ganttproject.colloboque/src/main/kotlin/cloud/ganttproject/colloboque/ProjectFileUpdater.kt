@@ -20,6 +20,7 @@ package cloud.ganttproject.colloboque
 
 import biz.ganttproject.core.calendar.WeekendCalendarImpl
 import biz.ganttproject.core.io.XmlProjectImporter
+import biz.ganttproject.customproperty.CustomColumnsManager
 import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.TaskManagerConfigImpl
 import net.sourceforge.ganttproject.io.GanttXMLSaver
