@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package biz.ganttproject.core.option
 
+import java.io.File
+
 data class Completion(val posStart: Int, val posEnd: Int, val text: String)
 
 interface GPObservable<T> {
@@ -52,7 +54,11 @@ class ObservableImpl<T>(initValue: T): GPObservable<T> {
   }
 
 }
-sealed class ObservableProperty<T>(val id: String, initValue: T, private val delegate: ObservableImpl<T> = ObservableImpl(initValue))
+
+sealed class ObservableProperty<T>(
+  val id: String,
+  initValue: T,
+  private val delegate: ObservableImpl<T> = ObservableImpl(initValue))
   : GPObservable<T> by delegate {
   private val _isWritable = ObservableImpl( true)
   val isWritable: GPObservable<Boolean> get() = _isWritable
@@ -63,10 +69,7 @@ sealed class ObservableProperty<T>(val id: String, initValue: T, private val del
   fun setWritable(value: Boolean) {
     _isWritable.set(value)
   }
-
-
 }
-
 
 class ObservableString(
   id: String, initValue: String? = null,
@@ -76,7 +79,16 @@ class ObservableString(
 
     var completions: (String, Int) -> List<Completion> = { _, _ -> emptyList() }
 }
-class ObservableBoolean(id: String, initValue: Boolean = false): ObservableProperty<Boolean>(id,initValue)
-class ObservableEnum<E : Enum<E>>(id: String, initValue: E, val allValues: Array<E>): ObservableProperty<E>(id,initValue)
 
-class ObservableObject<T>(id: String = "", initValue: T?): ObservableProperty<T?>(id, initValue)
+class ObservableBoolean(id: String, initValue: Boolean = false)
+  : ObservableProperty<Boolean>(id,initValue)
+
+class ObservableEnum<E : Enum<E>>(id: String, initValue: E, val allValues: Array<E>)
+  : ObservableProperty<E>(id,initValue)
+
+class ObservableFile(id: String, initValue: File? = null)
+  : ObservableProperty<File?>(id, initValue)
+
+class ObservableObject<T>(id: String = "", initValue: T?)
+  : ObservableProperty<T?>(id, initValue)
+

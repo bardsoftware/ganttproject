@@ -20,12 +20,15 @@ package biz.ganttproject.app
 
 import biz.ganttproject.core.option.*
 import biz.ganttproject.lib.fx.AutoCompletionTextFieldBinding
+import biz.ganttproject.lib.fx.buildFontAwesomeButton
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableMap
 import javafx.event.EventHandler
-import javafx.geometry.Insets
+import javafx.geometry.HPos
+import javafx.geometry.VPos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.effect.InnerShadow
@@ -34,12 +37,15 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.paint.Color
+import javafx.stage.FileChooser
 import javafx.util.StringConverter
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.util.BrowserControl
+import org.controlsfx.control.textfield.CustomTextField
 import java.awt.event.ActionEvent
+import java.io.File
 
-private data class OptionItem(val option: ObservableProperty<*>, val editor: Node, val label: String?)
+internal data class OptionItem(val option: ObservableProperty<*>, val editor: Node, val label: String?)
 private val MIN_COLUMN_WIDTH = 100.0
 
 class PropertySheet(
@@ -56,53 +62,35 @@ class PropertySheet(
     set(value) { node.isDisable = value }
 }
 
-class PropertySheetBuilder(private val localizer: Localizer) {
-  private val validationErrors = FXCollections.observableMap(mutableMapOf<ObservableProperty<*>, String>())
-  private val isEscCloseEnabled = SimpleBooleanProperty(true)
-  fun createPropertySheet(options: List<ObservableProperty<*>>): PropertySheet {
-    val gridPane = PropertyPane().also {
-      it.styleClass.add("property-pane")
-      it.stylesheets.add("/biz/ganttproject/app/PropertySheet.css")
+internal typealias OptionItemBuilder = () -> OptionItem
+class PropertyPaneBuilder(private val localizer: Localizer) {
+  internal val validationErrors = FXCollections.observableMap(mutableMapOf<ObservableProperty<*>, String>())
+  internal val isEscCloseEnabled = SimpleBooleanProperty(true)
+  internal val itemBuilders = mutableListOf<OptionItemBuilder>()
+
+  fun text(property: ObservableString, optionValues: (TextDisplayOptions.()->Unit)? = null) {
+    itemBuilders.add {
+      val options = optionValues?.let { TextDisplayOptions().apply(it) }
+      createOptionItem(property, createStringOptionEditor(property, options))
     }
-    options.map { createOptionEditorAndLabel(it) }.forEachIndexed { idx, item ->
-      if (item.label != null) {
-        val label = createLabel(item)
-        gridPane.add(label, 0, idx)
-        GridPane.setHgrow(label, Priority.SOMETIMES)
-
-        item.editor.also {editor ->
-          if (editor is Region) {
-            editor.minWidth = MIN_COLUMN_WIDTH
-            editor.maxWidth = Double.MAX_VALUE
-          }
-          label.labelFor = editor
-          HBox(editor).also {hbox ->
-            HBox.setHgrow(item.editor, Priority.ALWAYS)
-
-            getOptionHelpUrl(item.option)?.let { url ->
-              hbox.children.add(createButton(OpenUrlAction(url), onlyIcon = true)?.also {
-                it.styleClass.add("btn-help-url")
-              })
-            }
-            gridPane.add(hbox, 1, idx)
-            GridPane.setHgrow(hbox, Priority.SOMETIMES)
-          }
-        }
-
-      }
-      if (idx == 0) {
-        gridPane.focusedProperty().addListener { _, oldValue, newValue ->
-          if (!oldValue && newValue) {
-            item.editor.requestFocus()
-          }
-        }
-      }
-    }
-    return PropertySheet(gridPane, validationErrors, isEscCloseEnabled)
   }
 
-  private fun createLabel(item: OptionItem): Label {
-    return Label(item.label)
+  fun file(property: ObservableFile, optionValues: (FileDisplayOptions.()->Unit)? = null) {
+    itemBuilders.add {
+      val options = optionValues?.let { FileDisplayOptions().apply(it) }
+      createOptionItem(property, createFileOptionEditor(property, options))
+    }
+  }
+
+  private fun createOptionItem(property: ObservableProperty<*>, editor: Node): OptionItem {
+    property.isWritable.addWatcher { evt -> editor.isDisable = !evt.newValue }
+    return OptionItem(property, editor, getOptionLabel(property))
+  }
+
+  fun <T> add(property: ObservableProperty<T>, displayOptions: PropertyDisplayOptions<T>? = null) {
+    itemBuilders.add {
+      createOptionEditorAndLabel(property)
+    }
   }
 
   private fun createOptionEditorAndLabel(option: ObservableProperty<*>): OptionItem {
@@ -110,6 +98,7 @@ class PropertySheetBuilder(private val localizer: Localizer) {
       is ObservableBoolean -> createBooleanOptionEditor(option)
       is ObservableString -> createStringOptionEditor(option)
       is ObservableEnum -> createEnumerationOptionEditor(option)
+      is ObservableFile -> createFileOptionEditor(option)
       is ObservableObject<*> -> error("Can't create editor for ObservableObject=${option.id}")
     }
     option.isWritable.addWatcher { evt -> editor.isDisable = !evt.newValue }
@@ -149,52 +138,171 @@ class PropertySheetBuilder(private val localizer: Localizer) {
     }
   }
 
-  private fun createNoEditor(option: GPOption<*>) = Label(option.value?.toString())
-
-
-  private fun createStringOptionEditor(option: ObservableString): Node =
-    (if (option.isScreened) { PasswordField() } else { TextField() }).also { textField ->
-      AutoCompletionTextFieldBinding(textField = textField, suggestionProvider ={req ->
-          option.completions(req.userText, textField.caretPosition)
-      }, converter = {it.text}).also {
-        isEscCloseEnabled.bind(it.autoCompletionPopup.showingProperty().not())
+  private fun createStringOptionEditor(property: ObservableString, displayOptions: TextDisplayOptions? = null): Node {
+    val textField = when {
+      property.isScreened -> PasswordField()
+      displayOptions?.isMultiline == true -> TextArea().also {
+        it.prefColumnCount = displayOptions.columnCount
+        it.prefWidth = displayOptions.columnCount * 10.0
       }
-      val validatedText = textField.textProperty().validated(option.validator)
-      option.isWritable.addWatcher {
-        if (it.newValue) {
-          validatedText.validate(textField.text, null)
-        }
-      }
-      validatedText.addWatcher { evt ->
-        option.set(evt.newValue, textField)
-      }
-
-      validatedText.validationMessage.addWatcher {
-        if (it.newValue == null) {
-          textField.markValid()
-          validationErrors.remove(option)
-        } else {
-          textField.markInvalid()
-          validationErrors[option] = it.newValue
-        }
-      }
-      option.addWatcher {
-        if (it.trigger != textField) {
-          textField.text = option.value
+      else -> TextField().also {
+        AutoCompletionTextFieldBinding(textField = it, suggestionProvider = { req ->
+          property.completions(req.userText, it.caretPosition)
+        }, converter = { it.text }).also {
+          isEscCloseEnabled.bind(it.autoCompletionPopup.showingProperty().not())
         }
       }
     }
 
+    val validatedText = textField.textProperty().validated(property.validator)
+    property.isWritable.addWatcher {
+      if (it.newValue) {
+        validatedText.validate(textField.text, null)
+      }
+    }
+    validatedText.addWatcher { evt ->
+      property.set(evt.newValue, textField)
+    }
+
+    validatedText.validationMessage.addWatcher {
+      if (it.newValue == null) {
+        textField.markValid()
+        validationErrors.remove(property)
+      } else {
+        textField.markInvalid()
+        validationErrors[property] = it.newValue
+      }
+    }
+    property.addWatcher {
+      if (it.trigger != textField) {
+        textField.text = property.value
+      }
+    }
+
+    return textField
+  }
+
+  private fun createFileOptionEditor(option: ObservableFile, displayOptions: FileDisplayOptions? = null): Node {
+    val textField = CustomTextField()
+    val onBrowse = {
+      val fileChooser = FileChooser();
+      var initialFile: File?  = File(textField.text)
+      while (initialFile?.exists() == false) {
+        initialFile = initialFile.parentFile
+      }
+      initialFile?.let {
+        if (it.isDirectory) {
+          fileChooser.initialDirectory = it
+        } else {
+          fileChooser.initialDirectory = it.parentFile
+        }
+      }
+      fileChooser.title = "Choose a file"
+      displayOptions?.let {
+        it.extensionFilters.forEach {filter ->
+          fileChooser.extensionFilters.add(FileChooser.ExtensionFilter(filter.description, filter.extensions))
+        }
+      }
+      val resultFile = fileChooser.showOpenDialog(null)
+      option.value = resultFile
+      resultFile?.let {
+        textField.text = it.absolutePath
+      }
+    }
+    textField.right = buildFontAwesomeButton(
+      iconName = FontAwesomeIcon.SEARCH.name,
+      label = "Browse...",
+      onClick = { onBrowse() },
+      styleClass = "btn"
+    )
+    return textField
+//    return HBox().apply {
+//      HBox.setHgrow(textField, Priority.ALWAYS)
+//      children.add(textField)
+//      children.add(Region().also {
+//        it.padding = Insets(0.0, 5.0, 0.0, 0.0)
+//      })
+//      children.add(btn)
+//    }
+
+  }
+
+  private fun createNoEditor(option: GPOption<*>) = Label(option.value?.toString())
+
+
   private fun getOptionLabel(option: ObservableProperty<*>) = localizer.formatTextOrNull("${option.id}.label")
+}
+
+class PropertySheetBuilder(private val localizer: Localizer) {
+
+  fun pane(code: PropertyPaneBuilder.()->Unit): PropertySheet {
+    val gridPane = PropertyPane().also {
+      it.styleClass.add("property-pane")
+      it.stylesheets.add("/biz/ganttproject/app/PropertySheet.css")
+    }
+    val paneBuilder = PropertyPaneBuilder(localizer).apply(code)
+    paneBuilder.itemBuilders.map { it.invoke() }.forEachIndexed { idx, item ->
+      if (item.label != null) {
+        val label = createLabel(item)
+        gridPane.add(label, 0, idx)
+        GridPane.setHgrow(label, Priority.SOMETIMES)
+        GridPane.setHalignment(label, HPos.RIGHT)
+        item.editor.also {editor ->
+          if (editor is Region) {
+            editor.minWidth = MIN_COLUMN_WIDTH
+            editor.maxWidth = Double.MAX_VALUE
+          }
+          if (editor is TextArea) {
+            GridPane.setValignment(label, VPos.TOP)
+          }
+          label.labelFor = editor
+          HBox(editor).also {hbox ->
+            HBox.setHgrow(item.editor, Priority.ALWAYS)
+
+            getOptionHelpUrl(item.option)?.let { url ->
+              hbox.children.add(createButton(OpenUrlAction(url), onlyIcon = true)?.also {
+                it.styleClass.add("btn-help-url")
+              })
+            }
+            gridPane.add(hbox, 1, idx)
+            GridPane.setHgrow(hbox, Priority.SOMETIMES)
+          }
+        }
+
+      }
+      if (idx == 0) {
+        gridPane.focusedProperty().addListener { _, oldValue, newValue ->
+          if (!oldValue && newValue) {
+            item.editor.requestFocus()
+          }
+        }
+      }
+    }
+    return PropertySheet(gridPane, paneBuilder.validationErrors, paneBuilder.isEscCloseEnabled)
+  }
+
+
+  fun createPropertySheet(options: List<ObservableProperty<*>>): PropertySheet {
+    return pane {
+      options.forEach {
+        add(it)
+      }
+    }
+  }
+
+  private fun createLabel(item: OptionItem): Label {
+    return Label(item.label)
+  }
+
   private fun getOptionHelpUrl(option: ObservableProperty<*>) = localizer.formatTextOrNull("${option.id}.helpUrl")
 }
 
 
 internal class PropertyPane : GridPane() {
   init {
-    vgap = 5.0
-    hgap = 5.0
-    padding = Insets(5.0, 15.0, 5.0, 15.0)
+    vgap = 10.0
+    hgap = 10.0
+    //padding = Insets(5.0, 15.0, 5.0, 15.0)
     styleClass.add("property-pane")
   }
 }
@@ -216,3 +324,12 @@ private class OpenUrlAction(private val url: String): GPAction("help.openUrl") {
     BrowserControl.displayURL(url)
   }
 }
+
+sealed class PropertyDisplayOptions<P>()
+data class TextDisplayOptions(
+  var isMultiline: Boolean = false,
+  var isScreened: Boolean = false,
+  var columnCount: Int = 40
+): PropertyDisplayOptions<String?>()
+data class FileExtensionFilter(val description: String, val extensions: List<String>)
+data class FileDisplayOptions(val extensionFilters: MutableList<FileExtensionFilter> = mutableListOf<FileExtensionFilter>()): PropertyDisplayOptions<File>()
