@@ -33,6 +33,12 @@
   }
 
   .content-pane {
+    @include validation-pane();
+    .hint-validation-pane {
+      -fx-background-insets: 0 10 0 0;
+      -fx-border-insets: 0 10 0 0;
+    }
+
     -fx-padding: 20 20 20 20;
 
     .label-updates {

@@ -48,7 +48,6 @@ import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.*
 import javafx.scene.layout.*
-import javafx.stage.FileChooser
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.UIFacade
 import org.controlsfx.control.HyperlinkLabel
@@ -210,6 +209,7 @@ internal class UpdateDialog(
         it.vbarPolicy = ScrollPane.ScrollBarPolicy.AS_NEEDED
       })
     }
+    bodyBuilder.add(UpdateFromZip(ourLocalizer).buildNode())
     return bodyBuilder.vbox
   }
 
@@ -220,6 +220,7 @@ internal class UpdateDialog(
     dialogApi.addStyleClass("dlg-platform-update")
     dialogApi.addStyleSheet(
       "/biz/ganttproject/app/Dialog.css",
+      "/biz/ganttproject/app/Util.css",
       "/biz/ganttproject/platform/Update.css"
     )
 
@@ -277,17 +278,6 @@ internal class UpdateDialog(
             }
           }
         }
-      }
-    }
-    dialogApi.setupButton(ButtonType("ZIP")) { btn ->
-      ButtonBar.setButtonUniformSize(btn, false)
-      btn.maxWidth = Double.MAX_VALUE
-      btn.text = "Install from ZIP"
-      btn.styleClass.add("btn")
-      btn.addEventFilter(ActionEvent.ACTION) {
-        val fileChooser = FileChooser();
-        fileChooser.title = "Choose a ZIP file";
-        fileChooser.showOpenDialog(null);
       }
     }
     dialogApi.setContent(this.createPane(bean))
@@ -481,7 +471,7 @@ private class MajorUpdateUi(update: UpdateMetadata, hasMinorUpdates: Boolean, pr
   }
 }
 private val LOG = GPLogger.create("App.Update")
-private val ourLocalizer = RootLocalizer.createWithRootKey("platform.update")
+private val ourLocalizer = RootLocalizer.createWithRootKey("platform.update", baseLocalizer = RootLocalizer)
 
 object UpdateOptions {
   val isCheckEnabled = DefaultBooleanOption("checkEnabled", true)
@@ -494,6 +484,10 @@ object UpdateOptions {
 object DummyUpdater : Updater {
   override fun getUpdateMetadata(p0: String?) = CompletableFuture.completedFuture(listOf<UpdateMetadata>())
   override fun installUpdate(p0: UpdateMetadata?, p1: UpdateProgressMonitor?, p2: UpdateIntegrityChecker?): CompletableFuture<File> {
+    TODO("Not yet implemented")
+  }
+
+  override fun installUpdate(p0: File?): CompletableFuture<File?>? {
     TODO("Not yet implemented")
   }
 }

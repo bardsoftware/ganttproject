@@ -18,11 +18,9 @@
   }
 
   .hint-validation-pane {
-    -fx-border-insets: 3 0 3 0;
     -fx-background-color: $gp-orange;
     -fx-background-radius: 3;
-    -fx-background-insets: 3 0 3 0;
-    /*-fx-border-color: -gp-orange;*/
+    -fx-border-color: -gp-orange;
     -fx-border-radius: 3;
     -fx-border-width: 5;
     -fx-pref-width: 100%;
