@@ -30,12 +30,14 @@ import javafx.scene.control.Button
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.Labeled
 import javafx.scene.control.ScrollPane
+import javafx.scene.control.TitledPane
 import javafx.scene.layout.BorderPane
 import javafx.scene.paint.Color
 import javafx.stage.Window
 import javafx.util.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
@@ -72,6 +74,12 @@ object FXUtil {
         Platform.runLater(code)
       }
     } else {
+      code()
+    }
+  }
+
+  fun launchFx(code: suspend ()->Unit) {
+    GlobalScope.launch(Dispatchers.JavaFx) {
       code()
     }
   }
@@ -274,7 +282,7 @@ object FXUtil {
 
 fun Node.printCss() {
   println("class=${styleClass} pseudoclass=${pseudoClassStates} scene=${this.scene}")
-  parent?.printCss()
+  //parent?.printCss()
 }
 
 fun Parent.walkTree(code: (Node)->Unit) {
@@ -282,6 +290,11 @@ fun Parent.walkTree(code: (Node)->Unit) {
   childrenUnmodifiable.forEach {
     when {
       it is ScrollPane -> it.content.let {
+        if (it is Parent) {
+          it.walkTree(code)
+        }
+      }
+      it is TitledPane -> it.content.let {
         if (it is Parent) {
           it.walkTree(code)
         }

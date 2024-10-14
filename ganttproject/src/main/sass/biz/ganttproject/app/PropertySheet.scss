@@ -24,4 +24,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     @include btn-toolbar-common();
     @include btn-toolbar-small();
   }
+
+  .text-area {
+    -fx-border-color: $gp-medium-gray;
+    -fx-border-width: 1;
+    -fx-border-radius: 0;
+  }
 }

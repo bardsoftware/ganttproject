@@ -26,13 +26,17 @@ import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.lib.fx.vbox
 import biz.ganttproject.platform.PgpUtil.verifyFile
-import javafx.event.ActionEvent
-import javafx.scene.control.Button
-import javafx.scene.control.TitledPane
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.runCatching
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.scene.control.Label
 import javafx.scene.layout.HBox
-import javafx.scene.layout.Priority
 import javafx.scene.text.Text
+import java.io.File
+import java.lang.IllegalStateException
 import org.eclipse.core.runtime.Platform as Eclipsito
+
 /**
  * Encapsulates UI and logic of installing a minor update from a ZIP file.
  * This requires downloading a ZIP file and a PGP signature that is available from the download site.
@@ -53,20 +57,27 @@ class UpdateFromZip(localizer: Localizer) {
     } ?: throw ValidationException(localizer.formatText("validation.file.empty"))
   })
 
-  private val btnApplyZip = Button(localizer.formatText("apply")).also {
-    it.styleClass.addAll("btn", "btn-regular")
-    it.addEventFilter(ActionEvent.ACTION) {
-      installUpdate()
-    }
-  }
+//  private val btnApplyZip = Button(localizer.formatText("apply")).also {
+//    it.styleClass.addAll("btn", "btn-regular")
+//    it.addEventFilter(ActionEvent.ACTION) {
+//      installUpdate()
+//    }
+//  }
 
   val propertySheet = PropertySheetBuilder(localizer).pane {
-    text(signatureOption) {
-      isMultiline = true
-    }
     file(fileOption) {
       extensionFilters.add(FileExtensionFilter(localizer.formatText("filterzip"), listOf("*.zip")))
     }
+    text(signatureOption) {
+      isMultiline = true
+    }
+  }
+
+  val title = Label(paneTitle).apply {
+    styleClass.add("title")
+  }
+  val subtitle = Label("You can download and install update as ZIP file").apply {
+    styleClass.setAll("subtitle")
   }
 
   private val errorLabel = Text().also {
@@ -96,7 +107,7 @@ class UpdateFromZip(localizer: Localizer) {
   private fun setupValidation() {
     val updateDisable = {
       val disable = signatureOption.value.isNullOrEmpty() || false == fileOption.value?.exists() || propertySheet.validationErrors.isNotEmpty()
-      btnApplyZip.isDisable = disable
+      disableApply.value = disable
       if (propertySheet.validationErrors.isEmpty()) {
         onError(null)
       } else {
@@ -108,32 +119,47 @@ class UpdateFromZip(localizer: Localizer) {
     propertySheet.validationErrors.subscribe { updateDisable() }
   }
 
-  private fun installUpdate() {
-    fileOption.value?.let {
-      Eclipsito.getUpdater().installUpdate(it).thenAccept {
-        println("Installed into $it")
-      }.exceptionally {
-        null
+  internal fun installUpdate(): Result<File?, Throwable> {
+    return fileOption.value?.let {
+      runCatching {
+        Eclipsito.getUpdater().installUpdate(it).join()
       }
-    }
-
+    } ?: Err(IllegalStateException("File is missing"))
   }
 
-  fun buildNode() = TitledPane().apply {
-    text = this@UpdateFromZip.paneTitle
-    setupValidation()
-    this@UpdateFromZip.btnApplyZip.isDisable = true
+  val disableApply = SimpleBooleanProperty(false)
 
-    content = vbox {
+  val node by lazy {
+    vbox {
+      addClasses("update-from-zip")
+      addStylesheets("/biz/ganttproject/platform/Update.css")
+      add(title)
+      add(subtitle)
       add(this@UpdateFromZip.propertySheet.node)
-      add(HBox().also {
-        it.styleClass.add("medskip")
-      })
-      add(HBox().also {
-        it.children.add(this@UpdateFromZip.errorPane)
-        it.children.add(this@UpdateFromZip.btnApplyZip)
-        HBox.setHgrow(this@UpdateFromZip.errorPane, Priority.ALWAYS)
-      })
+      setupValidation()
     }
   }
+//    add(HBox().also {
+//      it.styleClass.add("apply-pane")
+//      it.children.add(this@UpdateFromZip.errorPane)
+//      it.children.add(this@UpdateFromZip.btnApplyZip)
+//      HBox.setHgrow(this@UpdateFromZip.errorPane, Priority.ALWAYS)
+//    })
 }
+//  fun buildNode(isExpanded: Boolean = true) = TitledPane().apply {
+//    text = this@UpdateFromZip.paneTitle
+//    this.isExpanded = isExpanded
+//    setupValidation()
+//    this@UpdateFromZip.btnApplyZip.isDisable = true
+//
+//    content = vbox {
+//      addClasses("update-from-zip")
+//      add(this@UpdateFromZip.propertySheet.node)
+//      add(HBox().also {
+//        it.styleClass.add("apply-pane")
+//        it.children.add(this@UpdateFromZip.errorPane)
+//        it.children.add(this@UpdateFromZip.btnApplyZip)
+//        HBox.setHgrow(this@UpdateFromZip.errorPane, Priority.ALWAYS)
+//      })
+//    }
+//  }

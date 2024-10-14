@@ -89,7 +89,8 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
     if (ex != null) {
       updatesFetchErrorDialog(ex, dialogBuildApi)
     } else {
-      updatesAvailableDialog(filteredUpdates, filteredUpdates, { uiFacade.quitApplication(false) }, dialogBuildApi)
+      val updateModel = UpdateDialogModel(filteredUpdates, filteredUpdates, restarter = { uiFacade.quitApplication(false) })
+      updatesAvailableDialog(updateModel, dialogBuildApi)
     }
     return Scene(group)
   }

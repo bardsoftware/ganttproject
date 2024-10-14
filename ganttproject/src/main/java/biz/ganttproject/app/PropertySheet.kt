@@ -245,7 +245,7 @@ class PropertySheetBuilder(private val localizer: Localizer) {
       if (item.label != null) {
         val label = createLabel(item)
         gridPane.add(label, 0, idx)
-        GridPane.setHgrow(label, Priority.SOMETIMES)
+        GridPane.setHgrow(label, Priority.NEVER)
         GridPane.setHalignment(label, HPos.RIGHT)
         item.editor.also {editor ->
           if (editor is Region) {

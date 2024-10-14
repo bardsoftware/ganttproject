@@ -20,12 +20,11 @@
   .hint-validation-pane {
     -fx-background-color: $gp-orange;
     -fx-background-radius: 3;
-    -fx-border-color: -gp-orange;
+    -fx-border-color: $gp-orange;
     -fx-border-radius: 3;
     -fx-border-width: 5;
     -fx-pref-width: 100%;
     -fx-min-width: 400;
-    -fx-border-color: $gp-orange;
     visibility: visible;
 
     &.noerror {

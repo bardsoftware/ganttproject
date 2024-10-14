@@ -614,7 +614,8 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
   }
 
   override fun resize() {
-
+    this.buttonBar.layout()
+    this.root.layout()
   }
 
   override fun setEscCloseEnabled(value: Boolean) {

@@ -1,0 +1,37 @@
+/*!
+ * Copyright 2024 BarD Software s.r.o., Dmitry Barashev.
+ *
+ * This file is part of GanttProject, an opensource project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@import "theme";
+
+@mixin error-label() {
+  -fx-text-fill: $gp-error;
+  -fx-font-weight: bold;
+  -fx-font-size: normal;
+}
+
+/**
+ This will show an error label with red borders from top and bottom and some vertical padding around.
+ */
+@mixin error-embedded-box($color) {
+  -fx-border-width: 2 0 2 0;
+  -fx-padding: 0.75ex 0;
+  -fx-border-insets: 2ex 0;
+  -fx-background-insets: 2ex 0;
+  -fx-border-color: $color;
+}
