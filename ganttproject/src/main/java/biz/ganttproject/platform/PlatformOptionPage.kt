@@ -37,6 +37,8 @@ import org.eclipse.core.runtime.Platform as Eclipsito
  * @author dbarashev@bardsoftware.com
  */
 class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
+  private var onSetActive: (() -> Unit)? = null
+
   override fun getOptionGroups(): Array<GPOptionGroup> {
     return arrayOf()
   }
@@ -48,9 +50,12 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
     val wrapper = JPanel(BorderLayout())
     wrapper.add(jfxPanel, BorderLayout.CENTER)
     Eclipsito.getUpdater().getUpdateMetadata(UpdateOptions.updateUrl.value).thenAccept { updateMetadata ->
+      onSetActive = {
         Platform.runLater {
           jfxPanel.scene = createScene(updateMetadata, null)
+          jfxPanel.scene.root.layout()
         }
+      }
     }.exceptionally { ex ->
       GPLogger.logToLogger(ex)
       Platform.runLater {
@@ -58,11 +63,16 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
       }
       null
     }
-
-
     return wrapper
   }
 
+  override fun setActive(isActive: Boolean) {
+    super.setActive(isActive)
+    if (isActive) {
+      onSetActive?.invoke()
+      onSetActive = null
+    }
+  }
 
   private fun createScene(updateMetadata: List<UpdateMetadata>, ex: Throwable?): Scene {
     val runningVersion = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "2900"
@@ -79,7 +89,8 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform") {
     if (ex != null) {
       updatesFetchErrorDialog(ex, dialogBuildApi)
     } else {
-      updatesAvailableDialog(filteredUpdates, filteredUpdates, { uiFacade.quitApplication(false) }, dialogBuildApi)
+      val updateModel = UpdateDialogModel(filteredUpdates, filteredUpdates, restarter = { uiFacade.quitApplication(false) })
+      updatesAvailableDialog(updateModel, dialogBuildApi)
     }
     return Scene(group)
   }

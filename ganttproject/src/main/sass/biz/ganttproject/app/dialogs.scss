@@ -28,8 +28,10 @@ $alert-foreground: #721c24;
   -fx-padding: 15;
   -fx-background-insets: 0 0 4 0;
   -fx-effect: dropshadow(gaussian, #ccc, 4, 0, 0, 4);
-  -fx-font-size: 110%;
-  -fx-font-weight: bold;
+  .title {
+    -fx-font-size: 110%;
+    -fx-font-weight: bold;
+  }
 }
 
 @mixin dialog-content-padding {

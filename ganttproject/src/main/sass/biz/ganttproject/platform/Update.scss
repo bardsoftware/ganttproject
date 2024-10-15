@@ -19,7 +19,29 @@
 @import "../app/theme";
 @import "../app/dialogs";
 @import "../app/buttons";
+@import "../app/errors";
+@import "../app/margins";
 @import "../app/validation";
+
+@mixin titled-pane-title() {
+  -fx-padding: 0 0 0 0.5em;
+  -fx-font-size: 125%;
+  -fx-font-weight: bold;
+  -fx-background-color: $gp-orange;
+  -fx-fill: $gp-dark-gray;
+}
+
+@mixin titles() {
+  .title {
+    -fx-font-weight: bold;
+    -fx-font-size: 120%;
+  }
+  .subtitle {
+    -fx-text-fill: $gp-medium-gray;
+    -fx-font-size: 80%;
+    -fx-font-weight: normal;
+  }
+}
 
 /* A single item in the list of available updates */
 .body {
@@ -33,14 +55,65 @@
   }
 
   .content-pane {
+    @include validation-pane();
+    .hint-validation-pane {
+      -fx-background-insets: 0 10 0 0;
+      -fx-border-insets: 0 10 0 0;
+    }
+
     -fx-padding: 20 20 20 20;
+
+    .label-updates {
+      -fx-padding: 2ex 0 0.3ex 0;
+      -fx-font-size: 150%;
+      -fx-border-width: 0 0 2 0;
+      -fx-border-color: $gp-light-gray;
+      -fx-border-insets: 0 0 20 0;
+    }
 
     .help {
       -fx-padding: 0 0 2ex 0;
     }
 
+    .minor-update {
+      -fx-background-color: transparent;
+      @include titles();
+
+      .par {
+        -fx-fill: $gp-medium-gray;
+        -fx-padding: 0ex 0 0.5ex 0;
+      }
+
+      .progress {
+        -fx-font-size: 80%;
+        -fx-fill: $gp-medium-gray;
+        -fx-padding: 0 0 2ex 0;
+      }
+    }
+
+    .major-update {
+      @include vertical-space-top($vertical-space-medium);
+      @include titles();
+
+      .par {
+        -fx-fill: $gp-medium-gray;
+        -fx-padding: 2ex 0 0.5ex 0;
+        -mdfx-font-color: $gp-medium-gray;
+      }
+    }
+
+    .update-from-zip {
+      @include titles();
+
+      .property-pane {
+        @include vertical-space-top($vertical-space-medium);
+      }
+      .apply-pane {
+        @include vertical-space-top($vertical-space-small);
+      }
+    }
+
     .scroll-pane {
-      -fx-padding: 20 1em;
       -fx-border-color: transparent;
       -fx-background-color: $gp-control-background;
       & > .viewport {
@@ -54,76 +127,28 @@
         @include scroll-bar(15);
       }
 
-      .body {
+      .scroll-body {
         -fx-background-color: transparent;
-
-        .major-update {
-          .title {
-            -fx-fill: $gp-dark-gray;
-            -fx-font-size: 140%;
-          }
-          .subtitle {
-            -fx-fill: $gp-medium-gray;
-            -fx-font-size: 100%;
-            -fx-font-weight: normal;
-          }
-          .par {
-            -fx-fill: $gp-medium-gray;
-            -fx-padding: 2ex 0 0.5ex 0;
-          }
-        }
-
-        .minor-update {
-          -fx-background-color: transparent;
-          .title {
-            -fx-fill: $gp-dark-gray;
-            -fx-font-size: 110%;
-          }
-
-          .subtitle {
-            -fx-fill: $gp-medium-gray;
-            -fx-font-size: 80%;
-            -fx-font-weight: normal;
-          }
-
-          .par {
-            -fx-fill: $gp-medium-gray;
-            -fx-padding: 0.5ex 0 0.5ex 0;
-          }
-
-          .progress {
-            -fx-font-size: 80%;
-            -fx-fill: $gp-medium-gray;
-            -fx-padding: 0 0 2ex 0;
-          }
-        }
+        -fx-padding: 1em 0 0 0;
       }
     }
 
   }
 
-  Label.no-updates {
-    -fx-font-size: 200%;
-
-    .glyph-icon {
-      -glyph-size: 40px;
-    }
-  }
-
-  Label.alert-error {
-    @include validation-error();
-  }
-  .props {
-    -fx-font-size: 120%;
-
-    .toggle-switch {
-      -fx-content-display: left;
-      -fx-graphic-text-gap: 0;
-    }
+  .toggle-switch {
+    -fx-content-display: left;
+    -fx-graphic-text-gap: 0;
   }
 
   .button-pane {
     @include dialog-button-pane();
+  }
+
+  .alert-embedded-box {
+    @include error-embedded-box($gp-error);
+    .alert-error {
+      @include error-label();
+    }
   }
 }
 

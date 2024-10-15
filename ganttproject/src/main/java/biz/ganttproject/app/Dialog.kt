@@ -560,14 +560,14 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
   }
 
   override fun setupButton(type: ButtonType, code: (Button) -> Unit): Button? {
-    if (type == ButtonType.APPLY) {
+//    if (type == ButtonType.APPLY) {
       val btn = createButton(type)
       code(btn)
       this.buttonBar.buttons.add(btn)
       return btn
-    } else {
-      return null
-    }
+//    } else {
+//      return null
+//    }
   }
 
   override fun setupButton(action: GPAction, code: (Button)->Unit): Button? {
@@ -614,7 +614,8 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
   }
 
   override fun resize() {
-
+    this.buttonBar.layout()
+    this.root.layout()
   }
 
   override fun setEscCloseEnabled(value: Boolean) {
