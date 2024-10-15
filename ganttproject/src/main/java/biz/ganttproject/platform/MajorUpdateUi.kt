@@ -20,12 +20,8 @@ package biz.ganttproject.platform
 
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.lib.fx.vbox
-import biz.ganttproject.walkTree
 import com.bardsoftware.eclipsito.update.UpdateMetadata
 import com.sandec.mdfx.MarkdownView
-import javafx.event.EventHandler
-import javafx.scene.Parent
-import javafx.scene.control.Button
 import javafx.scene.control.Label
 
 /**
@@ -42,28 +38,14 @@ internal class MajorUpdateUi(update: UpdateMetadata) {
     l.stylesheets.add("/biz/ganttproject/app/mdfx.css")
     l.styleClass.add("par")
     l.mdString = ourLocalizer.formatText("majorUpdate.description", update.description)
-//    l.children.forEach {
-//      if (it is Parent) {
-//        it.walkTree { println(it.styleClass) }
-//      }
-//    }
   }
-//  val btnMinorUpdates = Button(ourLocalizer.formatText("majorUpdate.showBugfixUpdates")).also {
-//    it.styleClass.addAll("btn", "btn-attention", "secondary")
-//    it.onAction = EventHandler {
-//      this.onShowMinorUpdates()
-//    }
-//  }
+
   val component = vbox {
     addClasses("major-update")
     addStylesheets("/biz/ganttproject/platform/Update.css")
     add(title)
     add(subtitle)
     add(text)
-//    if (hasMinorUpdates) {
-//      add(Label("Minor updates are also available"))
-//      add(btnMinorUpdates)
-//    }
   }
 }
 private val ourLocalizer = RootLocalizer.createWithRootKey("platform.update", baseLocalizer = RootLocalizer)

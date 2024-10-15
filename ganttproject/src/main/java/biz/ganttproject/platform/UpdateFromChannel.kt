@@ -25,7 +25,6 @@ import biz.ganttproject.lib.fx.openInBrowser
 import biz.ganttproject.lib.fx.vbox
 import com.bardsoftware.eclipsito.update.UpdateMetadata
 import com.sandec.mdfx.MDFXNode
-import javafx.beans.property.SimpleStringProperty
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Insets

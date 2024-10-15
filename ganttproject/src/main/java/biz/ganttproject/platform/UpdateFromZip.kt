@@ -57,13 +57,6 @@ class UpdateFromZip(localizer: Localizer) {
     } ?: throw ValidationException(localizer.formatText("validation.file.empty"))
   })
 
-//  private val btnApplyZip = Button(localizer.formatText("apply")).also {
-//    it.styleClass.addAll("btn", "btn-regular")
-//    it.addEventFilter(ActionEvent.ACTION) {
-//      installUpdate()
-//    }
-//  }
-
   val propertySheet = PropertySheetBuilder(localizer).pane {
     file(fileOption) {
       extensionFilters.add(FileExtensionFilter(localizer.formatText("filterzip"), listOf("*.zip")))
@@ -139,27 +132,4 @@ class UpdateFromZip(localizer: Localizer) {
       setupValidation()
     }
   }
-//    add(HBox().also {
-//      it.styleClass.add("apply-pane")
-//      it.children.add(this@UpdateFromZip.errorPane)
-//      it.children.add(this@UpdateFromZip.btnApplyZip)
-//      HBox.setHgrow(this@UpdateFromZip.errorPane, Priority.ALWAYS)
-//    })
 }
-//  fun buildNode(isExpanded: Boolean = true) = TitledPane().apply {
-//    text = this@UpdateFromZip.paneTitle
-//    this.isExpanded = isExpanded
-//    setupValidation()
-//    this@UpdateFromZip.btnApplyZip.isDisable = true
-//
-//    content = vbox {
-//      addClasses("update-from-zip")
-//      add(this@UpdateFromZip.propertySheet.node)
-//      add(HBox().also {
-//        it.styleClass.add("apply-pane")
-//        it.children.add(this@UpdateFromZip.errorPane)
-//        it.children.add(this@UpdateFromZip.btnApplyZip)
-//        HBox.setHgrow(this@UpdateFromZip.errorPane, Priority.ALWAYS)
-//      })
-//    }
-//  }

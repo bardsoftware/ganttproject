@@ -19,6 +19,7 @@
 package biz.ganttproject.platform
 
 import biz.ganttproject.FXUtil.launchFx
+import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.DefaultStringOption
@@ -49,6 +50,7 @@ import java.util.concurrent.CompletionException
 import java.util.concurrent.Executors
 import javax.swing.SwingUtilities
 import org.eclipse.core.runtime.Platform as Eclipsito
+import biz.ganttproject.platform.UpdateDialogLocalizationKeys as Keys
 
 internal enum class ApplyAction {
   INSTALL_FROM_CHANNEL, INSTALL_FROM_ZIP, DOWNLOAD_MAJOR, RESTART
@@ -85,10 +87,11 @@ internal fun createModel(allUpdates: List<UpdateMetadata>, showSkipped: Boolean,
 class UpdateDialogModel(
   internal val updates: List<UpdateMetadata>,
   private val visibleUpdates: List<UpdateMetadata>,
+  internal val installedVersion: String = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "3390",
   private val restarter: AppRestarter
   ) {
 
-  internal var localizer = RootLocalizer
+  internal var localizer: Localizer = RootLocalizer
   internal var startProgressMonitor: (version: String)->InstallProgressMonitor? = {null}
 
   internal val hasUpdates: Boolean get() = this.visibleUpdates.isNotEmpty()
@@ -99,7 +102,7 @@ class UpdateDialogModel(
   internal val majorUpdate: UpdateMetadata? get() = this.updates.firstOrNull { it.isMajorUpdate }
   // The list of visible updates with major updates filtered out
   internal val minorUpdates get() = this.visibleUpdates.filter { !it.isMajorUpdate }
-  internal val installedVersion = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "3390"
+
 
   val btnApplyText = SimpleStringProperty("")
   val btnApplyDisabled = SimpleBooleanProperty(false)
@@ -111,21 +114,22 @@ class UpdateDialogModel(
     set(value) {
       when (value) {
         ApplyAction.INSTALL_FROM_CHANNEL -> {
-          btnApplyText.value = localizer.formatText("button.ok")
+          btnApplyText.value = localizer.formatText(Keys.BUTTON_OK)
           btnCloseText.value = localizer.formatText("button.close_skip")
           stateTitleProperty.value = "Maintenance Updates"
-          btnToggleSourceText.value = "Install from ZIP"
+          btnToggleSourceText.value = localizer.formatText(Keys.INSTALL_FROM_ZIP)
         }
         ApplyAction.INSTALL_FROM_ZIP -> {
-          btnToggleSourceText.value = "Install from Update Channel"
+          btnApplyText.value = localizer.formatText(Keys.BUTTON_OK)
+          btnToggleSourceText.value = localizer.formatText(Keys.INSTALL_FROM_CHANNEL)
         }
         ApplyAction.RESTART -> {
           btnApplyText.value = localizer.formatText("restart")
           btnCloseText.value = localizer.formatText("close")
         }
         ApplyAction.DOWNLOAD_MAJOR -> {
-          btnApplyText.value = localizer.formatText("majorUpdate.download")
-          btnToggleSourceText.value = "Install from ZIP"
+          btnApplyText.value = localizer.formatText(Keys.MAJOR_UPDATE_DOWNLOAD)
+          btnToggleSourceText.value = localizer.formatText(Keys.INSTALL_FROM_ZIP)
           stateTitleProperty.value = ""
         }
       }
@@ -163,15 +167,6 @@ class UpdateDialogModel(
       ourLogger.error("Failed to install updates", ex)
       Err(ex.cause ?: ex)
     }
-//    installFuture?.join()thenAccept {
-//      completed.value = true
-//    }?.exceptionally { ex ->
-//      GPLogger.logToLogger(ex)
-//      this.dialogApi.showAlert(ourLocalizer.create("alert.title"), createAlertBody(ex.message ?: ""))
-//      null
-//    }
-//  }
-
   }
 
   internal fun setupApplyButton(applyButton: Button) {
@@ -273,3 +268,10 @@ object UpdateOptions {
 private val ourBackgroundScope = CoroutineScope(Executors.newFixedThreadPool(2).asCoroutineDispatcher())
 private val ourLogger = createLogger("Update.Download")
 const val UPGRADE_URL = "https://www.ganttproject.biz/download/upgrade"
+
+object UpdateDialogLocalizationKeys {
+  internal const val MAJOR_UPDATE_DOWNLOAD = "majorUpdate.download"
+  internal const val BUTTON_OK = "button.ok"
+  internal const val INSTALL_FROM_ZIP = "Install from ZIP"
+  internal const val INSTALL_FROM_CHANNEL = "Install from Update Channel"
+}

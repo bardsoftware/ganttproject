@@ -72,7 +72,7 @@ fun updatesAvailableDialog(model: UpdateDialogModel,
 }
 
 fun updatesFetchErrorDialog(ex: Throwable, dialogController: DialogController) {
-  val dlg = UpdateDialog(UpdateDialogModel(listOf(), listOf(), {}))
+  val dlg = UpdateDialog(UpdateDialogModel(listOf(), listOf(), restarter = {}))
   dlg.addContent(ex, dialogController)
 }
 /**
