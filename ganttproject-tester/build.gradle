@@ -19,7 +19,7 @@ dependencies {
     testImplementation project(':biz.ganttproject.core')
     testImplementation project(':ganttproject')
     testImplementation project(':biz.ganttproject.impex.msproject2')
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.3'
     testImplementation 'org.jooq:jooq:3.19.14'
     testImplementation "com.h2database:h2:2.3.+"
     testImplementation "org.easymock:easymock:5.4.0"
