@@ -18,6 +18,7 @@
  */
 package biz.ganttproject.app
 
+import biz.ganttproject.FXUtil
 import biz.ganttproject.core.option.ChangeValueEvent
 import biz.ganttproject.core.option.DefaultFontOption
 import biz.ganttproject.core.option.FontSpec
@@ -40,10 +41,12 @@ class AppearanceManager(private val appFontOption: DefaultFontOption) {
       reloadCustomCss(c.list)
     }
     appFontOption.addChangeValueListener { _: ChangeValueEvent ->
-      setFont(appFontOption.getValue())
-      reloadCustomCss(Window.getWindows())
+      FXUtil.runLater {
+        setFont(appFontOption.value)
+        reloadCustomCss(Window.getWindows())
+      }
     }
-    setFont(appFontOption.getValue())
+    setFont(appFontOption.value)
   }
 
   fun setFont(font: FontSpec) {

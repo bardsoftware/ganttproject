@@ -32,6 +32,7 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
   private String myPageID;
   private IGanttProject myProject;
   private UIFacade myUiFacade;
+  private boolean isActive;
 
   protected OptionPageProviderBase(String pageID) {
     myPageID = pageID;
@@ -67,8 +68,10 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
 
   @Override
   public void setActive(boolean isActive) {
+    this.isActive = isActive;
   }
 
+  protected boolean isActive() { return this.isActive; }
   @Override
   public abstract GPOptionGroup[] getOptionGroups();
 

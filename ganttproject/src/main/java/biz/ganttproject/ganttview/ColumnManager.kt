@@ -221,7 +221,7 @@ internal class CustomPropertyEditor(
   selectedItemProperty: ObservableProperty<ColumnAsListItem?>,
   private val btnDeleteController: BtnController<Unit>,
   escCloseEnabled: BooleanProperty,
-) : ItemEditorPane<ColumnAsListItem>(model.allOptions, selectedItemProperty, dialogModel, ourEditorLocalizer) {
+) : ItemEditorPaneImpl<ColumnAsListItem>(model.allOptions, selectedItemProperty, dialogModel, ourEditorLocalizer) {
 
   init {
     escCloseEnabled.bind(propertySheet.isEscCloseEnabled)

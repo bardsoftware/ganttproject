@@ -103,7 +103,7 @@ internal class FilterEditor(
   editItem: ObservableObject<TaskFilter?>,
   model: ItemListDialogModel<TaskFilter>
 )
-  : ItemEditorPane<TaskFilter>(
+  : ItemEditorPaneImpl<TaskFilter>(
   editorModel.fields, editItem, model, i18n
 ) {
   override fun loadData(item: TaskFilter?) {

@@ -53,7 +53,7 @@ import org.eclipse.core.runtime.Platform as Eclipsito
 import biz.ganttproject.platform.UpdateDialogLocalizationKeys as Keys
 
 internal enum class ApplyAction {
-  INSTALL_FROM_CHANNEL, INSTALL_FROM_ZIP, DOWNLOAD_MAJOR, RESTART
+  UP_TO_DATE, INSTALL_FROM_CHANNEL, INSTALL_FROM_ZIP, DOWNLOAD_MAJOR, RESTART
 }
 
 typealias InstallProgressMonitor = (Int)->Unit
@@ -113,6 +113,9 @@ class UpdateDialogModel(
   internal var state: ApplyAction = ApplyAction.INSTALL_FROM_CHANNEL
     set(value) {
       when (value) {
+        ApplyAction.UP_TO_DATE -> {
+          btnApplyText.value = "NO ACTION"
+        }
         ApplyAction.INSTALL_FROM_CHANNEL -> {
           btnApplyText.value = localizer.formatText(Keys.BUTTON_OK)
           btnCloseText.value = localizer.formatText("button.close_skip")
@@ -147,6 +150,8 @@ class UpdateDialogModel(
       state = ApplyAction.DOWNLOAD_MAJOR
     } else if (hasMinorUpdates) {
       state = ApplyAction.INSTALL_FROM_CHANNEL
+    } else {
+      state = ApplyAction.UP_TO_DATE
     }
   }
 
@@ -202,6 +207,7 @@ class UpdateDialogModel(
 
   private suspend fun onApplyPressed() {
     when (state) {
+      ApplyAction.UP_TO_DATE -> {}
       ApplyAction.INSTALL_FROM_CHANNEL -> {
         applyMinorUpdates()
       }

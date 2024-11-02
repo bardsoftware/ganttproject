@@ -41,7 +41,7 @@ public class OptionPageProviderPanel {
     myGroups = myProvider.getOptionGroups();
   }
 
-  public Component getComponent() {
+  public JComponent getComponent() {
     JComponent providerComponent;
     if (myProvider.hasCustomComponent()) {
       providerComponent = (JComponent) myProvider.buildPageComponent();
@@ -51,9 +51,8 @@ public class OptionPageProviderPanel {
       providerComponent = builder.buildPage(myGroups, myProvider.getPageID());
     }
     providerComponent.setBorder(new EmptyBorder(5, 5, 5, 5));
-    Component result = providerComponent;
     //JScrollPane result = new JScrollPane(providerComponent);
-    return result;
+    return providerComponent;
   }
 
   // public boolean applyChanges(boolean askForApply) {
