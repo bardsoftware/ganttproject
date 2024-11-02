@@ -80,7 +80,6 @@ fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (Di
     owner?.let(::initOwner)
     initModality(Modality.APPLICATION_MODAL)
 
-
     DialogControllerFx(dialogPane, this).let { dialogBuildApi ->
       dialogPane.styleClass.addAll("dlg")
       dialogPane.stylesheets.addAll(DIALOG_STYLESHEET)
@@ -607,6 +606,7 @@ class DialogControllerPane(private val root: BorderPane) : DialogController {
   }
 
   override fun removeButtonBar() {
+    root.bottom = null
   }
 
   override fun toggleProgress(shown: Boolean): () -> Unit {

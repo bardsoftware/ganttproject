@@ -46,6 +46,9 @@ import net.sourceforge.ganttproject.gui.ActionUtil
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 
+interface FxUiComponent {
+  fun buildNode(): Node
+}
 /**
  * @author dbarashev@bardsoftware.com
  */

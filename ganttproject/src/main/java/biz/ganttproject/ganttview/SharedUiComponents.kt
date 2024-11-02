@@ -21,9 +21,6 @@ package biz.ganttproject.ganttview
 import biz.ganttproject.app.DialogController
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.PropertySheetBuilder
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.core.option.GPObservable
-import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.option.ObservableProperty
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.createToggleSwitch
@@ -52,13 +49,14 @@ import java.util.WeakHashMap
 /**
  * This is an object that is rendered in a list view.
  */
-data class ShowHideListItem(val text: ()->String, val isVisible: ()->Boolean, val toggleVisible: ()->Unit)
+data class ShowHideListItem(val text: ()->String, val isVisible: ()->Boolean, val toggleVisible: ()->Unit, val styleClass: String = "", val hasVisibilityToggle: Boolean = true)
 
 private val ourCells = WeakHashMap<ShowHideListCell<*>, Boolean>()
 /**
  * A list cell is a UI component that renders items in a list view. It adds a show/hide icon to the item title.
  */
 internal class ShowHideListCell<T>(private val converter: (T)-> ShowHideListItem) : ListCell<T>() {
+  private var initialStyles: List<String>
   private val iconVisible = MaterialIconView(MaterialIcon.VISIBILITY)
   private val iconHidden = MaterialIconView(MaterialIcon.VISIBILITY_OFF)
   private val iconPane = StackPane().also {
@@ -70,16 +68,21 @@ internal class ShowHideListCell<T>(private val converter: (T)-> ShowHideListItem
 
   val theItem by lazy { converter(item) }
   init {
-    styleClass.add("column-item-cell")
+    initialStyles = mutableListOf<String>().also { it.addAll(styleClass) }
     alignment = Pos.CENTER_LEFT
     ourCells.put(this, true)
   }
 
   override fun updateItem(item: T?, empty: Boolean) {
     super.updateItem(item, empty)
+    styleClass.clear()
+    styleClass.addAll(initialStyles)
+    styleClass.add("column-item-cell")
+    //font = applicationFont.value
     if (item == null || empty) {
       text = ""
       graphic = null
+      styleClass.add("column-item-cell-empty")
       return
     }
     updateTheItem(converter(item))
@@ -93,15 +96,20 @@ internal class ShowHideListCell<T>(private val converter: (T)-> ShowHideListItem
     if (graphic == null) {
       graphic = iconPane
     }
-    if (item.isVisible()) {
-      styleClass.add("is-visible")
-      styleClass.remove("is-hidden")
-      iconPane.children.setAll(iconVisible)
-    } else {
-      if (!styleClass.contains("is-hidden")) {
-        styleClass.remove("is-visible")
-        styleClass.add("is-hidden")
-        iconPane.children.setAll(iconHidden)
+    if (item.styleClass.isNotBlank()) {
+      styleClass.add(item.styleClass)
+    }
+    if (item.hasVisibilityToggle) {
+      if (item.isVisible()) {
+        styleClass.add("is-visible")
+        styleClass.remove("is-hidden")
+        iconPane.children.setAll(iconVisible)
+      } else {
+        if (!styleClass.contains("is-hidden")) {
+          styleClass.remove("is-visible")
+          styleClass.add("is-hidden")
+          iconPane.children.setAll(iconHidden)
+        }
       }
     }
   }
@@ -113,21 +121,25 @@ internal class ShowHideListCell<T>(private val converter: (T)-> ShowHideListItem
   }
 }
 
+interface ItemEditorPane {
+  val node: Node
+  fun focus()
+}
 /**
  * UI for editing properties of the selected list item.
  */
-internal open class ItemEditorPane<T: Item<T>>(
+internal open class ItemEditorPaneImpl<T: Item<T>>(
   // Fields that need to be shown in the UI.
   fields: List<ObservableProperty<*>>,
   protected val editItem: ObservableProperty<T?>,
   // The whole dialog model.
   private val dialogModel: ItemListDialogModel<T>,
   // i18n
-  localizer: Localizer) {
+  localizer: Localizer): ItemEditorPane {
 
   private var isEditIgnored = false
 
-  val node: Node by lazy {
+  override val node: Node by lazy {
     vbox {
       addClasses("property-sheet-box")
       add(visibilityTogglePane)
@@ -201,7 +213,7 @@ internal open class ItemEditorPane<T: Item<T>>(
     dialogModel.requireRefresh.set(true)
   }
 
-  internal fun focus() {
+  override fun focus() {
     propertySheet.requestFocus()
     onEdit()
   }
@@ -239,7 +251,7 @@ data class BtnController<T>(
  */
 internal class ItemListDialogModel<T: Item<T>>(
   private val listItems: ObservableList<T>,
-  private val newItemFactory: ()->T,
+  private val newItemFactory: ()->T?,
   private val i18n: Localizer,
 ) {
   val btnAddController = BtnController(onAction = this::onAddColumn)
@@ -248,24 +260,25 @@ internal class ItemListDialogModel<T: Item<T>>(
   internal var selection: ()-> Collection<T> = { emptyList() }
   val requireRefresh = SimpleBooleanProperty(false)
 
-  fun onAddColumn(): T {
-    val item = newItemFactory()
-    val title = i18n.create("addItem").also {
-      it.update("")
-    }
-    var count = 1
-    while (listItems.any { it.title == title.value.trim() }) {
-      val prevValue = title.value
-      title.update(count.toString())
-      if (prevValue == title.value) {
-        break
+  fun onAddColumn(): T? =
+    newItemFactory()?.let { item ->
+      val title = i18n.create("addItem").also {
+        it.update("")
       }
-      count++
+      var count = 1
+      while (listItems.any { it.title == title.value.trim() }) {
+        val prevValue = title.value
+        title.update(count.toString())
+        if (prevValue == title.value) {
+          break
+        }
+        count++
+      }
+      item.title = title.value.trim()
+      listItems.add(item)
+      item
     }
-    item.title = title.value.trim()
-    listItems.add(item)
-    return item
-  }
+
 
   fun onDeleteColumn() {
     listItems.removeAll(selection())
@@ -285,12 +298,18 @@ internal class ItemListDialogPane<T: Item<T>>(
   // The dialog model.
   private val dialogModel: ItemListDialogModel<T>,
   // The editor pane UI.
-  val editor: ItemEditorPane<T>,
+  val editor: ItemEditorPane,
   // i18n.
   private val localizer: Localizer) {
 
   internal val listView: ListView<T> = ListView()
 
+  var isAddRemoveEnabled = true
+  var isHeaderEnabled = true
+  var contentNode = HBox().also {
+    it.children.addAll(listView, editor.node)
+    HBox.setHgrow(editor.node, Priority.ALWAYS)
+  }
   init {
     listView.apply {
       this@ItemListDialogPane.dialogModel.selection = { selectionModel.selectedItems }
@@ -317,46 +336,45 @@ internal class ItemListDialogPane<T: Item<T>>(
   fun build(dlg: DialogController) {
     dlg.addStyleClass("dlg-list-view-editor")
     dlg.addStyleSheet("/biz/ganttproject/ganttview/ListViewEditorDialog.css")
-    dlg.setHeader(
-      VBoxBuilder("header").apply {
-        addTitle(localizer.create("title")).also { hbox ->
-          hbox.alignment = Pos.CENTER_LEFT
-          hbox.isFillHeight = true
-        }
-      }.vbox
-    )
+    if (isHeaderEnabled) {
+      dlg.setHeader(
+        VBoxBuilder("header").apply {
+          addTitle(localizer.create("title")).also { hbox ->
+            hbox.alignment = Pos.CENTER_LEFT
+            hbox.isFillHeight = true
+          }
+        }.vbox
+      )
+    }
+    dlg.setContent(contentNode)
 
-    dlg.setContent(HBox().also {
-      it.children.addAll(listView, editor.node)
-      HBox.setHgrow(editor.node, Priority.ALWAYS)
-    })
-
-    dlg.setupButton(ButtonType(localizer.formatText("add"))) { btn ->
-      btn.text = localizer.formatText("add")
-      ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP)
-      btn.disableProperty().bind(dialogModel.btnAddController.isDisabled)
-      btn.styleClass.addAll("btn-attention", "secondary")
-      btn.addEventFilter(ActionEvent.ACTION) {
-        it.consume()
-        dialogModel.btnAddController.onAction().also { item ->
-          listView.scrollTo(item)
-          listView.selectionModel.select(item)
-          editor.focus()
+    if (isAddRemoveEnabled) {
+      dlg.setupButton(ButtonType(localizer.formatText("add"))) { btn ->
+        btn.text = localizer.formatText("add")
+        ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP)
+        btn.disableProperty().bind(dialogModel.btnAddController.isDisabled)
+        btn.styleClass.addAll("btn-attention", "secondary")
+        btn.addEventFilter(ActionEvent.ACTION) {
+          it.consume()
+          dialogModel.btnAddController.onAction().also { item ->
+            listView.scrollTo(item)
+            listView.selectionModel.select(item)
+            editor.focus()
+          }
         }
       }
-    }
 
-    dlg.setupButton(ButtonType(localizer.formatText("delete"))) { btn ->
-      btn.text = localizer.formatText("delete")
-      ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP_2)
-      btn.disableProperty().bind(dialogModel.btnDeleteController.isDisabled)
-      btn.addEventFilter(ActionEvent.ACTION) {
-        it.consume()
-        dialogModel.btnDeleteController.onAction()
+      dlg.setupButton(ButtonType(localizer.formatText("delete"))) { btn ->
+        btn.text = localizer.formatText("delete")
+        ButtonBar.setButtonData(btn, ButtonBar.ButtonData.HELP_2)
+        btn.disableProperty().bind(dialogModel.btnDeleteController.isDisabled)
+        btn.addEventFilter(ActionEvent.ACTION) {
+          it.consume()
+          dialogModel.btnDeleteController.onAction()
+        }
+        btn.styleClass.addAll("btn-regular", "secondary")
       }
-      btn.styleClass.addAll("btn-regular", "secondary")
     }
-
     dlg.setupButton(ButtonType.APPLY) { btn ->
       btn.text = localizer.formatText("apply")
       btn.styleClass.add("btn-attention")

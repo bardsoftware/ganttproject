@@ -18,10 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
+import biz.ganttproject.settings.SettingsDialogFx;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 
 import java.awt.event.ActionEvent;
 
@@ -44,7 +44,8 @@ public class SettingsDialogAction extends GPAction {
     if (calledFromAppleScreenMenu(e)) {
       return;
     }
-    SettingsDialog2 dialog = new SettingsDialog2(myProject, myUiFacade, "settings.app.pageOrder", "settings.app");
-    dialog.show();
+    //SettingsDialog2 dialog = new SettingsDialog2(myProject, myUiFacade, "settings.app.pageOrder", "settings.app");
+    //dialog.show();
+    new SettingsDialogFx(myProject,myUiFacade, "settings.app.pageOrder", "settings.app").showSettingsDialog();
   }
 }

@@ -85,7 +85,7 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
   // Progress indicator
   private val installFromZipUi by lazy {
     UpdateFromZip(ourLocalizer).also {
-      model.installFromZip = it::installUpdate
+      model.installFromZip = { it.installUpdate() }
     }
   }
   private val installFromChannelUi by lazy {
@@ -127,30 +127,33 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
       )
     })
 
-    dialogApi.setupButton(ButtonType.APPLY) { btn ->
-      ButtonBar.setButtonUniformSize(btn, false)
-      btn.styleClass.add("btn-attention")
-      btn.maxWidth = Double.MAX_VALUE
-      model.setupApplyButton(btn)
-    }
-
-    if (!isFromSettings) {
-      // If we show this dialog on start-up, we allow for skipping the update and add the appropriate button.
-      // This button will also behave like "close" button if we install the update.
-      dialogApi.setupButton(ButtonType.CLOSE) { btn ->
-        ButtonBar.setButtonUniformSize(btn, false)
-        btn.maxWidth = Double.MAX_VALUE
-        btn.styleClass.add("btn")
-        model.setupCloseButton(btn)
-      }
+    if (model.state == ApplyAction.UP_TO_DATE) {
+      dialogApi.removeButtonBar()
     } else {
-      dialogApi.setupButton(ButtonType("ZIP")) { btn ->
+      dialogApi.setupButton(ButtonType.APPLY) { btn ->
+        ButtonBar.setButtonUniformSize(btn, false)
+        btn.styleClass.add("btn-attention")
         btn.maxWidth = Double.MAX_VALUE
-        btn.styleClass.addAll("btn", "btn-regular")
-        model.setupToggleSourceButton(btn)
+        model.setupApplyButton(btn)
+      }
+
+      if (!isFromSettings) {
+        // If we show this dialog on start-up, we allow for skipping the update and add the appropriate button.
+        // This button will also behave like "close" button if we install the update.
+        dialogApi.setupButton(ButtonType.CLOSE) { btn ->
+          ButtonBar.setButtonUniformSize(btn, false)
+          btn.maxWidth = Double.MAX_VALUE
+          btn.styleClass.add("btn")
+          model.setupCloseButton(btn)
+        }
+      } else {
+        dialogApi.setupButton(ButtonType("ZIP")) { btn ->
+          btn.maxWidth = Double.MAX_VALUE
+          btn.styleClass.addAll("btn", "btn-regular")
+          model.setupToggleSourceButton(btn)
+        }
       }
     }
-
     dialogContent.center = installFromChannelUi.node
     dialogApi.setContent(dialogContent)
     dialogApi.setButtonPaneNode(installFromChannelUi.progressLabel)

@@ -1,0 +1,62 @@
+/*
+ * Copyright 2024 BarD Software s.r.o., Dmitry Barashev.
+ *
+ * This file is part of GanttProject, an opensource project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
+@import "../app/theme";
+.dlg-list-view-editor.dlg-settings {
+  .content-pane {
+    .list-view {
+      -fx-background-color: white;
+      -fx-border-width: 0;
+    }
+    .column-item-cell {
+      &.settings-item-header {
+        -fx-font-weight: 900;
+        -fx-font-size: 110%;
+        -fx-background-color: $gp-zebra-gray;
+        -fx-border-color: $gp-orange;
+        -fx-border-width: 0 0 2 0;
+        -fx-padding: 5 10 5 5;
+        -fx-background-insets: 1ex 0 0 0;
+        -fx-border-insets: 10 0 2 0;
+      }
+      &.settings-item-page {
+        -fx-fill: $gp-dark-gray;
+        -fx-text-fill: $gp-dark-gray;
+        &:hover {
+          -fx-cursor: hand;
+          -fx-fill: $gp-medium-gray;
+          -fx-border-color: transparent;
+          -fx-border-width: 0 0 0 2;
+        }
+        &:selected {
+          -fx-border-color: $gp-medium-gray;
+          -fx-border-width: 0 0 0 2;
+        }
+
+      }
+      &.settings-item-page {
+        -fx-background-color: white;
+      }
+    }
+    .column-item-cell-empty {
+      -fx-background-color: white;
+    }
+  }
+}
+//.column-item-cell.settings-item-header {
+//}

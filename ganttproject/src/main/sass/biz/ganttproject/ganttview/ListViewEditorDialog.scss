@@ -13,11 +13,11 @@
       -fx-border-width: 0 1 0 0;
       -fx-border-color: $gp-light-gray;
       -fx-min-width: 20em;
+      -fx-font-size: 100%;
     }
     .column-item-cell {
       -fx-fill: $gp-dark-gray;
       -fx-text-fill: $gp-dark-gray;
-      -fx-font-size: 100%;
       -fx-padding: 5 10 5 15;
       -fx-strikethrough: false;
       .glyph-icon {
