@@ -1131,7 +1131,7 @@ class DragAndDropSupport(private val selectionManager: TaskSelectionManager) {
     }
   }
   private fun dragDetected(cell: TextCell<Task, Task>) {
-    val task = cell.tableRow.treeItem.value
+    val task = cell.tableRow?.treeItem?.value ?: return
     clipboardContent = ClipboardContents(task.manager).also { clipboard ->
       clipboard.addTasks(selectionManager.selectedTasks.let {selection ->
         mutableListOf<Task>().also {
@@ -1142,7 +1142,7 @@ class DragAndDropSupport(private val selectionManager: TaskSelectionManager) {
     clipboardProcessor = ClipboardTaskProcessor(task.manager)
     val db = cell.startDragAndDrop(TransferMode.COPY)
     val content = ClipboardContent()
-    content[TEXT_FORMAT] = cell.tableRow.treeItem.value.taskID
+    content[TEXT_FORMAT] = task.taskID
     db.setContent(content)
     db.dragView = cell.snapshot(null, null)
     cell.setOnDragExited { db.clear() }
