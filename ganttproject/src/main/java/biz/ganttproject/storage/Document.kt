@@ -289,6 +289,7 @@ fun String.withGanExtension() =
 private val domParser = DocumentBuilderFactory.newInstance().also {
   it.isValidating = false
   it.isNamespaceAware = false
+  it.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
 }
 
 @Throws(SAXException::class)
