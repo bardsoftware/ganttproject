@@ -55,7 +55,9 @@ dependencies {
     }
     implementation "com.michael-bull.kotlin-result:kotlin-result:2.0.0"
 
-
+    implementation('net.harawata:appdirs:1.2.1') {
+        exclude group: 'net.java.dev.jna', module: 'jna'
+    }
     testImplementation group: 'org.easymock', name: 'easymock', version: '5.+'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.+'
 

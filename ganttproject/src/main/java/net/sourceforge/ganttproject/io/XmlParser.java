@@ -25,9 +25,7 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.parser.FileFormatException;
 import net.sourceforge.ganttproject.parser.ParsingListener;
 import net.sourceforge.ganttproject.parser.TagHandler;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 import org.xml.sax.ext.DefaultHandler2;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -115,12 +113,18 @@ public class XmlParser extends DefaultHandler2 {
     // Use the default (non-validating) parser
     SAXParserFactory factory = SAXParserFactory.newInstance();
     try {
+      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+    } catch (ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException e) {
+      GPLogger.log(e);
+      throw new IOException(e.getMessage());
+    }
+
+    try {
       // Parse the input
       SAXParser saxParser;
       saxParser = factory.newSAXParser();
       XMLReader xmlReader = saxParser.getXMLReader();
-      xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler",
-          this);
+      xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", this);
       saxParser.parse(new ByteArrayInputStream(inputBytes), this);
 
       var xmlProject = XmlSerializerKt.parseXmlProject(new String(inputBytes, Charsets.UTF_8));

@@ -137,6 +137,10 @@ check_java() {
   [[ "$VERSION" =~ 17\.? ]] && return 0;
   [[ "$VERSION" =~ 18\.? ]] && return 0;
   [[ "$VERSION" =~ 19\.? ]] && return 0;
+  [[ "$VERSION" =~ 20\.? ]] && return 0;
+  [[ "$VERSION" =~ 21\.? ]] && return 0;
+  [[ "$VERSION" =~ 22\.? ]] && return 0;
+  [[ "$VERSION" =~ 23\.? ]] && return 0;
   log "...this seems to be an old Java Runtime (or maybe just too new)";
   JAVA_COMMAND=""
   return 1

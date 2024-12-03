@@ -636,7 +636,7 @@ public class TaskImpl implements Task {
     }
 
     recalculateActivities(myManager.getConfig().getCalendar(), this, myActivities, startDate, endDate);
-    int length = 0;
+    float length = 0;
     for (TaskActivity activity : myActivities) {
       if (activity.getIntensity() > 0) {
         length += activity.getDuration().getLength(getDuration().getTimeUnit());

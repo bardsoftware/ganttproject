@@ -64,7 +64,7 @@ allprojects {
 
 subprojects {
     group 'biz.ganttproject'
-    version = new Date().format("yy.MM.dd") + "-SNAPSHOT"
+    version = "3.3.3312"
 }
 
 
