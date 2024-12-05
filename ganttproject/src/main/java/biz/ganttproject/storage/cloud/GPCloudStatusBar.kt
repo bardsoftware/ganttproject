@@ -88,7 +88,7 @@ class GPCloudStatusBar(
       field = value
       Platform.runLater {
         toggleConnect.isSelected = value
-        labelConnect.text = STATUS_BAR_LOCALIZER.formatText("connected.${value.toString().toLowerCase()}")
+        labelConnect.text = STATUS_BAR_LOCALIZER.formatText("connected.${value.toString().lowercase()}")
         GPCloudOptions.cloudStatus.value = if (value) CloudStatus.CONNECTED else CloudStatus.DISCONNECTED
       }
     }

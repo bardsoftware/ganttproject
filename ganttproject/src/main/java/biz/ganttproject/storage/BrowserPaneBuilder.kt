@@ -201,7 +201,7 @@ class BrowserPaneBuilder<T: FolderItem>(
 
   fun withActionButton(btnSetup: (Button) -> Unit) {
     this.btnSave = Button().also {
-      it.textProperty().bind(i18n.create("${this.mode.name.toLowerCase()}.actionLabel"))
+      it.textProperty().bind(i18n.create("${this.mode.name.lowercase()}.actionLabel"))
     }
     btnSave.styleClass.add("btn-attention")
 
@@ -287,7 +287,7 @@ class BrowserPaneBuilder<T: FolderItem>(
     installEventHandlers()
     rootPane.apply {
       vbox.prefWidth = 400.0
-      addTitle(this@BrowserPaneBuilder.i18n.create("${this@BrowserPaneBuilder.mode.name.toLowerCase()}.title")).also {
+      addTitle(this@BrowserPaneBuilder.i18n.create("${this@BrowserPaneBuilder.mode.name.lowercase()}.title")).also {
         it.styleClass.add("title-integrated")
       }
       add(vbox {

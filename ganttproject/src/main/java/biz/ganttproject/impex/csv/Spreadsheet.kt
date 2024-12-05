@@ -101,7 +101,7 @@ enum class SpreadsheetFormat(val extension: String) {
   CSV("csv"), XLS("xls");
 
   override fun toString(): String {
-    return "impex.csv.fileformat." + name.toLowerCase()
+    return "impex.csv.fileformat." + name.lowercase()
   }
 
   companion object {

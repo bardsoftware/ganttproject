@@ -60,7 +60,7 @@ fun buildFontAwesomeButton(iconName: String, label: String? = null, onClick: ((E
   val contentDisplay = if (label == null) ContentDisplay.GRAPHIC_ONLY else ContentDisplay.LEFT
   val size = if (label == null) "100%" else "1em"
   val result = FontAwesomeIconFactory.get().createIconButton(
-      FontAwesomeIcon.valueOf(iconName.toUpperCase()), label ?: "", size, size, contentDisplay)
+      FontAwesomeIcon.valueOf(iconName.uppercase()), label ?: "", size, size, contentDisplay)
   if (onClick != null) {
     result.addEventHandler(ActionEvent.ACTION, onClick)
   }
