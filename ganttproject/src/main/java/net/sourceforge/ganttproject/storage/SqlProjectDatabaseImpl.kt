@@ -84,6 +84,10 @@ class SqlProjectDatabaseImpl(
   override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager) =
     customPropertyStorageManager.onCustomColumnChange(customPropertyManager)
 
+  override fun updateBuiltInCalculatedColumns() {
+    runScriptFromResource(dataSource, DB_UPDATE_BUILTIN_CALCULATED_COLUMNS)
+  }
+
   /**
    * Applies updates from Colloboque
    */
@@ -538,4 +542,5 @@ const val SQL_PROJECT_DATABASE_OPTIONS = ";DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=t
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state$SQL_PROJECT_DATABASE_OPTIONS"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"
 private const val DB_INIT_SCRIPT_PATH2 = "/sql/init-project-database-step2.sql"
+private const val DB_UPDATE_BUILTIN_CALCULATED_COLUMNS = "/sql/update-builtin-calculated-columns.sql"
 private val LOG = GPLogger.create("ProjectDatabase")

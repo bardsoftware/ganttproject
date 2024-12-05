@@ -38,7 +38,9 @@ class CalculatedPropertyUpdater(
         else -> null
       }
     }
+
     projectDatabase.mapTasks(*(updaters.toTypedArray()))
+    projectDatabase.updateBuiltInCalculatedColumns()
     LOG.debug("<<<")
   }
 }

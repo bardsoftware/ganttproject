@@ -1,0 +1,1 @@
+UPDATE Task SET end_date=TASK_END_DATE(num), cost=TASK_COST(num);

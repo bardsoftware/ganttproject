@@ -167,4 +167,6 @@ interface ProjectDatabase {
    * @param customPropertyManager an instance of the CustomPropertyManager with the actual custom property definitions.
    */
   fun onCustomColumnChange(customPropertyManager: CustomPropertyManager)
+
+  fun updateBuiltInCalculatedColumns()
 }

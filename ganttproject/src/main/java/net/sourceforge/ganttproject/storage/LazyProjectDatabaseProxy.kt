@@ -50,6 +50,11 @@ class LazyProjectDatabaseProxy(
       }.toMap()
     }
   ) }
+
+  override fun updateBuiltInCalculatedColumns() {
+    getDatabase().updateBuiltInCalculatedColumns()
+  }
+
   private val projectEventListenerImpl by lazy { ProjectEventListenerImpl(this, taskManager, calculatedPropertyUpdater, filterUpdater) }
 
   private fun isInitialized(): Boolean = lazyProjectDatabase != null

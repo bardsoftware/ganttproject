@@ -1,5 +1,5 @@
--- CREATE ALIAS IF NOT EXISTS TASK_COST FOR "net.sourceforge.ganttproject.storage.H2FunctionsKt.taskCost";
--- CREATE ALIAS IF NOT EXISTS TASK_END_DATE FOR "net.sourceforge.ganttproject.storage.H2FunctionsKt.taskEndDate";
+CREATE ALIAS IF NOT EXISTS TASK_COST FOR "net.sourceforge.ganttproject.storage.H2FunctionsKt.taskCost";
+CREATE ALIAS IF NOT EXISTS TASK_END_DATE FOR "net.sourceforge.ganttproject.storage.H2FunctionsKt.taskEndDate";
 --
 -- DROP VIEW TaskViewForComputedColumns;
 -- DROP TABLE Task CASCADE ;

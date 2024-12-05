@@ -18,13 +18,12 @@
  */
 package biz.ganttproject.storage
 
-import biz.ganttproject.customproperty.CustomPropertyClass
-import biz.ganttproject.customproperty.CustomPropertyHolder
-import biz.ganttproject.customproperty.CustomPropertyManager
-import biz.ganttproject.customproperty.SimpleSelect
+import biz.ganttproject.customproperty.*
 import biz.ganttproject.storage.db.tables.Task
 import net.sourceforge.ganttproject.TestSetupHelper
+import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.storage.*
+import net.sourceforge.ganttproject.task.CostStub
 import net.sourceforge.ganttproject.task.TaskManager
 import org.h2.jdbcx.JdbcDataSource
 import org.jooq.SQLDialect
@@ -34,6 +33,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.w3c.util.DateParser
+import java.math.BigDecimal
 import java.sql.SQLException
 import java.util.*
 import javax.sql.DataSource
@@ -82,7 +83,7 @@ class CalculatedPropertyTest {
   @Test
   fun `calculated property value`() {
     val foo = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "foo")
-    val bar =customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar").also {
+    val bar = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar").also {
       it.calculationMethod = SimpleSelect(it.id, "duration + 1", resultClass = CustomPropertyClass.INTEGER.javaClass)
     }
     val baz = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "baz").also {
@@ -99,15 +100,48 @@ class CalculatedPropertyTest {
     assertEquals(1, tasks.size)
 
     val propertyHolders = createPropertyHolders(taskManager)
-    val updaters = customPropertyManager.definitions.map {def ->
-        ColumnConsumer(SimpleSelect(def.id, def.id, resultClass = def.type)) { taskNum, value ->
-          propertyHolders[taskNum]?.setValue(def, value)
-      }
-    }.toList()
-    projectDatabase.mapTasks(*(updaters.toTypedArray()))
+    val updater = CalculatedPropertyUpdater(projectDatabase, {customPropertyManager}, {propertyHolders})
+    updater.update()
 
     assertEquals(2, task.customValues.getValue(bar))
     assertEquals("foo--", task.customValues.getValue(baz))
+  }
+
+  @Test
+  fun `builtin calculated property value`() {
+    val task = taskManager.newTaskBuilder().withName("task1").withStartDate(Date()).build()
+    projectDatabase.insertTask(task)
+
+    H2Functions.taskManager.set(taskManager)
+    task.createMutator().let {
+      it.setCost(CostStub(BigDecimal.ZERO, true))
+      it.setDuration(taskManager.createLength(2))
+      it.commit()
+    }
+
+    val updater = CalculatedPropertyUpdater(projectDatabase, {customPropertyManager}, { emptyMap() })
+    updater.update()
+
+    DSL.using(dataSource, SQLDialect.H2).also {
+      val tasks = it.selectFrom(Task.TASK).fetch()
+      assertEquals(1, tasks.size)
+      assertEquals(task.end.time, DateParser.toJavaDate(tasks[0].endDate))
+    }
+
+    val humanResourceManager = HumanResourceManager(null, CustomColumnsManager())
+    val resource = humanResourceManager.newResourceBuilder().withName("foo").withID(1).withStandardRate(BigDecimal.valueOf(100)).build()
+    task.assignmentCollection.addAssignment(resource).also {
+        it.load = 100f;
+    }
+
+    updater.update()
+    DSL.using(dataSource, SQLDialect.H2).also {
+      val tasks = it.selectFrom(Task.TASK).fetch()
+      assertEquals(1, tasks.size)
+      assertEquals(task.cost.value.toDouble(), tasks[0].cost.toDouble())
+      assertEquals(200.0, tasks[0].cost.toDouble())
+    }
+
   }
 
   @Test
