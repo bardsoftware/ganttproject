@@ -122,7 +122,7 @@ public enum NotificationChannel {
   public int getUnreadCount() {
     int result = 0;
     for (NotificationItem item : myItems) {
-      if (item != null && !item.isRead()) {
+      if (item != null && !item.isRead) {
         result++;
       }
     }
@@ -133,7 +133,7 @@ public enum NotificationChannel {
     assert position >= 0 && position < myItems.size() : "Attempt to mark read item#" + position + ". I have "
         + myItems.size() + " items";
     NotificationItem item = myItems.get(position);
-    item.setRead(true);
+    item.isRead = true;
     for (Listener l : myListeners) {
       l.notificationRead(item);
     }

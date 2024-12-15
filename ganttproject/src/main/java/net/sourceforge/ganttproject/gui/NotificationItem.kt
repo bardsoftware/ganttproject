@@ -16,52 +16,36 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.gui;
+package net.sourceforge.ganttproject.gui
 
-import javax.swing.event.HyperlinkListener;
-import java.time.LocalDateTime;
+import java.time.LocalDateTime
+import javax.swing.event.HyperlinkListener
 
-public class NotificationItem {
-  public final String myTitle;
-  public final String myBody;
-  public final HyperlinkListener myHyperlinkListener;
-  private final NotificationChannel myChannel;
-  public final LocalDateTime timestamp;
-  boolean isRead;
+class NotificationItem(
+    val channel: NotificationChannel,
+    title: String,
+    body: String,
+    val timestamp: LocalDateTime,
+    val myHyperlinkListener: HyperlinkListener
+) {
+    val myTitle: String = title ?: ""
+    val myBody: String = body ?: ""
+    @JvmField
+    var isRead: Boolean = false
+    var wasShown: Boolean = false
 
-  public NotificationItem(NotificationChannel channel, String title, String body, LocalDateTime timestamp, HyperlinkListener hyperlinkListener) {
-    myTitle = title == null ? "" : title;
-    myBody = body == null ? "" : body;
-    myHyperlinkListener = hyperlinkListener;
-    myChannel = channel;
-    this.timestamp = timestamp;
-  }
-
-  public boolean isRead() {
-    return isRead;
-  }
-
-  public void setRead(boolean b) {
-    isRead = b;
-  }
-
-  public NotificationChannel getChannel() {
-    return myChannel;
-  }
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == this) {
-      return true;
+    override fun equals(obj: Any?): Boolean {
+        if (obj === this) {
+            return true
+        }
+        if (obj is NotificationItem) {
+            val that = obj
+            return myTitle == that.myTitle && myBody == that.myBody
+        }
+        return false
     }
-    if (obj instanceof NotificationItem) {
-      NotificationItem that = (NotificationItem) obj;
-      return myTitle.equals(that.myTitle) && myBody.equals(that.myBody);
-    }
-    return false;
-  }
 
-  @Override
-  public int hashCode() {
-    return myBody.hashCode();
-  }
+    override fun hashCode(): Int {
+        return myBody.hashCode()
+    }
 }

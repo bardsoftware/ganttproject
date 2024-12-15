@@ -65,7 +65,7 @@ class NotificationManagerImpl : NotificationManager {
   private lateinit var owner: Stage
 
   private val notifications = mutableListOf<NotificationItem>()
-  private val maxUnreadSeverity = SimpleObjectProperty<NotificationChannel?>()
+//  private val maxUnreadSeverity = SimpleObjectProperty<NotificationChannel?>()
 
   fun setOwner(stage: Stage) { owner = stage }
 
@@ -73,13 +73,13 @@ class NotificationManagerImpl : NotificationManager {
     // Notifications API does not provide any way to listen on the popup events, so we use a workaround:
     // listen to all windows and find the one that is a notification popup.
     Window.getWindows().addListener { c: ListChangeListener.Change<out Window?> ->
-      c.list.firstOrNull { it.isNotificationPopup() }?.let {
+      c.list.firstOrNull { it?.isNotificationPopup() ?: false }?.let {
         it.onHiding = EventHandler { evt ->
           val notificationItem = it.scene.root.findDescendant {
             it.userData is NotificationItem
           }?.userData as? NotificationItem
 
-          notificationItem?.isRead = true
+          notificationItem?.wasShown = true
           updateUi()
         }
       }
@@ -101,6 +101,7 @@ class NotificationManagerImpl : NotificationManager {
       }
       NotificationItem(it.channel, it.myTitle, body, it.timestamp, it.myHyperlinkListener)
     })
+    Thread.dumpStack()
     updateUi()
   }
 
@@ -110,19 +111,19 @@ class NotificationManagerImpl : NotificationManager {
 
   private fun updateUi() {
     FXUtil.runLater {
-      val maxSeverityItem = notifications.filter { it.isRead.not() }.maxByOrNull {
-        when (it.channel) {
-          null, NotificationChannel.RSS -> 1
-          NotificationChannel.WARNING -> 2
-          NotificationChannel.ERROR -> 3
-        }
-      } ?: run {
-        maxUnreadSeverity.set(null)
-        return@runLater
-      }
-
+//      val maxSeverityItem = notifications.filter { it.isRead.not() }.maxByOrNull {
+//        when (it.channel) {
+//          null, NotificationChannel.RSS -> 1
+//          NotificationChannel.WARNING -> 2
+//          NotificationChannel.ERROR -> 3
+//        }
+//      } ?: run {
+//        maxUnreadSeverity.set(null)
+//        return@runLater
+//      }
+//
       val popupBuilder = Notifications.create().owner(owner)
-      maxUnreadSeverity.set(maxSeverityItem.channel)
+//      maxUnreadSeverity.set(maxSeverityItem.channel)
       when (maxSeverityItem.channel) {
         NotificationChannel.RSS -> {
           popupBuilder.graphic(StackPane().also {
@@ -145,12 +146,11 @@ class NotificationManagerImpl : NotificationManager {
           popupBuilder.show()
         }
         NotificationChannel.ERROR -> {
-          popupBuilder.title(maxSeverityItem.myTitle).text(maxSeverityItem.myBody)
-          popupBuilder.graphic(
-            ImageView(Notifications::class.java.getResource("/org/controlsfx/dialog/dialog-error.png")?.toExternalForm()).also {
+            val imageView = ImageView(Notifications::class.java.getResource("/org/controlsfx/dialog/dialog-error.png")?.toExternalForm()).also {
               it.userData = maxSeverityItem
             }
-          )
+          popupBuilder.title(maxSeverityItem.myTitle).text(maxSeverityItem.myBody)
+          popupBuilder.graphic(imageView)
           popupBuilder.show()
         }
         null -> {}
