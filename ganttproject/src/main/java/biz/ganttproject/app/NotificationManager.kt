@@ -21,6 +21,7 @@ package biz.ganttproject.app
 import biz.ganttproject.FXUtil
 import biz.ganttproject.findDescendant
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.lib.fx.notifications.Notifications
 import biz.ganttproject.lib.fx.vbox
 import com.sandec.mdfx.MarkdownView
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
@@ -29,7 +30,8 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.event.EventHandler
@@ -46,9 +48,12 @@ import javafx.stage.Popup
 import javafx.stage.Stage
 import javafx.stage.Window
 import javafx.util.Callback
-import net.sourceforge.ganttproject.gui.*
+import javafx.util.Duration
+import net.sourceforge.ganttproject.gui.NotificationChannel
+import net.sourceforge.ganttproject.gui.NotificationItem
+import net.sourceforge.ganttproject.gui.NotificationManager
+import net.sourceforge.ganttproject.gui.ViewLogDialog
 import org.apache.commons.text.StringEscapeUtils
-import org.controlsfx.control.Notifications
 import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -65,7 +70,8 @@ class NotificationManagerImpl : NotificationManager {
   private lateinit var owner: Stage
 
   private val notifications = mutableListOf<NotificationItem>()
-//  private val maxUnreadSeverity = SimpleObjectProperty<NotificationChannel?>()
+  private val hasRss = SimpleBooleanProperty(false)
+  private val hasError = SimpleIntegerProperty(0)
 
   fun setOwner(stage: Stage) { owner = stage }
 
@@ -74,14 +80,15 @@ class NotificationManagerImpl : NotificationManager {
     // listen to all windows and find the one that is a notification popup.
     Window.getWindows().addListener { c: ListChangeListener.Change<out Window?> ->
       c.list.firstOrNull { it?.isNotificationPopup() ?: false }?.let {
-        it.onHiding = EventHandler { evt ->
+        it.onHidden = EventHandler { evt ->
           val notificationItem = it.scene.root.findDescendant {
             it.userData is NotificationItem
           }?.userData as? NotificationItem
-
-          notificationItem?.wasShown = true
-          updateUi()
+          if (notificationItem != null) {
+            notificationItem.wasShown = true
+          }
         }
+
       }
     }
   }
@@ -99,9 +106,13 @@ class NotificationManagerImpl : NotificationManager {
       } else {
         it.myBody
       }
+      when (it.channel) {
+        NotificationChannel.ERROR -> hasError.set(2)
+        NotificationChannel.WARNING -> if (hasError.get() != 2) hasError.set(1)
+        NotificationChannel.RSS -> hasRss.set(true)
+      }
       NotificationItem(it.channel, it.myTitle, body, it.timestamp, it.myHyperlinkListener)
     })
-    Thread.dumpStack()
     updateUi()
   }
 
@@ -109,52 +120,65 @@ class NotificationManagerImpl : NotificationManager {
     TODO("Not yet implemented")
   }
 
+  private val overflowText = RootLocalizer.create("notification.overflow.text")
+  private var isUpdateRunning = false
   private fun updateUi() {
+    if (isUpdateRunning) {
+      overflowText.update(notifications.size)
+      return
+    }
+    isUpdateRunning = true
     FXUtil.runLater {
-//      val maxSeverityItem = notifications.filter { it.isRead.not() }.maxByOrNull {
-//        when (it.channel) {
-//          null, NotificationChannel.RSS -> 1
-//          NotificationChannel.WARNING -> 2
-//          NotificationChannel.ERROR -> 3
-//        }
-//      } ?: run {
-//        maxUnreadSeverity.set(null)
-//        return@runLater
-//      }
-//
+      val thresholdNotification = Notifications.create().owner(owner)
+        .title(RootLocalizer.formatText("notification.overflow.title"))
+        .graphic(Label().also { it.textProperty().bind(overflowText) })
+        .hideAfter(Duration.seconds(3600.0))
       val popupBuilder = Notifications.create().owner(owner)
-//      maxUnreadSeverity.set(maxSeverityItem.channel)
-      when (maxSeverityItem.channel) {
-        NotificationChannel.RSS -> {
-          popupBuilder.graphic(StackPane().also {
-            it.stylesheets.add("/biz/ganttproject/app/mdfx.css")
-            it.styleClass.add("notification")
-            it.children.add(maxSeverityItem.asMarkdownView())
-            it.prefWidth = 400.0
-            it.prefHeight = 400.0
-            it.userData = maxSeverityItem
-          })
-          popupBuilder.show()
-        }
-        NotificationChannel.WARNING -> {
-          popupBuilder.title(maxSeverityItem.myTitle).text(maxSeverityItem.myBody)
-          popupBuilder.graphic(
-            ImageView(Notifications::class.java.getResource("/org/controlsfx/dialog/dialog-warning.png")?.toExternalForm()).also {
-              it.userData = maxSeverityItem
+        .hideAfter(Duration.seconds(3600.0))
+        .position(Pos.BOTTOM_RIGHT)
+        .threshold(4, thresholdNotification)
+      val headItems = notifications.filter { it.wasShown.not() }
+      headItems.forEach { item ->
+        when (item.channel) {
+          NotificationChannel.RSS -> {
+            popupBuilder.graphic(StackPane().also {
+              it.stylesheets.add("/biz/ganttproject/app/mdfx.css")
+              it.styleClass.add("notification")
+              it.children.add(item.asMarkdownView())
+              it.prefWidth = 400.0
+              it.prefHeight = 400.0
+              it.userData = item
+            })
+            popupBuilder.show()
+          }
+
+          NotificationChannel.WARNING -> {
+            popupBuilder.title(item.myTitle).text(item.myBody)
+            popupBuilder.graphic(
+              ImageView(
+                Notifications::class.java.getResource("/org/controlsfx/dialog/dialog-warning.png")?.toExternalForm()
+              ).also {
+                it.userData = item
+              }
+            )
+            popupBuilder.show()
+          }
+
+          NotificationChannel.ERROR -> {
+            val imageView = ImageView(
+              Notifications::class.java.getResource("/org/controlsfx/dialog/dialog-error.png")?.toExternalForm()
+            ).also {
+              it.userData = item
             }
-          )
-          popupBuilder.show()
+            popupBuilder.title(item.myTitle).text(item.myBody)
+            popupBuilder.graphic(imageView)
+            popupBuilder.show()
+          }
+
+          null -> {}
         }
-        NotificationChannel.ERROR -> {
-            val imageView = ImageView(Notifications::class.java.getResource("/org/controlsfx/dialog/dialog-error.png")?.toExternalForm()).also {
-              it.userData = maxSeverityItem
-            }
-          popupBuilder.title(maxSeverityItem.myTitle).text(maxSeverityItem.myBody)
-          popupBuilder.graphic(imageView)
-          popupBuilder.show()
-        }
-        null -> {}
       }
+      isUpdateRunning = false
     }
   }
 
@@ -166,30 +190,30 @@ class NotificationManagerImpl : NotificationManager {
     errorButton.onAction = EventHandler { showErrors() }
     val rssButton = Button(RootLocalizer.formatText("notification.channel.rss.label"), NEWS_ICON)
     rssButton.onAction = EventHandler { showNews() }
-    maxUnreadSeverity.addListener { _, _, newValue ->
+
+    hasError.addListener { _, _, newValue ->
       FXUtil.runLater {
         when (newValue) {
-          NotificationChannel.ERROR -> {
-            errorButton.text = RootLocalizer.formatText("notification.channel.error.label")
-            errorButton.graphic = ERROR_ICON
-            errorButton.styleClass.clear()
-            errorButton.styleClass.addAll("unread", "error")
-          }
-          NotificationChannel.WARNING -> {
+          0 -> errorButton.styleClass.clear()
+          1 -> {
             errorButton.text = RootLocalizer.formatText("notification.channel.warning.label")
             errorButton.graphic = WARNING_ICON
             errorButton.styleClass.clear()
             errorButton.styleClass.addAll("unread", "warning")
           }
-          NotificationChannel.RSS -> {
-            rssButton.styleClass.clear()
-            rssButton.styleClass.addAll("unread", "news")
-          }
-          null -> {
-            rssButton.styleClass.clear()
+          2 -> {
+            errorButton.text = RootLocalizer.formatText("notification.channel.error.label")
+            errorButton.graphic = ERROR_ICON
             errorButton.styleClass.clear()
+            errorButton.styleClass.addAll("unread", "error")
           }
         }
+      }
+    }
+    hasRss.addListener { _, _, newValue ->
+      rssButton.styleClass.clear()
+      if (newValue) {
+        rssButton.styleClass.addAll("unread", "news")
       }
     }
     it.children.addAll(rssButton, errorButton)

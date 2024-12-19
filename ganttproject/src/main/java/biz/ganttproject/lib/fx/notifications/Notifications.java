@@ -258,9 +258,9 @@ public class Notifications {
         }
 
         Notifications thresholdNotification = notification.thresholdNotification;
-        if (thresholdNotification.text == null || thresholdNotification.text.isEmpty()) {
-          thresholdNotification.text = MessageFormat.format(Localization.getString("notifications.threshold.text"), popups.size());
-        }
+//        if (thresholdNotification.text == null || thresholdNotification.text.isEmpty()) {
+//          thresholdNotification.text = MessageFormat.format(Localization.getString("notifications.threshold.text"), popups.size());
+//        }
 
         notificationToShow = thresholdNotification;
       } else {
@@ -373,9 +373,8 @@ public class Notifications {
       this.isShowing = true;
       notificationBar.doShow();
       this.addPopupToMap(p, popup);
-      System.out.println("showing notification="+this);
-      //Timeline timeline = this.createHideTimeline(popup, notificationBar, p, notification.hideAfterDuration);
-      //timeline.play();
+      Timeline timeline = this.createHideTimeline(popup, notificationBar, p, notification.hideAfterDuration);
+      timeline.play();
     }
 
     private void hide(Popup popup, Pos p) {
@@ -416,7 +415,6 @@ public class Notifications {
     }
 
     private void doAnimation(Pos p, Popup changedPopup) {
-      //System.out.println("animation changed popup="+changedPopup+" pos="+p);
       List<Popup> popups = (List)this.popupsMap.get(p);
       if (popups != null) {
         this.parallelTransition.stop();

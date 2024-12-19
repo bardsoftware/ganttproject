@@ -34,18 +34,18 @@ class NotificationItem(
     var isRead: Boolean = false
     var wasShown: Boolean = false
 
-    override fun equals(obj: Any?): Boolean {
-        if (obj === this) {
-            return true
-        }
-        if (obj is NotificationItem) {
-            val that = obj
-            return myTitle == that.myTitle && myBody == that.myBody
-        }
-        return false
-    }
+//    override fun equals(obj: Any?): Boolean {
+//        if (obj === this) {
+//            return true
+//        }
+//        if (obj is NotificationItem) {
+//            val that = obj
+//            return myTitle == that.myTitle && myBody == that.myBody
+//        }
+//        return false
+//    }
 
-    override fun hashCode(): Int {
-        return myBody.hashCode()
-    }
+//    override fun hashCode(): Int {
+//        return myBody.hashCode()
+//    }
 }
