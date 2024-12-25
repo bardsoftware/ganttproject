@@ -1,48 +1,44 @@
 /**
- * Copyright (c) 2013, ControlsFX
+ * Copyright (c) 2014, 2022, ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *     * Neither the name of ControlsFX, any associated website, nor the
+ * names of its contributors may be used to endorse or promote products
+ * derived from this software without specific prior written permission.
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * 3. Neither the name of ControlsFX, any associated website, nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * This file was copied from ControlsFX code.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL CONTROLSFX BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package biz.ganttproject.lib.fx.notifications;
 
-import impl.org.controlsfx.i18n.Localization;
 import impl.org.controlsfx.skin.NotificationBar;
+
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.ParallelTransition;
@@ -57,423 +53,645 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
-import javafx.stage.*;
+import javafx.stage.Popup;
+import javafx.stage.PopupWindow;
+import javafx.stage.Screen;
+import javafx.stage.Window;
 import javafx.util.Duration;
+
 import org.controlsfx.control.NotificationPane;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.tools.Utils;
 
+import static impl.org.controlsfx.i18n.Localization.getString;
+
+/**
+ * An API to show popup notification messages to the user in the corner of their
+ * screen, unlike the {@link NotificationPane} which shows notification messages
+ * within your application itself.
+ *
+ * <h3>Screenshot</h3>
+ * <p>
+ * The following screenshot shows a sample notification rising from the
+ * bottom-right corner of my screen:
+ *
+ * <br>
+ * <br>
+ * <img src="notifications.png" alt="Screenshot of Notifications">
+ *
+ * <h3>Code Example:</h3>
+ * <p>
+ * To create the notification shown in the screenshot, simply do the following:
+ *
+ * <pre>
+ * {@code
+ * Notifications.create()
+ *              .title("Title Text")
+ *              .text("Hello World 0!")
+ *              .showWarning();
+ * }
+ * </pre>
+ *
+ * <p>When there are too many notifications on the screen, one can opt to collapse
+ * the notifications into a single notification using {@link Notifications#threshold(int, Notifications)}.</p>
+ * <pre>
+ * {@code
+ * Notifications.create()
+ *              .title("Title Text")
+ *              .text("Hello World 0!")
+ *              .threshold(3, Notifications.create().title("Collapsed Notification"))
+ *              .showWarning();
+ * }
+ * </pre>
+ *
+ */
 public class Notifications {
-  private static final String STYLE_CLASS_DARK = "dark";
+
+  /***************************************************************************
+   * * Static fields * *
+   **************************************************************************/
+
+  private static final String STYLE_CLASS_DARK = "dark"; //$NON-NLS-1$
+
+  /***************************************************************************
+   * * Private fields * *
+   **************************************************************************/
+
   private String title;
   private String text;
   private Node graphic;
   private ObservableList<Action> actions = FXCollections.observableArrayList();
-  private Pos position;
-  private Duration hideAfterDuration;
+  private Pos position = Pos.BOTTOM_RIGHT;
+  private Duration hideAfterDuration = Duration.seconds(5);
   private boolean hideCloseButton;
   private EventHandler<ActionEvent> onAction;
   private Window owner;
-  private Screen screen;
-  private List<String> styleClass;
+  private Screen screen = null;
+
+  private List<String> styleClass = new ArrayList<>();
   private int threshold;
   private Notifications thresholdNotification;
 
+  /***************************************************************************
+   * * Constructors * *
+   **************************************************************************/
+
+  // we do not allow instantiation of the Notifications class directly - users
+  // must go via the builder API (that is, calling create())
   private Notifications() {
-    this.position = Pos.BOTTOM_RIGHT;
-    this.hideAfterDuration = Duration.seconds((double)5.0F);
-    this.screen = null;
-    this.styleClass = new ArrayList();
+    // no-op
   }
 
+  /***************************************************************************
+   * * Public API * *
+   **************************************************************************/
+
+  /**
+   * Call this to begin the process of building a notification to show.
+   */
   public static Notifications create() {
     return new Notifications();
   }
 
+  /**
+   * Specifies the text to show in the notification.
+   */
   public Notifications text(String text) {
     this.text = text;
     return this;
   }
 
+  /**
+   * Specifies the title to show in the notification.
+   */
   public Notifications title(String title) {
     this.title = title;
     return this;
   }
 
+  /**
+   * Specifies the graphic to show in the notification.
+   */
   public Notifications graphic(Node graphic) {
     this.graphic = graphic;
     return this;
   }
 
+  /**
+   * Specifies the position of the notification on screen, by default it is
+   * {@link Pos#BOTTOM_RIGHT bottom-right}.
+   */
   public Notifications position(Pos position) {
     this.position = position;
     return this;
   }
 
+  /**
+   * The dialog window owner - which can be {@link Screen}, {@link Window}
+   * or {@link Node}. If specified, the notifications will be inside
+   * the owner, otherwise the notifications will be shown within the whole
+   * primary (default) screen.
+   */
   public Notifications owner(Object owner) {
     if (owner instanceof Screen) {
-      this.screen = (Screen)owner;
+      this.screen = (Screen) owner;
     } else {
       this.owner = Utils.getWindow(owner);
     }
-
     return this;
   }
 
+  /**
+   * Specifies the duration that the notification should show, after which it
+   * will be hidden.
+   */
   public Notifications hideAfter(Duration duration) {
     this.hideAfterDuration = duration;
     return this;
   }
 
+  /**
+   * Specifies what to do when the user clicks on the notification (in addition
+   * to the notification hiding, which happens whenever the notification is
+   * clicked on).
+   */
   public Notifications onAction(EventHandler<ActionEvent> onAction) {
     this.onAction = onAction;
     return this;
   }
 
+  /**
+   * Specifies that the notification should use the built-in dark styling,
+   * rather than the default 'modena' notification style (which is a
+   * light-gray).
+   */
   public Notifications darkStyle() {
-    this.styleClass.add("dark");
+    styleClass.add(STYLE_CLASS_DARK);
     return this;
   }
 
+  /**
+   * Specifies the style classes to add to the {@link NotificationBar}.
+   */
   public Notifications styleClass(String... styleClasses) {
-    this.styleClass.addAll(Arrays.asList(styleClasses));
+    styleClass.addAll(Arrays.asList(styleClasses));
     return this;
   }
 
+  /**
+   * Specifies that the close button in the top-right corner of the notification
+   * should not be shown.
+   */
   public Notifications hideCloseButton() {
     this.hideCloseButton = true;
     return this;
   }
 
+  /**
+   * Specifies the actions that should be shown in the notification as buttons.
+   */
   public Notifications action(Action... actions) {
-    this.actions = actions == null ? FXCollections.observableArrayList() : FXCollections.observableArrayList(actions);
+    this.actions = actions == null ? FXCollections.<Action> observableArrayList() : FXCollections
+      .observableArrayList(actions);
     return this;
   }
 
+  /**
+   * Collapses all the current notifications into a single notification when the
+   * number of notifications exceed the threshold limit. A value of zero will disable
+   * the threshold behavior.
+   *
+   * @param threshold The number of notifications to show before they can be collapsed
+   *                 into a single notification.
+   * @param thresholdNotification The {@link Notifications notification} to show when
+   *                              threshold is reached.
+   */
   public Notifications threshold(int threshold, Notifications thresholdNotification) {
     this.threshold = threshold;
     this.thresholdNotification = thresholdNotification;
     return this;
   }
 
+  /**
+   * Instructs the notification to be shown, and that it should use the
+   * built-in 'warning' graphic.
+   */
   public void showWarning() {
-    this.graphic(new ImageView(Notifications.class.getResource("/org/controlsfx/dialog/dialog-warning.png").toExternalForm()));
-    this.show();
+    graphic(new ImageView(Notifications.class.getResource("/org/controlsfx/dialog/dialog-warning.png").toExternalForm())); //$NON-NLS-1$
+    show();
   }
 
+  /**
+   * Instructs the notification to be shown, and that it should use the
+   * built-in 'information' graphic.
+   */
   public void showInformation() {
-    this.graphic(new ImageView(Notifications.class.getResource("/org/controlsfx/dialog/dialog-information.png").toExternalForm()));
-    this.show();
+    graphic(new ImageView(Notifications.class.getResource("/org/controlsfx/dialog/dialog-information.png").toExternalForm())); //$NON-NLS-1$
+    show();
   }
 
+  /**
+   * Instructs the notification to be shown, and that it should use the
+   * built-in 'error' graphic.
+   */
   public void showError() {
-    this.graphic(new ImageView(Notifications.class.getResource("/org/controlsfx/dialog/dialog-error.png").toExternalForm()));
-    this.show();
+    graphic(new ImageView(Notifications.class.getResource("/org/controlsfx/dialog/dialog-error.png").toExternalForm())); //$NON-NLS-1$
+    show();
   }
 
+  /**
+   * Instructs the notification to be shown, and that it should use the
+   * built-in 'confirm' graphic.
+   */
   public void showConfirm() {
-    this.graphic(new ImageView(Notifications.class.getResource("/org/controlsfx/dialog/dialog-confirm.png").toExternalForm()));
-    this.show();
+    graphic(new ImageView(Notifications.class.getResource("/org/controlsfx/dialog/dialog-confirm.png").toExternalForm())); //$NON-NLS-1$
+    show();
   }
 
+  /**
+   * Instructs the notification to be shown.
+   */
   public void show() {
-    Notifications.NotificationPopupHandler.getInstance().show(this);
+    NotificationPopupHandler.getInstance().show(this);
   }
 
+  /**
+   * Gets the style classes that would be added to the {@link NotificationBar}.
+   */
   public List<String> getStyleClass() {
-    return this.styleClass;
+    return styleClass;
   }
 
+  /***************************************************************************
+   * * Private support classes * *
+   **************************************************************************/
+
+  // not public so no need for JavaDoc
   private static final class NotificationPopupHandler {
+
     private static final NotificationPopupHandler INSTANCE = new NotificationPopupHandler();
     private static final String FINAL_ANCHOR_Y = "finalAnchorY";
+
     private double startX;
     private double startY;
     private double screenWidth;
     private double screenHeight;
-    private final Map<Pos, List<Popup>> popupsMap = new HashMap();
-    private static final double PADDING = (double)15.0F;
-    private static final double SPACING = (double)15.0F;
-    private ParallelTransition parallelTransition = new ParallelTransition();
-    private boolean isShowing = false;
-
-    private NotificationPopupHandler() {
-    }
 
     static final NotificationPopupHandler getInstance() {
       return INSTANCE;
     }
 
+    private final Map<Pos, List<Popup>> popupsMap = new HashMap<>();
+    private static final double PADDING = 15;
+    private static final double SPACING = 15;
+
+    // for animating in the notifications
+    private ParallelTransition parallelTransition = new ParallelTransition();
+
+    private boolean isShowing = false;
+
     public void show(Notifications notification) {
       Window window;
       if (notification.owner == null) {
-        window = Utils.getWindow((Object)null);
-        Screen screen = notification.screen != null ? notification.screen : (Screen)this.getScreenBounds(window).orElse(Screen.getPrimary());
+        /*
+         * If the owner is not set, we work with the whole screen.
+         */
+        window = Utils.getWindow(null);
+        Screen screen = notification.screen != null
+          ? notification.screen
+          : getScreenBounds(window).orElse(Screen.getPrimary());
         Rectangle2D screenBounds = screen.getBounds();
-        this.startX = screenBounds.getMinX();
-        this.startY = screenBounds.getMinY();
-        this.screenWidth = screenBounds.getWidth();
-        this.screenHeight = screenBounds.getHeight();
+        startX = screenBounds.getMinX();
+        startY = screenBounds.getMinY();
+        screenWidth = screenBounds.getWidth();
+        screenHeight = screenBounds.getHeight();
       } else {
-        this.startX = notification.owner.getX();
-        this.startY = notification.owner.getY();
-        this.screenWidth = notification.owner.getWidth();
-        this.screenHeight = notification.owner.getHeight();
+        /*
+         * If the owner is set, we will make the notifications popup
+         * inside its window.
+         */
+        startX = notification.owner.getX();
+        startY = notification.owner.getY();
+        screenWidth = notification.owner.getWidth();
+        screenHeight = notification.owner.getHeight();
         window = notification.owner;
       }
-
-      this.show(window, notification);
+      show(window, notification);
     }
 
     private Optional<Screen> getScreenBounds(Window window) {
       if (window == null) {
         return Optional.empty();
-      } else {
-        ObservableList<Screen> screensForRectangle = Screen.getScreensForRectangle(window.getX(), window.getY(), window.getWidth(), window.getHeight());
-        return screensForRectangle.stream().filter(Objects::nonNull).findFirst();
       }
+      final ObservableList<Screen> screensForRectangle = Screen.getScreensForRectangle(window.getX(),
+        window.getY(),
+        window.getWidth(),
+        window.getHeight());
+      return screensForRectangle.stream()
+        .filter(Objects::nonNull)
+        .findFirst();
     }
 
-    private void show(Window owner, Notifications notification) {
-      Window ownerWindow;
-      for(ownerWindow = owner; ownerWindow instanceof PopupWindow; ownerWindow = ((PopupWindow)ownerWindow).getOwnerWindow()) {
+    private void show(Window owner, final Notifications notification) {
+      // Stylesheets which are added to the scene of a popup aren't
+      // considered for styling. For this reason, we need to find the next
+      // window in the hierarchy which isn't a popup.
+      // This is also used as an owner for a new popup
+      // to avoid using previous popups as owners.
+      Window ownerWindow = owner;
+      while (ownerWindow instanceof PopupWindow) {
+        ownerWindow = ((PopupWindow) ownerWindow).getOwnerWindow();
       }
-
+      // need to install our CSS
       Scene ownerScene = ownerWindow == null ? null : ownerWindow.getScene();
       if (ownerScene != null) {
-        String stylesheetUrl = NotificationPane.class.getResource("notificationpopup.css").toExternalForm();
+        String stylesheetUrl = NotificationPane.class.getResource("notificationpopup.css").toExternalForm(); //$NON-NLS-1$
         if (!ownerScene.getStylesheets().contains(stylesheetUrl)) {
+          // The stylesheet needs to be added at the beginning so that
+          // the styling can be adjusted with custom stylesheets.
           ownerScene.getStylesheets().add(0, stylesheetUrl);
         }
       }
 
       final Popup popup = new Popup();
       popup.setAutoFix(false);
+
       final Pos p = notification.position;
-      List<Popup> popups = (List)this.popupsMap.get(p);
+
       final Notifications notificationToShow;
+      final List<Popup> popups = popupsMap.get(p);
       if (notification.threshold > 0 && popups != null && popups.size() >= notification.threshold) {
-        for(Popup popupElement : popups) {
+        for (Popup popupElement : popups) {
           popupElement.hide();
         }
 
-        Notifications thresholdNotification = notification.thresholdNotification;
+        final Notifications thresholdNotification = notification.thresholdNotification;
 //        if (thresholdNotification.text == null || thresholdNotification.text.isEmpty()) {
-//          thresholdNotification.text = MessageFormat.format(Localization.getString("notifications.threshold.text"), popups.size());
+//          thresholdNotification.text = MessageFormat.format(getString("notifications.threshold.text"), popups.size());
 //        }
-
         notificationToShow = thresholdNotification;
       } else {
         notificationToShow = notification;
       }
 
-      NotificationBar notificationBar = new NotificationBar() {
+      final NotificationBar notificationBar = new NotificationBar() {
+        @Override
         public String getTitle() {
           return notificationToShow.title;
         }
 
+        @Override
         public String getText() {
           return notificationToShow.text;
         }
 
+        @Override
         public Node getGraphic() {
           return notificationToShow.graphic;
         }
 
+        @Override
         public ObservableList<Action> getActions() {
           return notificationToShow.actions;
         }
 
+        @Override
         public boolean isShowing() {
-          return NotificationPopupHandler.this.isShowing;
+          return isShowing;
         }
 
+        @Override
         public boolean isShowFromTop() {
           return NotificationPopupHandler.this.isShowFromTop(notificationToShow.position);
         }
 
+        @Override
         public void hide() {
-          NotificationPopupHandler.this.isShowing = false;
-          NotificationPopupHandler.this.createHideTimeline(popup, this, p, Duration.ZERO).play();
+          isShowing = false;
+
+          // this would slide the notification bar out of view,
+          // but I prefer the fade out below
+          // doHide();
+
+          // animate out the popup by fading it
+          createHideTimeline(popup, this, p, Duration.ZERO).play();
         }
 
+        @Override
         public boolean isCloseButtonVisible() {
           return !notificationToShow.hideCloseButton;
         }
 
+        @Override
         public double getContainerHeight() {
-          return NotificationPopupHandler.this.startY + NotificationPopupHandler.this.screenHeight;
+          return startY + screenHeight;
         }
 
+        @Override
         public void relocateInParent(double x, double y) {
+          // this allows for us to slide the notification upwards
           switch (p) {
             case BOTTOM_LEFT:
             case BOTTOM_CENTER:
             case BOTTOM_RIGHT:
-              popup.setAnchorY(y - (double)15.0F);
+              popup.setAnchorY(y - PADDING);
+              break;
             default:
+              // no-op
+              break;
           }
         }
       };
-      notificationBar.setMinWidth((double)400.0F);
+
+      notificationBar.setMinWidth(400);
       notificationBar.getStyleClass().addAll(notificationToShow.styleClass);
-      notificationBar.setOnMouseClicked((e) -> {
+
+      notificationBar.setOnMouseClicked(e -> {
         if (notificationToShow.onAction != null) {
           ActionEvent actionEvent = new ActionEvent(notificationBar, notificationBar);
           notificationToShow.onAction.handle(actionEvent);
-          this.createHideTimeline(popup, notificationBar, p, Duration.ZERO).play();
-        }
 
+          // animate out the popup
+          createHideTimeline(popup, notificationBar, p, Duration.ZERO).play();
+        }
       });
+
       popup.getContent().add(notificationBar);
-      popup.show(ownerWindow, (double)0.0F, (double)0.0F);
-      double anchorX = (double)0.0F;
-      double anchorY = (double)0.0F;
-      double barWidth = notificationBar.getWidth();
-      double barHeight = notificationBar.getHeight();
+      popup.show(ownerWindow, 0, 0);
+
+      // determine location for the popup
+      double anchorX = 0, anchorY = 0;
+      final double barWidth = notificationBar.getWidth();
+      final double barHeight = notificationBar.getHeight();
+
+      // get anchorX
       switch (p) {
-        case BOTTOM_LEFT:
         case TOP_LEFT:
         case CENTER_LEFT:
-          anchorX = (double)15.0F + this.startX;
+        case BOTTOM_LEFT:
+          anchorX = PADDING + startX;
           break;
-        case BOTTOM_CENTER:
+
         case TOP_CENTER:
         case CENTER:
-          anchorX = this.startX + this.screenWidth / (double)2.0F - barWidth / (double)2.0F - (double)7.5F;
+        case BOTTOM_CENTER:
+          anchorX = startX + (screenWidth / 2.0) - barWidth / 2.0 - PADDING / 2.0;
           break;
-        case BOTTOM_RIGHT:
+
+        default:
         case TOP_RIGHT:
         case CENTER_RIGHT:
-        default:
-          anchorX = this.startX + this.screenWidth - barWidth - (double)15.0F;
+        case BOTTOM_RIGHT:
+          anchorX = startX + screenWidth - barWidth - PADDING;
+          break;
       }
 
+      // get anchorY
       switch (p) {
-        case BOTTOM_LEFT:
-        case BOTTOM_CENTER:
-        case BOTTOM_RIGHT:
-        default:
-          anchorY = this.startY + this.screenHeight - barHeight - (double)15.0F;
-          break;
         case TOP_LEFT:
         case TOP_CENTER:
         case TOP_RIGHT:
-          anchorY = (double)15.0F + this.startY;
+          anchorY = PADDING + startY;
           break;
+
         case CENTER_LEFT:
         case CENTER:
         case CENTER_RIGHT:
-          anchorY = this.startY + this.screenHeight / (double)2.0F - barHeight / (double)2.0F - (double)7.5F;
+          anchorY = startY + (screenHeight / 2.0) - barHeight / 2.0 - PADDING / 2.0;
+          break;
+
+        default:
+        case BOTTOM_LEFT:
+        case BOTTOM_CENTER:
+        case BOTTOM_RIGHT:
+          anchorY = startY + screenHeight - barHeight - PADDING;
+          break;
       }
 
       popup.setAnchorX(anchorX);
-      this.setFinalAnchorY(popup, anchorY);
+      setFinalAnchorY(popup, anchorY);
       popup.setAnchorY(anchorY);
-      this.isShowing = true;
+
+      isShowing = true;
       notificationBar.doShow();
-      this.addPopupToMap(p, popup);
-      Timeline timeline = this.createHideTimeline(popup, notificationBar, p, notification.hideAfterDuration);
+
+      addPopupToMap(p, popup);
+
+      // begin a timeline to get rid of the popup
+      Timeline timeline = createHideTimeline(popup, notificationBar, p, notification.hideAfterDuration);
       timeline.play();
     }
 
     private void hide(Popup popup, Pos p) {
       popup.hide();
-      this.removePopupFromMap(p, popup);
+      removePopupFromMap(p, popup);
     }
 
-    private Timeline createHideTimeline(Popup popup, NotificationBar bar, Pos p, Duration startDelay) {
-      KeyValue fadeOutBegin = new KeyValue(bar.opacityProperty(), (double)1.0F);
-      KeyValue fadeOutEnd = new KeyValue(bar.opacityProperty(), (double)0.0F);
-      KeyFrame kfBegin = new KeyFrame(Duration.ZERO, new KeyValue[]{fadeOutBegin});
-      KeyFrame kfEnd = new KeyFrame(Duration.millis((double)500.0F), new KeyValue[]{fadeOutEnd});
-      Timeline timeline = new Timeline(new KeyFrame[]{kfBegin, kfEnd});
+    private Timeline createHideTimeline(final Popup popup, NotificationBar bar, final Pos p, Duration startDelay) {
+      KeyValue fadeOutBegin = new KeyValue(bar.opacityProperty(), 1.0);
+      KeyValue fadeOutEnd = new KeyValue(bar.opacityProperty(), 0.0);
+
+      KeyFrame kfBegin = new KeyFrame(Duration.ZERO, fadeOutBegin);
+      KeyFrame kfEnd = new KeyFrame(Duration.millis(500), fadeOutEnd);
+
+      Timeline timeline = new Timeline(kfBegin, kfEnd);
       timeline.setDelay(startDelay);
-      timeline.setOnFinished((e) -> this.hide(popup, p));
+      timeline.setOnFinished(e -> hide(popup, p));
+
       return timeline;
     }
 
     private void addPopupToMap(Pos p, Popup popup) {
       List<Popup> popups;
-      if (!this.popupsMap.containsKey(p)) {
-        popups = new LinkedList();
-        this.popupsMap.put(p, popups);
+      if (!popupsMap.containsKey(p)) {
+        popups = new LinkedList<>();
+        popupsMap.put(p, popups);
       } else {
-        popups = (List)this.popupsMap.get(p);
+        popups = popupsMap.get(p);
       }
 
-      this.doAnimation(p, popup);
+      doAnimation(p, popup);
+
+      // add the popup to the list so it is kept in memory and can be
+      // accessed later on
       popups.add(popup);
     }
 
     private void removePopupFromMap(Pos p, Popup popup) {
-      if (this.popupsMap.containsKey(p)) {
-        List<Popup> popups = (List)this.popupsMap.get(p);
+      if (popupsMap.containsKey(p)) {
+        List<Popup> popups = popupsMap.get(p);
         popups.remove(popup);
       }
-
     }
 
     private void doAnimation(Pos p, Popup changedPopup) {
-      List<Popup> popups = (List)this.popupsMap.get(p);
-      if (popups != null) {
-        this.parallelTransition.stop();
-        this.parallelTransition.getChildren().clear();
-        boolean isShowFromTop = this.isShowFromTop(p);
-        double sum = (double)0.0F;
-        double[] targetAnchors = new double[popups.size()];
-
-        for(int i = popups.size() - 1; i >= 0; --i) {
-          Popup _popup = (Popup)popups.get(i);
-          NotificationBar notificationBar = (NotificationBar)_popup.getContent().get(0);
-          double popupHeight = notificationBar.minHeight(notificationBar.getWidth());
-          if (isShowFromTop) {
-            if (i == popups.size() - 1) {
-              sum = this.getFinalAnchorY(changedPopup) + popupHeight + (double)15.0F;
-            } else {
-              sum += popupHeight + (double)15.0F;
-            }
-
-            targetAnchors[i] = sum;
-            _popup.setAnchorY(sum - popupHeight);
-          } else {
-            if (i == popups.size() - 1) {
-              sum = this.getFinalAnchorY(changedPopup) - (popupHeight + (double)15.0F);
-            } else {
-              sum -= popupHeight + (double)15.0F;
-            }
-
-            targetAnchors[i] = sum;
-            _popup.setAnchorY(sum + popupHeight);
-          }
-        }
-
-        for(int i = popups.size() - 1; i >= 0; --i) {
-          Popup _popup = (Popup)popups.get(i);
-          _popup.setAnchorX(changedPopup.getAnchorX());
-          double anchorYTarget = targetAnchors[i];
-          if (anchorYTarget < this.startY) {
-            _popup.hide();
-          }
-
-          double oldAnchorY = this.getFinalAnchorY(_popup);
-          double distance = anchorYTarget - oldAnchorY;
-          this.setFinalAnchorY(_popup, oldAnchorY + distance);
-          Transition t = new CustomTransition(_popup, oldAnchorY, distance);
-          t.setCycleCount(1);
-          this.parallelTransition.getChildren().add(t);
-        }
-
-        this.parallelTransition.play();
+      List<Popup> popups = popupsMap.get(p);
+      if (popups == null) {
+        return;
       }
+
+      parallelTransition.stop();
+      parallelTransition.getChildren().clear();
+
+      final boolean isShowFromTop = isShowFromTop(p);
+
+      // animate all other popups in the list upwards so that the new one
+      // is in the 'new' area.
+      // firstly, we need to determine the target positions for all popups
+      double sum = 0;
+      double targetAnchors[] = new double[popups.size()];
+      for (int i = popups.size() - 1; i >= 0; i--) {
+        Popup _popup = popups.get(i);
+
+        final NotificationBar notificationBar = (NotificationBar) _popup.getContent().get(0);
+        final double popupHeight = notificationBar.minHeight(notificationBar.getWidth());
+
+        if (isShowFromTop) {
+          if (i == popups.size() - 1) {
+            sum = getFinalAnchorY(changedPopup) + popupHeight + SPACING;
+          } else {
+            sum += popupHeight + SPACING;
+          }
+          targetAnchors[i] = sum;
+          _popup.setAnchorY(sum-popupHeight);
+        } else {
+          if (i == popups.size() - 1) {
+            sum = getFinalAnchorY(changedPopup) - (popupHeight + SPACING);
+          } else {
+            sum -= (popupHeight + SPACING);
+          }
+
+          targetAnchors[i] = sum;
+          _popup.setAnchorY(sum+popupHeight);
+        }
+      }
+
+      // then we set up animations for each popup to animate towards the
+      // target
+      for (int i = popups.size() - 1; i >= 0; i--) {
+        final Popup _popup = popups.get(i);
+        _popup.setAnchorX(changedPopup.getAnchorX());
+        final double anchorYTarget = targetAnchors[i];
+        if (anchorYTarget < startY) {
+          _popup.hide();
+        }
+        final double oldAnchorY = getFinalAnchorY(_popup);
+        final double distance = anchorYTarget - oldAnchorY;
+
+        setFinalAnchorY(_popup, oldAnchorY + distance);
+        Transition t = new CustomTransition(_popup, oldAnchorY, distance);
+        t.setCycleCount(1);
+        parallelTransition.getChildren().add(t);
+      }
+      parallelTransition.play();
     }
 
     private double getFinalAnchorY(Popup popup) {
-      return (Double)popup.getProperties().get("finalAnchorY");
+      return (double) popup.getProperties().get(FINAL_ANCHOR_Y);
     }
 
     private void setFinalAnchorY(Popup popup, double anchorY) {
-      popup.getProperties().put("finalAnchorY", anchorY);
+      popup.getProperties().put(FINAL_ANCHOR_Y, anchorY);
     }
 
     private boolean isShowFromTop(Pos p) {
@@ -482,33 +700,33 @@ public class Notifications {
         case TOP_CENTER:
         case TOP_RIGHT:
           return true;
-        case CENTER_LEFT:
-        case CENTER:
         default:
           return false;
       }
     }
 
     class CustomTransition extends Transition {
+
       private WeakReference<Popup> popupWeakReference;
       private double oldAnchorY;
       private double distance;
 
       CustomTransition(Popup popup, double oldAnchorY, double distance) {
-        this.popupWeakReference = new WeakReference(popup);
+        popupWeakReference = new WeakReference<>(popup);
         this.oldAnchorY = oldAnchorY;
         this.distance = distance;
-        this.setCycleDuration(Duration.millis((double)350.0F));
+        setCycleDuration(Duration.millis(350.0));
       }
 
+      @Override
       protected void interpolate(double frac) {
-        Popup popup = (Popup)this.popupWeakReference.get();
+        Popup popup = popupWeakReference.get();
         if (popup != null) {
-          double newAnchorY = this.oldAnchorY + this.distance * frac;
+          double newAnchorY = oldAnchorY + distance * frac;
           popup.setAnchorY(newAnchorY);
         }
-
       }
+
     }
   }
 }
