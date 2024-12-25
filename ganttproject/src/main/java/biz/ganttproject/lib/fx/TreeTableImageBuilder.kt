@@ -23,6 +23,7 @@ import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.TableSceneBuilder
 import biz.ganttproject.core.table.TreeTableSceneBuilder
+import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.ganttview.TaskTable
 import biz.ganttproject.ganttview.depthFirstWalk
 import javafx.scene.control.TreeItem
@@ -76,7 +77,11 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
       values = visibleColumns.associate {
         val key = columnMap[it]
         val value: String = TaskDefaultColumn.find(it.id)?.let { tdc ->
-          taskTable.taskTableModel.getValueAt(item.value, tdc).toString()
+          val typedValue = taskTable.taskTableModel.getValueAt(item.value, tdc)
+          when (tdc) {
+            TaskDefaultColumn.DURATION -> ((typedValue as TimeDuration).length).toString()
+            else -> typedValue.toString()
+          }
         } ?: run {
           val customPropertyManager = item.value.manager.customPropertyManager
           val def = customPropertyManager.getCustomPropertyDefinition(it.id)
