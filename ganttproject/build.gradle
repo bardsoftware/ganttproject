@@ -53,7 +53,7 @@ dependencies {
     implementation('net.harawata:appdirs:1.2.2') {
         exclude group: 'net.java.dev.jna', module: 'jna'
     }
-    implementation "com.michael-bull.kotlin-result:kotlin-result:2.0.0"
+    implementation "com.michael-bull.kotlin-result:kotlin-result:2.0.1"
 
     implementation('net.harawata:appdirs:1.2.2') {
         exclude group: 'net.java.dev.jna', module: 'jna'
