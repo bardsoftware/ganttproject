@@ -20,7 +20,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.9
+                  java-version: 17.0.13
                   java-package: jdk+fx
                   cache: 'gradle'
             - id: 'auth'
