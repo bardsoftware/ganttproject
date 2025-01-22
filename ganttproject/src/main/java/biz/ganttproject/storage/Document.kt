@@ -307,6 +307,8 @@ private val domParser = DocumentBuilderFactory.newInstance().also {
   it.isValidating = false
   it.isNamespaceAware = false
   it.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+  it.setFeature("http://xml.org/sax/features/external-general-entities", false)
+  it.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
 }
 
 @Throws(SAXException::class)
