@@ -34,8 +34,8 @@ repositories {
 }
 
 dependencies {
-    implementation("biz.ganttproject:biz.ganttproject.core:24.+")
-    implementation("biz.ganttproject:ganttproject:24.+")
+    implementation("biz.ganttproject:biz.ganttproject.core:25.+")
+    implementation("biz.ganttproject:ganttproject:25.+")
     implementation("org.slf4j:slf4j-api:2.0.16")
     implementation("ch.qos.logback:logback-classic:1.5.6")
     implementation("org.slf4j:jul-to-slf4j:2.0.13")
