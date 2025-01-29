@@ -614,7 +614,16 @@ class ProjectFileImporter {
           if (t.getMilestone()) {
             return Pair.create(getTaskManager().createLength(1), null);
           }
-          return getDurations(t.getStart(), myNativeProject.getTimeUnitStack().getDefaultTimeUnit().adjustRight(t.getFinish()));
+          var defaultTimeUnit = myNativeProject.getTimeUnitStack().getDefaultTimeUnit();
+          var finishDate = t.getFinish();
+          // If the finish time is at the midnight between the finish date and the next day then
+          // this if condition will evaluate to false. Otherwise, e.g. when the finish date is at 20:00, we
+          // will adjust it to the right properly.
+          // Without this hack we would add one day to such tasks.
+          if (defaultTimeUnit.adjustLeft(finishDate).before(finishDate)) {
+            finishDate = defaultTimeUnit.adjustRight(finishDate);
+          }
+          return getDurations(t.getStart(), finishDate);
         }
       };
 

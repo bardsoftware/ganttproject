@@ -26,6 +26,7 @@ import net.sf.mpxj.ProjectFile
 import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.TestSetupHelper
 import net.sourceforge.ganttproject.importer.ImporterFromGanttFile
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.awt.Color
 import java.io.File
@@ -54,6 +55,7 @@ fun initLocale() {
  * Tests project calendar export and import.
  */
 class ProjectCalendarTest: TestCase() {
+  @BeforeEach
   override fun setUp() {
     super.setUp()
     initLocale()
@@ -137,5 +139,17 @@ class ProjectCalendarTest: TestCase() {
       .build().get(Calendar.WEEK_OF_YEAR))
   }
 
+  @Test
+  fun `issue 2659`() {
+    val project = GanttProjectImpl()
+    val columns = ImporterFromGanttFile.VisibleFieldsImpl()
+    val fileUrl = ProjectCalendarTest::class.java.getResource("/issue2659.xml")
+    assertNotNull(fileUrl)
+    val importer = ProjectFileImporter(project, columns, File(fileUrl.toURI()))
+    importer.setPatchMspdi(false)
+    importer.run()
+
+    assertEquals(1, project.taskManager.tasks[0].duration.length)
+  }
 }
 
