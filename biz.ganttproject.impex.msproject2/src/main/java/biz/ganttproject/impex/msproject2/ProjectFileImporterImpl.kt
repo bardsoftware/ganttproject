@@ -539,10 +539,16 @@ class ProjectFileImporterImpl(private val myProjectFile: ProjectFile, private va
       if (t.milestone) {
         return@Function Pair.create<TimeDuration, TimeDuration>(getTaskManager().createLength(1), null)
       }
-      getDurations(
-        ProjectFileImporter.toJavaDate(t.start.toLocalDate()),
-        myNativeProject.timeUnitStack.defaultTimeUnit.adjustRight(ProjectFileImporter.toJavaDate(t.finish.toLocalDate()))
-      )
+      val defaultTimeUnit = myNativeProject.timeUnitStack.defaultTimeUnit
+      var finishDate = ProjectFileImporter.toJavaDate(t.finish.toLocalDate())
+      // If the finish time is at the midnight between the finish date and the next day then
+      // this if condition will evaluate to false. Otherwise, e.g. when the finish date is at 20:00, we
+      // will adjust it to the right properly.
+      // Without this hack we would add one day to such tasks.
+      if (defaultTimeUnit.adjustLeft(finishDate).before(finishDate)) {
+        finishDate = defaultTimeUnit.adjustRight(finishDate);
+      }
+      getDurations(ProjectFileImporter.toJavaDate(t.start.toLocalDate()), finishDate);
     }
 
   private val DURATION_FROM_START_AND_DURATION: java.util.function.Function<net.sf.mpxj.Task, Pair<TimeDuration, TimeDuration>> =
