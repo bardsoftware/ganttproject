@@ -6,7 +6,6 @@ buildscript {
         }
     }
     dependencies {
-        classpath "gradle.plugin.io.miret.etienne.gradle:sass-gradle-plugin:1.+"
         classpath 'org.openjfx:javafx-plugin:0.1.0'
     }
 }
@@ -16,11 +15,11 @@ plugins {
     id "maven-publish"
     id "nu.studer.jooq" version "9.0"
     id "org.jetbrains.kotlin.plugin.serialization" version "$kotlin_version"
+    id "io.miret.etienne.sass" version "1.5.2"
 }
 
 apply plugin: 'application'
 apply plugin: 'org.openjfx.javafxplugin'
-apply plugin: 'io.miret.etienne.sass'
 
 ext {
     libDir = 'lib/core'
