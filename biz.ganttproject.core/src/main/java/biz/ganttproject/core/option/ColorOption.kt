@@ -35,6 +35,15 @@ interface ColorOption : GPOption<Color?> {
       return res
     }
 
+    fun getColor(color: javafx.scene.paint.Color): String {
+      var res = "#"
+      listOf(color.red, color.green, color.blue).map { (it*255).toInt() }.forEach {
+        if (it <= 15) res += "0"
+        res += Integer.toHexString(it)
+      }
+      return res
+    }
+
     /** parse a string as hew and return the corresponding color.  */
     fun determineColor(hexString: String): Color {
       assert(isValidColor(hexString)) { "Can't parse color $hexString" }

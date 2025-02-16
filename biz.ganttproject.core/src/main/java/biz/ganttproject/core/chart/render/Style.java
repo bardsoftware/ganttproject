@@ -265,6 +265,9 @@ public class Style {
     public java.awt.Color get() {
       return myColor;
     }
+    public javafx.scene.paint.Color getJavaFXColor() {
+      return javafx.scene.paint.Color.color(myColor.getRed()/255.0, myColor.getGreen()/255.0, myColor.getBlue()/255.0);
+    }
 
     public static Color parse(String value) {
       if (value == null) {

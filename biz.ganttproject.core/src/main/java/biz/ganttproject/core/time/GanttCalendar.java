@@ -99,6 +99,10 @@ public class GanttCalendar extends java.util.GregorianCalendar {
     return LocalDate.parse(DateParser.getIsoDateNoHours(getTime()));
   }
 
+  public static GanttCalendar fromLocalDate(LocalDate localDate) {
+    return CalendarFactory.createGanttCalendar(DateParser.toJavaDate(localDate));
+  }
+
   public int getYear() {
     return this.get(Calendar.YEAR);
   }

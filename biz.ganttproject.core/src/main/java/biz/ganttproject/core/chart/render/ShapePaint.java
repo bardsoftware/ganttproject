@@ -18,6 +18,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.chart.render;
 
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.paint.ImagePattern;
+
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
@@ -83,6 +86,11 @@ public class ShapePaint extends TexturePaint {
       return paint.width == width && paint.height == height;
     }
     return false;
+  }
+
+  public ImagePattern asJavaFxPattern() {
+    var image = this.getImage();
+    return new ImagePattern(SwingFXUtils.toFXImage(this.getImage(), null), 0.0, 0.0, image.getWidth(), image.getHeight(), false);
   }
 
   /** @return a string for the shape */
