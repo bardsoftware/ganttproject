@@ -18,9 +18,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
+import biz.ganttproject.core.chart.render.Style
 import biz.ganttproject.core.option.*
 import biz.ganttproject.lib.fx.AutoCompletionTextFieldBinding
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
+import biz.ganttproject.storage.CellFactory
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
@@ -31,21 +33,28 @@ import javafx.geometry.HPos
 import javafx.geometry.VPos
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.control.Spinner
 import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.paint.Color
+import javafx.scene.shape.Rectangle
 import javafx.stage.FileChooser
+import javafx.util.Callback
 import javafx.util.StringConverter
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.util.BrowserControl
 import org.controlsfx.control.textfield.CustomTextField
 import java.awt.event.ActionEvent
 import java.io.File
+import java.time.LocalDate
 
-internal data class OptionItem(val option: ObservableProperty<*>, val editor: Node, val label: String?)
+internal interface RowBuilder {
+  fun build(grid: GridPane, rowNum: Int): Int
+}
+
 private val MIN_COLUMN_WIDTH = 100.0
 
 class PropertySheet(
@@ -62,51 +71,99 @@ class PropertySheet(
     set(value) { node.isDisable = value }
 }
 
-internal typealias OptionItemBuilder = () -> OptionItem
-class PropertyPaneBuilder(private val localizer: Localizer) {
+class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane: PropertyPane) {
   internal val validationErrors = FXCollections.observableMap(mutableMapOf<ObservableProperty<*>, String>())
   internal val isEscCloseEnabled = SimpleBooleanProperty(true)
-  internal val itemBuilders = mutableListOf<OptionItemBuilder>()
+  internal val rowBuilders = mutableListOf<RowBuilder>()
+
+  fun stylesheet(stylesheet: String) {
+    gridPane.stylesheets.add(stylesheet)
+  }
+
+  fun title(title: LocalizedString) {
+    rowBuilders.add(LabelRowBuilder(title.value, "title"))
+  }
+
+  fun skip(rowNum: Int = 1) {
+    rowBuilders.add(LabelRowBuilder("\n".repeat(rowNum), "skip"))
+  }
 
   fun text(property: ObservableString, optionValues: (TextDisplayOptions.()->Unit)? = null) {
-    itemBuilders.add {
+    rowBuilders.add(run {
       val options = optionValues?.let { TextDisplayOptions().apply(it) }
-      createOptionItem(property, createStringOptionEditor(property, options))
-    }
+      createOptionItem(property, createStringOptionEditor(property, options), options)
+    })
   }
 
   fun file(property: ObservableFile, optionValues: (FileDisplayOptions.()->Unit)? = null) {
-    itemBuilders.add {
+    rowBuilders.add(run {
       val options = optionValues?.let { FileDisplayOptions().apply(it) }
       createOptionItem(property, createFileOptionEditor(property, options))
-    }
+    })
   }
 
-  private fun createOptionItem(property: ObservableProperty<*>, editor: Node): OptionItem {
+  fun checkbox(property: ObservableBoolean) {
+    rowBuilders.add(run {
+      createOptionItem(property, createBooleanOptionEditor(property))
+    })
+  }
+
+  fun date(property: ObservableDate) {
+    rowBuilders.add(createOptionItem(property, createDateOptionEditor(property)))
+  }
+
+  fun numeric(property: ObservableInt, optionValues: (IntDisplayOptions.()->Unit)? = null) {
+    rowBuilders.add(run {
+      val options = optionValues?.let { IntDisplayOptions().apply(it) } ?: IntDisplayOptions()
+      createOptionItem(property, createIntOptionEditor(property, options))
+    })
+  }
+
+  fun <E: Enum<E>> dropdown(property: ObservableEnum<E>, optionValues: (DropdownDisplayOptions<E>.()->Unit)? = null) {
+    rowBuilders.add(run {
+      val options = optionValues?.let { DropdownDisplayOptions<E>().apply(it) }
+      createOptionItem(property, createEnumerationOptionEditor(property, options))
+    })
+  }
+
+  fun color(property: ObservableColor) {
+    rowBuilders.add(createOptionItem(property, createColorOptionEditor(property)))
+  }
+
+  fun custom(property: ObservableProperty<*>, node: Node) {
+    rowBuilders.add(createOptionItem(property, node))
+  }
+
+  private fun createOptionItem(property: ObservableProperty<*>, editor: Node, options: PropertyDisplayOptions<*>? = null): OptionRowBuilder {
     property.isWritable.addWatcher { evt -> editor.isDisable = !evt.newValue }
-    return OptionItem(property, editor, getOptionLabel(property))
+    return OptionRowBuilder(property, editor, getOptionLabel(property), options)
   }
 
   fun <T> add(property: ObservableProperty<T>, displayOptions: PropertyDisplayOptions<T>? = null) {
-    itemBuilders.add {
+    rowBuilders.add(run {
       createOptionEditorAndLabel(property)
-    }
+    })
   }
 
-  private fun createOptionEditorAndLabel(option: ObservableProperty<*>): OptionItem {
+  private fun createOptionEditorAndLabel(option: ObservableProperty<*>): OptionRowBuilder {
     val editor = when (option) {
       is ObservableBoolean -> createBooleanOptionEditor(option)
       is ObservableString -> createStringOptionEditor(option)
       is ObservableEnum -> createEnumerationOptionEditor(option)
       is ObservableFile -> createFileOptionEditor(option)
+      is ObservableDate -> createDateOptionEditor(option)
+      is ObservableInt -> createIntOptionEditor(option)
+      is ObservableColor -> createColorOptionEditor(option)
+      is ObservableNumeric<*> -> error("Can't create editor for ObservableNumeric=${option.id}")
       is ObservableObject<*> -> error("Can't create editor for ObservableObject=${option.id}")
     }
     option.isWritable.addWatcher { evt -> editor.isDisable = !evt.newValue }
+    editor.isDisable = option.isWritable.value.not()
 
-    return OptionItem(option, editor, getOptionLabel(option))
+    return OptionRowBuilder(option, editor, getOptionLabel(option), null)
   }
 
-  private fun createBooleanOptionEditor(option: ObservableBoolean): Node {
+  fun createBooleanOptionEditor(option: ObservableBoolean): Node {
     return CheckBox().also {checkBox ->
       checkBox.onAction = EventHandler {
         option.set(checkBox.isSelected, checkBox)
@@ -120,11 +177,28 @@ class PropertyPaneBuilder(private val localizer: Localizer) {
 
   }
 
-  private fun <E: Enum<E>> createEnumerationOptionEditor(option: ObservableEnum<E>): Node {
+  private fun <E: Enum<E>> createEnumerationOptionEditor(
+    option: ObservableEnum<E>, displayOptions: DropdownDisplayOptions<E>? = null): Node {
+
     val key2i18n: List<Pair<E, String>> = option.allValues.map { it to localizer.formatText("$it.label") }.toList()
     return ComboBox(FXCollections.observableArrayList(key2i18n)).also { comboBox ->
       comboBox.onAction = EventHandler{
         option.set(comboBox.value.first, comboBox)
+      }
+      displayOptions?.cellFactory?.let { customCellFactory ->
+        comboBox.cellFactory = Callback { p ->
+          object: ListCell<Pair<E, String>>() {
+            override fun updateItem(item: Pair<E, String>?, empty: Boolean) {
+              super.updateItem(item, empty)
+              if (item == null || empty) {
+                setGraphic(null);
+              } else {
+                graphic = customCellFactory(this, item)
+              }
+            }
+          }
+        }
+        comboBox.buttonCell = comboBox.cellFactory.call(null)
       }
       option.addWatcher { evt ->
         if (evt.trigger != comboBox) {
@@ -135,10 +209,11 @@ class PropertyPaneBuilder(private val localizer: Localizer) {
         override fun toString(item: Pair<E, String>?) = item?.second
         override fun fromString(string: String?) = key2i18n.find { it.second == string }
       }
+      comboBox.value = key2i18n.find { it.first == option.value }
     }
   }
 
-  private fun createStringOptionEditor(property: ObservableString, displayOptions: TextDisplayOptions? = null): Node {
+  fun createStringOptionEditor(property: ObservableString, displayOptions: TextDisplayOptions? = null): Node {
     val textField = when {
       property.isScreened -> PasswordField()
       displayOptions?.isMultiline == true -> TextArea().also {
@@ -178,7 +253,7 @@ class PropertyPaneBuilder(private val localizer: Localizer) {
         textField.text = property.value
       }
     }
-
+    textField.text = property.value
     return textField
   }
 
@@ -227,10 +302,153 @@ class PropertyPaneBuilder(private val localizer: Localizer) {
 
   }
 
+  fun createDateOptionEditor(option: ObservableDate): Node {
+    return DatePicker(option.value ?: LocalDate.now()).also { picker ->
+      option.addWatcher { evt ->
+        if (evt.trigger != picker) picker.value = evt.newValue
+      }
+      picker.valueProperty().subscribe { oldValue, newValue ->
+        option.set(newValue, picker)
+      }
+      option.isWritable.addWatcher { evt -> picker.isDisable = !evt.newValue }
+      picker.isDisable = option.isWritable.value.not()
+    }
+  }
+
+  private fun createIntOptionEditor(option: ObservableInt, displayOptions: IntDisplayOptions = IntDisplayOptions()): Node {
+    return Spinner<Int>().also { spinner ->
+      spinner.isEditable = true
+      val valueFactory = SpinnerValueFactory.IntegerSpinnerValueFactory(displayOptions.minValue, displayOptions.maxValue, option.value)
+      spinner.valueFactory = valueFactory
+      spinner.valueProperty().subscribe { oldValue, newValue ->
+        option.set(newValue, spinner)
+      }
+      option.addWatcher {
+        if (it.trigger != spinner) {
+          valueFactory.value = it.newValue
+        }
+      }
+    }
+  }
+  private fun _createIntOptionEditor(option: ObservableInt): Node {
+    return TextField().also { textField ->
+      val validatedText = textField.textProperty().validated(option.validator)
+      option.isWritable.addWatcher {
+        if (it.newValue) {
+          validatedText.validate(textField.text, null)
+        }
+      }
+      validatedText.addWatcher { evt ->
+        evt.newValue?.let {option.set(it, textField)}
+      }
+      validatedText.validationMessage.addWatcher {
+        if (it.newValue == null) {
+          textField.markValid()
+        } else {
+          textField.markInvalid()
+        }
+      }
+      option.addWatcher {
+        if (it.trigger != textField) {
+          textField.text = option.value.toString()
+        }
+      }
+      textField.text = option.value.toString()
+    }
+  }
+
+  private fun createColorOptionEditor(option: ObservableColor): Node {
+    return ColorPicker(option.value?.javaFXColor ?: Color.WHITE).also { picker ->
+      option.addWatcher { evt ->
+        if (evt.trigger != picker) picker.value = evt.newValue?.javaFXColor
+      }
+      picker.valueProperty().subscribe { oldValue, newValue ->
+        option.set(Style.Color.parse(ColorOption.Util.getColor(newValue)), picker)
+      }
+    }
+  }
   private fun createNoEditor(option: GPOption<*>) = Label(option.value?.toString())
 
 
-  private fun getOptionLabel(option: ObservableProperty<*>) = localizer.formatTextOrNull("${option.id}.label")
+  private fun getOptionLabel(option: ObservableProperty<*>) = localizer.formatText("${option.id}.label")
+
+  inner class OptionRowBuilder(
+    val option: ObservableProperty<*>,
+    val editor: Node,
+    val label: String?,
+    val options: PropertyDisplayOptions<*>?
+  ): RowBuilder {
+    private fun createLabel(item: OptionRowBuilder): Label {
+      return Label(item.label)
+    }
+
+    override fun build(gridPane: GridPane, idx: Int): Int {
+      var resultRow = idx
+      if (label != null) {
+        val label = createLabel(this)
+        when (options?.labelPosition ?: LabelPosition.LEFT) {
+          LabelPosition.LEFT -> {
+            gridPane.add(label, 0, idx)
+            GridPane.setHgrow(label, Priority.NEVER)
+            GridPane.setHalignment(label, HPos.RIGHT)
+          }
+          LabelPosition.ABOVE -> {
+            gridPane.add(label, 0, idx, 2, 1)
+            GridPane.setHgrow(label, Priority.NEVER)
+            GridPane.setHalignment(label, HPos.LEFT)
+            resultRow++
+          }
+        }
+
+        if (editor is Region) {
+          editor.minWidth = MIN_COLUMN_WIDTH
+          editor.maxWidth = Double.MAX_VALUE
+        }
+        if (editor is TextArea) {
+          GridPane.setValignment(label, VPos.TOP)
+        }
+        label.labelFor = editor
+        HBox(editor).also {hbox ->
+          HBox.setHgrow(editor, Priority.ALWAYS)
+
+          getOptionHelpUrl(option)?.let { url ->
+            hbox.children.add(createButton(OpenUrlAction(url), onlyIcon = true)?.also {
+              it.styleClass.add("btn-help-url")
+            })
+          }
+          when (options?.labelPosition ?: LabelPosition.LEFT) {
+            LabelPosition.LEFT -> {
+              gridPane.add(hbox, 1, idx)
+              GridPane.setHgrow(hbox, Priority.SOMETIMES)
+            }
+            LabelPosition.ABOVE -> {
+              gridPane.add(hbox, 0, resultRow, 2, 1)
+              GridPane.setHgrow(hbox, Priority.ALWAYS)
+            }
+          }
+        }
+
+        if (idx == 0) {
+          gridPane.focusedProperty().addListener { _, oldValue, newValue ->
+            if (!oldValue && newValue) {
+              editor.requestFocus()
+            }
+          }
+        }
+      }
+      return resultRow
+    }
+  }
+
+  inner class LabelRowBuilder(val text: String, val styleClass: String): RowBuilder {
+    override fun build(grid: GridPane, rowNum: Int): Int {
+      gridPane.add(Label(text).also { it.styleClass.add(styleClass) }, 0, rowNum, 2, 1)
+      return rowNum
+    }
+  }
+
+  private fun getOptionHelpUrl(option: ObservableProperty<*>) = localizer.formatTextOrNull("${option.id}.helpUrl")
+
 }
 
 class PropertySheetBuilder(private val localizer: Localizer) {
@@ -240,43 +458,10 @@ class PropertySheetBuilder(private val localizer: Localizer) {
       it.styleClass.add("property-pane")
       it.stylesheets.add("/biz/ganttproject/app/PropertySheet.css")
     }
-    val paneBuilder = PropertyPaneBuilder(localizer).apply(code)
-    paneBuilder.itemBuilders.map { it.invoke() }.forEachIndexed { idx, item ->
-      if (item.label != null) {
-        val label = createLabel(item)
-        gridPane.add(label, 0, idx)
-        GridPane.setHgrow(label, Priority.NEVER)
-        GridPane.setHalignment(label, HPos.RIGHT)
-        item.editor.also {editor ->
-          if (editor is Region) {
-            editor.minWidth = MIN_COLUMN_WIDTH
-            editor.maxWidth = Double.MAX_VALUE
-          }
-          if (editor is TextArea) {
-            GridPane.setValignment(label, VPos.TOP)
-          }
-          label.labelFor = editor
-          HBox(editor).also {hbox ->
-            HBox.setHgrow(item.editor, Priority.ALWAYS)
-
-            getOptionHelpUrl(item.option)?.let { url ->
-              hbox.children.add(createButton(OpenUrlAction(url), onlyIcon = true)?.also {
-                it.styleClass.add("btn-help-url")
-              })
-            }
-            gridPane.add(hbox, 1, idx)
-            GridPane.setHgrow(hbox, Priority.SOMETIMES)
-          }
-        }
-
-      }
-      if (idx == 0) {
-        gridPane.focusedProperty().addListener { _, oldValue, newValue ->
-          if (!oldValue && newValue) {
-            item.editor.requestFocus()
-          }
-        }
-      }
+    val paneBuilder = PropertyPaneBuilder(localizer, gridPane).apply(code)
+    var rowNum = 1
+    paneBuilder.rowBuilders.forEachIndexed { _, builder ->
+      rowNum = builder.build(gridPane, rowNum) + 1
     }
     return PropertySheet(gridPane, paneBuilder.validationErrors, paneBuilder.isEscCloseEnabled)
   }
@@ -289,18 +474,12 @@ class PropertySheetBuilder(private val localizer: Localizer) {
       }
     }
   }
-
-  private fun createLabel(item: OptionItem): Label {
-    return Label(item.label)
-  }
-
-  private fun getOptionHelpUrl(option: ObservableProperty<*>) = localizer.formatTextOrNull("${option.id}.helpUrl")
 }
 
 
-internal class PropertyPane : GridPane() {
+class PropertyPane : GridPane() {
   init {
-    vgap = 10.0
+    vgap = 5.0
     hgap = 10.0
     //padding = Insets(5.0, 15.0, 5.0, 15.0)
     styleClass.add("property-pane")
@@ -325,7 +504,12 @@ private class OpenUrlAction(private val url: String): GPAction("help.openUrl") {
   }
 }
 
-sealed class PropertyDisplayOptions<P>()
+enum class LabelPosition {
+  LEFT, ABOVE
+}
+sealed class PropertyDisplayOptions<P> {
+  var labelPosition: LabelPosition = LabelPosition.LEFT
+}
 data class TextDisplayOptions(
   var isMultiline: Boolean = false,
   var isScreened: Boolean = false,
@@ -333,3 +517,10 @@ data class TextDisplayOptions(
 ): PropertyDisplayOptions<String?>()
 data class FileExtensionFilter(val description: String, val extensions: List<String>)
 data class FileDisplayOptions(val extensionFilters: MutableList<FileExtensionFilter> = mutableListOf<FileExtensionFilter>()): PropertyDisplayOptions<File>()
+data class IntDisplayOptions(
+  var minValue: Int = 0,
+  var maxValue: Int = Int.MAX_VALUE,
+) : PropertyDisplayOptions<Int>()
+data class DropdownDisplayOptions<E: Enum<E>>(
+  var cellFactory: ((ListCell<Pair<E, String>>, Pair<E, String>) -> Node)? = null
+): PropertyDisplayOptions<E>()
