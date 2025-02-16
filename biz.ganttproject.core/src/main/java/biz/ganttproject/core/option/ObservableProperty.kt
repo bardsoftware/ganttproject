@@ -19,7 +19,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package biz.ganttproject.core.option
 
+import biz.ganttproject.core.chart.render.Style
+import biz.ganttproject.core.chart.render.Style.Color
 import java.io.File
+import java.time.LocalDate
 
 data class Completion(val posStart: Int, val posEnd: Int, val text: String)
 
@@ -57,7 +60,7 @@ class ObservableImpl<T>(initValue: T): GPObservable<T> {
 
 sealed class ObservableProperty<T>(
   val id: String,
-  initValue: T,
+  val initValue: T,
   private val delegate: ObservableImpl<T> = ObservableImpl(initValue))
   : GPObservable<T> by delegate {
   private val _isWritable = ObservableImpl( true)
@@ -68,6 +71,12 @@ sealed class ObservableProperty<T>(
   }
   fun setWritable(value: Boolean) {
     _isWritable.set(value)
+  }
+
+  fun ifChanged(code: (T)->Unit) {
+    if (initValue != value) {
+      code(value)
+    }
   }
 }
 
@@ -92,3 +101,10 @@ class ObservableFile(id: String, initValue: File? = null)
 class ObservableObject<T>(id: String = "", initValue: T?)
   : ObservableProperty<T?>(id, initValue)
 
+class ObservableDate(id: String, initValue: LocalDate? = null)
+  : ObservableProperty<LocalDate?>(id, initValue)
+
+class ObservableColor(id: String, initValue: Style.Color? = null) : ObservableProperty<Color?>(id, initValue)
+
+open class ObservableNumeric<T: Number>(id: String, initValue: T, val validator: ValueValidator<T>) : ObservableProperty<T>(id, initValue)
+class ObservableInt(id: String, initValue: Int) : ObservableNumeric<Int>(id, initValue, integerValidator)
