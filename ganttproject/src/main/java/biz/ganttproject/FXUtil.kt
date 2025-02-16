@@ -26,11 +26,7 @@ import javafx.event.ActionEvent
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.Parent
-import javafx.scene.control.Button
-import javafx.scene.control.ContentDisplay
-import javafx.scene.control.Labeled
-import javafx.scene.control.ScrollPane
-import javafx.scene.control.TitledPane
+import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.paint.Color
 import javafx.stage.Window
@@ -43,6 +39,7 @@ import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.ActionUtil
+import java.lang.Runnable
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 
@@ -303,7 +300,7 @@ fun Parent.walkTree(code: (Node)->Unit) {
         }
       }
       it is Parent -> it.walkTree(code)
-      else -> code(this)
+      else -> code(it)
     }
   }
 }

@@ -26,7 +26,6 @@ import biz.ganttproject.core.option.DefaultColorOption;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -54,6 +53,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 /**
  * Real panel for editing task properties
@@ -253,6 +254,13 @@ public class GanttTaskPropertiesBean extends JPanel {
     generalPanel.add(propertiesWrapper);
     generalPanel.add(notesPanel);
     SpringUtilities.makeCompactGrid(generalPanel, 1, 2, 1, 1, 10, 5);
+    generalPanel.addFocusListener(new FocusAdapter() {
+      @Override
+      public void focusGained(FocusEvent e) {
+        System.out.println("Focus gained, general Panel");
+        nameField1.requestFocus();
+      }
+    });
   }
 
   private void constructEarliestBegin(Container propertiesPanel) {
@@ -334,69 +342,71 @@ public class GanttTaskPropertiesBean extends JPanel {
     constructCustomColumnPanel();
   }
 
+  public void save(TaskMutator mutator) {
+    myAllocationsPanel.commit(mutator);
+    myCustomColumnPanel.commit(mutator);
+    mutator.commit();
+    myDependenciesPanel.commit();
+  }
   /** Apply the modified properties to the selected Tasks */
   public void applySettings() {
     for (int i = 0; i < selectedTasks.length; i++) {
       // TODO The originalXXX values should not be used,
       // but the original values should be read from each processed task to
       // determine whether the value has been changed
-      TaskMutator mutator = selectedTasks[i].createMutator();
-      if (originalName == null || !originalName.equals(getTaskName())) {
-        mutator.setName(getTaskName());
-      }
-      if (originalWebLink == null || !originalWebLink.equals(getWebLink())) {
-        mutator.setWebLink(getWebLink());
-      }
-      if (mileStoneCheckBox1 != null) {
-        if (originalIsMilestone != isMilestone()) {
-          mutator.setMilestone(isMilestone());
-        }
-      } else if (projectTaskCheckBox1 != null) {
-        if (originalIsProjectTask != isProjectTask()) {
-          mutator.setProjectTask(isProjectTask());
-        }
-      }
-      if (!originalStartDate.equals(getStart())) {
-        mutator.setStart(getStart());
-      }
-      if (!originalEndDate.equals(getEnd())) {
-        mutator.setEnd(getEnd());
-      }
-      if (originalEarliestBeginDate == null && getThird() != null || originalEarliestBeginDate != null && getThird() == null
-          || originalEarliestBeginDate != null && !originalEarliestBeginDate.equals(getThird())
-          || originalEarliestBeginEnabled != getThirdDateConstraint()) {
-        mutator.setThird(getThird(), getThirdDateConstraint());
-      }
+//      TaskMutator mutator = selectedTasks[i].createMutator();
+//      if (originalName == null || !originalName.equals(getTaskName())) {
+//        mutator.setName(getTaskName());
+//      }
+//      if (originalWebLink == null || !originalWebLink.equals(getWebLink())) {
+//        mutator.setWebLink(getWebLink());
+//      }
+//      if (mileStoneCheckBox1 != null) {
+//        if (originalIsMilestone != isMilestone()) {
+//          mutator.setMilestone(isMilestone());
+//        }
+//      } else if (projectTaskCheckBox1 != null) {
+//        if (originalIsProjectTask != isProjectTask()) {
+//          mutator.setProjectTask(isProjectTask());
+//        }
+//      }
+//      if (!originalStartDate.equals(getStart())) {
+//        mutator.setStart(getStart());
+//      }
+//      if (!originalEndDate.equals(getEnd())) {
+//        mutator.setEnd(getEnd());
+//      }
+//      if (originalEarliestBeginDate == null && getThird() != null || originalEarliestBeginDate != null && getThird() == null
+//          || originalEarliestBeginDate != null && !originalEarliestBeginDate.equals(getThird())
+//          || originalEarliestBeginEnabled != getThirdDateConstraint()) {
+//        mutator.setThird(getThird(), getThirdDateConstraint());
+//      }
+//
+//      if (getLength() > 0) {
+//        mutator.setDuration(selectedTasks[i].getManager().createLength(getLength()));
+//      }
+//      if (!Objects.equal(originalNotes, getNotes())) {
+//        mutator.setNotes(getNotes());
+//      }
+//      if (originalCompletionPercentage != getPercentComplete()) {
+//        mutator.setCompletionPercentage(getPercentComplete());
+//      }
+//      if (this.originalPriority != getPriority()) {
+//        mutator.setPriority(getPriority());
+//      }
+//      mutator.setColor(myTaskColorOption.getValue());
+//      if (this.originalShape == null && shapeComboBox.getSelectedIndex() != 0 || originalShape != null
+//          && !this.originalShape.equals(shapeComboBox.getSelectedPaint())) {
+//        mutator.setShape(new ShapePaint((ShapePaint) shapeComboBox.getSelectedPaint(), Color.white,
+//            myTaskColorOption.getValue()));
+//      }
+//
 
-      if (getLength() > 0) {
-        mutator.setDuration(selectedTasks[i].getManager().createLength(getLength()));
-      }
-      if (!Objects.equal(originalNotes, getNotes())) {
-        mutator.setNotes(getNotes());
-      }
-      if (originalCompletionPercentage != getPercentComplete()) {
-        mutator.setCompletionPercentage(getPercentComplete());
-      }
-      if (this.originalPriority != getPriority()) {
-        mutator.setPriority(getPriority());
-      }
-      mutator.setColor(myTaskColorOption.getValue());
-      if (this.originalShape == null && shapeComboBox.getSelectedIndex() != 0 || originalShape != null
-          && !this.originalShape.equals(shapeComboBox.getSelectedPaint())) {
-        mutator.setShape(new ShapePaint((ShapePaint) shapeComboBox.getSelectedPaint(), Color.white,
-            myTaskColorOption.getValue()));
-      }
-
-      myAllocationsPanel.commit(mutator);
-      myCustomColumnPanel.commit(mutator);
-      mutator.commit();
-      myDependenciesPanel.commit();
-
-      if (!myShowInTimeline.isSelected()) {
-        myUIfacade.getCurrentTaskView().getTimelineTasks().remove(selectedTasks[i]);
-      } else {
-        myUIfacade.getCurrentTaskView().getTimelineTasks().add(selectedTasks[i]);
-      }
+//      if (!myShowInTimeline.isSelected()) {
+//        myUIfacade.getCurrentTaskView().getTimelineTasks().remove(selectedTasks[i]);
+//      } else {
+//        myUIfacade.getCurrentTaskView().getTimelineTasks().add(selectedTasks[i]);
+//      }
     }
   }
 
@@ -590,5 +600,11 @@ public class GanttTaskPropertiesBean extends JPanel {
       result = null;
     }
     return result;
+  }
+
+  public void onActivate(JComponent contentNode) {
+    if (contentNode == generalPanel) {
+      nameField1.requestFocusInWindow();
+    }
   }
 }

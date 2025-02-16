@@ -28,6 +28,7 @@ import biz.ganttproject.FXUtilKt;
 import biz.ganttproject.app.DialogKt;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Insets;
+import javafx.scene.Parent;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -40,6 +41,7 @@ import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
+import net.sourceforge.ganttproject.gui.taskproperties.TaskPropertiesController;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
@@ -53,11 +55,14 @@ public class GanttDialogProperties {
   public void show(final IGanttProject project, final UIFacade uiFacade) {
     final GanttLanguage language = GanttLanguage.getInstance();
     final GanttTaskPropertiesBean taskPropertiesBean = new GanttTaskPropertiesBean(myTasks, project, uiFacade);
+    final var taskPropertiesController = new TaskPropertiesController(myTasks[0], uiFacade);
+
     final GPAction[] actions = new GPAction[] { new OkAction() {
       @Override
       public void actionPerformed(ActionEvent arg0) {
         uiFacade.getUndoManager().undoableEdit(language.getText("properties.changed"), () -> {
-          taskPropertiesBean.applySettings();
+          var mutator = taskPropertiesController.save();
+          taskPropertiesBean.save(mutator);
           try {
             project.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
           } catch (TaskDependencyException e) {
@@ -92,7 +97,21 @@ public class GanttDialogProperties {
       dialogController.addStyleClass("dlg-lock");
       var tabbedPane = new TabPane();
       tabbedPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-
+      tabbedPane.getSelectionModel().selectedItemProperty().subscribe(newValue -> {
+        if (newValue == null) {
+          return;
+        }
+        var tabContent = newValue.getContent();
+        if (tabContent instanceof Parent) {
+          FXUtilKt.walkTree((Parent)tabContent, node -> {
+            if (node instanceof SwingNode) {
+              var contentNode = ((SwingNode) node).getContent();
+              SwingUtilities.invokeLater(() -> taskPropertiesBean.onActivate(contentNode));
+            }
+            return Unit.INSTANCE;
+          });
+        }
+      });
       var insertPane = new Function2<JComponent, String, Unit>() {
         @Override
         public Unit invoke(JComponent node, String title) {
@@ -107,7 +126,14 @@ public class GanttDialogProperties {
           return Unit.INSTANCE;
         }
       };
-      insertPane.invoke(taskPropertiesBean.generalPanel, language.getText("general"));
+      var mainPropertiesPanel = taskPropertiesController.getMainPropertiesPanel();
+
+      try {
+        tabbedPane.getTabs().add(new Tab(mainPropertiesPanel.getTitle(), mainPropertiesPanel.getFxNode()));
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      //insertPane.invoke(taskPropertiesBean.generalPanel, language.getText("general"));
       insertPane.invoke(taskPropertiesBean.predecessorsPanel, language.getText("predecessors"));
       insertPane.invoke(taskPropertiesBean.resourcesPanel, language.getCorrectedLabel("human"));
 
