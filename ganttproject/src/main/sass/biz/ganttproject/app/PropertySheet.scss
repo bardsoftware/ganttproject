@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 @import "theme";
 @import "buttons";
+@import "dropdowns";
 
 .property-pane {
   .btn-help-url {
@@ -30,4 +31,28 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-border-width: 1;
     -fx-border-radius: 0;
   }
+
+  .title {
+    -fx-font-weight: bold;
+    -fx-font-size: 120%;
+  }
+  .skip {
+    -fx-font-size: 20%;
+  }
+
+  @include dropdown-normal();
+
+  .spinner .increment-arrow-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0.333em 0.666em 0.333em 0.666em; /* 4 8 4 8 */
+  }
+  .spinner .decrement-arrow-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0.250em 0.666em 0.5em 0.666em; /* 3 8 6 8 */
+  }
+
 }

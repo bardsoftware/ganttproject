@@ -1,0 +1,59 @@
+/*!
+ * Copyright (c) 2025 Dmitry Barashev, BarD Software s.r.o.
+ *
+ * This file is part of GanttProject, an open-source project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
+@import "theme";
+@import "buttons";
+
+@mixin dropdown-normal {
+  .combo-box-base  {
+    @include btn-normal();
+
+    .arrow-button {
+      @include btn-normal(transparent);
+    }
+
+    &:hover {
+      @include btn-hovered();
+      .arrow-button {
+        @include btn-hovered(transparent);
+      }
+    }
+
+    &:focused {
+      @include btn-hovered();
+      @include btn-focused();
+
+      .arrow-button {
+        @include btn-hovered(transparent);
+      }
+    }
+
+    &:disabled {
+      -fx-opacity: .4;
+    }
+  }
+
+  /* ------- OPEN BUTTON ------- */
+
+  .combo-box-base:showing > .arrow-button,
+  .date-picker:showing > .arrow-button {
+    -fx-color: -fx-pressed-base;
+  }
+
+
+}

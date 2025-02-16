@@ -32,6 +32,7 @@
 @mixin btn-focused($border: derive($gp-dark-gray, -20%), $bg: derive($gp-light-gray, 20%)) {
   -fx-background-color: $border, $bg;
   -fx-background-insets: 0, 1;
+  -fx-background-radius: 5, 3;
   -fx-border-color: transparent;
   -fx-border-width: 0;
 }
