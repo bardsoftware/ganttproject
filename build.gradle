@@ -29,7 +29,7 @@ allprojects {
     ext {
         libDir = 'lib'
         mvnDir = 'lib/mvn'
-        kotlin_version = "2.1.0"
+        kotlin_version = "2.1.10"
         java_version = "21"
         javaExportOptions = [
             '--add-exports', 'javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED',
