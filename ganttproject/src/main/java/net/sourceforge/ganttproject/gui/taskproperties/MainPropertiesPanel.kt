@@ -38,16 +38,11 @@ import net.sourceforge.ganttproject.task.Task.Priority
 import net.sourceforge.ganttproject.task.TaskMutator
 import net.sourceforge.ganttproject.task.TaskView
 
-private enum class CalculatedPart {
-  START_DATE, END_DATE, DURATION
-}
 class MainPropertiesPanel(private val task: Task, private val taskView: TaskView) {
   val title: String = RootLocalizer.formatText("general")
   private val nameOption = ObservableString("name", task.name)
+  private val taskDatesController = TaskDatesController(task)
   private val milestoneOption = ObservableBoolean("milestone", task.isMilestone)
-  private val startDateOption = ObservableDate("startDate", task.start.toLocalDate())
-  private val endDateOption = ObservableDate("endDate", task.end.toLocalDate())
-  private val durationOption = ObservableInt("duration", task.duration.value.toInt())
   private val hasEarliestStart = ObservableBoolean("hasEarliestStart", task.thirdDateConstraint == 1)
   private val earliestStartOption = ObservableDate("earliestStart", if (task.thirdDateConstraint == 1 ) task.third.toLocalDate() else null)
   private val priorityOption = ObservableEnum<Priority>("priority", task.priority, Priority.entries.toTypedArray())
@@ -57,37 +52,11 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   private val notesOption = ObservableString("notes", task.notes)
   private val webLinkOption = ObservableString("webLink", task.webLink)
   private val textureOption = ObservableEnum("texture", TaskTexture.find(task.shape) ?: TaskTexture.TRANSPARENT, TaskTexture.values())
-  private val schedulingOptions = ObservableEnum("schedulingOptions", CalculatedPart.END_DATE,
-    CalculatedPart.entries.toTypedArray()
-  )
-
-  private fun onSchedulingOptionChange(calculatedPart: CalculatedPart) {
-    when (calculatedPart) {
-      CalculatedPart.START_DATE -> {
-        startDateOption.setWritable(false)
-        endDateOption.setWritable(true)
-        durationOption.setWritable(true)
-      }
-      CalculatedPart.END_DATE -> {
-        endDateOption.setWritable(false)
-        startDateOption.setWritable(true)
-        durationOption.setWritable(true)
-      }
-      CalculatedPart.DURATION -> {
-        durationOption.setWritable(false)
-        startDateOption.setWritable(true)
-        endDateOption.setWritable(true)
-      }
-    }
-  }
-
   private fun onHasEarliestStartChange(hasEarliestStart: Boolean) = earliestStartOption.setWritable(hasEarliestStart)
 
   init {
-    schedulingOptions.addWatcher { event -> onSchedulingOptionChange(event.newValue)}
     hasEarliestStart.addWatcher { event -> onHasEarliestStartChange(event.newValue) }
 
-    onSchedulingOptionChange(schedulingOptions.value)
     onHasEarliestStartChange(hasEarliestStart.value)
   }
 
@@ -100,10 +69,10 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
       checkbox(milestoneOption)
 
       skip()
-      dropdown(schedulingOptions)
-      date(startDateOption)
-      date(endDateOption)
-      numeric(durationOption) {
+      dropdown(taskDatesController.schedulingOptions)
+      date(taskDatesController.startDateOption)
+      date(taskDatesController.endDateOption)
+      numeric(taskDatesController.durationOption) {
         minValue = 1
       }
 
@@ -171,7 +140,12 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   fun save(taskMutator: TaskMutator) {
     nameOption.ifChanged(taskMutator::setName)
     milestoneOption.ifChanged(taskMutator::setMilestone)
-
+    taskDatesController.startDateOption.ifChanged { value ->
+      taskMutator.setStart(GanttCalendar.fromLocalDate(value))
+    }
+    taskDatesController.durationOption.ifChanged { value ->
+      taskMutator.setDuration(task.manager.createLength(value.toLong()))
+    }
     earliestStartOption.ifChanged { value ->
       if (hasEarliestStart.value) {
         taskMutator.setThird(GanttCalendar.fromLocalDate(value), 1)

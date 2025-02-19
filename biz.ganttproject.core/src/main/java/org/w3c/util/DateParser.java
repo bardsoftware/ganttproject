@@ -292,4 +292,8 @@ public class DateParser {
     }
   }
 
+  public static LocalDate toLocalDate(Date javaDate) {
+    return LocalDate.parse(DateParser.getIsoDateNoHours(javaDate));
+  }
+
 }
