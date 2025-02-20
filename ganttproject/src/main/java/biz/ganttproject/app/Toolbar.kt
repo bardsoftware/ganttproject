@@ -25,9 +25,7 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.embed.swing.JFXPanel
-import javafx.event.ActionEvent
 import javafx.event.EventHandler
-import javafx.geometry.Pos
 import javafx.geometry.VPos
 import javafx.scene.Node
 import javafx.scene.Parent
@@ -38,10 +36,10 @@ import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.util.Callback
 import net.sourceforge.ganttproject.action.GPAction
-import net.sourceforge.ganttproject.gui.ActionUtil
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import javax.swing.SwingUtilities
+import biz.ganttproject.createButton as doCreateButton
 
 class FXToolbar {
   val component = JFXPanel().also {
@@ -81,35 +79,8 @@ class FXToolbar {
 
 private typealias ToolbarVisitor = (toolbar: FXToolbar) -> Unit
 
-fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
-  val icon = action.getGlyphIcon()
-  val contentDisplay = action.getValue(GPAction.TEXT_DISPLAY) as? ContentDisplay ?: if (onlyIcon) ContentDisplay.GRAPHIC_ONLY else ContentDisplay.RIGHT
-  if (icon == null && contentDisplay != ContentDisplay.TEXT_ONLY) {
-    return null
-  }
-  val hasAutoRepeat = action.getValue(GPAction.HAS_AUTO_REPEAT) as? Boolean ?: false
-  return Button("", icon).apply {
-    this.contentDisplay = contentDisplay
-    this.alignment = Pos.CENTER_LEFT
-    if (contentDisplay != ContentDisplay.GRAPHIC_ONLY) {
-      this.textProperty().bind(action.localizedNameObservable)
-    } else {
-      this.styleClass.add("graphic-only")
-    }
-    this.addEventHandler(ActionEvent.ACTION) {
-      SwingUtilities.invokeLater {
-        action.actionPerformed(null)
-      }
-    }
-    this.isDisable = !action.isEnabled
-    action.addPropertyChangeListener {
-      this.isDisable = !action.isEnabled
-    }
-    if (hasAutoRepeat) {
-      ActionUtil.setupAutoRepeat(this, action, 200);
-    }
-    applyFontStyle(this)
-  }
+fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? = doCreateButton(action, onlyIcon)?.also {
+  applyFontStyle(it)
 }
 
 private fun applyFontStyle(node: Parent) {
