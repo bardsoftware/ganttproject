@@ -26,13 +26,15 @@ import biz.ganttproject.core.chart.render.Style
 import biz.ganttproject.core.chart.render.TaskTexture
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.createButton
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
-import javafx.scene.control.Hyperlink
+import javafx.scene.control.ContentDisplay
 import javafx.scene.layout.*
 import javafx.scene.layout.Priority.ALWAYS
 import javafx.scene.shape.Rectangle
+import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.Task.Priority
 import net.sourceforge.ganttproject.task.TaskMutator
@@ -52,7 +54,16 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   private val notesOption = ObservableString("notes", task.notes)
   private val webLinkOption = ObservableString("webLink", task.webLink)
   private val textureOption = ObservableEnum("texture", TaskTexture.find(task.shape) ?: TaskTexture.TRANSPARENT, TaskTexture.values())
-  private fun onHasEarliestStartChange(hasEarliestStart: Boolean) = earliestStartOption.setWritable(hasEarliestStart)
+  private val copyStartDateAction = GPAction.create("Copy Start Date") {
+    earliestStartOption.set(taskDatesController.startDateOption.value)
+  }.also {
+    it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
+    it.isEnabled = earliestStartOption.isWritable.value
+  }
+  private fun onHasEarliestStartChange(hasEarliestStart: Boolean) {
+    earliestStartOption.setWritable(hasEarliestStart)
+    copyStartDateAction.isEnabled = hasEarliestStart
+  }
 
   init {
     hasEarliestStart.addWatcher { event -> onHasEarliestStartChange(event.newValue) }
@@ -84,13 +95,12 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
           val dateEditor = this@pane.createDateOptionEditor(earliestStartOption)
           children.add(this@pane.createBooleanOptionEditor(hasEarliestStart))
           children.add(dateEditor)
-          children.add(Hyperlink("Copy Start Date"))
+          children.add(createButton(copyStartDateAction, onlyIcon = false)?.also {
+            it.styleClass.addAll("btn-regular", "small", "secondary")
+          })
           disableProperty().subscribe { oldValue, newValue ->
             if (!oldValue && newValue) {
               isDisable = false
-              dateEditor.isDisable = true
-            } else if (oldValue && !newValue) {
-              dateEditor.isDisable = false
             }
           }
         }
