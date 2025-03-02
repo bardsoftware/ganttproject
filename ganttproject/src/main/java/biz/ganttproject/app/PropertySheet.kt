@@ -85,6 +85,8 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
     rowBuilders.add(LabelRowBuilder(title.value, "title"))
   }
 
+  fun title(title: String) = title(localizer.create(title))
+
   fun skip(rowNum: Int = 1) {
     rowBuilders.add(LabelRowBuilder("\n".repeat(rowNum), "skip"))
   }
@@ -181,7 +183,9 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
   private fun <E: Enum<E>> createEnumerationOptionEditor(
     option: ObservableEnum<E>, displayOptions: DropdownDisplayOptions<E>? = null): Node {
 
-    val key2i18n: List<Pair<E, String>> = option.allValues.map { it to localizer.formatText("$it.label") }.toList()
+    val key2i18n: List<Pair<E, String>> = option.allValues.map {
+      it to localizer.formatText("${option.id}.value.${it.name.lowercase()}")
+    }.toList()
     return ComboBox(FXCollections.observableArrayList(key2i18n)).also { comboBox ->
       comboBox.onAction = EventHandler{
         option.set(comboBox.value.first, comboBox)

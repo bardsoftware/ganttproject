@@ -43,18 +43,18 @@ class TaskDatesController(private val task: Task, milestoneOption: ObservableBoo
   internal val startDateOption = ObservableDate("startDate", task.start.toLocalDate())
   internal val endDateOption = ObservableDate("endDate", task.end.toLocalDate())
   internal val durationOption = ObservableInt("duration", task.duration.value.toInt())
-  internal val schedulingOptions = ObservableEnum("schedulingOptions", CalculatedPart.END_DATE,
+  internal val schedulingOptions = ObservableEnum("scheduling.manual", CalculatedPart.END,
     CalculatedPart.entries.toTypedArray()
   )
 
   private fun onSchedulingOptionChange(calculatedPart: CalculatedPart) {
     when (calculatedPart) {
-      CalculatedPart.START_DATE -> {
+      CalculatedPart.START -> {
         startDateOption.setWritable(false)
         endDateOption.setWritable(true)
         durationOption.setWritable(true)
       }
-      CalculatedPart.END_DATE -> {
+      CalculatedPart.END -> {
         endDateOption.setWritable(false)
         startDateOption.setWritable(true)
         durationOption.setWritable(true)
@@ -107,13 +107,13 @@ class TaskDatesController(private val task: Task, milestoneOption: ObservableBoo
   private fun setLength(length: Int) {
     durationOption.set(length, this)
     when (schedulingOptions.value) {
-      CalculatedPart.START_DATE -> {
+      CalculatedPart.START -> {
         val startDate =
           if (isMilestone) endDateOption.value!!
           else DateParser.toLocalDate(calendar.shiftDate(DateParser.toJavaDate(endDateOption.value), durationOption.asTaskDuration().reverse()))
         setStart(startDate, false)
       }
-      CalculatedPart.END_DATE -> {
+      CalculatedPart.END -> {
         val endDate =
           if (isMilestone) startDateOption.value!!
           else DateParser.toLocalDate(calendar.shiftDate(DateParser.toJavaDate(startDateOption.value), durationOption.asTaskDuration()))
@@ -167,5 +167,5 @@ class TaskDatesController(private val task: Task, milestoneOption: ObservableBoo
 }
 
 internal enum class CalculatedPart {
-  START_DATE, END_DATE, DURATION
+  START, END, DURATION
 }

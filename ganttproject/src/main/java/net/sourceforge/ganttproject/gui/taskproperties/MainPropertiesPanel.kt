@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.gui.taskproperties
 
 import biz.ganttproject.app.LabelPosition
+import biz.ganttproject.app.MappingLocalizer
 import biz.ganttproject.app.PropertySheetBuilder
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.colorFromUiManager
@@ -46,12 +47,13 @@ import javax.swing.SwingUtilities
 
 class MainPropertiesPanel(private val task: Task, private val taskView: TaskView) {
   val title: String = RootLocalizer.formatText("general")
+
   private val nameOption = ObservableString("name", task.name)
   private val milestoneOption = ObservableBoolean("milestone", task.isMilestone)
   private val taskDatesController = TaskDatesController(task, milestoneOption)
   private val projectTaskOption = ObservableBoolean("projectTask", task.isProjectTask)
   private val hasEarliestStart = ObservableBoolean("hasEarliestStart", task.thirdDateConstraint == 1)
-  private val earliestStartOption = ObservableDate("earliestStart", if (task.thirdDateConstraint == 1 ) task.third.toLocalDate() else null)
+  private val earliestStartOption = ObservableDate("earliestBegin", if (task.thirdDateConstraint == 1 ) task.third.toLocalDate() else null)
   private val priorityOption = ObservableEnum<Priority>("priority", task.priority, Priority.entries.toTypedArray())
   private val progressOption = ObservableInt("progress", task.completionPercentage)
   private val showInTimelineOption = ObservableBoolean("showInTimeline", taskView.timelineTasks.contains(task))
@@ -59,7 +61,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   private val notesOption = ObservableString("notes", task.notes)
   private val webLinkOption = ObservableString("webLink", task.webLink)
   private val textureOption = ObservableEnum("texture", TaskTexture.find(task.shape) ?: TaskTexture.TRANSPARENT, TaskTexture.values())
-  private val copyStartDateAction = GPAction.create("Copy Start Date") {
+  private val copyStartDateAction = GPAction.create("option.taskProperties.main.earliestBegin.copyBeginDate") {
     earliestStartOption.set(taskDatesController.startDateOption.value)
   }.also {
     it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
@@ -77,10 +79,10 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   }
 
   fun getFxNode() = StackPane().apply {
-    background = Background(BackgroundFill("Panel.background".colorFromUiManager(), CornerRadii.EMPTY, Insets.EMPTY))
-    val leftPane = PropertySheetBuilder(RootLocalizer).pane {
+     background = Background(BackgroundFill("Panel.background".colorFromUiManager(), CornerRadii.EMPTY, Insets.EMPTY))
+    val leftPane = PropertySheetBuilder(i18n).pane {
       stylesheet("/biz/ganttproject/task/TaskPropertiesDialog.css")
-      title(RootLocalizer.create("Main Properties"))
+      title("section.main")
       text(nameOption)
       if (task.canBeProjectTask()) {
         checkbox(projectTaskOption)
@@ -121,7 +123,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
       }
 
       skip()
-      title(RootLocalizer.create("View"))
+      title("section.view")
       checkbox(showInTimelineOption)
       color(colorOption)
       dropdown(textureOption) {
@@ -134,16 +136,16 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
     }
     val grid = GridPane()
 
-    val rightPane = PropertySheetBuilder(RootLocalizer).pane {
+    val rightPane = PropertySheetBuilder(i18n).pane {
       stylesheet("/biz/ganttproject/task/TaskPropertiesDialog.css")
-      title(RootLocalizer.create("Documents"))
+      title("section.documents")
       text(notesOption) {
         isMultiline = true
         labelPosition = LabelPosition.ABOVE
       }
       text(webLinkOption) {
         editorStyles.add("weblink")
-        rightNode = Button("Open", FontAwesomeIconView(FontAwesomeIcon.EXTERNAL_LINK)).also {
+        rightNode = Button(i18n.formatTextOrNull("btn.open"), FontAwesomeIconView(FontAwesomeIcon.EXTERNAL_LINK)).also {
           it.contentDisplay = ContentDisplay.LEFT
           it.onAction = EventHandler { e ->
             webLinkOption.value?.let {
@@ -232,3 +234,26 @@ private fun Task.isProjectTaskOrContainsProjectTask(): Boolean {
   }
   return this.nestedTasks.any { it.isProjectTaskOrContainsProjectTask() }
 }
+
+private val labelLocalizer = MappingLocalizer(mapOf(
+  "startDate" to { RootLocalizer.create("dateOfBegining") },
+  "endDate" to { RootLocalizer.create("dateOfEnd") },
+  "progress" to { RootLocalizer.create("advancement") },
+  "milestone" to { RootLocalizer.create("meetingPoint") },
+  "notes" to { RootLocalizer.create("notesTask") },
+  "color" to { RootLocalizer.create("colors") },
+  "texture" to { RootLocalizer.create("shape") },
+), unhandledKey = RootLocalizer::create)
+
+private val fallback = MappingLocalizer(mapOf(
+), unhandledKey = {
+  when {
+    it.endsWith(".label") -> labelLocalizer.create(it.removeSuffix(".label"))
+    it.startsWith("priority.value.") -> RootLocalizer.create("priority.${it.removePrefix("priority.value.")}")
+    it == "btn.open" -> RootLocalizer.create("storage.action.open")
+    else -> null
+  }
+})
+
+private val i18n = RootLocalizer.createWithRootKey("option.taskProperties.main", baseLocalizer = fallback)
+
