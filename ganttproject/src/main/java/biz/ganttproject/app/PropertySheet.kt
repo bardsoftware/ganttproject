@@ -76,6 +76,7 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
   internal val validationErrors = FXCollections.observableMap(mutableMapOf<ObservableProperty<*>, String>())
   internal val isEscCloseEnabled = SimpleBooleanProperty(true)
   internal val rowBuilders = mutableListOf<RowBuilder>()
+  internal var onRequestFocus: (()->Unit)? = null
 
   fun stylesheet(stylesheet: String) {
     gridPane.stylesheets.add(stylesheet)
@@ -139,6 +140,9 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
 
   private fun createOptionItem(property: ObservableProperty<*>, editor: Node, options: PropertyDisplayOptions<*>? = null): OptionRowBuilder {
     property.isWritable.addWatcher { evt -> editor.isDisable = !evt.newValue }
+    if (onRequestFocus == null) {
+      onRequestFocus = { editor.requestFocus() }
+    }
     return OptionRowBuilder(property, editor, getOptionLabel(property), options)
   }
 
@@ -471,6 +475,11 @@ class PropertySheetBuilder(private val localizer: Localizer) {
     var rowNum = 1
     paneBuilder.rowBuilders.forEachIndexed { _, builder ->
       rowNum = builder.build(gridPane, rowNum) + 1
+    }
+    gridPane.focusedProperty().addListener { _, _, newValue ->
+      if (newValue) {
+        paneBuilder.onRequestFocus?.invoke()
+      }
     }
     return PropertySheet(gridPane, paneBuilder.validationErrors, paneBuilder.isEscCloseEnabled)
   }

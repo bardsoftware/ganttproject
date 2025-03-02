@@ -47,6 +47,7 @@ import javax.swing.SwingUtilities
 
 class MainPropertiesPanel(private val task: Task, private val taskView: TaskView) {
   val title: String = RootLocalizer.formatText("general")
+  val fxComponent by lazy { getFxNode() }
 
   private val nameOption = ObservableString("name", task.name)
   private val milestoneOption = ObservableBoolean("milestone", task.isMilestone)
@@ -67,6 +68,8 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
     it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
     it.isEnabled = earliestStartOption.isWritable.value
   }
+  private var onRequestFocus = {}
+
   private fun onHasEarliestStartChange(hasEarliestStart: Boolean) {
     earliestStartOption.setWritable(hasEarliestStart)
     copyStartDateAction.isEnabled = hasEarliestStart
@@ -78,8 +81,8 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
     onHasEarliestStartChange(hasEarliestStart.value)
   }
 
-  fun getFxNode() = StackPane().apply {
-     background = Background(BackgroundFill("Panel.background".colorFromUiManager(), CornerRadii.EMPTY, Insets.EMPTY))
+  private fun getFxNode() = StackPane().apply {
+    background = Background(BackgroundFill("Panel.background".colorFromUiManager(), CornerRadii.EMPTY, Insets.EMPTY))
     val leftPane = PropertySheetBuilder(i18n).pane {
       stylesheet("/biz/ganttproject/task/TaskPropertiesDialog.css")
       title("section.main")
@@ -134,6 +137,8 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
         }
       }
     }
+    onRequestFocus = leftPane::requestFocus
+
     val grid = GridPane()
 
     val rightPane = PropertySheetBuilder(i18n).pane {
@@ -200,6 +205,8 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
       taskMutator.setShape(value.paint)
     }
   }
+
+  fun requestFocus() = onRequestFocus()
 }
 
 private fun Task.canBeMilestone() = this.nestedTasks.isEmpty()

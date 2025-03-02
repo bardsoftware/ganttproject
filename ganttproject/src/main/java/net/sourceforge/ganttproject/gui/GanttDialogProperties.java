@@ -129,7 +129,7 @@ public class GanttDialogProperties {
       var mainPropertiesPanel = taskPropertiesController.getMainPropertiesPanel();
 
       try {
-        tabbedPane.getTabs().add(new Tab(mainPropertiesPanel.getTitle(), mainPropertiesPanel.getFxNode()));
+        tabbedPane.getTabs().add(new Tab(mainPropertiesPanel.getTitle(), mainPropertiesPanel.getFxComponent()));
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -155,6 +155,7 @@ public class GanttDialogProperties {
           }
           return null;
         });
+        mainPropertiesPanel.requestFocus();
         dialogController.resize();
         return null;
       }); return null; });
