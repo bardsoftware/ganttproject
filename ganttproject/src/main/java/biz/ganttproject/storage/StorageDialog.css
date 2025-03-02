@@ -102,10 +102,6 @@ webdav-list-cell-button-pane.alert-warning {
     -fx-padding: 5 0;
 }
 
-.custom-text-field:right-node-visible .right-pane {
-    -fx-padding: 0;
-}
-
 .custom-text-field.error {
     -fx-effect: innershadow(three-pass-box, #ff6f85, 3, 1, 0, 0);
 }

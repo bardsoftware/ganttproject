@@ -27,18 +27,22 @@ import biz.ganttproject.core.chart.render.TaskTexture
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.createButton
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.event.EventHandler
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.ContentDisplay
 import javafx.scene.layout.*
-import javafx.scene.layout.Priority.ALWAYS
 import javafx.scene.shape.Rectangle
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.Task.Priority
 import net.sourceforge.ganttproject.task.TaskMutator
 import net.sourceforge.ganttproject.task.TaskView
+import net.sourceforge.ganttproject.util.BrowserControl
+import javax.swing.SwingUtilities
 
 class MainPropertiesPanel(private val task: Task, private val taskView: TaskView) {
   val title: String = RootLocalizer.formatText("general")
@@ -132,15 +136,21 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
         isMultiline = true
         labelPosition = LabelPosition.ABOVE
       }
-      custom(webLinkOption,
-        HBox().apply {
-          val editor = this@pane.createStringOptionEditor(webLinkOption)
-          alignment = Pos.CENTER
-          children.add(editor)
-          children.add(Button("Open"))
-          HBox.setHgrow(editor, ALWAYS)
+      text(webLinkOption) {
+        editorStyles.add("weblink")
+        rightNode = Button("Open", FontAwesomeIconView(FontAwesomeIcon.EXTERNAL_LINK)).also {
+          it.contentDisplay = ContentDisplay.LEFT
+          it.onAction = EventHandler { e ->
+            webLinkOption.value?.let {
+              if (it.isNotBlank()) {
+                SwingUtilities.invokeLater {
+                  BrowserControl.displayURL(webLinkOption.value)
+                }
+              }
+            }
+          }
         }
-      )
+      }
     }
     grid.add(leftPane.node, 0, 0)
     grid.add(rightPane.node, 1, 0)

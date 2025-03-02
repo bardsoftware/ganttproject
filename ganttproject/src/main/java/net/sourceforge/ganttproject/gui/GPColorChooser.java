@@ -77,6 +77,18 @@ public class GPColorChooser {
     myRecentColors = recentColors;
   }
 
+  public static void addRecentColor(Color color) {
+    List<Color> recentColors = GPColorChooser.getRecentColors();
+    // If we already have such color in the recent list then we remove it
+    // If we failed to remove selected color (=> it was not in the list)
+    // and the list is long enough then we remove colors from the tail
+    if (!recentColors.remove(color) && recentColors.size() == 10) {
+      recentColors.remove(9);
+    }
+    recentColors.add(0,  color);
+    GPColorChooser.setRecentColors(recentColors);
+  }
+
   public JComponent buildComponent() {
     JPanel result = new JPanel(new BorderLayout());
     result.add(myChooserImpl, BorderLayout.CENTER);

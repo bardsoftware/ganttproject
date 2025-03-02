@@ -45,6 +45,7 @@ import javafx.stage.FileChooser
 import javafx.util.Callback
 import javafx.util.StringConverter
 import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.gui.GPColorChooser
 import net.sourceforge.ganttproject.util.BrowserControl
 import org.controlsfx.control.textfield.CustomTextField
 import java.awt.event.ActionEvent
@@ -220,12 +221,13 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
         it.prefColumnCount = displayOptions.columnCount
         it.prefWidth = displayOptions.columnCount * 10.0
       }
-      else -> TextField().also {
+      else -> CustomTextField().also {
         AutoCompletionTextFieldBinding(textField = it, suggestionProvider = { req ->
           property.completions(req.userText, it.caretPosition)
         }, converter = { it.text }).also {
           isEscCloseEnabled.bind(it.autoCompletionPopup.showingProperty().not())
         }
+        displayOptions?.rightNode?.let { rightNode -> it.right = rightNode }
       }
     }
 
@@ -254,6 +256,7 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
       }
     }
     textField.text = property.value
+    displayOptions?.editorStyles?.let(textField.styleClass::addAll)
     return textField
   }
 
@@ -359,11 +362,13 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
 
   private fun createColorOptionEditor(option: ObservableColor): Node {
     return ColorPicker(option.value?.javaFXColor ?: Color.WHITE).also { picker ->
+      picker.customColors.addAll(GPColorChooser.getRecentColorsOption().values.map { ColorOption.Util.awtColorToFxColor(it) }.toList())
       option.addWatcher { evt ->
         if (evt.trigger != picker) picker.value = evt.newValue?.javaFXColor
       }
-      picker.valueProperty().subscribe { oldValue, newValue ->
+      picker.valueProperty().subscribe { _, newValue ->
         option.set(Style.Color.parse(ColorOption.Util.getColor(newValue)), picker)
+        GPColorChooser.addRecentColor(ColorOption.Util.fxColorToAwtColor(newValue))
       }
     }
   }
@@ -509,11 +514,13 @@ enum class LabelPosition {
 }
 sealed class PropertyDisplayOptions<P> {
   var labelPosition: LabelPosition = LabelPosition.LEFT
+  val editorStyles = mutableListOf<String>()
 }
 data class TextDisplayOptions(
   var isMultiline: Boolean = false,
   var isScreened: Boolean = false,
-  var columnCount: Int = 40
+  var columnCount: Int = 40,
+  var rightNode: Node? = null,
 ): PropertyDisplayOptions<String?>()
 data class FileExtensionFilter(val description: String, val extensions: List<String>)
 data class FileDisplayOptions(val extensionFilters: MutableList<FileExtensionFilter> = mutableListOf<FileExtensionFilter>()): PropertyDisplayOptions<File>()

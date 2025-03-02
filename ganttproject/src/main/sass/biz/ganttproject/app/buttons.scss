@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright (c) 2021 Dmitry Barashev, BarD Software s.r.o.
  *
  * This file is part of GanttProject, an open-source project management tool.
@@ -136,5 +136,28 @@
   .glyph-icon {
     -glyph-size: 18px;
     -fx-padding: 0;
+  }
+}
+
+@mixin btn-embedded-into-text-field($bg: $gp-control-background, $fg: $gp-dark-gray) {
+  -fx-background-color: $bg;
+  -fx-fill: $fg;
+  -fx-text-fill: $fg;
+  -fx-border-insets: 0;
+  -fx-border-radius: 0;
+  -fx-background-insets: 1;
+  -fx-background-radius: 0;
+
+  .glyph-icon {
+    -fx-fill: $fg;
+  }
+
+  &:hover {
+    -fx-background-color: derive($bg, 20%);
+    -fx-fill: derive($gp-dark-gray, -20%);
+    -fx-cursor: hand;
+    -fx-effect: none;
+    .glyph-icon {
+    }
   }
 }

@@ -139,6 +139,7 @@ class StorageDialogBuilder(
   fun build(mode: Mode) {
     dialogBuildApi.addStyleClass("dlg-storage")
     dialogBuildApi.addStyleSheet("/biz/ganttproject/storage/StorageDialog.css")
+    dialogBuildApi.addStyleSheet("/biz/ganttproject/storage/StorageDialog2.css")
     dialogBuildApi.removeButtonBar()
     dialogBuildApi.setEscCloseEnabled(true)
 

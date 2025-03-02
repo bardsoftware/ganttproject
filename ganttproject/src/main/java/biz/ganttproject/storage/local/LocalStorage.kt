@@ -219,6 +219,7 @@ class LocalStorage(
         onClick = { onBrowse() },
         styleClass = "local-storage-browse"
     )
+    this.paneElements.filenameInput.styleClass.add("filename-input")
     this.paneElements.filenameInput.right = btnBrowse
     if (this.mode == StorageDialogBuilder.Mode.SAVE) {
       this.paneElements.filenameInput.text = currentDocument.fileName
