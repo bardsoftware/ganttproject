@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.gui.taskproperties
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.option.ObservableDate
 import biz.ganttproject.core.option.ObservableEnum
 import biz.ganttproject.core.option.ObservableInt
@@ -28,7 +29,14 @@ import net.sourceforge.ganttproject.task.Task
 import org.w3c.util.DateParser
 import java.time.LocalDate
 
-class TaskDatesController(private val task: Task) {
+/**
+ * Manages a group of related fields of a task properties dialog: start date, end date and duration.
+ * Only two fields out of three can be enabled, as the third one is calculated from two. The controller provides
+ * a special enumeration option to choose the disabled field.
+ *
+ * Besides, only the start date can be enabled if a task is a milestone.
+ */
+class TaskDatesController(private val task: Task, milestoneOption: ObservableBoolean) {
   private val isMilestone = task.isMilestone()
   private val calendar = task.manager.calendar
 
@@ -61,6 +69,17 @@ class TaskDatesController(private val task: Task) {
 
 
   init {
+    milestoneOption.addWatcher { event ->
+      if (event.newValue) {
+        durationOption.setWritable(false)
+        endDateOption.setWritable(false)
+        startDateOption.setWritable(true)
+        schedulingOptions.setWritable(false)
+      } else {
+        schedulingOptions.setWritable(true)
+        onSchedulingOptionChange(schedulingOptions.value)
+      }
+    }
     schedulingOptions.addWatcher { event -> onSchedulingOptionChange(event.newValue)}
     onSchedulingOptionChange(schedulingOptions.value)
 

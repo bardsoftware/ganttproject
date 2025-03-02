@@ -47,8 +47,9 @@ import javax.swing.SwingUtilities
 class MainPropertiesPanel(private val task: Task, private val taskView: TaskView) {
   val title: String = RootLocalizer.formatText("general")
   private val nameOption = ObservableString("name", task.name)
-  private val taskDatesController = TaskDatesController(task)
   private val milestoneOption = ObservableBoolean("milestone", task.isMilestone)
+  private val taskDatesController = TaskDatesController(task, milestoneOption)
+  private val projectTaskOption = ObservableBoolean("projectTask", task.isProjectTask)
   private val hasEarliestStart = ObservableBoolean("hasEarliestStart", task.thirdDateConstraint == 1)
   private val earliestStartOption = ObservableDate("earliestStart", if (task.thirdDateConstraint == 1 ) task.third.toLocalDate() else null)
   private val priorityOption = ObservableEnum<Priority>("priority", task.priority, Priority.entries.toTypedArray())
@@ -81,7 +82,11 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
       stylesheet("/biz/ganttproject/task/TaskPropertiesDialog.css")
       title(RootLocalizer.create("Main Properties"))
       text(nameOption)
-      checkbox(milestoneOption)
+      if (task.canBeProjectTask()) {
+        checkbox(projectTaskOption)
+      } else if (task.canBeMilestone()) {
+        checkbox(milestoneOption)
+      }
 
       skip()
       dropdown(taskDatesController.schedulingOptions)
@@ -160,6 +165,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   fun save(taskMutator: TaskMutator) {
     nameOption.ifChanged(taskMutator::setName)
     milestoneOption.ifChanged(taskMutator::setMilestone)
+    projectTaskOption.ifChanged(taskMutator::setProjectTask)
     taskDatesController.startDateOption.ifChanged { value ->
       taskMutator.setStart(GanttCalendar.fromLocalDate(value))
     }
@@ -191,7 +197,38 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
     textureOption.ifChanged { value ->
       taskMutator.setShape(value.paint)
     }
+  }
+}
 
+private fun Task.canBeMilestone() = this.nestedTasks.isEmpty()
+
+private fun Task.canBeProjectTask(): Boolean {
+  run {
+    var parent = this.supertask
+    while (parent != null) {
+      if (parent.isProjectTask) {
+        return false
+      }
+      parent = parent.supertask
+    }
   }
 
+  val nestedTasks = this.nestedTasks
+  if (nestedTasks.isEmpty()) {
+    return false
+  }
+
+  for (nestedTask in nestedTasks) {
+    if (this.isProjectTaskOrContainsProjectTask()) {
+      return false
+    }
+  }
+  return true
+}
+
+private fun Task.isProjectTaskOrContainsProjectTask(): Boolean {
+  if (this.isProjectTask) {
+    return true
+  }
+  return this.nestedTasks.any { it.isProjectTaskOrContainsProjectTask() }
 }
