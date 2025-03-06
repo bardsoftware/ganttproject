@@ -142,6 +142,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         new Action[]{taskDeleteAction.get(), resourceDeleteAction.get()}
     )
   );
+  private final java.util.function.Supplier<GPAction> taskPropertiesAction = Suppliers.memoize(myTaskActions::getPropertiesAction);
 
   public JMenuBar getMenuBar() {
     var bar = new JMenuBar();
@@ -313,7 +314,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   public List<GPAction> getAppLevelActions() {
-    return List.of(insertAction.get(), deleteAction.get());
+    return List.of(insertAction.get(), deleteAction.get(), taskPropertiesAction.get());
   }
   private void restoreBounds() {
     //++

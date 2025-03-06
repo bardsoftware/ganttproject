@@ -25,13 +25,13 @@ import javafx.application.Platform
 import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.image.Image
-import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.stage.Stage
 import net.sourceforge.ganttproject.APP_LOGGER
 import net.sourceforge.ganttproject.GanttProject
+import javax.swing.SwingUtilities
 
 class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() {
 
@@ -95,9 +95,17 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
         }
       }
       APP_LOGGER.debug("... geometry, icons and title done.")
-      ganttProject.appLevelActions.forEach {
-        appScene.accelerators.put(it.keyCombination) {
-          it.actionPerformed(null)
+//      ganttProject.appLevelActions.forEach {
+//        println("Action: ${it.name} ${it.keyCombination}")
+//        appScene.accelerators.put(it.keyCombination) {
+//          it.actionPerformed(null)
+//        }
+//      }
+      appScene.onKeyPressed = EventHandler { event ->
+        ganttProject.appLevelActions.firstOrNull { it.triggeredBy(event) }?.let { action ->
+          SwingUtilities.invokeLater {
+              action.actionPerformed(null)
+          }
         }
       }
 
