@@ -2,7 +2,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "2.1.0" apply false
+    id "org.jetbrains.kotlin.jvm" version "2.1.10" apply false
 }
 ext.distBinDir = file('ganttproject-builder/dist-bin')
 ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins/base")
