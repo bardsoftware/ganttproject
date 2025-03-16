@@ -33,7 +33,7 @@ class InternationalizationTest {
   @Test
   fun `test simple localizer`() {
     val i18n = DefaultLocalizer(
-      currentTranslation = newResourceBundle(mapOf(
+      currentTranslation = newTranslation(mapOf(
           "foo" to "I am Foo",
           "hello" to "Hello, {0}"
       ))
@@ -45,7 +45,7 @@ class InternationalizationTest {
   @Test
   fun `test key prefix`() {
     val rootLocalizer = DefaultLocalizer(
-      currentTranslation = newResourceBundle(mapOf(
+      currentTranslation = newTranslation(mapOf(
           "foo.hello" to "Hello, {0}"
       ))
     )
@@ -56,12 +56,12 @@ class InternationalizationTest {
   @Test
   fun `fallback localizer`() {
     val fallbackLocalizer = DefaultLocalizer(
-      currentTranslation = newResourceBundle(mapOf(
+      currentTranslation = newTranslation(mapOf(
           "hello" to "Hello, {0}"
       ))
     )
     val i18n = DefaultLocalizer(baseLocalizer = fallbackLocalizer,
-      currentTranslation = newResourceBundle(mapOf(
+      currentTranslation = newTranslation(mapOf(
           "world" to "World!"
       ))
     )
@@ -71,7 +71,7 @@ class InternationalizationTest {
   @Test
   fun `prefix and fallback`() {
     val rootLocalizer = DefaultLocalizer(
-      currentTranslation = newResourceBundle(mapOf(
+      currentTranslation = newTranslation(mapOf(
           "foo.hello" to "Hello, {0}",
           "world" to "World!",
           "foo.ganttproject" to "GanttProject!",
@@ -85,7 +85,7 @@ class InternationalizationTest {
 
   @Test fun `mapping localizer`() {
     val rootLocalizer = DefaultLocalizer(
-      currentTranslation = newResourceBundle(mapOf(
+      currentTranslation = newTranslation(mapOf(
         "foo.hello" to "Hello, {0}",
     )))
     val mappingLocalizer = MappingLocalizer(mapOf(
@@ -101,9 +101,7 @@ class InternationalizationTest {
 
 }
 
-private fun newResourceBundle(kv: Map<Any, Any>) : SimpleObjectProperty<ResourceBundle?> {
-  return SimpleObjectProperty(object : ListResourceBundle() {
-    private val contents: Array<Array<Any>> = kv.map { entry -> arrayOf(entry.key, entry.value) }.toTypedArray()
-    override fun getContents(): Array<Array<Any>> = contents
-  })
+private fun newTranslation(kv: Map<String, String?>) : SimpleObjectProperty<Translation?> {
+  val translation = Translation(Locale.US, kv::get)
+  return SimpleObjectProperty(translation)
 }

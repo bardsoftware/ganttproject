@@ -60,7 +60,7 @@ internal fun createTranslation(locale: Locale, resourceBundle: ResourceBundle) =
 
 var _explicitTranslation: Translation? = null
 val defaultTranslation by lazy {
-  _explicitTranslation ?: createTranslationFromFile(Locale.ENGLISH, "i18n.properties")!!
+  _explicitTranslation ?: createTranslationFromFile(Locale.ENGLISH, "i18n.properties") ?: Translation(Locale.ENGLISH) { null }
 }
 
 internal fun createTranslationFromFile(locale: Locale, fileName: String): Translation? {
