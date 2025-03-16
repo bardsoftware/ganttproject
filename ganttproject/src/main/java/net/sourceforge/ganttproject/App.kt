@@ -41,8 +41,9 @@ import javax.swing.SwingUtilities
 
 
 fun main(args: Array<String>) {
+  _explicitTranslation = createTranslation(Locale.US, ResourceBundle.getBundle("i18n"))
+  RootLocalizer = SingleTranslationLocalizer(defaultTranslation)
   var builder = AppBuilder(args).withLogging().withWindowVisible().runBeforeUi {
-    RootLocalizer = SingleTranslationLocalizer(ResourceBundle.getBundle("i18n"))
     PluginManager.setViewProviders(listOf())
     GanttLanguage.getInstance()
   }

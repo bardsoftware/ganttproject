@@ -19,11 +19,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package net.sourceforge.ganttproject.language;
 
+import biz.ganttproject.app.InternationalizationImplKt;
 import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.option.GPAbstractOption;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.customproperty.PropertyTypeEncoder;
-import kotlin.jvm.functions.Function1;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 import org.w3c.util.DateParser;
@@ -196,7 +196,7 @@ public class GanttLanguage {
   }
 
   public List<Locale> getAvailableLocales() {
-    return InternationalizationKt.getAvailableTranslations();
+    return InternationalizationImplKt.getAvailableTranslationLocales();
   }
 
   public String formatLanguageAndCountry(Locale locale) {

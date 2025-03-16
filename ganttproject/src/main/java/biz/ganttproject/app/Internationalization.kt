@@ -23,9 +23,6 @@ import biz.ganttproject.core.option.validatorI18N
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ObservableValue
-import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.util.PropertiesUtil
-import org.eclipse.core.runtime.Platform
 import java.text.MessageFormat
 import java.text.NumberFormat
 import java.util.*
@@ -111,6 +108,7 @@ object DummyLocalizer : Localizer {
   }
 }
 
+val DEFAULT_TRANSLATION_LOCALIZER = SingleTranslationLocalizer(defaultTranslation)
 /**
  * This localizer allows for flexible use of shared resource bundles.
  * When searching for a message by the given message key, it first prepends the rootKey prefix to the
@@ -134,9 +132,10 @@ object DummyLocalizer : Localizer {
  */
 open class DefaultLocalizer(
     private val rootKey: String = "",
-    private val baseLocalizer: Localizer = DummyLocalizer,
+    private val baseLocalizer: Localizer = DEFAULT_TRANSLATION_LOCALIZER,
     private val prefixedLocalizer: Localizer? = null,
-    private val currentTranslation: SimpleObjectProperty<ResourceBundle?> = SimpleObjectProperty(null)) : Localizer {
+    private val currentTranslation: SimpleObjectProperty<Translation?> = SimpleObjectProperty(null)) : Localizer {
+
   override fun create(key: String): LocalizedString {
     return LocalizedString(key, this).also {
       currentTranslation.addListener { _, oldValue, newValue ->
@@ -156,11 +155,9 @@ open class DefaultLocalizer(
     }
     return try {
       this.currentTranslation.value?.let { tr ->
-        if (tr.containsKey(prefixedKey)) {
-          MessageFormat.format(tr.getString(prefixedKey), *args)
-        } else {
-          this.baseLocalizer.formatTextOrNull(key, *args)
-        }
+        tr.mapKey(prefixedKey)?.let { value ->
+          MessageFormat.format(value, *args)
+        } ?: this.baseLocalizer.formatTextOrNull(key, *args)
       }
     } catch (ex: MissingResourceException) {
       null
@@ -174,6 +171,23 @@ open class DefaultLocalizer(
       DefaultLocalizer(rootKey, baseLocalizer, this, this.currentTranslation)
 }
 
+class PrefixedLocalizer(
+  private val prefix: String, private val base: Localizer, private val fallback: Localizer = DummyLocalizer
+): Localizer {
+  override fun create(key: String): LocalizedString = LocalizedString(key, this)
+
+  override fun formatTextOrNull(key: String, vararg args: Any): String? {
+    return this.base.formatTextOrNull("$prefix.$key", *args) ?: this.fallback.formatTextOrNull(key, *args)
+  }
+}
+
+class IfNullLocalizer(private val base: Localizer, private val fallback: Localizer): Localizer {
+  override fun create(key: String): LocalizedString = LocalizedString(key, this)
+
+  override fun formatTextOrNull(key: String, vararg args: Any): String? {
+    return this.base.formatTextOrNull(key, *args) ?: this.fallback.formatTextOrNull(key, *args)
+  }
+}
 /**
  * This localizer searches for key values in a map. The map values are lambdas which
  * allows for values calculation.
@@ -188,95 +202,26 @@ class MappingLocalizer(val key2lambda: Map<String, ()->LocalizedString?>, val un
 /**
  * Localizer which always uses the given resource bundle.
  */
-class SingleTranslationLocalizer(val bundle: ResourceBundle) : DefaultLocalizer(currentTranslation = SimpleObjectProperty(bundle))
+class SingleTranslationLocalizer(val bundle: Translation) : DefaultLocalizer(currentTranslation = SimpleObjectProperty(bundle), baseLocalizer = DummyLocalizer)
 
 
 private var ourLocale: Locale = Locale.getDefault()
-private val ourCurrentTranslation: SimpleObjectProperty<ResourceBundle?> = SimpleObjectProperty(getResourceBundle(Locale.getDefault(), true))
+val ourCurrentTranslation: SimpleObjectProperty<Translation?> = SimpleObjectProperty(null)
 var RootLocalizer : DefaultLocalizer = DefaultLocalizer(currentTranslation = ourCurrentTranslation).also {
   validatorI18N = it::formatText
 }
 
+fun createDefaultLocalizer(fallback: Localizer): DefaultLocalizer {
+  return DefaultLocalizer(baseLocalizer = fallback, currentTranslation = ourCurrentTranslation)
+}
+
 fun setLocale(locale: Locale) {
   ourLocale = locale
-  ourCurrentTranslation.value = getResourceBundle(locale, true)
-}
-
-private fun getResourceBundle(locale: Locale, withFallback: Boolean): ResourceBundle? {
-  return Platform.getExtensionRegistry()?.getConfigurationElementsFor("net.sourceforge.ganttproject.l10n")
-      ?.mapNotNull { l10nConfig ->
-        val path = l10nConfig.getAttribute("path")
-        val pluginBundle = Platform.getBundle(l10nConfig.declaringExtension.namespaceIdentifier)
-            ?: error("Can't find plugin bundle for extension=" + l10nConfig.name)
-        try {
-          val control = if (withFallback)
-            ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)
-          else
-            ResourceBundle.Control.getNoFallbackControl(ResourceBundle.Control.FORMAT_PROPERTIES)
-          val resourceBundle = ResourceBundle.getBundle(path, locale, pluginBundle.bundleClassLoader, control)
-          if (withFallback || resourceBundle.locale == locale) {
-            resourceBundle
-          } else {
-            null
-          }
-        } catch (ex: MissingResourceException) {
-          GPLogger.logToLogger(String.format("Can't find bundle: path=%s locale=%s plugin bundle=%s", path, locale, pluginBundle))
-          null
-        }
-      }
-      ?.firstOrNull()
-}
-
-private val extraLocales = Properties().also {
-  PropertiesUtil.loadProperties(it, "/language/extra.properties")
-}
-
-private val LEXICOGRAPHICAL_LOCALE_COMPARATOR: Comparator<Locale> = Comparator { o1, o2 ->
-  (o1.getDisplayLanguage(Locale.US) + o1.getDisplayCountry(Locale.US)).compareTo(
-      o2.getDisplayLanguage(Locale.US) + o2.getDisplayCountry(Locale.US)
-  )
-}
-
-fun getAvailableTranslations(): List<Locale> {
-  val removeLangOnly = HashSet<Locale>()
-  val result = HashSet<Locale>()
-  Locale.getAvailableLocales().sortedBy { it.toString() }.forEach { l ->
-    if (l.language.isEmpty()) {
-      return@forEach
-    }
-    if (getResourceBundle(l, false) != null) {
-      if (l.country.isNotEmpty()) {
-        removeLangOnly.add(Locale(l.language))
-      }
-      result.add(Locale(l.language, l.country))
-    } else {
-      val langOnly = Locale(l.language)
-      if (getResourceBundle(langOnly, false) != null) {
-        result.add(langOnly)
-      }
-    }
-  }
-
-  val locales = extraLocales.getProperty("_").split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-  for (l in locales) {
-    if (!extraLocales.containsKey("$l.lang")) {
-      continue
-    }
-    val langCode = extraLocales.getProperty("$l.lang")
-    val countryCode = extraLocales.getProperty("$l.country", "")
-    val regionCode = extraLocales.getProperty("$l.region", "")
-    val locale = Locale(langCode, countryCode, regionCode)
-    result.add(locale)
-  }
-
-  result.removeAll(removeLangOnly)
-  result.add(Locale.ENGLISH)
-
-  val result1 = ArrayList(result)
-  Collections.sort(result1, LEXICOGRAPHICAL_LOCALE_COMPARATOR)
-  return result1
+  ourCurrentTranslation.value = createTranslation(locale) ?: defaultTranslation
 }
 
 fun String.removeMnemonicsPlaceholder(): String = this.replace("$", "")
 
 fun getNumberFormat(): NumberFormat = NumberFormat.getInstance(ourLocale)
+
+data class Translation(val locale: Locale, val mapKey: (String) -> String?)
