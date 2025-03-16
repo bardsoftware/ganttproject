@@ -18,10 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui.taskproperties
 
-import biz.ganttproject.app.LabelPosition
-import biz.ganttproject.app.MappingLocalizer
-import biz.ganttproject.app.PropertySheetBuilder
-import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.*
 import biz.ganttproject.colorFromUiManager
 import biz.ganttproject.core.chart.render.Style
 import biz.ganttproject.core.chart.render.TaskTexture
@@ -242,25 +239,40 @@ private fun Task.isProjectTaskOrContainsProjectTask(): Boolean {
   return this.nestedTasks.any { it.isProjectTaskOrContainsProjectTask() }
 }
 
-private val labelLocalizer = MappingLocalizer(mapOf(
-  "startDate" to { RootLocalizer.create("dateOfBegining") },
-  "endDate" to { RootLocalizer.create("dateOfEnd") },
-  "progress" to { RootLocalizer.create("advancement") },
-  "milestone" to { RootLocalizer.create("meetingPoint") },
-  "notes" to { RootLocalizer.create("notesTask") },
-  "color" to { RootLocalizer.create("colors") },
-  "texture" to { RootLocalizer.create("shape") },
-), unhandledKey = RootLocalizer::create)
 
-private val fallback = MappingLocalizer(mapOf(
-), unhandledKey = {
-  when {
-    it.endsWith(".label") -> labelLocalizer.create(it.removeSuffix(".label"))
-    it.startsWith("priority.value.") -> RootLocalizer.create("priority.${it.removePrefix("priority.value.")}")
-    it == "btn.open" -> RootLocalizer.create("storage.action.open")
-    else -> null
+// In the new Properties dialog all labels are structured as 'option.taskProperties.main.<FIELD>.label",
+// e.g. "option.taskProperties.main.progress.label". If we have translations for such keys, we're lucky,
+// however, there are already translated strings for the previously used keys, e.g. for "advancement" that corresponds
+// to "option.taskProperties.main.progress.label". We want to reuse them until we get the updated translations.
+private val i18n = i18n {
+  // We will search for the translation corresponding to a structured key in the current language only.
+  default(withFallback = false)
+  prefix("option.taskProperties.main") {
+    // If there is no translation, we'll search for the translation corresponding to the previously used unstructured key,
+    // again in the current language only.
+    default(withFallback = false)
+    transform { key ->
+      val key1 = when {
+        key.endsWith(".label") -> key.removeSuffix(".label")
+        key.startsWith("priority.value.") -> "priority.${key.removePrefix("priority.value.")}"
+        else -> key
+      }
+      val map = mapOf(
+        "startDate" to "dateOfBegining",
+        "endDate" to "dateOfEnd",
+        "progress" to "advancement",
+        "milestone" to "meetingPoint",
+        "notes" to "notesTask",
+        "color" to "colors",
+        "texture" to "shape",
+        "btn.open" to "storage.action.open",
+      )
+      map[key1] ?: key1
+    }
+    fallback {
+      // Finally, we'll use the English translation of a structured key.
+      default()
+      prefix("option.taskProperties.main")
+    }
   }
-})
-
-private val i18n = RootLocalizer.createWithRootKey("option.taskProperties.main", baseLocalizer = fallback)
-
+}
