@@ -30,6 +30,9 @@ public class PropertiesUtil {
   public static void loadProperties(Properties result, String resource) {
     URL url = PropertiesUtil.class.getResource(resource);
     if (url == null) {
+      url = PropertiesUtil.class.getResource("/resources" + resource);
+    }
+    if (url == null) {
       return;
     }
     URL resolvedUrl;
