@@ -13,7 +13,7 @@ buildscript {
 plugins {
     id "org.jetbrains.kotlin.jvm"
     id "maven-publish"
-    id "nu.studer.jooq" version "9.0"
+    id "nu.studer.jooq" version "10.0"
     id "org.jetbrains.kotlin.plugin.serialization" version "$kotlin_version"
     id "io.miret.etienne.sass" version "1.5.2"
 }
