@@ -63,6 +63,7 @@ import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskSelectionManager
 import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm
@@ -389,7 +390,7 @@ class TaskTable(
           }
         } else {
           keepSelection {
-            e.newContainer!!.addChildTreeItem(e.task, e.indexAtNew)
+            addChildTreeItem(e.newContainer!!, e.task, e.indexAtNew, task2treeItem, ::onCreateTreeItem)
             taskTableChartConnector.visibleTasks.clear()
             taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
           }
@@ -755,91 +756,30 @@ class TaskTable(
       LOGGER.debug("Sync >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
       val treeModel = taskManager.taskHierarchy
       task2treeItem.clear()
-      task2treeItem[treeModel.rootTask] = rootItem
 
-      var filteredCount = 0
-      treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx, level ->
-        LOGGER.debug(">>> [walk] parent={} child={} idx={}", parent, child, idx)
-        if (level == 0 && child == null) {
-          // This is just the root task itself.
-          return@depthFirstWalk true
-        }
-        val parentItem = task2treeItem[parent]!!
-        val result = if (!this.filterManager.activeFilter.filterFxn(parent, child)) {
-          LOGGER.debug("...child={} is filtered out", child)
-          if (idx < parentItem.children.size) {
-            parentItem.children.remove(idx, parentItem.children.size)
-          } else {
-            LOGGER.debug("It seemed to be removed before, because its sibling was filtered, so we just skip it here")
-          }
-          LOGGER.debug("...now parentItem.children={}", parentItem.children)
-          filteredCount++
-          false
-        } else {
-          if (child == null) {
-            parentItem.children.remove(idx, parentItem.children.size)
-          } else {
-            LOGGER.debug("...parentItem.children={}", parentItem.children)
-            if (parentItem.children.size > idx) {
-              val childItem = parentItem.children[idx]
-              LOGGER.debug("...child@{}={}", idx, child)
-              if (childItem.value.taskID == child.taskID) {
-                childItem.value = child
-                task2treeItem[child] = childItem
-              } else {
-                LOGGER.debug("...replacing child")
-                parentItem.children.removeAt(idx)
-                parent.addChildTreeItem(child, idx)
-              }
-            } else {
-              LOGGER.debug("...adding child")
-              parent.addChildTreeItem(child)
-            }
-          }
-          true
-        }
-        LOGGER.debug("<<< [walk] parent={} child={} idx={}", parent, child, idx)
-        result
-      }
+      val syncAlgorithm = SyncAlgorithm(treeModel, task2treeItem, rootItem, filterManager.activeFilter.filterFxn, ::onCreateTreeItem)
+      syncAlgorithm.sync()
       val visibleTasks = getExpandedTasks()
       taskTableChartConnector.visibleTasks.setAll(visibleTasks)
       if (visibleTasks.isEmpty()) {
-        treeTable.placeholder = if (filteredCount > 0) {
+        treeTable.placeholder = if (syncAlgorithm.filteredCount > 0) {
           placeholderShowHidden
         } else {
           placeholderEmpty
         }
       }
-      filterManager.hiddenTaskCount.set(filteredCount)
+      filterManager.hiddenTaskCount.set(syncAlgorithm.filteredCount)
       initializationCompleted()
       LOGGER.debug("Sync <<<<<<<<<<<<<<<<<")
     }
   }
 
-  private fun Task.addChildTreeItem(child: Task, pos: Int = -1): TreeItem<Task> {
-    val parentItem = task2treeItem[this] ?: run {
-      //println(task2treeItem)
-      throw NullPointerException("NPE! this=$this")
-    }
-    task2treeItem[child]?.let { return it }
 
-    val childItem = createTreeItem(child)
-    if (pos == -1 || pos > parentItem.children.size) {
-      parentItem.children.add(childItem)
-    } else {
-      parentItem.children.add(pos, childItem)
-    }
-//    LOGGER.debug("addChildTreeItem: child=$child pos=$pos parent=$parentItem")
-//    LOGGER.debug("addChildTreeItem: parentItem.children=${parentItem.children}")
-//    LOGGER.delegate().debug("Stack: ", Exception())
-    task2treeItem[child] = childItem
-    return childItem
-  }
-
-  private fun createTreeItem(task: Task) = TreeItem(task).also {
-    it.isExpanded = treeCollapseView.isExpanded(task)
-    it.expandedProperty().addListener { _, _, _ -> onExpanded() }
-    treeTable.registerTreeItem(it)
+  private fun onCreateTreeItem(treeItem: TreeItem<Task>) {
+    val task = treeItem.value
+    treeItem.isExpanded = treeCollapseView.isExpanded(task)
+    treeItem.expandedProperty().addListener { _, _, _ -> onExpanded() }
+    treeTable.registerTreeItem(treeItem)
   }
 
   private fun onExpanded() {
@@ -1069,6 +1009,87 @@ class TaskTable(
 
 }
 
+internal class SyncAlgorithm(
+  private val treeModel: TaskContainmentHierarchyFacade,
+  private val task2treeItem: MutableMap<Task, TreeItem<Task>>,
+  private val rootItem: TreeItem<Task>,
+  private val activeFilter: TaskFilterFxn,
+  private val onCreateTreeItem: (TreeItem<Task>) -> Unit
+) {
+
+  internal var filteredCount = 0
+
+  fun sync() {
+    task2treeItem[treeModel.rootTask] = rootItem
+
+    treeModel.depthFirstWalk(treeModel.rootTask) { parent, child, idx, level ->
+      LOGGER.debug(">>> [walk] parent={} child={} idx={}", parent, child, idx)
+      val parentItem = task2treeItem[parent]!!
+      val result = if (!this.activeFilter(parent, child)) {
+        LOGGER.debug("...child={} is filtered out", child)
+        if (idx < parentItem.children.size) {
+          parentItem.children.remove(idx, parentItem.children.size)
+        } else {
+          LOGGER.debug("It seemed to be removed before, because its sibling was filtered, so we just skip it here")
+        }
+        LOGGER.debug("...now parentItem.children={}", parentItem.children)
+        filteredCount++
+        false
+      } else {
+        if (child == null) {
+          parentItem.children.remove(idx, parentItem.children.size)
+        } else {
+          LOGGER.debug("...parentItem.children={}", parentItem.children)
+          if (parentItem.children.size > idx) {
+            val childItem = parentItem.children[idx]
+            LOGGER.debug("...child@{}={}", idx, child)
+            if (childItem.value.taskID == child.taskID) {
+              childItem.value = child
+              task2treeItem[child] = childItem
+            } else {
+              LOGGER.debug("...replacing child")
+              parentItem.children.removeAt(idx)
+              parent.addChildTreeItem(child, idx)
+            }
+          } else {
+            LOGGER.debug("...adding child")
+            parent.addChildTreeItem(child)
+          }
+        }
+        true
+      }
+      LOGGER.debug("<<< [walk] parent={} child={} idx={}", parent, child, idx)
+      result
+    }
+  }
+
+  internal fun Task.addChildTreeItem(child: Task, pos: Int = -1) =
+    addChildTreeItem(this, child, pos, task2treeItem, onCreateTreeItem)
+
+}
+
+internal fun addChildTreeItem(parent: Task, child: Task, pos: Int = -1,
+                              task2treeItem: MutableMap<Task, TreeItem<Task>>,
+                              onCreateTreeItem: (TreeItem<Task>) -> Unit): TreeItem<Task> {
+  val parentItem = task2treeItem[parent] ?: run {
+    //println(task2treeItem)
+    throw NullPointerException("NPE! this=$parent")
+  }
+
+
+  val childItem = task2treeItem[child] ?: TreeItem(child).also { onCreateTreeItem(it) }
+  childItem.parent?.children?.remove(childItem)
+  if (pos == -1 || pos > parentItem.children.size) {
+    parentItem.children.add(childItem)
+  } else {
+    parentItem.children.add(pos, childItem)
+  }
+//    LOGGER.debug("addChildTreeItem: child=$child pos=$pos parent=$parentItem")
+//    LOGGER.debug("addChildTreeItem: parentItem.children=${parentItem.children}")
+//    LOGGER.delegate().debug("Stack: ", Exception())
+  task2treeItem[child] = childItem
+  return childItem
+}
 private class TreeSelectionListenerImpl(
   private val selectedItems: ObservableList<TreeItem<Task>?>,
   private val selectionManager: TaskSelectionManager,
