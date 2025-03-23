@@ -323,6 +323,7 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
       }
       option.isWritable.addWatcher { evt -> picker.isDisable = !evt.newValue }
       picker.isDisable = option.isWritable.value.not()
+      picker.converter = createDateConverter()
     }
   }
 

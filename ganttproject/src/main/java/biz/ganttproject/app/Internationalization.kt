@@ -20,11 +20,16 @@ package biz.ganttproject.app
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.core.option.validatorI18N
+import biz.ganttproject.core.time.GanttCalendar
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ObservableValue
+import javafx.util.StringConverter
+import net.sourceforge.ganttproject.language.GanttLanguage
+import org.w3c.util.DateParser
 import java.text.MessageFormat
 import java.text.NumberFormat
+import java.time.LocalDate
 import java.util.*
 
 /**
@@ -223,5 +228,16 @@ fun setLocale(locale: Locale) {
 fun String.removeMnemonicsPlaceholder(): String = this.replace("$", "")
 
 fun getNumberFormat(): NumberFormat = NumberFormat.getInstance(ourLocale)
+
+fun createDateConverter(): StringConverter<LocalDate> = StringConverterImpl(ourLocale)
+
+class StringConverterImpl(val locale: Locale) : StringConverter<LocalDate>() {
+  override fun toString(date: LocalDate?): String? =
+    date?.let { GanttLanguage.getInstance().formatShortDate(GanttCalendar.fromLocalDate(it)) }
+
+
+  override fun fromString(str: String?): LocalDate? =
+    str?.let { DateParser.toLocalDate(GanttLanguage.getInstance().parseDate(it)) }
+}
 
 data class Translation(val locale: Locale, val mapKey: (String) -> String?)
