@@ -48,7 +48,7 @@ interface ColorOption : GPOption<Color?> {
       javafx.scene.paint.Color.color(color.red / 255.0, color.green / 255.0, color.blue / 255.0)
 
     fun fxColorToAwtColor(color: javafx.scene.paint.Color) =
-      Color((color.red*256).toInt(), (color.green*256).toInt(), (color.blue*256).toInt())
+      Color((color.red*255).toInt(), (color.green*255).toInt(), (color.blue*255).toInt())
     /** parse a string as hew and return the corresponding color.  */
     fun determineColor(hexString: String): Color {
       assert(isValidColor(hexString)) { "Can't parse color $hexString" }

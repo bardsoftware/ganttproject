@@ -56,6 +56,7 @@ data class OptionPageItem(
   val fxNode by lazy {
     provider?.let {
       if (it is FxUiComponent) {
+        it.init(project, uiFacade)
         it.buildNode()
       } else {
         SwingNode().also {

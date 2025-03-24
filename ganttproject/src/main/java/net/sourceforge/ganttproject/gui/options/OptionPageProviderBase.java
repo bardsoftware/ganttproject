@@ -61,8 +61,10 @@ public abstract class OptionPageProviderBase implements OptionPageProvider {
 
   @Override
   public void commit() {
-    for (GPOptionGroup optionGroup : getOptionGroups()) {
-      optionGroup.commit();
+    if (myProject != null && myUiFacade != null) {
+      for (GPOptionGroup optionGroup : getOptionGroups()) {
+        optionGroup.commit();
+      }
     }
   }
 
