@@ -39,8 +39,14 @@
 
     .custom-label-menu-item {
       .glyph-icon {
-        -glyph-size: 30px;
-        -fx-fill: transparent;
+        -glyph-size: 18px;
+        -fx-fill: $gp-dark-gray;
+      }
+      -fx-padding: 5px;
+      &.blank_icon {
+        .glyph-icon {
+          -fx-fill: transparent;
+        }
       }
     }
     &:focused {

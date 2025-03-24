@@ -273,9 +273,12 @@ fun GPAction.asMenuItem(): MenuItem =
       label.styleClass.add("custom-label-menu-item")
       getGlyphIcon()?.let { icon ->
         label.graphic = icon
-      } ?: run { label.graphic = MaterialIconView(MaterialIcon.SPACE_BAR).also {
-        it.styleClass.add("box")
-      } }
+      } ?: run {
+        label.graphic = MaterialIconView(MaterialIcon.SPACE_BAR).also {
+          it.styleClass.add("box")
+        }
+        label.styleClass.add("blank_icon")
+      }
     }
     val menuItem = CustomMenuItem(node)
     this.getAccelerator()?.let {
