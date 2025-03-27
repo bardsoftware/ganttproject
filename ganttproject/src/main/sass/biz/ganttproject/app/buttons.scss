@@ -59,6 +59,45 @@
   -fx-background-color: transparent;
 }
 
+.btn-attention {
+  -fx-background-color: #ffca28;
+  -fx-border-color: transparent;
+  -fx-border-radius: 0;
+  -fx-text-fill: #424242;
+  /*    -fx-font-size: 110%;*/
+  -fx-font-weight: bold;
+  -fx-padding: 0.75ex 2em;
+  -fx-cursor: hand;
+
+  &:hover {
+    @include btn-hovered(transparent, #ffca28);
+    -fx-effect: dropshadow(gaussian, #e0e0e0, 4, 0, 0, 4);
+  }
+  &:focused {
+    @include btn-focused(transparent, #ffca28);
+  }
+  &:disabled {
+    -fx-opacity: 0.4;
+    -fx-cursor: default;
+  }
+  &:pressed {
+    -fx-effect: none;
+    -fx-background-color: derive(#ffca28, 10%);
+    -fx-text-fill: derive(#424242, -10%);
+  }
+  &.secondary {
+    -fx-background-color: transparent;
+    -fx-border-color: #ffca28;
+
+    &:hover {
+      @include btn-hovered(#ffca28, transparent);
+    }
+    &:focused {
+      @include btn-focused(#ffca28, transparent);
+    }
+  }
+}
+
 @mixin scroll-bar($width) {
   -fx-background-color: transparent;
   -fx-opacity: 0.2;
