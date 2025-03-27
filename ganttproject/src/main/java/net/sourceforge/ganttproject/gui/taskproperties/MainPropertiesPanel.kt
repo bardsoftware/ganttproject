@@ -42,6 +42,11 @@ import net.sourceforge.ganttproject.task.TaskView
 import net.sourceforge.ganttproject.util.BrowserControl
 import javax.swing.SwingUtilities
 
+/**
+ * This class is responsible for rendering the user interface components to display
+ * and update properties such as the task name, milestone status, scheduling options,
+ * priority, progress, colors, notes, web links, and task-specific configurations.
+ */
 class MainPropertiesPanel(private val task: Task, private val taskView: TaskView) {
   val title: String = RootLocalizer.formatText("general")
   val fxComponent by lazy { getFxNode() }
@@ -58,7 +63,9 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   private val colorOption = ObservableColor("color", Style.Color.parse(ColorOption.Util.getColor(task.color)))
   private val notesOption = ObservableString("notes", task.notes)
   private val webLinkOption = ObservableString("webLink", task.webLink)
-  private val textureOption = ObservableEnum("texture", TaskTexture.find(task.shape) ?: TaskTexture.TRANSPARENT, TaskTexture.values())
+  private val textureOption = ObservableEnum("texture", TaskTexture.find(task.shape) ?: TaskTexture.TRANSPARENT,
+    TaskTexture.entries.toTypedArray()
+  )
   private val copyStartDateAction = GPAction.create("option.taskProperties.main.earliestBegin.copyBeginDate") {
     earliestStartOption.set(taskDatesController.startDateOption.value)
   }.also {
@@ -225,7 +232,7 @@ private fun Task.canBeProjectTask(): Boolean {
   }
 
   for (nestedTask in nestedTasks) {
-    if (this.isProjectTaskOrContainsProjectTask()) {
+    if (nestedTask.isProjectTaskOrContainsProjectTask()) {
       return false
     }
   }
