@@ -119,7 +119,7 @@ class VBoxBuilder(vararg classes: String) {
     add(node, alignment = null, growth = null)
   }
 
-  fun add(node: Node, alignment: Pos?, growth: Priority?): Node {
+  fun add(node: Node, alignment: Pos?, growth: Priority? = null): Node {
     val child =
         if (alignment == null) {
           node
