@@ -76,7 +76,23 @@ class ViewPane {
 }
 
 fun ViewProvider.getLabel() = localizer.formatText("${this.id}.label")
-private val localizer = RootLocalizer.createWithRootKey("view")
+private val localizer = i18n {
+  default(withFallback = false)
+  prefix("view") {
+    default(withFallback = false)
+    transform { key ->
+      val map = mapOf(
+        "0.label" to "gantt",
+        "1.label" to "resourcesChart"
+      )
+      map[key] ?: key
+    }
+    fallback {
+      default()
+      prefix("view")
+    }
+  }
+}
 
 private class ViewImpl(
   private val tabPane: TabPane,
