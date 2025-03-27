@@ -19,12 +19,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.gui.taskproperties
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.createButton
 import biz.ganttproject.customproperty.CustomColumnsException
 import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.customproperty.CustomPropertyDefinition
+import biz.ganttproject.customproperty.CustomPropertyEvent
 import biz.ganttproject.customproperty.CustomPropertyHolder
+import biz.ganttproject.customproperty.CustomPropertyListener
 import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.ganttview.ApplyExecutorType
 import biz.ganttproject.ganttview.showResourceColumnManager
@@ -39,8 +42,10 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.embed.swing.JFXPanel
 import javafx.event.EventHandler
+import javafx.geometry.Pos
 import javafx.scene.Scene
 import javafx.scene.control.ContentDisplay
+import javafx.scene.control.Label
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
@@ -48,6 +53,8 @@ import javafx.scene.control.TableColumn.CellDataFeatures
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
 import javafx.util.Callback
 import javafx.util.converter.DefaultStringConverter
 import net.sourceforge.ganttproject.action.GPAction
@@ -57,8 +64,6 @@ import net.sourceforge.ganttproject.task.TaskMutator
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import org.controlsfx.control.tableview2.TableColumn2
 import org.controlsfx.control.tableview2.TableView2
-import java.awt.event.ActionEvent
-import java.lang.RuntimeException
 import javax.swing.JComponent
 
 /**
@@ -67,7 +72,7 @@ import javax.swing.JComponent
  * @author dbarashev (Dmitry Barashev)
  */
 class CustomColumnsPanel(
-  manager: CustomPropertyManager,
+  private val manager: CustomPropertyManager,
   projectDatabase: ProjectDatabase,
   type: Type,
   undoManager: GPUndoManager,
@@ -82,18 +87,21 @@ class CustomColumnsPanel(
     TASK, RESOURCE
   }
 
-  private val myCustomPropertyManager: CustomPropertyManager = manager
-
   private val myHolder: CustomPropertyHolder = customPropertyHolder
+  private val tableItems: ObservableList<TableViewRow> = FXCollections.observableArrayList()
+  private val customPropertyListener = object : CustomPropertyListener {
+    override fun customPropertyChange(event: CustomPropertyEvent) {
+      createTableRows()
+    }
+  }.also(manager::addListener)
 
   private val myTableHeaderFacade: ColumnList = tableHeaderFacade
 
-  private val actionShowManager = object : GPAction("columns.manage.label") {
-    override fun actionPerformed(e: ActionEvent?) {
+  private val actionShowManager = GPAction.create("columns.manage.label") {
       when (myType) {
         Type.TASK -> showTaskColumnManager(
           myTableHeaderFacade,
-          myCustomPropertyManager,
+          manager,
           myUndoManager,
           myProjectDatabase,
           ApplyExecutorType.DIRECT
@@ -101,34 +109,43 @@ class CustomColumnsPanel(
 
         Type.RESOURCE -> showResourceColumnManager(
           myTableHeaderFacade,
-          myCustomPropertyManager,
+          manager,
           myUndoManager,
           myProjectDatabase,
           ApplyExecutorType.SWING
         )
       }
-    }
   }.also {
     it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
   }
 
-  private val tableItems: ObservableList<TableViewRow> = FXCollections.observableArrayList(myHolder.customProperties.map {
-    TableViewRow(
-      SimpleStringProperty(it.definition.name),
-      SimpleStringProperty(it.valueAsString),
-      SimpleBooleanProperty(it.definition.calculationMethod != null),
-      it.definition
+  private fun createTableRows() {
+    tableItems.clear()
+    tableItems.addAll(
+      manager.definitions.map { def ->
+        val currentValue = myHolder.customProperties.find { it.definition == def }?.valueAsString
+        TableViewRow(
+          SimpleStringProperty(def.name),
+          SimpleStringProperty(currentValue ?: ""),
+          SimpleBooleanProperty(def.calculationMethod != null),
+          def
+        )
+      }.sortedWith { o1, o2 ->
+        var result: Int = o1.def.isCalculated().compareTo(o2.def.isCalculated())
+        if (result == 0) {
+          result = o1.def.name.compareTo(o2.def.name)
+        }
+        result
+      }
     )
-  }.sortedWith(Comparator<TableViewRow> { o1, o2 ->
-    var result: Int = o1.def.isCalculated().compareTo(o2.def.isCalculated())
-    if (result == 0) {
-      result = o1.def.name.compareTo(o2.def.name)
-    }
-    result
-  }))
+  }
 
   fun getFxNode() = BorderPane().apply {
+    createTableRows()
+    stylesheets.add("/biz/ganttproject/task/TaskPropertiesDialog.css")
     stylesheets.add("/biz/ganttproject/app/tables.css")
+    stylesheets.add("/biz/ganttproject/app/buttons.css")
+    styleClass.add("pane-custom-columns")
     this.top = vbox {
       add(HBox().also {
         it.children.add(createButton(actionShowManager, onlyIcon = false).also { btn ->
@@ -140,6 +157,17 @@ class CustomColumnsPanel(
       })
     }
     this.center = TableView2<TableViewRow>().also { table ->
+      table.placeholder = vbox {
+        addClasses("placeholder")
+        add(Pane(), Pos.CENTER, Priority.ALWAYS)
+        add(Label().also {
+          it.text = RootLocalizer.formatText("option.taskProperties.customColumn.placeholder.label")
+        }, Pos.CENTER)
+        add(createButton(actionShowManager, onlyIcon = false).also { btn ->
+          btn.styleClass.addAll("btn", "btn-attention", "secondary")
+        }, Pos.CENTER)
+        add(Pane(), Pos.CENTER, Priority.ALWAYS)
+      }
       table.isEditable = true
       val nameColumn = TableColumn2<TableViewRow, String>(GanttLanguage.getInstance().getText("name")).also {
         it.cellValueFactory = object : Callback<CellDataFeatures<TableViewRow, String>, ObservableValue<String>> {
@@ -209,6 +237,7 @@ class CustomColumnsPanel(
 
   fun commit(mutator: TaskMutator) {
 //    CommonPanel.saveColumnWidths(myTable, ourColumnWidth)
+    manager.removeListener(customPropertyListener)
     tableItems.forEach {
       if (it.def.calculationMethod == null) {
         myHolder.addCustomProperty(it.def, it.value.get())

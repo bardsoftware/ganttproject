@@ -26,3 +26,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
   }
 
 }
+
+.pane-custom-columns {
+  .placeholder {
+    -fx-background-color: $gp-light-gray;
+    Label {
+      -fx-font-size: 120%;
+      -fx-padding: 10;
+    }
+  }
+}
