@@ -338,11 +338,11 @@ fun centerOnOwner(child: Window, owner: Window) {
   child.y = owner.y + owner.height / 2.0 - child.height / 2.0
 }
 
-fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? {
+fun createButton(action: GPAction, onlyIcon: Boolean = true): Button {
   val icon = action.getGlyphIcon()
   val contentDisplay = action.getValue(GPAction.TEXT_DISPLAY) as? ContentDisplay ?: if (onlyIcon) ContentDisplay.GRAPHIC_ONLY else ContentDisplay.RIGHT
   if (icon == null && contentDisplay != ContentDisplay.TEXT_ONLY) {
-    return null
+    error("Icon for action ${action.id} is missing")
   }
   val hasAutoRepeat = action.getValue(GPAction.HAS_AUTO_REPEAT) as? Boolean ?: false
   return Button("", icon).apply {
