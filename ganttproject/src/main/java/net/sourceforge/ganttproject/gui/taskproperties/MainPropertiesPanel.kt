@@ -113,7 +113,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
           val dateEditor = this@pane.createDateOptionEditor(earliestStartOption)
           children.add(this@pane.createBooleanOptionEditor(hasEarliestStart))
           children.add(dateEditor)
-          children.add(createButton(copyStartDateAction, onlyIcon = false)?.also {
+          children.add(createButton(copyStartDateAction, onlyIcon = false).also {
             it.styleClass.addAll("btn-regular", "small", "secondary")
           })
           disableProperty().subscribe { oldValue, newValue ->

@@ -101,21 +101,21 @@ public class GanttDialogProperties {
       dialogController.addStyleClass("dlg-lock");
       var tabbedPane = new TabPane();
       tabbedPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-      tabbedPane.getSelectionModel().selectedItemProperty().subscribe(newValue -> {
-        if (newValue == null) {
-          return;
-        }
-        var tabContent = newValue.getContent();
-        if (tabContent instanceof Parent) {
-          FXUtilKt.walkTree((Parent)tabContent, node -> {
-            if (node instanceof SwingNode) {
-              var contentNode = ((SwingNode) node).getContent();
-              SwingUtilities.invokeLater(() -> taskPropertiesBean.onActivate(contentNode));
-            }
-            return Unit.INSTANCE;
-          });
-        }
-      });
+//      tabbedPane.getSelectionModel().selectedItemProperty().subscribe(newValue -> {
+//        if (newValue == null) {
+//          return;
+//        }
+//        var tabContent = newValue.getContent();
+//        if (tabContent instanceof Parent) {
+//          FXUtilKt.walkTree((Parent)tabContent, node -> {
+//            if (node instanceof SwingNode) {
+//              var contentNode = ((SwingNode) node).getContent();
+//              SwingUtilities.invokeLater(() -> taskPropertiesBean.onActivate(contentNode));
+//            }
+//            return Unit.INSTANCE;
+//          });
+//        }
+//      });
       var insertPane = new Function2<JComponent, String, Unit>() {
         @Override
         public Unit invoke(JComponent node, String title) {

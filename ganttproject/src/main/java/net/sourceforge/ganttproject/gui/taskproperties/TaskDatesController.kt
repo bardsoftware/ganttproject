@@ -40,6 +40,8 @@ class TaskDatesController(private val task: Task, milestoneOption: ObservableBoo
   private val isMilestone = task.isMilestone()
   private val calendar = task.manager.calendar
 
+  // TODO: get back "around project start" validator.
+  //    var validator = DateValidators.INSTANCE.aroundProjectStart(myProject.getTaskManager().getProjectStart());
   internal val startDateOption = ObservableDate("startDate", task.start.toLocalDate())
   internal val endDateOption = ObservableDate("endDate", task.end.toLocalDate())
   internal val durationOption = ObservableInt("duration", task.duration.value.toInt())
