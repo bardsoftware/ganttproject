@@ -46,10 +46,13 @@ import javafx.util.Callback
 import javafx.util.StringConverter
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.GPColorChooser
+import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.util.BrowserControl
 import org.controlsfx.control.textfield.CustomTextField
+import org.w3c.util.DateParser
 import java.awt.event.ActionEvent
 import java.io.File
+import java.text.ParseException
 import java.time.LocalDate
 
 internal interface RowBuilder {
@@ -318,8 +321,38 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
       option.addWatcher { evt ->
         if (evt.trigger != picker) picker.value = evt.newValue
       }
+
+      val textEditor = picker.editor
+      val composedValidator = ValueValidator<LocalDate?> {
+        try {
+          GanttLanguage.getInstance().parseDate(it)?.let(DateParser::toLocalDate)
+            ?: throw ValidationException("The date $it can't be parsed using the current date format")
+        } catch (ex: ParseException) {
+          throw ValidationException("The date $it can't be parsed using the current date format", ex)
+        }
+      }
+      val validatedText = textEditor.textProperty().validated(composedValidator)
+      option.isWritable.addWatcher {
+        if (it.newValue) {
+          validatedText.validate(textEditor.text, null)
+        }
+      }
+
+      validatedText.validationMessage.addWatcher {
+        if (it.newValue == null) {
+          textEditor.markValid()
+          validationErrors.remove(option)
+        } else {
+          textEditor.markInvalid()
+          validationErrors[option] = it.newValue
+        }
+      }
       picker.valueProperty().subscribe { oldValue, newValue ->
-        option.set(newValue, picker)
+        try {
+          option.set(newValue, picker)
+        } catch (ex: ValidationException) {
+          validatedText.validationMessage.value = ex.message
+        }
       }
       option.isWritable.addWatcher { evt -> picker.isDisable = !evt.newValue }
       picker.isDisable = option.isWritable.value.not()

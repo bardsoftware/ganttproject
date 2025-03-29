@@ -78,7 +78,7 @@ fun createStringDateValidator(dv: DateValidatorType? = null, formats: Supplier<L
   }
 
 
-typealias DateValidatorType = (Date) -> Pair<Boolean, String?>
+private typealias DateValidatorType = (Date) -> Pair<Boolean, String?>
 
 object DateValidators {
   fun aroundProjectStart(projectStart: Date): DateValidatorType {
@@ -98,7 +98,7 @@ object DateValidators {
   }
 }
 
-class ValidatedObservable<T>(observableValue: ObservableString, private val validator: ValueValidator<T>) : GPObservable<T?> {
+class ValidatedObservable<T>(private val observableValue: ObservableString, private val validator: ValueValidator<T>) : GPObservable<T?> {
 
   private var parsedValue: T? = null
   private val watchers: MutableList<ObservableWatcher<T?>> by lazy { mutableListOf() }
@@ -109,13 +109,15 @@ class ValidatedObservable<T>(observableValue: ObservableString, private val vali
 
   init {
     observableValue.addWatcher {sourceEvent -> validate(sourceEvent.newValue ?: "", sourceEvent.trigger) }
-    validate(observableValue.value ?: "", null)
   }
 
   override fun addWatcher(watcher: ObservableWatcher<T?>) {
     watchers.add(watcher)
   }
 
+  fun initialValidate() {
+    validate(observableValue.value ?: "", null)
+  }
   fun validate(newValue: String, trigger: Any?) {
     val oldValidated = parsedValue
     doValidate(newValue).fold(

@@ -15,6 +15,7 @@ dependencies {
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.10.+'
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     api "com.google.guava:guava:31.+"
+    api "com.michael-bull.kotlin-result:kotlin-result:2.0.1"
 
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.3'
 

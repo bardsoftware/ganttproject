@@ -21,6 +21,10 @@ package biz.ganttproject.core.option
 
 import biz.ganttproject.core.chart.render.Style
 import biz.ganttproject.core.chart.render.Style.Color
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.map
+import com.github.michaelbull.result.mapError
 import java.io.File
 import java.time.LocalDate
 
@@ -32,6 +36,7 @@ interface GPObservable<T> {
 }
 
 typealias ObservableWatcher<T> = (ObservableEvent<T>) -> Unit
+typealias ObservablePropertyValidator<T> = (ObservableEvent<T>)-> Result<T, String>
 data class ObservableEvent<T>(val oldValue: T, val newValue: T, val trigger: Any?)
 
 class ObservableImpl<T>(initValue: T): GPObservable<T> {
@@ -66,7 +71,7 @@ sealed class ObservableProperty<T>(
   private val _isWritable = ObservableImpl( true)
   val isWritable: GPObservable<Boolean> get() = _isWritable
 
-  fun set(newValue: T, trigger: Any? = null) {
+  open fun set(newValue: T, trigger: Any? = null) {
     this.delegate.set(newValue, trigger)
   }
   fun setWritable(value: Boolean) {
@@ -101,8 +106,14 @@ class ObservableFile(id: String, initValue: File? = null)
 class ObservableObject<T>(id: String = "", initValue: T?)
   : ObservableProperty<T?>(id, initValue)
 
-class ObservableDate(id: String, initValue: LocalDate? = null)
-  : ObservableProperty<LocalDate?>(id, initValue)
+class ObservableDate(id: String, initValue: LocalDate? = null,
+                     val validator: ObservablePropertyValidator<LocalDate?> = { evt -> Ok(evt.newValue) })
+  : ObservableProperty<LocalDate?>(id, initValue) {
+  override fun set(newValue: LocalDate?, trigger: Any?) {
+    val evt = ObservableEvent(this.value, newValue, trigger)
+    validator.invoke(evt).map { super.set(newValue, trigger) }.mapError { throw ValidationException(it) }
+  }
+}
 
 class ObservableColor(id: String, initValue: Style.Color? = null) : ObservableProperty<Color?>(id, initValue)
 

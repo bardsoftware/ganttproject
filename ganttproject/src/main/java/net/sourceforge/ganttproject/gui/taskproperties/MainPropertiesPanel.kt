@@ -25,6 +25,8 @@ import biz.ganttproject.core.chart.render.TaskTexture
 import biz.ganttproject.core.option.*
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.createButton
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.event.EventHandler
@@ -56,7 +58,11 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   private val taskDatesController = TaskDatesController(task, milestoneOption)
   private val projectTaskOption = ObservableBoolean("projectTask", task.isProjectTask)
   private val hasEarliestStart = ObservableBoolean("hasEarliestStart", task.thirdDateConstraint == 1)
-  private val earliestStartOption = ObservableDate("earliestBegin", if (task.thirdDateConstraint == 1 ) task.third.toLocalDate() else null)
+  private val earliestStartOption = ObservableDate("earliestBegin",
+    if (task.thirdDateConstraint == 1 ) task.third.toLocalDate() else null,
+    validator = { date -> if ((date.newValue?.year ?: 0) >= 2025) Ok(date.newValue) else Err("Date must be > 2025")
+    }
+  )
   private val priorityOption = ObservableEnum<Priority>("priority", task.priority, Priority.entries.toTypedArray())
   private val progressOption = ObservableInt("progress", task.completionPercentage)
   private val showInTimelineOption = ObservableBoolean("showInTimeline", taskView.timelineTasks.contains(task))
