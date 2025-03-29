@@ -131,8 +131,6 @@ public class GanttTaskPropertiesBean extends JPanel {
 
   private final TaskScheduleDatesPanel myTaskScheduleDates;
 
-  CustomColumnsPanel myCustomColumnPanel = null;
-
   private TaskDependenciesPanel myDependenciesPanel;
 
   private TaskAllocationsPanel myAllocationsPanel;
@@ -299,11 +297,6 @@ public class GanttTaskPropertiesBean extends JPanel {
     propertiesPanel.add(valueBox);
   }
 
-  private void constructCustomColumnPanel() {
-    myCustomColumnPanel = new CustomColumnsPanel(myProject.getTaskCustomColumnManager(), myProject.getProjectDatabase(), CustomColumnsPanel.Type.TASK,
-      myUIfacade.getUndoManager(), selectedTasks[0].getCustomValues().copyOf(), myUIfacade.getTaskColumnList());
-  }
-
   /** Construct the predecessors tabbed pane */
   private void constructPredecessorsPanel() {
     myDependenciesPanel = new TaskDependenciesPanel();
@@ -339,12 +332,10 @@ public class GanttTaskPropertiesBean extends JPanel {
     constructGeneralPanel();
     constructPredecessorsPanel();
     constructResourcesPanel();
-    constructCustomColumnPanel();
   }
 
   public void save(TaskMutator mutator) {
     myAllocationsPanel.commit(mutator);
-    myCustomColumnPanel.commit(mutator);
     mutator.commit();
     myDependenciesPanel.commit();
   }

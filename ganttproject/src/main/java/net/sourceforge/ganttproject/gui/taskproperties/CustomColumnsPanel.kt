@@ -73,15 +73,12 @@ import javax.swing.JComponent
  */
 class CustomColumnsPanel(
   private val manager: CustomPropertyManager,
-  projectDatabase: ProjectDatabase,
-  type: Type,
-  undoManager: GPUndoManager,
+  private val myProjectDatabase: ProjectDatabase,
+  private val myType: Type,
+  private val myUndoManager: GPUndoManager,
   customPropertyHolder: CustomPropertyHolder,
   tableHeaderFacade: ColumnList
 ) {
-  private val myType: Type = type
-  private val myUndoManager: GPUndoManager = undoManager
-  private val myProjectDatabase: ProjectDatabase = projectDatabase
 
   enum class Type {
     TASK, RESOURCE
@@ -140,16 +137,17 @@ class CustomColumnsPanel(
     )
   }
 
+  val title = RootLocalizer.formatText("customColumns")
   fun getFxNode() = BorderPane().apply {
     createTableRows()
     stylesheets.add("/biz/ganttproject/task/TaskPropertiesDialog.css")
     stylesheets.add("/biz/ganttproject/app/tables.css")
     stylesheets.add("/biz/ganttproject/app/buttons.css")
-    styleClass.add("pane-custom-columns")
+    styleClass.addAll("tab-contents", "pane-custom-columns")
     this.top = vbox {
       add(HBox().also {
         it.children.add(createButton(actionShowManager, onlyIcon = false).also { btn ->
-          btn?.styleClass?.addAll("btn", "btn-regular", "secondary", "small")
+          btn.styleClass.addAll("btn", "btn-regular", "secondary", "small")
         })
       })
       add(HBox().also {
@@ -217,7 +215,7 @@ class CustomColumnsPanel(
         val result = object : TextFieldTableCell<TableViewRow, String>(DefaultStringConverter()) {
           override fun updateItem(item: String?, empty: Boolean) {
             super.updateItem(item, empty)
-            val isEditable = this.tableRow?.item?.let(isEditable) ?: false to false
+            val isEditable = this.tableRow?.item?.let(isEditable) ?: (false to false)
             this.isEditable = isEditable.first
             this.isDisable = isEditable.second
           }
@@ -235,7 +233,7 @@ class CustomColumnsPanel(
     }
   }
 
-  fun commit(mutator: TaskMutator) {
+  fun save(mutator: TaskMutator) {
 //    CommonPanel.saveColumnWidths(myTable, ourColumnWidth)
     manager.removeListener(customPropertyListener)
     tableItems.forEach {
@@ -249,6 +247,10 @@ class CustomColumnsPanel(
     } catch (e: CustomColumnsException) {
       throw RuntimeException(e)
     }
+  }
+
+  fun cancel() {
+    manager.removeListener(customPropertyListener)
   }
 }
 

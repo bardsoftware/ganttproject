@@ -55,9 +55,9 @@ public class GanttDialogProperties {
   public void show(final IGanttProject project, final UIFacade uiFacade) {
     final GanttLanguage language = GanttLanguage.getInstance();
     final GanttTaskPropertiesBean taskPropertiesBean = new GanttTaskPropertiesBean(myTasks, project, uiFacade);
-    final var taskPropertiesController = new TaskPropertiesController(myTasks[0], uiFacade);
+    final var taskPropertiesController = new TaskPropertiesController(myTasks[0], project.getProjectDatabase(), uiFacade);
 
-    final GPAction[] actions = new GPAction[] { new OkAction() {
+    final var okAction = new OkAction() {
       @Override
       public void actionPerformed(ActionEvent arg0) {
         uiFacade.getUndoManager().undoableEdit(language.getText("properties.changed"), () -> {
@@ -74,13 +74,17 @@ public class GanttDialogProperties {
           uiFacade.getActiveChart().focus();
         });
       }
-    }, new CancelAction() {
+    };
+
+    final var cancelAction = new CancelAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        super.actionPerformed(e);
+        taskPropertiesController.cancel();
         uiFacade.getActiveChart().focus();
       }
-    } };
+    };
+
+    final GPAction[] actions = new GPAction[] { okAction, cancelAction };
 
     StringBuffer taskNames = new StringBuffer();
     for (int i = 0; i < myTasks.length; i++) {
@@ -133,13 +137,11 @@ public class GanttDialogProperties {
       } catch (Exception e) {
         e.printStackTrace();
       }
-      //insertPane.invoke(taskPropertiesBean.generalPanel, language.getText("general"));
       insertPane.invoke(taskPropertiesBean.predecessorsPanel, language.getText("predecessors"));
       insertPane.invoke(taskPropertiesBean.resourcesPanel, language.getCorrectedLabel("human"));
 
-      var customPropertyPanel = taskPropertiesBean.myCustomColumnPanel.getFxNode();
-      customPropertyPanel.getStyleClass().add("tab-contents");
-      var customPropertyTab = new Tab(language.getText("customColumns"), customPropertyPanel);
+      var customPropertyPanel = taskPropertiesController.getCustomPropertiesPanel();
+      var customPropertyTab = new Tab(customPropertyPanel.getTitle(), customPropertyPanel.getFxNode());
       tabbedPane.getTabs().add(customPropertyTab);
 
       dialogController.setContent(tabbedPane);

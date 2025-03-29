@@ -19,18 +19,29 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.gui.taskproperties
 
 import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskMutator
 
-class TaskPropertiesController(private val task: Task, private val uiFacade: UIFacade) {
+class TaskPropertiesController(private val task: Task, private val projectDatabase: ProjectDatabase, private val uiFacade: UIFacade) {
 
   val mainPropertiesPanel by lazy {
     MainPropertiesPanel(task, uiFacade.getCurrentTaskView())
   }
 
+  val customPropertiesPanel by lazy {
+    CustomColumnsPanel(task.manager.customPropertyManager, projectDatabase, CustomColumnsPanel.Type.TASK,
+      uiFacade.undoManager, task.customValues.copyOf(), uiFacade.taskColumnList)
+  }
+
   fun save(): TaskMutator =
     task.createMutator().also {
       mainPropertiesPanel.save(it)
+      customPropertiesPanel.save(it)
     }
+
+  fun cancel() {
+    customPropertiesPanel.cancel()
+  }
 
 }
