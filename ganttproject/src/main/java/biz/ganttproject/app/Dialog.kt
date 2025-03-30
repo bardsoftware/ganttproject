@@ -77,10 +77,12 @@ fun dialogFx(title: String? = null, owner: Window? = DialogPlacement.application
 
 fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (DialogController) -> Unit): Dialog<Unit> =
   Dialog<Unit>().apply {
+    val dialogPaneExt = DialogPaneExt()
+    dialogPane = dialogPaneExt
     owner?.let(::initOwner)
     initModality(Modality.APPLICATION_MODAL)
 
-    DialogControllerFx(dialogPane, this).let { dialogBuildApi ->
+    DialogControllerFx(dialogPaneExt, this).let { dialogBuildApi ->
       dialogPane.styleClass.addAll("dlg")
       dialogPane.stylesheets.addAll(DIALOG_STYLESHEET)
       dialogBuildApi.setEscCloseEnabled(true)
@@ -123,7 +125,24 @@ fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (Di
 
   }
 
+class DialogPaneExt() : DialogPane() {
+  private lateinit var errorPaneWrapper: StackPane
 
+  fun setButtonBarNode(node: Node) {
+    errorPaneWrapper.children.add(node)
+  }
+  override fun createButtonBar(): Node? {
+    val buttonBar = super.createButtonBar()
+    errorPaneWrapper = StackPane().also {
+      it.styleClass.add("swing-background")
+    }
+    return HBox().apply {
+      HBox.setHgrow(buttonBar, Priority.SOMETIMES)
+      HBox.setHgrow(errorPaneWrapper, Priority.SOMETIMES)
+      children.addAll(errorPaneWrapper, buttonBar)
+    }
+  }
+}
 fun dialog(title: String? = null,  id: String? = null, contentBuilder: (DialogController) -> Unit) {
   Platform.runLater {
     try {
@@ -133,6 +152,7 @@ fun dialog(title: String? = null,  id: String? = null, contentBuilder: (DialogCo
     }
   }
 }
+
 
 enum class FrameStyle {
   NO_FRAME, NATIVE_FRAME
@@ -391,7 +411,7 @@ class DialogControllerSwing : DialogController {
 /**
  * This is an implementation of a DialogController on top of JavaFX dialog.
  */
-class DialogControllerFx(private val dialogPane: DialogPane, private val dialog: Dialog<Unit>) : DialogController {
+class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dialog: Dialog<Unit>) : DialogController {
   override var frameStyle: FrameStyle = FrameStyle.NATIVE_FRAME
 
   override var beforeShow: () -> Unit = {}
@@ -523,6 +543,7 @@ class DialogControllerFx(private val dialogPane: DialogPane, private val dialog:
   }
 
   override fun setButtonPaneNode(content: Node) {
+    dialogPane.setButtonBarNode(content)
   }
 }
 

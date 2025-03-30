@@ -34,7 +34,6 @@ import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.text.Text
 import java.io.File
-import java.lang.IllegalStateException
 import org.eclipse.core.runtime.Platform as Eclipsito
 
 /**

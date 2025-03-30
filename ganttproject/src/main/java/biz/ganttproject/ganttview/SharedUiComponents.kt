@@ -19,6 +19,7 @@
 package biz.ganttproject.ganttview
 
 import biz.ganttproject.app.DialogController
+import biz.ganttproject.app.ErrorPane
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.PropertySheetBuilder
 import biz.ganttproject.core.option.ObservableProperty
@@ -138,6 +139,7 @@ internal open class ItemEditorPaneImpl<T: Item<T>>(
   localizer: Localizer): ItemEditorPane {
 
   private var isEditIgnored = false
+  private val errorPane = ErrorPane()
 
   override val node: Node by lazy {
     vbox {
@@ -145,7 +147,8 @@ internal open class ItemEditorPaneImpl<T: Item<T>>(
       add(visibilityTogglePane)
       add(propertySheetLabel, Pos.CENTER_LEFT, Priority.NEVER)
       add(propertySheet.node, Pos.CENTER, Priority.ALWAYS)
-      add(errorPane)
+      add(errorPane.fxNode)
+      dialogModel.btnApplyController.isDisabled.bind(errorPane.hasErrorsProperty)
     }
   }
 
@@ -159,14 +162,6 @@ internal open class ItemEditorPaneImpl<T: Item<T>>(
     it.styleClass.add("title")
   }
   internal val propertySheet = PropertySheetBuilder(localizer).createPropertySheet(fields)
-  private val errorLabel = Label().also {
-    it.styleClass.addAll("hint", "hint-validation")
-    it.isWrapText = true
-  }
-  private val errorPane = HBox().also {
-    it.styleClass.addAll("hint-validation-pane", "noerror")
-    it.children.add(errorLabel)
-  }
 
   init {
     fields.forEach { it.addWatcher { onEdit() } }
@@ -187,9 +182,9 @@ internal open class ItemEditorPaneImpl<T: Item<T>>(
     }
     propertySheet.validationErrors.addListener(MapChangeListener {
       if (propertySheet.validationErrors.isEmpty()) {
-        onError(null)
+        errorPane.onError(null)
       } else {
-        onError(propertySheet.validationErrors.values.joinToString(separator = "\n"))
+        errorPane.onError(propertySheet.validationErrors.values.joinToString(separator = "\n"))
       }
     })
   }
@@ -216,23 +211,6 @@ internal open class ItemEditorPaneImpl<T: Item<T>>(
   override fun focus() {
     propertySheet.requestFocus()
     onEdit()
-  }
-
-  private fun onError(it: String?) {
-    if (it == null) {
-      errorPane.isVisible = false
-      if (!errorPane.styleClass.contains("noerror")) {
-        errorPane.styleClass.add("noerror")
-      }
-      errorLabel.text = ""
-      dialogModel.btnApplyController.isDisabled.value = false
-    }
-    else {
-      errorLabel.text = it
-      errorPane.isVisible = true
-      errorPane.styleClass.remove("noerror")
-      dialogModel.btnApplyController.isDisabled.value = true
-    }
   }
 }
 

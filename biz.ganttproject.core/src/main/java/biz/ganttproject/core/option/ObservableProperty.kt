@@ -111,7 +111,11 @@ class ObservableDate(id: String, initValue: LocalDate? = null,
   : ObservableProperty<LocalDate?>(id, initValue) {
   override fun set(newValue: LocalDate?, trigger: Any?) {
     val evt = ObservableEvent(this.value, newValue, trigger)
-    validator.invoke(evt).map { super.set(newValue, trigger) }.mapError { throw ValidationException(it) }
+    validator.invoke(evt).map {
+      super.set(newValue, trigger)
+    }.mapError {
+      throw ValidationException(it)
+    }
   }
 }
 

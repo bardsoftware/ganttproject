@@ -1,0 +1,56 @@
+/*
+Copyright 2025 Dmitry Barashev, BarD Software s.r.o
+
+This file is part of GanttProject, an open-source project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package biz.ganttproject.app
+
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.scene.control.Label
+import javafx.scene.layout.HBox
+
+class ErrorPane {
+  val hasErrorsProperty = SimpleBooleanProperty(false)
+  val fxNode get() = errorPane
+
+  private val errorLabel = Label().also {
+    it.styleClass.addAll("hint", "hint-validation")
+    it.isWrapText = true
+  }
+
+  private val errorPane = HBox().also {
+    it.styleClass.addAll("hint-validation-pane", "noerror")
+    it.children.add(errorLabel)
+  }
+
+  fun onError(it: String?) {
+    if (it == null) {
+      errorPane.isVisible = false
+      if (!errorPane.styleClass.contains("noerror")) {
+        errorPane.styleClass.add("noerror")
+      }
+      errorLabel.text = ""
+      hasErrorsProperty.value = false
+    }
+    else {
+      errorLabel.text = it
+      errorPane.isVisible = true
+      errorPane.styleClass.remove("noerror")
+      hasErrorsProperty.value = true
+    }
+  }
+
+}

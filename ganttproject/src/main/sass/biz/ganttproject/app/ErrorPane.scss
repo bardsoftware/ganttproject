@@ -1,0 +1,48 @@
+/*!
+ * Copyright (c) 2025 Dmitry Barashev, BarD Software s.r.o.
+ *
+ * This file is part of GanttProject, an open-source project management tool.
+ *
+ * GanttProject is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ * GanttProject is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+ */
+@import "theme";
+
+.hint-validation {
+  -fx-padding: 3 2 3 0;
+  -fx-text-fill: -gp-dark-gray;
+}
+
+.hint-validation-pane {
+  -fx-border-insets: 3 0 0 0;
+  -fx-background-color: $gp-orange;
+  -fx-background-radius: 3;
+  -fx-background-insets: 3 0 0 0;
+  /*-fx-border-color: -gp-orange;*/
+  -fx-border-radius: 0;
+  -fx-border-width: 5;
+  -fx-pref-width: 100%;
+  -fx-min-width: 400;
+  -fx-border-color: $gp-orange;
+
+  &.noerror {
+    /*visibility: hidden;*/
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+  }
+}
+
+.hint .glyph-icon {
+  -fx-fill: -gp-dark-gray;
+  -fx-padding: 3 3 3 3;
+}

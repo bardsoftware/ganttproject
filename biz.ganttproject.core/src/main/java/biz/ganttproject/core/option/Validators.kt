@@ -82,14 +82,14 @@ private typealias DateValidatorType = (Date) -> Pair<Boolean, String?>
 
 object DateValidators {
   fun aroundProjectStart(projectStart: Date): DateValidatorType {
-    return dateInRange(projectStart, 1000)
+    return dateInRange(projectStart, 1)
   }
 
   fun dateInRange(center: Date, yearDiff: Int): DateValidatorType = { value: Date ->
     val diff = Duration.between(value.toInstant(), center.toInstant()).abs().dividedBy(Duration.ofDays(365))
     if (diff > yearDiff) {
       Pair(false, String.format(
-          "Date %s is far away (%d years) from expected date %s. Any mistake?", value, diff, center
+          "Date %s is far away (%d years) from the expected date %s. Any mistake?", value, diff, center
         )
       )
     } else {

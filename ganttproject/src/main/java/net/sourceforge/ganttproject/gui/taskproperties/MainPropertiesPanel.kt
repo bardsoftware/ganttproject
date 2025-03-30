@@ -29,6 +29,8 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
+import javafx.collections.FXCollections
+import javafx.collections.MapChangeListener
 import javafx.event.EventHandler
 import javafx.geometry.Insets
 import javafx.geometry.Pos
@@ -42,6 +44,7 @@ import net.sourceforge.ganttproject.task.Task.Priority
 import net.sourceforge.ganttproject.task.TaskMutator
 import net.sourceforge.ganttproject.task.TaskView
 import net.sourceforge.ganttproject.util.BrowserControl
+import org.w3c.util.DateParser
 import javax.swing.SwingUtilities
 
 /**
@@ -52,6 +55,7 @@ import javax.swing.SwingUtilities
 class MainPropertiesPanel(private val task: Task, private val taskView: TaskView) {
   val title: String = RootLocalizer.formatText("general")
   val fxComponent by lazy { getFxNode() }
+  val validationErrors = FXCollections.observableArrayList<String>()
 
   private val nameOption = ObservableString("name", task.name)
   private val milestoneOption = ObservableBoolean("milestone", task.isMilestone)
@@ -60,7 +64,13 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   private val hasEarliestStart = ObservableBoolean("hasEarliestStart", task.thirdDateConstraint == 1)
   private val earliestStartOption = ObservableDate("earliestBegin",
     if (task.thirdDateConstraint == 1 ) task.third.toLocalDate() else null,
-    validator = { date -> if ((date.newValue?.year ?: 0) >= 2025) Ok(date.newValue) else Err("Date must be > 2025")
+    validator = { evt ->
+      val result = DateValidators.aroundProjectStart(task.manager.projectStart).invoke(DateParser.toJavaDate(evt.newValue))
+      if (result.first) {
+        Ok(evt.newValue)
+      } else {
+        Err(result.second ?: "The value $result looks suspicious here")
+      }
     }
   )
   private val priorityOption = ObservableEnum<Priority>("priority", task.priority, Priority.entries.toTypedArray())
@@ -174,6 +184,10 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
         }
       }
     }
+    leftPane.validationErrors.addListener(MapChangeListener {
+      validationErrors.clear()
+      validationErrors.addAll(leftPane.validationErrors.values)
+    })
     grid.add(leftPane.node, 0, 0)
     grid.add(rightPane.node, 1, 0)
     children.add(grid)

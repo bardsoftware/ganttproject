@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui.taskproperties
 
+import javafx.collections.FXCollections
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.task.Task
@@ -26,13 +27,20 @@ import net.sourceforge.ganttproject.task.TaskMutator
 class TaskPropertiesController(private val task: Task, private val projectDatabase: ProjectDatabase, private val uiFacade: UIFacade) {
 
   val mainPropertiesPanel by lazy {
-    MainPropertiesPanel(task, uiFacade.getCurrentTaskView())
+    MainPropertiesPanel(task, uiFacade.getCurrentTaskView()).also {
+      it.validationErrors.subscribe {
+        validationErrors.clear()
+        validationErrors.addAll(it.validationErrors)
+      }
+    }
   }
 
   val customPropertiesPanel by lazy {
     CustomColumnsPanel(task.manager.customPropertyManager, projectDatabase, CustomColumnsPanel.Type.TASK,
       uiFacade.undoManager, task.customValues.copyOf(), uiFacade.taskColumnList)
   }
+
+  val validationErrors = FXCollections.observableArrayList<String>()
 
   fun save(): TaskMutator =
     task.createMutator().also {

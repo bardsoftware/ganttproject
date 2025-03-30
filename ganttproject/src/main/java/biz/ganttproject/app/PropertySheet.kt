@@ -22,7 +22,7 @@ import biz.ganttproject.core.chart.render.Style
 import biz.ganttproject.core.option.*
 import biz.ganttproject.lib.fx.AutoCompletionTextFieldBinding
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
-import biz.ganttproject.storage.CellFactory
+import com.github.michaelbull.result.onFailure
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
@@ -325,8 +325,12 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
       val textEditor = picker.editor
       val composedValidator = ValueValidator<LocalDate?> {
         try {
-          GanttLanguage.getInstance().parseDate(it)?.let(DateParser::toLocalDate)
+          val parsedDate = GanttLanguage.getInstance().parseDate(it)?.let(DateParser::toLocalDate)
             ?: throw ValidationException("The date $it can't be parsed using the current date format")
+          option.validator.invoke(ObservableEvent(option.value, parsedDate, textEditor)).onFailure { msg ->
+            throw ValidationException(msg)
+          }
+          parsedDate
         } catch (ex: ParseException) {
           throw ValidationException("The date $it can't be parsed using the current date format", ex)
         }

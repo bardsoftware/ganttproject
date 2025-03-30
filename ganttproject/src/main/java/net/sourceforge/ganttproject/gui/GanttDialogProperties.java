@@ -26,12 +26,11 @@ import javax.swing.*;
 import biz.ganttproject.FXUtil;
 import biz.ganttproject.FXUtilKt;
 import biz.ganttproject.app.DialogKt;
+import biz.ganttproject.app.ErrorPane;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
@@ -96,26 +95,13 @@ public class GanttDialogProperties {
 
     final String title = MessageFormat.format(language.getText("properties.task.title"), taskNames);
     DialogKt.dialog(title, "taskProperties", dialogController -> {
+      dialogController.addStyleSheet("/biz/ganttproject/app/ErrorPane.css");
       dialogController.addStyleSheet("/biz/ganttproject/app/TabPane.css");
       dialogController.addStyleSheet("/biz/ganttproject/app/Util.css");
       dialogController.addStyleClass("dlg-lock");
       var tabbedPane = new TabPane();
       tabbedPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-//      tabbedPane.getSelectionModel().selectedItemProperty().subscribe(newValue -> {
-//        if (newValue == null) {
-//          return;
-//        }
-//        var tabContent = newValue.getContent();
-//        if (tabContent instanceof Parent) {
-//          FXUtilKt.walkTree((Parent)tabContent, node -> {
-//            if (node instanceof SwingNode) {
-//              var contentNode = ((SwingNode) node).getContent();
-//              SwingUtilities.invokeLater(() -> taskPropertiesBean.onActivate(contentNode));
-//            }
-//            return Unit.INSTANCE;
-//          });
-//        }
-//      });
+
       var insertPane = new Function2<JComponent, String, Unit>() {
         @Override
         public Unit invoke(JComponent node, String title) {
@@ -130,13 +116,19 @@ public class GanttDialogProperties {
           return Unit.INSTANCE;
         }
       };
-      var mainPropertiesPanel = taskPropertiesController.getMainPropertiesPanel();
 
-      try {
-        tabbedPane.getTabs().add(new Tab(mainPropertiesPanel.getTitle(), mainPropertiesPanel.getFxComponent()));
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+      var errorPane = new ErrorPane();
+      var mainPropertiesPanel = taskPropertiesController.getMainPropertiesPanel();
+      taskPropertiesController.getValidationErrors().subscribe(() -> {
+        var errors = mainPropertiesPanel.getValidationErrors();
+        if (errors.isEmpty()) {
+          errorPane.onError(null);
+        } else {
+          errorPane.onError(errors.getFirst());
+        }
+      });
+
+      tabbedPane.getTabs().add(new Tab(mainPropertiesPanel.getTitle(), mainPropertiesPanel.getFxComponent()));
       insertPane.invoke(taskPropertiesBean.predecessorsPanel, language.getText("predecessors"));
       insertPane.invoke(taskPropertiesBean.resourcesPanel, language.getCorrectedLabel("human"));
 
@@ -145,12 +137,13 @@ public class GanttDialogProperties {
       tabbedPane.getTabs().add(customPropertyTab);
 
       dialogController.setContent(tabbedPane);
+      dialogController.setButtonPaneNode(errorPane.getFxNode());
       dialogController.setupButton(actions[0], button -> null);
       dialogController.setupButton(actions[1], button -> null);
 
       dialogController.setOnShown(() -> { FXUtil.INSTANCE.runLater(() -> {
         dialogController.walkTree(node -> {
-          if (node instanceof ButtonBar || node.getStyleClass().contains("tab-header-background") || node.getStyleClass().contains("tab-contents")) {
+          if (node instanceof ButtonBar || node.getStyleClass().contains("tab-header-background") || node.getStyleClass().contains("tab-contents") || node.getStyleClass().contains("swing-background")) {
             ((Region)node).setBackground(new Background(new BackgroundFill(
               FXUtilKt.colorFromUiManager("Panel.background"), CornerRadii.EMPTY, Insets.EMPTY
             )));
@@ -164,6 +157,5 @@ public class GanttDialogProperties {
 
       return null;
     });
-    //uiFacade.createDialog(taskPropertiesBean, actions, title).show();
   }
 }
