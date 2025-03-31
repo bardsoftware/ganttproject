@@ -26,7 +26,7 @@ dependencies {
         'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
     )
     testRuntimeOnly(
-        'org.junit.jupiter:junit-jupiter-engine:5.12.0',
+        'org.junit.jupiter:junit-jupiter-engine:5.12.1',
         'org.junit.platform:junit-platform-launcher:1.12.1',
     )
 }
