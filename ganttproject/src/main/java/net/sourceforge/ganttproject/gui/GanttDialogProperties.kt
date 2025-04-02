@@ -16,146 +16,80 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.gui;
+package net.sourceforge.ganttproject.gui
 
-import java.awt.event.ActionEvent;
-import java.text.MessageFormat;
+import javafx.scene.control.Tab
+import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.GanttTask
+import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.action.CancelAction
+import net.sourceforge.ganttproject.action.OkAction
+import net.sourceforge.ganttproject.gui.taskproperties.TaskPropertiesController
+import net.sourceforge.ganttproject.language.GanttLanguage
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
+import java.awt.event.ActionEvent
+import java.text.MessageFormat
 
-import javax.swing.*;
+class GanttDialogProperties(private val tasks: Array<GanttTask?>) {
+    fun show(project: IGanttProject, uiFacade: UIFacade) {
+        val language = GanttLanguage.getInstance()
+        val taskPropertiesBean = GanttTaskPropertiesBean(tasks, project, uiFacade)
+        val taskPropertiesController = TaskPropertiesController(tasks[0]!!, project.projectDatabase, uiFacade)
 
-import biz.ganttproject.FXUtil;
-import biz.ganttproject.FXUtilKt;
-import biz.ganttproject.app.DialogKt;
-import biz.ganttproject.app.ErrorPane;
-import javafx.embed.swing.SwingNode;
-import javafx.geometry.Insets;
-import javafx.scene.Parent;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import kotlin.Unit;
-import kotlin.jvm.functions.Function2;
-import net.sourceforge.ganttproject.GPLogger;
-import net.sourceforge.ganttproject.GanttTask;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.action.CancelAction;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.OkAction;
-import net.sourceforge.ganttproject.gui.taskproperties.TaskPropertiesController;
-import net.sourceforge.ganttproject.language.GanttLanguage;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
+        val okAction = OkAction.create("ok") {
+            uiFacade.getUndoManager().undoableEdit(language.getText("properties.changed"), Runnable {
+                val mutator = taskPropertiesController.save()
+                taskPropertiesBean.save(mutator)
+                try {
+                    project.taskManager.getAlgorithmCollection().recalculateTaskScheduleAlgorithm.run()
+                } catch (e: TaskDependencyException) {
+                    if (!GPLogger.log(e)) {
+                        e.printStackTrace()
+                    }
+                }
+                uiFacade.refresh()
+                uiFacade.getActiveChart().focus()
+            })
+        }
 
-public class GanttDialogProperties {
-  private final GanttTask[] myTasks;
+        val cancelAction = CancelAction.create("cancel") {
+            taskPropertiesController.cancel()
+            uiFacade.getActiveChart().focus()
+        }
 
-  public GanttDialogProperties(GanttTask[] tasks) {
-    myTasks = tasks;
-  }
-
-  public void show(final IGanttProject project, final UIFacade uiFacade) {
-    final GanttLanguage language = GanttLanguage.getInstance();
-    final GanttTaskPropertiesBean taskPropertiesBean = new GanttTaskPropertiesBean(myTasks, project, uiFacade);
-    final var taskPropertiesController = new TaskPropertiesController(myTasks[0], project.getProjectDatabase(), uiFacade);
-
-    final var okAction = new OkAction() {
-      @Override
-      public void actionPerformed(ActionEvent arg0) {
-        uiFacade.getUndoManager().undoableEdit(language.getText("properties.changed"), () -> {
-          var mutator = taskPropertiesController.save();
-          taskPropertiesBean.save(mutator);
-          try {
-            project.getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
-          } catch (TaskDependencyException e) {
-            if (!GPLogger.log(e)) {
-              e.printStackTrace();
+        val taskNames = StringBuffer()
+        for (i in tasks.indices) {
+            if (i > 0) {
+                taskNames.append(language.getText(if (i + 1 == tasks.size) "list.separator.last" else "list.separator"))
             }
-          }
-          uiFacade.refresh();
-          uiFacade.getActiveChart().focus();
-        });
-      }
-    };
+            taskNames.append(tasks[i]!!.name)
+        }
 
-    final var cancelAction = new CancelAction() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        taskPropertiesController.cancel();
-        uiFacade.getActiveChart().focus();
-      }
-    };
+        val title = MessageFormat.format(language.getText("properties.task.title"), taskNames)
+        val tabProviders = listOf(
+            PropertiedDialogTabProvider(
+              { tabPane -> tabPane.tabs.add(Tab(
+                taskPropertiesController.mainPropertiesPanel.title,
+                taskPropertiesController.mainPropertiesPanel.fxComponent
+              ))},
+              { taskPropertiesController.mainPropertiesPanel.requestFocus() }
+            ),
+            swingTab(language.getText("predecessors")) { taskPropertiesBean.predecessorsPanel },
+            swingTab(language.getText("human")) { taskPropertiesBean.resourcesPanel },
+            PropertiedDialogTabProvider(
+                { tabPane ->
+                    tabPane.tabs.add(
+                        Tab(
+                            taskPropertiesController.customPropertiesPanel.title,
+                            taskPropertiesController.customPropertiesPanel.getFxNode()
+                        )
+                    )
+                },
+                { }
+            )
+        )
 
-    final GPAction[] actions = new GPAction[] { okAction, cancelAction };
-
-    StringBuffer taskNames = new StringBuffer();
-    for (int i = 0; i < myTasks.length; i++) {
-      if (i > 0) {
-        taskNames.append(language.getText(i + 1 == myTasks.length ? "list.separator.last" : "list.separator"));
-      }
-      taskNames.append(myTasks[i].getName());
+        val actions = listOf(okAction, cancelAction)
+        propertiesDialog(title, "taskProperties", actions, taskPropertiesController.validationErrors, tabProviders)
     }
-
-    final String title = MessageFormat.format(language.getText("properties.task.title"), taskNames);
-    DialogKt.dialog(title, "taskProperties", dialogController -> {
-      dialogController.addStyleSheet("/biz/ganttproject/app/ErrorPane.css");
-      dialogController.addStyleSheet("/biz/ganttproject/app/TabPane.css");
-      dialogController.addStyleSheet("/biz/ganttproject/app/Util.css");
-      dialogController.addStyleClass("dlg-lock");
-      var tabbedPane = new TabPane();
-      tabbedPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-
-      var insertPane = new Function2<JComponent, String, Unit>() {
-        @Override
-        public Unit invoke(JComponent node, String title) {
-          var swingNode = new SwingNode();
-          var swingNodeWrapper = new StackPane(swingNode);
-          swingNodeWrapper.getStyleClass().add("tab-contents");
-          SwingUtilities.invokeLater(() -> {
-            swingNode.setContent(node);
-            swingNodeWrapper.setPrefWidth(800.0);
-          });
-          tabbedPane.getTabs().add(new Tab(title, swingNodeWrapper));
-          return Unit.INSTANCE;
-        }
-      };
-
-      var errorPane = new ErrorPane();
-      var mainPropertiesPanel = taskPropertiesController.getMainPropertiesPanel();
-      taskPropertiesController.getValidationErrors().subscribe(() -> {
-        var errors = mainPropertiesPanel.getValidationErrors();
-        if (errors.isEmpty()) {
-          errorPane.onError(null);
-        } else {
-          errorPane.onError(errors.getFirst());
-        }
-      });
-
-      tabbedPane.getTabs().add(new Tab(mainPropertiesPanel.getTitle(), mainPropertiesPanel.getFxComponent()));
-      insertPane.invoke(taskPropertiesBean.predecessorsPanel, language.getText("predecessors"));
-      insertPane.invoke(taskPropertiesBean.resourcesPanel, language.getCorrectedLabel("human"));
-
-      var customPropertyPanel = taskPropertiesController.getCustomPropertiesPanel();
-      var customPropertyTab = new Tab(customPropertyPanel.getTitle(), customPropertyPanel.getFxNode());
-      tabbedPane.getTabs().add(customPropertyTab);
-
-      dialogController.setContent(tabbedPane);
-      dialogController.setButtonPaneNode(errorPane.getFxNode());
-      dialogController.setupButton(actions[0], button -> null);
-      dialogController.setupButton(actions[1], button -> null);
-
-      dialogController.setOnShown(() -> { FXUtil.INSTANCE.runLater(() -> {
-        dialogController.walkTree(node -> {
-          if (node instanceof ButtonBar || node.getStyleClass().contains("tab-header-background") || node.getStyleClass().contains("tab-contents") || node.getStyleClass().contains("swing-background")) {
-            ((Region)node).setBackground(new Background(new BackgroundFill(
-              FXUtilKt.colorFromUiManager("Panel.background"), CornerRadii.EMPTY, Insets.EMPTY
-            )));
-          }
-          return null;
-        });
-        mainPropertiesPanel.requestFocus();
-        dialogController.resize();
-        return null;
-      }); return null; });
-
-      return null;
-    });
-  }
 }

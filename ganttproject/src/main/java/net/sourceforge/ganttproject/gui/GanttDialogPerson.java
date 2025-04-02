@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject.gui;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.customproperty.CustomPropertyManager;
+import com.google.common.collect.Lists;
+import javafx.collections.FXCollections;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.DateIntervalListEditor.DateInterval;
@@ -37,8 +39,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 
 public class GanttDialogPerson {
   private final TaskManager myTaskManager;
@@ -49,8 +49,6 @@ public class GanttDialogPerson {
   private HumanResource person;
 
   private static final GanttLanguage language = GanttLanguage.getInstance();
-
-  private JTabbedPane tabbedPane;
 
   private final StringOption myNameField = new DefaultStringOption("name");
   private final StringOption myPhoneField = new DefaultStringOption("colPhone");
@@ -99,7 +97,6 @@ public class GanttDialogPerson {
   public void setVisible(boolean isVisible) {
     if (isVisible) {
       loadFields();
-      JComponent contentPane = getComponent();
       OkAction okAction = new OkAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -114,7 +111,46 @@ public class GanttDialogPerson {
           change = false;
         }
       };
-      myUIFacade.createDialog(contentPane, new Action[] { okAction, cancelAction }, language.getCorrectedLabel("human")).show();
+
+      OptionsPageBuilder builder = new OptionsPageBuilder();
+      OptionsPageBuilder.I18N i18n = new OptionsPageBuilder.I18N() {
+        @Override
+        public String getOptionLabel(GPOptionGroup group, GPOption<?> option) {
+          return getValue(option.getID());
+        }
+      };
+      builder.setI18N(i18n);
+
+      var actions = Lists.newArrayList(okAction, cancelAction);
+      PropertiesDialogKt.propertiesDialog(
+        language.getCorrectedLabel("human"),
+        "resourceProperties", actions, FXCollections.emptyObservableList(),
+        Lists.newArrayList(
+          PropertiesDialogKt.swingTab(
+            language.getText("general"),
+            () -> builder.buildPlanePage(new GPOptionGroup[] { myGroup, myRateGroup })
+          ),
+          PropertiesDialogKt.swingTab(
+            language.getText("daysOff"),
+            this::constructDaysOffPanel
+          ),
+          PropertiesDialogKt.swingTab(
+            language.getText("customColumns"),
+            () -> {
+              var customColumnsPanel = new CustomColumnsPanel(myCustomPropertyManager, myProjectDatabase, CustomColumnsPanel.Type.RESOURCE,
+                myUIFacade.getUndoManager(), person, myUIFacade.getResourceTree().getVisibleFields());
+              return customColumnsPanel.getComponent();
+            }
+          ),
+          PropertiesDialogKt.swingTab(
+            language.getText("assignments"),
+            () -> {
+              constructAssignmentsPanel();
+              return myAssignmentsPanel.getComponent();
+            }
+          )
+        )
+      );
     }
   }
 
@@ -129,45 +165,6 @@ public class GanttDialogPerson {
     myStandardRateField.setValue(person.getStandardPayRate());
     myTotalCostField.setValue(person.getTotalCost());
     myTotalLoadField.setValue(person.getTotalLoad());
-  }
-
-  private JComponent getComponent() {
-    OptionsPageBuilder builder = new OptionsPageBuilder();
-    OptionsPageBuilder.I18N i18n = new OptionsPageBuilder.I18N() {
-      @Override
-      public String getOptionLabel(GPOptionGroup group, GPOption<?> option) {
-        return getValue(option.getID());
-      }
-    };
-    builder.setI18N(i18n);
-    final JComponent mainPage = builder.buildPlanePage(new GPOptionGroup[] { myGroup, myRateGroup });
-    mainPage.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    tabbedPane = new JTabbedPane();
-    tabbedPane.addTab(language.getText("general"), new ImageIcon(getClass().getResource("/icons/properties_16.gif")),
-        mainPage);
-    tabbedPane.addTab(language.getText("daysOff"), new ImageIcon(getClass().getResource("/icons/holidays_16.gif")),
-        constructDaysOffPanel());
-    CustomColumnsPanel customColumnsPanel = new CustomColumnsPanel(myCustomPropertyManager, myProjectDatabase, CustomColumnsPanel.Type.RESOURCE,
-        myUIFacade.getUndoManager(), person, myUIFacade.getResourceTree().getVisibleFields());
-    tabbedPane.addTab(language.getText("customColumns"), new ImageIcon(getClass().getResource("/icons/custom.gif")),
-        customColumnsPanel.getComponent());
-    constructAssignmentsPanel();
-    tabbedPane.addTab(language.getText("assignments"), new ImageIcon(getClass().getResource("/icons/copy_16.gif")),
-        myAssignmentsPanel.getComponent()); //todo change icon
-    tabbedPane.addFocusListener(new FocusAdapter() {
-      boolean isFirstTime = true;
-
-      @Override
-      public void focusGained(FocusEvent e) {
-        if (isFirstTime) {
-          mainPage.requestFocus();
-          isFirstTime = false;
-        }
-        super.focusGained(e);
-      }
-
-    });
-    return tabbedPane;
   }
 
   private void constructAssignmentsPanel() {
