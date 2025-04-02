@@ -28,6 +28,7 @@ class TaskPropertiesController(private val task: Task, private val projectDataba
 
   val mainPropertiesPanel by lazy {
     MainPropertiesPanel(task, uiFacade.getCurrentTaskView()).also {
+      it.defaultColor = uiFacade.ganttChart.taskDefaultColorOption
       it.validationErrors.subscribe {
         validationErrors.clear()
         validationErrors.addAll(it.validationErrors)

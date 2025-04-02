@@ -72,10 +72,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
   }
   &.secondary {
     -fx-background-color: transparent;
-    -fx-border-color: $gp-medium-gray;
+    -fx-border-color: derive($gp-light-gray, -20%);
 
     &:hover, &:focused {
       -fx-background-color: derive($gp-light-gray, 10%);
+      -fx-border-color: $gp-medium-gray;
+      -fx-border-width: 1;
     }
   }
   &:hover, &:focused {

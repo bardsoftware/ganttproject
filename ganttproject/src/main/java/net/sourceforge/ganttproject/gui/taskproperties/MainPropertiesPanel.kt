@@ -56,6 +56,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   val title: String = RootLocalizer.formatText("general")
   val fxComponent by lazy { getFxNode() }
   val validationErrors = FXCollections.observableArrayList<String>()
+  var defaultColor: ColorOption? = null
 
   private val nameOption = ObservableString("name", task.name)
   private val milestoneOption = ObservableBoolean("milestone", task.isMilestone)
@@ -87,6 +88,13 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   }.also {
     it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
     it.isEnabled = earliestStartOption.isWritable.value
+  }
+  private val applyDefaultColorAction = GPAction.create("defaultColor") {
+    defaultColor?.value?.let {
+      colorOption.set(Style.Color.parse(ColorOption.Util.getColor(it)))
+    }
+  }.also {
+    it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
   }
   private var onRequestFocus = {}
 
@@ -122,7 +130,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
       }
 
       skip()
-      custom(earliestStartOption, run {
+      custom(earliestStartOption, 
         HBox().apply {
           alignment = Pos.CENTER
           spacing = 5.0
@@ -138,7 +146,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
             }
           }
         }
-      })
+      )
       dropdown(priorityOption)
       numeric(progressOption) {
         minValue = 0
@@ -148,7 +156,14 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
       skip()
       title("section.view")
       checkbox(showInTimelineOption)
-      color(colorOption)
+      custom(colorOption, HBox().apply {
+        alignment = Pos.CENTER_LEFT
+        spacing = 5.0
+        children.add(createColorOptionEditor(colorOption).also { HBox.setHgrow(it, javafx.scene.layout.Priority.ALWAYS) })
+        children.add(createButton(applyDefaultColorAction, onlyIcon = false).also {
+          it.styleClass.addAll("btn-regular", "small", "secondary")
+        })
+      })
       dropdown(textureOption) {
         cellFactory = { _, p ->
           Rectangle(200.0, 20.0).also {

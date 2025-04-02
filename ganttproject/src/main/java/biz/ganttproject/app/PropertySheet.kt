@@ -406,7 +406,7 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
     }
   }
 
-  private fun createColorOptionEditor(option: ObservableColor): Node {
+  fun createColorOptionEditor(option: ObservableColor): Node {
     return ColorPicker(option.value?.javaFXColor ?: Color.WHITE).also { picker ->
       picker.customColors.addAll(GPColorChooser.getRecentColorsOption().values.map { ColorOption.Util.awtColorToFxColor(it) }.toList())
       option.addWatcher { evt ->
