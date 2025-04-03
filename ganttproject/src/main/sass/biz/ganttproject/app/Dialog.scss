@@ -221,3 +221,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-font-weight: normal;
 }
 
+.hide {
+  visibility: hidden;
+  -fx-max-width: 0;
+}

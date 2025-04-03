@@ -130,13 +130,15 @@ class DialogPaneExt() : DialogPane() {
 
   fun setButtonBarNode(node: Node) {
     errorPaneWrapper.children.add(node)
+    errorPaneWrapper.styleClass.remove("hide")
   }
   override fun createButtonBar(): Node? {
     val buttonBar = super.createButtonBar()
     errorPaneWrapper = StackPane().also {
-      it.styleClass.add("swing-background")
+      it.styleClass.addAll("swing-background", "hide")
     }
     return HBox().apply {
+      styleClass.addAll("button-pane", "swing-background")
       HBox.setHgrow(buttonBar, Priority.SOMETIMES)
       HBox.setHgrow(errorPaneWrapper, Priority.SOMETIMES)
       children.addAll(errorPaneWrapper, buttonBar)
