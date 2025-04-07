@@ -53,7 +53,7 @@ dependencies {
 
     exported "org.apache.httpcomponents:httpclient:4.5.14"
     exported "org.apache.httpcomponents:httpmime:4.5.14"
-    exported "org.apache.poi:poi:5.4.0"
+    exported "org.apache.poi:poi:5.4.1"
     exported "org.controlsfx:controlsfx:11.2.2"
     exported "org.nanohttpd:nanohttpd:2.3.1"
     exported('org.jdom:jdom') {
