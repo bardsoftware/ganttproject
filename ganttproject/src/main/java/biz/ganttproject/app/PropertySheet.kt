@@ -426,6 +426,11 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
         textField.text = property.value.toString()
       }
     }
+    validatedText.addWatcher { evt ->
+      evt.newValue?.let {
+        property.set(it, textField)
+      }
+    }
   }
 
   private fun createDoubleOptionEditor(property: ObservableDouble): Node {
