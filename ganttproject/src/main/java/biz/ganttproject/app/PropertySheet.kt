@@ -40,7 +40,6 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.paint.Color
-import javafx.scene.shape.Rectangle
 import javafx.stage.FileChooser
 import javafx.util.Callback
 import javafx.util.StringConverter
@@ -52,8 +51,13 @@ import org.controlsfx.control.textfield.CustomTextField
 import org.w3c.util.DateParser
 import java.awt.event.ActionEvent
 import java.io.File
+import java.math.BigDecimal
+import java.text.DecimalFormat
+import java.text.NumberFormat
 import java.text.ParseException
+import java.text.ParsePosition
 import java.time.LocalDate
+import kotlin.toString
 
 internal interface RowBuilder {
   fun build(grid: GridPane, rowNum: Int): Int
@@ -126,6 +130,17 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
     })
   }
 
+  fun numeric(property: ObservableDouble) {
+    rowBuilders.add(run {
+      createOptionItem(property, createDoubleOptionEditor(property))
+    })
+  }
+  fun money(property: ObservableMoney) {
+    rowBuilders.add(run {
+      createOptionItem(property, createMoneyOptionEditor(property))
+    })
+  }
+
   fun <E: Enum<E>> dropdown(property: ObservableEnum<E>, optionValues: (DropdownDisplayOptions<E>.()->Unit)? = null) {
     rowBuilders.add(run {
       val options = optionValues?.let { DropdownDisplayOptions<E>().apply(it) }
@@ -133,6 +148,12 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
     })
   }
 
+  fun <T> dropdown(property: ObservableChoice<T>, displayOptions: (DropdownDisplayOptions<T>.()->Unit)? = null) {
+    rowBuilders.add(run {
+      val options = displayOptions?.let { DropdownDisplayOptions<T>().apply(it) }
+      createOptionItem(property, createChoiceOptionEditor(property, options))
+    })
+  }
   fun color(property: ObservableColor) {
     rowBuilders.add(createOptionItem(property, createColorOptionEditor(property)))
   }
@@ -160,10 +181,13 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
       is ObservableBoolean -> createBooleanOptionEditor(option)
       is ObservableString -> createStringOptionEditor(option)
       is ObservableEnum -> createEnumerationOptionEditor(option)
+      is ObservableChoice -> createChoiceOptionEditor(option)
       is ObservableFile -> createFileOptionEditor(option)
       is ObservableDate -> createDateOptionEditor(option)
       is ObservableInt -> createIntOptionEditor(option)
+      is ObservableDouble -> createDoubleOptionEditor(option)
       is ObservableColor -> createColorOptionEditor(option)
+      is ObservableMoney -> createMoneyOptionEditor(option)
       is ObservableNumeric<*> -> error("Can't create editor for ObservableNumeric=${option.id}")
       is ObservableObject<*> -> error("Can't create editor for ObservableObject=${option.id}")
     }
@@ -187,12 +211,23 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
 
   }
 
+  fun <T> createChoiceOptionEditor(option: ObservableChoice<T>, displayOptions: DropdownDisplayOptions<T>? = null): Node {
+    val key2i18n: List<Pair<T, String>> = option.allValues.map {
+      it to option.converter.toString(it)
+    }.toList()
+    return createDropdownEditor(option, key2i18n, displayOptions)
+  }
+
   private fun <E: Enum<E>> createEnumerationOptionEditor(
     option: ObservableEnum<E>, displayOptions: DropdownDisplayOptions<E>? = null): Node {
 
     val key2i18n: List<Pair<E, String>> = option.allValues.map {
       it to localizer.formatText("${option.id}.value.${it.name.lowercase()}")
     }.toList()
+    return createDropdownEditor(option, key2i18n, displayOptions)
+  }
+
+  private fun <E> createDropdownEditor(option: ObservableProperty<E>, key2i18n: List<Pair<E, String>>, displayOptions: DropdownDisplayOptions<E>? = null): Node {
     return ComboBox(FXCollections.observableArrayList(key2i18n)).also { comboBox ->
       comboBox.onAction = EventHandler{
         option.set(comboBox.value.first, comboBox)
@@ -336,21 +371,13 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
         }
       }
       val validatedText = textEditor.textProperty().validated(composedValidator)
+      setupValidation(option, textEditor, validatedText)
       option.isWritable.addWatcher {
         if (it.newValue) {
           validatedText.validate(textEditor.text, null)
         }
       }
 
-      validatedText.validationMessage.addWatcher {
-        if (it.newValue == null) {
-          textEditor.markValid()
-          validationErrors.remove(option)
-        } else {
-          textEditor.markInvalid()
-          validationErrors[option] = it.newValue
-        }
-      }
       picker.valueProperty().subscribe { oldValue, newValue ->
         try {
           option.set(newValue, picker)
@@ -358,8 +385,7 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
           validatedText.validationMessage.value = ex.message
         }
       }
-      option.isWritable.addWatcher { evt -> picker.isDisable = !evt.newValue }
-      picker.isDisable = option.isWritable.value.not()
+      setupDisabled(option, picker.disableProperty())
       picker.converter = createDateConverter()
     }
   }
@@ -379,6 +405,47 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
       }
     }
   }
+
+  private fun <T> setupDisabled(property: ObservableProperty<T>, editorDisabled: BooleanProperty) {
+    editorDisabled.set(property.isWritable.value.not())
+    property.isWritable.addWatcher { evt -> editorDisabled.set(!evt.newValue) }
+  }
+
+  private fun <T> setupValidation(property: ObservableProperty<T>, textField: TextField, validatedText: ValidatedObservable<T>) {
+    validatedText.validationMessage.addWatcher {
+      if (it.newValue == null) {
+        textField.markValid()
+        validationErrors.remove(property)
+      } else {
+        textField.markInvalid()
+        validationErrors[property] = it.newValue
+      }
+    }
+    property.addWatcher {
+      if (it.trigger != textField) {
+        textField.text = property.value.toString()
+      }
+    }
+  }
+
+  private fun createDoubleOptionEditor(property: ObservableDouble): Node {
+    return TextField().also { textField ->
+      val validatedText = textField.textProperty().validated(DoubleValidator)
+      setupValidation(property, textField, validatedText)
+      setupDisabled(property, textField.disableProperty())
+      textField.text = property.value.toString()
+    }
+  }
+
+  private fun createMoneyOptionEditor(property: ObservableMoney): Node {
+    return TextField().also { textField ->
+      val validatedText = textField.textProperty().validated(MoneyValidator)
+      setupValidation(property, textField, validatedText)
+      setupDisabled(property, textField.disableProperty())
+      textField.text = property.value.toString()
+    }
+  }
+
   private fun _createIntOptionEditor(option: ObservableInt): Node {
     return TextField().also { textField ->
       val validatedText = textField.textProperty().validated(option.validator)
@@ -502,6 +569,9 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
 
 }
 
+/**
+ * Provides a small DSL for building a property sheet.
+ */
 class PropertySheetBuilder(private val localizer: Localizer) {
 
   fun pane(code: PropertyPaneBuilder.()->Unit): PropertySheet {
@@ -579,6 +649,47 @@ data class IntDisplayOptions(
   var minValue: Int = 0,
   var maxValue: Int = Int.MAX_VALUE,
 ) : PropertyDisplayOptions<Int>()
-data class DropdownDisplayOptions<E: Enum<E>>(
+data class DropdownDisplayOptions<E>(
   var cellFactory: ((ListCell<Pair<E, String>>, Pair<E, String>) -> Node)? = null
 ): PropertyDisplayOptions<E>()
+
+/**
+ * Validator that checks if the text input can be parsed as a monetary value, using the currently chosen locale settings.
+ */
+object MoneyValidator: ValueValidator<BigDecimal> {
+  private val format: NumberFormat = NumberFormat.getNumberInstance(getCurrentLocale()).also {
+    (it as DecimalFormat).isParseBigDecimal = true
+  }
+
+  override fun parse(text: String): BigDecimal =
+    try {
+      if (text.isBlank()) BigDecimal.ZERO
+      else {
+        val trimmed = text.trim()
+        val pos = ParsePosition(0)
+        val num = format.parse(trimmed, pos)
+        if (pos.index != trimmed.length || pos.errorIndex != -1) {
+          throw ValidationException("Failed to parse $text using current currency format")
+        }
+        num as BigDecimal
+      }
+    } catch (ex: ParseException) {
+      ex.printStackTrace()
+      throw ValidationException(ex)
+    }
+}
+
+/**
+ * Validator that checks if the text input can be parsed as a decimal value, using the currently chosen locale settings.
+ */
+object DoubleValidator: ValueValidator<Double> {
+  private val format: NumberFormat = NumberFormat.getNumberInstance(getCurrentLocale())
+
+  override fun parse(text: String): Double =
+    try {
+      if (text.isBlank()) 0.0 else format.parse(text).toDouble()
+    } catch (ex: ParseException) {
+      ex.printStackTrace()
+      throw ValidationException(ex)
+    }
+}

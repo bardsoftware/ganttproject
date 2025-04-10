@@ -25,7 +25,9 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.map
 import com.github.michaelbull.result.mapError
+import javafx.util.StringConverter
 import java.io.File
+import java.math.BigDecimal
 import java.time.LocalDate
 
 data class Completion(val posStart: Int, val posEnd: Int, val text: String)
@@ -100,6 +102,9 @@ class ObservableBoolean(id: String, initValue: Boolean = false)
 class ObservableEnum<E : Enum<E>>(id: String, initValue: E, val allValues: Array<E>)
   : ObservableProperty<E>(id,initValue)
 
+class ObservableChoice<T>(id: String, initValue: T, val allValues: List<T>, val converter: StringConverter<T>)
+  : ObservableProperty<T>(id, initValue)
+
 class ObservableFile(id: String, initValue: File? = null)
   : ObservableProperty<File?>(id, initValue)
 
@@ -123,3 +128,5 @@ class ObservableColor(id: String, initValue: Style.Color? = null) : ObservablePr
 
 open class ObservableNumeric<T: Number>(id: String, initValue: T, val validator: ValueValidator<T>) : ObservableProperty<T>(id, initValue)
 class ObservableInt(id: String, initValue: Int) : ObservableNumeric<Int>(id, initValue, integerValidator)
+class ObservableMoney(id: String, initValue: BigDecimal) : ObservableProperty<BigDecimal>(id, initValue)
+class ObservableDouble(id: String, initValue: Double) : ObservableProperty<Double>(id, initValue)
