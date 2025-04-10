@@ -65,16 +65,6 @@ public class ResourceNewAction extends ResourceAction {
     resource.setRole(myRoleManager.getDefaultRole());
     GanttDialogPerson dp = new GanttDialogPerson(getManager(), getManager().getCustomPropertyManager(), myTaskManager, myProjectDatabase, myUIFacade, resource);
     dp.setVisible(true);
-    if (dp.result()) {
-      myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), new Runnable() {
-        @Override
-        public void run() {
-          getManager().add(resource);
-          myUIFacade.getResourceTree().setSelected(resource, true);
-          myUIFacade.getViewManager().getView(String.valueOf(UIFacade.RESOURCES_INDEX)).setActive(true);
-        }
-      });
-    }
   }
 
   @Override

@@ -54,9 +54,6 @@ public class ResourcePropertiesAction extends ResourceAction {
       GanttDialogPerson dp = new GanttDialogPerson(myProject.getHumanResourceManager(), myProject.getResourceCustomPropertyManager(), myProject.getTaskManager(),
         myProject.getProjectDatabase(), myUIFacade, selectedResources[0]);
       dp.setVisible(true);
-      if (dp.result()) {
-        myProject.setModified(true);
-      }
       myUIFacade.getActiveChart().focus();
     }
   }

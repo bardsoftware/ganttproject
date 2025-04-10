@@ -96,5 +96,30 @@ private val roleStringConverter = object : StringConverter<Role>() {
 private val i18n = i18n {
   // We will search for the translation corresponding to a structured key in the current language only.
   default(withFallback = false)
-  prefix("option.resourceProperties.main")
+  prefix("option.personProperties.main") {
+    // If there is no translation, we'll search for the translation corresponding to the previously used unstructured key,
+    // again in the current language only.
+    default(withFallback = false)
+    transform { key ->
+      val key1 = when {
+        key.endsWith(".label") -> key.removeSuffix(".label")
+        else -> key
+      }
+      val map = mapOf(
+        "phone" to "colPhone",
+        "email" to "colMail",
+        "role" to "colRole",
+        "standardRate" to "colStandardRate",
+        "totalCost" to "colTotalCost",
+        "totalLoad" to "colTotalLoad",
+        "section.rate" to "optionGroup.resourceRate.label"
+      )
+      map[key1] ?: key1
+    }
+    fallback {
+      // Finally, we'll use the English translation of a structured key.
+      default()
+      prefix("option.personProperties.main")
+    }
+  }
 }
