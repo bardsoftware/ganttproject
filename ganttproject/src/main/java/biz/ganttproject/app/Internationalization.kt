@@ -225,6 +225,8 @@ fun setLocale(locale: Locale) {
   ourCurrentTranslation.value = createTranslation(locale) ?: defaultTranslation
 }
 
+fun getCurrentLocale() = ourLocale
+
 fun String.removeMnemonicsPlaceholder(): String = this.replace("$", "")
 
 fun getNumberFormat(): NumberFormat = NumberFormat.getInstance(ourLocale)
