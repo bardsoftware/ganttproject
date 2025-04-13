@@ -40,7 +40,7 @@ public class ViewToggleAction extends GPAction {
   }
 
   @Override
-  protected String getLocalizedDescription() {
+  public String getLocalizedDescription() {
     return MessageFormat.format(getI18n("view.toggle.description"), getLocalizedName());
   }
 

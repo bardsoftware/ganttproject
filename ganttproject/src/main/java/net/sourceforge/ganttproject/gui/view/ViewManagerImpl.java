@@ -34,6 +34,7 @@ import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,6 +54,7 @@ public class ViewManagerImpl implements GPViewManager {
   private final CopyAction myCopyAction;
   private final CutAction myCutAction;
   private final PasteAction myPasteAction;
+  private final ViewDefinedAction propertiesAction = new ViewDefinedAction("artefact.properties");
   private final List<ViewProvider> myViewProviders;
   private boolean isInitialized = false;
 
@@ -66,6 +68,11 @@ public class ViewManagerImpl implements GPViewManager {
     myCutAction = new CutAction(this, undoManager, uiFacade);
     myPasteAction = new PasteAction(project, uiFacade, this, undoManager);
 
+    myViewPane.getSelectedViewProperty().subscribe(activeView -> {
+      if (activeView != null) {
+        propertiesAction.setDelegateAction(activeView.getPropertiesAction());
+      }
+    });
     /*
     myTabs.getModel().addChangeListener(e -> {
       GPView selectedView = (GPView) myTabs.getSelectedUserObject();
@@ -105,6 +112,11 @@ public class ViewManagerImpl implements GPViewManager {
   @Override
   public GPAction getPasteAction() {
     return myPasteAction;
+  }
+
+  @Override
+  public @NotNull GPAction getPropertiesAction() {
+    return propertiesAction;
   }
 
   @Override

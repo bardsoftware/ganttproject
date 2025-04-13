@@ -142,7 +142,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         new Action[]{taskDeleteAction.get(), resourceDeleteAction.get()}
     )
   );
-  private final java.util.function.Supplier<GPAction> taskPropertiesAction = Suppliers.memoize(myTaskActions::getPropertiesAction);
+  private final java.util.function.Supplier<GPAction> taskPropertiesAction = Suppliers.memoize(() ->
+    getViewManager().getPropertiesAction()
+  );
 
   public JMenuBar getMenuBar() {
     var bar = new JMenuBar();
@@ -425,13 +427,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 //++    applyComponentOrientation(language.getComponentOrientation());
   }
 
-  /**
-   * @return the ToolTip in HTML (with gray bgcolor)
-   */
-  public static String getToolTip(String msg) {
-    return "<html><body bgcolor=#EAEAEA>" + msg + "</body></html>";
-  }
-
   public GPCloudStatusBar createStatusBar() {
     var result  = new GPCloudStatusBar(
       myObservableDocument, getUIFacade(), getProjectUIFacade(), getProject()
@@ -451,15 +446,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     builder.addButton(taskNewAction.get().asToolbarAction()).addButton(resourceNewAction.get().asToolbarAction());
     builder.addButton(deleteAction.get().asToolbarAction());
 
-    final ArtefactAction propertiesAction;
-    {
-      final GPAction taskPropertiesAction = myTaskActions.getPropertiesAction().asToolbarAction();
-      final GPAction resourcePropertiesAction = getResourceTree().getPropertiesAction().asToolbarAction();
-      propertiesAction = new TaskResourcePropertiesAction(
-        taskPropertiesAction, resourcePropertiesAction,
-        () -> Integer.valueOf(getViewManager().getActiveView().getId()),
-        () -> getTaskSelectionManager().getSelectedTasks());
-    }
+    var propertiesAction = getViewManager().getPropertiesAction();
 
     //++UIUtil.registerActions(getRootPane(), false, newAction, propertiesAction, deleteAction);
     // TODO: it might be necessary to uncomment it
@@ -491,7 +478,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       if (opened) {
         insertAction.get().init();
         deleteAction.get().init();
-        propertiesAction.init();
+//        propertiesAction.init();
       }
       return Unit.INSTANCE;
     });

@@ -788,6 +788,11 @@ public class ActivityOnNodePertChart extends PertChart {
     return null;
   }
 
+  @Override
+  public @NotNull GPAction getPropertiesAction() {
+    return null;
+  }
+
   /**
    * Graphical node that is rendered on graphics.
    *

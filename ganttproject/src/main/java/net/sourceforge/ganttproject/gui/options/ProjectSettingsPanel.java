@@ -78,7 +78,6 @@ public class ProjectSettingsPanel {
 
     tfWebLink = new JTextField();
     JButton bWeb = new TestGanttRolloverButton(new ImageIcon(getClass().getResource("/icons/web_16.gif")));
-    bWeb.setToolTipText(GanttProject.getToolTip(language.getText("openWebLink")));
     bWeb.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {

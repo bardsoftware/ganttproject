@@ -106,18 +106,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       .withClasses("toolbar-common", "toolbar-small", "toolbar-chart", "align-right");
   }
 
-  private Component createSchedulePanel() {
-    return createScheduleToolbar().withScene().build().getComponent();
-  }
-
-  JComponent getComponent() {
-    if (myComponent == null) {
-      myComponent = createContentComponent();
-    }
-    return myComponent;
-  }
-
-
   private final Label filterTaskLabel = new Label();
 
   private Supplier<TaskFilterActionSet> filterActions = Suppliers.memoize(() ->
@@ -306,4 +294,8 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
     return myTaskActions.getDeleteAction();
   }
 
+  @Override
+  public @NotNull GPAction getPropertiesAction() {
+    return myTaskActions.getPropertiesAction();
+  }
 }

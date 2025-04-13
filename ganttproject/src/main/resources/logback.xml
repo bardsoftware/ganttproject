@@ -19,7 +19,7 @@
     <logger name="net.sourceforge.ganttproject.task.algorithm.SchedulerImpl" level="INFO"/>
     <logger name="io.milton.httpclient" level="INFO"/>
 
-    <logger name="App" level="DEBUG"/>
+    <logger name="App" level="INFO"/>
     <logger name="App.Dirs" level="INFO"/>
     <logger name="App.Update" level="INFO"/>
     <logger name="Cloud.Document" level="INFO"/>
@@ -37,6 +37,7 @@
     <logger name="TaskTable" level="INFO"/>
     <logger name="TaskTable.Orchestrator" level="INFO"/>
     <logger name="TaskTable.ImageBuilder" level="INFO"/>
+    <logger name="View" level="DEBUG"/>
     <logger name="Window" level="INFO"/>
     <logger name="Window.Bounds" level="INFO"/>
     <logger name="Window.Startup" level="DEBUG"/>

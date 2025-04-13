@@ -22,6 +22,7 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.core.option.IntegerOption
 import biz.ganttproject.lib.fx.vbox
 import javafx.beans.property.SimpleDoubleProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.embed.swing.SwingNode
 import javafx.geometry.Orientation
 import javafx.geometry.Rectangle2D
@@ -52,10 +53,17 @@ interface View {
 
   val createAction: GPAction
   val deleteAction: GPAction
+  val propertiesAction: GPAction
 }
 
 class ViewPane {
-  private val tabPane = TabPane()
+  private val tabPane = TabPane().also {
+    it.selectionModel.selectedItemProperty().subscribe { oldTab, newTab ->
+      selectedViewProperty.set(newTab?.userData as? ViewImpl)
+    }
+  }
+  val selectedViewProperty = SimpleObjectProperty<View?>()
+
   var onViewCreated: ()->Unit = {}
   fun createComponent(): Parent = tabPane
 
@@ -71,7 +79,12 @@ class ViewPane {
     }
     tabPane.tabs.add(tab)
     tabPane.layout()
-    return ViewImpl(tabPane, tab, viewProvider.chart, viewProvider.createAction, viewProvider.deleteAction)
+    return ViewImpl(tabPane, tab, viewProvider.chart, viewProvider.createAction, viewProvider.deleteAction, viewProvider.propertiesAction).also {
+      tab.userData = it
+      if (tabPane.tabs.size == 1) {
+        selectedViewProperty.set(it)
+      }
+    }
   }
 }
 
@@ -99,7 +112,8 @@ private class ViewImpl(
   private val tab: Tab,
   override val chart: Chart,
   override val createAction: GPAction,
-  override val deleteAction: GPAction): View {
+  override val deleteAction: GPAction,
+  override val propertiesAction: GPAction): View {
 
   override var isVisible: Boolean = true
     set(value) {
@@ -138,7 +152,8 @@ class UninitializedView(private val viewPane: ViewPane, private val viewProvider
     get() = TODO("Not yet implemented")
   override val deleteAction: GPAction
     get() = TODO("Not yet implemented")
-
+  override val propertiesAction: GPAction
+    get() = TODO("Not yet implemented")
 }
 
 /**
@@ -232,3 +247,4 @@ fun createViewComponents(
   }
   return ViewComponents(image = imagePane, splitPane = splitPane, table = table)
 }
+

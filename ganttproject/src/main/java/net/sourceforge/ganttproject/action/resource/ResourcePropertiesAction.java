@@ -19,9 +19,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.resource;
 
 import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.resource.AssignmentContext;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.ResourceContext;
 
@@ -30,37 +32,51 @@ import java.awt.event.ActionEvent;
 public class ResourcePropertiesAction extends ResourceAction {
   private final IGanttProject myProject;
   private final UIFacade myUIFacade;
+  private final AssignmentContext assignmentContext;
+  private boolean isShowing;
+  private GPAction taskPropertiesAction;
 
-  public ResourcePropertiesAction(IGanttProject project, ResourceContext context, UIFacade uiFacade) {
-    this(project, context, uiFacade, IconSize.MENU);
+  public ResourcePropertiesAction(IGanttProject project, ResourceContext context, AssignmentContext assignmentContext, UIFacade uiFacade) {
+    this(project, context, assignmentContext, uiFacade, IconSize.MENU);
   }
 
-  private ResourcePropertiesAction(IGanttProject project, ResourceContext context, UIFacade uiFacade, IconSize size) {
+  private ResourcePropertiesAction(IGanttProject project, ResourceContext context, AssignmentContext assignmentContext, UIFacade uiFacade, IconSize size) {
     super("resource.properties", null, context, size);
     myProject = project;
     myUIFacade = uiFacade;
+    this.assignmentContext = assignmentContext;
     setEnabled(hasResources());
+
   }
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    if (calledFromAppleScreenMenu(e)) {
+    if (isShowing || calledFromAppleScreenMenu(e)) {
       return;
     }
     HumanResource[] selectedResources = getSelection();
     if (selectedResources.length > 0) {
+      isShowing = true;
       myUIFacade.getResourceTree().stopEditing();
       // TODO Allow to edit multiple resources (instead of [0])
       GanttDialogPerson dp = new GanttDialogPerson(myProject.getHumanResourceManager(), myProject.getResourceCustomPropertyManager(), myProject.getTaskManager(),
-        myProject.getProjectDatabase(), myUIFacade, selectedResources[0]);
+        myProject.getProjectDatabase(), myUIFacade, selectedResources[0], this::onHide);
       dp.setVisible(true);
-      myUIFacade.getActiveChart().focus();
+    } else {
+      var assignments = assignmentContext.getResourceAssignments();
+      if (assignments != null && assignments.length == 1 && taskPropertiesAction != null) {
+        taskPropertiesAction.actionPerformed(null);
+      }
     }
+  }
+
+  private void onHide() {
+    isShowing = false;
   }
 
   @Override
   public ResourcePropertiesAction asToolbarAction() {
-    final ResourcePropertiesAction result = new ResourcePropertiesAction(myProject, getContext(), myUIFacade);
+    final ResourcePropertiesAction result = new ResourcePropertiesAction(myProject, getContext(), assignmentContext, myUIFacade);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
     addPropertyChangeListener(evt -> {
       if ("enabled".equals(evt.getPropertyName())) {
@@ -68,5 +84,9 @@ public class ResourcePropertiesAction extends ResourceAction {
       }
     });
     return result;
+  }
+
+  public void setTaskPropertiesAction(GPAction taskPropertiesAction) {
+    this.taskPropertiesAction = taskPropertiesAction;
   }
 }

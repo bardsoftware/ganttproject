@@ -311,4 +311,9 @@ class ViewProviderStub implements ViewProvider {
   public @NotNull GPAction getDeleteAction() {
     return null;
   }
+
+  @Override
+  public @NotNull GPAction getPropertiesAction() {
+    return null;
+  }
 }

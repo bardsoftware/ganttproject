@@ -34,4 +34,5 @@ interface ViewProvider {
   val refresh: ()->Unit
   val createAction: GPAction
   val deleteAction: GPAction
+  val propertiesAction: GPAction
 }

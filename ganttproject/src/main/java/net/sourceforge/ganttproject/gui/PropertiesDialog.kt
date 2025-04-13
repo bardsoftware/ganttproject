@@ -68,6 +68,7 @@ fun propertiesDialog(title: String, id: String, actions: List<GPAction>, validat
     dialogController.setButtonPaneNode(errorPane.fxNode);
     dialogController.setupButton(actions[0]);
     dialogController.setupButton(actions[1]);
+    dialogController.setEscCloseEnabled(true)
 
     dialogController.onShown = {
       dialogController.walkTree { node ->

@@ -34,7 +34,7 @@ class ResourceActionSet(
   val resourceNewAction = ResourceNewAction(project.humanResourceManager, project.projectDatabase, project.roleManager, project.taskManager, uiFacade)
   val cloudResourceList = GPCloudResourceListAction(project.humanResourceManager)
   val resourceDeleteAction: ResourceDeleteAction
-  val resourcePropertiesAction = ResourcePropertiesAction(project, resourceContext, uiFacade)
+  val resourcePropertiesAction = ResourcePropertiesAction(project, resourceContext, assignmentContext, uiFacade)
   val resourceMoveUpAction: ResourceMoveUpAction
   val resourceMoveDownAction: ResourceMoveDownAction
   val resourceSendMailAction = ResourceSendMailAction(table)

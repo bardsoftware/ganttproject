@@ -167,7 +167,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
    * @return translation of "ID.description" if available, otherwise translation
    * of "ID"
    */
-  protected String getLocalizedDescription() {
+  public String getLocalizedDescription() {
     if (getID() == null) {
       return null;
     }

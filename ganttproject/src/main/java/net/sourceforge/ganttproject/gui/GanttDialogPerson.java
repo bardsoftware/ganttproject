@@ -49,6 +49,7 @@ public class GanttDialogPerson {
 
   private final UIFacade myUIFacade;
   private final CustomPropertyManager myCustomPropertyManager;
+  private final Runnable onHide;
   private ResourceAssignmentsPanel myAssignmentsPanel;
   private final MainPropertiesPanel mainPropertiesPanel;
 
@@ -58,7 +59,9 @@ public class GanttDialogPerson {
                            TaskManager taskManager,
                            ProjectDatabase projectDatabase,
                            UIFacade uiFacade,
-                           HumanResource person) {
+                           HumanResource person,
+                           Runnable onHide
+                           ) {
     myResourceManager = resourceManager;
     myCustomPropertyManager = customPropertyManager;
     myTaskManager = taskManager;
@@ -66,6 +69,7 @@ public class GanttDialogPerson {
     myProjectDatabase = projectDatabase;
     this.person = person;
     mainPropertiesPanel = new MainPropertiesPanel(person);
+    this.onHide = onHide;
   }
 
   public void setVisible(boolean isVisible) {
@@ -74,12 +78,14 @@ public class GanttDialogPerson {
         @Override
         public void actionPerformed(ActionEvent e) {
           okButtonActionPerformed();
+          onHide.run();
           myUIFacade.getActiveChart().focus();
         }
       };
       CancelAction cancelAction = new CancelAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
+          onHide.run();
           myUIFacade.getActiveChart().focus();
         }
       };

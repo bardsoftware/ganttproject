@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.resource;
 
-import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.gui.GanttDialogPerson;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -48,14 +47,6 @@ public class ResourceNewAction extends ResourceAction {
     myProjectDatabase = projectDatabase;
   }
 
-  private ResourceNewAction(HumanResourceManager hrManager, ProjectDatabase projectDatabase, RoleManager roleManager, TaskManager taskManager, UIFacade uiFacade, IconSize size) {
-    super("resource.new", hrManager, null, size);
-    myUIFacade = uiFacade;
-    myRoleManager = roleManager;
-    myTaskManager = taskManager;
-    myProjectDatabase = projectDatabase;
-  }
-
   @Override
   public void actionPerformed(ActionEvent event) {
     if (calledFromAppleScreenMenu(event)) {
@@ -63,7 +54,7 @@ public class ResourceNewAction extends ResourceAction {
     }
     final HumanResource resource = getManager().newHumanResource();
     resource.setRole(myRoleManager.getDefaultRole());
-    GanttDialogPerson dp = new GanttDialogPerson(getManager(), getManager().getCustomPropertyManager(), myTaskManager, myProjectDatabase, myUIFacade, resource);
+    GanttDialogPerson dp = new GanttDialogPerson(getManager(), getManager().getCustomPropertyManager(), myTaskManager, myProjectDatabase, myUIFacade, resource, ()->{});
     dp.setVisible(true);
   }
 

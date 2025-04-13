@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.TaskResourcePropertiesAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
@@ -84,8 +83,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     }, new Action[]{myResourceActionSet.getResourceDeleteAction(), myResourceActionSet.getAssignmentDelete()});
     getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(),
         myResourceActionSet.getResourceMoveDownAction(), myResourceActionSet.getResourceNewAction(), deleteAction,
-        appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction(),
-        myResourceActionSet.getResourcePropertiesAction());
+        appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction());
     getTreeTable().addActionWithAccelleratorKey(myResourceActionSet.getAssignmentDelete());
     getTreeTable().setRowHeight(20);
 
@@ -149,7 +147,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   }
 
   private void updateContextActions() {
-    myResourceActionSet.getResourcePropertiesAction().setEnabled(getResources().length == 1);
     myResourceActionSet.getResourceDeleteAction().setEnabled(getResources().length > 0);
     myResourceActionSet.getAssignmentDelete().setEnabled(getResourceAssignments().length > 0);
     appli.getViewManager().getCopyAction().setEnabled(getResources().length > 0);
@@ -388,18 +385,17 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         .addButton(myResourceActionSet.getResourceMoveDownAction().asToolbarAction());
   }
 
+  public GPAction getPropertiesAction() {
+    return myResourceActionSet.getResourcePropertiesAction();
+  }
+
   public ResourceActionSet getResourceActionSet() {
     return myResourceActionSet;
   }
 
   void setTaskPropertiesAction(GPAction action) {
-    myTaskPropertiesAction = action;
-    getTreeTable().addActionWithAccelleratorKey(action);
-
-    var propertiesAction = new TaskResourcePropertiesAction(myTaskPropertiesAction, myResourceActionSet.getResourcePropertiesAction(),
-      () -> UIFacade.RESOURCES_INDEX,
-      () -> getTaskSelectionManager().getSelectedTasks());
-    setArtefactActions(myResourceActionSet.getResourceNewAction(), propertiesAction, deleteAction);
+    myResourceActionSet.getResourcePropertiesAction().setTaskPropertiesAction(action);
+    setArtefactActions(myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourcePropertiesAction(), deleteAction);
   }
 
   private UIFacade getUIFacade() {

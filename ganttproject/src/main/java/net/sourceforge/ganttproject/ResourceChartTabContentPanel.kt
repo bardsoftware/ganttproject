@@ -23,10 +23,11 @@ import javax.swing.JComponent
 import javax.swing.SwingUtilities
 
 internal class ResourceChartTabContentPanel(
-  project: IGanttProject, workbenchFacade: UIFacade, private val myTreeFacade: GanttResourcePanel,
+  project: IGanttProject,
+  workbenchFacade: UIFacade,
+  private val myTreeFacade: GanttResourcePanel,
   override val chartComponent: JComponent
-) : ChartTabContentPanel(project, workbenchFacade, workbenchFacade.resourceChart),
-  ViewProvider {
+) : ChartTabContentPanel(project, workbenchFacade, workbenchFacade.resourceChart), ViewProvider {
 
   private lateinit var viewComponents: ViewComponents
   private var myTabContentPanel: JComponent? = null
@@ -113,6 +114,9 @@ internal class ResourceChartTabContentPanel(
     }
   override val createAction: GPAction = myTreeFacade.resourceActionSet.resourceNewAction
   override val deleteAction: GPAction = myTreeFacade.resourceActionSet.resourceDeleteAction
+
+  override val propertiesAction: GPAction
+    get() = myTreeFacade.propertiesAction
 
   init {
     addTableResizeListeners(myTreeFacade.treeComponent, myTreeFacade.treeTable.scrollPane.viewport)

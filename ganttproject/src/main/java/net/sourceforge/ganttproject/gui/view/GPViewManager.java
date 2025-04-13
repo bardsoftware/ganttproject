@@ -23,6 +23,7 @@ import javafx.scene.Node;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author bard
@@ -36,9 +37,11 @@ public interface GPViewManager {
 
   GPAction getPasteAction();
 
-  ChartSelection getSelectedArtefacts();
+  @NotNull GPAction getPropertiesAction();
 
+  ChartSelection getSelectedArtefacts();
   View getActiveView();
+
   Chart getActiveChart();
 
   void activateNextView();
