@@ -428,6 +428,7 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
   override var onClosed: () -> Unit = {}
   private val stackPane = StackPane().also { it.styleClass.add("layers") }
   private var content: Node = Region()
+  private var cancelAction: CancelAction? = null
 
   init {
     dialog.onShowing = EventHandler{ beforeShow() }
@@ -460,6 +461,9 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
       is OkAction -> ButtonType.OK
       is CancelAction -> ButtonType.CANCEL
       else -> ButtonType(action.name)
+    }
+    if (action is CancelAction) {
+      this.cancelAction = action
     }
     return setupButton(buttonType) { btn ->
       btn.text = action.name
@@ -500,6 +504,7 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
       }
     }
     this.dialog.dialogPane.scene.accelerators[KeyCombination.keyCombination("ESC")] = Runnable { hide() }
+    this.cancelAction?.actionPerformed(null)
   }
 
   override fun walkTree(walker: (Node) -> Unit) {
@@ -534,7 +539,7 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
   }
 
   override fun removeButtonBar() {
-    this.dialogPane.children.remove(this.dialogPane.children.first { it.styleClass.contains("button-bar") })
+    this.dialogPane.children.firstOrNull { it.styleClass.contains("button-bar") }?.let(this.dialogPane.children::remove)
   }
 
   override fun hide() {
