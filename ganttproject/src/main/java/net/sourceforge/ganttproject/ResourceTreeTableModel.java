@@ -317,6 +317,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
   private void buildAssignmentsSubtree(ResourceNode resourceNode) {
     HumanResource resource = resourceNode.getResource();
     resourceNode.removeAllChildren();
+    modelSupport.fireTreeStructureChanged(TreeUtil.createPath(resourceNode));
     ResourceAssignment[] assignments = resource.getAssignments();
     int[] indices = new int[assignments.length];
     TreeNode[] children = new TreeNode[assignments.length];

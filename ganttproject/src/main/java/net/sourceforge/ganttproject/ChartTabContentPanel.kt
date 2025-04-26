@@ -53,7 +53,7 @@ internal abstract class ChartTabContentPanel(
   private val myUiFacade: UIFacade
   private var myImagePanel: GanttImagePanel? = null
   protected var headerHeight: () -> Int = { 0 }
-  protected var imageHeight: () -> Int = { myImagePanel!!.preferredSize.height }
+  protected var imageHeight: () -> Int = { myImagePanel?.preferredSize?.height ?: 0}
 
 
   protected open fun buildDropdownActions(): List<GPAction> = emptyList()
@@ -142,7 +142,7 @@ internal abstract class ChartTabContentPanel(
   abstract val chartComponent: JComponent?
     get
 
-  protected abstract fun getTreeComponent(): Component
+  protected abstract fun getTreeComponent(): Component?
   protected abstract fun createButtonPanel(): Component?
 
   private fun createChartPanels(): JComponent {

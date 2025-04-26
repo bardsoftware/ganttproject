@@ -55,6 +55,7 @@ public class ViewManagerImpl implements GPViewManager {
   private final CutAction myCutAction;
   private final PasteAction myPasteAction;
   private final ViewDefinedAction propertiesAction = new ViewDefinedAction("artefact.properties");
+  private final ViewDefinedAction deleteAction = new ViewDefinedAction("artefact.delete");
   private final List<ViewProvider> myViewProviders;
   private boolean isInitialized = false;
 
@@ -71,6 +72,7 @@ public class ViewManagerImpl implements GPViewManager {
     myViewPane.getSelectedViewProperty().subscribe(activeView -> {
       if (activeView != null) {
         propertiesAction.setDelegateAction(activeView.getPropertiesAction());
+        deleteAction.setDelegateAction(activeView.getDeleteAction());
       }
     });
     /*
@@ -118,6 +120,9 @@ public class ViewManagerImpl implements GPViewManager {
   public @NotNull GPAction getPropertiesAction() {
     return propertiesAction;
   }
+
+  @Override
+  public GPAction getDeleteAction() { return deleteAction; }
 
   @Override
   public ChartSelection getSelectedArtefacts() {

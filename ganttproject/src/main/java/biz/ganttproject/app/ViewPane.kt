@@ -52,7 +52,14 @@ interface View {
   val id: String
 
   val createAction: GPAction
+  /**
+   * Deletes the selected objects in this view.
+   */
   val deleteAction: GPAction
+
+  /**
+   * Opens a properties dialog for the selected objects in this view.
+   */
   val propertiesAction: GPAction
 }
 

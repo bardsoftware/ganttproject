@@ -143,7 +143,7 @@ public class GanttDialogPerson {
       myUIFacade.getUndoManager().undoableEdit(GanttLanguage.getInstance().formatText("resource.new.description"), () -> {
         applyChanges();
         myResourceManager.add(person);
-        myUIFacade.getResourceTree().setSelected(person, true);
+//        myUIFacade.getResourceTree().setSelected(person, true);
         myUIFacade.getViewManager().getView(String.valueOf(UIFacade.RESOURCES_INDEX)).setActive(true);
       });
     }

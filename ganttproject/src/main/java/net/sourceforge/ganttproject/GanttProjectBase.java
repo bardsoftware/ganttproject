@@ -125,6 +125,12 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   private final TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
   protected final Supplier<TaskTable> myTaskTableSupplier;
 
+  ResourceTableChartConnector myResourceTableChartConnector = new ResourceTableChartConnector(
+    new SimpleIntegerProperty(-1),
+    TreeTableCellsKt.getMinCellHeight(),
+    new SimpleTreeCollapseView<>()
+  );
+
   protected final ProjectDatabase myProjectDatabase;
 
   private final NotificationManagerImpl myNotificationManager;

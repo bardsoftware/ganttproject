@@ -18,9 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
-import biz.ganttproject.FXUtil
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.app.MenuBuilderFx
+import biz.ganttproject.core.option.ObservableInt
+import biz.ganttproject.core.option.ObservableProperty
 import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
 import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
 import biz.ganttproject.lib.fx.treetable.VirtualFlow
@@ -289,6 +290,7 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
 interface TreeCollapseView<T> {
   fun isExpanded(node: T): Boolean
   fun setExpanded(node: T, value: Boolean)
+  val expandedCount: ObservableProperty<Int>
 }
 
 class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
@@ -299,7 +301,10 @@ class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
 
   override fun setExpanded(node: T, value: Boolean) {
     node2value[node] = value
+    expandedCount.set(node2value.count { it.value })
   }
+
+  override val expandedCount = ObservableInt("", 0)
 }
 
 

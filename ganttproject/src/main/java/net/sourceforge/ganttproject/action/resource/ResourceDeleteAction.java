@@ -18,9 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.resource;
 
-import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
+import net.sourceforge.ganttproject.resource.AssignmentContext;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceContext;
@@ -33,18 +33,18 @@ import java.awt.event.ActionEvent;
 public class ResourceDeleteAction extends ResourceAction {
   private final UIFacade myUIFacade;
 
-  private final GanttProject myProject;
+  private final AssignmentContext assignmentContext;
 
-  public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
+  public ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, AssignmentContext assignmentContext,
                               UIFacade uiFacade) {
-    this(hrManager, context, project, uiFacade, IconSize.TOOLBAR_SMALL);
+    this(hrManager, context, assignmentContext, uiFacade, IconSize.TOOLBAR_SMALL);
   }
 
-  private ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, GanttProject project,
+  private ResourceDeleteAction(HumanResourceManager hrManager, ResourceContext context, AssignmentContext assignmentContext,
                                UIFacade uiFacade, IconSize size) {
     super("resource.delete", hrManager, context, size);
     myUIFacade = uiFacade;
-    myProject = project;
+    this.assignmentContext = assignmentContext;
     setEnabled(hasResources());
   }
 
@@ -60,6 +60,9 @@ public class ResourceDeleteAction extends ResourceAction {
           myUIFacade.getActiveChart().focus();
         }
       });
+    } else {
+      var assignmentDeleteAction = new AssignmentDeleteAction(assignmentContext, myUIFacade);
+      assignmentDeleteAction.actionPerformed(null);
     }
   }
 
@@ -71,7 +74,7 @@ public class ResourceDeleteAction extends ResourceAction {
 
   @Override
   public ResourceDeleteAction asToolbarAction() {
-    ResourceDeleteAction result = new ResourceDeleteAction(getManager(), getContext(), myProject, myUIFacade);
+    ResourceDeleteAction result = new ResourceDeleteAction(getManager(), getContext(), assignmentContext, myUIFacade);
     result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
     return result;
   }

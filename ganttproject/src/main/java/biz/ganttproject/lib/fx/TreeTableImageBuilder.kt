@@ -27,7 +27,7 @@ import biz.ganttproject.core.table.TableSceneBuilder
 import biz.ganttproject.core.table.TreeTableSceneBuilder
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.ganttview.TaskTable
-import biz.ganttproject.ganttview.depthFirstWalk
+import biz.ganttproject.core.table.depthFirstWalk
 import javafx.scene.control.TreeItem
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration

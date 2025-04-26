@@ -18,8 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.ganttview.ResourceTableChartConnector;
 import com.google.common.collect.Lists;
-import net.sourceforge.ganttproject.action.ArtefactDeleteAction;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
@@ -37,10 +38,8 @@ import net.sourceforge.ganttproject.util.collect.Pair;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -50,7 +49,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   public final GanttProject appli;
 
   private final ResourceActionSet myResourceActionSet;
-  private final GPAction deleteAction;
 
   private final GanttProjectBase.RowHeightAligner myRowHeightAligner;
 
@@ -67,7 +65,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     return Pair.create(new ResourceTreeTable(project, model, uiFacade), model);
   }
 
-  public GanttResourcePanel(final GanttProject prj, final UIFacade uiFacade) {
+  public GanttResourcePanel(final GanttProject prj, final UIFacade uiFacade, ResourceTableChartConnector resourceTableConnector) {
     super(createTreeTable(prj.getProject(), uiFacade));
     appli = prj;
     myUIFacade = uiFacade;
@@ -75,32 +73,31 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     prj.addProjectEventListener(getProjectEventListener());
     myResourceActionSet = new ResourceActionSet(this, this, prj, uiFacade, getTreeTable());
 
-    deleteAction = new ArtefactDeleteAction(() -> {
-      if (getResourceAssignments().length > 0) {
-        return myResourceActionSet.getAssignmentDelete();
-      }
-      return myResourceActionSet.getResourceDeleteAction();
-    }, new Action[]{myResourceActionSet.getResourceDeleteAction(), myResourceActionSet.getAssignmentDelete()});
-    getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(),
-        myResourceActionSet.getResourceMoveDownAction(), myResourceActionSet.getResourceNewAction(), deleteAction,
-        appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction());
-    getTreeTable().addActionWithAccelleratorKey(myResourceActionSet.getAssignmentDelete());
-    getTreeTable().setRowHeight(20);
-
-    getTreeTable().insertWithLeftyScrollBar(this);
+//    getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(),
+//        myResourceActionSet.getResourceMoveDownAction(), myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourceDeleteAction(),
+//        appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction());
+//    getTreeTable().addActionWithAccelleratorKey(myResourceActionSet.getAssignmentDelete());
+//    getTreeTable().setRowHeight(20);
+//    resourceTableConnector.getRowHeight().setValue(20);
+//
+//    getTreeTable().insertWithLeftyScrollBar(this);
     area = new ResourceLoadGraphicArea(prj, prj.getZoomManager(), this) {
       @Override
       public boolean isExpanded(HumanResource hr) {
-        return getResourceTreeTable().isExpanded(hr);
+        return resourceTableConnector.getCollapseView().isExpanded(hr);
       }
 
       @Override
       protected int getRowHeight() {
-        return getTreeTable().getRowHeight();
+        return resourceTableConnector.getMinRowHeight().intValue();
       }
     };
+    resourceTableConnector.getCollapseView().getExpandedCount().addWatcher(evt -> {
+      area.repaint();
+      return Unit.INSTANCE;
+    });
     prj.getZoomManager().addZoomListener(area.getZoomListener());
-    area.getChartModel().setRowHeight(getTreeTable().getRowHeight());
+    area.getChartModel().setRowHeight(resourceTableConnector.getMinRowHeight().intValue());
 
     this.setBackground(new Color(0.0f, 0.0f, 0.0f));
     updateContextActions();
@@ -131,7 +128,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   @Override
   protected void onSelectionChanged(List<DefaultMutableTreeTableNode> selection) {
     super.onSelectionChanged(selection);
-    getPropertiesAction().setEnabled(!selection.isEmpty());
     updateContextActions();
     List<Task> selectedTasks = Lists.newArrayList();
     for (DefaultMutableTreeTableNode node : selection) {
@@ -144,6 +140,8 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     } else {
       myUIFacade.getTaskSelectionManager().setSelectedTasks(selectedTasks, this);
     }
+    getPropertiesAction().setEnabled(!selection.isEmpty());
+    getDeleteAction().setEnabled(!selection.isEmpty());
   }
 
   private void updateContextActions() {
@@ -208,26 +206,26 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
   @Override
   public void resourceAdded(ResourceEvent event) {
-    newHuman(event.getResource());
+//    newHuman(event.getResource());
   }
 
   @Override
   public void resourcesRemoved(ResourceEvent event) {
-    getTreeTable().getTreeTable().editingStopped(new ChangeEvent(getTreeTable().getTreeTable()));
-    getTreeModel().deleteResources(event.getResources());
+//    getTreeTable().getTreeTable().editingStopped(new ChangeEvent(getTreeTable().getTreeTable()));
+//    getTreeModel().deleteResources(event.getResources());
   }
 
   @Override
   public void resourceChanged(ResourceEvent e) {
-    getTreeModel().resourceChanged(e.getResource());
-    e.getResource().resetLoads();
-    repaint();
+//    getTreeModel().resourceChanged(e.getResource());
+//    e.getResource().resetLoads();
+//    repaint();
   }
 
   @Override
   public void resourceAssignmentsChanged(ResourceEvent e) {
-    getTreeModel().resourceAssignmentsChanged(Arrays.asList(e.getResources()));
-    repaint();
+//    getTreeModel().resourceAssignmentsChanged(Arrays.asList(e.getResources()));
+//    repaint();
   }
 
   // //////////////////////////////////////////////////////////////////////////
@@ -262,17 +260,17 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   /**
    * Create a new Human
    */
-  public void newHuman(HumanResource people) {
-    if (people != null) {
-      try {
-        DefaultMutableTreeTableNode result = getTreeModel().addResource(people);
-        getTreeTable().getTree().scrollPathToVisible(TreeUtil.createPath(result));
-      } catch (Exception e) {
-        System.err.println("when adding this guy: " + people);
-        e.printStackTrace();
-      }
-    }
-  }
+//  public void newHuman(HumanResource people) {
+//    if (people != null) {
+//      try {
+//        DefaultMutableTreeTableNode result = getTreeModel().addResource(people);
+//        getTreeTable().getTree().scrollPathToVisible(TreeUtil.createPath(result));
+//      } catch (Exception e) {
+//        System.err.println("when adding this guy: " + people);
+//        e.printStackTrace();
+//      }
+//    }
+//  }
 
   public ResourceTreeTable getResourceTreeTable() {
     return getTreeTable();
@@ -395,7 +393,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
   void setTaskPropertiesAction(GPAction action) {
     myResourceActionSet.getResourcePropertiesAction().setTaskPropertiesAction(action);
-    setArtefactActions(myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourcePropertiesAction(), deleteAction);
+    setArtefactActions(myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourcePropertiesAction(), myResourceActionSet.getResourceDeleteAction());
   }
 
   private UIFacade getUIFacade() {

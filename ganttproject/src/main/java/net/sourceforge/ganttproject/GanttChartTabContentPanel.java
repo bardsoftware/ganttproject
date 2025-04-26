@@ -176,32 +176,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
 
   @Override
   protected @NotNull Component getTreeComponent() {
-    var jfxPanel = new JFXPanel();
-    this.taskTable = setupTaskTable();
-    jfxPanel.addKeyListener(new KeyAdapter() {
-      @Override
-      public void keyPressed(KeyEvent e) {
-        // Otherwise pressing Delete when editing a task name will delete the task itself.
-        if (e.getKeyCode() == KeyEvent.VK_DELETE && taskTable.getTreeTable().getEditingCell() != null) {
-          e.consume();
-        }
-      }
-    });
-    Platform.runLater(() -> {
-      jfxPanel.setScene(new Scene(taskTable.getControl()));
-      setHeaderHeight(() -> taskTable.getHeaderHeightProperty().intValue());
-      myInitializationCompleted.invoke();
-    });
-    taskTable.setRequestSwingFocus(() -> {
-      jfxPanel.requestFocus();
-      return null;
-    });
-    taskTable.setSwingComponent(jfxPanel);
-    taskTable.getColumnListWidthProperty().addListener((observable, oldValue, newValue) ->
-      SwingUtilities.invokeLater(() -> setTableWidth(newValue.component1() + newValue.component2()))
-    );
-
-    return jfxPanel;
+    return null;
   }
 
   private TaskTable setupTaskTable() {

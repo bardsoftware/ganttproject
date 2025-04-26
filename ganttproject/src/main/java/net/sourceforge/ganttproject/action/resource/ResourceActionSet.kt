@@ -38,7 +38,7 @@ class ResourceActionSet(
   val resourceMoveUpAction: ResourceMoveUpAction
   val resourceMoveDownAction: ResourceMoveDownAction
   val resourceSendMailAction = ResourceSendMailAction(table)
-  val assignmentDelete: AssignmentDeleteAction
+  val assignmentDelete = AssignmentDeleteAction(assignmentContext, uiFacade)
   val actions: Array<AbstractAction> by lazy {
     resourceNewAction.putValue(Action.SHORT_DESCRIPTION, null)
     resourcePropertiesAction.putValue(Action.SHORT_DESCRIPTION, null)
@@ -48,9 +48,20 @@ class ResourceActionSet(
 
   init {
     val manager = project.humanResourceManager
-    resourceDeleteAction = ResourceDeleteAction(manager, resourceContext, project, uiFacade)
+    resourceDeleteAction = ResourceDeleteAction(manager, resourceContext, assignmentContext, uiFacade)
     resourceMoveUpAction = ResourceMoveUpAction(table)
     resourceMoveDownAction = ResourceMoveDownAction(table)
-    assignmentDelete = AssignmentDeleteAction(assignmentContext, uiFacade)
+  }
+}
+
+fun deleteAssignments(assignmentContext: AssignmentContext, uiFacade: UIFacade, actionDescription: String) {
+  assignmentContext.resourceAssignments?.let { assignments ->
+    uiFacade.undoManager.undoableEdit(actionDescription) {
+      assignments.forEach { assignment ->
+        assignment.delete()
+        assignment.task.assignmentCollection.deleteAssignment(assignment.resource)
+      }
+      uiFacade.refresh()
+    }
   }
 }

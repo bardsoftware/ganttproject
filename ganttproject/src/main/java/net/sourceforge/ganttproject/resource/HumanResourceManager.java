@@ -30,10 +30,7 @@ import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author barmeier
@@ -171,7 +168,7 @@ public class HumanResourceManager {
   }
 
   public List<HumanResource> getResources() {
-    return resources;
+    return Collections.unmodifiableList(new ArrayList<>(resources));
   }
 
   public void remove(HumanResource resource) {

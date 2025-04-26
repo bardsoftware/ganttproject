@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
+import biz.ganttproject.core.table.BuiltinColumn;
 import com.google.common.base.MoreObjects;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
@@ -31,7 +32,7 @@ import java.util.List;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public enum ResourceDefaultColumn {
+public enum ResourceDefaultColumn implements BuiltinColumn {
   ID(new ColumnList.ColumnStub("", null, false, 0, 75), Integer.class, "tableColID", true),
   NAME(new ColumnList.ColumnStub("0", null, true, 0, 200), String.class, "tableColResourceName", true),
   ROLE(new ColumnList.ColumnStub("1", null, true, 1, 75), String.class, "tableColResourceRole", true),
@@ -58,7 +59,7 @@ public enum ResourceDefaultColumn {
     return myDelegate;
   }
 
-  static List<Column> getColumnStubs() {
+  public static List<Column> getColumnStubs() {
     List<Column> result = new ArrayList<Column>();
     for (ResourceDefaultColumn dc : values()) {
       result.add(dc.myDelegate);
@@ -90,5 +91,15 @@ public enum ResourceDefaultColumn {
       }
     }
     return null;
+  }
+
+  @Override
+  public <NodeType> boolean isEditable(NodeType node) {
+    return true;
+  }
+
+  @Override
+  public boolean isIconified() {
+    return false;
   }
 }

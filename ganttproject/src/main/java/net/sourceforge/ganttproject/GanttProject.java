@@ -134,17 +134,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     )
   );
 
-  private final Supplier<GPAction> taskDeleteAction = Suppliers.memoize(myTaskActions::getDeleteAction);
-  private final Supplier<GPAction> resourceDeleteAction = Suppliers.memoize(() -> getResourceTree().getDeleteAction());
-  private final Supplier<ArtefactAction> deleteAction = Suppliers.memoize(() ->
-    new ArtefactDeleteAction(
-        () -> getViewManager().getActiveView().getDeleteAction(),
-        new Action[]{taskDeleteAction.get(), resourceDeleteAction.get()}
-    )
-  );
-  private final java.util.function.Supplier<GPAction> taskPropertiesAction = Suppliers.memoize(() ->
-    getViewManager().getPropertiesAction()
-  );
 
   public JMenuBar getMenuBar() {
     var bar = new JMenuBar();
@@ -234,7 +223,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         getUIConfiguration(), myTaskTableSupplier, myTaskActions, myUiInitializationPromise);
 
     myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(), getResourcePanel(),
-        getResourcePanel().area);
+        getResourcePanel().area, myResourceTableChartConnector);
 //++
 //    addComponentListener(new ComponentAdapter() {
 //      @Override
@@ -316,7 +305,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   public List<GPAction> getAppLevelActions() {
-    return List.of(insertAction.get(), deleteAction.get(), taskPropertiesAction.get());
+    return List.of(insertAction.get(), getViewManager().getDeleteAction(), getViewManager().getPropertiesAction());
   }
   private void restoreBounds() {
     //++
@@ -444,14 +433,15 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         .addWhitespace();
 
     builder.addButton(taskNewAction.get().asToolbarAction()).addButton(resourceNewAction.get().asToolbarAction());
-    builder.addButton(deleteAction.get().asToolbarAction());
+    builder.addButton(getViewManager().getDeleteAction().asToolbarAction());
 
     var propertiesAction = getViewManager().getPropertiesAction();
 
     //++UIUtil.registerActions(getRootPane(), false, newAction, propertiesAction, deleteAction);
     // TODO: it might be necessary to uncomment it
     //UIUtil.registerActions(myGanttChartTabContent.getComponent(), true, newAction, propertiesAction, deleteAction);
-    UIUtil.registerActions(myResourceChartTabContent.getComponent(), true, insertAction.get(), propertiesAction, deleteAction.get());
+//    UIUtil.registerActions(myResourceChartTabContent.getComponent(), true, insertAction.get(), propertiesAction,
+//      getViewManager().getDeleteAction());
 //    getTabs().getModel().addChangeListener(e -> {
 //      // Tell artefact actions that the active provider changed, so they
 //      // are able to update their state according to the current delegate
@@ -477,7 +467,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getWindowOpenedBarrier().await(opened -> {
       if (opened) {
         insertAction.get().init();
-        deleteAction.get().init();
+//        deleteAction.get().init();
 //        propertiesAction.init();
       }
       return Unit.INSTANCE;
@@ -571,7 +561,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   public GanttResourcePanel getResourcePanel() {
     if (this.resp == null) {
-      this.resp = new GanttResourcePanel(this, getUIFacade());
+      this.resp = new GanttResourcePanel(this, getUIFacade(), myResourceTableChartConnector);
       this.resp.init();
       myRowHeightAligners.add(this.resp.getRowHeightAligner());
       getHumanResourceManager().addView(this.resp);
