@@ -285,9 +285,6 @@ class TaskTable(
         }
       }
     }
-    columns.addListener(ListChangeListener {
-      onColumnsChange()
-    })
     initNewTaskActor()
     treeTable.onProperties = this::onProperties
     treeTable.contextMenuActions = this::contextMenuActions
@@ -313,15 +310,20 @@ class TaskTable(
     )
     treeTable.setColumns(tableColumns)
     reload()
+    columns.addListener(ListChangeListener {
+      onColumnsChange()
+    })
   }
 
   private fun onColumnsChange()  {
     FXUtil.runLater {
       columnList.columns().forEach { it.taskDefaultColumn()?.isVisible = it.isVisible }
-      columnBuilder.buildColumns(
+      val newColumns = columnBuilder.buildColumns(
         columns = columnList.columns(),
         currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
       )
+      treeTable.setColumns(newColumns)
+      reload()
     }
   }
 

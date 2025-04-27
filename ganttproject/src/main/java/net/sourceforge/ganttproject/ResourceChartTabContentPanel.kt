@@ -5,11 +5,15 @@ package net.sourceforge.ganttproject
 
 import biz.ganttproject.app.FXToolbarBuilder
 import biz.ganttproject.app.ViewComponents
+import biz.ganttproject.app.createButton
 import biz.ganttproject.app.createViewComponents
 import biz.ganttproject.core.option.GPOption
+import biz.ganttproject.ganttview.ApplyExecutorType
 import biz.ganttproject.ganttview.ResourceTable
 import biz.ganttproject.ganttview.ResourceTableChartConnector
+import biz.ganttproject.ganttview.showResourceColumnManager
 import javafx.scene.Node
+import javafx.scene.control.Button
 import javafx.scene.control.ToolBar
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -18,6 +22,7 @@ import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.chart.TimelineChart
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder
 import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.gui.UIUtil
 import net.sourceforge.ganttproject.gui.view.ViewProvider
 import java.awt.Component
 import javax.swing.JComponent
@@ -31,13 +36,10 @@ internal class ResourceChartTabContentPanel(
 ) : ChartTabContentPanel(project, workbenchFacade, workbenchFacade.resourceChart), ViewProvider {
 
   private lateinit var viewComponents: ViewComponents
-  private var myTabContentPanel: JComponent? = null
-  val component: JComponent
-    get() {
-      if (myTabContentPanel == null) {
-        myTabContentPanel = createContentComponent()
-      }
-      return myTabContentPanel!!
+  val component: JComponent? = null
+  private val manageColumnsAction = GPAction.create("columns.manage.label") {
+      showResourceColumnManager(resourceTable.columnList,
+        project.resourceCustomPropertyManager, workbenchFacade.getUndoManager(), project.projectDatabase, ApplyExecutorType.DIRECT);
     }
 
   override fun buildDropdownActions(): List<GPAction> = listOf(
@@ -66,9 +68,16 @@ internal class ResourceChartTabContentPanel(
   }
 
   private fun createToolbarBuilder(): FXToolbarBuilder {
+    val manageColumnsButton: Button = createButton(GPAction.create("taskTable.tableMenuToggle") {
+      manageColumnsAction.actionPerformed(null)
+    }.also {
+      it.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(it))
+    })
+    val rightComponent = HBox(0.0, manageColumnsButton)
     return FXToolbarBuilder()
       .addButton(myTreeFacade.resourceActionSet.resourceMoveUpAction.asToolbarAction())
       .addButton(myTreeFacade.resourceActionSet.resourceMoveDownAction.asToolbarAction())
+      .addTail(rightComponent)
       .withClasses("toolbar-common", "toolbar-small", "task-filter")
   }
 

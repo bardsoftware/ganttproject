@@ -19,18 +19,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.ganttview
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.core.table.BaseTreeTableComponent
-import biz.ganttproject.core.table.ColumnBuilder
-import biz.ganttproject.core.table.ColumnList
+import biz.ganttproject.core.table.*
 import biz.ganttproject.core.table.ColumnList.ColumnStub
-import biz.ganttproject.core.table.TableModel
-import biz.ganttproject.core.table.depthFirstWalk
-import biz.ganttproject.core.table.reload
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.lib.fx.*
 import javafx.beans.property.DoubleProperty
 import javafx.beans.property.IntegerProperty
 import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
@@ -39,8 +35,10 @@ import net.sourceforge.ganttproject.ResourceDefaultColumn
 import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.resource.ResourceEvent
 import net.sourceforge.ganttproject.resource.ResourceView
+import net.sourceforge.ganttproject.roles.Role
 import net.sourceforge.ganttproject.task.ResourceAssignment
 import net.sourceforge.ganttproject.undo.GPUndoManager
+import java.math.BigDecimal
 import kotlin.math.ceil
 
 sealed class ResourceTableNode
@@ -57,7 +55,8 @@ data class ResourceTableChartConnector(
 /**
  * This class connects a tree table UI widget to the chart and resource/task models.
  */
-class ResourceTable(private val project: IGanttProject, private val undoManager: GPUndoManager,
+class ResourceTable(private val project: IGanttProject,
+                    private val undoManager: GPUndoManager,
                     private val resourceChartConnector: ResourceTableChartConnector) :
   BaseTreeTableComponent<ResourceTableNode, ResourceDefaultColumn>(
     GPTreeTableView<ResourceTableNode>(TreeItem<ResourceTableNode>(RootNode())), project, undoManager
@@ -65,9 +64,9 @@ class ResourceTable(private val project: IGanttProject, private val undoManager:
 
   private val tableModel = ResourceTableModel()
   private val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
-  private val columnList: ColumnListImpl = ColumnListImpl(columns, project.resourceCustomPropertyManager,
+  val columnList: ColumnListImpl = ColumnListImpl(columns, project.resourceCustomPropertyManager,
     { treeTable.columns },
-    { },
+    { onColumnsChange() },
     BuiltinColumns(
       isZeroWidth = {
         ResourceDefaultColumn.find(it)?.isIconified ?: false
@@ -117,6 +116,21 @@ class ResourceTable(private val project: IGanttProject, private val undoManager:
       currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
     )
     treeTable.setColumns(tableColumns)
+    columns.addListener(ListChangeListener {
+      onColumnsChange()
+    })
+  }
+
+  private fun onColumnsChange()  {
+    FXUtil.runLater {
+      columnList.columns().forEach { it.resourceDefaultColumn()?.isVisible = it.isVisible }
+      val newColumns = columnBuilder.buildColumns(
+        columns = columnList.columns(),
+        currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
+      )
+      treeTable.setColumns(newColumns)
+      treeTable.reload(::sync)
+    }
   }
 
   override fun sync(keepFocus: Boolean) {
@@ -141,6 +155,8 @@ class ResourceTable(private val project: IGanttProject, private val undoManager:
     }
   }
 }
+
+private fun ColumnList.Column.resourceDefaultColumn() = ResourceDefaultColumn.find(this.id)?.stub
 
 /**
  * A model class that moves data between the table cells and HumanResource instances.
@@ -170,15 +186,28 @@ class ResourceTableModel: TableModel<ResourceTableNode, ResourceDefaultColumn> {
   }
 
   override fun getValue(t: ResourceTableNode, customProperty: CustomPropertyDefinition): Any? {
-    TODO("Not yet implemented")
+    return if (t is ResourceNode) {
+      t.resource.getCustomField(customProperty)
+    } else null
   }
 
   override fun setValue(value: Any, node: ResourceTableNode, property: ResourceDefaultColumn) {
-    TODO("Not yet implemented")
+    if (node is ResourceNode) {
+      when (property) {
+        ResourceDefaultColumn.NAME -> node.resource.name = "$value"
+        ResourceDefaultColumn.PHONE -> node.resource.phone = "$value"
+        ResourceDefaultColumn.EMAIL -> node.resource.mail = "$value"
+        ResourceDefaultColumn.ROLE -> node.resource.role = value as Role
+        ResourceDefaultColumn.STANDARD_RATE -> (value as? Double)?.let { node.resource.standardPayRate = BigDecimal.valueOf(it) }
+        else -> {}
+      }
+    }
   }
 
   override fun setValue(value: Any, node: ResourceTableNode, column: CustomPropertyDefinition) {
-    TODO("Not yet implemented")
+    if (node is ResourceNode) {
+      node.resource.setValue(column, value)
+    }
   }
 
 }

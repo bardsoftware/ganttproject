@@ -79,7 +79,7 @@ class FXToolbar {
 
 private typealias ToolbarVisitor = (toolbar: FXToolbar) -> Unit
 
-fun createButton(action: GPAction, onlyIcon: Boolean = true): Button? = doCreateButton(action, onlyIcon)?.also {
+fun createButton(action: GPAction, onlyIcon: Boolean = true): Button = doCreateButton(action, onlyIcon).also {
   applyFontStyle(it)
 }
 

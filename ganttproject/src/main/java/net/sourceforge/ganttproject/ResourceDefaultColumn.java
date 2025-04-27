@@ -62,7 +62,9 @@ public enum ResourceDefaultColumn implements BuiltinColumn {
   public static List<Column> getColumnStubs() {
     List<Column> result = new ArrayList<Column>();
     for (ResourceDefaultColumn dc : values()) {
-      result.add(dc.myDelegate);
+      result.add(new ColumnList.ColumnStub(
+        dc.myDelegate.getID(), dc.getName(),
+        dc.myDelegate.isVisible(), dc.myDelegate.getOrder(), dc.myDelegate.getWidth()));
     }
     return result;
   }

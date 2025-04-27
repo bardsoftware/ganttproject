@@ -72,7 +72,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private TaskTable taskTable;
   private ViewComponents myViewComponents;
 
-  private DoubleOption myDividerOption = new DefaultDoubleOption("divider", 0.5);
+  private final DoubleOption myDividerOption = new DefaultDoubleOption("divider", 0.5);
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
                             JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
@@ -108,7 +108,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
 
   private final Label filterTaskLabel = new Label();
 
-  private Supplier<TaskFilterActionSet> filterActions = Suppliers.memoize(() ->
+  private final Supplier<TaskFilterActionSet> filterActions = Suppliers.memoize(() ->
     new TaskFilterActionSet(taskTable.getFilterManager(), getProject().getProjectDatabase())
   );
   //private final TaskFilterActionSet
@@ -170,6 +170,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   }
 
   @Override
+  @NotNull
   public JComponent getChartComponent() {
     return myGanttChart;
   }
@@ -229,7 +230,8 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
         chartToolbarBox.getChildren().add(createScheduleToolbar().build().getToolbar$ganttproject());
         return chartToolbarBox;
       },
-      /*chartBuilder=*/        this::getChartComponent,
+      /*chartBuilder=*/
+      this::getChartComponent,
       myWorkbenchFacade.getDpiOption()
     );
 
