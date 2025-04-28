@@ -44,7 +44,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class GanttResourcePanel extends TreeTableContainer<HumanResource, ResourceTreeTable, ResourceTreeTableModel>
-    implements ResourceView, ResourceContext, AssignmentContext, ResourceTreeUIFacade {
+    implements ResourceView, AssignmentContext, ResourceTreeUIFacade {
 
   public final GanttProject appli;
 
@@ -71,7 +71,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     myUIFacade = uiFacade;
 
     prj.addProjectEventListener(getProjectEventListener());
-    myResourceActionSet = new ResourceActionSet(this, this, prj, uiFacade, getTreeTable());
+    myResourceActionSet = new ResourceActionSet(uiFacade.getResourceSelectionManager(), this, prj, uiFacade, getTreeTable());
 
 //    getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(),
 //        myResourceActionSet.getResourceMoveDownAction(), myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourceDeleteAction(),
@@ -230,7 +230,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
   // //////////////////////////////////////////////////////////////////////////
   // ResourceContext interface
-  @Override
   public HumanResource[] getResources() {
     // ProjectResource[] res;
     // List allRes = model.getAllResouces();
@@ -285,10 +284,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
    */
   public void reset() {
     getTreeModel().reset();
-  }
-
-  public ResourceContext getContext() {
-    return this;
   }
 
   @Override

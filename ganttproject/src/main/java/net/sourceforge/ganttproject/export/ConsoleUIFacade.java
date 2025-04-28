@@ -39,6 +39,7 @@ import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.resource.ResourceSelectionManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
@@ -208,6 +209,11 @@ public class ConsoleUIFacade implements UIFacade {
   @Override
   public TaskSelectionContext getTaskSelectionContext() {
     // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ResourceSelectionManager getResourceSelectionManager() {
     return null;
   }
 

@@ -56,6 +56,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.language.LanguageOption;
 import net.sourceforge.ganttproject.language.ShortDateFormatOption;
+import net.sourceforge.ganttproject.resource.ResourceSelectionManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
@@ -83,6 +84,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private final ZoomManager myZoomManager;
   private final UIFacade myFallbackDelegate;
   private final TaskSelectionManager myTaskSelectionManager;
+  private final ResourceSelectionManager myResourceSelectionManager = new ResourceSelectionManager();
+
   private final List<GPOptionGroup> myOptionGroups = Lists.newArrayList();
   private final LafOption myLafOption;
   private final DefaultFileOption myLogoOption;
@@ -521,6 +524,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   @Override
   public TaskSelectionManager getTaskSelectionManager() {
     return myTaskSelectionManager;
+  }
+
+  public ResourceSelectionManager getResourceSelectionManager() {
+    return myResourceSelectionManager;
   }
 
   @Override

@@ -87,7 +87,8 @@ internal class ResourceChartTabContentPanel(
   override val chart: Chart
     get() = getUiFacade().resourceChart
 
-  private val resourceTable = ResourceTable(project, workbenchFacade.undoManager, resourceTableChartConnector)
+  private val resourceTable = ResourceTable(project, workbenchFacade.undoManager, workbenchFacade.resourceSelectionManager,
+    resourceTableChartConnector)
 
   override val node: Node
     get() {

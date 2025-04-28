@@ -19,22 +19,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.resource
 
 import biz.ganttproject.resource.GPCloudResourceListAction
-import net.sourceforge.ganttproject.resource.AssignmentContext
 import net.sourceforge.ganttproject.GanttProject
-import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.ResourceTreeTable
+import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.resource.AssignmentContext
+import net.sourceforge.ganttproject.resource.ResourceSelectionManager
 import javax.swing.AbstractAction
-import net.sourceforge.ganttproject.resource.ResourceContext
 import javax.swing.Action
 
 class ResourceActionSet(
-  resourceContext: ResourceContext, assignmentContext: AssignmentContext,
+  selectionManager: ResourceSelectionManager, assignmentContext: AssignmentContext,
   project: GanttProject, uiFacade: UIFacade, table: ResourceTreeTable
 ) {
   val resourceNewAction = ResourceNewAction(project.humanResourceManager, project.projectDatabase, project.roleManager, project.taskManager, uiFacade)
   val cloudResourceList = GPCloudResourceListAction(project.humanResourceManager)
   val resourceDeleteAction: ResourceDeleteAction
-  val resourcePropertiesAction = ResourcePropertiesAction(project, resourceContext, assignmentContext, uiFacade)
+  val resourcePropertiesAction = ResourcePropertiesAction(project, selectionManager, assignmentContext, uiFacade)
   val resourceMoveUpAction: ResourceMoveUpAction
   val resourceMoveDownAction: ResourceMoveDownAction
   val resourceSendMailAction = ResourceSendMailAction(table)
@@ -48,9 +48,15 @@ class ResourceActionSet(
 
   init {
     val manager = project.humanResourceManager
-    resourceDeleteAction = ResourceDeleteAction(manager, resourceContext, assignmentContext, uiFacade)
+    resourceDeleteAction = ResourceDeleteAction(manager, selectionManager, assignmentContext, uiFacade)
     resourceMoveUpAction = ResourceMoveUpAction(table)
     resourceMoveDownAction = ResourceMoveDownAction(table)
+
+    selectionManager.subscribe { _, _ ->
+      listOf(resourcePropertiesAction, resourceDeleteAction).forEach {
+        it.updateEnabled()
+      }
+    }
   }
 }
 

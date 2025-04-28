@@ -34,9 +34,11 @@ import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ResourceDefaultColumn
 import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.resource.ResourceEvent
+import net.sourceforge.ganttproject.resource.ResourceSelectionManager
 import net.sourceforge.ganttproject.resource.ResourceView
 import net.sourceforge.ganttproject.roles.Role
 import net.sourceforge.ganttproject.task.ResourceAssignment
+import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.math.BigDecimal
 import kotlin.math.ceil
@@ -46,17 +48,27 @@ class RootNode: ResourceTableNode()
 class ResourceNode(internal val resource: HumanResource) : ResourceTableNode()
 class AssignmentNode(internal val assignment: ResourceAssignment): ResourceTableNode()
 
+/**
+ * This class connects the table and the resource chart
+ */
 data class ResourceTableChartConnector(
+  // Row height set by the chart. The table can listen this property and set the cell height appropriately.
   val rowHeight: IntegerProperty,
+
+  // Minimum row height, defined by the fonts and padding.
   val minRowHeight: DoubleProperty,
+
+  // Collapse view that keeps the resource nodes expansion state.
+  // The chart listens to the changes and updates appropriately.
   val collapseView: TreeCollapseView<HumanResource>
 )
 
 /**
- * This class connects a tree table UI widget to the chart and resource/task models.
+ * This class is a controller of the tree table UI widget that shows project human resources.
  */
 class ResourceTable(private val project: IGanttProject,
                     private val undoManager: GPUndoManager,
+                    private val resourceSelectionManager: ResourceSelectionManager,
                     private val resourceChartConnector: ResourceTableChartConnector) :
   BaseTreeTableComponent<ResourceTableNode, ResourceDefaultColumn>(
     GPTreeTableView<ResourceTableNode>(TreeItem<ResourceTableNode>(RootNode())), project, undoManager
@@ -76,6 +88,8 @@ class ResourceTable(private val project: IGanttProject,
       }
     )
   )
+  private val resource2treeItem = mutableMapOf<HumanResource, TreeItem<ResourceNode>>()
+  private val task2treeItem = mutableMapOf<ResourceAssignment, TreeItem<AssignmentNode>>()
 
   init {
     resourceChartConnector.rowHeight.subscribe { value ->
@@ -102,7 +116,14 @@ class ResourceTable(private val project: IGanttProject,
       override fun resourceAssignmentsChanged(e: ResourceEvent?) {
         treeTable.reload(::sync)
       }
-
+    })
+    treeTable.selectionModel.selectedItems.addListener(ListChangeListener<TreeItem<ResourceTableNode>> { change ->
+      this.resourceSelectionManager.select(treeTable.selectionModel.selectedItems.map { it.value as? ResourceTableNode }.mapNotNull {
+        when (it) {
+          is ResourceNode -> it.resource
+          else -> null
+        }
+      }.toList(), true, this@ResourceTable)
     })
   }
 
@@ -128,18 +149,23 @@ class ResourceTable(private val project: IGanttProject,
         columns = columnList.columns(),
         currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
       )
-      treeTable.setColumns(newColumns)
+      if (newColumns.isNotEmpty()) {
+        treeTable.setColumns(newColumns)
+      }
       treeTable.reload(::sync)
     }
   }
 
   override fun sync(keepFocus: Boolean) {
+    task2treeItem.clear()
+    resource2treeItem.clear()
     treeTable.root.children.clear()
     project.humanResourceManager.resources.forEach { hr ->
-      val resourceNode: TreeItem<ResourceTableNode> = TreeItem<ResourceTableNode>(ResourceNode(hr)).also {
+      val resourceNode: TreeItem<ResourceNode> = TreeItem<ResourceNode>(ResourceNode(hr)).also {
         it.expandedProperty().subscribe(::onTreeItemExpanded)
+        resource2treeItem[hr] = it
       }
-      treeTable.root.children.add(resourceNode)
+      treeTable.root.children.add(resourceNode as TreeItem<ResourceTableNode>)
       hr.assignments.forEach { assignment ->
         resourceNode.children.add(TreeItem(AssignmentNode(assignment)))
       }

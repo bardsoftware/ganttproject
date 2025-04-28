@@ -62,6 +62,7 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
+import net.sourceforge.ganttproject.resource.ResourceSelectionManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.storage.LazyProjectDatabaseProxy;
 import net.sourceforge.ganttproject.storage.ProjectDatabase;
@@ -429,6 +430,11 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   @Override
   public TaskSelectionContext getTaskSelectionContext() {
     return myUIFacade.getTaskSelectionContext();
+  }
+
+  @Override
+  public ResourceSelectionManager getResourceSelectionManager() {
+    return myUIFacade.getResourceSelectionManager();
   }
 
   @Override

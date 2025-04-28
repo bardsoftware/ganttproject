@@ -322,7 +322,9 @@ class TaskTable(
         columns = columnList.columns(),
         currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
       )
-      treeTable.setColumns(newColumns)
+      if (newColumns.isNotEmpty()) {
+        treeTable.setColumns(newColumns)
+      }
       reload()
     }
   }
@@ -583,7 +585,6 @@ class TaskTable(
     }
   }
   private fun doSync(keepFocus: Boolean) {
-    keepSelection(keepFocus) {
       LOGGER.debug("Sync >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
       val treeModel = taskManager.taskHierarchy
       task2treeItem.clear()
@@ -602,7 +603,6 @@ class TaskTable(
       filterManager.hiddenTaskCount.set(syncAlgorithm.filteredCount)
       initializationCompleted()
       LOGGER.debug("Sync <<<<<<<<<<<<<<<<<")
-    }
   }
 
 

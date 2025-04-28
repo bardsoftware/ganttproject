@@ -78,8 +78,9 @@ class TwoPhaseBarrierImpl<T>(private val value: T) : Barrier<T>, BarrierEntrance
 
   var isActive: Boolean = false
     set(value) {
+      val wasActive = field
       field = value
-      if (value && counter.get() == 0) {
+      if (value && !wasActive && counter.get() == 0) {
         exits.forEach { it(this.value) }
       }
     }
