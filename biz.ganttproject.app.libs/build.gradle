@@ -38,7 +38,7 @@ dependencies {
     exported "com.evanlennick:retry4j:0.15.0"
     exported 'com.fasterxml.jackson.core:jackson-core:2.18.3'
     exported 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
-    exported 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.3'
+    exported 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.0'
     exported 'com.jgoodies:jgoodies-common:1.8.+'
     exported "com.jgoodies:jgoodies-looks:2.7.0"
     exported "com.squareup.okhttp3:okhttp:3.14.9"
