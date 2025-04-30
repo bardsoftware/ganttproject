@@ -49,7 +49,7 @@ dependencies {
 
     exported 'net.java.balloontip:balloontip:1.2.4.1'
     exported "org.apache.commons:commons-lang3:3.17.0"
-    exported "org.apache.commons:commons-text:1.13.0"
+    exported "org.apache.commons:commons-text:1.13.1"
 
     exported "org.apache.httpcomponents:httpclient:4.5.14"
     exported "org.apache.httpcomponents:httpmime:4.5.14"
