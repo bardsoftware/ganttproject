@@ -59,7 +59,7 @@ dependencies {
     testImplementation group: 'org.easymock', name: 'easymock', version: '5.+'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.+'
     testImplementation 'org.junit.platform:junit-platform-launcher:1.12.2'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.12.1'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.12.2'
 
 //    implementation "de.jensd:fontawesomefx-materialicons:2.2.+"
 }
