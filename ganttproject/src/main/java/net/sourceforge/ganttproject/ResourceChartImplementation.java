@@ -5,13 +5,9 @@ import biz.ganttproject.print.PrintChartApi;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
-import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.PrintChartApiImpl;
 import net.sourceforge.ganttproject.chart.export.TreeTableApiKt;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.resource.HumanResource;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 
 import java.awt.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,7 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 class ResourceChartImplementation extends AbstractChartImplementation {
 
   private final ResourceLoadGraphicArea resourceLoadGraphicArea;
-  private ResourceLoadGraphicArea.ResourceChartSelection mySelection;
 
   public ResourceChartImplementation(
       ResourceLoadGraphicArea resourceLoadGraphicArea, IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel,
@@ -48,32 +43,29 @@ class ResourceChartImplementation extends AbstractChartImplementation {
     }
   }
 
-  @Override
-  public ChartSelection getSelection() {
-    if (mySelection == null) {
-      mySelection = new ResourceLoadGraphicArea.ResourceChartSelection(getProject(), resourceLoadGraphicArea.appli.getResourcePanel());
-    }
-    return mySelection;
-  }
+//  @Override
+//  public ChartSelection getSelection() {
+//    return null;
+//  }
+//
+//  @Override
+//  public IStatus canPaste(ChartSelection selection) {
+//    return Status.OK_STATUS;
+//  }
 
-  @Override
-  public IStatus canPaste(ChartSelection selection) {
-    return Status.OK_STATUS;
-  }
-
-  @Override
-  public void paste(ChartSelection selection) {
-    if (selection instanceof ResourceLoadGraphicArea.ResourceChartSelection) {
-      ResourceLoadGraphicArea.ResourceChartSelection resourceChartSelection = (ResourceLoadGraphicArea.ResourceChartSelection) selection;
-      for (HumanResource res : resourceChartSelection.myClipboardContents.getResources()) {
-        if (resourceChartSelection.myClipboardContents.isCut()) {
-          resourceLoadGraphicArea.getResourceManager().add(res);
-        } else {
-          resourceLoadGraphicArea.getResourceManager().add(res.unpluggedClone());
-        }
-      }
-    }
-  }
+//  @Override
+//  public void paste(ChartSelection selection) {
+//    if (selection instanceof ResourceChartSelection) {
+//      ResourceChartSelection resourceChartSelection = (ResourceChartSelection) selection;
+//      for (HumanResource res : resourceChartSelection.myClipboardContents.getResources()) {
+//        if (resourceChartSelection.myClipboardContents.isCut()) {
+//          resourceLoadGraphicArea.getResourceManager().add(res);
+//        } else {
+//          resourceLoadGraphicArea.getResourceManager().add(res.unpluggedClone());
+//        }
+//      }
+//    }
+//  }
 
   @Override
   public PrintChartApi asPrintChartApi() {

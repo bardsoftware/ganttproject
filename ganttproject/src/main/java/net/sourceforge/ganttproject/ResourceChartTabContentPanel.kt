@@ -19,6 +19,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
+import net.sourceforge.ganttproject.chart.ChartSelection
 import net.sourceforge.ganttproject.chart.TimelineChart
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder
 import net.sourceforge.ganttproject.gui.UIFacade
@@ -87,7 +88,8 @@ internal class ResourceChartTabContentPanel(
   override val chart: Chart
     get() = getUiFacade().resourceChart
 
-  private val resourceTable = ResourceTable(project, workbenchFacade.undoManager, workbenchFacade.resourceSelectionManager,
+  private val resourceTable = ResourceTable(
+    project, workbenchFacade.undoManager, workbenchFacade.resourceSelectionManager, myTreeFacade.resourceActionSet,
     resourceTableChartConnector)
 
   override val node: Node
@@ -130,17 +132,19 @@ internal class ResourceChartTabContentPanel(
   override val createAction: GPAction = myTreeFacade.resourceActionSet.resourceNewAction
   override val deleteAction: GPAction = myTreeFacade.resourceActionSet.resourceDeleteAction
 
-  /*
-  private final Supplier<GPAction> taskDeleteAction = Suppliers.memoize(myTaskActions::getDeleteAction);
-  private final Supplier<GPAction> resourceDeleteAction = Suppliers.memoize(() -> getResourceTree().getDeleteAction());
-  private final Supplier<ArtefactAction> deleteAction = Suppliers.memoize(() ->
-  new ArtefactDeleteAction(
-  () -> getViewManager().getActiveView().getDeleteAction(),
-  new Action[]{taskDeleteAction.get(), resourceDeleteAction.get()}
-  )
-  );
+  override val selection: ChartSelection = ResourceChartSelection(project, workbenchFacade.resourceSelectionManager)
 
-   */
+  /*
+    private final Supplier<GPAction> taskDeleteAction = Suppliers.memoize(myTaskActions::getDeleteAction);
+    private final Supplier<GPAction> resourceDeleteAction = Suppliers.memoize(() -> getResourceTree().getDeleteAction());
+    private final Supplier<ArtefactAction> deleteAction = Suppliers.memoize(() ->
+    new ArtefactDeleteAction(
+    () -> getViewManager().getActiveView().getDeleteAction(),
+    new Action[]{taskDeleteAction.get(), resourceDeleteAction.get()}
+    )
+    );
+
+     */
   override val propertiesAction: GPAction
     get() = myTreeFacade.propertiesAction
 

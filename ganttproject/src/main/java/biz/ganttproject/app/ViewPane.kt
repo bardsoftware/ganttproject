@@ -38,6 +38,7 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
+import net.sourceforge.ganttproject.chart.ChartSelection
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.view.ViewProvider
 import javax.swing.JComponent
@@ -47,11 +48,14 @@ interface View {
   fun refresh() {}
 
   var isVisible: Boolean
-  var isActive: Boolean;
+  var isActive: Boolean
+
+  val selection: ChartSelection
   val chart: Chart
   val id: String
 
   val createAction: GPAction
+
   /**
    * Deletes the selected objects in this view.
    */
@@ -86,7 +90,8 @@ class ViewPane {
     }
     tabPane.tabs.add(tab)
     tabPane.layout()
-    return ViewImpl(tabPane, tab, viewProvider.chart, viewProvider.createAction, viewProvider.deleteAction, viewProvider.propertiesAction).also {
+    return ViewImpl(tabPane, tab, viewProvider.selection, viewProvider.chart, viewProvider.createAction,
+      viewProvider.deleteAction, viewProvider.propertiesAction).also {
       tab.userData = it
       if (tabPane.tabs.size == 1) {
         selectedViewProperty.set(it)
@@ -117,6 +122,7 @@ private val localizer = i18n {
 private class ViewImpl(
   private val tabPane: TabPane,
   private val tab: Tab,
+  override val selection: ChartSelection,
   override val chart: Chart,
   override val createAction: GPAction,
   override val deleteAction: GPAction,
@@ -152,6 +158,8 @@ class UninitializedView(private val viewPane: ViewPane, private val viewProvider
       }
     }
   override var isActive: Boolean = false
+  override val selection: ChartSelection
+    get() = TODO("Not yet implemented")
   override val chart: Chart
     get() = error("Not supposed to be called")
   override val id = viewProvider.id

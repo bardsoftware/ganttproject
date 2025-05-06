@@ -314,21 +314,21 @@ public abstract class AbstractChartImplementation implements TimelineChart, Zoom
     return null;
   }
 
-  @Override
-  public ChartSelection getSelection() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public IStatus canPaste(ChartSelection selection) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void paste(ChartSelection selection) {
-    throw new UnsupportedOperationException();
-  }
-
+//  @Override
+//  public ChartSelection getSelection() {
+//    throw new UnsupportedOperationException();
+//  }
+//
+//  @Override
+//  public IStatus canPaste(ChartSelection selection) {
+//    throw new UnsupportedOperationException();
+//  }
+//
+//  @Override
+//  public void paste(ChartSelection selection) {
+//    throw new UnsupportedOperationException();
+//  }
+//
   @Override
   public void addSelectionListener(ChartSelectionListener listener) {
     mySelectionListeners.add(listener);

@@ -19,20 +19,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.ganttview.ResourceTableChartConnector;
-import com.google.common.collect.Lists;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
-import net.sourceforge.ganttproject.chart.gantt.ClipboardContents;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.*;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.util.collect.Pair;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
@@ -41,7 +38,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
-import java.util.List;
 
 public class GanttResourcePanel extends TreeTableContainer<HumanResource, ResourceTreeTable, ResourceTreeTableModel>
     implements ResourceView, AssignmentContext, ResourceTreeUIFacade {
@@ -50,11 +46,11 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
   private final ResourceActionSet myResourceActionSet;
 
-  private final GanttProjectBase.RowHeightAligner myRowHeightAligner;
+//  private final GanttProjectBase.RowHeightAligner myRowHeightAligner;
 
   public ResourceLoadGraphicArea area;
 
-  private GPAction myTaskPropertiesAction;
+//  private GPAction myTaskPropertiesAction;
 
   private final UIFacade myUIFacade;
 
@@ -99,10 +95,10 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     prj.getZoomManager().addZoomListener(area.getZoomListener());
     area.getChartModel().setRowHeight(resourceTableConnector.getMinRowHeight().intValue());
 
-    this.setBackground(new Color(0.0f, 0.0f, 0.0f));
-    updateContextActions();
+//    this.setBackground(new Color(0.0f, 0.0f, 0.0f));
+//    updateContextActions();
     // applyComponentOrientation(lang.getComponentOrientation());
-    myRowHeightAligner = new GanttProjectBase.RowHeightAligner(this, this.area.getChartModel());
+//    myRowHeightAligner = new GanttProjectBase.RowHeightAligner(this, this.area.getChartModel());
   }
 
   @Override
@@ -111,9 +107,9 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     area.setVScrollController(getTreeTable().getVScrollController());
   }
 
-  public GanttProjectBase.RowHeightAligner getRowHeightAligner() {
-    return myRowHeightAligner;
-  }
+//  public GanttProjectBase.RowHeightAligner getRowHeightAligner() {
+//    return myRowHeightAligner;
+//  }
 
   private ProjectEventListener getProjectEventListener() {
     return new ProjectEventListener.Stub() {
@@ -125,31 +121,31 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     };
   }
 
-  @Override
-  protected void onSelectionChanged(List<DefaultMutableTreeTableNode> selection) {
-    super.onSelectionChanged(selection);
-    updateContextActions();
-    List<Task> selectedTasks = Lists.newArrayList();
-    for (DefaultMutableTreeTableNode node : selection) {
-      if (node instanceof AssignmentNode) {
-        selectedTasks.add(((AssignmentNode) node).getTask());
-      }
-    }
-    if (selectedTasks.isEmpty()) {
-      myUIFacade.getTaskSelectionManager().clear();
-    } else {
-      myUIFacade.getTaskSelectionManager().setSelectedTasks(selectedTasks, this);
-    }
-    getPropertiesAction().setEnabled(!selection.isEmpty());
-    getDeleteAction().setEnabled(!selection.isEmpty());
-  }
+//  @Override
+//  protected void onSelectionChanged(List<DefaultMutableTreeTableNode> selection) {
+//    super.onSelectionChanged(selection);
+////    updateContextActions();
+//    List<Task> selectedTasks = Lists.newArrayList();
+//    for (DefaultMutableTreeTableNode node : selection) {
+//      if (node instanceof AssignmentNode) {
+//        selectedTasks.add(((AssignmentNode) node).getTask());
+//      }
+//    }
+//    if (selectedTasks.isEmpty()) {
+//      myUIFacade.getTaskSelectionManager().clear();
+//    } else {
+//      myUIFacade.getTaskSelectionManager().setSelectedTasks(selectedTasks, this);
+//    }
+//    getPropertiesAction().setEnabled(!selection.isEmpty());
+//    getDeleteAction().setEnabled(!selection.isEmpty());
+//  }
 
-  private void updateContextActions() {
-    myResourceActionSet.getResourceDeleteAction().setEnabled(getResources().length > 0);
-    myResourceActionSet.getAssignmentDelete().setEnabled(getResourceAssignments().length > 0);
-    appli.getViewManager().getCopyAction().setEnabled(getResources().length > 0);
-    appli.getViewManager().getCutAction().setEnabled(getResources().length > 0);
-  }
+//  private void updateContextActions() {
+//    myResourceActionSet.getResourceDeleteAction().setEnabled(getResources().length > 0);
+//    myResourceActionSet.getAssignmentDelete().setEnabled(getResourceAssignments().length > 0);
+//    appli.getViewManager().getCopyAction().setEnabled(getResources().length > 0);
+//    appli.getViewManager().getCutAction().setEnabled(getResources().length > 0);
+//  }
 
   @Override
   protected void handlePopupTrigger(MouseEvent e) {
@@ -162,9 +158,9 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
         getTaskSelectionManager().clear();
         getTaskSelectionManager().setSelectedTasks(Collections.singletonList(assignmentNode.getTask()), this);
         Point popupPoint = getPopupMenuPoint(e);
-        getUIFacade().showPopupMenu(this,
-            new Action[]{myTaskPropertiesAction, myResourceActionSet.getAssignmentDelete()}, popupPoint.x,
-            popupPoint.y);
+//        getUIFacade().showPopupMenu(this,
+//            new Action[]{myTaskPropertiesAction, myResourceActionSet.getAssignmentDelete()}, popupPoint.x,
+//            popupPoint.y);
       } else {
         createPopupMenu(e);
       }
@@ -226,6 +222,11 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   public void resourceAssignmentsChanged(ResourceEvent e) {
 //    getTreeModel().resourceAssignmentsChanged(Arrays.asList(e.getResources()));
 //    repaint();
+  }
+
+  @Override
+  public void resourceStructureChanged() {
+
   }
 
   // //////////////////////////////////////////////////////////////////////////
@@ -308,31 +309,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     return res;
   }
 
-  public void copySelection(ClipboardContents clipboardContents) {
-    saveSelectionToClipboard(clipboardContents, false);
-  }
-
-  public void cutSelection(ClipboardContents clipboardContents) {
-    saveSelectionToClipboard(clipboardContents, true);
-  }
-
-  private void saveSelectionToClipboard(ClipboardContents clipboardContents, boolean cut) {
-    DefaultMutableTreeTableNode selectedNodes[] = getSelectedNodes();
-
-    if (selectedNodes == null) {
-      return;
-    }
-
-    for (DefaultMutableTreeTableNode node : selectedNodes) {
-      if (node instanceof ResourceNode) {
-        HumanResource res = (HumanResource) node.getUserObject();
-        if (cut) {
-          this.appli.getHumanResourceManager().remove(res, this.appli.getUndoManager());
-        }
-        clipboardContents.addResource(res);
-      }
-    }
-  }
 
   @Override
   public void setSelected(HumanResource resource, boolean clear) {

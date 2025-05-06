@@ -174,7 +174,7 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
       modelColumn.valueClass == BigDecimal::class.java -> {
           createDecimalColumn<NodeType>(
               modelColumn.getName(),
-              getValue = { tableModel.getValueAt(it, modelColumn) as BigDecimal },
+              getValue = { tableModel.getValueAt(it, modelColumn) as BigDecimal? },
               setValue = { node, value ->
                   undoManager.undoableEdit("Edit properties") {
                       tableModel.setValue(value, node, modelColumn)

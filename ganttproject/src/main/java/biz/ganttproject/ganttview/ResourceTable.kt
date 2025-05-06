@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.ganttview
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.core.table.*
 import biz.ganttproject.core.table.ColumnList.ColumnStub
 import biz.ganttproject.customproperty.CustomPropertyDefinition
@@ -30,23 +31,32 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ResourceDefaultColumn
+import net.sourceforge.ganttproject.action.resource.ResourceActionSet
 import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.resource.ResourceEvent
 import net.sourceforge.ganttproject.resource.ResourceSelectionManager
 import net.sourceforge.ganttproject.resource.ResourceView
 import net.sourceforge.ganttproject.roles.Role
 import net.sourceforge.ganttproject.task.ResourceAssignment
-import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.math.BigDecimal
 import kotlin.math.ceil
 
 sealed class ResourceTableNode
 class RootNode: ResourceTableNode()
-class ResourceNode(internal val resource: HumanResource) : ResourceTableNode()
-class AssignmentNode(internal val assignment: ResourceAssignment): ResourceTableNode()
+class ResourceNode(internal val resource: HumanResource) : ResourceTableNode() {
+  override fun toString(): String {
+    return "ResourceNode(${resource.name})"
+  }
+}
+class AssignmentNode(internal val assignment: ResourceAssignment): ResourceTableNode() {
+  override fun toString(): String {
+    return "AssignmentNode(assignment=$assignment)"
+  }
+}
 
 /**
  * This class connects the table and the resource chart
@@ -69,12 +79,13 @@ data class ResourceTableChartConnector(
 class ResourceTable(private val project: IGanttProject,
                     private val undoManager: GPUndoManager,
                     private val resourceSelectionManager: ResourceSelectionManager,
+                    private val resourceActions: ResourceActionSet,
                     private val resourceChartConnector: ResourceTableChartConnector) :
   BaseTreeTableComponent<ResourceTableNode, ResourceDefaultColumn>(
-    GPTreeTableView<ResourceTableNode>(TreeItem<ResourceTableNode>(RootNode())), project, undoManager
+    GPTreeTableView(TreeItem<ResourceTableNode>(RootNode())), project, undoManager, project.resourceCustomPropertyManager
   ) {
 
-  private val tableModel = ResourceTableModel()
+  override val tableModel = ResourceTableModel()
   private val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
   val columnList: ColumnListImpl = ColumnListImpl(columns, project.resourceCustomPropertyManager,
     { treeTable.columns },
@@ -90,6 +101,14 @@ class ResourceTable(private val project: IGanttProject,
   )
   private val resource2treeItem = mutableMapOf<HumanResource, TreeItem<ResourceNode>>()
   private val task2treeItem = mutableMapOf<ResourceAssignment, TreeItem<AssignmentNode>>()
+  override val selectionKeeper = SelectionKeeper(this.treeTable) { node ->
+    val result: TreeItem<ResourceTableNode>? = when (node) {
+      is ResourceNode -> resource2treeItem[node.resource] as? TreeItem<ResourceTableNode>
+      is AssignmentNode -> task2treeItem[node.assignment] as? TreeItem<ResourceTableNode>
+      else -> null
+    }
+    result
+  }
 
   init {
     resourceChartConnector.rowHeight.subscribe { value ->
@@ -100,21 +119,26 @@ class ResourceTable(private val project: IGanttProject,
       ResourceDefaultColumn::find
     )
     initProjectEventHandlers()
+    initKeyboardEventHandlers(listOf(resourceActions.resourceMoveUpAction, resourceActions.resourceMoveDownAction))
     project.humanResourceManager.addView(object: ResourceView {
       override fun resourceAdded(event: ResourceEvent?) {
-        treeTable.reload(::sync)
+        sync(keepFocus = true)
       }
 
       override fun resourcesRemoved(event: ResourceEvent?) {
-        treeTable.reload(::sync)
+        sync(keepFocus = true)
       }
 
       override fun resourceChanged(e: ResourceEvent?) {
-        treeTable.reload(::sync)
+        sync(keepFocus = true)
       }
 
       override fun resourceAssignmentsChanged(e: ResourceEvent?) {
-        treeTable.reload(::sync)
+        sync(keepFocus = true)
+      }
+
+      override fun resourceStructureChanged() {
+        sync(keepFocus = true)
       }
     })
     treeTable.selectionModel.selectedItems.addListener(ListChangeListener<TreeItem<ResourceTableNode>> { change ->
@@ -142,6 +166,32 @@ class ResourceTable(private val project: IGanttProject,
     })
   }
 
+  override fun onProperties() {
+    resourceActions.resourcePropertiesAction.actionPerformed(null)
+  }
+
+  override fun contextMenuActions(builder: MenuBuilder) {
+    builder.apply {
+      items(resourceActions.resourceNewAction)
+    }
+    if (resourceSelectionManager.resources.isNotEmpty()) {
+      builder.apply {
+        items(
+          resourceActions.resourcePropertiesAction,
+          resourceActions.resourceMoveUpAction,
+          resourceActions.resourceMoveDownAction
+        )
+        separator()
+        items(
+          resourceActions.copyAction,
+          resourceActions.cutAction,
+          resourceActions.pasteAction,
+          resourceActions.resourceDeleteAction
+        )
+      }
+    }
+  }
+
   private fun onColumnsChange()  {
     FXUtil.runLater {
       columnList.columns().forEach { it.resourceDefaultColumn()?.isVisible = it.isVisible }
@@ -157,20 +207,62 @@ class ResourceTable(private val project: IGanttProject,
   }
 
   override fun sync(keepFocus: Boolean) {
-    task2treeItem.clear()
-    resource2treeItem.clear()
-    treeTable.root.children.clear()
-    project.humanResourceManager.resources.forEach { hr ->
-      val resourceNode: TreeItem<ResourceNode> = TreeItem<ResourceNode>(ResourceNode(hr)).also {
-        it.expandedProperty().subscribe(::onTreeItemExpanded)
-        resource2treeItem[hr] = it
+    selectionKeeper.keepSelection(keepFocus) {
+      task2treeItem.clear()
+      resource2treeItem.clear()
+
+      val parent = treeTable.root
+      LOGGER.debug(">>> sync: root={} |children|={}", parent, parent.children.size)
+      val resourceList = project.humanResourceManager.resources
+      resourceList.forEachIndexed { idx, hr ->
+        LOGGER.debug("... idx={} [hr]={}", idx, hr)
+        if (parent.children.size > idx) {
+          LOGGER.debug("... there is existing node @{}", idx)
+          val childItem = parent.children[idx]
+          val childRes = (childItem.value as? ResourceNode)?.resource ?: return@forEachIndexed
+          if (childRes == hr) {
+            LOGGER.debug("... it is the same as [hr]")
+            resource2treeItem[hr] = childItem as TreeItem<ResourceNode>
+          } else {
+            LOGGER.debug("... it is {}, different from [hr]. Replacing with [hr]")
+            parent.children.removeAt(idx)
+            addResourceNode(parent, hr, idx)
+          }
+        } else {
+          LOGGER.debug("... there is no node@{}, adding ", idx)
+          addResourceNode(parent, hr, -1)
+        }
       }
-      treeTable.root.children.add(resourceNode as TreeItem<ResourceTableNode>)
-      hr.assignments.forEach { assignment ->
-        resourceNode.children.add(TreeItem(AssignmentNode(assignment)))
-      }
+      LOGGER.debug("... now children size={}", parent.children.size)
+      parent.children.subList(resourceList.size, parent.children.size).clear()
     }
   }
+
+  private fun addResourceNode(parentItem: TreeItem<ResourceTableNode>, res: HumanResource, pos: Int): TreeItem<ResourceTableNode> {
+    val childItem = resource2treeItem[res] ?: TreeItem(ResourceNode(res)).also {
+      it.expandedProperty().subscribe(::onTreeItemExpanded)
+    }
+    childItem.parent?.children?.remove(childItem)
+    if (pos == -1 || pos > parentItem.children.size) {
+      parentItem.children.add(childItem as TreeItem<ResourceTableNode>)
+    } else {
+      parentItem.children.add(pos, childItem as TreeItem<ResourceTableNode>)
+    }
+//    LOGGER.debug("addChildTreeItem: child=$child pos=$pos parent=$parentItem")
+//    LOGGER.debug("addChildTreeItem: parentItem.children=${parentItem.children}")
+//    LOGGER.delegate().debug("Stack: ", Exception())
+    resource2treeItem[res] = childItem
+    childItem.children.clear()
+    res.assignments.forEach { assignment ->
+      val assignmentItem = TreeItem(AssignmentNode(assignment))
+      childItem.children.add(assignmentItem as TreeItem<ResourceTableNode>)
+      task2treeItem[assignment] = assignmentItem
+    }
+
+    return childItem
+
+  }
+
 
   private fun onTreeItemExpanded(value: Boolean) {
     treeTable.root.depthFirstWalk { treeItem ->
@@ -256,3 +348,5 @@ class ResourceColumnBuilder(tableModel: ResourceTableModel,
     }
   }
 }
+
+private val LOGGER = GPLogger.create("ResourceTable")

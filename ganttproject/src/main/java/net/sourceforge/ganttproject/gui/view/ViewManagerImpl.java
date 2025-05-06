@@ -51,6 +51,7 @@ public class ViewManagerImpl implements GPViewManager {
   private final ViewPane myViewPane;
   //GPView mySelectedView;
 
+  //private final ViewDefinedAction myCopyAction = new ViewDefinedAction("copy");
   private final CopyAction myCopyAction;
   private final CutAction myCutAction;
   private final PasteAction myPasteAction;
@@ -73,6 +74,8 @@ public class ViewManagerImpl implements GPViewManager {
       if (activeView != null) {
         propertiesAction.setDelegateAction(activeView.getPropertiesAction());
         deleteAction.setDelegateAction(activeView.getDeleteAction());
+        //myCopyAction.setDelegateAction(activeView.getCopyAction());
+        updateActions();
       }
     });
     /*
@@ -126,7 +129,7 @@ public class ViewManagerImpl implements GPViewManager {
 
   @Override
   public ChartSelection getSelectedArtefacts() {
-    return getSelectedView().getChart().getSelection();
+    return getSelectedView().getSelection();
   }
 
   @Override
@@ -146,9 +149,9 @@ public class ViewManagerImpl implements GPViewManager {
   }
 
   void updateActions() {
-    ChartSelection selection = getSelectedView().getChart().getSelection();
-    myCopyAction.setEnabled(false == selection.isEmpty());
-    myCutAction.setEnabled(false == selection.isEmpty() && selection.isDeletable().isOK());
+    ChartSelection selection = getSelectedView().getSelection();
+    myCopyAction.setEnabled(!selection.isEmpty());
+    myCutAction.setEnabled(!selection.isEmpty() && selection.isDeletable().isOK());
   }
 
   @Override

@@ -21,6 +21,7 @@ package biz.ganttproject.core.table
 import biz.ganttproject.FXUtil
 import biz.ganttproject.lib.fx.GPTreeTableView
 import com.sun.javafx.scene.control.behavior.CellBehaviorBase
+import javafx.application.Platform
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTablePosition
 
@@ -40,14 +41,15 @@ class SelectionKeeper<NodeType>(
   fun keepSelection(keepFocus: Boolean = false, code: ()->Unit) {
     val body = {
       LOGGER.debug(">>> keepSelection")
-      val selectedObjects =
-        treeTable.selectionModel.selectedItems.associate {
+      val selectedItems = treeTable.selectionModel.selectedItems
+      LOGGER.debug("Selected items={}", selectedItems)
+      val selectedObjects = selectedItems.associate {
           it.value to (it.previousSibling()
             ?: it.parent?.let { parent -> if (parent == treeTable.root) null else parent }
             ?: it.nextSibling())
         }
-      LOGGER.debug("Selected tasks={}", selectedObjects)
-      val focusedTask = treeTable.focusModel.focusedItem?.value
+      LOGGER.debug("Selected nodes={}", selectedObjects)
+      val focusedNode = treeTable.focusModel.focusedItem?.value
       val focusedCell = treeTable.focusModel.focusedCell
 
       // This way we ignore table selection changes which happen when we manipulate with the tree items in code()
@@ -70,18 +72,20 @@ class SelectionKeeper<NodeType>(
       // Sometimes we need to keep the focus, e.g. when we move some task in the tree, but sometimes we want to focus
       // some other item. E.g. if a task was added due to user action, the user would expect the new task to be focused.
       if (keepFocus) {
-        LOGGER.debug("requested to keep focus. Focused task={}", focusedTask)
+        LOGGER.debug("requested to keep focus. Focused node={}", focusedNode)
       }
-      if (keepFocus && focusedTask != null) {
+      if (keepFocus && focusedNode != null) {
         //val liveTask = taskManager.getTask(focusedTask.taskID)
         //LOGGER.debug("live task={}", liveTask)
-        node2treeItem(focusedTask)?.let { it ->
+        node2treeItem(focusedNode)?.let { it ->
           val row = treeTable.getRow(it)
           LOGGER.debug("row to focus={}", it)
           FXUtil.runLater {
-            LOGGER.debug("focusing row={} column={}", row, focusedCell.tableColumn.id)
+            LOGGER.debug("focusing row={} column={}", row, focusedCell.tableColumn)
             lastFocusedInSync = row
-            treeTable.focusModel.focus(TreeTablePosition(treeTable, row, focusedCell.tableColumn))
+            Platform.runLater {
+              treeTable.focusModel.focus(TreeTablePosition(treeTable, row, focusedCell.tableColumn))
+            }
           }
         }
       }

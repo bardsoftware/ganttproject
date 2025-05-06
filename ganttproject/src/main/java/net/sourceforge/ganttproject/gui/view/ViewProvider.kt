@@ -22,6 +22,7 @@ import biz.ganttproject.core.option.GPOption
 import javafx.scene.Node
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
+import net.sourceforge.ganttproject.chart.ChartSelection
 
 /**
  * @author dbarashev (Dmitry Barashev)
@@ -37,6 +38,8 @@ interface ViewProvider {
    */
   val options: List<GPOption<*>>
 
+  val selection: ChartSelection
+
   /**
    * Interface of a chart object provided by this view.
    */
@@ -46,6 +49,7 @@ interface ViewProvider {
    * JavaFX node to be shown in the UI
    */
   val node: Node?
+
   val refresh: ()->Unit
   val createAction: GPAction
 

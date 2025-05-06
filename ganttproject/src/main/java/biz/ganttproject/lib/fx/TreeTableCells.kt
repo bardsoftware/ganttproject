@@ -402,6 +402,8 @@ fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue
       )
       TextCell(converter).also {
         it.styleClass.add("text-right")
+        it.isDisable = !this@apply.isEditable
+        it.isEditable = this@apply.isEditable
       }
     }
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toDouble().toBigDecimal()) }

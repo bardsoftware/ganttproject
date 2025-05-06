@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Action base for resource related actions
  */
-abstract class ResourceAction extends GPAction implements ActionDelegate {
+abstract public class ResourceAction extends GPAction implements ActionDelegate {
   private final HumanResourceManager myManager;
   private final List<ActionStateChangedListener> myListeners = new ArrayList<ActionStateChangedListener>();
   private final ResourceContext myContext;

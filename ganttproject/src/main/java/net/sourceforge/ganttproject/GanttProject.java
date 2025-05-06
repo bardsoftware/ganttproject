@@ -111,7 +111,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private final ResourceChartTabContentPanel myResourceChartTabContent;
 
-  private final List<RowHeightAligner> myRowHeightAligners = Lists.newArrayList();
+//  private final List<RowHeightAligner> myRowHeightAligners = Lists.newArrayList();
 
   private ParserFactory myParserFactory;
 
@@ -563,7 +563,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     if (this.resp == null) {
       this.resp = new GanttResourcePanel(this, getUIFacade(), myResourceTableChartConnector);
       this.resp.init();
-      myRowHeightAligners.add(this.resp.getRowHeightAligner());
+//      myRowHeightAligners.add(this.resp.getRowHeightAligner());
       getHumanResourceManager().addView(this.resp);
     }
     return this.resp;
@@ -747,6 +747,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   @Override
   public void resourceAssignmentsChanged(ResourceEvent e) {
+    setAskForSave(true);
+  }
+
+  @Override
+  public void resourceStructureChanged() {
     setAskForSave(true);
   }
 

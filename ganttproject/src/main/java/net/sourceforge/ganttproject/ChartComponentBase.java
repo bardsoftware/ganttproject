@@ -137,20 +137,20 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     return getChartModel().getChartOptionGroups();
   }
 
-  @Override
-  public ChartSelection getSelection() {
-    return getImplementation().getSelection();
-  }
-
-  @Override
-  public IStatus canPaste(ChartSelection selection) {
-    return getImplementation().canPaste(selection);
-  }
-
-  @Override
-  public void paste(ChartSelection selection) {
-    getImplementation().paste(selection);
-  }
+//  @Override
+//  public ChartSelection getSelection() {
+//    return getImplementation().getSelection();
+//  }
+//
+//  @Override
+//  public IStatus canPaste(ChartSelection selection) {
+//    return getImplementation().canPaste(selection);
+//  }
+//
+//  @Override
+//  public void paste(ChartSelection selection) {
+//    getImplementation().paste(selection);
+//  }
 
   @Override
   public void addSelectionListener(ChartSelectionListener listener) {

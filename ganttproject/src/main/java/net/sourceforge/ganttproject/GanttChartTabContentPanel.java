@@ -27,10 +27,8 @@ import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.task.TaskActions;
 import com.google.common.base.Suppliers;
 import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
@@ -43,6 +41,8 @@ import net.sourceforge.ganttproject.action.BaselineDialogAction;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.ChartSelection;
+import net.sourceforge.ganttproject.chart.gantt.GanttChartSelection;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -53,8 +53,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -68,10 +66,9 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private final Supplier<TaskTable> myTaskTableSupplier;
   private final TaskActions myTaskActions;
   private final Function0<Unit> myInitializationCompleted;
-  private JComponent myComponent;
   private TaskTable taskTable;
   private ViewComponents myViewComponents;
-
+  private final GanttChartSelection mySelection;
   private final DoubleOption myDividerOption = new DefaultDoubleOption("divider", 0.5);
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
@@ -96,6 +93,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
         myViewComponents.getSplitPane().setDividerPosition(0, myDividerOption.getValue());
       }
     });
+    mySelection = new GanttChartSelection(project.getTaskManager(), workbenchFacade.getTaskSelectionManager());
     //addChartPanel(createSchedulePanel());
     //addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());
   }
@@ -203,6 +201,12 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
 //      myTaskActions.getCreateAction().updateAction();
 //    }
 //  }
+
+
+  @Override
+  public @NotNull ChartSelection getSelection() {
+    return mySelection;
+  }
 
   @Override
   public Chart getChart() {

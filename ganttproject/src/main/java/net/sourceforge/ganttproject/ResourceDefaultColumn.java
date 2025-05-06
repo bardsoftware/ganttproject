@@ -24,6 +24,7 @@ import biz.ganttproject.core.table.BuiltinColumn;
 import com.google.common.base.MoreObjects;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,8 +40,8 @@ public enum ResourceDefaultColumn implements BuiltinColumn {
   EMAIL(new ColumnList.ColumnStub("2", null, false, -1, 75), String.class, "tableColResourceEMail", true),
   PHONE(new ColumnList.ColumnStub("3", null, false, -1, 50), String.class, "tableColResourcePhone", true),
   ROLE_IN_TASK(new ColumnList.ColumnStub("4", null, false, -1, 75), String.class, "tableColResourceRoleForTask", true),
-  STANDARD_RATE(new ColumnList.ColumnStub("5", null, false, -1, 75), Double.class, "tableColResourceRate", true),
-  TOTAL_COST(new ColumnList.ColumnStub("6", null, false, -1, 50), Double.class, "tableColResourceCost", false),
+  STANDARD_RATE(new ColumnList.ColumnStub("5", null, false, -1, 75), BigDecimal.class, "tableColResourceRate", true),
+  TOTAL_COST(new ColumnList.ColumnStub("6", null, false, -1, 50), BigDecimal.class, "tableColResourceCost", false),
   TOTAL_LOAD(new ColumnList.ColumnStub("7", null, false, -1, 50), Double.class, "tableColResourceLoad", false);
 
   private final Column myDelegate;

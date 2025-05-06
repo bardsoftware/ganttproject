@@ -19,19 +19,24 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.table
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.app.Barrier
-import biz.ganttproject.app.BarrierEntrance
-import biz.ganttproject.app.OnBarrierReached
+import biz.ganttproject.app.*
+import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.customproperty.CustomPropertyDefinition
-import biz.ganttproject.lib.fx.*
+import biz.ganttproject.customproperty.CustomPropertyManager
+import biz.ganttproject.lib.fx.GPTreeTableView
 import javafx.beans.property.ReadOnlyDoubleProperty
+import javafx.event.EventHandler
 import javafx.scene.control.TreeItem
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
+import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.undo.GPUndoListener
 import net.sourceforge.ganttproject.undo.GPUndoManager
+import javax.swing.SwingUtilities
 import javax.swing.event.UndoableEditEvent
 
 /**
@@ -41,8 +46,9 @@ import javax.swing.event.UndoableEditEvent
 abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn>(
   val treeTable: GPTreeTableView<NodeType>,
   private val project: IGanttProject,
-  private val undoManager: GPUndoManager
-  ) {
+  private val undoManager: GPUndoManager,
+  private val customPropertyManager: CustomPropertyManager
+) {
 
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   protected var projectModified: () -> Unit = { project.isModified = true }
@@ -55,6 +61,8 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
       treeTable.isTableMenuButtonVisible = false
     }
     treeTable.stylesheets.add("/biz/ganttproject/app/Dialog.css")
+    treeTable.onProperties = this::onProperties
+    treeTable.contextMenuActions = this::contextMenuActions
 
   }
 
@@ -86,8 +94,81 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
     })
   }
 
+  protected fun initKeyboardEventHandlers(keyActions: List<GPAction>) {
+    treeTable.addEventFilter(KeyEvent.KEY_PRESSED) { event ->
+      event.whenMatches("tree.expand") {
+        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
+        keepSelection(keepFocus = true) {
+          focusedCell.treeItem.isExpanded = focusedCell.treeItem.isExpanded.not()
+        }
+      }
+      event.whenMatches("tree.expandAll") {
+        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
+        keepSelection(keepFocus = true) {
+          focusedCell.treeItem.isExpanded = true
+          focusedCell.treeItem.depthFirstWalk {
+            it.isExpanded = true
+            return@depthFirstWalk true
+          }
+        }
+      }
+      event.whenMatches("tree.collapseAll") {
+        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
+        keepSelection(keepFocus = true) {
+          focusedCell.treeItem.depthFirstWalk {
+            it.isExpanded = false
+            return@depthFirstWalk true
+          }
+          focusedCell.treeItem.isExpanded = false
+        }
+      }
+    }
+    treeTable.onKeyPressed = EventHandler { event ->
+      keyActions.firstOrNull { action ->
+        action.triggeredBy(event)
+      }?.let { action ->
+        SwingUtilities.invokeLater {
+          undoManager.undoableEdit(action.name) {
+            action.actionPerformed(null)
+          }
+        }
+      }
+
+      val focusedCell = treeTable.focusModel.focusedCell
+      val column = focusedCell.tableColumn
+      column?.userData?.let {
+        if (column.isEditable && it is ColumnList.Column) {
+          this.customPropertyManager.getCustomPropertyDefinition(it.id)?.let { def ->
+            if (def.propertyClass == CustomPropertyClass.BOOLEAN) {
+              if (event.code == KeyCode.SPACE || event.code == KeyCode.ENTER && event.getModifiers() == 0) {
+                val task = focusedCell.treeItem.value
+                // intentionally java.lang.Boolean, because as? Boolean returns null
+                (tableModel.getValue(task, def) as? java.lang.Boolean)?.let { value ->
+                  undoManager.undoableEdit("Edit properties") {
+                    tableModel.setValue(value.booleanValue().not(), task, def)
+                  }
+                  // This trick refreshes the cell in the table.
+                  treeTable.focusModel.focus(-1)
+                  treeTable.focusModel.focus(focusedCell)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+
   abstract fun loadDefaultColumns()
   protected abstract fun sync(keepFocus: Boolean = false)
+  protected abstract fun onProperties()
+  protected abstract fun contextMenuActions(builder: MenuBuilder)
+  protected abstract val tableModel: TableModel<NodeType, BuiltinColumnType>
+  protected abstract val selectionKeeper: SelectionKeeper<NodeType>
+  protected fun keepSelection(keepFocus: Boolean = false, code: () -> Unit) {
+    selectionKeeper.keepSelection(keepFocus, code)
+  }
 }
 
 fun <T> TreeItem<T>.depthFirstWalk(visitor: (TreeItem<T>) -> Boolean) {

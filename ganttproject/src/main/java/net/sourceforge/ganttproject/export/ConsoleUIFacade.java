@@ -32,6 +32,7 @@ import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.*;
@@ -282,6 +283,11 @@ class ViewProviderStub implements ViewProvider {
   @Override
   public List<GPOption<?>> getOptions() {
     return Collections.emptyList();
+  }
+
+  @Override
+  public @NotNull ChartSelection getSelection() {
+    return ChartSelection.EMPTY;
   }
 
   @NotNull

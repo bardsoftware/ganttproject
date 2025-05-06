@@ -48,11 +48,11 @@ public interface Chart extends IAdaptable {
 
   public GPOptionGroup[] getOptionGroups();
 
-  public ChartSelection getSelection();
-
-  public IStatus canPaste(ChartSelection selection);
-
-  public void paste(ChartSelection selection);
+//  public ChartSelection getSelection();
+//
+//  public IStatus canPaste(ChartSelection selection);
+//
+//  public void paste(ChartSelection selection);
 
   public void addSelectionListener(ChartSelectionListener listener);
 

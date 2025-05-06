@@ -27,7 +27,6 @@ import biz.ganttproject.core.table.ColumnList.ColumnStub
 import biz.ganttproject.core.table.SelectionKeeper
 import biz.ganttproject.core.table.depthFirstWalk
 import biz.ganttproject.core.table.reload
-import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
 import biz.ganttproject.task.ancestors
@@ -93,12 +92,13 @@ class TaskTable(
   BaseTreeTableComponent<Task, TaskDefaultColumn>(
     GPTreeTableView<Task>(TreeItem(taskManager.taskHierarchy.rootTask)),
     project,
-    undoManager
+    undoManager,
+    taskManager.customPropertyManager
   ) {
 
   private val isSortedProperty = SimpleBooleanProperty()
   val rootItem: TreeItem<Task> = treeTable.root
-  val taskTableModel = TaskTableModel(taskManager.customPropertyManager)
+  public override val tableModel = TaskTableModel(taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
 
   val control: Parent get() = treeTable
@@ -140,7 +140,7 @@ class TaskTable(
   private val placeholderEmpty by lazy { Pane() }
 
   private val initializationCompleted = initializationPromise.register("Task table initialization")
-  private val selectionKeeper = SelectionKeeper<Task>(this.treeTable) { task ->
+  override val selectionKeeper = SelectionKeeper<Task>(this.treeTable) { task ->
     taskManager.getTask(task.taskID)?.let {
       task2treeItem[it]
     }
@@ -245,7 +245,7 @@ class TaskTable(
 
   init {
     columnBuilder = TaskColumnBuilder(
-      taskTableModel, taskManager.customPropertyManager, undoManager, ourNameCellFactory,
+      tableModel, taskManager.customPropertyManager, undoManager, ourNameCellFactory,
       onNameEditCompleted = { task ->
         runBlocking {
           newTaskActor.inboxChannel.send(EditingCompleted(task))
@@ -266,7 +266,7 @@ class TaskTable(
     initTaskEventHandlers()
     initProjectEventHandlers()
     initChartConnector()
-    initKeyboardEventHandlers()
+    initKeyboardEventHandlers(taskActions.all())
     initSelectionListeners()
     treeTable.onSort = EventHandler {
       // It is important to run this later because the event is sent _before_ the
@@ -286,8 +286,6 @@ class TaskTable(
       }
     }
     initNewTaskActor()
-    treeTable.onProperties = this::onProperties
-    treeTable.contextMenuActions = this::contextMenuActions
 
     filterManager.sync = { this.sync() }
     minCellHeight.addListener { observable, oldValue, newValue ->
@@ -329,70 +327,6 @@ class TaskTable(
     }
   }
 
-  private fun initKeyboardEventHandlers() {
-    treeTable.addEventFilter(KeyEvent.KEY_PRESSED) {event ->
-      event.whenMatches("tree.expand") {
-        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
-        keepSelection(keepFocus = true) {
-          focusedCell.treeItem.isExpanded = focusedCell.treeItem.isExpanded.not()
-        }
-      }
-      event.whenMatches("tree.expandAll") {
-        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
-        keepSelection(keepFocus = true) {
-          focusedCell.treeItem.isExpanded = true
-          focusedCell.treeItem.depthFirstWalk {
-            it.isExpanded = true
-            return@depthFirstWalk true
-          }
-        }
-      }
-      event.whenMatches("tree.collapseAll") {
-        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
-        keepSelection(keepFocus = true) {
-          focusedCell.treeItem.depthFirstWalk {
-            it.isExpanded = false
-            return@depthFirstWalk true
-          }
-          focusedCell.treeItem.isExpanded = false
-        }
-      }
-    }
-    treeTable.onKeyPressed = EventHandler { event ->
-      taskActions.all().firstOrNull { action ->
-        action.triggeredBy(event)
-      }?.let { action ->
-        SwingUtilities.invokeLater {
-          undoManager.undoableEdit(action.name) {
-            action.actionPerformed(null)
-          }
-        }
-      }
-
-      val focusedCell = treeTable.focusModel.focusedCell
-      val column = focusedCell.tableColumn
-      column?.userData?.let {
-        if (column.isEditable && it is ColumnList.Column) {
-          this.taskManager.customPropertyManager.getCustomPropertyDefinition(it.id)?.let { def ->
-            if (def.propertyClass == CustomPropertyClass.BOOLEAN) {
-              if (event.code == KeyCode.SPACE || event.code == KeyCode.ENTER && event.getModifiers() == 0) {
-                val task = focusedCell.treeItem.value
-                // intentionally java.lang.Boolean, because as? Boolean returns null
-                (taskTableModel.getValue(task, def) as? java.lang.Boolean)?.let { value ->
-                  undoManager.undoableEdit("Edit properties of task ${task.name}") {
-                    taskTableModel.setValue(value.booleanValue().not(), task, def)
-                  }
-                  // This trick refreshes the cell in the table.
-                  treeTable.focusModel.focus(-1)
-                  treeTable.focusModel.focus(focusedCell)
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
 
   private fun initChartConnector() {
     taskTableChartConnector.rowHeight.addListener { _, _, newValue ->
@@ -469,7 +403,7 @@ class TaskTable(
         if (e.oldContainer == null) {
           return
         }
-        Platform.runLater {
+        FXUtil.runLater {
           sync(true)
           // Force selection changed event because some actions depend on the relative location of tasks.
           selectionManager.fireSelectionChanged()
@@ -477,7 +411,7 @@ class TaskTable(
       }
 
       override fun taskRemoved(e: TaskHierarchyEvent) {
-        Platform.runLater { sync() }
+        FXUtil.runLater { sync() }
       }
 
       override fun taskModelReset() {
@@ -609,7 +543,7 @@ class TaskTable(
   private fun onCreateTreeItem(treeItem: TreeItem<Task>) {
     val task = treeItem.value
     treeItem.isExpanded = treeCollapseView.isExpanded(task)
-    treeItem.expandedProperty().addListener { _, _, _ -> onExpanded() }
+    treeItem.expandedProperty().subscribe(::onExpanded)
     treeTable.registerTreeItem(treeItem)
   }
 
@@ -632,17 +566,12 @@ class TaskTable(
     return result
   }
 
-
-  private fun keepSelection(keepFocus: Boolean = false, code: () -> Unit) {
-    selectionKeeper.keepSelection(keepFocus, code)
-  }
-
-  private fun onProperties() {
+  override fun onProperties() {
     SwingUtilities.invokeLater {
       taskActions.propertiesAction.actionPerformed(null)
     }
   }
-  private fun contextMenuActions(builder: MenuBuilder) {
+  override fun contextMenuActions(builder: MenuBuilder) {
     builder.apply {
       items(taskActions.createAction)
     }

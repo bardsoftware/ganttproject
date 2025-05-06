@@ -79,7 +79,7 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
       values = visibleColumns.associate {
         val key = columnMap[it]
         val value: String = TaskDefaultColumn.find(it.id)?.let { tdc ->
-          val typedValue = taskTable.taskTableModel.getValueAt(item.value, tdc)
+          val typedValue = taskTable.tableModel.getValueAt(item.value, tdc)
           when (tdc) {
             TaskDefaultColumn.DURATION -> ((typedValue as TimeDuration).length).toString()
             else -> typedValue.toString()

@@ -24,6 +24,7 @@ import biz.ganttproject.customproperty.CustomProperty;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.collect.Lists;
 import biz.ganttproject.customproperty.CustomPropertyManager;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
@@ -94,6 +95,10 @@ public class HumanResourceManager {
   private final CustomPropertyManager myCustomPropertyManager;
 
   private final RoleManager myRoleManager;
+  private final ResourceHierarchyViewImpl myHierarchyView = new ResourceHierarchyViewImpl(resources, () -> {
+    this.fireStructureChange();
+    return Unit.INSTANCE;
+  });
 
   public HumanResourceManager(Role defaultRole, CustomPropertyManager customPropertyManager) {
     this(defaultRole, customPropertyManager, null);
@@ -103,6 +108,10 @@ public class HumanResourceManager {
     myDefaultRole = defaultRole;
     myCustomPropertyManager = customPropertyManager;
     myRoleManager = roleManager;
+  }
+
+  public ResourceHierarchyView getResourceHierarchyView() {
+    return myHierarchyView;
   }
 
   public HumanResource newHumanResource() {
@@ -221,6 +230,11 @@ public class HumanResourceManager {
     }
   }
 
+  private void fireStructureChange() {
+    for (ResourceView nextView : myViews) {
+      nextView.resourceStructureChanged();
+    }
+  }
   private void fireCleanup() {
     fireResourcesRemoved(resources.toArray(new HumanResource[0]));
   }
