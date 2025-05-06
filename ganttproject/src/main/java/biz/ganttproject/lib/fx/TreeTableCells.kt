@@ -320,6 +320,8 @@ fun <S> createTextColumn(
     }
     cellFactory = TextCellFactory<S, String>(converter = DefaultStringConverter().adapt()) {
       it.styleClass.add("text-left")
+      it.isDisable = !this@apply.isEditable
+      it.isEditable = this@apply.isEditable
     }
     onEditCommit = EventHandler { event ->
       setValue(event.rowValue.value, event.newValue)
@@ -347,6 +349,8 @@ fun <S> createDateColumn(name: String, getValue: (S) -> GanttCalendar?, setValue
     val converter = GanttCalendarStringConverter()
     cellFactory = Callback { TextCell<S, GanttCalendar>(converter.adapt()).also {
       it.styleClass.add("text-left")
+      it.isDisable = !this@apply.isEditable
+      it.isEditable = this@apply.isEditable
     } }
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue) }
   }
@@ -370,6 +374,8 @@ fun <S> createIntegerColumn(name: String, getValue: (S) -> Int?, setValue: (S, I
     cellFactory = Callback {
       TextCell<S, Number>(NumberStringConverter(getNumberFormat()).adapt()).also {
         it.styleClass.add("text-right")
+        it.isDisable = !this@apply.isEditable
+        it.isEditable = this@apply.isEditable
       }
     }
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toInt()) }
@@ -383,6 +389,8 @@ fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S,
     cellFactory = Callback {
       TextCell<S, Number>(NumberStringConverter(getNumberFormat()).adapt()).also {
         it.styleClass.add("text-right")
+        it.isDisable = !this@apply.isEditable
+        it.isEditable = this@apply.isEditable
       }
     }
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toDouble()) }

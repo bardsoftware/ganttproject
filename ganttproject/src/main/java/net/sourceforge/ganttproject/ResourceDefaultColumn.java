@@ -98,7 +98,7 @@ public enum ResourceDefaultColumn implements BuiltinColumn {
 
   @Override
   public <NodeType> boolean isEditable(NodeType node) {
-    return true;
+    return isEditable;
   }
 
   @Override

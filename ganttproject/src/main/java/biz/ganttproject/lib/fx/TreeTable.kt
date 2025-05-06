@@ -66,8 +66,9 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     addEventHandler(MouseEvent.MOUSE_CLICKED) { event ->
       if (event.button == MouseButton.SECONDARY) {
         val contextMenu = ContextMenu()
+        contextMenu.isAutoHide = true
         contextMenuActions(MenuBuilderFx(contextMenu))
-        contextMenu.show(this, event.screenX, event.screenY)
+        contextMenu.show(this.scene.window, event.screenX, event.screenY)
       }
     }
     columnResizePolicy = resizePolicy
