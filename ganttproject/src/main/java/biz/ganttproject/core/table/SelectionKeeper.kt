@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.table
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.LoggerApi
 import biz.ganttproject.lib.fx.GPTreeTableView
 import com.sun.javafx.scene.control.behavior.CellBehaviorBase
 import javafx.application.Platform
@@ -33,22 +34,22 @@ import javafx.scene.control.TreeTablePosition
  */
 class SelectionKeeper<NodeType>(
     private val treeTable: GPTreeTableView<NodeType>,
-    private val node2treeItem: (NodeType) -> TreeItem<NodeType>?
+    private val node2treeItem: (NodeType) -> TreeItem<NodeType>?,
+    private val logger: LoggerApi<*>
   ) {
   var ignoreSelectionChange = false
-  private var lastFocusedInSync = -1
 
   fun keepSelection(keepFocus: Boolean = false, code: ()->Unit) {
     val body = {
-      LOGGER.debug(">>> keepSelection")
+      logger.debug(">>> keepSelection")
       val selectedItems = treeTable.selectionModel.selectedItems
-      LOGGER.debug("Selected items={}", selectedItems)
-      val selectedObjects = selectedItems.associate {
-          it.value to (it.previousSibling()
-            ?: it.parent?.let { parent -> if (parent == treeTable.root) null else parent }
-            ?: it.nextSibling())
-        }
-      LOGGER.debug("Selected nodes={}", selectedObjects)
+      logger.debug("Selected items={}", selectedItems)
+      // For every selected node we find a node that will be selected if this node is not found after running the code.
+      val selectionReplacements: Map<NodeType, NodeType?> = selectedItems.associate {
+        val replacement = it.previousSibling()?.value ?: it.nextSibling()?.value ?: it.parent?.takeUnless { it == treeTable.root }?.value
+        it.value to replacement
+      }
+      logger.debug("Selected nodes={}", selectionReplacements)
       val focusedNode = treeTable.focusModel.focusedItem?.value
       val focusedCell = treeTable.focusModel.focusedCell
 
@@ -61,28 +62,30 @@ class SelectionKeeper<NodeType>(
       CellBehaviorBase.removeAnchor(treeTable)
       ignoreSelectionChange = false
 
-      // The array of row numbers is passed as vararg argument to selectIndices
-      val selectedRows = selectedObjects
-        .map { node2treeItem(it.key) ?: it.value }
-        .map { treeTable.getRow(it) }
+      val selectedNodes = selectionReplacements
+        // If the node disappeared after running code(), we select its replacement.
+        .mapNotNull { node2treeItem(it.key) ?: it.value?.let(node2treeItem) }
+      logger.debug("Nodes to be selected={}", selectedNodes)
+//      treeTable.selectionModel.selectedItems.addAll(selectedNodes)
+      val selectedRows = selectedNodes
+        .map { node -> treeTable.getRow(node) }
         .toIntArray()
-      LOGGER.debug("Selected rows={}", selectedRows)
+      logger.debug("Selected rows={}", selectedRows)
       treeTable.selectionModel.selectIndices(-1, *selectedRows)
 
       // Sometimes we need to keep the focus, e.g. when we move some task in the tree, but sometimes we want to focus
       // some other item. E.g. if a task was added due to user action, the user would expect the new task to be focused.
       if (keepFocus) {
-        LOGGER.debug("requested to keep focus. Focused node={}", focusedNode)
+        logger.debug("requested to keep focus. Focused node={}", focusedNode)
       }
       if (keepFocus && focusedNode != null) {
         //val liveTask = taskManager.getTask(focusedTask.taskID)
-        //LOGGER.debug("live task={}", liveTask)
+        //logger.debug("live task={}", liveTask)
         node2treeItem(focusedNode)?.let { it ->
           val row = treeTable.getRow(it)
-          LOGGER.debug("row to focus={}", it)
+          logger.debug("row to focus={}", it)
           FXUtil.runLater {
-            LOGGER.debug("focusing row={} column={}", row, focusedCell.tableColumn)
-            lastFocusedInSync = row
+            logger.debug("focusing row={} column={}", row, focusedCell.tableColumn)
             Platform.runLater {
               treeTable.focusModel.focus(TreeTablePosition(treeTable, row, focusedCell.tableColumn))
             }
@@ -92,7 +95,7 @@ class SelectionKeeper<NodeType>(
       if (treeTable.editingCell == null) {
         treeTable.requestFocus()
       }
-      LOGGER.debug("<<< keepSelection")
+      logger.debug("<<< keepSelection")
     }
     FXUtil.runLater(body)
   }

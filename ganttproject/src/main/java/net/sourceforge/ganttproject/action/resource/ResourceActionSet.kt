@@ -23,10 +23,8 @@ import net.sourceforge.ganttproject.GanttProject
 import net.sourceforge.ganttproject.ResourceTreeTable
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.view.GPViewManager
-import net.sourceforge.ganttproject.resource.AssignmentContext
-import net.sourceforge.ganttproject.resource.HumanResource
-import net.sourceforge.ganttproject.resource.HumanResourceManager
-import net.sourceforge.ganttproject.resource.ResourceSelectionManager
+import net.sourceforge.ganttproject.resource.*
+import net.sourceforge.ganttproject.task.ResourceAssignment
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 import javax.swing.Action
@@ -42,7 +40,7 @@ class ResourceActionSet(
   val resourceMoveUpAction = ResourceMoveUpAction2(project.humanResourceManager, selectionManager)
   val resourceMoveDownAction = ResourceMoveDownAction2(project.humanResourceManager, selectionManager)
   val resourceSendMailAction = ResourceSendMailAction(table)
-  val assignmentDelete = AssignmentDeleteAction(assignmentContext, uiFacade)
+  val assignmentDelete = AssignmentDeleteAction2(selectionManager, uiFacade)
   val copyAction = ResourceCopyAction(project.humanResourceManager, selectionManager, uiFacade.viewManager)
   val pasteAction get() = uiFacade.viewManager.pasteAction
   val cutAction get() = uiFacade.viewManager.cutAction
@@ -58,7 +56,7 @@ class ResourceActionSet(
     val manager = project.humanResourceManager
     resourceDeleteAction = ResourceDeleteAction(manager, selectionManager, assignmentContext, uiFacade)
 
-    selectionManager.subscribe { _, _ ->
+    selectionManager.addResourceListener { _, _ ->
       listOf(resourcePropertiesAction, resourceDeleteAction).forEach {
         it.updateEnabled()
       }
@@ -84,7 +82,7 @@ class ResourceMoveUpAction2(
   : ResourceAction("resource.move.up", resourceManager, selectionManager, IconSize.NO_ICON) {
 
     init {
-        selectionManager.subscribe(this::onSelectionChange)
+        selectionManager.addResourceListener(this::onSelectionChange)
     }
   override fun actionPerformed(e: ActionEvent?) {
     resourceManager.resourceHierarchyView.moveUp(selectionManager.resources)
@@ -101,7 +99,7 @@ class ResourceMoveDownAction2(
   : ResourceAction("resource.move.down", resourceManager, selectionManager, IconSize.NO_ICON) {
 
   init {
-    selectionManager.subscribe(this::onSelectionChange)
+    selectionManager.addResourceListener(this::onSelectionChange)
   }
 
   override fun actionPerformed(e: ActionEvent?) {
@@ -120,7 +118,7 @@ class ResourceCopyAction(
   : ResourceAction("copy", resourceManager, selectionManager, IconSize.NO_ICON) {
 
   init {
-    selectionManager.subscribe(this::onSelectionChange)
+    selectionManager.addResourceListener(this::onSelectionChange)
   }
 
   override fun actionPerformed(e: ActionEvent?) {
@@ -128,6 +126,23 @@ class ResourceCopyAction(
   }
 
   private fun onSelectionChange(selection: List<HumanResource>, trigger: Any) {
+    isEnabled = selection.isNotEmpty()
+  }
+}
+
+class AssignmentDeleteAction2(
+  private val selectionManager: ResourceSelectionManager,
+  private val uiFacade: UIFacade)
+  : ResourceAction("assignment.delete", null, null, IconSize.NO_ICON) {
+  init {
+    selectionManager.addAssignmentListener(this::onSelectionChange)
+  }
+
+  override fun actionPerformed(e: ActionEvent?) {
+    deleteAssignments(selectionManager, uiFacade, "assignment.delete")
+  }
+
+  private fun onSelectionChange(selection: List<ResourceAssignment>, trigger: Any) {
     isEnabled = selection.isNotEmpty()
   }
 }

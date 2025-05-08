@@ -29,16 +29,14 @@ import javafx.beans.property.IntegerProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
+import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ResourceDefaultColumn
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet
-import net.sourceforge.ganttproject.resource.HumanResource
-import net.sourceforge.ganttproject.resource.ResourceEvent
-import net.sourceforge.ganttproject.resource.ResourceSelectionManager
-import net.sourceforge.ganttproject.resource.ResourceView
+import net.sourceforge.ganttproject.resource.*
 import net.sourceforge.ganttproject.roles.Role
 import net.sourceforge.ganttproject.task.ResourceAssignment
 import net.sourceforge.ganttproject.undo.GPUndoManager
@@ -101,14 +99,14 @@ class ResourceTable(private val project: IGanttProject,
   )
   private val resource2treeItem = mutableMapOf<HumanResource, TreeItem<ResourceNode>>()
   private val task2treeItem = mutableMapOf<ResourceAssignment, TreeItem<AssignmentNode>>()
-  override val selectionKeeper = SelectionKeeper(this.treeTable) { node ->
+  override val selectionKeeper = SelectionKeeper(logger = LOGGER, treeTable = this.treeTable, node2treeItem = { node ->
     val result: TreeItem<ResourceTableNode>? = when (node) {
       is ResourceNode -> resource2treeItem[node.resource] as? TreeItem<ResourceTableNode>
       is AssignmentNode -> task2treeItem[node.assignment] as? TreeItem<ResourceTableNode>
       else -> null
     }
     result
-  }
+  })
 
   init {
     resourceChartConnector.rowHeight.subscribe { value ->
@@ -142,13 +140,27 @@ class ResourceTable(private val project: IGanttProject,
       }
     })
     treeTable.selectionModel.selectedItems.addListener(ListChangeListener<TreeItem<ResourceTableNode>> { change ->
-      this.resourceSelectionManager.select(treeTable.selectionModel.selectedItems.map { it.value as? ResourceTableNode }.mapNotNull {
+      val selectedResources = treeTable.selectionModel.selectedItems.map { it.value }.mapNotNull {
         when (it) {
           is ResourceNode -> it.resource
           else -> null
         }
-      }.toList(), true, this@ResourceTable)
+      }.toList()
+      val selectedAssignments = treeTable.selectionModel.selectedItems.map { it.value }.mapNotNull {
+        when (it) {
+          is AssignmentNode -> it.assignment
+          else -> null
+        }
+      }.toList()
+      if (selectedAssignments.isNotEmpty() && selectedResources.isNotEmpty()) {
+        this.resourceSelectionManager.select(emptyList(), replace = true, trigger = this@ResourceTable)
+        this.resourceSelectionManager.select(emptyList<ResourceAssignment>(), trigger = this@ResourceTable)
+      } else {
+        this.resourceSelectionManager.select(selectedResources, true, this@ResourceTable)
+        this.resourceSelectionManager.select(selectedAssignments, this@ResourceTable)
+      }
     })
+    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
   }
 
   override fun loadDefaultColumns() = FXUtil.runLater {
@@ -164,6 +176,15 @@ class ResourceTable(private val project: IGanttProject,
     columns.addListener(ListChangeListener {
       onColumnsChange()
     })
+  }
+
+  override fun sync(keepFocus: Boolean) {
+    selectionKeeper.keepSelection(keepFocus) {
+      val sync = ResourceSyncAlgorithm(project.humanResourceManager, treeTable.root, resource2treeItem, task2treeItem,
+        onCreateTreeItem = { treeItem -> treeItem.expandedProperty().subscribe(this::onTreeItemExpanded) }
+      )
+      sync.sync()
+    }
   }
 
   override fun onProperties() {
@@ -190,6 +211,14 @@ class ResourceTable(private val project: IGanttProject,
         )
       }
     }
+    if (this.resourceSelectionManager.resourceAssignments.isNotEmpty()) {
+      builder.apply {
+        items(
+          //resourceActions.assignedTaskProperties,
+          resourceActions.assignmentDelete
+        )
+      }
+    }
   }
 
   private fun onColumnsChange()  {
@@ -206,64 +235,6 @@ class ResourceTable(private val project: IGanttProject,
     }
   }
 
-  override fun sync(keepFocus: Boolean) {
-    selectionKeeper.keepSelection(keepFocus) {
-      task2treeItem.clear()
-      resource2treeItem.clear()
-
-      val parent = treeTable.root
-      LOGGER.debug(">>> sync: root={} |children|={}", parent, parent.children.size)
-      val resourceList = project.humanResourceManager.resources
-      resourceList.forEachIndexed { idx, hr ->
-        LOGGER.debug("... idx={} [hr]={}", idx, hr)
-        if (parent.children.size > idx) {
-          LOGGER.debug("... there is existing node @{}", idx)
-          val childItem = parent.children[idx]
-          val childRes = (childItem.value as? ResourceNode)?.resource ?: return@forEachIndexed
-          if (childRes == hr) {
-            LOGGER.debug("... it is the same as [hr]")
-            resource2treeItem[hr] = childItem as TreeItem<ResourceNode>
-          } else {
-            LOGGER.debug("... it is {}, different from [hr]. Replacing with [hr]")
-            parent.children.removeAt(idx)
-            addResourceNode(parent, hr, idx)
-          }
-        } else {
-          LOGGER.debug("... there is no node@{}, adding ", idx)
-          addResourceNode(parent, hr, -1)
-        }
-      }
-      LOGGER.debug("... now children size={}", parent.children.size)
-      parent.children.subList(resourceList.size, parent.children.size).clear()
-    }
-  }
-
-  private fun addResourceNode(parentItem: TreeItem<ResourceTableNode>, res: HumanResource, pos: Int): TreeItem<ResourceTableNode> {
-    val childItem = resource2treeItem[res] ?: TreeItem(ResourceNode(res)).also {
-      it.expandedProperty().subscribe(::onTreeItemExpanded)
-    }
-    childItem.parent?.children?.remove(childItem)
-    if (pos == -1 || pos > parentItem.children.size) {
-      parentItem.children.add(childItem as TreeItem<ResourceTableNode>)
-    } else {
-      parentItem.children.add(pos, childItem as TreeItem<ResourceTableNode>)
-    }
-//    LOGGER.debug("addChildTreeItem: child=$child pos=$pos parent=$parentItem")
-//    LOGGER.debug("addChildTreeItem: parentItem.children=${parentItem.children}")
-//    LOGGER.delegate().debug("Stack: ", Exception())
-    resource2treeItem[res] = childItem
-    childItem.children.clear()
-    res.assignments.forEach { assignment ->
-      val assignmentItem = TreeItem(AssignmentNode(assignment))
-      childItem.children.add(assignmentItem as TreeItem<ResourceTableNode>)
-      task2treeItem[assignment] = assignmentItem
-    }
-
-    return childItem
-
-  }
-
-
   private fun onTreeItemExpanded(value: Boolean) {
     treeTable.root.depthFirstWalk { treeItem ->
       (treeItem.value as? ResourceNode)?.let {
@@ -276,6 +247,98 @@ class ResourceTable(private val project: IGanttProject,
 
 private fun ColumnList.Column.resourceDefaultColumn() = ResourceDefaultColumn.find(this.id)?.stub
 
+class ResourceSyncAlgorithm(
+  private val resourceManager: HumanResourceManager,
+  private val rootItem: TreeItem<ResourceTableNode>,
+  private val resource2treeItem: MutableMap<HumanResource, TreeItem<ResourceNode>>,
+  private val task2treeItem: MutableMap<ResourceAssignment, TreeItem<AssignmentNode>>,
+  private val onCreateTreeItem: (TreeItem<out ResourceTableNode>) -> Unit
+  ) {
+
+  fun sync() {
+      task2treeItem.clear()
+      resource2treeItem.clear()
+
+      val parent = rootItem
+      LOGGER.debug(">>> sync: root={} |children|={}", parent, parent.children.size)
+      val resourceList = resourceManager.resources
+      resourceList.forEachIndexed { idx, hr ->
+        LOGGER.debug("... idx={} [hr]={}", idx, hr)
+        if (parent.children.size > idx) {
+          LOGGER.debug("... there is existing node @{}", idx)
+          val childItem = parent.children[idx]
+          val childRes = (childItem.value as? ResourceNode)?.resource ?: return@forEachIndexed
+          if (childRes == hr) {
+            LOGGER.debug("... it is the same as [hr]")
+            resource2treeItem[hr] = childItem as TreeItem<ResourceNode>
+            syncAssignments(childItem, hr)
+
+          } else {
+            LOGGER.debug("... it is {}, different from [hr]. Replacing with [hr]")
+            parent.children.removeAt(idx)
+            addResourceNode(parent, hr, idx)
+          }
+        } else {
+          LOGGER.debug("... there is no node@{}, adding ", idx)
+          addResourceNode(parent, hr, -1)
+        }
+      }
+      LOGGER.debug("... now children size={}", parent.children.size)
+      parent.children.subList(resourceList.size, parent.children.size).clear()
+      LOGGER.debug("task2treeitem={}", task2treeItem)
+  }
+
+  private fun syncAssignments(parent: TreeItem<ResourceTableNode>, res: HumanResource) {
+    res.assignments.forEachIndexed { idx, assignment ->
+      if (parent.children.size > idx) {
+        LOGGER.debug("... there is existing node @{}", idx)
+        val childItem = parent.children[idx]
+        val childAssignment = (childItem.value as? AssignmentNode)?.assignment ?: return@forEachIndexed
+        if (childAssignment.task == assignment.task) {
+          LOGGER.debug("... it is the same assignment as [assignment]")
+          task2treeItem[assignment] = childItem as TreeItem<AssignmentNode>
+        } else {
+          LOGGER.debug("... it is different assignment, replacing")
+          parent.children.removeAt(idx)
+          addAssignmentNode(parent, assignment, idx)
+        }
+      } else {
+        LOGGER.debug("... there is no node@{}, adding ", idx)
+        addAssignmentNode(parent, assignment, -1)
+      }
+    }
+    LOGGER.debug("... now children size={}", parent.children.size)
+    parent.children.subList(res.assignments.size, parent.children.size).clear()
+  }
+
+  private fun addAssignmentNode(parentItem: TreeItem<ResourceTableNode>, assignment: ResourceAssignment, pos: Int) {
+    val childItem = task2treeItem[assignment] ?: TreeItem(AssignmentNode(assignment))
+    childItem.parent?.children?.remove(childItem)
+    if (pos == -1 || pos > parentItem.children.size) {
+      parentItem.children.add(childItem as TreeItem<ResourceTableNode>)
+    } else {
+      parentItem.children.add(pos, childItem as TreeItem<ResourceTableNode>)
+    }
+    task2treeItem[assignment] = childItem
+  }
+
+
+  private fun addResourceNode(parentItem: TreeItem<ResourceTableNode>, res: HumanResource, pos: Int): TreeItem<ResourceTableNode> {
+    val childItem = resource2treeItem[res] ?: TreeItem(ResourceNode(res)).also {
+      onCreateTreeItem(it)
+    }
+    childItem.parent?.children?.remove(childItem)
+    if (pos == -1 || pos > parentItem.children.size) {
+      parentItem.children.add(childItem as TreeItem<ResourceTableNode>)
+    } else {
+      parentItem.children.add(pos, childItem as TreeItem<ResourceTableNode>)
+    }
+    syncAssignments(childItem, res)
+    return childItem
+  }
+
+
+}
 /**
  * A model class that moves data between the table cells and HumanResource instances.
  */

@@ -140,11 +140,11 @@ class TaskTable(
   private val placeholderEmpty by lazy { Pane() }
 
   private val initializationCompleted = initializationPromise.register("Task table initialization")
-  override val selectionKeeper = SelectionKeeper<Task>(this.treeTable) { task ->
+  override val selectionKeeper = SelectionKeeper(logger = LOGGER, treeTable = this.treeTable, node2treeItem = { task ->
     taskManager.getTask(task.taskID)?.let {
       task2treeItem[it]
     }
-  }
+  })
   private val treeTableSelectionListener = TreeSelectionListenerImpl(treeTable.selectionModel.selectedItems, selectionKeeper, selectionManager, this@TaskTable)
   private val dragAndDropSupport = DragAndDropSupport(selectionManager)
   private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->

@@ -40,7 +40,7 @@ import java.awt.event.MouseEvent;
 import java.util.Collections;
 
 public class GanttResourcePanel extends TreeTableContainer<HumanResource, ResourceTreeTable, ResourceTreeTableModel>
-    implements ResourceView, AssignmentContext, ResourceTreeUIFacade {
+    implements ResourceView, ResourceTreeUIFacade {
 
   public final GanttProject appli;
 
@@ -67,7 +67,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     myUIFacade = uiFacade;
 
     prj.addProjectEventListener(getProjectEventListener());
-    myResourceActionSet = new ResourceActionSet(uiFacade.getResourceSelectionManager(), this, prj, uiFacade, getTreeTable());
+    myResourceActionSet = new ResourceActionSet(uiFacade.getResourceSelectionManager(), uiFacade.getResourceSelectionManager(), prj, uiFacade, getTreeTable());
 
 //    getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(),
 //        myResourceActionSet.getResourceMoveDownAction(), myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourceDeleteAction(),
@@ -286,29 +286,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   public void reset() {
     getTreeModel().reset();
   }
-
-  @Override
-  public ResourceAssignment[] getResourceAssignments() {
-    ResourceAssignment[] res = null;
-    DefaultMutableTreeTableNode[] tNodes = getSelectedNodes();
-    if (tNodes != null) {
-      int nbAssign = 0;
-      for (int i = 0; i < tNodes.length; i++) {
-        if (tNodes[i] instanceof AssignmentNode) {
-          nbAssign++;
-        }
-      }
-
-      res = new ResourceAssignment[nbAssign];
-      for (int i = 0; i < nbAssign; i++) {
-        if (tNodes[i] instanceof AssignmentNode) {
-          res[i] = (ResourceAssignment) ((AssignmentNode) tNodes[i]).getUserObject();
-        }
-      }
-    }
-    return res;
-  }
-
 
   @Override
   public void setSelected(HumanResource resource, boolean clear) {

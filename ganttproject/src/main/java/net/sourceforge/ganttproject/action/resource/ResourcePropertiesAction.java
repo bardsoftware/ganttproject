@@ -64,7 +64,7 @@ public class ResourcePropertiesAction extends ResourceAction {
       dp.setVisible(true);
     } else {
       var assignments = assignmentContext.getResourceAssignments();
-      if (assignments != null && assignments.length == 1 && taskPropertiesAction != null) {
+      if (!assignments.isEmpty() && taskPropertiesAction != null) {
         taskPropertiesAction.actionPerformed(null);
       }
     }
