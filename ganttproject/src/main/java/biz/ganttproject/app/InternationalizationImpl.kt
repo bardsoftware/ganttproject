@@ -103,12 +103,8 @@ private val cachedAvailableLocales by lazy {
       return@forEach
     }
     val candidateFileName = "i18n_${l.language.lowercase()}_${l.country.uppercase()}.properties"
-    print("testing: $candidateFileName")
     if (translationFileNames.contains(candidateFileName)) {
       result.add(l)
-      println("... yes")
-    } else {
-      println("... no")
     }
   }
 
