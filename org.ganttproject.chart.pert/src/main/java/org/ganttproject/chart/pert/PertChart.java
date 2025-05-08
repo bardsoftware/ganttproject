@@ -109,15 +109,6 @@ public abstract class PertChart extends JPanel implements Chart, ViewProvider {
   }
 
   @Override
-  public IStatus canPaste(ChartSelection selection) {
-    return Status.CANCEL_STATUS;
-  }
-
-  @Override
-  public void paste(ChartSelection selection) {
-  }
-
-  @Override
   public void addSelectionListener(ChartSelectionListener listener) {
     // No listeners are implemented
   }
