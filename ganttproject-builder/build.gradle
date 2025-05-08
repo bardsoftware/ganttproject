@@ -42,12 +42,12 @@ task distBin(dependsOn: [
             from(fileTree(".")) {
                 include "lib/javagalician.jar"
                 include "lib/slf4j*.jar"
+                include "lib/logback*.jar"
                 include "ganttproject.bat"
                 include "ganttproject.exe"
                 include "ganttproject.l4j.ini"
                 include "HouseBuildingSample.gan"
                 include "LICENSE"
-                include "logback.xml"
             }
         }
         copy {

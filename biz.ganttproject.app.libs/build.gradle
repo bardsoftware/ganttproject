@@ -90,6 +90,7 @@ task copyPlugin(dependsOn: assemble) {
                     exclude "javafx*.jar"
                 }
                 exclude "slf4j*.jar"
+                exclude "logback*.jar"
             }
     	    rename { filename -> filename + ".lib" }
         }
@@ -97,6 +98,7 @@ task copyPlugin(dependsOn: assemble) {
             into(new File(rootProject.projectDir, "ganttproject-builder/lib/"))
             from(configurations.exported) {
                 include "slf4j*.jar"
+                include "logback*.jar"
             }
         }
         println "<<< $project.name"
