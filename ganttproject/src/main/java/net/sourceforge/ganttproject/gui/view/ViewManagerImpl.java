@@ -149,7 +149,11 @@ public class ViewManagerImpl implements GPViewManager {
   }
 
   void updateActions() {
-    ChartSelection selection = getSelectedView().getSelection();
+    var selectedView = getSelectedView();
+    if (selectedView == null) {
+      return;
+    }
+    var selection = selectedView.getSelection();
     myCopyAction.setEnabled(!selection.isEmpty());
     myCutAction.setEnabled(!selection.isEmpty() && selection.isDeletable().isOK());
   }
