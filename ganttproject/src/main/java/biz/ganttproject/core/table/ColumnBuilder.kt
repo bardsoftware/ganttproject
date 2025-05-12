@@ -109,7 +109,7 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
     return when {
       // TEXT column
       modelColumn.valueClass == java.lang.String::class.java -> {
-        val column: TreeTableColumn<NodeType, String> = createTextColumn<NodeType>(
+        val column: TreeTableColumn<NodeType, String> = createTextColumn(
             name = modelColumn.getName(),
             getValue = {
                 tableModel.getValueAt(it, modelColumn).toString()

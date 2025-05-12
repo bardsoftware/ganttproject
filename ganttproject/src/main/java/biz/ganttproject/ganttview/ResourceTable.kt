@@ -32,6 +32,7 @@ import javafx.collections.ObservableList
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
+import javafx.util.StringConverter
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ResourceDefaultColumn
@@ -112,10 +113,7 @@ class ResourceTable(private val project: IGanttProject,
     resourceChartConnector.rowHeight.subscribe { value ->
       treeTable.fixedCellSize = ceil(maxOf(value.toDouble(), minCellHeight.value))
     }
-    columnBuilder = ColumnBuilder(
-      tableModel, project.humanResourceManager.customPropertyManager, undoManager,
-      ResourceDefaultColumn::find
-    )
+    columnBuilder = ResourceColumnBuilder(tableModel, project, undoManager)
     initProjectEventHandlers()
     initKeyboardEventHandlers(listOf(resourceActions.resourceMoveUpAction, resourceActions.resourceMoveDownAction))
     project.humanResourceManager.addView(object: ResourceView {
@@ -344,25 +342,29 @@ class ResourceSyncAlgorithm(
  */
 class ResourceTableModel: TableModel<ResourceTableNode, ResourceDefaultColumn> {
   override fun getValueAt(t: ResourceTableNode, defaultColumn: ResourceDefaultColumn): Any? {
-    return if (t is ResourceNode) {
-      when (defaultColumn) {
-        ResourceDefaultColumn.NAME -> t.resource.name
-        ResourceDefaultColumn.EMAIL -> t.resource.mail
-        ResourceDefaultColumn.ROLE -> t.resource.role
-        ResourceDefaultColumn.PHONE -> t.resource.phone
-        ResourceDefaultColumn.ID -> t.resource.id
-        ResourceDefaultColumn.STANDARD_RATE -> t.resource.standardPayRate
-        ResourceDefaultColumn.TOTAL_COST -> t.resource.totalCost
-        ResourceDefaultColumn.TOTAL_LOAD -> t.resource.totalLoad
-        else -> null
+    return when (t) {
+        is ResourceNode -> {
+          when (defaultColumn) {
+            ResourceDefaultColumn.NAME -> t.resource.name
+            ResourceDefaultColumn.EMAIL -> t.resource.mail
+            ResourceDefaultColumn.ROLE -> t.resource.role
+            ResourceDefaultColumn.PHONE -> t.resource.phone
+            ResourceDefaultColumn.ID -> t.resource.id
+            ResourceDefaultColumn.STANDARD_RATE -> t.resource.standardPayRate
+            ResourceDefaultColumn.TOTAL_COST -> t.resource.totalCost
+            ResourceDefaultColumn.TOTAL_LOAD -> t.resource.totalLoad
+            else -> null
+          }
+        }
+
+      is AssignmentNode -> {
+        when (defaultColumn) {
+          ResourceDefaultColumn.NAME -> t.assignment.task.name
+          else -> null
+        }
       }
-    } else if (t is AssignmentNode) {
-      when (defaultColumn) {
-        ResourceDefaultColumn.NAME -> t.assignment.task.name
-        else -> null
-      }
-    } else {
-      null
+      else -> ""
+
     }
   }
 
@@ -393,19 +395,33 @@ class ResourceTableModel: TableModel<ResourceTableNode, ResourceDefaultColumn> {
 
 }
 
-class ResourceColumnBuilder(tableModel: ResourceTableModel,
-                            project: IGanttProject,
-                            undoManager: GPUndoManager,
-                            private val nameCellFactory: TextCellFactory<ResourceTableNode, ResourceTableNode>,)
+/**
+ * Column builder customized for the resource table. It creates a column with dropdown for the default role
+ * property.
+ */
+class ResourceColumnBuilder(private val tableModel: ResourceTableModel,
+                            private val project: IGanttProject,
+                            undoManager: GPUndoManager)
   : ColumnBuilder<ResourceTableNode, ResourceDefaultColumn>(
   tableModel, project.humanResourceManager.customPropertyManager, undoManager, ResourceDefaultColumn::find) {
 
   override fun createDefaultColumn(modelColumn: ResourceDefaultColumn): TreeTableColumn<ResourceTableNode, out Any> {
     return when (modelColumn) {
-      ResourceDefaultColumn.NAME -> {
-        TreeTableColumn<ResourceTableNode, ResourceTableNode>(modelColumn.name).apply {
-          cellFactory = nameCellFactory
-        }
+      ResourceDefaultColumn.ROLE -> {
+        createChoiceColumn(modelColumn.getName(),
+          getValue = { tableModel.getValueAt(it, modelColumn) as Role?},
+          setValue = { node, value -> tableModel.setValue(value, node, modelColumn)},
+          allValues = { project.roleManager.enabledRoles.toList()},
+          stringConverter = object : StringConverter<Role?>() {
+            override fun toString(role: Role?): String = role?.name ?: ""
+
+            override fun fromString(string: String?): Role =
+              project.roleManager.enabledRoles.find { it.name == string } ?: project.roleManager.defaultRole
+          },
+          isEditableCell = {
+            it is ResourceNode
+          }
+        )
       }
       else -> super.createDefaultColumn(modelColumn)
     }
