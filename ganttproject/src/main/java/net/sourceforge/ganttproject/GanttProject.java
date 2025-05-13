@@ -564,7 +564,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       this.resp = new GanttResourcePanel(this, getUIFacade(), myResourceTableChartConnector);
       this.resp.init();
 //      myRowHeightAligners.add(this.resp.getRowHeightAligner());
-      getHumanResourceManager().addView(this.resp);
     }
     return this.resp;
   }

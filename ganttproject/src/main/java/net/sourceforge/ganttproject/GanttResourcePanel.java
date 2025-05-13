@@ -27,20 +27,15 @@ import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.*;
-import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.util.collect.Pair;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Collections;
 
 public class GanttResourcePanel extends TreeTableContainer<HumanResource, ResourceTreeTable, ResourceTreeTableModel>
-    implements ResourceView, ResourceTreeUIFacade {
+    implements ResourceTreeUIFacade {
 
   public final GanttProject appli;
 
@@ -107,6 +102,10 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     area.setVScrollController(getTreeTable().getVScrollController());
   }
 
+  @Override
+  protected void handlePopupTrigger(MouseEvent e) {
+  }
+
 //  public GanttProjectBase.RowHeightAligner getRowHeightAligner() {
 //    return myRowHeightAligner;
 //  }
@@ -120,157 +119,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
       }
     };
   }
-
-//  @Override
-//  protected void onSelectionChanged(List<DefaultMutableTreeTableNode> selection) {
-//    super.onSelectionChanged(selection);
-////    updateContextActions();
-//    List<Task> selectedTasks = Lists.newArrayList();
-//    for (DefaultMutableTreeTableNode node : selection) {
-//      if (node instanceof AssignmentNode) {
-//        selectedTasks.add(((AssignmentNode) node).getTask());
-//      }
-//    }
-//    if (selectedTasks.isEmpty()) {
-//      myUIFacade.getTaskSelectionManager().clear();
-//    } else {
-//      myUIFacade.getTaskSelectionManager().setSelectedTasks(selectedTasks, this);
-//    }
-//    getPropertiesAction().setEnabled(!selection.isEmpty());
-//    getDeleteAction().setEnabled(!selection.isEmpty());
-//  }
-
-//  private void updateContextActions() {
-//    myResourceActionSet.getResourceDeleteAction().setEnabled(getResources().length > 0);
-//    myResourceActionSet.getAssignmentDelete().setEnabled(getResourceAssignments().length > 0);
-//    appli.getViewManager().getCopyAction().setEnabled(getResources().length > 0);
-//    appli.getViewManager().getCutAction().setEnabled(getResources().length > 0);
-//  }
-
-  @Override
-  protected void handlePopupTrigger(MouseEvent e) {
-    if (e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3) {
-      DefaultMutableTreeTableNode[] selectedNodes = getSelectedNodes();
-      // TODO Allow to have multiple assignments selected as well!
-      if (selectedNodes.length == 1 && selectedNodes[0] instanceof AssignmentNode) {
-        // Clicked on an assignment node (ie a task assigned to a resource)
-        AssignmentNode assignmentNode = (AssignmentNode) selectedNodes[0];
-        getTaskSelectionManager().clear();
-        getTaskSelectionManager().setSelectedTasks(Collections.singletonList(assignmentNode.getTask()), this);
-        Point popupPoint = getPopupMenuPoint(e);
-//        getUIFacade().showPopupMenu(this,
-//            new Action[]{myTaskPropertiesAction, myResourceActionSet.getAssignmentDelete()}, popupPoint.x,
-//            popupPoint.y);
-      } else {
-        createPopupMenu(e);
-      }
-    }
-  }
-
-  private Point getPopupMenuPoint(MouseEvent popupTriggerEvent) {
-    final int x = popupTriggerEvent.getX();
-    final int y = popupTriggerEvent.getY() + getTreeTable().getRowHeight();
-    return new Point(x, y);
-  }
-
-  /**
-   * Create the popup menu
-   */
-  private void createPopupMenu(MouseEvent e) {
-    commitIfEditing();
-    JPopupMenu menu = new JPopupMenu();
-    AbstractAction[] resourceActions = myResourceActionSet.getActions();
-    menu.add(resourceActions[0]);
-    if (getSelectedNodes().length == 1) {
-      for (int i = 1; i < resourceActions.length; i++) {
-        menu.add(resourceActions[i]);
-      }
-      menu.add(myResourceActionSet.getResourceSendMailAction());
-      menu.addSeparator();
-      menu.add(myResourceActionSet.getResourceMoveUpAction());
-      menu.add(myResourceActionSet.getResourceMoveDownAction());
-      menu.addSeparator();
-      menu.add(appli.getCutAction());
-      menu.add(appli.getCopyAction());
-      menu.add(appli.getPasteAction());
-      menu.add(myResourceActionSet.getResourceDeleteAction());
-    }
-    menu.applyComponentOrientation(GanttLanguage.getInstance().getComponentOrientation());
-    Point popupPoint = getPopupMenuPoint(e);
-    menu.show(this, popupPoint.x, popupPoint.y);
-  }
-
-  @Override
-  public void resourceAdded(ResourceEvent event) {
-//    newHuman(event.getResource());
-  }
-
-  @Override
-  public void resourcesRemoved(ResourceEvent event) {
-//    getTreeTable().getTreeTable().editingStopped(new ChangeEvent(getTreeTable().getTreeTable()));
-//    getTreeModel().deleteResources(event.getResources());
-  }
-
-  @Override
-  public void resourceChanged(ResourceEvent e) {
-//    getTreeModel().resourceChanged(e.getResource());
-//    e.getResource().resetLoads();
-//    repaint();
-  }
-
-  @Override
-  public void resourceAssignmentsChanged(ResourceEvent e) {
-//    getTreeModel().resourceAssignmentsChanged(Arrays.asList(e.getResources()));
-//    repaint();
-  }
-
-  @Override
-  public void resourceStructureChanged() {
-
-  }
-
-  // //////////////////////////////////////////////////////////////////////////
-  // ResourceContext interface
-  public HumanResource[] getResources() {
-    // ProjectResource[] res;
-    // List allRes = model.getAllResouces();
-    // res = new ProjectResource[allRes.size()];
-    // model.getAllResouces().toArray(res);
-    // return res;
-    DefaultMutableTreeTableNode[] tNodes = getSelectedNodes();
-    if (tNodes == null) {
-      return new HumanResource[0];
-    }
-    int nbHumanResource = 0;
-    for (int i = 0; i < tNodes.length; i++) {
-      if (tNodes[i] instanceof ResourceNode) {
-        nbHumanResource++;
-      }
-    }
-
-    HumanResource[] res = new HumanResource[nbHumanResource];
-    for (int i = 0; i < nbHumanResource; i++) {
-      if (tNodes[i] instanceof ResourceNode) {
-        res[i] = (HumanResource) ((ResourceNode) tNodes[i]).getUserObject();
-      }
-    }
-    return res;
-  }
-
-  /**
-   * Create a new Human
-   */
-//  public void newHuman(HumanResource people) {
-//    if (people != null) {
-//      try {
-//        DefaultMutableTreeTableNode result = getTreeModel().addResource(people);
-//        getTreeTable().getTree().scrollPathToVisible(TreeUtil.createPath(result));
-//      } catch (Exception e) {
-//        System.err.println("when adding this guy: " + people);
-//        e.printStackTrace();
-//      }
-//    }
-//  }
 
   public ResourceTreeTable getResourceTreeTable() {
     return getTreeTable();
@@ -342,14 +190,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
   void setTaskPropertiesAction(GPAction action) {
     myResourceActionSet.getResourcePropertiesAction().setTaskPropertiesAction(action);
     setArtefactActions(myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourcePropertiesAction(), myResourceActionSet.getResourceDeleteAction());
-  }
-
-  private UIFacade getUIFacade() {
-    return myUIFacade;
-  }
-
-  private TaskSelectionManager getTaskSelectionManager() {
-    return getUIFacade().getTaskSelectionManager();
   }
 
   @Override
