@@ -541,7 +541,9 @@ class DropdownTableCell<ObjectType, ChoiceType>(
       val node = this.treeTableView.getTreeItem(this.tableRow.index).value
       if (isEditableCell(node)) {
         graphic = editor
-        editor.value = item
+        if (editor.value != item) {
+          editor.value = item
+        }
       } else {
         graphic = null
       }

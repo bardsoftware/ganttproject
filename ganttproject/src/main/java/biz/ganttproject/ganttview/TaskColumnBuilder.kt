@@ -55,7 +55,7 @@ class TaskColumnBuilder(private val taskTableModel: TableModel<Task, TaskDefault
   override fun createDefaultColumn(modelColumn: TaskDefaultColumn): TreeTableColumn<Task, out Any> {
     return when (modelColumn) {
       TaskDefaultColumn.DURATION -> {
-        createIntegerColumn<Task>(modelColumn.name,
+        createIntegerColumn(modelColumn.getName(),
           getValue = {
             (taskTableModel.getValueAt(it, modelColumn) as TimeDuration).length
           },
@@ -67,7 +67,7 @@ class TaskColumnBuilder(private val taskTableModel: TableModel<Task, TaskDefault
         )
       }
       TaskDefaultColumn.NAME -> {
-          TreeTableColumn<Task, Task>(modelColumn.name).apply {
+          TreeTableColumn<Task, Task>(modelColumn.getName()).apply {
             setCellValueFactory {
               ReadOnlyObjectWrapper(it.value.value)
             }
@@ -111,7 +111,7 @@ class TaskColumnBuilder(private val taskTableModel: TableModel<Task, TaskDefault
       }
       TaskDefaultColumn.PRIORITY -> {
         createIconColumn<Task, Task.Priority>(
-          modelColumn.name,
+          modelColumn.getName(),
           getValue = {
             taskTableModel.getValueAt(it, modelColumn) as Task.Priority
           },

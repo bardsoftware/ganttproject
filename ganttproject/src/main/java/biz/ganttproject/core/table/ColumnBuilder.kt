@@ -112,7 +112,7 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
         val column: TreeTableColumn<NodeType, String> = createTextColumn(
             name = modelColumn.getName(),
             getValue = {
-                tableModel.getValueAt(it, modelColumn).toString()
+                tableModel.getValueAt(it, modelColumn)?.toString()
             },
             setValue = { node, value ->
                 undoManager.undoableEdit("Edit properties") {
@@ -132,7 +132,7 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
           createDateColumn<NodeType>(
               modelColumn.getName(),
               getValue = {
-                  tableModel.getValueAt(it, modelColumn) as GanttCalendar?
+                  tableModel.getValueAt(it, modelColumn) as? GanttCalendar?
               },
               setValue = { node, value ->
                   undoManager.undoableEdit("Edit properties") {
@@ -147,7 +147,7 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
           createIntegerColumn<NodeType>(
               modelColumn.getName(),
               getValue = {
-                  tableModel.getValueAt(it, modelColumn) as Int
+                  tableModel.getValueAt(it, modelColumn) as? Int
               },
               setValue = { node, value ->
                   undoManager.undoableEdit("Edit properties") {
@@ -161,7 +161,7 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
       modelColumn.valueClass == java.lang.Double::class.java -> {
           createDoubleColumn<NodeType>(
               modelColumn.getName(),
-              getValue = { tableModel.getValueAt(it, modelColumn) as Double },
+              getValue = { tableModel.getValueAt(it, modelColumn) as? Double },
               setValue = { node, value ->
                   undoManager.undoableEdit("Edit properties") {
                       tableModel.setValue(value, node, modelColumn)
@@ -174,7 +174,7 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
       modelColumn.valueClass == BigDecimal::class.java -> {
           createDecimalColumn<NodeType>(
               modelColumn.getName(),
-              getValue = { tableModel.getValueAt(it, modelColumn) as BigDecimal? },
+              getValue = { tableModel.getValueAt(it, modelColumn) as? BigDecimal? },
               setValue = { node, value ->
                   undoManager.undoableEdit("Edit properties") {
                       tableModel.setValue(value, node, modelColumn)
@@ -186,7 +186,7 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
       else -> TreeTableColumn<NodeType, Any>(modelColumn.getName()).apply {
         setCellValueFactory {
           ReadOnlyStringWrapper(
-              tableModel.getValueAt(it.value.value, modelColumn).toString()
+              tableModel.getValueAt(it.value.value, modelColumn)?.toString()
           ) as ObservableValue<in Any>?
         }
       }

@@ -179,7 +179,13 @@ class ResourceTable(private val project: IGanttProject,
   override fun sync(keepFocus: Boolean) {
     selectionKeeper.keepSelection(keepFocus) {
       val sync = ResourceSyncAlgorithm(project.humanResourceManager, treeTable.root, resource2treeItem, task2treeItem,
-        onCreateTreeItem = { treeItem -> treeItem.expandedProperty().subscribe(this::onTreeItemExpanded) }
+        onCreateTreeItem = { treeItem ->
+          val node = treeItem.value
+          if (node is ResourceNode) {
+            treeItem.isExpanded = this.resourceChartConnector.collapseView.isExpanded(node.resource)
+            treeItem.expandedProperty().subscribe(this::onTreeItemExpanded)
+          }
+        }
       )
       sync.sync()
     }
@@ -274,11 +280,15 @@ class ResourceSyncAlgorithm(
           } else {
             LOGGER.debug("... it is {}, different from [hr]. Replacing with [hr]")
             parent.children.removeAt(idx)
-            addResourceNode(parent, hr, idx)
+            addResourceNode(parent, hr, idx).also {
+              resource2treeItem[hr] = it as TreeItem<ResourceNode>
+            }
           }
         } else {
           LOGGER.debug("... there is no node@{}, adding ", idx)
-          addResourceNode(parent, hr, -1)
+          addResourceNode(parent, hr, -1).also {
+            resource2treeItem[hr] = it as TreeItem<ResourceNode>
+          }
         }
       }
       LOGGER.debug("... now children size={}", parent.children.size)
@@ -360,6 +370,8 @@ class ResourceTableModel: TableModel<ResourceTableNode, ResourceDefaultColumn> {
       is AssignmentNode -> {
         when (defaultColumn) {
           ResourceDefaultColumn.NAME -> t.assignment.task.name
+          ResourceDefaultColumn.ID -> t.assignment.task.taskID
+          ResourceDefaultColumn.ROLE_IN_TASK -> t.assignment.roleForAssignment
           else -> null
         }
       }
@@ -384,6 +396,11 @@ class ResourceTableModel: TableModel<ResourceTableNode, ResourceDefaultColumn> {
         ResourceDefaultColumn.STANDARD_RATE -> (value as? Double)?.let { node.resource.standardPayRate = BigDecimal.valueOf(it) }
         else -> {}
       }
+    } else if (node is AssignmentNode) {
+      when (property) {
+        ResourceDefaultColumn.ROLE_IN_TASK -> node.assignment.roleForAssignment = value as Role?
+        else -> {}
+      }
     }
   }
 
@@ -406,22 +423,26 @@ class ResourceColumnBuilder(private val tableModel: ResourceTableModel,
   tableModel, project.humanResourceManager.customPropertyManager, undoManager, ResourceDefaultColumn::find) {
 
   override fun createDefaultColumn(modelColumn: ResourceDefaultColumn): TreeTableColumn<ResourceTableNode, out Any> {
-    return when (modelColumn) {
-      ResourceDefaultColumn.ROLE -> {
-        createChoiceColumn(modelColumn.getName(),
-          getValue = { tableModel.getValueAt(it, modelColumn) as Role?},
-          setValue = { node, value -> tableModel.setValue(value, node, modelColumn)},
-          allValues = { project.roleManager.enabledRoles.toList()},
-          stringConverter = object : StringConverter<Role?>() {
-            override fun toString(role: Role?): String = role?.name ?: ""
+    fun createRoleColumn(isEditableCell: (ResourceTableNode) -> Boolean) =
+      createChoiceColumn(modelColumn.getName(),
+        getValue = { tableModel.getValueAt(it, modelColumn) as Role?},
+        setValue = { node, value -> tableModel.setValue(value, node, modelColumn)},
+        allValues = { project.roleManager.enabledRoles.toList()},
+        stringConverter = object : StringConverter<Role?>() {
+          override fun toString(role: Role?): String = role?.name ?: ""
 
-            override fun fromString(string: String?): Role =
-              project.roleManager.enabledRoles.find { it.name == string } ?: project.roleManager.defaultRole
-          },
-          isEditableCell = {
-            it is ResourceNode
-          }
-        )
+          override fun fromString(string: String?): Role =
+            project.roleManager.enabledRoles.find { it.name == string } ?: project.roleManager.defaultRole
+        },
+        isEditableCell = isEditableCell
+      )
+
+    return when (modelColumn) {
+      ResourceDefaultColumn.ROLE -> createRoleColumn {
+        it is ResourceNode
+      }
+      ResourceDefaultColumn.ROLE_IN_TASK -> createRoleColumn {
+        it is AssignmentNode
       }
       else -> super.createDefaultColumn(modelColumn)
     }
