@@ -370,7 +370,7 @@ fun <S> createBooleanColumn(name: String, getValue: (S) -> Boolean?, setValue: (
 fun <S> createIntegerColumn(name: String, getValue: (S) -> Int?, setValue: (S, Int) -> Unit) =
   TreeTableColumn<S, Number>(name).apply {
     setCellValueFactory {
-      ReadOnlyIntegerWrapper(getValue(it.value.value) ?: 0)
+      ReadOnlyObjectWrapper(getValue(it.value.value))
     }
     cellFactory = Callback {
       TextCell<S, Number>(NumberStringConverter(getNumberFormat()).adapt()).also {
@@ -385,7 +385,7 @@ fun <S> createIntegerColumn(name: String, getValue: (S) -> Int?, setValue: (S, I
 fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S, Double) -> Unit) =
   TreeTableColumn<S, Number>(name).apply {
     setCellValueFactory {
-      ReadOnlyDoubleWrapper(getValue(it.value.value) ?: 0.0)
+      ReadOnlyObjectWrapper(getValue(it.value.value))
     }
     cellFactory = Callback {
       TextCell<S, Number>(NumberStringConverter(getNumberFormat()).adapt()).also {
@@ -400,7 +400,7 @@ fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S,
 fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue: (S, BigDecimal) -> Unit) =
   TreeTableColumn<S, BigDecimal>(name).apply {
     setCellValueFactory {
-      ReadOnlyObjectWrapper(getValue(it.value.value) ?: 0.toBigDecimal())
+      ReadOnlyObjectWrapper(getValue(it.value.value))
     }
     cellFactory = Callback {
       val converter = MyStringConverter<S, BigDecimal>(

@@ -159,7 +159,7 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
 
       // FLOATING POINT column
       modelColumn.valueClass == java.lang.Double::class.java -> {
-          createDoubleColumn<NodeType>(
+          createDoubleColumn(
               modelColumn.getName(),
               getValue = { tableModel.getValueAt(it, modelColumn) as? Double },
               setValue = { node, value ->
@@ -172,7 +172,7 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
 
       // DECIMAL column
       modelColumn.valueClass == BigDecimal::class.java -> {
-          createDecimalColumn<NodeType>(
+          createDecimalColumn(
               modelColumn.getName(),
               getValue = { tableModel.getValueAt(it, modelColumn) as? BigDecimal? },
               setValue = { node, value ->

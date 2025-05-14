@@ -29,6 +29,7 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Priority
 import javafx.scene.text.Text
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.UIUtil
@@ -81,7 +82,14 @@ class MenuBuilderFx(private val contextMenu: ContextMenu) : MenuBuilder {
   }
   override fun separator() { add(SeparatorMenuItem()) }
   override fun submenu(title: String, code: (MenuBuilder)->Unit) {
-    Menu(title).also { menu ->
+    val label = Label(title).also { label ->
+      label.styleClass.add("custom-label-menu-item")
+      label.graphic = MaterialIconView(MaterialIcon.SPACE_BAR).also {
+        it.styleClass.add("box")
+      }
+      label.styleClass.add("blank_icon")
+    }
+    Menu("", label).also { menu ->
       add(menu)
       stack.push {
         menu.items.add(it)
@@ -197,11 +205,11 @@ fun (GPAction).getGlyphIcon(): Text? =
     UIUtil.getFontawesomeLabel(this)?.let { iconLabel ->
       when (UIUtil.getFontawesomeIconset(this)) {
         "fontawesome" -> {
-          val icon: FontAwesomeIcon? = FontAwesomeIcon.values().firstOrNull { icon -> icon.unicode() == iconLabel }
+          val icon: FontAwesomeIcon? = FontAwesomeIcon.entries.firstOrNull { icon -> icon.unicode() == iconLabel }
           icon?.let { FontAwesomeIconView(it) }
         }
         "material" -> {
-          val icon: MaterialIcon? = MaterialIcon.values().firstOrNull { icon -> icon.unicode() == iconLabel }
+          val icon: MaterialIcon? = MaterialIcon.entries.firstOrNull { icon -> icon.unicode() == iconLabel }
           icon?.let { MaterialIconView(it) }
         }
         else -> null
@@ -229,7 +237,8 @@ private class CheckBoxMenuItemNode(private val action: GPAction, initiallySelect
     this.styleClass.add("check-box")
     this.graphic = HBox().also {hbox ->
       hbox.styleClass.add("box")
-      hbox.alignment = Pos.CENTER
+      hbox.alignment = Pos.CENTER_LEFT
+      hbox.isFillHeight = false
       hbox.children.add(iconView)
       hbox.children.add(vbox {
         val helpText = action.getHelpText()
@@ -244,6 +253,8 @@ private class CheckBoxMenuItemNode(private val action: GPAction, initiallySelect
             it.styleClass.add("help")
           })
         }
+      }.also {
+        HBox.setHgrow(it, Priority.NEVER)
       })
     }
     this.onAction = EventHandler { e ->
@@ -291,9 +302,9 @@ fun GPAction.asMenuItem(): MenuItem =
       }
     }
 
-    this.addPropertyChangeListener(PropertyChangeListener {
+    this.addPropertyChangeListener {
       menuItem.isDisable = !this.isEnabled
-    })
+    }
 
     menuItem.also {
       it.isDisable = !isEnabled

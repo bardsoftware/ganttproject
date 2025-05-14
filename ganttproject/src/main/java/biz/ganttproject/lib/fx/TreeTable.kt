@@ -68,6 +68,8 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
         val contextMenu = ContextMenu()
         contextMenu.isAutoHide = true
         contextMenuActions(MenuBuilderFx(contextMenu))
+        contextMenu.scene.stylesheets.add("/biz/ganttproject/app/menu.css")
+        contextMenu.styleClass.add("context-menu")
         contextMenu.show(this.scene.window, event.screenX, event.screenY)
       }
     }
