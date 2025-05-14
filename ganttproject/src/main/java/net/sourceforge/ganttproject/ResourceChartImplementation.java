@@ -1,6 +1,7 @@
 // Copyright (C) 2021 BarD Software
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.ganttview.ResourceTableChartConnector;
 import biz.ganttproject.print.PrintChartApi;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -20,10 +21,25 @@ class ResourceChartImplementation extends AbstractChartImplementation {
   private final ResourceLoadGraphicArea resourceLoadGraphicArea;
 
   public ResourceChartImplementation(
-      ResourceLoadGraphicArea resourceLoadGraphicArea, IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel,
-      ChartComponentBase chartComponent) {
+    ResourceLoadGraphicArea resourceLoadGraphicArea, IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel,
+    ChartComponentBase chartComponent, ResourceTableChartConnector resourceTableConnector) {
     super(project, uiFacade, chartModel, chartComponent);
     this.resourceLoadGraphicArea = resourceLoadGraphicArea;
+    setVScrollController(new VScrollController() {
+      @Override
+      public boolean isScrollable() {
+        return true;
+      }
+
+      @Override
+      public void scrollBy(int pixels) {
+        var scrollConsumer = resourceTableConnector.getChartScrollOffset();
+        if (scrollConsumer != null) {
+          scrollConsumer.accept(0.0 + pixels);
+        }
+      }
+    });
+
   }
 
   @Override
@@ -42,6 +58,7 @@ class ResourceChartImplementation extends AbstractChartImplementation {
       super.paintChart(g);
     }
   }
+
 
 //  @Override
 //  public ChartSelection getSelection() {

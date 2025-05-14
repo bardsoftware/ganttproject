@@ -129,7 +129,9 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   ResourceTableChartConnector myResourceTableChartConnector = new ResourceTableChartConnector(
     new SimpleIntegerProperty(-1),
     TreeTableCellsKt.getMinCellHeight(),
-    new SimpleTreeCollapseView<>()
+    new SimpleTreeCollapseView<>(),
+    new SimpleDoubleProperty(0.0),
+    null
   );
 
   protected final ProjectDatabase myProjectDatabase;

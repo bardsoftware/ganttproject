@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.ganttview.ResourceTableChartConnector;
+import javafx.beans.value.ChangeListener;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
@@ -72,7 +73,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 //    resourceTableConnector.getRowHeight().setValue(20);
 //
 //    getTreeTable().insertWithLeftyScrollBar(this);
-    area = new ResourceLoadGraphicArea(prj, prj.getZoomManager(), this) {
+    area = new ResourceLoadGraphicArea(prj, prj.getZoomManager(), this, resourceTableConnector) {
       @Override
       public boolean isExpanded(HumanResource hr) {
         return resourceTableConnector.getCollapseView().isExpanded(hr);
@@ -87,6 +88,14 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
       area.repaint();
       return Unit.INSTANCE;
     });
+    resourceTableConnector.getTableScrollOffset().addListener(
+      (ChangeListener<? super Number>) (wtf, old, newValue) -> SwingUtilities.invokeLater(() -> {
+        area.getChartModel().setVerticalOffset(newValue.intValue());
+        area.repaint();
+        //reset();
+      })
+    );
+
     prj.getZoomManager().addZoomListener(area.getZoomListener());
     area.getChartModel().setRowHeight(resourceTableConnector.getMinRowHeight().intValue());
 
@@ -98,8 +107,8 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
   @Override
   protected void init() {
-    getTreeTable().initTreeTable();
-    area.setVScrollController(getTreeTable().getVScrollController());
+    //getTreeTable().initTreeTable();
+    //area.setVScrollController(getTreeTable().getVScrollController());
   }
 
   @Override

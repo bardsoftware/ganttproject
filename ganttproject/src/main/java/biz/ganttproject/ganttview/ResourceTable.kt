@@ -42,6 +42,7 @@ import net.sourceforge.ganttproject.roles.Role
 import net.sourceforge.ganttproject.task.ResourceAssignment
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.math.BigDecimal
+import java.util.function.Consumer
 import kotlin.math.ceil
 
 sealed class ResourceTableNode
@@ -69,7 +70,10 @@ data class ResourceTableChartConnector(
 
   // Collapse view that keeps the resource nodes expansion state.
   // The chart listens to the changes and updates appropriately.
-  val collapseView: TreeCollapseView<HumanResource>
+  val collapseView: TreeCollapseView<HumanResource>,
+
+  val tableScrollOffset: DoubleProperty,
+  var chartScrollOffset: Consumer<Double>?
 )
 
 /**
@@ -113,6 +117,15 @@ class ResourceTable(private val project: IGanttProject,
     resourceChartConnector.rowHeight.subscribe { value ->
       treeTable.fixedCellSize = ceil(maxOf(value.toDouble(), minCellHeight.value))
     }
+    resourceChartConnector.chartScrollOffset = Consumer { newValue ->
+      FXUtil.runLater {
+        treeTable.scrollBy(newValue)
+      }
+    }
+    treeTable.addScrollListener { newValue ->
+      resourceChartConnector.tableScrollOffset.value = newValue
+    }
+
     columnBuilder = ResourceColumnBuilder(tableModel, project, undoManager)
     initProjectEventHandlers()
     initKeyboardEventHandlers(listOf(resourceActions.resourceMoveUpAction, resourceActions.resourceMoveDownAction))

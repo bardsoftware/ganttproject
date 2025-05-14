@@ -18,12 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.ganttview.ResourceTableChartConnector;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelResource;
 import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.ResourceChart;
-import net.sourceforge.ganttproject.chart.gantt.ClipboardContents;
 import net.sourceforge.ganttproject.chart.mouse.MouseListenerBase;
 import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
 import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
@@ -35,9 +35,6 @@ import net.sourceforge.ganttproject.util.MouseUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -55,14 +52,14 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
   final ResourceTreeUIFacade myTreeUi;
 
-  public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager, ResourceTreeUIFacade treeUi) {
+  public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager, ResourceTreeUIFacade treeUi, ResourceTableChartConnector resourceTableConnector) {
     super(app.getProject(), app.getUIFacade(), zoomManager);
     appli = app;
     myTreeUi = treeUi;
     this.setBackground(Color.WHITE);
     myChartModel = new ChartModelResource(getTaskManager(), app.getHumanResourceManager(), getTimeUnitStack(),
         getUIConfiguration(), this);
-    myChartImplementation = new ResourceChartImplementation(this, app.getProject(), getUIFacade(), myChartModel, this);
+    myChartImplementation = new ResourceChartImplementation(this, app.getProject(), getUIFacade(), myChartModel, this, resourceTableConnector);
     myViewState = new ChartViewState(this, app.getUIFacade());
     app.getUIFacade().getZoomManager().addZoomListener(myViewState);
     initMouseListeners();
