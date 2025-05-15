@@ -96,7 +96,7 @@ public class GanttDialogPerson {
         "resourceProperties", actions,
         mainPropertiesPanel.getValidationErrors(),
         Lists.newArrayList(
-          new PropertiedDialogTabProvider(
+          new PropertiesDialogTabProvider(
             tabPane -> {
               tabPane.getTabs().add(new Tab(mainPropertiesPanel.getTitle(), mainPropertiesPanel.getFxComponent()));
               return Unit.INSTANCE;

@@ -36,13 +36,13 @@ import javafx.scene.layout.StackPane
 import javax.swing.JComponent
 import javax.swing.SwingUtilities
 
-data class PropertiedDialogTabProvider(
+data class PropertiesDialogTabProvider(
   val insertTab: (TabPane)->Unit,
   val requestFocus: ()->Unit
 )
 
-fun swingTab(title: String, createContents: ()->JComponent): PropertiedDialogTabProvider {
-  return PropertiedDialogTabProvider(
+fun swingTab(title: String, createContents: ()->JComponent): PropertiesDialogTabProvider {
+  return PropertiesDialogTabProvider(
     insertTab = { tabbedPane ->
       val swingNode = SwingNode()
       var swingNodeWrapper = StackPane(swingNode)
@@ -65,7 +65,7 @@ fun swingTab(title: String, createContents: ()->JComponent): PropertiedDialogTab
  * - an observable list of validation errors to be shown in the dialog UI.
  */
 fun propertiesDialog(title: String, id: String, actions: List<GPAction>, validationErrors: ObservableList<String>,
-                     tabProviders: List<PropertiedDialogTabProvider>) {
+                     tabProviders: List<PropertiesDialogTabProvider>) {
   dialog(title, id) { dialogController ->
     dialogController.addStyleSheet("/biz/ganttproject/app/ErrorPane.css");
     dialogController.addStyleSheet("/biz/ganttproject/app/TabPane.css");

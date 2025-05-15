@@ -264,6 +264,9 @@ class ResourceTable(private val project: IGanttProject,
 
 private fun ColumnList.Column.resourceDefaultColumn() = ResourceDefaultColumn.find(this.id)?.stub
 
+/**
+ * This object synchronizes the resource table widget contents with the model classes.
+ */
 class ResourceSyncAlgorithm(
   private val resourceManager: HumanResourceManager,
   private val rootItem: TreeItem<ResourceTableNode>,
