@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.resource;
 
+import biz.ganttproject.app.Barrier;
+import biz.ganttproject.app.BarrierEntrance;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.customproperty.CustomColumnsException;
 import biz.ganttproject.customproperty.CustomProperty;
@@ -26,9 +28,13 @@ import com.google.common.collect.Lists;
 import biz.ganttproject.customproperty.CustomPropertyManager;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.IGanttProject;
+import net.sourceforge.ganttproject.ProjectEventListener;
+import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -37,6 +43,37 @@ import java.util.*;
  * @author barmeier
  */
 public class HumanResourceManager {
+
+  private boolean eventsEnabled = true;
+
+  public @NotNull ProjectEventListener getProjectListener() {
+    return new ProjectEventListener.Stub() {
+      @Override
+      public void projectClosed() {
+        clear();
+      }
+
+      @Override
+      public void projectOpened(BarrierEntrance barrierRegistry, Barrier<IGanttProject> barrier) {
+        barrier.await(iGanttProject -> {
+          fireModelReset();
+          return Unit.INSTANCE;
+        });
+      }
+
+      @Override
+      public void projectRestoring(Barrier<Document> completion) {
+        completion.await(doc -> {
+          fireModelReset();
+          return Unit.INSTANCE;
+        });
+      }
+    };
+  }
+
+  public void setEventsEnabled(boolean value) {
+    this.eventsEnabled = value;
+  }
 
   public abstract static class ResourceBuilder {
     String myName;
@@ -194,7 +231,6 @@ public class HumanResourceManager {
   }
 
   public void clear() {
-    fireCleanup();
     resources.clear();
   }
 
@@ -203,6 +239,9 @@ public class HumanResourceManager {
   }
 
   private void fireResourceAdded(HumanResource resource) {
+    if (!eventsEnabled) {
+      return;
+    }
     ResourceEvent e = new ResourceEvent(this, resource);
     for (ResourceView nextView : myViews) {
       nextView.resourceAdded(e);
@@ -210,6 +249,9 @@ public class HumanResourceManager {
   }
 
   void fireResourceChanged(HumanResource resource) {
+    if (!eventsEnabled) {
+      return;
+    }
     ResourceEvent e = new ResourceEvent(this, resource);
     for (ResourceView nextView : myViews) {
       nextView.resourceChanged(e);
@@ -217,6 +259,9 @@ public class HumanResourceManager {
   }
 
   private void fireResourcesRemoved(HumanResource[] resources) {
+    if (!eventsEnabled) {
+      return;
+    }
     ResourceEvent e = new ResourceEvent(this, resources);
     for (ResourceView nextView : myViews) {
       nextView.resourcesRemoved(e);
@@ -224,6 +269,9 @@ public class HumanResourceManager {
   }
 
   public void fireAssignmentsChanged(HumanResource resource) {
+    if (!eventsEnabled) {
+      return;
+    }
     ResourceEvent e = new ResourceEvent(this, resource);
     for (ResourceView nextView : myViews) {
       nextView.resourceAssignmentsChanged(e);
@@ -231,12 +279,18 @@ public class HumanResourceManager {
   }
 
   private void fireStructureChange() {
+    if (!eventsEnabled) {
+      return;
+    }
     for (ResourceView nextView : myViews) {
       nextView.resourceStructureChanged();
     }
   }
-  private void fireCleanup() {
-    fireResourcesRemoved(resources.toArray(new HumanResource[0]));
+
+  private void fireModelReset() {
+    for (ResourceView nextView : myViews) {
+      nextView.resourceModelReset();
+    }
   }
 
   /** Move up the resource number index */

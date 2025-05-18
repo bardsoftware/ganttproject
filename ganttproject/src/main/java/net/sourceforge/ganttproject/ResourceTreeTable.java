@@ -180,7 +180,6 @@ public class ResourceTreeTable extends GPTreeTableBase {
   @Override
   protected void onProjectOpened() {
     super.onProjectOpened();
-    myResourceTreeModel.updateResources();
   }
 
   private RoleManager getRoleManager() {

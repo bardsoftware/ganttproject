@@ -182,6 +182,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     myUIConfiguration.setDpiOption(getUiFacadeImpl().getDpiOption());
 
     addProjectEventListener(getTaskManager().getProjectListener());
+    addProjectEventListener(getHumanResourceManager().getProjectListener());
     getActiveCalendar().addListener(getTaskManager().getCalendarListener());
 
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
@@ -752,6 +753,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   @Override
   public void resourceStructureChanged() {
     setAskForSave(true);
+  }
+
+  @Override
+  public void resourceModelReset() {
   }
 
   // ///////////////////////////////////////////////////////////////

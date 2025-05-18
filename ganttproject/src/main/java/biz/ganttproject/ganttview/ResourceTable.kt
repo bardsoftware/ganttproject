@@ -149,8 +149,17 @@ class ResourceTable(private val project: IGanttProject,
       override fun resourceStructureChanged() {
         sync(keepFocus = true)
       }
+
+      override fun resourceModelReset() {
+        LOGGER.debug(">> resourceModelReset()")
+        sync(keepFocus = true)
+        LOGGER.debug("<< resourceModelReset()")
+      }
     })
     treeTable.selectionModel.selectedItems.addListener(ListChangeListener<TreeItem<ResourceTableNode>> { change ->
+      if (selectionKeeper.ignoreSelectionChange) {
+        return@ListChangeListener
+      }
       val selectedResources = treeTable.selectionModel.selectedItems.map { it.value }.mapNotNull {
         when (it) {
           is ResourceNode -> it.resource
@@ -246,9 +255,11 @@ class ResourceTable(private val project: IGanttProject,
         currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
       )
       if (newColumns.isNotEmpty()) {
-        treeTable.setColumns(newColumns)
+        keepSelection {
+          treeTable.reload(::sync)
+          treeTable.setColumns(newColumns)
+        }
       }
-      treeTable.reload(::sync)
     }
   }
 

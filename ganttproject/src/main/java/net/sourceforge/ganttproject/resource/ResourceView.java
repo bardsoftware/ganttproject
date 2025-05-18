@@ -37,4 +37,6 @@ public interface ResourceView {
   void resourceAssignmentsChanged(ResourceEvent e);
 
   void resourceStructureChanged();
+
+  void resourceModelReset();
 }

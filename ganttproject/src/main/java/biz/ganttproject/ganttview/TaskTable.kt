@@ -321,9 +321,11 @@ class TaskTable(
         currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
       )
       if (newColumns.isNotEmpty()) {
-        treeTable.setColumns(newColumns)
+        keepSelection {
+          reload()
+          treeTable.setColumns(newColumns)
+        }
       }
-      reload()
     }
   }
 
@@ -460,7 +462,7 @@ class TaskTable(
     this.treeTable.focusedProperty().addListener { _, oldValue, newValue ->
       if (newValue && newValue != oldValue) {
         this.selectionManager.setUserInputConsumer(this@TaskTable)
-        this.treeTableSelectionListener.onChanged(null)
+        //this.treeTableSelectionListener.onChanged(null)
       }
     }
     this.treeTable.focusModel.focusedCellProperty().addListener { _, oldValue, newValue ->

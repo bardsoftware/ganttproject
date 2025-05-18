@@ -158,11 +158,13 @@ public class ProxyDocument implements Document {
   public void read() throws IOException, DocumentException {
     try {
       getTaskManager().setEventsEnabled(false);
+      getHumanResourceManager().setEventsEnabled(false);
       doParse();
     } catch (Exception e) {
       throw new DocumentException("Failed to parse document", e);
     } finally {
       getTaskManager().setEventsEnabled(true);
+      getHumanResourceManager().setEventsEnabled(true);
     }
   }
 
