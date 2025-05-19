@@ -23,8 +23,13 @@ import biz.ganttproject.app.*
 import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.customproperty.CustomPropertyManager
+import biz.ganttproject.lib.fx.BuiltinColumns
+import biz.ganttproject.lib.fx.ColumnListImpl
 import biz.ganttproject.lib.fx.GPTreeTableView
 import javafx.beans.property.ReadOnlyDoubleProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.event.EventHandler
 import javafx.scene.control.TreeItem
 import javafx.scene.input.KeyCode
@@ -47,12 +52,20 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
   val treeTable: GPTreeTableView<NodeType>,
   private val project: IGanttProject,
   private val undoManager: GPUndoManager,
-  private val customPropertyManager: CustomPropertyManager
+  private val customPropertyManager: CustomPropertyManager,
+  private val builtinColumns: BuiltinColumns
 ) {
 
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
   protected var projectModified: () -> Unit = { project.isModified = true }
   lateinit var columnBuilder: ColumnBuilder<NodeType, BuiltinColumnType>
+  protected val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
+  val columnList: ColumnListImpl = ColumnListImpl(columns, customPropertyManager,
+    { treeTable.columns },
+    { onColumnsChange() },
+    builtinColumns
+  )
+  val columnListWidthProperty = SimpleObjectProperty<Pair<Double, Double>>()
 
   init {
     FXUtil.runLater {
@@ -63,7 +76,17 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
     treeTable.stylesheets.add("/biz/ganttproject/app/Dialog.css")
     treeTable.onProperties = this::onProperties
     treeTable.contextMenuActions = this::contextMenuActions
-
+    columnList.totalWidthProperty.addListener { _, oldValue, newValue ->
+      if (oldValue != newValue) {
+        // We add vertical scroll bar width to the sum width of all columns, so that the split pane
+        // which contains the table was resized appropriately.
+        columnListWidthProperty.value = newValue.toDouble() to treeTable.vbarWidth()
+      }
+    }
+    treeTable.onColumnResize = {
+      columnList.onColumnResize
+      projectModified()
+    }
   }
 
   protected fun initProjectEventHandlers() {
@@ -163,6 +186,22 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
   abstract fun loadDefaultColumns()
   protected abstract fun sync(keepFocus: Boolean = false)
   protected abstract fun onProperties()
+  fun onColumnsChange()  {
+    FXUtil.runLater {
+      columnList.columns().forEach { builtinColumns.find(it.id)?.isVisible = it.isVisible }
+      val newColumns = columnBuilder.buildColumns(
+        columns = columnList.columns(),
+        currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
+      )
+      if (newColumns.isNotEmpty()) {
+        keepSelection {
+          treeTable.reload(::sync, null)
+          treeTable.setColumns(newColumns)
+        }
+      }
+    }
+  }
+
   protected abstract fun contextMenuActions(builder: MenuBuilder)
   protected abstract val tableModel: TableModel<NodeType, BuiltinColumnType>
   protected abstract val selectionKeeper: SelectionKeeper<NodeType>

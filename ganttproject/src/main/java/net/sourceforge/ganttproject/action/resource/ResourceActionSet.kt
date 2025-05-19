@@ -19,11 +19,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.resource
 
 import biz.ganttproject.resource.GPCloudResourceListAction
-import net.sourceforge.ganttproject.GanttProject
-import net.sourceforge.ganttproject.ResourceTreeTable
+import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.view.GPViewManager
-import net.sourceforge.ganttproject.resource.*
+import net.sourceforge.ganttproject.resource.AssignmentContext
+import net.sourceforge.ganttproject.resource.HumanResource
+import net.sourceforge.ganttproject.resource.HumanResourceManager
+import net.sourceforge.ganttproject.resource.ResourceSelectionManager
 import net.sourceforge.ganttproject.task.ResourceAssignment
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
@@ -31,7 +33,7 @@ import javax.swing.Action
 
 class ResourceActionSet(
   selectionManager: ResourceSelectionManager, assignmentContext: AssignmentContext,
-  project: GanttProject, private val uiFacade: UIFacade, table: ResourceTreeTable
+  project: IGanttProject, private val uiFacade: UIFacade
 ) {
   val resourceNewAction = ResourceNewAction(project.humanResourceManager, project.projectDatabase, project.roleManager, project.taskManager, uiFacade)
   val cloudResourceList = GPCloudResourceListAction(project.humanResourceManager)
@@ -39,7 +41,6 @@ class ResourceActionSet(
   val resourcePropertiesAction = ResourcePropertiesAction(project, selectionManager, assignmentContext, uiFacade)
   val resourceMoveUpAction = ResourceMoveUpAction2(project.humanResourceManager, selectionManager)
   val resourceMoveDownAction = ResourceMoveDownAction2(project.humanResourceManager, selectionManager)
-  val resourceSendMailAction = ResourceSendMailAction(table)
   val assignmentDelete = AssignmentDeleteAction2(selectionManager, uiFacade)
   val copyAction = ResourceCopyAction(project.humanResourceManager, selectionManager, uiFacade.viewManager)
   val pasteAction get() = uiFacade.viewManager.pasteAction
@@ -48,7 +49,6 @@ class ResourceActionSet(
   val actions: Array<AbstractAction> by lazy {
     resourceNewAction.putValue(Action.SHORT_DESCRIPTION, null)
     resourcePropertiesAction.putValue(Action.SHORT_DESCRIPTION, null)
-    resourceSendMailAction.putValue(Action.SHORT_DESCRIPTION, null)
     arrayOf(resourceNewAction, resourcePropertiesAction)
   }
 

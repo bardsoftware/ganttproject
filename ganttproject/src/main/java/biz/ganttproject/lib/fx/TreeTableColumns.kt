@@ -37,6 +37,7 @@ data class BuiltinColumns(
   val allColumns: () -> List<ColumnList.Column>
 ) {
   fun exists(columnId: String) = allColumns().any { it.id == columnId }
+  fun find(columnId: String) = allColumns().find { it.id == columnId }
 }
 
 /**

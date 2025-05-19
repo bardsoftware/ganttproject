@@ -126,7 +126,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private FXSearchUi mySearchUi;
 
   private final Supplier<GPAction> taskNewAction = Suppliers.memoize(myTaskActions::getCreateAction);
-  private final Supplier<GPAction> resourceNewAction = Suppliers.memoize(()->getResourceTree().getNewAction());
+  private final Supplier<GPAction> resourceNewAction = Suppliers.memoize(myResourceActions::getResourceNewAction);
   private final Supplier<ArtefactAction> insertAction = Suppliers.memoize(() ->
     new ArtefactNewAction(
       () -> getViewManager().getActiveView().getCreateAction(),
@@ -148,15 +148,14 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     mTask.add(myTaskActions.getCreateAction());
     mTask.add(myTaskActions.getPropertiesAction());
     mTask.add(myTaskActions.getDeleteAction());
-    getResourcePanel().setTaskPropertiesAction(myTaskActions.getPropertiesAction());
     bar.add(mTask);
 
     JMenu mHuman = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("human"));
-    ResourceActionSet resourceActionSet = getResourcePanel().getResourceActionSet();
+    ResourceActionSet resourceActionSet = myResourceActions;
     for (AbstractAction a : resourceActionSet.getActions()) {
       mHuman.add(a);
     }
-    mHuman.add(resourceActionSet.getResourceSendMailAction());
+    //mHuman.add(resourceActionSet.getResourceSendMailAction());
     mHuman.add(resourceActionSet.getCloudResourceList());
 
     HelpMenu helpMenu = new HelpMenu(getProject(), getUIFacade(), getProjectUIFacade());
@@ -223,8 +222,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         getProject(), getUIFacade(), area.getJComponent(),
         getUIConfiguration(), myTaskTableSupplier, myTaskActions, myUiInitializationPromise);
 
-    myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(), getResourcePanel(),
-        getResourcePanel().area, myResourceTableChartConnector);
+    myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(),
+      myResourceTableSupplier, getResourcePanel().area);
 //++
 //    addComponentListener(new ComponentAdapter() {
 //      @Override
@@ -790,7 +789,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
       return new GanttXMLSaver(GanttProject.this, getArea(), getUIFacade(),
         myGanttChartTabContent,
         myResourceChartTabContent,
-        () -> myTaskTableSupplier.get().getColumnList(), GanttProject.this::getTaskFilterManager);
+        () -> myTaskTableSupplier.get().getColumnList(), GanttProject.this::getTaskFilterManager,
+        () -> myResourceTableSupplier.get().getColumnList());
     }
   }
 

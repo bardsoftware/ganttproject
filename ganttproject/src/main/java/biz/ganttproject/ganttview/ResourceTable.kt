@@ -26,9 +26,7 @@ import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.lib.fx.*
 import javafx.beans.property.DoubleProperty
 import javafx.beans.property.IntegerProperty
-import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
-import javafx.collections.ObservableList
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
@@ -82,17 +80,13 @@ data class ResourceTableChartConnector(
 class ResourceTable(private val project: IGanttProject,
                     private val undoManager: GPUndoManager,
                     private val resourceSelectionManager: ResourceSelectionManager,
-                    private val resourceActions: ResourceActionSet,
+                    val resourceActions: ResourceActionSet,
                     private val resourceChartConnector: ResourceTableChartConnector) :
   BaseTreeTableComponent<ResourceTableNode, ResourceDefaultColumn>(
-    GPTreeTableView(TreeItem<ResourceTableNode>(RootNode())), project, undoManager, project.resourceCustomPropertyManager
-  ) {
-
-  override val tableModel = ResourceTableModel()
-  private val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
-  val columnList: ColumnListImpl = ColumnListImpl(columns, project.resourceCustomPropertyManager,
-    { treeTable.columns },
-    { onColumnsChange() },
+    GPTreeTableView(TreeItem<ResourceTableNode>(RootNode())),
+    project,
+    undoManager,
+    project.resourceCustomPropertyManager,
     BuiltinColumns(
       isZeroWidth = {
         ResourceDefaultColumn.find(it)?.isIconified ?: false
@@ -101,7 +95,9 @@ class ResourceTable(private val project: IGanttProject,
         ColumnList.Immutable.fromList(ResourceDefaultColumn.getColumnStubs()).copyOf()
       }
     )
-  )
+  ) {
+
+  override val tableModel = ResourceTableModel()
   private val resource2treeItem = mutableMapOf<HumanResource, TreeItem<ResourceNode>>()
   private val task2treeItem = mutableMapOf<ResourceAssignment, TreeItem<AssignmentNode>>()
   override val selectionKeeper = SelectionKeeper(logger = LOGGER, treeTable = this.treeTable, node2treeItem = { node ->
@@ -243,22 +239,6 @@ class ResourceTable(private val project: IGanttProject,
           //resourceActions.assignedTaskProperties,
           resourceActions.assignmentDelete
         )
-      }
-    }
-  }
-
-  private fun onColumnsChange()  {
-    FXUtil.runLater {
-      columnList.columns().forEach { it.resourceDefaultColumn()?.isVisible = it.isVisible }
-      val newColumns = columnBuilder.buildColumns(
-        columns = columnList.columns(),
-        currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
-      )
-      if (newColumns.isNotEmpty()) {
-        keepSelection {
-          treeTable.reload(::sync)
-          treeTable.setColumns(newColumns)
-        }
       }
     }
   }

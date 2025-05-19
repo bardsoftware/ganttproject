@@ -93,7 +93,15 @@ class TaskTable(
     GPTreeTableView<Task>(TreeItem(taskManager.taskHierarchy.rootTask)),
     project,
     undoManager,
-    taskManager.customPropertyManager
+    taskManager.customPropertyManager,
+    BuiltinColumns(
+      isZeroWidth = {
+        TaskDefaultColumn.find(it)?.isIconified ?: false
+      },
+      allColumns = {
+        ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs()).copyOf()
+      }
+    )
   ) {
 
   private val isSortedProperty = SimpleBooleanProperty()
@@ -113,21 +121,6 @@ class TaskTable(
       isSorted = isSortedProperty
     )
   }
-  private val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
-  val columnList: ColumnListImpl = ColumnListImpl(columns, taskManager.customPropertyManager,
-    { treeTable.columns },
-    { onColumnsChange() },
-    BuiltinColumns(
-      isZeroWidth = {
-        TaskDefaultColumn.find(it)?.isIconified ?: false
-      },
-      allColumns = {
-        ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs()).copyOf()
-      }
-    )
-  )
-
-  val columnListWidthProperty = SimpleObjectProperty<Pair<Double, Double>>()
 
   private val placeholderShowHidden by lazy {
     Button(RootLocalizer.formatText("taskTable.placeholder.showHiddenTasks")).also {
@@ -252,17 +245,6 @@ class TaskTable(
         }
       }
     )
-    columnList.totalWidthProperty.addListener { _, oldValue, newValue ->
-      if (oldValue != newValue) {
-        // We add vertical scroll bar width to the sum width of all columns, so that the split pane
-        // which contains the table was resized appropriately.
-        columnListWidthProperty.value = newValue.toDouble() to treeTable.vbarWidth()
-      }
-    }
-    treeTable.onColumnResize = {
-      columnList.onColumnResize
-      projectModified()
-    }
     initTaskEventHandlers()
     initProjectEventHandlers()
     initChartConnector()
@@ -311,22 +293,6 @@ class TaskTable(
     columns.addListener(ListChangeListener {
       onColumnsChange()
     })
-  }
-
-  private fun onColumnsChange()  {
-    FXUtil.runLater {
-      columnList.columns().forEach { it.taskDefaultColumn()?.isVisible = it.isVisible }
-      val newColumns = columnBuilder.buildColumns(
-        columns = columnList.columns(),
-        currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
-      )
-      if (newColumns.isNotEmpty()) {
-        keepSelection {
-          reload()
-          treeTable.setColumns(newColumns)
-        }
-      }
-    }
   }
 
 

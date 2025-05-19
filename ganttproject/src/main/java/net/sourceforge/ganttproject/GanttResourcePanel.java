@@ -40,7 +40,7 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
   public final GanttProject appli;
 
-  private final ResourceActionSet myResourceActionSet;
+  //private final ResourceActionSet myResourceActionSet;
 
 //  private final GanttProjectBase.RowHeightAligner myRowHeightAligner;
 
@@ -63,7 +63,6 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
     myUIFacade = uiFacade;
 
     prj.addProjectEventListener(getProjectEventListener());
-    myResourceActionSet = new ResourceActionSet(uiFacade.getResourceSelectionManager(), uiFacade.getResourceSelectionManager(), prj, uiFacade, getTreeTable());
 
 //    getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(),
 //        myResourceActionSet.getResourceMoveDownAction(), myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourceDeleteAction(),
@@ -160,12 +159,12 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
   @Override
   public AbstractAction getMoveUpAction() {
-    return myResourceActionSet.getResourceMoveUpAction();
+    return null;
   }
 
   @Override
   public AbstractAction getMoveDownAction() {
-    return myResourceActionSet.getResourceMoveDownAction();
+    return null;
   }
 
   @Override
@@ -184,21 +183,10 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
   @Override
   public void addToolbarActions(ToolbarBuilder builder) {
-    builder.addButton(myResourceActionSet.getResourceMoveUpAction().asToolbarAction())
-        .addButton(myResourceActionSet.getResourceMoveDownAction().asToolbarAction());
   }
 
   public GPAction getPropertiesAction() {
-    return myResourceActionSet.getResourcePropertiesAction();
-  }
-
-  public ResourceActionSet getResourceActionSet() {
-    return myResourceActionSet;
-  }
-
-  void setTaskPropertiesAction(GPAction action) {
-    myResourceActionSet.getResourcePropertiesAction().setTaskPropertiesAction(action);
-    setArtefactActions(myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourcePropertiesAction(), myResourceActionSet.getResourceDeleteAction());
+    return null;
   }
 
   @Override

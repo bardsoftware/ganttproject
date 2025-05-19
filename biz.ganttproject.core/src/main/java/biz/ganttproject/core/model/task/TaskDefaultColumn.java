@@ -22,6 +22,7 @@ import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
 import biz.ganttproject.core.table.BuiltinColumn;
 import biz.ganttproject.customproperty.CustomPropertyClass;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -91,7 +92,8 @@ public enum TaskDefaultColumn implements BuiltinColumn {
     mySortComparator = sortComparator;
   }
 
-  public Column getStub() {
+  @Override
+  public @NotNull Column getStub() {
     return myDelegate;
   }
 

@@ -23,6 +23,7 @@ import biz.ganttproject.core.table.ColumnList.Column;
 import biz.ganttproject.core.table.BuiltinColumn;
 import com.google.common.base.MoreObjects;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -56,7 +57,8 @@ public enum ResourceDefaultColumn implements BuiltinColumn {
     myValueClass = valueClass;
   }
 
-  public Column getStub() {
+  @Override
+  public @NotNull Column getStub() {
     return myDelegate;
   }
 
