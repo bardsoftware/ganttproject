@@ -25,6 +25,7 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /** Search service for resources */
 public class ResourceSearchService extends SearchServiceBase<ResourceSearchService.MySearchResult, HumanResource> {
@@ -52,17 +53,13 @@ public class ResourceSearchService extends SearchServiceBase<ResourceSearchServi
 
   @Override
   public void init(IGanttProject project, UIFacade uiFacade) {
-    super.init(project, uiFacade.getResourceTree(), uiFacade);
+    super.init(project, null, uiFacade);
   }
 
   public void select(List<ResourceSearchService.MySearchResult> results) {
-    myTreeUiFacade.clearSelection();
-    for (SearchResult<HumanResource> r : results) {
-      myTreeUiFacade.setSelected(r.getObject(), false);
-      myTreeUiFacade.makeVisible(r.getObject());
-    }
-    myUiFacade.getViewManager().getView(String.valueOf(UIFacade.RESOURCES_INDEX)).setActive(true);
-    myTreeUiFacade.getTreeComponent().requestFocusInWindow();
+    var selectionManager = getUiFacade().getResourceSelectionManager();
+    var selectedResources = results.stream().map(SearchResult::getObject).toList();
+    selectionManager.select(selectedResources, true,this);
+    getUiFacade().getViewManager().getView(String.valueOf(UIFacade.RESOURCES_INDEX)).setActive(true);
   }
-
 }

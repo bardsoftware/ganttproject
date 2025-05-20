@@ -114,7 +114,7 @@ public class GanttDialogPerson {
             language.getText("customColumns"),
             () -> {
               var customColumnsPanel = new CustomColumnsPanel(myCustomPropertyManager, myProjectDatabase, CustomColumnsPanel.Type.RESOURCE,
-                myUIFacade.getUndoManager(), person, myUIFacade.getResourceTree().getVisibleFields());
+                myUIFacade.getUndoManager(), person, myUIFacade.getResourceColumnList());
               return customColumnsPanel.getComponent();
             }
           ),

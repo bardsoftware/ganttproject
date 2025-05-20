@@ -94,7 +94,7 @@ class ResourceChartImplementation extends AbstractChartImplementation {
         setupExportSettings(settings, modelCopy);
         var rowCount = new AtomicInteger(0);
         getProject().getHumanResourceManager().getResources().forEach(hr -> {
-          resourceLoadGraphicArea.myTreeUi.setExpanded(hr, true);
+          //resourceLoadGraphicArea.myTreeUi.setExpanded(hr, true);
           rowCount.addAndGet(hr.getAssignments().length + 1);
         });
         settings.setRowCount(rowCount.get());

@@ -142,14 +142,13 @@ public interface UIFacade {
   //TaskTreeUIFacade getTaskTree();
   TreeCollapseView<Task> getTaskCollapseView();
   ColumnList getTaskColumnList();
-
+  ColumnList getResourceColumnList();
 
   TaskSelectionManager getTaskSelectionManager();
 
   TaskSelectionContext getTaskSelectionContext();
 
   ResourceSelectionManager getResourceSelectionManager();
-  ResourceTreeUIFacade getResourceTree();
 
   DefaultEnumerationOption<Locale> getLanguageOption();
 

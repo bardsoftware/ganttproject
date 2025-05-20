@@ -592,7 +592,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   }
 
   private void writeResources() throws Exception {
-    ColumnList visibleFields = getUIFacade().getResourceTree().getVisibleFields();
+    ColumnList visibleFields = getUIFacade().getResourceColumnList();
     final ArrayList<Column> orderedColumns = new ArrayList<>();
     final PdfPTable table = createTableHeader(visibleFields, orderedColumns);
     List<HumanResource> resources = getProject().getHumanResourceManager().getResources();

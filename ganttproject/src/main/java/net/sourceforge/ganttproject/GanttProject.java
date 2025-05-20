@@ -28,7 +28,6 @@ import com.beust.jcommander.Parameter;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import javafx.stage.Stage;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.action.*;
@@ -42,7 +41,6 @@ import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
-import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
@@ -75,15 +73,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private final LoggerApi<Logger> boundsLogger = GPLogger.create("Window.Bounds");
   private final LoggerApi<Logger> gpLogger = GPLogger.create("GanttProject");
 
-  /**
-   * GanttGraphicArea for the calendar with Gantt
-   */
+  // Chart component of the Gantt chart view.
   private final GanttGraphicArea area;
 
-  /**
-   * GanttPeoplePanel to edit person that work on the project
-   */
-  private GanttResourcePanel resp;
+  // Chart component of the resource load view.
+  private final ResourceLoadGraphicArea resourceChart;
 
   private final EditMenu myEditMenu;
 
@@ -110,8 +104,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   private final GanttChartTabContentPanel myGanttChartTabContent;
 
   private final ResourceChartTabContentPanel myResourceChartTabContent;
-
-//  private final List<RowHeightAligner> myRowHeightAligners = Lists.newArrayList();
 
   private ParserFactory myParserFactory;
 
@@ -187,6 +179,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     area = new GanttGraphicArea(this, getTaskManager(), getZoomManager(), getUndoManager(),
         myTaskTableChartConnector,
       Suppliers.memoize(() -> myTaskTableSupplier.get().getActionConnector())::get);
+    resourceChart = new ResourceLoadGraphicArea(this, getZoomManager(), myResourceTableChartConnector);
+
     options.addOptionGroups(getUIFacade().getOptions());
     options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
     options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
@@ -207,13 +201,12 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     ScrollingManager scrollingManager = getScrollingManager();
     scrollingManager.addScrollingListener(area.getViewState());
-    scrollingManager.addScrollingListener(getResourcePanel().area.getViewState());
+    scrollingManager.addScrollingListener(resourceChart.getViewState());
 
     startupLogger.debug("3. creating menus...");
     myZoomActions = new ZoomActionSet(getZoomManager());
     myProjectMenu = new ProjectMenu(this, stage, "project");
     myEditMenu = new EditMenu(getProject(), getUIFacade(), getViewManager(), () -> mySearchUi.requestFocus(), "edit");
-    getResourcePanel().getTreeTable().setupActionMaps(myEditMenu.getSearchAction());
 
 
     startupLogger.debug("4. creating views...");
@@ -223,7 +216,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
         getUIConfiguration(), myTaskTableSupplier, myTaskActions, myUiInitializationPromise);
 
     myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(),
-      myResourceTableSupplier, getResourcePanel().area);
+      myResourceTableSupplier, resourceChart);
 //++
 //    addComponentListener(new ComponentAdapter() {
 //      @Override
@@ -411,7 +404,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public void languageChanged(Event event) {
 //++    applyComponentOrientation(language.getComponentOrientation());
     area.repaint();
-    getResourcePanel().area.repaint();
+    resourceChart.repaint();
 
 //++    applyComponentOrientation(language.getComponentOrientation());
   }
@@ -557,15 +550,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   public void setAskForSave(boolean afs) {
     getProjectImpl().fireProjectModified(afs, (ex) -> getUIFacade().showErrorDialog(ex) );
     askForSave = afs;
-  }
-
-  public GanttResourcePanel getResourcePanel() {
-    if (this.resp == null) {
-      this.resp = new GanttResourcePanel(this, getUIFacade(), myResourceTableChartConnector);
-      this.resp.init();
-//      myRowHeightAligners.add(this.resp.getRowHeightAligner());
-    }
-    return this.resp;
   }
 
   public GanttGraphicArea getArea() {
@@ -768,12 +752,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   @Override
   public TimelineChart getResourceChart() {
-    return getResourcePanel().area;
-  }
-
-  @Override
-  public ResourceTreeUIFacade getResourceTree() {
-    return getResourcePanel();
+    return resourceChart;
   }
 
   private class ParserFactoryImpl implements ParserFactory {

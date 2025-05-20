@@ -164,17 +164,6 @@ internal class ResourceChartTabContentPanel(
 
   override val selection: ChartSelection = ResourceChartSelection(project, workbenchFacade.resourceSelectionManager)
 
-  /*
-    private final Supplier<GPAction> taskDeleteAction = Suppliers.memoize(myTaskActions::getDeleteAction);
-    private final Supplier<GPAction> resourceDeleteAction = Suppliers.memoize(() -> getResourceTree().getDeleteAction());
-    private final Supplier<ArtefactAction> deleteAction = Suppliers.memoize(() ->
-    new ArtefactDeleteAction(
-    () -> getViewManager().getActiveView().getDeleteAction(),
-    new Action[]{taskDeleteAction.get(), resourceDeleteAction.get()}
-    )
-    );
-
-     */
   override val propertiesAction: GPAction
     get() = resourceActions.resourcePropertiesAction
 

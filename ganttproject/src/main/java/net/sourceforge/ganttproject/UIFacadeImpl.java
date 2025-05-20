@@ -512,8 +512,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   }
 
   @Override
-  public ResourceTreeUIFacade getResourceTree() {
-    return myFallbackDelegate.getResourceTree();
+  public ColumnList getResourceColumnList() {
+    return myFallbackDelegate.getResourceColumnList();
   }
 
   @Override

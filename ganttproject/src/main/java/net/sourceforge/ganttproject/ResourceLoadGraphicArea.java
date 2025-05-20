@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.ganttview.ResourceTableChartConnector;
+import javafx.beans.value.ChangeListener;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.ChartModelResource;
@@ -26,11 +28,9 @@ import net.sourceforge.ganttproject.chart.ChartViewState;
 import net.sourceforge.ganttproject.chart.ResourceChart;
 import net.sourceforge.ganttproject.chart.mouse.MouseListenerBase;
 import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
-import net.sourceforge.ganttproject.gui.ResourceTreeUIFacade;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
-import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.util.MouseUtil;
 
 import javax.swing.*;
@@ -44,25 +44,40 @@ import java.awt.event.MouseMotionListener;
  */
 public class ResourceLoadGraphicArea extends ChartComponentBase implements ResourceChart {
   /** The main application */
-  final GanttProject appli;
-
   final ChartModelResource myChartModel;
 
   private final ChartViewState myViewState;
 
-  final ResourceTreeUIFacade myTreeUi;
+  private final ResourceTableChartConnector tableConnector;
 
-  public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager, ResourceTreeUIFacade treeUi, ResourceTableChartConnector resourceTableConnector) {
+  public ResourceLoadGraphicArea(GanttProject app, ZoomManager zoomManager, ResourceTableChartConnector resourceTableConnector) {
     super(app.getProject(), app.getUIFacade(), zoomManager);
-    appli = app;
-    myTreeUi = treeUi;
+    this.tableConnector = resourceTableConnector;
     this.setBackground(Color.WHITE);
     myChartModel = new ChartModelResource(getTaskManager(), app.getHumanResourceManager(), getTimeUnitStack(),
         getUIConfiguration(), this);
     myChartImplementation = new ResourceChartImplementation(this, app.getProject(), getUIFacade(), myChartModel, this, resourceTableConnector);
     myViewState = new ChartViewState(this, app.getUIFacade());
-    app.getUIFacade().getZoomManager().addZoomListener(myViewState);
+    zoomManager.addZoomListener(myViewState);
+    zoomManager.addZoomListener(getZoomListener());
     initMouseListeners();
+    tableConnector.getCollapseView().getExpandedCount().addWatcher(evt -> {
+      repaint();
+      return Unit.INSTANCE;
+    });
+    tableConnector.getTableScrollOffset().addListener((ChangeListener<? super Number>) (wtf, old, newValue) -> SwingUtilities.invokeLater(() -> {
+      getChartModel().setVerticalOffset(newValue.intValue());
+      repaint();
+      })
+    );
+    getChartModel().setRowHeight(resourceTableConnector.getMinRowHeight().intValue());
+    app.getProject().addProjectEventListener(new ProjectEventListener.Stub() {
+      @Override
+      public void projectClosed() {
+        repaint();
+      }
+    });
+
   }
 
   /** @return the preferred size of the panel. */
@@ -71,13 +86,9 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     return new Dimension(465, 600);
   }
 
-  protected int getRowHeight() {
-    return appli.getResourcePanel().getRowHeight();
-  }
-
   @Override
   protected GPTreeTableBase getTreeTable() {
-    return appli.getResourcePanel().getResourceTreeTable();
+    return null;
   }
 
   @Override
@@ -87,7 +98,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
   @Override
   public void focus() {
-    myTreeUi.getTreeComponent().requestFocus();
+    //myTreeUi.getTreeComponent().requestFocus();
   }
 
   @Override
@@ -132,11 +143,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     return myChartImplementation;
   }
 
-  @Override
-  public boolean isExpanded(HumanResource resource) {
-    return true;
-  }
-
   private MouseMotionListener myMouseMotionListener;
 
   private MouseListener myMouseListener;
@@ -148,8 +154,13 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     return myViewState;
   }
 
-  HumanResourceManager getResourceManager() {
-    return appli.getHumanResourceManager();
+  @Override
+  public boolean isExpanded(HumanResource hr) {
+    return tableConnector.getCollapseView().isExpanded(hr);
+  }
+
+  protected int getRowHeight() {
+    return tableConnector.getMinRowHeight().intValue();
   }
 
 }

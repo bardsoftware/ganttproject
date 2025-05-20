@@ -466,6 +466,11 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   }
 
   @Override
+  public ColumnList getResourceColumnList() {
+    return myResourceTableSupplier.get().getColumnList();
+  }
+
+  @Override
   public void setWorkbenchTitle(String title) {
     myUIFacade.setWorkbenchTitle(title);
   }

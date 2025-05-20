@@ -203,8 +203,8 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public ResourceTreeUIFacade getResourceTree() {
-    return myRealFacade.getResourceTree();
+  public ColumnList getResourceColumnList() {
+    return myRealFacade.getResourceColumnList();
   }
 
   @Override
