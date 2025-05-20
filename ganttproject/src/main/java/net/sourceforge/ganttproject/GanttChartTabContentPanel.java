@@ -94,8 +94,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       }
     });
     mySelection = new GanttChartSelection(project.getTaskManager(), workbenchFacade.getTaskSelectionManager());
-    //addChartPanel(createSchedulePanel());
-    //addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());
   }
 
   private FXToolbarBuilder createScheduleToolbar() {
@@ -190,17 +188,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
     }));
     return taskTable;
   }
-
-  // //////////////////////////////////////////////
-  // GPView
-//  @Override
-//  public void setActive(boolean active) {
-//    if (active) {
-//      //myTaskTree.requestFocus();
-//      this.taskTable.initUserKeyboardInput();
-//      myTaskActions.getCreateAction().updateAction();
-//    }
-//  }
 
 
   @Override

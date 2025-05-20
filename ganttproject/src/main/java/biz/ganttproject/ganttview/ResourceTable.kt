@@ -70,7 +70,10 @@ data class ResourceTableChartConnector(
   // The chart listens to the changes and updates appropriately.
   val collapseView: TreeCollapseView<HumanResource>,
 
+  // Vertical scroll offset in the table.
   val tableScrollOffset: DoubleProperty,
+
+  // Callback that is called whenever the chart vertical scroll offset changes,
   var chartScrollOffset: Consumer<Double>?
 )
 
@@ -221,6 +224,10 @@ class ResourceTable(private val project: IGanttProject,
       builder.apply {
         items(
           resourceActions.resourcePropertiesAction,
+          resourceActions.resourceSendMailAction
+        )
+        separator()
+        items(
           resourceActions.resourceMoveUpAction,
           resourceActions.resourceMoveDownAction
         )

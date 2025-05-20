@@ -27,6 +27,7 @@ import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.resource.ResourceSelectionManager
 import net.sourceforge.ganttproject.task.ResourceAssignment
+import net.sourceforge.ganttproject.util.BrowserControl
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 import javax.swing.Action
@@ -45,6 +46,7 @@ class ResourceActionSet(
   val copyAction = ResourceCopyAction(project.humanResourceManager, selectionManager, uiFacade.viewManager)
   val pasteAction get() = uiFacade.viewManager.pasteAction
   val cutAction get() = uiFacade.viewManager.cutAction
+  val resourceSendMailAction = ResourceSendMailAction2(selectionManager)
 
   val actions: Array<AbstractAction> by lazy {
     resourceNewAction.putValue(Action.SHORT_DESCRIPTION, null)
@@ -76,6 +78,9 @@ fun deleteAssignments(assignmentContext: AssignmentContext, uiFacade: UIFacade, 
   }
 }
 
+/**
+ * Moves the selected resources up in the table.
+ */
 class ResourceMoveUpAction2(
   private val resourceManager: HumanResourceManager,
   private val selectionManager: ResourceSelectionManager)
@@ -93,6 +98,9 @@ class ResourceMoveUpAction2(
   }
 }
 
+/**
+ * Moves the selected resources down in the table.
+ */
 class ResourceMoveDownAction2(
   private val resourceManager: HumanResourceManager,
   private val selectionManager: ResourceSelectionManager)
@@ -110,6 +118,9 @@ class ResourceMoveDownAction2(
   }
 }
 
+/**
+ * Places the selected resources into the clipboard.
+ */
 class ResourceCopyAction(
   resourceManager: HumanResourceManager,
   selectionManager: ResourceSelectionManager,
@@ -130,6 +141,9 @@ class ResourceCopyAction(
   }
 }
 
+/**
+ * Deletes the selected assignments.
+ */
 class AssignmentDeleteAction2(
   private val selectionManager: ResourceSelectionManager,
   private val uiFacade: UIFacade)
@@ -144,5 +158,28 @@ class AssignmentDeleteAction2(
 
   private fun onSelectionChange(selection: List<ResourceAssignment>, trigger: Any) {
     isEnabled = selection.isNotEmpty()
+  }
+}
+
+/**
+ * Opens a desktop-specific email client, capable of handling mailto: urls.
+ */
+class ResourceSendMailAction2(selectionManager: ResourceSelectionManager)
+  : ResourceAction("resource.sendmail", null, selectionManager, IconSize.NO_ICON) {
+
+  init {
+    selectionManager.addResourceListener(this::onSelectionChange)
+  }
+
+  override fun actionPerformed(e: ActionEvent?) {
+    try {
+      BrowserControl.displayURL("mailto:${selection[0].mail}")
+    } catch (exception: Exception) {
+      System.err.println(exception)
+    }
+  }
+
+  private fun onSelectionChange(selection: List<HumanResource>, trigger: Any) {
+    isEnabled = selection.size == 1 && selection[0].mail.isNotBlank()
   }
 }

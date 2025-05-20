@@ -34,7 +34,6 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskManager;
-import org.eclipse.core.runtime.IStatus;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -137,21 +136,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     return getChartModel().getChartOptionGroups();
   }
 
-//  @Override
-//  public ChartSelection getSelection() {
-//    return getImplementation().getSelection();
-//  }
-//
-//  @Override
-//  public IStatus canPaste(ChartSelection selection) {
-//    return getImplementation().canPaste(selection);
-//  }
-//
-//  @Override
-//  public void paste(ChartSelection selection) {
-//    getImplementation().paste(selection);
-//  }
-
   @Override
   public void addSelectionListener(ChartSelectionListener listener) {
     getImplementation().addSelectionListener(listener);
@@ -203,8 +187,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
   protected abstract MouseListener getMouseListener();
 
   protected abstract MouseMotionListener getMouseMotionListener();
-
-  // protected abstract MouseWheelListener getMouseWheelListener();
 
   protected abstract AbstractChartImplementation getImplementation();
 
@@ -266,9 +248,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     getImplementation().setBottomUnitWidth(width);
   }
 
-  // public void paintChart(Graphics g) {
-  // getImplementation().paintChart(g);
-  // }
   @Override
   public void addRenderer(ChartRendererBase renderer) {
     getImplementation().addRenderer(renderer);

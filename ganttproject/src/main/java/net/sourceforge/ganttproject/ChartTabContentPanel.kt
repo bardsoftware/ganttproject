@@ -19,9 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject
 
 import biz.ganttproject.app.FXToolbarBuilder
-import biz.ganttproject.app.getGlyphIcon
-import biz.ganttproject.core.option.ChangeValueListener
 import biz.ganttproject.app.applicationFont
+import biz.ganttproject.app.getGlyphIcon
 import com.google.common.base.Preconditions
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
@@ -37,18 +36,16 @@ import net.sourceforge.ganttproject.chart.overview.ZoomingPanel
 import net.sourceforge.ganttproject.gui.GanttImagePanel
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.language.GanttLanguage
-import java.awt.*
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
-import javax.swing.*
+import java.awt.Component
+import javax.swing.JComponent
+import javax.swing.SwingUtilities
 
 internal abstract class ChartTabContentPanel(
     protected val project: IGanttProject, workbenchFacade: UIFacade, chart: TimelineChart) {
 
-  private var zoomingPanel: ZoomingPanel
-  private var navigationPanel: NavigationPanel
+  private var zoomingPanel: ZoomingPanel = ZoomingPanel(workbenchFacade, chart)
+  private var navigationPanel: NavigationPanel = NavigationPanel(project, chart, workbenchFacade)
   private val myChart: TimelineChart
-  private var mySplitPane: JSplitPane? = null
   private val myPanels: MutableList<Component> = ArrayList()
   private val myUiFacade: UIFacade
   private var myImagePanel: GanttImagePanel? = null
@@ -59,100 +56,11 @@ internal abstract class ChartTabContentPanel(
   protected open fun buildDropdownActions(): List<GPAction> = emptyList()
   protected open fun buildToolbarActions(): List<GPAction> = emptyList()
 
-  fun createContentComponent(): JComponent {
-    val tabContentPanel = JPanel(BorderLayout())
-    val left = JPanel(BorderLayout())
-    val treeHeader = Box.createVerticalBox()
-    //treeHeader.add(toolbar.component)
-
-    // /*
-    val buttonPanel = createButtonPanel() as JComponent
-    val buttonWrapper = JPanel(BorderLayout())
-    buttonWrapper.add(buttonPanel, BorderLayout.CENTER)
-    //button.setAlignmentX(Component.LEFT_ALIGNMENT);
-    treeHeader.add(buttonWrapper)
-    val defaultScaledHeight =
-      (UIFacade.DEFAULT_LOGO.iconHeight * myUiFacade.dpiOption.value / (1f * UIFacade.DEFAULT_DPI)).toInt()
-    myImagePanel = GanttImagePanel(myUiFacade.logo, 300, defaultScaledHeight)
-    val imageWrapper = JPanel(BorderLayout())
-    imageWrapper.add(myImagePanel, BorderLayout.WEST)
-    treeHeader.add(imageWrapper)
-    // */
-
-    left.add(treeHeader, BorderLayout.NORTH)
-    left.add(getTreeComponent(), BorderLayout.CENTER)
-    val minSize = Dimension(0, 0)
-    left.minimumSize = minSize
-    val right = JPanel(BorderLayout())
-    val chartPanels = createChartPanels()
-    right.add(chartPanels, BorderLayout.NORTH)
-    right.background = Color(0.93f, 0.93f, 0.93f)
-    right.add(chartComponent, BorderLayout.CENTER)
-    right.minimumSize = minSize
-    mySplitPane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT)
-    if (GanttLanguage.getInstance().componentOrientation == ComponentOrientation.LEFT_TO_RIGHT) {
-      mySplitPane!!.leftComponent = left
-      mySplitPane!!.rightComponent = right
-      mySplitPane!!.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT)
-      mySplitPane!!.dividerLocation = Math.min(300, left.preferredSize.width)
-    } else {
-      mySplitPane!!.rightComponent = left
-      mySplitPane!!.leftComponent = right
-      mySplitPane!!.dividerLocation =
-        Toolkit.getDefaultToolkit().screenSize.width - Math.min(300, left.preferredSize.width)
-      mySplitPane!!.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT)
-    }
-    mySplitPane!!.isOneTouchExpandable = true
-    mySplitPane!!.resetToPreferredSizes()
-    tabContentPanel.add(mySplitPane, BorderLayout.CENTER)
-    val changeValueListener = ChangeValueListener {
-      if (myUiFacade.dpiOption.value < 96) {
-        return@ChangeValueListener
-      }
-      SwingUtilities.invokeLater {
-        alignTopPanelHeights(buttonPanel, chartPanels)
-        myImagePanel!!.setScale(myUiFacade.dpiOption.value / (1f * UIFacade.DEFAULT_DPI))
-        //myImageHeight = myImagePanel!!.height
-        updateTimelineHeight()
-      }
-    }
-    myUiFacade.dpiOption.addChangeValueListener(changeValueListener, 2)
-    return tabContentPanel
-  }
-
-  // /*
-  private fun alignTopPanelHeights(buttonPanel: JComponent, chartPanels: JComponent) {
-    val maxHeight = Math.max(buttonPanel.size.height, chartPanels.size.height)
-    if (buttonPanel.height < maxHeight) {
-      //left.setBorder(BorderFactory.createEmptyBorder(maxHeight - buttonPanel.getHeight(), 0, 0, 0));
-      val diff = maxHeight - buttonPanel.height
-      val emptyBorder = BorderFactory.createEmptyBorder((diff + 1) / 2, 0, diff / 2, 0)
-      buttonPanel.border = emptyBorder
-    }
-    if (chartPanels.height < maxHeight) {
-      val diff = maxHeight - chartPanels.height
-      //Border emptyBorder = BorderFactory.createEmptyBorder((diff+1)/2, 0, diff/2, 0);
-      //chartPanels.setBorder(emptyBorder);
-      chartPanels.remove(chartPanels.getComponent(chartPanels.componentCount - 1))
-      chartPanels.add(Box.createRigidArea(Dimension(0, diff)))
-    }
-  }
-  // */
-
   abstract val chartComponent: JComponent?
     get
 
   protected abstract fun getTreeComponent(): Component?
   protected abstract fun createButtonPanel(): Component?
-
-  private fun createChartPanels(): JComponent {
-    val panelsBox = Box.createHorizontalBox()
-    for (panel in myPanels) {
-      panelsBox.add(panel)
-      panelsBox.add(Box.createHorizontalStrut(10))
-    }
-    return panelsBox
-  }
 
   fun addChartPanel(panel: Component) {
     myPanels.add(panel)
@@ -171,47 +79,7 @@ internal abstract class ChartTabContentPanel(
     }
   }
 
-  protected fun setTableWidth(width: Double) {
-    mySplitPane?.dividerLocation = width.toInt() + 1
-  }
-  fun addTableResizeListeners(tableContainer: Component, table: Component) {
-    headerHeight = {
-      if (table.isShowing && tableContainer.isShowing) {
-        val tableLocation = table.locationOnScreen
-        val containerLocation = tableContainer.locationOnScreen
-        tableLocation.y - containerLocation.y
-      } else {
-        0
-      }
-    }
-    val componentListener: ComponentAdapter = object : ComponentAdapter() {
-      override fun componentShown(componentEvent: ComponentEvent) {
-        updateTimelineHeight()
-      }
-
-      override fun componentResized(componentEvent: ComponentEvent) {
-        updateTimelineHeight()
-      }
-
-      override fun componentMoved(componentEvent: ComponentEvent) {
-        updateTimelineHeight()
-      }
-    }
-    tableContainer.addComponentListener(componentListener)
-    table.addComponentListener(componentListener)
-  }
-
-//  open fun setActive(active: Boolean) {
-//    if (active) {
-//      //getTreeComponent().requestFocus()
-//      updateTimelineHeight()
-//    }
-//  }
-
-  //  private GanttImagePanel myImagePanel;
   init {
-    navigationPanel = NavigationPanel(project, chart, workbenchFacade)
-    zoomingPanel = ZoomingPanel(workbenchFacade, chart)
 
     addChartPanel(createNavigationToolbarBuilder().withScene().build().component)
 
