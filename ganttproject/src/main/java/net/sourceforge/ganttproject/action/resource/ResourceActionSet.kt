@@ -27,6 +27,7 @@ import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.resource.ResourceSelectionManager
 import net.sourceforge.ganttproject.task.ResourceAssignment
+import net.sourceforge.ganttproject.undo.GPUndoManager
 import net.sourceforge.ganttproject.util.BrowserControl
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
@@ -38,7 +39,7 @@ class ResourceActionSet(
 ) {
   val resourceNewAction = ResourceNewAction(project.humanResourceManager, project.projectDatabase, project.roleManager, project.taskManager, uiFacade)
   val cloudResourceList = GPCloudResourceListAction(project.humanResourceManager)
-  val resourceDeleteAction: ResourceDeleteAction
+  val resourceDeleteAction = ResourceDeleteAction2(project.humanResourceManager, selectionManager, uiFacade)
   val resourcePropertiesAction = ResourcePropertiesAction(project, selectionManager, assignmentContext, uiFacade)
   val resourceMoveUpAction = ResourceMoveUpAction2(project.humanResourceManager, selectionManager)
   val resourceMoveDownAction = ResourceMoveDownAction2(project.humanResourceManager, selectionManager)
@@ -55,11 +56,8 @@ class ResourceActionSet(
   }
 
   init {
-    val manager = project.humanResourceManager
-    resourceDeleteAction = ResourceDeleteAction(manager, selectionManager, assignmentContext, uiFacade)
-
     selectionManager.addResourceListener { _, _ ->
-      listOf(resourcePropertiesAction, resourceDeleteAction).forEach {
+      listOf(resourcePropertiesAction).forEach {
         it.updateEnabled()
       }
     }
@@ -141,6 +139,35 @@ class ResourceCopyAction(
   }
 }
 
+class ResourceDeleteAction2(
+  resourceManager: HumanResourceManager,
+  private val selectionManager: ResourceSelectionManager,
+  private val uiFacade: UIFacade
+) : ResourceAction("resource.delete", resourceManager, selectionManager, IconSize.NO_ICON) {
+
+  init {
+    selectionManager.addResourceListener(this::onResourceSelectionChange)
+    selectionManager.addAssignmentListener(this::onAssignmentSelectionChange)
+  }
+
+  override fun actionPerformed(e: ActionEvent?) {
+    if (selection.isNotEmpty()) {
+      uiFacade.undoManager.undoableEdit(localizedDescription) {
+        selection.forEach { it.delete() }
+      }
+    } else if (selectionManager.resourceAssignments.isNotEmpty()) {
+      deleteAssignments(selectionManager, uiFacade, localizedDescription)
+    }
+  }
+
+  private fun onResourceSelectionChange(selection: List<HumanResource>, trigger: Any) {
+    isEnabled = selection.isNotEmpty() || selectionManager.resourceAssignments.isNotEmpty()
+  }
+
+  private fun onAssignmentSelectionChange(selection: List<ResourceAssignment>, trigger: Any) {
+    isEnabled = selection.isNotEmpty() || selectionManager.resources.isNotEmpty()
+  }
+}
 /**
  * Deletes the selected assignments.
  */

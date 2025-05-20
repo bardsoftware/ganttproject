@@ -38,7 +38,6 @@ import java.awt.event.MouseEvent;
 public class GanttResourcePanel extends TreeTableContainer<HumanResource, ResourceTreeTable, ResourceTreeTableModel>
     implements ResourceTreeUIFacade {
 
-  public final GanttProject appli;
 
   //private final ResourceActionSet myResourceActionSet;
 
@@ -59,19 +58,10 @@ public class GanttResourcePanel extends TreeTableContainer<HumanResource, Resour
 
   public GanttResourcePanel(final GanttProject prj, final UIFacade uiFacade, ResourceTableChartConnector resourceTableConnector) {
     super(createTreeTable(prj.getProject(), uiFacade));
-    appli = prj;
     myUIFacade = uiFacade;
 
     prj.addProjectEventListener(getProjectEventListener());
 
-//    getTreeTable().setupActionMaps(myResourceActionSet.getResourceMoveUpAction(),
-//        myResourceActionSet.getResourceMoveDownAction(), myResourceActionSet.getResourceNewAction(), myResourceActionSet.getResourceDeleteAction(),
-//        appli.getCutAction(), appli.getCopyAction(), appli.getPasteAction());
-//    getTreeTable().addActionWithAccelleratorKey(myResourceActionSet.getAssignmentDelete());
-//    getTreeTable().setRowHeight(20);
-//    resourceTableConnector.getRowHeight().setValue(20);
-//
-//    getTreeTable().insertWithLeftyScrollBar(this);
     area = new ResourceLoadGraphicArea(prj, prj.getZoomManager(), this, resourceTableConnector) {
       @Override
       public boolean isExpanded(HumanResource hr) {
