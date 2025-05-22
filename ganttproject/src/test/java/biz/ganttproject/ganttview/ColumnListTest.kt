@@ -21,7 +21,7 @@ class ColumnListTest {
     }
   },
   allColumns = {
-    ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs()).copyOf()
+    TaskDefaultColumn.entries
   }
   )
 

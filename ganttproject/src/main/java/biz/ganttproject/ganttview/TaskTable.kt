@@ -490,13 +490,13 @@ class TaskTable(
   override fun sync(keepFocus: Boolean) {
     keepSelection(keepFocus) {
       try {
-        doSync(keepFocus)
+        doSync()
       } catch (ex: Exception) {
         LOGGER.error("Failure when syncing the task table", exception = ex)
       }
     }
   }
-  private fun doSync(keepFocus: Boolean) {
+  private fun doSync() {
       LOGGER.debug("Sync >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
       val treeModel = taskManager.taskHierarchy
       task2treeItem.clear()
