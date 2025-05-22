@@ -39,7 +39,7 @@ class TestViewSerializer {
             }
         },
         allColumns = {
-            ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs()).copyOf()
+          TaskDefaultColumn.entries
         }
     )
     @Test

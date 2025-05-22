@@ -31,6 +31,7 @@ import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.resource.ResourceSelectionManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
@@ -141,13 +142,13 @@ public interface UIFacade {
   //TaskTreeUIFacade getTaskTree();
   TreeCollapseView<Task> getTaskCollapseView();
   ColumnList getTaskColumnList();
-
-
-  ResourceTreeUIFacade getResourceTree();
+  ColumnList getResourceColumnList();
 
   TaskSelectionManager getTaskSelectionManager();
 
   TaskSelectionContext getTaskSelectionContext();
+
+  ResourceSelectionManager getResourceSelectionManager();
 
   DefaultEnumerationOption<Locale> getLanguageOption();
 

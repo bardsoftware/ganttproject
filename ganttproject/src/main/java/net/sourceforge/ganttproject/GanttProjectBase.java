@@ -45,6 +45,7 @@ import javafx.collections.FXCollections;
 import javafx.stage.Stage;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
+import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.client.RssFeedChecker;
@@ -62,6 +63,7 @@ import net.sourceforge.ganttproject.parser.ParserFactory;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
+import net.sourceforge.ganttproject.resource.ResourceSelectionManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.storage.LazyProjectDatabaseProxy;
 import net.sourceforge.ganttproject.storage.ProjectDatabase;
@@ -124,6 +126,17 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   );
   private final TreeCollapseView<Task> myTaskCollapseView = new SimpleTreeCollapseView<>();
   protected final Supplier<TaskTable> myTaskTableSupplier;
+
+  protected final ResourceActionSet myResourceActions;
+  ResourceTableChartConnector myResourceTableChartConnector = new ResourceTableChartConnector(
+    new SimpleIntegerProperty(-1),
+    TreeTableCellsKt.getMinCellHeight(),
+    new SimpleTreeCollapseView<>(),
+    new SimpleDoubleProperty(0.0),
+    null,
+    () -> null
+  );
+  protected final Supplier<ResourceTable> myResourceTableSupplier;
 
   protected final ProjectDatabase myProjectDatabase;
 
@@ -239,6 +252,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     GPLogger.setUIFacade(myUIFacade);
     var newTaskActor = new NewTaskActor<Task>();
     newTaskActor.start();
+    myViewManager = new ViewManagerImpl(getProject(), myUIFacade, getUndoManager(), viewPane, PluginManager.getViewProviders());
 
     myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
         this::getViewManager,
@@ -252,6 +266,10 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
       new TaskTable(getProject(), getTaskManager(), myTaskTableChartConnector, myTaskCollapseView,
         getTaskSelectionManager(), myTaskActions, getUndoManager(), getTaskFilterManager(), myUiInitializationPromise, newTaskActor)
     ));
+    myResourceActions = new ResourceActionSet(getUIFacade().getResourceSelectionManager(), getUIFacade().getResourceSelectionManager(), getProject(), getUIFacade());
+    myResourceTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(() ->
+      new ResourceTable(getProject(), getUndoManager(), getResourceSelectionManager(), myResourceActions, myResourceTableChartConnector)
+      ));
     myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
       @Override
       protected ParserFactory getParserFactory() {
@@ -265,7 +283,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
 
       @Override
       protected ColumnList getResourceVisibleFields() {
-        return getUIFacade().getResourceTree().getVisibleFields();
+        return myResourceTableSupplier.get().getColumnList();
       }
     };
     myUndoManager = new UndoManagerImpl(this, null, myDocumentManager, myProjectDatabase) {
@@ -276,7 +294,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     };
     myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
     myUndoManager.addUndoableEditListener(getTaskFilterManager().getUndoListener());
-    myViewManager = new ViewManagerImpl(getProject(), myUIFacade, getUndoManager(), viewPane, PluginManager.getViewProviders());
     myProjectUIFacade = new ProjectUIFacadeImpl(stage, myUIFacade, myDocumentManager, myUndoManager, myProjectImpl);
     myRssChecker = new RssFeedChecker(myUIFacade);
     myUIFacade.addOptions(myRssChecker.getUiOptions());
@@ -426,6 +443,11 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   }
 
   @Override
+  public ResourceSelectionManager getResourceSelectionManager() {
+    return myUIFacade.getResourceSelectionManager();
+  }
+
+  @Override
   public TaskSelectionManager getTaskSelectionManager() {
     return myUIFacade.getTaskSelectionManager();
   }
@@ -442,6 +464,11 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   @Override
   public ColumnList getTaskColumnList() {
     return myTaskTableSupplier.get().getColumnList();
+  }
+
+  @Override
+  public ColumnList getResourceColumnList() {
+    return myResourceTableSupplier.get().getColumnList();
   }
 
   @Override

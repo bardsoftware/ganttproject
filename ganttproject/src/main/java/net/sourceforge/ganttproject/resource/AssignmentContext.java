@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.resource;
 
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 
+import java.util.List;
+
 public interface AssignmentContext {
-  public ResourceAssignment[] getResourceAssignments();
+  public List<ResourceAssignment> getResourceAssignments();
 }

@@ -52,6 +52,6 @@ fun importBufferProject(
 
 fun UIFacade.asImportBufferProjectApi() = ImportBufferProjectApi(
   { taskColumnList },
-  { resourceTree.visibleFields },
+  { resourceColumnList },
   { refresh() }
 )

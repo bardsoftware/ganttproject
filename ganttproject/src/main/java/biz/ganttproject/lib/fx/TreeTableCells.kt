@@ -31,6 +31,7 @@ import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.application.Platform
 import javafx.beans.property.*
+import javafx.collections.FXCollections
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
@@ -275,7 +276,7 @@ class TextCell<S, T>(
     }
   }
 
-  private fun getItemText() = converter.toString(this, this.item)
+  private fun getItemText() = converter.toString(this, this.item) ?: ""
   private fun createTextField() =
     TextField(getItemText()).also { textField ->
       //textField.prefWidth = this.width
@@ -320,6 +321,8 @@ fun <S> createTextColumn(
     }
     cellFactory = TextCellFactory<S, String>(converter = DefaultStringConverter().adapt()) {
       it.styleClass.add("text-left")
+      it.isDisable = !this@apply.isEditable
+      it.isEditable = this@apply.isEditable
     }
     onEditCommit = EventHandler { event ->
       setValue(event.rowValue.value, event.newValue)
@@ -347,6 +350,8 @@ fun <S> createDateColumn(name: String, getValue: (S) -> GanttCalendar?, setValue
     val converter = GanttCalendarStringConverter()
     cellFactory = Callback { TextCell<S, GanttCalendar>(converter.adapt()).also {
       it.styleClass.add("text-left")
+      it.isDisable = !this@apply.isEditable
+      it.isEditable = this@apply.isEditable
     } }
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue) }
   }
@@ -365,11 +370,13 @@ fun <S> createBooleanColumn(name: String, getValue: (S) -> Boolean?, setValue: (
 fun <S> createIntegerColumn(name: String, getValue: (S) -> Int?, setValue: (S, Int) -> Unit) =
   TreeTableColumn<S, Number>(name).apply {
     setCellValueFactory {
-      ReadOnlyIntegerWrapper(getValue(it.value.value) ?: 0)
+      ReadOnlyObjectWrapper(getValue(it.value.value))
     }
     cellFactory = Callback {
       TextCell<S, Number>(NumberStringConverter(getNumberFormat()).adapt()).also {
         it.styleClass.add("text-right")
+        it.isDisable = !this@apply.isEditable
+        it.isEditable = this@apply.isEditable
       }
     }
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toInt()) }
@@ -378,11 +385,13 @@ fun <S> createIntegerColumn(name: String, getValue: (S) -> Int?, setValue: (S, I
 fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S, Double) -> Unit) =
   TreeTableColumn<S, Number>(name).apply {
     setCellValueFactory {
-      ReadOnlyDoubleWrapper(getValue(it.value.value) ?: 0.0)
+      ReadOnlyObjectWrapper(getValue(it.value.value))
     }
     cellFactory = Callback {
       TextCell<S, Number>(NumberStringConverter(getNumberFormat()).adapt()).also {
         it.styleClass.add("text-right")
+        it.isDisable = !this@apply.isEditable
+        it.isEditable = this@apply.isEditable
       }
     }
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toDouble()) }
@@ -391,7 +400,7 @@ fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S,
 fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue: (S, BigDecimal) -> Unit) =
   TreeTableColumn<S, BigDecimal>(name).apply {
     setCellValueFactory {
-      ReadOnlyObjectWrapper(getValue(it.value.value) ?: 0.toBigDecimal())
+      ReadOnlyObjectWrapper(getValue(it.value.value))
     }
     cellFactory = Callback {
       val converter = MyStringConverter<S, BigDecimal>(
@@ -402,6 +411,8 @@ fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue
       )
       TextCell(converter).also {
         it.styleClass.add("text-right")
+        it.isDisable = !this@apply.isEditable
+        it.isEditable = this@apply.isEditable
       }
     }
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toDouble().toBigDecimal()) }
@@ -426,6 +437,28 @@ fun <S, T> createIconColumn(name: String, getValue: (S) ->T?, iconFactory: (T) -
       cell
     }
   }
+
+/**
+ * Creates a column that shows values from the given list. Its editor is a dropdown/
+ */
+fun <ObjectType, ChoiceType> createChoiceColumn(
+  name: String,
+  getValue: (ObjectType) -> ChoiceType?,
+  setValue: (ObjectType, ChoiceType) -> Unit,
+  allValues: ()->List<ChoiceType>,
+  stringConverter: StringConverter<ChoiceType?>,
+  isEditableCell: (ObjectType)->Boolean = {true}) = TreeTableColumn<ObjectType, ChoiceType>(name).apply {
+
+  setCellValueFactory {
+    ReadOnlyObjectWrapper(getValue(it.value.value))
+  }
+  cellFactory = Callback {
+    DropdownTableCell<ObjectType, ChoiceType?>(allValues, stringConverter, isEditableCell)
+  }
+  onEditCommit = EventHandler { event ->
+    setValue(event.rowValue.value, event.newValue)
+  }
+}
 
 class TextCellFactory<S, T>(
   private val converter: MyStringConverter<S, T>,
@@ -476,6 +509,57 @@ class CheckBoxTableCell<S> : TreeTableCell<S, Boolean>() {
   }
 }
 
+/**
+ * This cell contains a dropdown control that allows for choosing from a list of available values.
+ */
+class DropdownTableCell<ObjectType, ChoiceType>(
+  allValues: () -> List<ChoiceType>,
+  stringConverter: StringConverter<ChoiceType>,
+  private val isEditableCell: (ObjectType) -> Boolean
+) : TreeTableCell<ObjectType, ChoiceType>() {
+  private val editor = createDropdownEditor(allValues(), stringConverter).also { dropdown ->
+    dropdown.onAction = EventHandler {
+      val newValue = dropdown.value
+      this.treeTableView.edit(this.tableRow.index, this.tableColumn)
+      commitEdit(newValue)
+    }
+  }
+
+  init {
+    styleClass.add("gp-dropdown-tree-table-cell")
+  }
+
+  override fun updateItem(item: ChoiceType, empty: Boolean) {
+    super.updateItem(item, empty)
+    updateCellClasses(this, empty)
+    if (empty) {
+      text = null
+      graphic = null
+    } else {
+      contentDisplay = ContentDisplay.GRAPHIC_ONLY
+      alignment = Pos.CENTER_LEFT
+      val node = this.treeTableView.getTreeItem(this.tableRow.index).value
+      if (isEditableCell(node)) {
+        graphic = editor
+        if (editor.value != item) {
+          editor.value = item
+        }
+      } else {
+        graphic = null
+      }
+    }
+  }
+}
+
+fun <ChoiceType> createDropdownEditor(
+  allValues: List<ChoiceType>,
+  stringConverter: StringConverter<ChoiceType>): ComboBox<ChoiceType> {
+
+  return ComboBox(FXCollections.observableArrayList(allValues)).also { comboBox ->
+    comboBox.converter = stringConverter
+  }
+}
+
 private fun <S> updateCellClasses(cell: TreeTableCell<S, *>, empty: Boolean) {
   if (cell.treeTableView.focusModel.isFocused(cell.tableRow.index, cell.tableColumn)) {
     if (cell.styleClass.indexOf("focused") < 0) {
@@ -483,6 +567,13 @@ private fun <S> updateCellClasses(cell: TreeTableCell<S, *>, empty: Boolean) {
     }
   } else {
     cell.styleClass.removeAll("focused")
+  }
+  if (cell.treeTableView.selectionModel.isSelected(cell.tableRow.index)) {
+    if (cell.styleClass.indexOf("selected") < 0) {
+      cell.styleClass.add("selected")
+    } else {
+      cell.styleClass.removeAll("selected")
+    }
   }
   cell.styleClass.removeAll("odd")
   cell.styleClass.removeAll("even")

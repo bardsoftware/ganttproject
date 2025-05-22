@@ -41,8 +41,6 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
-import javafx.util.Callback
-import javafx.util.StringConverter
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.GPColorChooser
 import net.sourceforge.ganttproject.language.GanttLanguage
@@ -57,7 +55,6 @@ import java.text.NumberFormat
 import java.text.ParseException
 import java.text.ParsePosition
 import java.time.LocalDate
-import kotlin.toString
 
 internal interface RowBuilder {
   fun build(grid: GridPane, rowNum: Int): Int
@@ -211,13 +208,6 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
 
   }
 
-  fun <T> createChoiceOptionEditor(option: ObservableChoice<T>, displayOptions: DropdownDisplayOptions<T>? = null): Node {
-    val key2i18n: List<Pair<T, String>> = option.allValues.map {
-      it to option.converter.toString(it)
-    }.toList()
-    return createDropdownEditor(option, key2i18n, displayOptions)
-  }
-
   private fun <E: Enum<E>> createEnumerationOptionEditor(
     option: ObservableEnum<E>, displayOptions: DropdownDisplayOptions<E>? = null): Node {
 
@@ -227,38 +217,6 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
     return createDropdownEditor(option, key2i18n, displayOptions)
   }
 
-  private fun <E> createDropdownEditor(option: ObservableProperty<E>, key2i18n: List<Pair<E, String>>, displayOptions: DropdownDisplayOptions<E>? = null): Node {
-    return ComboBox(FXCollections.observableArrayList(key2i18n)).also { comboBox ->
-      comboBox.onAction = EventHandler{
-        option.set(comboBox.value.first, comboBox)
-      }
-      displayOptions?.cellFactory?.let { customCellFactory ->
-        comboBox.cellFactory = Callback { p ->
-          object: ListCell<Pair<E, String>>() {
-            override fun updateItem(item: Pair<E, String>?, empty: Boolean) {
-              super.updateItem(item, empty)
-              if (item == null || empty) {
-                setGraphic(null);
-              } else {
-                graphic = customCellFactory(this, item)
-              }
-            }
-          }
-        }
-        comboBox.buttonCell = comboBox.cellFactory.call(null)
-      }
-      option.addWatcher { evt ->
-        if (evt.trigger != comboBox) {
-          comboBox.selectionModel.select(key2i18n.find { it.first == option.value })
-        }
-      }
-      comboBox.converter = object : StringConverter<Pair<E, String>>() {
-        override fun toString(item: Pair<E, String>?) = item?.second
-        override fun fromString(string: String?) = key2i18n.find { it.second == string }
-      }
-      comboBox.value = key2i18n.find { it.first == option.value }
-    }
-  }
 
   fun createStringOptionEditor(property: ObservableString, displayOptions: TextDisplayOptions? = null): Node {
     val textField = when {
@@ -698,3 +656,4 @@ object DoubleValidator: ValueValidator<Double> {
       throw ValidationException(ex)
     }
 }
+

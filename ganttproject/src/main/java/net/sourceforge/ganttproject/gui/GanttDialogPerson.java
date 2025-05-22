@@ -96,7 +96,7 @@ public class GanttDialogPerson {
         "resourceProperties", actions,
         mainPropertiesPanel.getValidationErrors(),
         Lists.newArrayList(
-          new PropertiedDialogTabProvider(
+          new PropertiesDialogTabProvider(
             tabPane -> {
               tabPane.getTabs().add(new Tab(mainPropertiesPanel.getTitle(), mainPropertiesPanel.getFxComponent()));
               return Unit.INSTANCE;
@@ -114,7 +114,7 @@ public class GanttDialogPerson {
             language.getText("customColumns"),
             () -> {
               var customColumnsPanel = new CustomColumnsPanel(myCustomPropertyManager, myProjectDatabase, CustomColumnsPanel.Type.RESOURCE,
-                myUIFacade.getUndoManager(), person, myUIFacade.getResourceTree().getVisibleFields());
+                myUIFacade.getUndoManager(), person, myUIFacade.getResourceColumnList());
               return customColumnsPanel.getComponent();
             }
           ),
@@ -143,7 +143,7 @@ public class GanttDialogPerson {
       myUIFacade.getUndoManager().undoableEdit(GanttLanguage.getInstance().formatText("resource.new.description"), () -> {
         applyChanges();
         myResourceManager.add(person);
-        myUIFacade.getResourceTree().setSelected(person, true);
+//        myUIFacade.getResourceTree().setSelected(person, true);
         myUIFacade.getViewManager().getView(String.valueOf(UIFacade.RESOURCES_INDEX)).setActive(true);
       });
     }

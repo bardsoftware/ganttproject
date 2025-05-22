@@ -24,7 +24,6 @@ import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.print.PrintChartApi;
 import net.sourceforge.ganttproject.IGanttProject;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IStatus;
 
 import java.util.Date;
 
@@ -33,30 +32,24 @@ public interface Chart extends IAdaptable {
 
   void init(IGanttProject project, IntegerOption dpiOption, FontOption chartFontOption);
 
-  public Date getStartDate();
+  Date getStartDate();
 
   void setStartDate(Date startDate);
 
-  public Date getEndDate();
+  Date getEndDate();
 
   void setDimensions(int height, int width);
 
-  public String getName();
+  String getName();
 
   /** Repaints the chart */
-  public void reset();
+  void reset();
 
-  public GPOptionGroup[] getOptionGroups();
+  GPOptionGroup[] getOptionGroups();
 
-  public ChartSelection getSelection();
+  void addSelectionListener(ChartSelectionListener listener);
 
-  public IStatus canPaste(ChartSelection selection);
-
-  public void paste(ChartSelection selection);
-
-  public void addSelectionListener(ChartSelectionListener listener);
-
-  public void removeSelectionListener(ChartSelectionListener listener);
+  void removeSelectionListener(ChartSelectionListener listener);
 
   void focus();
 

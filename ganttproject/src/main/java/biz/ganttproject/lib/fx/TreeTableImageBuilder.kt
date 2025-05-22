@@ -22,17 +22,12 @@ import biz.ganttproject.app.applicationFont
 import biz.ganttproject.app.applicationFontSpec
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl
-import biz.ganttproject.core.model.task.TaskDefaultColumn
-import biz.ganttproject.core.table.TableSceneBuilder
-import biz.ganttproject.core.table.TreeTableSceneBuilder
+import biz.ganttproject.core.table.*
 import biz.ganttproject.core.time.TimeDuration
-import biz.ganttproject.ganttview.TaskTable
-import biz.ganttproject.ganttview.depthFirstWalk
 import javafx.scene.control.TreeItem
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration
 import net.sourceforge.ganttproject.chart.StyledPainterImpl
-import net.sourceforge.ganttproject.task.Task
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.RenderingHints
@@ -40,57 +35,58 @@ import java.util.*
 import kotlin.math.roundToInt
 
 /**
+ * This function creates an image of the tree component on the provided graphics instance.
+ *
  * @author dbarashev@bardsoftware.com
  */
-fun TaskTable.buildImage(graphics2D: Graphics2D) {
-  val taskTable = this
+fun <NodeType, BuiltinColumnType: BuiltinColumn> BaseTreeTableComponent<NodeType, BuiltinColumnType>.buildImage(
+  graphics2D: Graphics2D, builtinColumnValue: (NodeType, BuiltinColumnType)->String) {
+  val treeTable = this
 
   val textMetrics = TextLengthCalculatorImpl((graphics2D.create() as Graphics2D).also {
     it.font = applicationFontSpec.value.asAwtFontOfSize(applicationFont.value.size.roundToInt())
   })
   val sceneBuilderInput = TreeTableSceneBuilder.InputApi(
     textMetrics = textMetrics,
-    headerHeight = taskTable.headerHeightProperty.intValue(),
+    headerHeight = treeTable.headerHeightProperty.intValue(),
     headerAlignment = Canvas.HAlignment.CENTER,
-    rowHeight = taskTable.taskTableChartConnector.rowHeight.value,
+    rowHeight = treeTable.rowHeightProperty.intValue(),
     depthIndent = 15,
     horizontalOffset = 0,
     fontSpec = applicationFontSpec.value
   )
   val treeTableSceneBuilder = TreeTableSceneBuilder(sceneBuilderInput)
 
-  val visibleColumns = taskTable.columnList.exportData().filter {
+  val visibleColumns: List<ColumnList.Column> = treeTable.columnList.exportData().filter {
     // We will not print as columns the color and notes columns: they are shown as icons in the table UI.
-    it.isVisible && TaskDefaultColumn.COLOR.stub.id != it.id && TaskDefaultColumn.NOTES.stub.id != it.id && TaskDefaultColumn.INFO.stub.id != it.id
+    it.isVisible && !treeTable.builtinColumns.isZeroWidth(it.id)
   }
-  val columnMap = visibleColumns.associateWith {
-    val defaultColumn = TaskDefaultColumn.find(it.id)
-    TableSceneBuilder.Table.Column(
-      name = it.name,
-      width = it.width,
-      isTreeColumn = it.id == TaskDefaultColumn.NAME.stub.id,
-      alignment = defaultColumn?.alignment() ?: Canvas.HAlignment.LEFT
-    )
-  }
-  val treeItem2sceneItem = mutableMapOf<TreeItem<Task>, TreeTableSceneBuilder.Item>()
+  val columnMap: Map<ColumnList.Column, TableSceneBuilder.Table.Column> = visibleColumns.mapNotNull {
+    builtinColumns.find(it.id)?.let { defaultColumn ->
+      it to TableSceneBuilder.Table.Column(
+        name = it.name,
+        width = it.width,
+        isTreeColumn = treeTable.isTreeColumn(defaultColumn as BuiltinColumnType),
+        alignment = defaultColumn.alignment() ?: Canvas.HAlignment.LEFT
+      )
+    }
+  }.toMap()
+  val treeItem2sceneItem = mutableMapOf<TreeItem<NodeType>, TreeTableSceneBuilder.Item>()
   val rootSceneItems = mutableListOf<TreeTableSceneBuilder.Item>()
-  taskTable.rootItem.depthFirstWalk { item ->
+
+  treeTable.rootItem.depthFirstWalk { item ->
     val sceneItem = TreeTableSceneBuilder.Item(
       values = visibleColumns.associate {
         val key = columnMap[it]
-        val value: String = TaskDefaultColumn.find(it.id)?.let { tdc ->
-          val typedValue = taskTable.taskTableModel.getValueAt(item.value, tdc)
-          when (tdc) {
-            TaskDefaultColumn.DURATION -> ((typedValue as TimeDuration).length).toString()
-            else -> typedValue.toString()
-          }
+        val value: String = treeTable.builtinColumns.find(it.id)?.let { tdc ->
+          builtinColumnValue(item.value, tdc as BuiltinColumnType)
         } ?: run {
-          val customPropertyManager = item.value.manager.customPropertyManager
+          val customPropertyManager = treeTable.customPropertyManager
           val def = customPropertyManager.getCustomPropertyDefinition(it.id)
           if (def == null) {
             LOGGER.error("can't find def for custom property=${it.id}")
           }
-          def?.let { d -> item.value.customValues.getValue(d) }?.toString() ?: ""
+          def?.let { d -> treeTable.getCustomValues(item.value).getValue(d) }?.toString() ?: ""
         }
         key?.let { key to value } ?: (columnMap.values.first() to "")
       }
@@ -103,7 +99,7 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
     columns = columnMap.values.toList(),
     items = rootSceneItems
   )
-  val painter = StyledPainterImpl(ChartUIConfiguration( taskTable.project.uIConfiguration).also {
+  val painter = StyledPainterImpl(ChartUIConfiguration( treeTable.project.uIConfiguration).also {
     // Use font from the application font settings for the export.
     val fontsize = applicationFont.value.size.roundToInt()
     val font = applicationFontSpec.value.asAwtFontOfSize(fontsize)
@@ -121,7 +117,7 @@ fun TaskTable.buildImage(graphics2D: Graphics2D) {
   canvas.paint(painter)
 }
 
-fun (TaskDefaultColumn?).alignment(): Canvas.HAlignment? {
+fun (BuiltinColumn?).alignment(): Canvas.HAlignment? {
   if (this == null) {
     return null
   }

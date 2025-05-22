@@ -21,44 +21,29 @@ package net.sourceforge.ganttproject;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.customproperty.CustomPropertyManager;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import net.sourceforge.ganttproject.resource.AssignmentNode;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.resource.ResourceNode;
 import net.sourceforge.ganttproject.resource.ResourceTableNode;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.event.TaskListenerAdapter;
-import net.sourceforge.ganttproject.task.event.TaskScheduleEvent;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 
 import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 public class ResourceTreeTableModel extends DefaultTreeTableModel {
   private static final int STANDARD_COLUMN_COUNT = ResourceDefaultColumn.values().length;
-  /** Column indexer */
-  private static int index = -1;
 
   private DefaultMutableTreeTableNode root = null;
 
   private final HumanResourceManager myResourceManager;
-
-  private final TaskManager myTaskManager;
-
-  private TreeSelectionModel mySelectionModel;
 
   private final CustomPropertyManager myCustomPropertyManager;
 
@@ -67,60 +52,12 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     super();
     myCustomPropertyManager = customPropertyManager;
     myResourceManager = resMgr;
-    myTaskManager = taskManager;
-    myTaskManager.addTaskListener(new TaskListenerAdapter() {
-      @Override
-      public void taskScheduleChanged(TaskScheduleEvent e) {
-        Set<HumanResource> affected = Sets.newHashSet();
-        List<Task> subtree = Lists.newArrayList(myTaskManager.getTaskHierarchy().getDeepNestedTasks(e.getTask()));
-        subtree.add(e.getTask());
-        for (Task t : subtree) {
-          for (ResourceAssignment ra : t.getAssignments()) {
-            affected.add(ra.getResource());
-          }
-        }
-        for (HumanResource resource : affected) {
-          resource.resetLoads();
-        }
-        resourceAssignmentsChanged(affected);
-      }
-    });
-    root = buildTree();
     this.setRoot(root);
   }
 
   @Override
   public int getHierarchicalColumn() {
     return ResourceDefaultColumn.NAME.ordinal();
-  }
-
-  public int useNextIndex() {
-    index++;
-    return index;
-  }
-
-  public MutableTreeTableNode getNodeForAssigment(ResourceAssignment assignement) {
-    for (MutableTreeTableNode an : ImmutableList.copyOf(Iterators.forEnumeration(getNodeForResource(
-        assignement.getResource()).children()))) {
-      if (assignement.equals(an.getUserObject())) {
-        return an;
-      }
-    }
-    return null;
-  }
-
-  private DefaultMutableTreeTableNode buildTree() {
-
-    DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode();
-    List<HumanResource> listResources = myResourceManager.getResources();
-    Iterator<HumanResource> itRes = listResources.iterator();
-
-    while (itRes.hasNext()) {
-      HumanResource hr = itRes.next();
-      ResourceNode rnRes = new ResourceNode(hr); // the first for the resource
-      root.add(rnRes);
-    }
-    return root;
   }
 
   public void updateResources() {
@@ -156,31 +93,6 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     }
   }
 
-  public void changePeople(List<HumanResource> people) {
-    Iterator<HumanResource> it = people.iterator();
-    while (it.hasNext()) {
-      addResource(it.next());
-    }
-  }
-
-  public DefaultMutableTreeTableNode addResource(HumanResource people) {
-    DefaultMutableTreeTableNode result = new ResourceNode(people);
-    insertNodeInto(result, root, root.getChildCount());
-    myResourceManager.toString();
-    return result;
-  }
-
-  public void deleteResources(HumanResource[] peoples) {
-    for (int i = 0; i < peoples.length; i++) {
-      deleteResource(peoples[i]);
-    }
-  }
-
-  public void deleteResource(HumanResource people) {
-    removeNodeFromParent(getNodeForResource(people));
-    // myResourceManager.remove(people);
-  }
-
   /** Move Up the selected resource */
   public boolean moveUp(HumanResource resource) {
     myResourceManager.up(resource);
@@ -207,11 +119,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
   }
 
   public void reset() {
-    myResourceManager.clear();
-  }
-
-  public List<HumanResource> getAllResouces() {
-    return myResourceManager.getResources();
+//    myResourceManager.clear();
   }
 
   @Override
@@ -295,28 +203,10 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     }
   }
 
-  public void resourceChanged(HumanResource resource) {
-    ResourceNode node = getNodeForResource(resource);
-    if (node == null) {
-      return;
-    }
-    modelSupport.firePathChanged(TreeUtil.createPath(node));
-  }
-
-  public void resourceAssignmentsChanged(Iterable<HumanResource> resources) {
-    for (HumanResource resource : resources) {
-      ResourceNode nextNode = getNodeForResource(resource);
-      if (nextNode != null) {
-        SelectionKeeper selectionKeeper = new SelectionKeeper(mySelectionModel, nextNode);
-        buildAssignmentsSubtree(nextNode);
-        selectionKeeper.restoreSelection();
-      }
-    }
-  }
-
   private void buildAssignmentsSubtree(ResourceNode resourceNode) {
     HumanResource resource = resourceNode.getResource();
     resourceNode.removeAllChildren();
+    modelSupport.fireTreeStructureChanged(TreeUtil.createPath(resourceNode));
     ResourceAssignment[] assignments = resource.getAssignments();
     int[] indices = new int[assignments.length];
     TreeNode[] children = new TreeNode[assignments.length];
@@ -331,41 +221,7 @@ public class ResourceTreeTableModel extends DefaultTreeTableModel {
     modelSupport.fireTreeStructureChanged(TreeUtil.createPath(resourceNode));
   }
 
-  void decreaseCustomPropertyIndex(int i) {
-    index -= i;
-  }
-
   void setSelectionModel(TreeSelectionModel selectionModel) {
-    mySelectionModel = selectionModel;
   }
 
-  private class SelectionKeeper {
-    private final DefaultMutableTreeTableNode myChangingSubtreeRoot;
-    private final TreeSelectionModel mySelectionModel;
-    private boolean hasWork = false;
-    private Object myModelObject;
-
-    SelectionKeeper(TreeSelectionModel selectionModel, DefaultMutableTreeTableNode changingSubtreeRoot) {
-      mySelectionModel = selectionModel;
-      myChangingSubtreeRoot = changingSubtreeRoot;
-      TreePath selectionPath = mySelectionModel.getSelectionPath();
-      if (selectionPath != null && TreeUtil.createPath(myChangingSubtreeRoot).isDescendant(selectionPath)) {
-        hasWork = true;
-        DefaultMutableTreeTableNode lastNode = (DefaultMutableTreeTableNode) selectionPath.getLastPathComponent();
-        myModelObject = lastNode.getUserObject();
-      }
-    }
-
-    void restoreSelection() {
-      if (!hasWork) {
-        return;
-      }
-      for (MutableTreeTableNode node : TreeUtil.collectSubtree(myChangingSubtreeRoot)) {
-        if (node.getUserObject().equals(myModelObject)) {
-          mySelectionModel.setSelectionPath(TreeUtil.createPath(node));
-          break;
-        }
-      }
-    }
-  }
 }

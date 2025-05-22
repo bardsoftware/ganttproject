@@ -22,17 +22,44 @@ import biz.ganttproject.core.option.GPOption
 import javafx.scene.Node
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
+import net.sourceforge.ganttproject.chart.ChartSelection
 
 /**
  * @author dbarashev (Dmitry Barashev)
  */
 interface ViewProvider {
-  val options: List<GPOption<*>>
-  val chart: Chart
-  val node: Node?
+  /**
+   * ID of this view
+   */
   val id: String
+
+  /**
+   * This view options to be shown in the options dialog.
+   */
+  val options: List<GPOption<*>>
+
+  val selection: ChartSelection
+
+  /**
+   * Interface of a chart object provided by this view.
+   */
+  val chart: Chart
+
+  /**
+   * JavaFX node to be shown in the UI
+   */
+  val node: Node?
+
   val refresh: ()->Unit
   val createAction: GPAction
+
+  /**
+   * Deletes the selected objects in this view.
+   */
   val deleteAction: GPAction
+
+  /**
+   * Opens a properties dialog for the selected objects in this view.
+   */
   val propertiesAction: GPAction
 }

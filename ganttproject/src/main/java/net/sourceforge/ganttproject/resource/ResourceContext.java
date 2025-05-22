@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.resource;
 
+import java.util.List;
+
 /**
  * This interface represents a kind of 'selection' in the application It is
  * designed for collaboration between actions which do something with selected
@@ -30,5 +32,5 @@ package net.sourceforge.ganttproject.resource;
  */
 public interface ResourceContext {
   /** @return Resources selected at the moment */
-  public HumanResource[] getResources();
+  List<HumanResource> getResources();
 }

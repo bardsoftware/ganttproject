@@ -44,7 +44,8 @@ import java.util.Set;
  * @author dbarashev (Dmitry Barashev)
  */
 class ViewSaver extends SaverBase {
-  public void save(UIFacade facade, ViewProvider ganttViewProvider, ViewProvider resourceViewProvider, ColumnList taskColumnList, TaskFilterManager taskFilterManager, TransformerHandler handler) throws SAXException {
+  public void save(UIFacade facade, ViewProvider ganttViewProvider, ViewProvider resourceViewProvider, ColumnList taskColumnList,
+                   TaskFilterManager taskFilterManager, ColumnList resourceColumnList, TransformerHandler handler) throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
     addAttribute("zooming-state", facade.getZoomManager().getZoomState().getPersistentName(), attrs);
     addAttribute("id", "gantt-chart", attrs);
@@ -59,7 +60,7 @@ class ViewSaver extends SaverBase {
 
     addAttribute("id", "resource-table", attrs);
     startElement("view", attrs, handler);
-    writeColumns(facade.getResourceTree().getVisibleFields(), handler);
+    writeColumns(resourceColumnList, handler);
 
     endElement("view", handler);
 

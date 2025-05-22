@@ -33,6 +33,7 @@
     <logger name="Print" level="INFO"/>
     <logger name="Print.ImageProcessor" level="INFO"/>
     <logger name="ProjectDatabase" level="INFO"/>
+    <logger name="ResourceTable" level="INFO"/>
     <logger name="SchedulerImpl" level="INFO"/>
     <logger name="TaskTable" level="INFO"/>
     <logger name="TaskTable.Orchestrator" level="INFO"/>

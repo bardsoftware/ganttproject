@@ -34,8 +34,6 @@ import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskSelectionManager
 import net.sourceforge.ganttproject.undo.GPUndoManager
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
 import javax.swing.Action
 
 /**
@@ -51,7 +49,7 @@ class TaskActions(private val project: IGanttProject,
   val createAction = TaskNewAction(project, uiFacade, newTaskActor)
   val propertiesAction = TaskPropertiesAction(project, selectionManager, uiFacade)
   val deleteAction = TaskDeleteAction(project.taskManager, selectionManager, uiFacade)
-
+  val copyAction = TaskCopyAction(project.taskManager, selectionManager, uiFacade, viewManager)
   /**
    * "Indents" the selection, that is, moves tasks downwards in the task tree which in the UI looks
    * as if they move rightwards (get indented)
@@ -140,7 +138,7 @@ class TaskActions(private val project: IGanttProject,
       selection.last()
     }
   )
-  val copyAction get() = viewManager().copyAction
+  //val copyAction get() = viewManager().copyAction
   val cutAction get() = viewManager().cutAction
   val pasteAction get() = viewManager().pasteAction
   val linkTasksAction = TaskLinkAction(project.taskManager, selectionManager, uiFacade)
@@ -234,3 +232,15 @@ fun unindent(selection: List<Task>, taskHierarchy: TaskContainmentHierarchyFacad
     taskHierarchy.move(task, ancestor, index)
   }
 
+
+class TaskCopyAction(taskManager: TaskManager, selectionManager: TaskSelectionManager, uiFacade: UIFacade, private val viewManager: () -> GPViewManager)
+  : TaskActionBase("copy", taskManager, selectionManager, uiFacade) {
+  override fun isEnabled(selection: List<Task>): Boolean {
+    return selection.isNotEmpty()
+  }
+
+  override fun run(selection: MutableList<Task>?) {
+    viewManager().selectedArtefacts.startCopyClipboardTransaction()
+  }
+
+}

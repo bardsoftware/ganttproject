@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Action base for resource related actions
  */
-abstract class ResourceAction extends GPAction implements ActionDelegate {
+abstract public class ResourceAction extends GPAction implements ActionDelegate {
   private final HumanResourceManager myManager;
   private final List<ActionStateChangedListener> myListeners = new ArrayList<ActionStateChangedListener>();
   private final ResourceContext myContext;
@@ -61,13 +61,15 @@ abstract class ResourceAction extends GPAction implements ActionDelegate {
   }
 
   protected boolean hasResources() {
-    HumanResource[] selection = myContext.getResources();
-    return selection != null && selection.length > 0;
+    return !myContext.getResources().isEmpty();
   }
 
   protected HumanResource[] getSelection() {
-    HumanResource[] selection = myContext.getResources();
-    return selection == null ? new HumanResource[0] : selection;
+    return myContext.getResources().toArray(new HumanResource[0]);
+  }
+
+  public void updateEnabled() {
+    setEnabled(!getContext().getResources().isEmpty());
   }
 
   @Override

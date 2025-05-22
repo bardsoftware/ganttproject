@@ -1,10 +1,65 @@
 @import "../../app/theme";
 @import "../../app/typography";
 @import "../../app/buttons";
+@import "../../app/dropdowns";
 @import "../../app/validation";
 @import "../../app/menu";
 
 .gp-tree-table-view {
+  .gp-dropdown-tree-table-cell {
+    -fx-border-width: 0 0 2 0;
+
+    &.selected {
+      .combo-box-base {
+        .list-cell {
+          -fx-fill: white;
+          -fx-text-fill: white;
+        }
+        &:hover .list-cell, &:focused .list-cell {
+          -fx-fill: derive($gp-dark-gray, -20%);
+          -fx-text-fill: derive($gp-dark-gray, -20%);
+        }
+
+        & .arrow {
+          -fx-background-color: white, white;
+        }
+        &:hover .arrow, &:focused .arrow {
+          -fx-background-color: derive($gp-dark-gray, -20%), derive($gp-dark-gray, -20%);
+        }
+      }
+    }
+    .combo-box-base  {
+      @include btn-normal(transparent, transparent);
+
+      .arrow-button {
+        @include btn-normal(transparent, transparent);
+      }
+
+      &:hover {
+        @include btn-hovered();
+        .arrow-button {
+          @include btn-hovered(transparent);
+        }
+      }
+
+      &:focused {
+        @include btn-hovered();
+        @include btn-focused();
+
+        .arrow-button {
+          @include btn-hovered(transparent);
+        }
+      }
+
+      &:disabled {
+        -fx-opacity: .4;
+      }
+    }
+
+    &.focused {
+      -fx-border-color: $gp-orange;
+    }
+  }
   .gp-check-box-tree-table-cell {
     -fx-border-width: 0 0 2 0;
 

@@ -48,7 +48,7 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
 
   private ClipboardContents myClipboardContents;
 
-  GanttChartSelection(TaskManager taskManager, TaskSelectionManager selectionManager) {
+  public GanttChartSelection(TaskManager taskManager, TaskSelectionManager selectionManager) {
     myTaskManager = taskManager;
     mySelectionManager = selectionManager;
   }
@@ -110,6 +110,15 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
     ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
     processor.setTaskCopyNameOption(myTaskManager.getTaskCopyNamePrefixOption());
     return processor.pasteAsSibling(target, myClipboardContents);
+  }
+
+  @Override
+  public void commitClipboardTransaction() {
+    if (mySelectionManager.getSelectedTasks().size() != 1) {
+      return;
+    }
+    paste(mySelectionManager.getSelectedTasks().getFirst());
+    super.commitClipboardTransaction();
   }
 
   @Override

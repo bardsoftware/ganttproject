@@ -65,7 +65,7 @@ public class PasteAction extends GPAction {
     ChartSelection selection = myViewmanager.getSelectedArtefacts();
     if (!selection.isEmpty()) {
       pasteInternalFlavor(selection);
-      myUiFacade.getActiveChart().focus();
+      //myUiFacade.getViewManager().getActiveView().f
       return;
     }
     var clipboardProject = ClipboardContentsKt.getProjectFromClipboard(new BufferProject(myProject, myUiFacade));
@@ -92,7 +92,8 @@ public class PasteAction extends GPAction {
 
   private void pasteInternalFlavor(final ChartSelection selection) {
     myUndoManager.undoableEdit(getLocalizedName(), () -> {
-      myViewmanager.getActiveChart().paste(selection);
+      //myViewmanager.getActiveChart().paste(selection);
+
       selection.commitClipboardTransaction();
     });
   }

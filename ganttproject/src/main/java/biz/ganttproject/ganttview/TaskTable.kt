@@ -21,11 +21,13 @@ package biz.ganttproject.ganttview
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.*
 import biz.ganttproject.core.model.task.TaskDefaultColumn
+import biz.ganttproject.core.table.BaseTreeTableComponent
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.table.ColumnList.ColumnStub
-import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.core.table.SelectionKeeper
+import biz.ganttproject.core.table.reload
 import biz.ganttproject.core.time.TimeDuration
-import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomColumnsValues
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
 import biz.ganttproject.task.ancestors
@@ -37,7 +39,6 @@ import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.application.Platform
 import javafx.beans.property.*
-import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
@@ -56,39 +57,28 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
-import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.export.TreeTableApi
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
 import net.sourceforge.ganttproject.chart.gantt.ClipboardTaskProcessor
-import net.sourceforge.ganttproject.document.Document
-import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade
-import net.sourceforge.ganttproject.task.TaskManager
-import net.sourceforge.ganttproject.task.TaskSelectionManager
+import net.sourceforge.ganttproject.task.*
 import net.sourceforge.ganttproject.task.algorithm.RetainRootsAlgorithm
-import net.sourceforge.ganttproject.task.depthFirstWalk
 import net.sourceforge.ganttproject.task.event.TaskHierarchyEvent
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
-import net.sourceforge.ganttproject.undo.GPUndoListener
 import net.sourceforge.ganttproject.undo.GPUndoManager
-import java.awt.Component
-import java.math.BigDecimal
-import java.util.*
 import java.util.List.copyOf
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import javax.swing.SwingUtilities
-import javax.swing.event.UndoableEditEvent
 import kotlin.math.ceil
 
 
 /**
+ * Customization of the generic tree table for the task display purposes.
+ *
  * @author dbarashev@bardsoftware.com
  */
 class TaskTable(
-  val project: IGanttProject,
+  project: IGanttProject,
   private val taskManager: TaskManager,
   val taskTableChartConnector: TaskTableChartConnector,
   private val treeCollapseView: TreeCollapseView<Task>,
@@ -98,13 +88,22 @@ class TaskTable(
   val filterManager: TaskFilterManager,
   initializationPromise: TwoPhaseBarrierImpl<*>,
   private val newTaskActor: NewTaskActor<Task>
-) {
-  val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
+):
+  BaseTreeTableComponent<Task, TaskDefaultColumn>(
+    GPTreeTableView<Task>(TreeItem(taskManager.taskHierarchy.rootTask)),
+    project,
+    undoManager,
+    taskManager.customPropertyManager,
+    BuiltinColumns(
+      isZeroWidth = {
+        TaskDefaultColumn.find(it)?.isIconified ?: false
+      },
+      allColumns = { TaskDefaultColumn.entries }
+    )
+  ) {
+
   private val isSortedProperty = SimpleBooleanProperty()
-  private val treeModel = taskManager.taskHierarchy
-  val rootItem = TreeItem(treeModel.rootTask)
-  val treeTable = GPTreeTableView<Task>(rootItem)
-  val taskTableModel = TaskTableModel(taskManager.customPropertyManager)
+  override val tableModel = TaskTableModel(taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
 
   val control: Parent get() = treeTable
@@ -119,23 +118,6 @@ class TaskTable(
       isSorted = isSortedProperty
     )
   }
-  private val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
-  val columnList: ColumnListImpl = ColumnListImpl(columns, taskManager.customPropertyManager,
-    { treeTable.columns },
-    { onColumnsChange() },
-    BuiltinColumns(
-      isZeroWidth = {
-        TaskDefaultColumn.find(it)?.isIconified ?: false
-      },
-      allColumns = {
-        ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs()).copyOf()
-      }
-    )
-  )
-
-  val columnListWidthProperty = SimpleObjectProperty<Pair<Double, Double>>()
-  var requestSwingFocus: () -> Unit = {}
-  lateinit var swingComponent: Component
 
   private val placeholderShowHidden by lazy {
     Button(RootLocalizer.formatText("taskTable.placeholder.showHiddenTasks")).also {
@@ -148,769 +130,13 @@ class TaskTable(
   private val placeholderEmpty by lazy { Pane() }
 
   private val initializationCompleted = initializationPromise.register("Task table initialization")
-  private val treeTableSelectionListener = TreeSelectionListenerImpl(treeTable.selectionModel.selectedItems, selectionManager, this@TaskTable)
-  private var projectModified: () -> Unit = { project.isModified = true }
+  override val selectionKeeper = SelectionKeeper(logger = LOGGER, treeTable = this.treeTable, node2treeItem = { task ->
+    taskManager.getTask(task.taskID)?.let {
+      task2treeItem[it]
+    }
+  })
+  private val treeTableSelectionListener = TreeSelectionListenerImpl(treeTable.selectionModel.selectedItems, selectionKeeper, selectionManager, this@TaskTable)
   private val dragAndDropSupport = DragAndDropSupport(selectionManager)
-  init {
-
-    columnList.totalWidthProperty.addListener { _, oldValue, newValue ->
-      if (oldValue != newValue) {
-        // We add vertical scroll bar width to the sum width of all columns, so that the split pane
-        // which contains the table was resized appropriately.
-        columnListWidthProperty.value = newValue.toDouble() to treeTable.vbarWidth()
-      }
-    }
-    treeTable.onColumnResize = {
-      columnList.onColumnResize
-      projectModified()
-    }
-    Platform.runLater {
-      treeTable.isShowRoot = false
-      treeTable.isEditable = true
-      treeTable.isTableMenuButtonVisible = false
-    }
-    treeTable.stylesheets.add("/biz/ganttproject/app/Dialog.css")
-    initTaskEventHandlers()
-    initProjectEventHandlers()
-    initChartConnector()
-    initKeyboardEventHandlers()
-    initSelectionListeners()
-    treeTable.onSort = EventHandler {
-      // It is important to run this later because the event is sent _before_ the
-      // actual sorting, so if we collect the expanded tasks synchronously, we
-      // get the order before sorting.
-      Platform.runLater {
-        if (treeTable.sortOrder.isEmpty()) {
-          isSortedProperty.value = false
-          reload()
-        } else {
-          isSortedProperty.value = true
-          taskTableChartConnector.visibleTasks.clear()
-          getExpandedTasks().also {
-            taskTableChartConnector.visibleTasks.addAll(it)
-          }
-        }
-      }
-    }
-    columns.addListener(ListChangeListener {
-      onColumnsChange()
-    })
-    initNewTaskActor()
-    treeTable.onProperties = this::onProperties
-    treeTable.contextMenuActions = this::contextMenuActions
-
-    filterManager.sync = { this.sync() }
-    minCellHeight.addListener { observable, oldValue, newValue ->
-      if (oldValue != newValue) {
-        treeTable.coalescingRefresh()
-      }
-    }
-  }
-
-  fun loadDefaultColumns() = FXUtil.runLater {
-    treeTable.columns.clear()
-    columnList.importData(ColumnList.Immutable.fromList(
-      TaskDefaultColumn.getColumnStubs().map {
-        ColumnStub(it)
-      }.toList()
-    ), false)
-    buildColumns(columnList.columns())
-    reload()
-  }
-
-  private fun onColumnsChange()  {
-    FXUtil.runLater {
-      columnList.columns().forEach { it.taskDefaultColumn()?.isVisible = it.isVisible }
-      buildColumns(columnList.columns())
-    }
-  }
-
-  private fun initKeyboardEventHandlers() {
-    treeTable.addEventFilter(KeyEvent.KEY_PRESSED) {event ->
-      event.whenMatches("tree.expand") {
-        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
-        keepSelection(keepFocus = true) {
-          focusedCell.treeItem.isExpanded = focusedCell.treeItem.isExpanded.not()
-        }
-      }
-      event.whenMatches("tree.expandAll") {
-        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
-        keepSelection(keepFocus = true) {
-          focusedCell.treeItem.isExpanded = true
-          focusedCell.treeItem.depthFirstWalk {
-            it.isExpanded = true
-            return@depthFirstWalk true
-          }
-        }
-      }
-      event.whenMatches("tree.collapseAll") {
-        val focusedCell = treeTable.focusModel.focusedCell ?: return@whenMatches
-        keepSelection(keepFocus = true) {
-          focusedCell.treeItem.depthFirstWalk {
-            it.isExpanded = false
-            return@depthFirstWalk true
-          }
-          focusedCell.treeItem.isExpanded = false
-        }
-      }
-    }
-    treeTable.onKeyPressed = EventHandler { event ->
-      taskActions.all().firstOrNull { action ->
-        action.triggeredBy(event)
-      }?.let { action ->
-        SwingUtilities.invokeLater {
-          undoManager.undoableEdit(action.name) {
-            action.actionPerformed(null)
-          }
-        }
-      }
-
-      val focusedCell = treeTable.focusModel.focusedCell
-      val column = focusedCell.tableColumn
-      column?.userData?.let {
-        if (column.isEditable && it is ColumnList.Column) {
-          this.taskManager.customPropertyManager.getCustomPropertyDefinition(it.id)?.let { def ->
-            if (def.propertyClass == CustomPropertyClass.BOOLEAN) {
-              if (event.code == KeyCode.SPACE || event.code == KeyCode.ENTER && event.getModifiers() == 0) {
-                val task = focusedCell.treeItem.value
-                // intentionally java.lang.Boolean, because as? Boolean returns null
-                (taskTableModel.getValue(task, def) as? java.lang.Boolean)?.let { value ->
-                  undoManager.undoableEdit("Edit properties of task ${task.name}") {
-                    taskTableModel.setValue(value.booleanValue().not(), task, def)
-                  }
-                  // This trick refreshes the cell in the table.
-                  treeTable.focusModel.focus(-1)
-                  treeTable.focusModel.focus(focusedCell)
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private fun initChartConnector() {
-    taskTableChartConnector.rowHeight.addListener { _, _, newValue ->
-      Platform.runLater {
-        treeTable.fixedCellSize = ceil(maxOf(newValue.toDouble(), minCellHeight.value))
-      }
-    }
-    taskTableChartConnector.chartScrollOffset = Consumer { newValue ->
-      Platform.runLater {
-        treeTable.scrollBy(newValue)
-      }
-    }
-    treeTable.addScrollListener { newValue ->
-      taskTableChartConnector.tableScrollOffset.value = newValue
-    }
-    taskTableChartConnector.exportTreeTableApi = {
-      TreeTableApi(
-        rowHeight = { taskTableChartConnector.rowHeight.value },
-        tableHeaderHeight = { treeTable.headerHeight.intValue()  },
-        width = { fullWidthNotViewport ->
-          if (fullWidthNotViewport) {
-            // TODO: we need to autosize onl if column widths are not in the file,
-            // that is, when we import from MS Project or CSV
-            val job = CoroutineScope(Dispatchers.JavaFx).launch {
-              treeTable.autosizeColumns()
-              columnList.reloadWidthFromUi()
-            }
-            runBlocking {
-              job.join()
-            }
-            columnList.totalWidth.toInt()
-          } else {
-            treeTable.width.toInt() - treeTable.vbarWidth().toInt()
-          }
-        },
-        tableHeaderComponent = { null },
-        tableComponent = { null },
-        tablePainter = { this.buildImage(it) }
-      )
-    }
-    taskTableChartConnector.focus = {
-      requestSwingFocus()
-      FXUtil.runLater {
-        treeTable.requestFocus()
-      }
-    }
-  }
-
-  private fun initProjectEventHandlers() {
-    project.addProjectEventListener(object : ProjectEventListener.Stub() {
-      override fun projectRestoring(completion: Barrier<Document>) {
-        completion.await {
-          sync(keepFocus = true)
-        }
-      }
-
-      override fun projectOpened(
-        barrierRegistry: BarrierEntrance,
-        barrier: Barrier<IGanttProject>
-      ) {
-        barrier.await {
-          this@TaskTable.projectModified = {
-            project.isModified = true
-          }
-        }
-        reload(barrierRegistry.register("Reload Task Table"))
-      }
-
-      override fun projectCreated() {
-        loadDefaultColumns()
-        reload()
-      }
-    })
-    undoManager.addUndoableEditListener(object : GPUndoListener {
-      override fun undoableEditHappened(e: UndoableEditEvent) {
-        treeTable.coalescingRefresh()
-      }
-
-      override fun undoOrRedoHappened() {}
-      override fun undoReset() {}
-    })
-  }
-
-  private fun initTaskEventHandlers() {
-    taskManager.addTaskListener(object : TaskListenerAdapter() {
-      override fun taskAdded(e: TaskHierarchyEvent) {
-        LOGGER.debug("taskAdded: event={}", e)
-        if (e.taskSource == TaskManager.EventSource.USER) {
-          runBlocking { newTaskActor.inboxChannel.send(TaskReady(e.task)) }
-          FXUtil.runLater {
-            sync()
-            treeTable.selectionModel.clearSelection()
-            CellBehaviorBase.removeAnchor(treeTable)
-            val treeItem = task2treeItem[e.task]!!
-            taskTableChartConnector.visibleTasks.clear()
-            taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
-            treeTable.selectionModel.select(treeItem)
-            runBlocking { newTaskActor.inboxChannel.send(TreeItemReady(treeItem)) }
-          }
-        } else {
-          keepSelection {
-            addChildTreeItem(e.newContainer!!, e.task, e.indexAtNew, task2treeItem, ::onCreateTreeItem)
-            taskTableChartConnector.visibleTasks.clear()
-            taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
-          }
-        }
-      }
-
-      override fun taskMoved(e: TaskHierarchyEvent)  {
-        if (e.oldContainer == null) {
-          return
-        }
-        Platform.runLater {
-          sync(true)
-          // Force selection changed event because some actions depend on the relative location of tasks.
-          selectionManager.fireSelectionChanged()
-        }
-      }
-
-      override fun taskRemoved(e: TaskHierarchyEvent) {
-        Platform.runLater { sync() }
-      }
-
-      override fun taskModelReset() {
-        keepSelection {
-          reload()
-        }
-      }
-    })
-  }
-
-  // Launches a coroutine which is reading command messages from the New Task Actor and
-  // starts or commits tree cell edits.
-  private fun initNewTaskActor() {
-    CoroutineScope(Dispatchers.JavaFx).launch {
-      for (cmd in newTaskActor.commandChannel) {
-        when (cmd) {
-          is StartEditing -> {
-            requestSwingFocus()
-            if (treeTable.editingCell == null) {
-              val idx = treeTable.getRow(cmd.treeItem)
-              treeTable.edit(idx, findNameColumn())
-            } else {
-              //println("there is an editing cell")
-              //println("editing cell is ${treeTable.editingCell}")
-            }
-          }
-          is CommitEditing -> {
-            commitEditing()
-          }
-          is StartScrolling -> {
-            treeTable.scrollTo(cmd.treeItem)
-            FXUtil.runLater {
-              runBlocking {  newTaskActor.inboxChannel.send(TreeItemScrolled(cmd.treeItem)) }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private fun commitEditing() {
-    ourNameCellFactory.editingCell?.commitEdit()
-    //newTaskActor.inboxChannel.send(EditingCompleted())
-  }
-
-  private fun initSelectionListeners() {
-    this.treeTable.focusedProperty().addListener { _, oldValue, newValue ->
-      if (newValue && newValue != oldValue) {
-        this.selectionManager.setUserInputConsumer(this@TaskTable)
-        this.treeTableSelectionListener.onChanged(null)
-      }
-    }
-    this.treeTable.focusModel.focusedCellProperty().addListener { _, oldValue, newValue ->
-      LOGGER.debug("Focus changed: newValue={}", newValue.row to newValue.column)
-    }
-
-    this.selectionManager.addSelectionListener(object : TaskSelectionManager.Listener {
-      override fun selectionChanged(currentSelection: List<Task>, source: Any?) {
-        if (source != this@TaskTable) {
-          Platform.runLater {
-            ancestors(currentSelection, taskManager.taskHierarchy).reversed()
-              .forEach { task2treeItem[it]?.isExpanded = true }
-
-            treeTable.selectionModel.clearSelection()
-            for (task in currentSelection) {
-              task2treeItem[task]?.let {
-                treeTable.selectionModel.select(it)
-              }
-            }
-            if (currentSelection.size == 1) {
-              task2treeItem[currentSelection[0]]?.let { treeTable.scrollTo(it) }
-            }
-          }
-        }
-      }
-
-      override fun userInputConsumerChanged(newConsumer: Any?) {
-        // TODO: commit editing
-      }
-    })
-//    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
-//    treeTable.selectionModel.selectedItems.addListener(ListChangeListener {
-//      copyOf(treeTable.selectionModel.selectedItems.filterNotNull()).map { it.value }
-//        .filter { it.manager.taskHierarchy.contains(it) }.also {
-//          selectionManager.setSelectedTasks(it, this@TaskTable)
-//        }
-//    })
-
-    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
-    treeTable.selectionModel.selectedItems.addListener(treeTableSelectionListener)
-  }
-
-  private fun findNameColumn() = treeTable.columns.find { (it.userData as ColumnList.Column).id == TaskDefaultColumn.NAME.stub.id }
-
-  private fun anyDifference(newColumns: List<ColumnList.Column>, oldColumns: List<ColumnList.Column>): Boolean {
-    if (newColumns.size != oldColumns.size) {
-      LOGGER.debug("anyDifference: columns list sizes are different: new={}, old={}", newColumns.size, oldColumns.size)
-      return true
-    }
-    newColumns.forEach { col ->
-      oldColumns.find { it.id == col.id }?.let {
-        if (it != col) {
-          LOGGER.debug("anyDifference: column {} != old column with the same id={}", col, it)
-          return true
-        }
-      } ?: run {
-        LOGGER.debug("anyDifference: column {} not found in the old columns", col)
-        return true
-      }
-    }
-    oldColumns.forEach { col ->
-      newColumns.find { it.id == col.id }?.let {
-        if (it != col) {
-          LOGGER.debug("anyDifference: column {} != new column with the same id={}", col, it)
-          return true
-        }
-      } ?: run {
-        LOGGER.debug("anyDifference: column {} not found in the new columns", col)
-        return true
-      }
-    }
-    LOGGER.debug("anyDifference: no difference in the column list")
-    return false
-  }
-
-  private fun buildColumns(columns: List<ColumnList.Column>) {
-    val filteredColumns = columns.filter { col -> (TaskDefaultColumn.find(col.id)?.isIconified ?: false).not()  }
-    if (anyDifference(filteredColumns, treeTable.columns.map { it.userData as ColumnList.Column }.toList())) {
-      val tableColumns =
-        columns.mapNotNull { column ->
-          val taskDefaultColumn = TaskDefaultColumn.find(column.id)
-          when {
-            taskDefaultColumn == null -> createCustomColumn(column)
-            taskDefaultColumn.isIconified -> null
-            else -> createDefaultColumn(column, taskDefaultColumn)
-          }?.also {
-            it.prefWidth = column.width.toDouble()
-          }
-        }.toList()
-      //(treeTable.lookup(".virtual-flow") as Region).minWidth = columnList.totalWidth.toDouble()
-      treeTable.setColumns(tableColumns)
-    }
-  }
-
-  private fun createDefaultColumn(column: ColumnList.Column, taskDefaultColumn: TaskDefaultColumn) =
-    when {
-      taskDefaultColumn.valueClass == java.lang.String::class.java -> {
-        if (taskDefaultColumn == TaskDefaultColumn.NAME) {
-          TreeTableColumn<Task, Task>(taskDefaultColumn.getName()).apply {
-            setCellValueFactory {
-              ReadOnlyObjectWrapper(it.value.value)
-            }
-            cellFactory = ourNameCellFactory
-            onEditCommit = EventHandler { event ->
-              val targetTask: Task = event.rowValue.value
-              event.newValue?.let { copyTask ->
-                undoManager.undoableEdit("Edit properties of task ${copyTask.name}") {
-                  taskTableModel.setValue(copyTask.name, targetTask, taskDefaultColumn)
-                }
-              }
-              runBlocking {
-                LOGGER.debug("onEditCommit (name): task=$targetTask")
-                newTaskActor.inboxChannel.send(EditingCompleted(targetTask))
-              }
-            }
-            onEditCancel = EventHandler { event ->
-              LOGGER.debug("onEditCancel: event=$event")
-              LOGGER.error("why cancel?", exception = Exception())
-              val targetTask: Task = event.rowValue.value
-              runBlocking {
-                LOGGER.debug("onEditCancel (name): task=$targetTask")
-                newTaskActor.inboxChannel.send(EditingCompleted(targetTask))
-              }
-            }
-            treeTable.treeColumn = this
-          }
-        } else {
-          createTextColumn(
-            name = taskDefaultColumn.getName(),
-            getValue = { taskTableModel.getValueAt(it, taskDefaultColumn).toString() },
-            setValue = { task: Task, value ->
-              undoManager.undoableEdit("Edit properties of task ${task.name}") {
-                taskTableModel.setValue(value, task, taskDefaultColumn)
-                runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(task)) }
-              }
-            },
-            onEditCompleted = { runBlocking {
-              newTaskActor.inboxChannel.send(EditingCompleted(it))
-            }}
-          ).apply {
-            if (taskDefaultColumn == TaskDefaultColumn.OUTLINE_NUMBER) {
-              this.comparator = TaskDefaultColumn.Functions.OUTLINE_NUMBER_COMPARATOR
-            }
-          }
-        }
-      }
-      GregorianCalendar::class.java.isAssignableFrom(taskDefaultColumn.valueClass) -> {
-        createDateColumn(taskDefaultColumn.getName(),
-          { taskTableModel.getValueAt(it, taskDefaultColumn) as GanttCalendar? },
-          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
-            taskTableModel.setValue(value, task, taskDefaultColumn)
-          }}
-        )
-      }
-      taskDefaultColumn.valueClass == java.lang.Integer::class.java -> {
-        createIntegerColumn(taskDefaultColumn.getName(),
-          {
-            if (taskDefaultColumn == TaskDefaultColumn.DURATION) {
-              (taskTableModel.getValueAt(it, taskDefaultColumn) as TimeDuration).length
-            } else {
-              taskTableModel.getValueAt(it, taskDefaultColumn) as Int
-            }
-          },
-          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
-            taskTableModel.setValue(value, task, taskDefaultColumn)
-          }}
-        )
-      }
-      taskDefaultColumn.valueClass == java.lang.Double::class.java -> {
-        createDoubleColumn(taskDefaultColumn.getName(),
-          { taskTableModel.getValueAt(it, taskDefaultColumn) as Double },
-          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
-            taskTableModel.setValue(value, task, taskDefaultColumn)
-          }}
-        )
-      }
-      taskDefaultColumn.valueClass == java.math.BigDecimal::class.java -> {
-        createDecimalColumn(taskDefaultColumn.getName(),
-          { taskTableModel.getValueAt(it, taskDefaultColumn) as BigDecimal },
-          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
-            taskTableModel.setValue(value, task, taskDefaultColumn)
-          }}
-        )
-      }
-      taskDefaultColumn == TaskDefaultColumn.PRIORITY -> {
-        createIconColumn(
-          taskDefaultColumn.getName(),
-          { taskTableModel.getValueAt(it, taskDefaultColumn) as Task.Priority},
-          { priority: Task.Priority -> priority.getIcon() },
-          RootLocalizer.createWithRootKey("priority")
-        )
-      }
-      else -> TreeTableColumn<Task, String>(taskDefaultColumn.getName()).apply {
-        setCellValueFactory {
-          ReadOnlyStringWrapper(taskTableModel.getValueAt(it.value.value, taskDefaultColumn).toString())
-        }
-      }
-    }.also {
-      it.isEditable = taskDefaultColumn.isEditable(null)
-      it.isVisible = column.isVisible
-      it.userData = column
-      it.prefWidth = column.width.toDouble()
-    }
-
-  private fun Task.Priority.getIcon(): GlyphIcon<*>? = when (this) {
-    Task.Priority.HIGHEST -> FontAwesomeIconView(FontAwesomeIcon.ANGLE_DOUBLE_UP)
-    Task.Priority.HIGH -> FontAwesomeIconView(FontAwesomeIcon.ANGLE_UP)
-    Task.Priority.NORMAL -> null
-    Task.Priority.LOW -> FontAwesomeIconView(FontAwesomeIcon.ANGLE_DOWN)
-    Task.Priority.LOWEST -> FontAwesomeIconView(FontAwesomeIcon.ANGLE_DOUBLE_DOWN)
-  }
-
-  private fun createCustomColumn(column: ColumnList.Column): TreeTableColumn<Task, *>? {
-    val customProperty = taskManager.customPropertyManager.getCustomPropertyDefinition(column.id) ?: return null
-    return when (customProperty.propertyClass) {
-      CustomPropertyClass.TEXT -> {
-        createTextColumn(
-          name = customProperty.name,
-          getValue = { taskTableModel.getValue(it, customProperty)?.toString() },
-          setValue = { task, value ->
-            undoManager.undoableEdit("Edit properties of task ${task.name}") {
-              taskTableModel.setValue(value, task, customProperty)
-              runBlocking { newTaskActor.inboxChannel.send(EditingCompleted(task)) }
-            }
-          },
-          onEditCompleted = {
-            runBlocking {
-              newTaskActor.inboxChannel.send(EditingCompleted(it))
-            }
-          }
-        )
-      }
-      CustomPropertyClass.BOOLEAN -> {
-        createBooleanColumn<Task>(customProperty.name,
-          { taskTableModel.getValue(it, customProperty) as Boolean? },
-          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
-            taskTableModel.setValue(value, task, customProperty)
-          }}
-        )
-      }
-      CustomPropertyClass.INTEGER -> {
-        createIntegerColumn(customProperty.name,
-          { taskTableModel.getValue(it, customProperty) as Int? },
-          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
-            taskTableModel.setValue(value, task, customProperty)
-          }}
-        )
-      }
-      CustomPropertyClass.DOUBLE -> {
-        createDoubleColumn(customProperty.name,
-          { taskTableModel.getValue(it, customProperty) as Double? },
-          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
-            taskTableModel.setValue(value, task, customProperty)
-          }}
-        )
-      }
-      CustomPropertyClass.DATE -> {
-        createDateColumn(customProperty.name,
-          { taskTableModel.getValue(it, customProperty) as GanttCalendar? },
-          { task, value ->  undoManager.undoableEdit("Edit properties of task ${task.name}") {
-            taskTableModel.setValue(value, task, customProperty)
-          }}
-        )
-      }
-    }.also {
-      it.isEditable = customProperty.calculationMethod == null
-      it.isVisible = column.isVisible
-      it.userData = column
-      it.prefWidth = column.width.toDouble()
-    }
-  }
-
-  fun reload(termination: OnBarrierReached? = null) {
-    FXUtil.runLater {
-      treeTable.root.children.clear()
-      treeTable.selectionModel.clearSelection()
-      sync()
-      termination?.invoke()
-    }
-  }
-
-
-  fun sync(keepFocus: Boolean = false) {
-    keepSelection(keepFocus) {
-      try {
-        doSync(keepFocus)
-      } catch (ex: Exception) {
-        LOGGER.error("Failure when syncing the task table", exception = ex)
-      }
-    }
-  }
-  private fun doSync(keepFocus: Boolean) {
-    keepSelection(keepFocus) {
-      LOGGER.debug("Sync >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-      val treeModel = taskManager.taskHierarchy
-      task2treeItem.clear()
-
-      val syncAlgorithm = SyncAlgorithm(treeModel, task2treeItem, rootItem, filterManager.activeFilter.filterFxn, ::onCreateTreeItem)
-      syncAlgorithm.sync()
-      val visibleTasks = getExpandedTasks()
-      taskTableChartConnector.visibleTasks.setAll(visibleTasks)
-      if (visibleTasks.isEmpty()) {
-        treeTable.placeholder = if (syncAlgorithm.filteredCount > 0) {
-          placeholderShowHidden
-        } else {
-          placeholderEmpty
-        }
-      }
-      filterManager.hiddenTaskCount.set(syncAlgorithm.filteredCount)
-      initializationCompleted()
-      LOGGER.debug("Sync <<<<<<<<<<<<<<<<<")
-    }
-  }
-
-
-  private fun onCreateTreeItem(treeItem: TreeItem<Task>) {
-    val task = treeItem.value
-    treeItem.isExpanded = treeCollapseView.isExpanded(task)
-    treeItem.expandedProperty().addListener { _, _, _ -> onExpanded() }
-    treeTable.registerTreeItem(treeItem)
-  }
-
-  private fun onExpanded() {
-    rootItem.depthFirstWalk { child ->
-      treeCollapseView.setExpanded(child.value, child.isExpanded)
-      true
-    }
-    taskTableChartConnector.visibleTasks.clear()
-    taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
-
-  }
-
-  private fun getExpandedTasks(): List<Task> {
-    val result = mutableListOf<Task>()
-    rootItem.depthFirstWalk { child ->
-      result.add(child.value)
-      treeCollapseView.isExpanded(child.value)
-    }
-    return result
-  }
-
-  private var lastFocusedInSync = -1
-  private fun keepSelection(keepFocus: Boolean = false, code: ()->Unit) {
-    val body = {
-      LOGGER.debug(">>> keepSelection")
-      val selectedTasks =
-        treeTable.selectionModel.selectedItems.associate {
-          it.value to (it.previousSibling()
-            ?: it.parent?.let { parent -> if (parent == treeTable.root) null else parent }
-            ?: it.nextSibling())
-        }
-      LOGGER.debug("Selected tasks={}", selectedTasks)
-      val focusedTask = treeTable.focusModel.focusedItem?.value
-      val focusedCell = treeTable.focusModel.focusedCell
-
-      // This way we ignore table selection changes which happen when we manipulate with the tree items in code()
-      treeTableSelectionListener.disabled = true
-      code()
-      // Yup, sometimes clearSelection() call is not enough, and selectedIndices remain not empty after it.
-      treeTable.selectionModel.clearSelection()
-      treeTable.selectionModel.selectedIndices.clear()
-      CellBehaviorBase.removeAnchor(treeTable)
-      treeTableSelectionListener.disabled = false
-
-      // The array of row numbers is passed as vararg argument to selectIndices
-      val selectedRows = selectedTasks
-        .map { task2treeItem[taskManager.getTask(it.key.taskID)] ?: it.value }
-        .map { treeTable.getRow(it) }
-        .toIntArray()
-      LOGGER.debug("Selected rows={}", selectedRows)
-      treeTable.selectionModel.selectIndices(-1, *selectedRows)
-
-      // Sometimes we need to keep the focus, e.g. when we move some task in the tree, but sometimes we want to focus
-      // some other item. E.g. if a task was added due to user action, the user would expect the new task to be focused.
-      if (keepFocus) {
-        LOGGER.debug("requested to keep focus. Focused task={}", focusedTask)
-      }
-      if (keepFocus && focusedTask != null) {
-        val liveTask = taskManager.getTask(focusedTask.taskID)
-        LOGGER.debug("live task={}", liveTask)
-        task2treeItem[liveTask]?.let { it ->
-          val row = treeTable.getRow(it)
-          LOGGER.debug("row to focus={}", liveTask)
-          FXUtil.runLater {
-            LOGGER.debug("focusing row={} column={}", row, focusedCell.tableColumn.id)
-            lastFocusedInSync = row
-            treeTable.focusModel.focus(TreeTablePosition(treeTable, row, focusedCell.tableColumn))
-          }
-        }
-      }
-      treeTable.requestFocus()
-      LOGGER.debug("<<< keepSelection")
-    }
-    FXUtil.runLater(body)
-  }
-
-  private fun onProperties() {
-    SwingUtilities.invokeLater {
-      taskActions.propertiesAction.actionPerformed(null)
-    }
-  }
-  private fun contextMenuActions(builder: MenuBuilder) {
-    builder.apply {
-      items(taskActions.createAction)
-    }
-    if (selectionManager.selectedTasks.isNotEmpty()) {
-      builder.apply {
-        items(taskActions.propertiesAction)
-        separator()
-        items(
-          taskActions.unindentAction,
-          taskActions.indentAction,
-          taskActions.moveUpAction,
-          taskActions.moveDownAction,
-        )
-        separator()
-        items(
-          taskActions.copyAction,
-          taskActions.cutAction,
-          taskActions.pasteAction,
-          taskActions.deleteAction
-        )
-        if (selectionManager.selectedTasks.size == 1) {
-          separator()
-          submenu(RootLocalizer.formatText("assignments")) {
-            items(taskActions.assignments(selectionManager.selectedTasks[0], project.humanResourceManager, undoManager))
-          }
-        }
-      }
-    }
-  }
-
-  private val timer = Executors.newSingleThreadScheduledExecutor()
-  fun initUserKeyboardInput() {
-    // It appears that when we activate the task table component (sitting inside JFXPanel) its Scene/Window
-    // receives "activated" event and reset the focus owner to some button, and it happens after we "request focus"
-    // to the table. This hack delays focus request, and it seems to work.
-    // Reproducing:
-    // 1. Create two tasks
-    // 2. Create a new resource (resource tab becomes visible)
-    // 3. Switch back to the task tab
-    // Expected: task properties action is enabled, the last created task is selected and Alt+enter opens its
-    // properties.
-    timer.schedule({
-      Platform.runLater {
-        treeTable.requestFocus()
-      }
-      this.requestSwingFocus()
-    }, 200, TimeUnit.MILLISECONDS)
-  }
-
   private val ourNameCellFactory = TextCellFactory(converter = taskNameConverter) { cell ->
     dragAndDropSupport.install(cell)
 
@@ -1007,6 +233,352 @@ class TaskTable(
     cell.alignment = Pos.CENTER_LEFT
   }
 
+  override fun isTreeColumn(column: TaskDefaultColumn) = column == TaskDefaultColumn.NAME
+  override fun getCustomValues(node: Task): CustomColumnsValues = node.customValues
+
+  init {
+    columnBuilder = TaskColumnBuilder(
+      tableModel, taskManager.customPropertyManager, undoManager, ourNameCellFactory,
+      onNameEditCompleted = { task ->
+        runBlocking {
+          newTaskActor.inboxChannel.send(EditingCompleted(task))
+        }
+      }
+    )
+    initTaskEventHandlers()
+    initProjectEventHandlers()
+    initChartConnector()
+    initKeyboardEventHandlers(taskActions.all())
+    initSelectionListeners()
+    treeTable.onSort = EventHandler {
+      // It is important to run this later because the event is sent _before_ the
+      // actual sorting, so if we collect the expanded tasks synchronously, we
+      // get the order before sorting.
+      Platform.runLater {
+        if (treeTable.sortOrder.isEmpty()) {
+          isSortedProperty.value = false
+          reload()
+        } else {
+          isSortedProperty.value = true
+          taskTableChartConnector.visibleTasks.clear()
+          getExpandedTasks().also {
+            taskTableChartConnector.visibleTasks.addAll(it)
+          }
+        }
+      }
+    }
+    initNewTaskActor()
+
+    filterManager.sync = { this.sync() }
+    minCellHeight.addListener { observable, oldValue, newValue ->
+      if (oldValue != newValue) {
+        treeTable.coalescingRefresh()
+      }
+    }
+  }
+
+  override fun loadDefaultColumns() = FXUtil.runLater {
+    treeTable.columns.clear()
+    columnList.importData(ColumnList.Immutable.fromList(
+      TaskDefaultColumn.getColumnStubs().map {
+        ColumnStub(it)
+      }.toList()
+    ), false)
+    val tableColumns = columnBuilder.buildColumns(
+      columns = columnList.columns(),
+      currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
+    )
+    treeTable.setColumns(tableColumns)
+    reload()
+    columns.addListener(ListChangeListener {
+      onColumnsChange()
+    })
+  }
+
+
+  private fun initChartConnector() {
+    taskTableChartConnector.rowHeight.addListener { _, _, newValue ->
+      Platform.runLater {
+        treeTable.fixedCellSize = ceil(maxOf(newValue.toDouble(), minCellHeight.value))
+      }
+    }
+    taskTableChartConnector.chartScrollOffset = Consumer { newValue ->
+      Platform.runLater {
+        treeTable.scrollBy(newValue)
+      }
+    }
+    treeTable.addScrollListener { newValue ->
+      taskTableChartConnector.tableScrollOffset.value = newValue
+    }
+    taskTableChartConnector.exportTreeTableApi = {
+      TreeTableApi(
+        rowHeight = { taskTableChartConnector.rowHeight.value },
+        tableHeaderHeight = { treeTable.headerHeight.intValue()  },
+        width = { fullWidthNotViewport ->
+          if (fullWidthNotViewport) {
+            // TODO: we need to autosize onl if column widths are not in the file,
+            // that is, when we import from MS Project or CSV
+            val job = CoroutineScope(Dispatchers.JavaFx).launch {
+              treeTable.autosizeColumns()
+              columnList.reloadWidthFromUi()
+            }
+            runBlocking {
+              job.join()
+            }
+            columnList.totalWidth.toInt()
+          } else {
+            treeTable.width.toInt() - treeTable.vbarWidth().toInt()
+          }
+        },
+        tableHeaderComponent = { null },
+        tableComponent = { null },
+        tablePainter = {
+          this.buildImage(it, this::builtinColumnValueForPrinting)
+        }
+      )
+    }
+    taskTableChartConnector.focus = {
+      FXUtil.runLater {
+        treeTable.requestFocus()
+      }
+    }
+  }
+
+  private fun builtinColumnValueForPrinting(task: Task, taskDefaultColumn: TaskDefaultColumn): String {
+    val typedValue = tableModel.getValueAt(task, taskDefaultColumn)
+    return when (taskDefaultColumn) {
+      TaskDefaultColumn.DURATION -> ((typedValue as TimeDuration).length).toString()
+      else -> typedValue?.toString() ?: ""
+    }
+  }
+
+  private fun initTaskEventHandlers() {
+    taskManager.addTaskListener(object : TaskListenerAdapter() {
+      override fun taskAdded(e: TaskHierarchyEvent) {
+        LOGGER.debug("taskAdded: event={}", e)
+        if (e.taskSource == TaskManager.EventSource.USER) {
+          runBlocking { newTaskActor.inboxChannel.send(TaskReady(e.task)) }
+          FXUtil.runLater {
+            sync()
+            treeTable.selectionModel.clearSelection()
+            CellBehaviorBase.removeAnchor(treeTable)
+            val treeItem = task2treeItem[e.task]!!
+            taskTableChartConnector.visibleTasks.clear()
+            taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
+            treeTable.selectionModel.select(treeItem)
+            runBlocking { newTaskActor.inboxChannel.send(TreeItemReady(treeItem)) }
+          }
+        } else {
+          keepSelection {
+            addChildTreeItem(e.newContainer!!, e.task, e.indexAtNew, task2treeItem, ::onCreateTreeItem)
+            taskTableChartConnector.visibleTasks.clear()
+            taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
+          }
+        }
+      }
+
+      override fun taskMoved(e: TaskHierarchyEvent)  {
+        if (e.oldContainer == null) {
+          return
+        }
+        FXUtil.runLater {
+          sync(true)
+          // Force selection changed event because some actions depend on the relative location of tasks.
+          selectionManager.fireSelectionChanged()
+        }
+      }
+
+      override fun taskRemoved(e: TaskHierarchyEvent) {
+        FXUtil.runLater { sync() }
+      }
+
+      override fun taskModelReset() {
+        keepSelection {
+          reload()
+        }
+      }
+    })
+  }
+
+  // Launches a coroutine which is reading command messages from the New Task Actor and
+  // starts or commits tree cell edits.
+  private fun initNewTaskActor() {
+    CoroutineScope(Dispatchers.JavaFx).launch {
+      for (cmd in newTaskActor.commandChannel) {
+        when (cmd) {
+          is StartEditing -> {
+            if (treeTable.editingCell == null) {
+              val idx = treeTable.getRow(cmd.treeItem)
+              treeTable.edit(idx, findNameColumn())
+            } else {
+              //println("there is an editing cell")
+              //println("editing cell is ${treeTable.editingCell}")
+            }
+          }
+          is CommitEditing -> {
+            commitEditing()
+          }
+          is StartScrolling -> {
+            treeTable.scrollTo(cmd.treeItem)
+            FXUtil.runLater {
+              runBlocking {  newTaskActor.inboxChannel.send(TreeItemScrolled(cmd.treeItem)) }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private fun commitEditing() {
+    ourNameCellFactory.editingCell?.commitEdit()
+    //newTaskActor.inboxChannel.send(EditingCompleted())
+  }
+
+  private fun initSelectionListeners() {
+    this.treeTable.focusedProperty().addListener { _, oldValue, newValue ->
+      if (newValue && newValue != oldValue) {
+        this.selectionManager.setUserInputConsumer(this@TaskTable)
+        //this.treeTableSelectionListener.onChanged(null)
+      }
+    }
+    this.treeTable.focusModel.focusedCellProperty().addListener { _, oldValue, newValue ->
+      LOGGER.debug("Focus changed: newValue={}", newValue.row to newValue.column)
+    }
+
+    this.selectionManager.addSelectionListener(object : TaskSelectionManager.Listener {
+      override fun selectionChanged(currentSelection: List<Task>, source: Any?) {
+        if (source != this@TaskTable) {
+          Platform.runLater {
+            ancestors(currentSelection, taskManager.taskHierarchy).reversed()
+              .forEach { task2treeItem[it]?.isExpanded = true }
+
+            treeTable.selectionModel.clearSelection()
+            for (task in currentSelection) {
+              task2treeItem[task]?.let {
+                treeTable.selectionModel.select(it)
+              }
+            }
+            if (currentSelection.size == 1) {
+              task2treeItem[currentSelection[0]]?.let { treeTable.scrollTo(it) }
+            }
+          }
+        }
+      }
+
+      override fun userInputConsumerChanged(newConsumer: Any?) {
+        // TODO: commit editing
+      }
+    })
+//    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
+//    treeTable.selectionModel.selectedItems.addListener(ListChangeListener {
+//      copyOf(treeTable.selectionModel.selectedItems.filterNotNull()).map { it.value }
+//        .filter { it.manager.taskHierarchy.contains(it) }.also {
+//          selectionManager.setSelectedTasks(it, this@TaskTable)
+//        }
+//    })
+
+    treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
+    treeTable.selectionModel.selectedItems.addListener(treeTableSelectionListener)
+  }
+
+  private fun findNameColumn() = treeTable.columns.find { (it.userData as ColumnList.Column).id == TaskDefaultColumn.NAME.stub.id }
+
+  fun reload(termination: OnBarrierReached? = null) {
+    treeTable.reload(::sync, termination)
+  }
+
+  override fun sync(keepFocus: Boolean) {
+    keepSelection(keepFocus) {
+      try {
+        doSync()
+      } catch (ex: Exception) {
+        LOGGER.error("Failure when syncing the task table", exception = ex)
+      }
+    }
+  }
+  private fun doSync() {
+      LOGGER.debug("Sync >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+      val treeModel = taskManager.taskHierarchy
+      task2treeItem.clear()
+
+      val syncAlgorithm = SyncAlgorithm(treeModel, task2treeItem, rootItem, filterManager.activeFilter.filterFxn, ::onCreateTreeItem)
+      syncAlgorithm.sync()
+      val visibleTasks = getExpandedTasks()
+      taskTableChartConnector.visibleTasks.setAll(visibleTasks)
+      if (visibleTasks.isEmpty()) {
+        treeTable.placeholder = if (syncAlgorithm.filteredCount > 0) {
+          placeholderShowHidden
+        } else {
+          placeholderEmpty
+        }
+      }
+      filterManager.hiddenTaskCount.set(syncAlgorithm.filteredCount)
+      initializationCompleted()
+      LOGGER.debug("Sync <<<<<<<<<<<<<<<<<")
+  }
+
+
+  private fun onCreateTreeItem(treeItem: TreeItem<Task>) {
+    val task = treeItem.value
+    treeItem.isExpanded = treeCollapseView.isExpanded(task)
+    treeItem.expandedProperty().subscribe(::onExpanded)
+    treeTable.registerTreeItem(treeItem)
+  }
+
+  private fun onExpanded() {
+    rootItem.depthFirstWalk { child ->
+      treeCollapseView.setExpanded(child.value, child.isExpanded)
+      true
+    }
+    taskTableChartConnector.visibleTasks.clear()
+    taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
+
+  }
+
+  private fun getExpandedTasks(): List<Task> {
+    val result = mutableListOf<Task>()
+    rootItem.depthFirstWalk { child ->
+      result.add(child.value)
+      treeCollapseView.isExpanded(child.value)
+    }
+    return result
+  }
+
+  override fun onProperties() {
+    SwingUtilities.invokeLater {
+      taskActions.propertiesAction.actionPerformed(null)
+    }
+  }
+  override fun contextMenuActions(builder: MenuBuilder) {
+    builder.apply {
+      items(taskActions.createAction)
+    }
+    if (selectionManager.selectedTasks.isNotEmpty()) {
+      builder.apply {
+        items(taskActions.propertiesAction)
+        separator()
+        items(
+          taskActions.unindentAction,
+          taskActions.indentAction,
+          taskActions.moveUpAction,
+          taskActions.moveDownAction,
+        )
+        separator()
+        items(
+          taskActions.copyAction,
+          taskActions.cutAction,
+          taskActions.pasteAction,
+          taskActions.deleteAction
+        )
+        if (selectionManager.selectedTasks.size == 1) {
+          separator()
+          submenu(RootLocalizer.formatText("assignments")) {
+            items(taskActions.assignments(selectionManager.selectedTasks[0], project.humanResourceManager, undoManager))
+          }
+        }
+      }
+    }
+  }
 }
 
 internal class SyncAlgorithm(
@@ -1090,17 +662,18 @@ internal fun addChildTreeItem(parent: Task, child: Task, pos: Int = -1,
   task2treeItem[child] = childItem
   return childItem
 }
+
 private class TreeSelectionListenerImpl(
   private val selectedItems: ObservableList<TreeItem<Task>?>,
+  private val selectionKeeper: SelectionKeeper<Task>,
   private val selectionManager: TaskSelectionManager,
-  private val selectionSource: Any)
+  private val selectionSource: Any
+)
   : ListChangeListener<TreeItem<Task>> {
-
-  var disabled: Boolean = false
 
   override fun onChanged(c: ListChangeListener.Change<out TreeItem<Task>>?) {
     LOGGER.debug("Selection changed: currentSelection={}", selectedItems)
-    if (!disabled) {
+    if (!selectionKeeper.ignoreSelectionChange) {
       copyOf(selectedItems.filterNotNull()).map { it.value }
         .filter { it.manager.taskHierarchy.contains(it) }.also {
           SwingUtilities.invokeLater {
@@ -1131,10 +704,6 @@ data class TaskTableActionConnector(
   val contextMenuActions: (MenuBuilder) -> Unit,
   val isSorted: ReadOnlyBooleanProperty
 )
-
-fun TreeItem<Task>.depthFirstWalk(visitor: (TreeItem<Task>) -> Boolean) {
-  this.children.forEach { if (visitor(it)) it.depthFirstWalk(visitor) }
-}
 
 
 class DragAndDropSupport(private val selectionManager: TaskSelectionManager) {
@@ -1211,16 +780,17 @@ private val taskNameConverter = MyStringConverter<Task, Task>(
   }
 )
 
-private val getParentTask =  { task: Task -> task.manager.taskHierarchy.getContainer(task) }
-
-private val ourRetainRootsAlgorithm = RetainRootsAlgorithm<Task>()
-
 private fun Task.ProgressStatus.getIcon() : GlyphIcon<*>? =
   when (this) {
     Task.ProgressStatus.NOT_YET -> null
     Task.ProgressStatus.INPROGRESS -> FontAwesomeIconView(FontAwesomeIcon.HOURGLASS_HALF)
     Task.ProgressStatus.DEADLINE_MISS -> FontAwesomeIconView(FontAwesomeIcon.HOURGLASS_END)
   }
+
+
+private val getParentTask =  { task: Task -> task.manager.taskHierarchy.getContainer(task) }
+
+private val ourRetainRootsAlgorithm = RetainRootsAlgorithm<Task>()
 
 private val TEXT_FORMAT = DataFormat.lookupMimeType("text/ganttproject-task-node") ?: DataFormat("text/ganttproject-task-node")
 private val LOGGER = GPLogger.create("TaskTable")

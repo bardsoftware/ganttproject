@@ -41,19 +41,6 @@ public class AssignmentDeleteAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    final ResourceAssignment[] context = myContext.getResourceAssignments();
-    if (context != null && context.length > 0) {
-      myUIFacade.getUndoManager().undoableEdit(getLocalizedDescription(), () -> {
-        deleteAssignments(context);
-        myUIFacade.refresh();
-      });
-    }
-  }
-
-  private void deleteAssignments(ResourceAssignment[] context) {
-    for (ResourceAssignment ra : context) {
-      ra.delete();
-      ra.getTask().getAssignmentCollection().deleteAssignment(ra.getResource());
-    }
+    ResourceActionSetKt.deleteAssignments(myContext, myUIFacade, getLocalizedDescription());
   }
 }

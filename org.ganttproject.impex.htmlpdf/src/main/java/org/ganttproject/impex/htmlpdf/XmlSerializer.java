@@ -133,7 +133,7 @@ public class XmlSerializer extends SaverBase {
 
     addAttribute("id", "resource-table", attrs);
     startElement("view", attrs, handler);
-    writeColumns(facade.getResourceTree().getVisibleFields(), handler);
+    writeColumns(facade.getResourceColumnList(), handler);
 
     endElement("view", handler);
   }

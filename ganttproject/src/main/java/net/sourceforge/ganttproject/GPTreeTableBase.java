@@ -122,13 +122,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       editCellAt(t.getSelectedRow(), t.getSelectedColumn());
     }
   };
-  private GPAction myManageColumnsAction = new GPAction("columns.manage.label") {
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      ColumnManagerKt.showResourceColumnManager(myTableHeaderFacade,
-          myCustomPropertyManager, getUiFacade().getUndoManager(), getProject().getProjectDatabase(), ApplyExecutorType.SWING);
-    }
-  };
   private GPAction myNewRowAction;
   private GPAction myPropertiesAction;
   private TableCellEditor myHierarchicalEditor;
@@ -273,9 +266,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
     updateHierarchicalRendererEditor();
   }
 
-  Action getManageColumnsAction() {
-    return myManageColumnsAction;
-  }
 
   protected class TableHeaderUiFacadeImpl implements ColumnList {
     private final List<Column> myDefaultColumnStubs = new ArrayList<>();
@@ -1142,9 +1132,6 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       final int columnAtPoint = getTable().columnAtPoint(mouseEvent.getPoint());
       final ColumnImpl column = getTableHeaderUiFacade().findColumnByViewIndex(columnAtPoint);
 
-      {
-        result.add(myManageColumnsAction);
-      }
       {
         GPAction fitAction = new GPAction("columns.fit.label") {
           @Override

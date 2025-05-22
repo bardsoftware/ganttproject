@@ -18,9 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
-import biz.ganttproject.FXUtil
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.app.MenuBuilderFx
+import biz.ganttproject.core.option.ObservableInt
+import biz.ganttproject.core.option.ObservableProperty
 import biz.ganttproject.lib.fx.treetable.TreeTableRowSkin
 import biz.ganttproject.lib.fx.treetable.TreeTableViewSkin
 import biz.ganttproject.lib.fx.treetable.VirtualFlow
@@ -65,8 +66,11 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     addEventHandler(MouseEvent.MOUSE_CLICKED) { event ->
       if (event.button == MouseButton.SECONDARY) {
         val contextMenu = ContextMenu()
+        contextMenu.isAutoHide = true
         contextMenuActions(MenuBuilderFx(contextMenu))
-        contextMenu.show(this, event.screenX, event.screenY)
+        contextMenu.scene.stylesheets.add("/biz/ganttproject/app/menu.css")
+        contextMenu.styleClass.add("context-menu")
+        contextMenu.show(this.scene.window, event.screenX, event.screenY)
       }
     }
     columnResizePolicy = resizePolicy
@@ -196,6 +200,13 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     }
 
   }
+
+  fun refreshFocusedCell() {
+    // This trick refreshes the cell in the table.
+    val focusedCell = focusModel.focusedCell
+    focusModel.focus(-1)
+    focusModel.focus(focusedCell)
+  }
 }
 
 class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableViewSkin<T>(table) {
@@ -289,6 +300,7 @@ class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableV
 interface TreeCollapseView<T> {
   fun isExpanded(node: T): Boolean
   fun setExpanded(node: T, value: Boolean)
+  val expandedCount: ObservableProperty<Int>
 }
 
 class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
@@ -299,7 +311,10 @@ class SimpleTreeCollapseView<T> : TreeCollapseView<T> {
 
   override fun setExpanded(node: T, value: Boolean) {
     node2value[node] = value
+    expandedCount.set(node2value.count { it.value })
   }
+
+  override val expandedCount = ObservableInt("", 0)
 }
 
 
@@ -386,6 +401,23 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
     if (diff > 0) {
       visibleColumns.last().prefWidth += diff
     }
+  }
+}
+
+fun <T> TreeItem<T>.depthFirstWalk(visitor: (TreeItem<T>) -> Boolean) {
+  this.children.forEach { if (visitor(it)) it.depthFirstWalk(visitor) }
+}
+
+fun <T> TreeItem<T>.find(predicate: (TreeItem<T>) -> Boolean): TreeItem<T>? {
+  if (predicate(this)) return this
+  else {
+    this.children.forEach {
+      val result = it.find(predicate)
+      if (result != null) {
+        return result
+      }
+    }
+    return null
   }
 }
 

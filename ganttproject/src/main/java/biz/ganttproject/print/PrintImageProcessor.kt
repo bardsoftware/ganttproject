@@ -88,7 +88,7 @@ internal class PrintImageProcessor(
     val job = imageScope.launch {
       try {
         doRun()
-      } catch (ex: IOException) {
+      } catch (ex: Throwable) {
         ourLogger.error("Image generation job failed", ex)
         channel.close(ex)
       }

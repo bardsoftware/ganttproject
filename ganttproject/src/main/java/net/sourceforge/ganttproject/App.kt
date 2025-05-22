@@ -61,6 +61,7 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
   FXUtil.startup{
     Thread.setDefaultUncaughtExceptionHandler { t, e ->
       APP_LOGGER.error("Uncaught exception", e)
+      e.printStackTrace()
     }
     try {
       val stage = Stage()
@@ -133,8 +134,9 @@ class AppBuilder(args: Array<String>) {
       GPLogger.log(e)
     }
     SwingUtilities.invokeLater {
-      Thread.currentThread().uncaughtExceptionHandler = UncaughtExceptionHandler {
-          _, e -> GPLogger.log(e)
+      Thread.currentThread().uncaughtExceptionHandler = UncaughtExceptionHandler { _, e ->
+          e.printStackTrace()
+          GPLogger.log(e)
       }
     }
     whenWindowOpened {

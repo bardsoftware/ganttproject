@@ -32,6 +32,7 @@ import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.GanttChart;
 import net.sourceforge.ganttproject.chart.TimelineChart;
 import net.sourceforge.ganttproject.gui.*;
@@ -39,6 +40,7 @@ import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.gui.view.ViewProvider;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.resource.ResourceSelectionManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.TaskView;
@@ -201,13 +203,18 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public ResourceTreeUIFacade getResourceTree() {
-    return myRealFacade.getResourceTree();
+  public ColumnList getResourceColumnList() {
+    return myRealFacade.getResourceColumnList();
   }
 
   @Override
   public TaskSelectionContext getTaskSelectionContext() {
     // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ResourceSelectionManager getResourceSelectionManager() {
     return null;
   }
 
@@ -276,6 +283,11 @@ class ViewProviderStub implements ViewProvider {
   @Override
   public List<GPOption<?>> getOptions() {
     return Collections.emptyList();
+  }
+
+  @Override
+  public @NotNull ChartSelection getSelection() {
+    return ChartSelection.EMPTY;
   }
 
   @NotNull

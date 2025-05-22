@@ -39,7 +39,10 @@ public interface GPViewManager {
 
   @NotNull GPAction getPropertiesAction();
 
+  GPAction getDeleteAction();
+
   ChartSelection getSelectedArtefacts();
+
   View getActiveView();
 
   Chart getActiveChart();

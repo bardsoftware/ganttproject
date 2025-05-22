@@ -191,7 +191,7 @@ public class HumanResource implements CustomPropertyHolder {
     return myDaysOffList;
   }
 
-  Object getCustomField(CustomPropertyDefinition def) {
+  public Object getCustomField(CustomPropertyDefinition def) {
     return myCustomProperties.getValue(def);
   }
 
@@ -228,6 +228,9 @@ public class HumanResource implements CustomPropertyHolder {
     }
   }
 
+  public CustomColumnsValues getCustomValues() {
+    return myCustomProperties;
+  }
 
   @Override
   public List<CustomProperty> getCustomProperties() {

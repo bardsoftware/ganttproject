@@ -27,10 +27,8 @@ import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.task.TaskActions;
 import com.google.common.base.Suppliers;
 import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
@@ -43,6 +41,8 @@ import net.sourceforge.ganttproject.action.BaselineDialogAction;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
+import net.sourceforge.ganttproject.chart.ChartSelection;
+import net.sourceforge.ganttproject.chart.gantt.GanttChartSelection;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
@@ -53,8 +53,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -68,11 +66,10 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private final Supplier<TaskTable> myTaskTableSupplier;
   private final TaskActions myTaskActions;
   private final Function0<Unit> myInitializationCompleted;
-  private JComponent myComponent;
   private TaskTable taskTable;
   private ViewComponents myViewComponents;
-
-  private DoubleOption myDividerOption = new DefaultDoubleOption("divider", 0.5);
+  private final GanttChartSelection mySelection;
+  private final DoubleOption myDividerOption = new DefaultDoubleOption("divider", 0.5);
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
                             JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
@@ -96,8 +93,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
         myViewComponents.getSplitPane().setDividerPosition(0, myDividerOption.getValue());
       }
     });
-    //addChartPanel(createSchedulePanel());
-    //addTableResizeListeners(myTaskTree, myTreeFacade.getTreeTable().getScrollPane().getViewport());
+    mySelection = new GanttChartSelection(project.getTaskManager(), workbenchFacade.getTaskSelectionManager());
   }
 
   private FXToolbarBuilder createScheduleToolbar() {
@@ -108,7 +104,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
 
   private final Label filterTaskLabel = new Label();
 
-  private Supplier<TaskFilterActionSet> filterActions = Suppliers.memoize(() ->
+  private final Supplier<TaskFilterActionSet> filterActions = Suppliers.memoize(() ->
     new TaskFilterActionSet(taskTable.getFilterManager(), getProject().getProjectDatabase())
   );
   //private final TaskFilterActionSet
@@ -170,38 +166,14 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   }
 
   @Override
+  @NotNull
   public JComponent getChartComponent() {
     return myGanttChart;
   }
 
   @Override
   protected @NotNull Component getTreeComponent() {
-    var jfxPanel = new JFXPanel();
-    this.taskTable = setupTaskTable();
-    jfxPanel.addKeyListener(new KeyAdapter() {
-      @Override
-      public void keyPressed(KeyEvent e) {
-        // Otherwise pressing Delete when editing a task name will delete the task itself.
-        if (e.getKeyCode() == KeyEvent.VK_DELETE && taskTable.getTreeTable().getEditingCell() != null) {
-          e.consume();
-        }
-      }
-    });
-    Platform.runLater(() -> {
-      jfxPanel.setScene(new Scene(taskTable.getControl()));
-      setHeaderHeight(() -> taskTable.getHeaderHeightProperty().intValue());
-      myInitializationCompleted.invoke();
-    });
-    taskTable.setRequestSwingFocus(() -> {
-      jfxPanel.requestFocus();
-      return null;
-    });
-    taskTable.setSwingComponent(jfxPanel);
-    taskTable.getColumnListWidthProperty().addListener((observable, oldValue, newValue) ->
-      SwingUtilities.invokeLater(() -> setTableWidth(newValue.component1() + newValue.component2()))
-    );
-
-    return jfxPanel;
+    return null;
   }
 
   private TaskTable setupTaskTable() {
@@ -217,16 +189,11 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
     return taskTable;
   }
 
-  // //////////////////////////////////////////////
-  // GPView
-//  @Override
-//  public void setActive(boolean active) {
-//    if (active) {
-//      //myTaskTree.requestFocus();
-//      this.taskTable.initUserKeyboardInput();
-//      myTaskActions.getCreateAction().updateAction();
-//    }
-//  }
+
+  @Override
+  public @NotNull ChartSelection getSelection() {
+    return mySelection;
+  }
 
   @Override
   public Chart getChart() {
@@ -254,7 +221,8 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
         chartToolbarBox.getChildren().add(createScheduleToolbar().build().getToolbar$ganttproject());
         return chartToolbarBox;
       },
-      /*chartBuilder=*/        this::getChartComponent,
+      /*chartBuilder=*/
+      this::getChartComponent,
       myWorkbenchFacade.getDpiOption()
     );
 

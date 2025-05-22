@@ -291,7 +291,7 @@ public abstract class GPAction extends AbstractAction implements GanttLanguage.L
     return myFontAwesomeLabel;
   }
 
-  protected void setFontAwesomeLabel(String label) {
+  public void setFontAwesomeLabel(String label) {
     myFontAwesomeLabel = label;
     updateAction();
   }

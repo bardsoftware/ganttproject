@@ -40,8 +40,6 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 
 import javax.swing.*;
 import java.awt.*;
@@ -72,7 +70,7 @@ public class GanttChartController extends AbstractChartImplementation implements
     myMouseListener = new MouseListenerImpl(this, uiFacade, chartComponent, taskTableActionFacade);
     myMouseMotionListener = new MouseMotionListenerImpl(this, uiFacade, chartComponent);
     mySelectionManager = uiFacade.getTaskSelectionManager();
-    mySelection = new GanttChartSelection(myTaskManager, mySelectionManager);
+//    mySelection = new GanttChartSelection(myTaskManager, mySelectionManager);
     myTaskTableConnector = taskTableConnector;
     myTaskTableConnector.getVisibleTasks().addListener(
         (ListChangeListener<Task>) c -> SwingUtilities.invokeLater(this::reset)
@@ -185,27 +183,6 @@ public class GanttChartController extends AbstractChartImplementation implements
   @Override
   public MouseMotionListener getMouseMotionListener() {
     return myMouseMotionListener;
-  }
-
-  @Override
-  public IStatus canPaste(ChartSelection selection) {
-    return Status.OK_STATUS;
-  }
-
-  private final GanttChartSelection mySelection;
-
-  @Override
-  public ChartSelection getSelection() {
-    return mySelection;
-  }
-
-  @Override
-  public void paste(ChartSelection selection) {
-    if (mySelectionManager.getSelectedTasks().size() != 1) {
-      return;
-    }
-    mySelection.paste(mySelectionManager.getSelectedTasks().get(0));
-
   }
 
   public Task findTaskUnderPointer(int xpos, int ypos) {

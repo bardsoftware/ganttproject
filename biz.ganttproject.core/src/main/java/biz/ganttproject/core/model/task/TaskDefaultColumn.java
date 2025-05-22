@@ -20,7 +20,9 @@ package biz.ganttproject.core.model.task;
 
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
+import biz.ganttproject.core.table.BuiltinColumn;
 import biz.ganttproject.customproperty.CustomPropertyClass;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,7 +36,7 @@ import java.util.function.Predicate;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public enum TaskDefaultColumn {
+public enum TaskDefaultColumn implements BuiltinColumn {
   TYPE(new ColumnList.ColumnStub("tpd0", null, false, -1, -1), Icon.class, "tableColType"),
   PRIORITY(new ColumnList.ColumnStub("tpd1", null, false, -1, 50), Icon.class, "tableColPriority"),
   INFO(new ColumnList.ColumnStub("tpd2", null, false, -1, -1), Icon.class, "tableColInfo", Functions.NOT_EDITABLE, true),
@@ -90,7 +92,8 @@ public enum TaskDefaultColumn {
     mySortComparator = sortComparator;
   }
 
-  public Column getStub() {
+  @Override
+  public @NotNull Column getStub() {
     return myDelegate;
   }
 

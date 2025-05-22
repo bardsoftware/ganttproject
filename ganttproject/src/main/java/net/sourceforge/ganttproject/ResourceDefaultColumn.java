@@ -20,9 +20,12 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
+import biz.ganttproject.core.table.BuiltinColumn;
 import com.google.common.base.MoreObjects;
 import net.sourceforge.ganttproject.language.GanttLanguage;
+import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,15 +34,15 @@ import java.util.List;
  *
  * @author dbarashev (Dmitry Barashev)
  */
-public enum ResourceDefaultColumn {
+public enum ResourceDefaultColumn implements BuiltinColumn {
   ID(new ColumnList.ColumnStub("", null, false, 0, 75), Integer.class, "tableColID", true),
   NAME(new ColumnList.ColumnStub("0", null, true, 0, 200), String.class, "tableColResourceName", true),
   ROLE(new ColumnList.ColumnStub("1", null, true, 1, 75), String.class, "tableColResourceRole", true),
   EMAIL(new ColumnList.ColumnStub("2", null, false, -1, 75), String.class, "tableColResourceEMail", true),
   PHONE(new ColumnList.ColumnStub("3", null, false, -1, 50), String.class, "tableColResourcePhone", true),
   ROLE_IN_TASK(new ColumnList.ColumnStub("4", null, false, -1, 75), String.class, "tableColResourceRoleForTask", true),
-  STANDARD_RATE(new ColumnList.ColumnStub("5", null, false, -1, 75), Double.class, "tableColResourceRate", true),
-  TOTAL_COST(new ColumnList.ColumnStub("6", null, false, -1, 50), Double.class, "tableColResourceCost", false),
+  STANDARD_RATE(new ColumnList.ColumnStub("5", null, false, -1, 75), BigDecimal.class, "tableColResourceRate", true),
+  TOTAL_COST(new ColumnList.ColumnStub("6", null, false, -1, 50), BigDecimal.class, "tableColResourceCost", false),
   TOTAL_LOAD(new ColumnList.ColumnStub("7", null, false, -1, 50), Double.class, "tableColResourceLoad", false);
 
   private final Column myDelegate;
@@ -54,14 +57,17 @@ public enum ResourceDefaultColumn {
     myValueClass = valueClass;
   }
 
-  public Column getStub() {
+  @Override
+  public @NotNull Column getStub() {
     return myDelegate;
   }
 
-  static List<Column> getColumnStubs() {
+  public static List<Column> getColumnStubs() {
     List<Column> result = new ArrayList<Column>();
     for (ResourceDefaultColumn dc : values()) {
-      result.add(dc.myDelegate);
+      result.add(new ColumnList.ColumnStub(
+        dc.myDelegate.getID(), dc.getName(),
+        dc.myDelegate.isVisible(), dc.myDelegate.getOrder(), dc.myDelegate.getWidth()));
     }
     return result;
   }
@@ -90,5 +96,15 @@ public enum ResourceDefaultColumn {
       }
     }
     return null;
+  }
+
+  @Override
+  public <NodeType> boolean isEditable(NodeType node) {
+    return isEditable;
+  }
+
+  @Override
+  public boolean isIconified() {
+    return false;
   }
 }

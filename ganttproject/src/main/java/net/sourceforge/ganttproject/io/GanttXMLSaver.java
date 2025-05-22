@@ -55,18 +55,20 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
   private final Supplier<TaskFilterManager> myTaskFilters;
   private final ViewProvider myGanttViewProvider;
   private final ViewProvider myResourceViewProvider;
+  private final Supplier<ColumnList> myResourceColumnList;
 
   private GanttGraphicArea area;
 
   public GanttXMLSaver(IGanttProject project) {
-    this(project, null, null, null, null, () -> null, () -> null);
+    this(project, null, null, null, null, () -> null, () -> null, ()->null);
   }
 
   public GanttXMLSaver(IGanttProject project, GanttGraphicArea area, UIFacade uiFacade,
                        ViewProvider ganttViewProvider,
                        ViewProvider resourceViewProvider,
                        Supplier<ColumnList> taskColumnList,
-                       Supplier<TaskFilterManager> taskFilters) {
+                       Supplier<TaskFilterManager> taskFilters,
+                       Supplier<ColumnList> resourceColumnList) {
     this.area = area;
     myProject = project;
     myUIFacade = uiFacade;
@@ -74,6 +76,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
     myTaskFilters = taskFilters;
     myGanttViewProvider = ganttViewProvider;
     myResourceViewProvider = resourceViewProvider;
+    myResourceColumnList = resourceColumnList;
   }
 
   @Override
@@ -144,7 +147,7 @@ public class GanttXMLSaver extends SaverBase implements GPSaver {
 
   private void saveViews(TransformerHandler handler) throws SAXException {
     if (getUIFacade() != null) {
-      new ViewSaver().save(getUIFacade(), myGanttViewProvider, myResourceViewProvider, myTaskColumnList.get(), myTaskFilters.get(), handler);
+      new ViewSaver().save(getUIFacade(), myGanttViewProvider, myResourceViewProvider, myTaskColumnList.get(), myTaskFilters.get(), myResourceColumnList.get(), handler);
     }
   }
 

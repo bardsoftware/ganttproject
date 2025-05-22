@@ -139,6 +139,7 @@ task copyPlugin(dependsOn: jar) {
             }
             from(fileTree("src/main/resources")) {
                 include 'logging.properties'
+                include "logback.xml"
             }
         }
         copy {

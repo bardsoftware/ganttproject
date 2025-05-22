@@ -27,7 +27,6 @@ import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.gui.taskproperties.TaskPropertiesController
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
-import java.awt.event.ActionEvent
 import java.text.MessageFormat
 
 class GanttDialogProperties(private val tasks: Array<GanttTask?>) {
@@ -67,7 +66,7 @@ class GanttDialogProperties(private val tasks: Array<GanttTask?>) {
 
         val title = MessageFormat.format(language.getText("properties.task.title"), taskNames)
         val tabProviders = listOf(
-            PropertiedDialogTabProvider(
+            PropertiesDialogTabProvider(
               { tabPane -> tabPane.tabs.add(Tab(
                 taskPropertiesController.mainPropertiesPanel.title,
                 taskPropertiesController.mainPropertiesPanel.fxComponent
@@ -76,7 +75,7 @@ class GanttDialogProperties(private val tasks: Array<GanttTask?>) {
             ),
             swingTab(language.getText("predecessors")) { taskPropertiesBean.predecessorsPanel },
             swingTab(language.getText("human")) { taskPropertiesBean.resourcesPanel },
-            PropertiedDialogTabProvider(
+            PropertiesDialogTabProvider(
                 { tabPane ->
                     tabPane.tabs.add(
                         Tab(

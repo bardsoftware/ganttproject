@@ -22,6 +22,7 @@ package biz.ganttproject.ganttview
 import biz.ganttproject.FXUtil
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.ValidationException
+import biz.ganttproject.core.table.TableModel
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
@@ -40,10 +41,12 @@ import java.util.function.Predicate
 import java.util.function.Supplier
 
 /**
+ * A model that provides getters and setters for the values shown in the task table.
+ *
  * @author dbarashev@bardsoftware.com
  */
-class TaskTableModel(private val customColumnsManager: CustomPropertyManager) {
-  fun getValueAt(t: Task, defaultColumn: TaskDefaultColumn): Any? =
+class TaskTableModel(private val customColumnsManager: CustomPropertyManager): TableModel<Task, TaskDefaultColumn> {
+  override fun getValueAt(t: Task, defaultColumn: TaskDefaultColumn): Any? =
     when (defaultColumn) {
       TaskDefaultColumn.PRIORITY       -> t.priority
       TaskDefaultColumn.INFO           -> t.getProgressStatus()
@@ -64,24 +67,24 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager) {
       }
     }
 
-  fun getValue(t: Task, customProperty: CustomPropertyDefinition): Any? {
+  override fun getValue(t: Task, customProperty: CustomPropertyDefinition): Any? {
     return t.customValues.getValue(customProperty)
   }
 
-  fun setValue(value: Any, task: Task, property: TaskDefaultColumn) {
+  override fun setValue(value: Any, node: Task, property: TaskDefaultColumn) {
     fun runInUiThread(code: ()->Unit) = FXUtil.runLater(code)
 
     when (property) {
-      TaskDefaultColumn.NAME -> task.createMutator().also {
+      TaskDefaultColumn.NAME -> node.createMutator().also {
         it.setName(value.toString())
         it.commit()
       }
       TaskDefaultColumn.BEGIN_DATE -> {
         val startDate = value as GanttCalendar
-        val earliestStart = if (task.thirdDateConstraint == 1) task.third else null
+        val earliestStart = if (node.thirdDateConstraint == 1) node.third else null
 
         runInUiThread {
-          task.createMutatorFixingDuration().let {
+          node.createMutatorFixingDuration().let {
             it.setStart(minOf(startDate, earliestStart ?: startDate))
             it.commit()
           }
@@ -89,7 +92,7 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager) {
       }
       TaskDefaultColumn.END_DATE -> {
         runInUiThread {
-          task.createMutatorFixingDuration().let {
+          node.createMutatorFixingDuration().let {
             it.setEnd(CalendarFactory.createGanttCalendar(
               GPTimeUnitStack.DAY.adjustRight((value as GanttCalendar).time)
             ))
@@ -98,15 +101,15 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager) {
         }
       }
       TaskDefaultColumn.DURATION -> {
-        val tl = task.duration
+        val tl = node.duration
         runInUiThread {
-          task.createMutator().let {
-            it.setDuration(task.manager.createLength(tl.timeUnit, (value as Number).toInt().toFloat()))
+          node.createMutator().let {
+            it.setDuration(node.manager.createLength(tl.timeUnit, (value as Number).toInt().toFloat()))
             it.commit()
           }
         }
       }
-      TaskDefaultColumn.COMPLETION -> task.createMutator().let {
+      TaskDefaultColumn.COMPLETION -> node.createMutator().let {
         it.completionPercentage = (value as Number).toInt()
         it.commit()
       }
@@ -121,13 +124,13 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager) {
         val promises: Map<Int, Supplier<TaskDependency>>
         try {
           promises = TaskProperties.parseDependencies(
-            specs, task
-          ) { id -> task.manager.getTask(id!!) }
+            specs, node
+          ) { id -> node.manager.getTask(id!!) }
           runInUiThread {
             try {
-              val taskManager = task.manager
+              val taskManager = node.manager
               taskManager.algorithmCollection.scheduler.setEnabled(false)
-              task.dependenciesAsDependant.clear()
+              node.dependenciesAsDependant.clear()
               for (promise in promises.values) {
                 promise.get()
               }
@@ -143,7 +146,7 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager) {
       }
       TaskDefaultColumn.COST -> try {
         val cost = BigDecimal(value.toString())
-        task.createMutator().also {
+        node.createMutator().also {
           it.setCost(CostStub(cost, false))
           it.commit()
         }
@@ -155,14 +158,14 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager) {
     }
   }
 
-  fun setValue(value: Any, task: Task, column: CustomPropertyDefinition) {
+  override fun setValue(value: Any, node: Task, column: CustomPropertyDefinition) {
     if (column.calculationMethod != null) {
       throw ValidationException("This is a calculated column")
     }
     try {
-      val customValues = task.customValues.copyOf()
+      val customValues = node.customValues.copyOf()
       customValues.setValue(column, value)
-      task.createMutator().let {
+      node.createMutator().let {
         it.setCustomProperties(customValues)
         it.commit()
       }
