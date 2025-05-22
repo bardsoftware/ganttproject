@@ -22,6 +22,7 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.core.table.*
 import biz.ganttproject.core.table.ColumnList.ColumnStub
+import biz.ganttproject.customproperty.CustomColumnsValues
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.lib.fx.*
 import javafx.beans.property.DoubleProperty
@@ -31,10 +32,16 @@ import javafx.scene.control.SelectionMode
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
 import javafx.util.StringConverter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ResourceDefaultColumn
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet
+import net.sourceforge.ganttproject.chart.export.TreeTableApi
 import net.sourceforge.ganttproject.resource.*
 import net.sourceforge.ganttproject.roles.Role
 import net.sourceforge.ganttproject.task.ResourceAssignment
@@ -73,14 +80,17 @@ data class ResourceTableChartConnector(
   // Vertical scroll offset in the table.
   val tableScrollOffset: DoubleProperty,
 
-  // Callback that is called whenever the chart vertical scroll offset changes,
-  var chartScrollOffset: Consumer<Double>?
+  // Callback that is called whenever the chart vertical scroll offset changes.
+  var chartScrollOffset: Consumer<Double>?,
+
+  // Object that provides functions required for exporting a tree table as an image.
+  var exportTreeTableApi: () -> TreeTableApi? = { null }
 )
 
 /**
  * This class is a controller of the tree table UI widget that shows project human resources.
  */
-class ResourceTable(private val project: IGanttProject,
+class ResourceTable(project: IGanttProject,
                     private val undoManager: GPUndoManager,
                     private val resourceSelectionManager: ResourceSelectionManager,
                     val resourceActions: ResourceActionSet,
@@ -95,7 +105,7 @@ class ResourceTable(private val project: IGanttProject,
         ResourceDefaultColumn.find(it)?.isIconified ?: false
       },
       allColumns = {
-        ColumnList.Immutable.fromList(ResourceDefaultColumn.getColumnStubs()).copyOf()
+        ResourceDefaultColumn.entries
       }
     )
   ) {
@@ -120,6 +130,31 @@ class ResourceTable(private val project: IGanttProject,
       FXUtil.runLater {
         treeTable.scrollBy(newValue)
       }
+    }
+    resourceChartConnector.exportTreeTableApi = {
+      TreeTableApi(
+        rowHeight = { resourceChartConnector.rowHeight.value },
+        tableHeaderHeight = { treeTable.headerHeight.intValue()  },
+        width = { fullWidthNotViewport ->
+          if (fullWidthNotViewport) {
+            // TODO: we need to autosize onl if column widths are not in the file,
+            // that is, when we import from MS Project or CSV
+            val job = CoroutineScope(Dispatchers.JavaFx).launch {
+              treeTable.autosizeColumns()
+              columnList.reloadWidthFromUi()
+            }
+            runBlocking {
+              job.join()
+            }
+            columnList.totalWidth.toInt()
+          } else {
+            treeTable.width.toInt() - treeTable.vbarWidth().toInt()
+          }
+        },
+        tableHeaderComponent = { null },
+        tableComponent = { null },
+        tablePainter = { this.buildImage(it, this::builtinColumnValueForPrinting) }
+      )
     }
     treeTable.addScrollListener { newValue ->
       resourceChartConnector.tableScrollOffset.value = newValue
@@ -180,6 +215,21 @@ class ResourceTable(private val project: IGanttProject,
       }
     })
     treeTable.selectionModel.selectionMode = SelectionMode.MULTIPLE
+  }
+
+  private fun builtinColumnValueForPrinting(
+    resourceTableNode: ResourceTableNode,
+    resourceDefaultColumn: ResourceDefaultColumn): String {
+
+    val value = tableModel.getValueAt(resourceTableNode, resourceDefaultColumn)
+    return value?.toString() ?: ""
+  }
+
+  override fun isTreeColumn(column: ResourceDefaultColumn): Boolean = ResourceDefaultColumn.NAME == column
+  override fun getCustomValues(node: ResourceTableNode): CustomColumnsValues = when {
+    node is ResourceNode -> node.resource.customValues
+    node is AssignmentNode -> node.assignment.task.customValues
+    else -> error("Unexpected node type")
   }
 
   override fun loadDefaultColumns() = FXUtil.runLater {
@@ -440,7 +490,11 @@ class ResourceColumnBuilder(private val tableModel: ResourceTableModel,
     fun createRoleColumn(isEditableCell: (ResourceTableNode) -> Boolean) =
       createChoiceColumn(modelColumn.getName(),
         getValue = { tableModel.getValueAt(it, modelColumn) as Role?},
-        setValue = { node, value -> tableModel.setValue(value, node, modelColumn)},
+        setValue = { node, value ->
+          undoManager.undoableEdit("Edit Role") {
+            tableModel.setValue(value, node, modelColumn)
+          }
+        },
         allValues = { project.roleManager.enabledRoles.toList()},
         stringConverter = object : StringConverter<Role?>() {
           override fun toString(role: Role?): String = role?.name ?: ""

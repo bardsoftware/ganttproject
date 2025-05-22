@@ -70,7 +70,12 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
       repaint();
       })
     );
-    getChartModel().setRowHeight(resourceTableConnector.getMinRowHeight().intValue());
+
+    var model = getChartModel();
+    var rowHeight = Math.max(
+      model.calculateRowHeight(), resourceTableConnector.getMinRowHeight().getValue()
+    );
+    getChartModel().setRowHeight((int)rowHeight);
     app.getProject().addProjectEventListener(new ProjectEventListener.Stub() {
       @Override
       public void projectClosed() {

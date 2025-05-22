@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.lib.fx
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.core.table.BuiltinColumn
 import biz.ganttproject.core.table.ColumnList
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.scene.control.TreeTableColumn
@@ -34,10 +35,10 @@ data class BuiltinColumns(
    * @return true if a column with the given id is zero width
    */
   val isZeroWidth: (columnId: String) -> Boolean,
-  val allColumns: () -> List<ColumnList.Column>
+  val allColumns: () -> List<BuiltinColumn>
 ) {
-  fun exists(columnId: String) = allColumns().any { it.id == columnId }
-  fun find(columnId: String) = allColumns().find { it.id == columnId }
+  fun exists(columnId: String) = allColumns().any { it.stub.id == columnId }
+  fun find(columnId: String) = allColumns().find { it.stub.id == columnId }
 }
 
 /**
@@ -100,7 +101,7 @@ class ColumnListImpl(
     // If it turns out that none of the imported columns is visible, we shall do something so that the table was not empty.
     // Here we just replace the list with the default built-in columns.
     if (importedList.firstOrNull { it.isVisible } == null) {
-      importedList = builtinColumns.allColumns()
+      importedList = builtinColumns.allColumns().map { it.stub }
     }
 
 

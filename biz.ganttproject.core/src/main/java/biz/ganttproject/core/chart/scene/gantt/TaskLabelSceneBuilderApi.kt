@@ -76,7 +76,7 @@ class TaskColumnEnumerationOption(id: String, var customProps: List<CustomProper
 
   fun pubStringToObject(value: String): Column?  = stringToObject(value)
 
-  override fun loadPersistentValue(value: String) {
+  override fun loadPersistentValue(value: String?) {
     val validatedValue = when (value) {
       ID_TASK_ADVANCEMENT -> TaskDefaultColumn.COMPLETION.stub.id
       ID_TASK_COORDINATOR -> TaskDefaultColumn.COORDINATOR.stub.id

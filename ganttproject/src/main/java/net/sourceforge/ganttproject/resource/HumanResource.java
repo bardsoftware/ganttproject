@@ -228,6 +228,9 @@ public class HumanResource implements CustomPropertyHolder {
     }
   }
 
+  public CustomColumnsValues getCustomValues() {
+    return myCustomProperties;
+  }
 
   @Override
   public List<CustomProperty> getCustomProperties() {

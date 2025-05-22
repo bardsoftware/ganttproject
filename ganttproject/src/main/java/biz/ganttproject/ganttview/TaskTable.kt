@@ -25,8 +25,9 @@ import biz.ganttproject.core.table.BaseTreeTableComponent
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.table.ColumnList.ColumnStub
 import biz.ganttproject.core.table.SelectionKeeper
-import biz.ganttproject.core.table.depthFirstWalk
 import biz.ganttproject.core.table.reload
+import biz.ganttproject.core.time.TimeDuration
+import biz.ganttproject.customproperty.CustomColumnsValues
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
 import biz.ganttproject.task.ancestors
@@ -38,7 +39,6 @@ import de.jensd.fx.glyphs.materialicons.MaterialIcon
 import de.jensd.fx.glyphs.materialicons.MaterialIconView
 import javafx.application.Platform
 import javafx.beans.property.*
-import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.EventHandler
@@ -78,7 +78,7 @@ import kotlin.math.ceil
  * @author dbarashev@bardsoftware.com
  */
 class TaskTable(
-  val project: IGanttProject,
+  project: IGanttProject,
   private val taskManager: TaskManager,
   val taskTableChartConnector: TaskTableChartConnector,
   private val treeCollapseView: TreeCollapseView<Task>,
@@ -98,15 +98,12 @@ class TaskTable(
       isZeroWidth = {
         TaskDefaultColumn.find(it)?.isIconified ?: false
       },
-      allColumns = {
-        ColumnList.Immutable.fromList(TaskDefaultColumn.getColumnStubs()).copyOf()
-      }
+      allColumns = { TaskDefaultColumn.entries }
     )
   ) {
 
   private val isSortedProperty = SimpleBooleanProperty()
-  val rootItem: TreeItem<Task> = treeTable.root
-  public override val tableModel = TaskTableModel(taskManager.customPropertyManager)
+  override val tableModel = TaskTableModel(taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
 
   val control: Parent get() = treeTable
@@ -236,6 +233,9 @@ class TaskTable(
     cell.alignment = Pos.CENTER_LEFT
   }
 
+  override fun isTreeColumn(column: TaskDefaultColumn) = column == TaskDefaultColumn.NAME
+  override fun getCustomValues(node: Task): CustomColumnsValues = node.customValues
+
   init {
     columnBuilder = TaskColumnBuilder(
       tableModel, taskManager.customPropertyManager, undoManager, ourNameCellFactory,
@@ -332,13 +332,23 @@ class TaskTable(
         },
         tableHeaderComponent = { null },
         tableComponent = { null },
-        tablePainter = { this.buildImage(it) }
+        tablePainter = {
+          this.buildImage(it, this::builtinColumnValueForPrinting)
+        }
       )
     }
     taskTableChartConnector.focus = {
       FXUtil.runLater {
         treeTable.requestFocus()
       }
+    }
+  }
+
+  private fun builtinColumnValueForPrinting(task: Task, taskDefaultColumn: TaskDefaultColumn): String {
+    val typedValue = tableModel.getValueAt(task, taskDefaultColumn)
+    return when (taskDefaultColumn) {
+      TaskDefaultColumn.DURATION -> ((typedValue as TimeDuration).length).toString()
+      else -> typedValue?.toString() ?: ""
     }
   }
 

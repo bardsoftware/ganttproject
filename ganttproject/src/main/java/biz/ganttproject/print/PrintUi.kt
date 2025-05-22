@@ -339,6 +339,7 @@ private class Previews(val chart: Chart, private val preferences: Preferences, p
         pages = channel.receiveAsFlow().toList()
       } catch (ex: Exception) {
         ourLogger.error("Images generation failed", ex)
+        ex.printStackTrace()
         onError(ex)
       }
     }

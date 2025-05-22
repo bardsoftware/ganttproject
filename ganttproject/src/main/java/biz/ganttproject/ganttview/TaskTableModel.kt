@@ -41,6 +41,8 @@ import java.util.function.Predicate
 import java.util.function.Supplier
 
 /**
+ * A model that provides getters and setters for the values shown in the task table.
+ *
  * @author dbarashev@bardsoftware.com
  */
 class TaskTableModel(private val customColumnsManager: CustomPropertyManager): TableModel<Task, TaskDefaultColumn> {

@@ -20,12 +20,14 @@ package biz.ganttproject.core.table
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.*
+import biz.ganttproject.customproperty.CustomColumnsValues
 import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.lib.fx.BuiltinColumns
 import biz.ganttproject.lib.fx.ColumnListImpl
 import biz.ganttproject.lib.fx.GPTreeTableView
+import biz.ganttproject.lib.fx.depthFirstWalk
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
@@ -50,13 +52,15 @@ import javax.swing.event.UndoableEditEvent
  */
 abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn>(
   val treeTable: GPTreeTableView<NodeType>,
-  private val project: IGanttProject,
+  internal val project: IGanttProject,
   private val undoManager: GPUndoManager,
-  private val customPropertyManager: CustomPropertyManager,
-  private val builtinColumns: BuiltinColumns
+  val customPropertyManager: CustomPropertyManager,
+  val builtinColumns: BuiltinColumns
 ) {
 
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
+  val rowHeightProperty: ReadOnlyDoubleProperty get() = treeTable.fixedCellSizeProperty()
+
   protected var projectModified: () -> Unit = { project.isModified = true }
   lateinit var columnBuilder: ColumnBuilder<NodeType, BuiltinColumnType>
   protected val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
@@ -66,6 +70,7 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
     builtinColumns
   )
   val columnListWidthProperty = SimpleObjectProperty<Pair<Double, Double>>()
+  val rootItem: TreeItem<NodeType> = treeTable.root
 
   init {
     FXUtil.runLater {
@@ -170,9 +175,7 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
                   undoManager.undoableEdit("Edit properties") {
                     tableModel.setValue(value.booleanValue().not(), task, def)
                   }
-                  // This trick refreshes the cell in the table.
-                  treeTable.focusModel.focus(-1)
-                  treeTable.focusModel.focus(focusedCell)
+                  treeTable.refreshFocusedCell()
                 }
               }
             }
@@ -182,13 +185,14 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
     }
   }
 
-
+  abstract fun isTreeColumn(column: BuiltinColumnType): Boolean
+  abstract fun getCustomValues(node: NodeType): CustomColumnsValues
   abstract fun loadDefaultColumns()
   protected abstract fun sync(keepFocus: Boolean = false)
   protected abstract fun onProperties()
   fun onColumnsChange()  {
     FXUtil.runLater {
-      columnList.columns().forEach { builtinColumns.find(it.id)?.isVisible = it.isVisible }
+      columnList.columns().forEach { builtinColumns.find(it.id)?.stub?.isVisible = it.isVisible }
       val newColumns = columnBuilder.buildColumns(
         columns = columnList.columns(),
         currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
@@ -203,33 +207,16 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
   }
 
   protected abstract fun contextMenuActions(builder: MenuBuilder)
-  protected abstract val tableModel: TableModel<NodeType, BuiltinColumnType>
+  abstract val tableModel: TableModel<NodeType, BuiltinColumnType>
   protected abstract val selectionKeeper: SelectionKeeper<NodeType>
   protected fun keepSelection(keepFocus: Boolean = false, code: () -> Unit) {
     selectionKeeper.keepSelection(keepFocus, code)
   }
 }
 
-fun <T> TreeItem<T>.depthFirstWalk(visitor: (TreeItem<T>) -> Boolean) {
-  this.children.forEach { if (visitor(it)) it.depthFirstWalk(visitor) }
-}
-
-fun <T> TreeItem<T>.find(predicate: (TreeItem<T>) -> Boolean): TreeItem<T>? {
-  if (predicate(this)) return this
-  else {
-    this.children.forEach {
-      val result = it.find(predicate)
-      if (result != null) {
-        return result
-      }
-    }
-    return null
-  }
-}
-
 
 /**
- * Interface of the tree model which provides getters and setters of the values shown and changed in the tree.
+ * Interface of the table model which provides getters and setters of the values shown and changed in the tree table.
  */
 interface TableModel<NodeType, DefaultColumnType: BuiltinColumn> {
   fun getValueAt(t: NodeType, defaultColumn: DefaultColumnType): Any?

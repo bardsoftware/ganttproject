@@ -50,7 +50,7 @@ class TaskColumnBuilder(private val taskTableModel: TableModel<Task, TaskDefault
                         private val onNameEditCompleted: (Task)->Unit
 ): ColumnBuilder<Task, TaskDefaultColumn>(taskTableModel, customPropertyManager, undoManager, TaskDefaultColumn::find) {
 
-  var treeColumn: TreeTableColumn<Task, Task>? = null
+  //var treeColumn: TreeTableColumn<Task, Task>? = null
 
   override fun createDefaultColumn(modelColumn: TaskDefaultColumn): TreeTableColumn<Task, out Any> {
     return when (modelColumn) {
@@ -93,7 +93,7 @@ class TaskColumnBuilder(private val taskTableModel: TableModel<Task, TaskDefault
                 onNameEditCompleted(targetTask)
               }
             }
-            treeColumn = this
+    //        treeColumn = this
           }
       }
       else -> super.createDefaultColumn(modelColumn)

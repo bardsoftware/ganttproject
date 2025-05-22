@@ -7,7 +7,6 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import net.sourceforge.ganttproject.chart.ChartModelBase;
 import net.sourceforge.ganttproject.chart.PrintChartApiImpl;
-import net.sourceforge.ganttproject.chart.export.TreeTableApiKt;
 import net.sourceforge.ganttproject.gui.UIFacade;
 
 import java.awt.*;
@@ -19,12 +18,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 class ResourceChartImplementation extends AbstractChartImplementation {
 
   private final ResourceLoadGraphicArea resourceLoadGraphicArea;
+  private final ResourceTableChartConnector resourceTableConnector;
 
   public ResourceChartImplementation(
     ResourceLoadGraphicArea resourceLoadGraphicArea, IGanttProject project, UIFacade uiFacade, ChartModelBase chartModel,
     ChartComponentBase chartComponent, ResourceTableChartConnector resourceTableConnector) {
     super(project, uiFacade, chartModel, chartComponent);
     this.resourceLoadGraphicArea = resourceLoadGraphicArea;
+    this.resourceTableConnector = resourceTableConnector;
     setVScrollController(new VScrollController() {
       @Override
       public boolean isScrollable() {
@@ -60,34 +61,16 @@ class ResourceChartImplementation extends AbstractChartImplementation {
   }
 
 
-//  @Override
-//  public ChartSelection getSelection() {
-//    return null;
-//  }
-//
-//  @Override
-//  public IStatus canPaste(ChartSelection selection) {
-//    return Status.OK_STATUS;
-//  }
-
-//  @Override
-//  public void paste(ChartSelection selection) {
-//    if (selection instanceof ResourceChartSelection) {
-//      ResourceChartSelection resourceChartSelection = (ResourceChartSelection) selection;
-//      for (HumanResource res : resourceChartSelection.myClipboardContents.getResources()) {
-//        if (resourceChartSelection.myClipboardContents.isCut()) {
-//          resourceLoadGraphicArea.getResourceManager().add(res);
-//        } else {
-//          resourceLoadGraphicArea.getResourceManager().add(res.unpluggedClone());
-//        }
-//      }
-//    }
-//  }
-
   @Override
   public PrintChartApi asPrintChartApi() {
     ChartModelBase modelCopy = getChartModel().createCopy();
     modelCopy.setBounds(getChartComponent().getSize());
+    var rowHeight = Math.max(
+      modelCopy.calculateRowHeight(), resourceTableConnector.getMinRowHeight().getValue()
+    );
+    modelCopy.setRowHeight((int)rowHeight);
+    resourceTableConnector.getRowHeight().setValue(rowHeight);
+
     var settingsSetup = new Function1<GanttExportSettings, Unit>() {
       @Override
       public Unit invoke(GanttExportSettings settings) {
@@ -102,7 +85,7 @@ class ResourceChartImplementation extends AbstractChartImplementation {
       }
     };
     return new PrintChartApiImpl(modelCopy, settingsSetup,
-        () -> TreeTableApiKt.asTreeTableApi(getChartComponent().getTreeTable()),
+        resourceTableConnector.getExportTreeTableApi(),
         getUIFacade().getZoomManager()
     );
   }

@@ -133,7 +133,8 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     TreeTableCellsKt.getMinCellHeight(),
     new SimpleTreeCollapseView<>(),
     new SimpleDoubleProperty(0.0),
-    null
+    null,
+    () -> null
   );
   protected final Supplier<ResourceTable> myResourceTableSupplier;
 

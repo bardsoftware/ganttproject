@@ -200,6 +200,13 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
     }
 
   }
+
+  fun refreshFocusedCell() {
+    // This trick refreshes the cell in the table.
+    val focusedCell = focusModel.focusedCell
+    focusModel.focus(-1)
+    focusModel.focus(focusedCell)
+  }
 }
 
 class GPTreeTableViewSkin<T>(private val table: GPTreeTableView<T>) : TreeTableViewSkin<T>(table) {
@@ -394,6 +401,23 @@ class MyColumnResizePolicy<S>(private val table: GPTreeTableView<*>, tableWidth:
     if (diff > 0) {
       visibleColumns.last().prefWidth += diff
     }
+  }
+}
+
+fun <T> TreeItem<T>.depthFirstWalk(visitor: (TreeItem<T>) -> Boolean) {
+  this.children.forEach { if (visitor(it)) it.depthFirstWalk(visitor) }
+}
+
+fun <T> TreeItem<T>.find(predicate: (TreeItem<T>) -> Boolean): TreeItem<T>? {
+  if (predicate(this)) return this
+  else {
+    this.children.forEach {
+      val result = it.find(predicate)
+      if (result != null) {
+        return result
+      }
+    }
+    return null
   }
 }
 
