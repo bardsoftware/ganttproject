@@ -97,7 +97,6 @@ public class SchedulerImpl extends AlgorithmBase {
   }
 
   private void schedule(Node node) {
-    Logger logger = GPLogger.getLogger(this);
     debug("Scheduling node {}", node);
     Range<Date> startRange = Range.all();
     Range<Date> endRange = Range.all();

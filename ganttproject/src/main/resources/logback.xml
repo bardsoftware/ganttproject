@@ -4,9 +4,17 @@
             <pattern>%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${log_path:-ganttproject.log}</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
     </root>
 
     <logger name="java" level="INFO"/>
@@ -25,22 +33,23 @@
     <logger name="Cloud.Document" level="INFO"/>
     <logger name="Cloud.Document.History" level="INFO"/>
     <logger name="Cloud.Http" level="INFO"/>
-    <logger name="Document.Info" level="DEBUG"/>
+    <logger name="Document.Info" level="INFO"/>
     <logger name="Export" level="INFO"/>
     <logger name="Export.Progress" level="INFO"/>
-    <logger name="Export.Pdf.Fonts" level="WARNING"/>
+    <logger name="Export.Pdf.Fonts" level="INFO"/>
     <logger name="Import.MSProject" level="INFO"/>
     <logger name="Print" level="INFO"/>
     <logger name="Print.ImageProcessor" level="INFO"/>
     <logger name="ProjectDatabase" level="INFO"/>
+    <logger name="ProjectDatabase.CalculatedProperty" level="INFO"/>
     <logger name="ResourceTable" level="INFO"/>
     <logger name="SchedulerImpl" level="INFO"/>
     <logger name="TaskTable" level="INFO"/>
     <logger name="TaskTable.Orchestrator" level="INFO"/>
     <logger name="TaskTable.ImageBuilder" level="INFO"/>
-    <logger name="View" level="DEBUG"/>
+    <logger name="View" level="INFO"/>
     <logger name="Window" level="INFO"/>
     <logger name="Window.Bounds" level="INFO"/>
-    <logger name="Window.Startup" level="DEBUG"/>
+    <logger name="Window.Startup" level="INFO"/>
 
 </configuration>

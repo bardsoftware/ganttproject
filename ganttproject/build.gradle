@@ -120,7 +120,7 @@ sourceSets {
     main {
         resources {
             srcDirs = ["src/main/java", "src/main/resources"]
-            include "**/*.css", "**/*.properties", "**/*.sql"
+            include "**/*.css", "**/*.properties", "**/*.sql", "logback.xml"
         }
     }
 

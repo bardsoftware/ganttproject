@@ -19,9 +19,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.LoggerApi;
-import biz.ganttproject.LoggerImpl;
 import biz.ganttproject.LoggingKt;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.util.ContextInitializer;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.util.StatusPrinter;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.BufferedReader;
@@ -30,24 +34,19 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class GPLogger {
-  private static final Logger ourLogger = Logger.getLogger("net.sourceforge.ganttproject");
-  private static Handler ourHandler;
+  //private static final Logger ourLogger = Logger.getLogger("net.sourceforge.ganttproject");
   private static UIFacade ourUIFacade;
   private static final Map<String, Logger> ourLoggers = new HashMap<>();
   private static String ourLogFileName;
   private static PrintStream ourStderr;
+  private static final Map<String, LoggerApi> ourLoggersApi = new HashMap<>();
 
   static {
 //    ourHandler = new ConsoleHandler();
@@ -58,22 +57,12 @@ public class GPLogger {
   }
 
   public static void init() {
-    //System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, logbackFilePath);
     SLF4JBridgeHandler.removeHandlersForRootLogger();
     SLF4JBridgeHandler.install();
-    Logger.getLogger("").setLevel(Level.FINEST);
-    URL logConfig = GanttProject.class.getResource("/logging.properties");
-    if (logConfig != null) {
-      try {
-        readConfiguration(logConfig);
-      } catch (IOException e) {
-        System.err.println("Failed to setup logging: " + e.getMessage());
-        e.printStackTrace();
-      }
-    }
   }
 
   public static boolean log(Throwable e) {
+    //e.printStackTrace();
     if (ourUIFacade != null) {
       if (e instanceof NullPointerException) {
         StackTraceElement[] stackTrace = e.getStackTrace();
@@ -92,32 +81,21 @@ public class GPLogger {
   }
 
   public static boolean logToLogger(String message) {
-    if (ourHandler == null) {
-      return false;
-    }
-    ourLogger.log(Level.WARNING, message);
+    create("App").warn(message, new Object[0], null);
     return true;
   }
 
   public static boolean logToLogger(Throwable e) {
-    if (ourHandler == null) {
-      return false;
-    }
-    ourLogger.log(Level.WARNING, e.getMessage(), e);
+    create("App").warn(e.getMessage(), new Object[0], e);
     return true;
   }
 
   public static void log(String message) {
-    ourLogger.log(Level.INFO, message);
-  }
-
-  public static Logger getLogger(Object o) {
-    assert o != null;
-    return getLogger(o.getClass());
+    create("App").info(message);
   }
 
   public static LoggerApi<org.slf4j.Logger> create(String name) {
-    return LoggingKt.createLogger(name);
+    return ourLoggersApi.computeIfAbsent(name, LoggingKt::createLogger);
   }
 
   public static Logger getLogger(String name) {
@@ -154,21 +132,35 @@ public class GPLogger {
 
   public static void setLogFile(String logFileName) {
     try {
-      Handler fileHandler = new FileHandler(logFileName, true);
-      fileHandler.setFormatter(new java.util.logging.SimpleFormatter());
-      ourLogger.removeHandler(ourHandler);
-      ourLogger.addHandler(fileHandler);
-      ourHandler = fileHandler;
       ourLogFileName = logFileName;
+      System.setProperty("log_path", logFileName);
+      LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+      lc.putProperty("log_path", logFileName);
+      ContextInitializer ci = new ContextInitializer(lc);
+      lc.reset();
+      try {
+        ci.autoConfig();
+      } catch (JoranException e) {
+        // StatusPrinter will try to log this
+        e.printStackTrace();
+      }
+      StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
+
+//      Handler fileHandler = new FileHandler(logFileName, true);
+//      fileHandler.setFormatter(new java.util.logging.SimpleFormatter());
+//      ourLogger.removeHandler(ourHandler);
+//      ourLogger.addHandler(fileHandler);
+//      ourHandler = fileHandler;
+//      ourLogFileName = logFileName;
       var logFile = new File(logFileName);
       ourStderr = System.err;
       System.setErr(new PrintStream(new FileOutputStream(logFile)));
-      ourLoggers.values().forEach(logger -> {
-        logger.removeHandler(ourHandler);
-        logger.addHandler(fileHandler);
-      });
-
-
+//      ourLoggers.values().forEach(logger -> {
+//        logger.removeHandler(ourHandler);
+//        logger.addHandler(fileHandler);
+//      });
+//
+//
 //      ourLogbackAppender = new FileAppender();
 //      ourLogbackAppender.setFile(logFileName);
 //
@@ -176,19 +168,14 @@ public class GPLogger {
 //      for (LoggerImpl pendingLogger : ourPendingLoggers) {
 //        ((AppenderAttachable<ILoggingEvent>) pendingLogger.delegate()).addAppender(ourLogbackAppender);
 //      }
-    } catch (SecurityException | IOException e) {
+    } catch (Throwable e) {
       e.printStackTrace();
     }
   }
 
-  public static void readConfiguration(URL configuration) throws IOException {
-    InputStream input = configuration.openStream();
-    LogManager.getLogManager().readConfiguration(input);
-  }
-
   public static String readLog() {
     if (ourLogFileName != null) {
-      ourHandler.flush();
+      //ourHandler.flush();
       File f = new File(ourLogFileName);
       try {
         if (!f.exists()) {
@@ -237,6 +224,6 @@ public class GPLogger {
   }
 
   public static void close() {
-    ourHandler.flush();
+//    ourHandler.flush();
   }
 }

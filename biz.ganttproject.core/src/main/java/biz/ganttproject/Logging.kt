@@ -27,12 +27,13 @@ import org.slf4j.MDC
  */
 interface LoggerApi<T> {
   fun error(msg: String, vararg params: Any, kv: Map<String, Any> = emptyMap(), exception: Throwable? = null)
+  fun warn(msg: String, vararg params: Any, exception: Throwable? = null)
+  fun info(msg: String, vararg params: Any)
   fun debug(msg: String, vararg params: Any?, kv: Map<String, Any> = emptyMap())
   fun delegate(): T
   fun debug(msg: String) {
     debug(msg, params = arrayOf())
   }
-  fun info(msg: String, vararg params: Any)
 }
 
 class LoggerImpl(name: String) : LoggerApi<Logger> {
@@ -43,6 +44,10 @@ class LoggerImpl(name: String) : LoggerApi<Logger> {
         .forEach { if (it.value.isNotBlank()) MDC.put(it.key, it.value) }
     delegate.error(msg, *params, exception)
     MDC.clear()
+  }
+
+  override fun warn(msg: String, vararg params: Any, exception: Throwable?) {
+    delegate.warn(msg, *params, exception)
   }
 
   override fun debug(msg: String, vararg params: Any?, kv: Map<String, Any>) {
