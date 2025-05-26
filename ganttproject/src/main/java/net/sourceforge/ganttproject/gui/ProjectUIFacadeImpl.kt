@@ -270,6 +270,7 @@ class ProjectUIFacadeImpl(
                   }
                   runBlocking { onFinish?.send(true) }
                 } catch (ex: DocumentException) {
+                  ex.printStackTrace()
                   onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
                 }
               }

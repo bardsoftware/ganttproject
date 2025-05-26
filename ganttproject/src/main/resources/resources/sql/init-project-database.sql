@@ -18,7 +18,7 @@ create table if not exists Task (
     notes                   varchar                     null,
     cost                    numeric(1000, 2)            null,
 
-    primary key (uid)
+    CONSTRAINT task_pkey primary key (uid)
 );
 
 create table if not exists TaskCustomColumn(

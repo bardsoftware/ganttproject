@@ -41,6 +41,8 @@ class LazyProjectDatabaseProxy(
   private val taskManager: () -> TaskManager,
   private val filterUpdater: () -> Unit): ProjectDatabase {
 
+  var isProjectOpen: Boolean = false
+
   private var lazyProjectDatabase: ProjectDatabase? = null
   private val calculatedPropertyUpdater by lazy { CalculatedPropertyUpdater(this,
     { taskManager().customPropertyManager },
@@ -55,15 +57,19 @@ class LazyProjectDatabaseProxy(
     getDatabase().updateBuiltInCalculatedColumns()
   }
 
-  private val projectEventListenerImpl by lazy { ProjectEventListenerImpl(this, taskManager, calculatedPropertyUpdater, filterUpdater) }
+  private val projectEventListenerImpl by lazy {
+    ProjectEventListenerImpl(this, taskManager, calculatedPropertyUpdater, filterUpdater)
+  }
 
   private fun isInitialized(): Boolean = lazyProjectDatabase != null
 
   private fun getDatabase(): ProjectDatabase {
-    return lazyProjectDatabase ?: databaseFactory().also {
-      it.init();
-      lazyProjectDatabase = it
-      H2Functions.taskManager.set(taskManager())
+    return synchronized(this) {
+      lazyProjectDatabase ?: databaseFactory().also {
+        it.init();
+        lazyProjectDatabase = it
+        H2Functions.taskManager.set(taskManager())
+      }
     }
   }
 
@@ -128,7 +134,9 @@ class LazyProjectDatabaseProxy(
   }
 
   override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager) {
-    getDatabase().onCustomColumnChange(customPropertyManager)
+    if (isProjectOpen) {
+      getDatabase().onCustomColumnChange(customPropertyManager)
+    }
   }
 
   fun createProjectEventListener(): ProjectEventListener = projectEventListenerImpl

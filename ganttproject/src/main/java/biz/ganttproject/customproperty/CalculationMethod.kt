@@ -38,9 +38,13 @@ sealed class CalculationMethodImpl(override val propertyId: String, override val
  * "duration * 8", "CASE WHEN completion=100 THEN true ELSE false END"
  */
 class SimpleSelect(propertyId: String,
-                   val selectExpression: String = "id",
+                   val selectExpression: String = "uid",
                    val whereExpression: String? = null,
-                   resultClass: Class<*>) : CalculationMethodImpl(propertyId, resultClass)
+                   resultClass: Class<*>) : CalculationMethodImpl(propertyId, resultClass) {
+  override fun toString(): String {
+    return "SimpleSelect(selectExpression='$selectExpression', whereExpression=$whereExpression)"
+  }
+}
 
 class CalculationMethodValidator(private val projectDatabase: ProjectDatabase) {
   fun validate(calculationMethod: CalculationMethod) {

@@ -62,7 +62,7 @@ fun rebuildTaskDataTable(dataSource: DataSource, customPropertyManager: CustomPr
 }
 
 fun createCustomColumnStatements(customPropertyManager: CustomPropertyManager): List<String> {
-  return customPropertyManager.orderedDefinitions().map { def ->
+  val addColumnStatements = customPropertyManager.orderedDefinitions().map { def ->
     def.calculationMethod?.let {
       when (it) {
         is SimpleSelect -> "ALTER TABLE Task ADD COLUMN ${def.id} ${def.propertyClass.asSqlType()} GENERATED ALWAYS AS (${it.selectExpression})"
@@ -72,6 +72,7 @@ fun createCustomColumnStatements(customPropertyManager: CustomPropertyManager): 
       "ALTER TABLE Task ADD COLUMN ${def.id} ${def.propertyClass.asSqlType()}"
     }
   }.toList()
+  return addColumnStatements
 }
 
 fun createUpdateCustomValuesStatement(taskUid: String, customPropertyManager: CustomPropertyManager, customPropertyHolder: CustomPropertyHolder): String {

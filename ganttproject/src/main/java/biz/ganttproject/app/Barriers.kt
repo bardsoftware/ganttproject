@@ -71,45 +71,51 @@ class SimpleBarrier<T> : Barrier<T> {
  * Once all registered entrance activities reach the barrier, it opens it's exit and
  * starts the exit activities.
  */
-class TwoPhaseBarrierImpl<T>(private val value: T) : Barrier<T>, BarrierEntrance {
+class TwoPhaseBarrierImpl<T>(private val name: String, private val value: T) : Barrier<T>, BarrierEntrance {
   private val counter = AtomicInteger(0)
   private val exits = mutableListOf<BarrierExit<T>>()
   private val activities = mutableMapOf<String, OnBarrierReached>()
 
   var isActive: Boolean = false
-    set(value) {
-      val wasActive = field
-      field = value
-      if (value && !wasActive && counter.get() == 0) {
-        exits.forEach { it(this.value) }
-      }
+  set(value) {
+    val wasActive = field
+    field = value
+    // If there are exits, but no activities, we call exit immediately
+    if (value && !wasActive && counter.get() == 0) {
+      exits.forEach { it(this.value) }
     }
+  }
 
   override fun await(code: BarrierExit<T>) {
-    if (isActive && counter.get() == 0) {
-      code(value)
-    } else {
-      exits.add(code)
+    assert(!isActive) {
+      "You need to register barrier exits before it is activated"
     }
+    exits.add(code)
   }
 
   override fun register(activity: String): OnBarrierReached {
     assert(!isActive) {
-      "You need to register barrier activities before it gets active"
+      "You need to register barrier activities before it is activated"
     }
-    return {
+    val onActivityCompleted = {
       if (counter.get() > 0) {
-        BARRIER_LOGGER.debug("Barrier reached: $activity")
+        BARRIER_LOGGER.debug("Barrier $name: activity completed=$activity")
         //println("Barrier reached: $activity")
         activities.remove(activity)
-        counter.decrementAndGet()
-        isActive = true
+        tick()
       }
-    }.also {
-      BARRIER_LOGGER.debug("Barrier waiting: $activity")
-      //println("Barrier waiting: $activity")
-      activities[activity] = it
-      counter.incrementAndGet()
+    }
+    BARRIER_LOGGER.debug("Barrier $name: waiting for activity=$activity")
+    //println("Barrier waiting: $activity")
+    activities[activity] = onActivityCompleted
+    counter.incrementAndGet()
+    return onActivityCompleted
+  }
+
+  private fun tick() {
+    if (counter.decrementAndGet() == 0) {
+      BARRIER_LOGGER.debug("Barrier $name: reached.")
+      exits.forEach { it(value) }
     }
   }
 }

@@ -39,7 +39,7 @@ import javax.swing.event.UndoableEditEvent
  * @param projectDatabase - database which holds the current project state.
  */
 internal class ProjectEventListenerImpl(
-  private val projectDatabase: ProjectDatabase,
+  private val projectDatabase: LazyProjectDatabaseProxy,
   private val taskManagerSupplier: ()->TaskManager,
   private val calculatedPropertyUpdater: CalculatedPropertyUpdater,
   private val filterUpdater: ()->Unit)
@@ -56,6 +56,7 @@ internal class ProjectEventListenerImpl(
   override fun projectOpened(barrierRegistry: BarrierEntrance, barrier: Barrier<IGanttProject>) {
     projectDatabase.shutdown()
     barrier.await {
+      projectDatabase.isProjectOpen = true
       projectDatabase.onCustomColumnChange(it.taskCustomColumnManager)
       it.taskManager.tasks.forEach(projectDatabase::insertTask)
       calculatedPropertyUpdater.update()
@@ -64,6 +65,7 @@ internal class ProjectEventListenerImpl(
   }
 
   override fun projectClosed() = withLogger({ "Failed to close project" }) {
+    projectDatabase.isProjectOpen = false
     // TODO: Keep project database on restore.
     // projectDatabase.shutdown()
   }

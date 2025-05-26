@@ -17,6 +17,7 @@
         <appender-ref ref="FILE" />
     </root>
 
+    <logger name="org.jooq.tools.LoggerListener" level="INFO"/>
     <logger name="java" level="INFO"/>
     <logger name="javafx" level="INFO"/>
     <logger name="sun" level="INFO"/>
@@ -28,6 +29,7 @@
     <logger name="io.milton.httpclient" level="INFO"/>
 
     <logger name="App" level="INFO"/>
+    <logger name="App.Barrier" level="INFO"/>
     <logger name="App.Dirs" level="INFO"/>
     <logger name="App.Update" level="INFO"/>
     <logger name="Cloud.Document" level="INFO"/>

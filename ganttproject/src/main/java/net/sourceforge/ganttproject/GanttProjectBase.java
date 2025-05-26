@@ -247,7 +247,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
 
     myNotificationManager = new NotificationManagerImpl();
     myUIFacade = new UIFacadeImpl(stage, myNotificationManager, getProject(), this);
-    myUiInitializationPromise = new TwoPhaseBarrierImpl<>(myUIFacade);
+    myUiInitializationPromise = new TwoPhaseBarrierImpl<>("UI initialization", myUIFacade);
 
     GPLogger.setUIFacade(myUIFacade);
     var newTaskActor = new NewTaskActor<Task>();

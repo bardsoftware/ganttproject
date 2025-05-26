@@ -40,7 +40,9 @@ fun runScript(dataSource: DataSource, sqlText: String) {
   try {
     dataSource.connection.use { it.createStatement().use { it.execute(sqlText) } }
   } catch (e: Exception) {
-    throw ProjectDatabaseException("Failed to run the script", e)
+    throw ProjectDatabaseException("""Failed to run the script:
+      |$sqlText
+    """.trimMargin(), e)
   }
 
 }
