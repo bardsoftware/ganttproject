@@ -27,7 +27,7 @@ class BarriersTest {
   @Test
   fun `two phase barrier exit registered before entrance`() {
     var exitCalled = false
-    val barrier = TwoPhaseBarrierImpl<Boolean>(true)
+    val barrier = TwoPhaseBarrierImpl<Boolean>("Bar1", true)
     barrier.await {
       assertTrue(it)
       exitCalled = true
@@ -41,7 +41,7 @@ class BarriersTest {
   @Test
   fun `two phase barrier exit registered after entrance`() {
     var exitCalled = false
-    val barrier = TwoPhaseBarrierImpl<Boolean>(true)
+    val barrier = TwoPhaseBarrierImpl<Boolean>("Bar1", true)
     barrier.register("Entrance activity").let { entrance -> entrance() }
     barrier.await {
       assertTrue(it)
