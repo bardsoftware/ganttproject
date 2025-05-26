@@ -47,6 +47,7 @@ class BarriersTest {
       assertTrue(it)
       exitCalled = true
     }
+    barrier.isActive = true
     assertTrue(exitCalled)
   }
 
