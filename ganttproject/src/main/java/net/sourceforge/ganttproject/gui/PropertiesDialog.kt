@@ -81,7 +81,9 @@ fun propertiesDialog(title: String, id: String, actions: List<GPAction>, validat
       if (errors.isEmpty()) {
         errorPane.onError(null)
       } else {
+        dialogController.setButtonPaneNode(errorPane.fxNode)
         errorPane.onError(errors.first())
+
       }
     }
 
@@ -90,9 +92,9 @@ fun propertiesDialog(title: String, id: String, actions: List<GPAction>, validat
     }
 
     dialogController.setContent(tabbedPane);
-    dialogController.setButtonPaneNode(errorPane.fxNode);
     dialogController.setupButton(actions[0]);
     dialogController.setupButton(actions[1]);
+    //dialogController.setButtonPaneNode(errorPane.fxNode);
     dialogController.setEscCloseEnabled(true)
 
     // This is hack for the dialogs showing Swing components. We set the background color of the dialog panes

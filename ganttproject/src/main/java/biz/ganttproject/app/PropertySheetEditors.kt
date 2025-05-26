@@ -25,6 +25,7 @@ import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.control.ComboBox
 import javafx.scene.control.ListCell
+import javafx.scene.layout.HBox
 import javafx.util.Callback
 import javafx.util.StringConverter
 
@@ -39,7 +40,7 @@ fun <T> createChoiceOptionEditor(option: ObservableChoice<T>, displayOptions: Dr
 }
 
 fun <E> createDropdownEditor(option: ObservableProperty<E>, key2i18n: List<Pair<E, String>>, displayOptions: DropdownDisplayOptions<E>? = null): Node {
-  return ComboBox(FXCollections.observableArrayList(key2i18n)).also { comboBox ->
+  return HBox(ComboBox(FXCollections.observableArrayList(key2i18n)).also { comboBox ->
     comboBox.onAction = EventHandler{
       option.set(comboBox.value.first, comboBox)
     }
@@ -68,5 +69,5 @@ fun <E> createDropdownEditor(option: ObservableProperty<E>, key2i18n: List<Pair<
       override fun fromString(string: String?) = key2i18n.find { it.second == string }
     }
     comboBox.value = key2i18n.find { it.first == option.value }
-  }
+  })
 }

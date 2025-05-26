@@ -48,6 +48,7 @@ import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.gui.UIFacade
+import java.util.Stack
 import java.util.concurrent.CountDownLatch
 import javax.swing.SwingUtilities
 
@@ -125,21 +126,25 @@ fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (Di
 
   }
 
-class DialogPaneExt() : DialogPane() {
+class DialogPaneExt : DialogPane() {
   private lateinit var errorPaneWrapper: StackPane
 
   fun setButtonBarNode(node: Node) {
-    errorPaneWrapper.children.add(node)
+    if (!errorPaneWrapper.children.contains(node)) {
+      errorPaneWrapper.children.add(node)
+    }
     errorPaneWrapper.styleClass.remove("hide")
+    errorPaneWrapper.isManaged = true
   }
-  override fun createButtonBar(): Node? {
-    val buttonBar = super.createButtonBar()
+  override fun createButtonBar(): Node {
+    val buttonBar = StackPane(super.createButtonBar())
     errorPaneWrapper = StackPane().also {
       it.styleClass.addAll("swing-background", "hide")
+      it.isManaged = false
     }
     return HBox().apply {
       styleClass.addAll("button-pane", "swing-background")
-      HBox.setHgrow(buttonBar, Priority.SOMETIMES)
+      HBox.setHgrow(buttonBar, Priority.ALWAYS)
       HBox.setHgrow(errorPaneWrapper, Priority.SOMETIMES)
       children.addAll(errorPaneWrapper, buttonBar)
     }

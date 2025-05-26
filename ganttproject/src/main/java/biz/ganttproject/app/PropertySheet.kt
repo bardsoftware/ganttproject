@@ -35,10 +35,7 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.Spinner
 import javafx.scene.effect.InnerShadow
-import javafx.scene.layout.GridPane
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
+import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import net.sourceforge.ganttproject.action.GPAction
@@ -463,18 +460,18 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
       return Label(item.label)
     }
 
-    override fun build(gridPane: GridPane, idx: Int): Int {
+    override fun build(grid: GridPane, idx: Int): Int {
       var resultRow = idx
       if (label != null) {
         val label = createLabel(this)
         when (options?.labelPosition ?: LabelPosition.LEFT) {
           LabelPosition.LEFT -> {
-            gridPane.add(label, 0, idx)
+            grid.add(label, 0, idx)
             GridPane.setHgrow(label, Priority.NEVER)
             GridPane.setHalignment(label, HPos.RIGHT)
           }
           LabelPosition.ABOVE -> {
-            gridPane.add(label, 0, idx, 2, 1)
+            grid.add(label, 0, idx, 2, 1)
             GridPane.setHgrow(label, Priority.NEVER)
             GridPane.setHalignment(label, HPos.LEFT)
             resultRow++
@@ -499,18 +496,18 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
           }
           when (options?.labelPosition ?: LabelPosition.LEFT) {
             LabelPosition.LEFT -> {
-              gridPane.add(hbox, 1, idx)
+              grid.add(hbox, 1, idx)
               GridPane.setHgrow(hbox, Priority.SOMETIMES)
             }
             LabelPosition.ABOVE -> {
-              gridPane.add(hbox, 0, resultRow, 2, 1)
+              grid.add(hbox, 0, resultRow, 2, 1)
               GridPane.setHgrow(hbox, Priority.ALWAYS)
             }
           }
         }
 
         if (idx == 0) {
-          gridPane.focusedProperty().addListener { _, oldValue, newValue ->
+          grid.focusedProperty().addListener { _, oldValue, newValue ->
             if (!oldValue && newValue) {
               editor.requestFocus()
             }
@@ -542,6 +539,9 @@ class PropertySheetBuilder(private val localizer: Localizer) {
       it.styleClass.add("property-pane")
       it.stylesheets.add("/biz/ganttproject/app/PropertySheet.css")
     }
+    gridPane.columnConstraints.add(ColumnConstraints().also {
+      it.isFillWidth = true
+    })
     val paneBuilder = PropertyPaneBuilder(localizer, gridPane).apply(code)
     var rowNum = 1
     paneBuilder.rowBuilders.forEachIndexed { _, builder ->

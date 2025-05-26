@@ -45,6 +45,7 @@ $alert-foreground: #721c24;
 @mixin dialog-button-pane {
   -fx-padding: 2*$default-vertical-padding 1em $default-vertical-padding 1em;
   -fx-background-color: whitesmoke;
+  //-fx-border-color: yellow;
 }
 
 .dialog-alert {

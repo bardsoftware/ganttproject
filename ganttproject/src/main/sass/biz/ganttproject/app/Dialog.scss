@@ -151,7 +151,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 //}
 
 .dlg .button-bar {
-    -fx-padding: 0 0.833em 0.833em 0.833em;
+  -fx-padding: 0 0.833em 0.833em 0.833em;
+  //-fx-border-color: red;
 }
 
 .dlg .alert-glasspane {
