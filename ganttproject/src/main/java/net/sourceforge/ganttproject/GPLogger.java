@@ -86,7 +86,8 @@ public class GPLogger {
   }
 
   public static boolean logToLogger(Throwable e) {
-    create("App").warn(e.getMessage(), new Object[0], e);
+    var msg = e.getMessage();
+    create("App").warn(msg == null ? "" : msg, new Object[0], e);
     return true;
   }
 
