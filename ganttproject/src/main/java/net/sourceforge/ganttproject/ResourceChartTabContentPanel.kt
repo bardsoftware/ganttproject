@@ -25,7 +25,6 @@ import biz.ganttproject.app.createViewComponents
 import biz.ganttproject.core.option.DefaultDoubleOption
 import biz.ganttproject.core.option.DoubleOption
 import biz.ganttproject.core.option.GPOption
-import biz.ganttproject.ganttview.ApplyExecutorType
 import biz.ganttproject.ganttview.ResourceTable
 import biz.ganttproject.ganttview.showResourceColumnManager
 import javafx.scene.Node
@@ -56,8 +55,10 @@ internal class ResourceChartTabContentPanel(
   private lateinit var viewComponents: ViewComponents
   val component: JComponent? = null
   private val manageColumnsAction = GPAction.create("columns.manage.label") {
-      showResourceColumnManager(resourceTable.columnList,
-        project.resourceCustomPropertyManager, workbenchFacade.getUndoManager(), project.projectDatabase, ApplyExecutorType.DIRECT)
+      showResourceColumnManager(
+        resourceTable.columnList,
+        project.resourceCustomPropertyManager, workbenchFacade.getUndoManager(), project.projectDatabase
+      )
     }
 
   override fun buildDropdownActions(): List<GPAction> = listOf(

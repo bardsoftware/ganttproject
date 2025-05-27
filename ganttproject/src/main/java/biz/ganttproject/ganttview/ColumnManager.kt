@@ -40,7 +40,8 @@ class ColumnManager(
   private val customColumnsManager: CustomPropertyManager,
   calculationMethodValidator: CalculationMethodValidator,
   expressionAutoCompletion: (String, Int) -> List<Completion>,
-  private val applyExecutor: ApplyExecutorType
+  private val applyExecutor: ApplyExecutorType,
+  hasCalculatedProperties: Boolean
 ) {
 
   internal val escCloseEnabled = SimpleBooleanProperty(true)
@@ -66,7 +67,8 @@ class ColumnManager(
       nameClash = { tryName ->
         listItems.find { it.title == tryName && it != selectedItem.value } != null
       },
-      localizer = ourEditorLocalizer
+      localizer = ourEditorLocalizer,
+      hasCalculatedProperties
     ),
     dialogModel = dialogModel
   )
@@ -164,8 +166,9 @@ internal fun CustomPropertyDefinition.importColumnItem(item: ColumnAsListItem) {
 internal class EditorModel(
   private val calculationMethodValidator: CalculationMethodValidator,
   private val expressionAutoCompletion: (String, Int) -> List<Completion>,
-  private val nameClash: (String)-> Boolean,
+  private val nameClash: (String) -> Boolean,
   private val localizer: Localizer,
+  hasCalculatedProperties: Boolean,
 ) {
   val nameOption = ObservableString(id = "name", validator = { value ->
     if (nameClash(value)) {
@@ -210,7 +213,8 @@ internal class EditorModel(
     it.completions = expressionAutoCompletion
   }
 
-  val allOptions = listOf(nameOption, typeOption, defaultValueOption, isCalculatedOption, expressionOption)
+  val allOptions = if (hasCalculatedProperties) listOf(nameOption, typeOption, defaultValueOption, isCalculatedOption, expressionOption)
+  else listOf(nameOption, typeOption, defaultValueOption)
 }
 /**
  * Editor component shown to the right of the property list.
@@ -321,28 +325,28 @@ internal class ColumnAsListItem(
 enum class ApplyExecutorType { DIRECT, SWING }
 
 fun showResourceColumnManager(
-    columnList: ColumnList, customColumnsManager: CustomPropertyManager, undoManager: GPUndoManager,
-    projectDatabase: ProjectDatabase,
-    applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
+  columnList: ColumnList, customColumnsManager: CustomPropertyManager, undoManager: GPUndoManager,
+  projectDatabase: ProjectDatabase
+) {
   val localizer = RootLocalizer.createWithRootKey("resourceTable.columnManager", baseLocalizer = ourLocalizer)
-  showColumnManager(columnList, customColumnsManager, undoManager, localizer, projectDatabase, applyExecutor)
+  showColumnManager(columnList, customColumnsManager, undoManager, localizer, projectDatabase, hasCalculatedProperties = false)
 }
 
 fun showTaskColumnManager(
-    columnList: ColumnList, customColumnsManager: CustomPropertyManager, undoManager: GPUndoManager,
-    projectDatabase: ProjectDatabase,
-    applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
-  showColumnManager(columnList, customColumnsManager, undoManager, ourLocalizer, projectDatabase, applyExecutor)
+  columnList: ColumnList, customColumnsManager: CustomPropertyManager, undoManager: GPUndoManager,
+  projectDatabase: ProjectDatabase
+) {
+  showColumnManager(columnList, customColumnsManager, undoManager, ourLocalizer, projectDatabase, hasCalculatedProperties = true)
 }
 
 private fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomPropertyManager,
                               undoManager: GPUndoManager,
                               localizer: Localizer,
                               projectDatabase: ProjectDatabase,
-                              applyExecutor: ApplyExecutorType = ApplyExecutorType.DIRECT) {
+                              hasCalculatedProperties: Boolean = true) {
   dialog(title = RootLocalizer.formatText("customColumns"), id = "customColumns") { dlg ->
     val columnManager = ColumnManager(
-      columnList, customColumnsManager, CalculationMethodValidator(projectDatabase), ExpressionAutoCompletion()::complete, applyExecutor
+      columnList, customColumnsManager, CalculationMethodValidator(projectDatabase), ExpressionAutoCompletion()::complete, ApplyExecutorType.DIRECT, hasCalculatedProperties
     )
     columnManager.escCloseEnabled.addListener { _, _, newValue -> dlg.setEscCloseEnabled(newValue) }
     columnManager.dialogPane.build(dlg)

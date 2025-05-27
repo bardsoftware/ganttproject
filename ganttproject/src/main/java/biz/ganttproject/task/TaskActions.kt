@@ -146,7 +146,12 @@ class TaskActions(private val project: IGanttProject,
 
   val manageColumnsAction: GPAction
     get() = GPAction.create("columns.manage.label") {
-      showTaskColumnManager(tableConnector().columnList(), project.taskCustomColumnManager, uiFacade.undoManager, projectDatabase)
+      showTaskColumnManager(
+          tableConnector().columnList(),
+          project.taskCustomColumnManager,
+          uiFacade.undoManager,
+          projectDatabase
+      )
     }
   fun all() = listOf(indentAction, unindentAction, moveDownAction, moveUpAction, linkTasksAction, unlinkTasksAction)
   fun assignments(task: Task, hrManager: HumanResourceManager, undoManager: GPUndoManager): List<GPAction> {

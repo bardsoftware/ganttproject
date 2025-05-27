@@ -29,7 +29,6 @@ import biz.ganttproject.customproperty.CustomPropertyEvent
 import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.customproperty.CustomPropertyListener
 import biz.ganttproject.customproperty.CustomPropertyManager
-import biz.ganttproject.ganttview.ApplyExecutorType
 import biz.ganttproject.ganttview.showResourceColumnManager
 import biz.ganttproject.ganttview.showTaskColumnManager
 import biz.ganttproject.lib.fx.vbox
@@ -100,16 +99,14 @@ class CustomColumnsPanel(
           myTableHeaderFacade,
           manager,
           myUndoManager,
-          myProjectDatabase,
-          ApplyExecutorType.DIRECT
+          myProjectDatabase
         )
 
         Type.RESOURCE -> showResourceColumnManager(
           myTableHeaderFacade,
           manager,
           myUndoManager,
-          myProjectDatabase,
-          ApplyExecutorType.SWING
+          myProjectDatabase
         )
       }
   }.also {
