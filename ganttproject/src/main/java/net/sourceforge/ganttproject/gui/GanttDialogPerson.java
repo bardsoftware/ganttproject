@@ -110,12 +110,14 @@ public class GanttDialogPerson {
             language.getText("daysOff"),
             this::constructDaysOffPanel
           ),
-          PropertiesDialogKt.swingTab(
-            language.getText("customColumns"),
+          new PropertiesDialogTabProvider(tabPane -> {
+            var panel = new CustomColumnsPanel(myCustomPropertyManager, myProjectDatabase, CustomColumnsPanel.Type.RESOURCE,
+              myUIFacade.getUndoManager(), person, myUIFacade.getResourceColumnList());
+            tabPane.getTabs().add(new Tab(panel.getTitle(), panel.getFxNode()));
+            return Unit.INSTANCE;
+          },
             () -> {
-              var customColumnsPanel = new CustomColumnsPanel(myCustomPropertyManager, myProjectDatabase, CustomColumnsPanel.Type.RESOURCE,
-                myUIFacade.getUndoManager(), person, myUIFacade.getResourceColumnList());
-              return customColumnsPanel.getComponent();
+            return Unit.INSTANCE;
             }
           ),
           PropertiesDialogKt.swingTab(

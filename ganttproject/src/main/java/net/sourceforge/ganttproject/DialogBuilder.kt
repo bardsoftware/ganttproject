@@ -32,10 +32,7 @@ import javafx.scene.control.ButtonBar
 import javafx.scene.control.ButtonType
 import javafx.scene.control.Dialog
 import javafx.scene.input.KeyCombination
-import javafx.scene.layout.Background
-import javafx.scene.layout.BackgroundFill
-import javafx.scene.layout.CornerRadii
-import javafx.scene.layout.Priority
+import javafx.scene.layout.*
 import javafx.stage.Screen
 import javafx.stage.Stage
 import net.sourceforge.ganttproject.action.CancelAction
@@ -210,14 +207,14 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
         SwingUtilities.invokeLater {
           swingNode.content = contentPane
           Platform.runLater {
-            dialog.dialogPane.let {
-              it.walkTree { node ->
-                if (node is ButtonBar) {
-                  node.background = Background(BackgroundFill("Panel.background".colorFromUiManager(), CornerRadii.EMPTY, Insets.EMPTY))
+            dialog.dialogPane.let { dlg ->
+              dlg.walkTree { node ->
+                if (node is ButtonBar || node.styleClass.contains("button-pane")) {
+                  (node as Region).background = Background(BackgroundFill("Panel.background".colorFromUiManager(), CornerRadii.EMPTY, Insets.EMPTY))
                 }
               }
-              it.layout()
-              it.scene.window.sizeToScene()
+              dlg.layout()
+              dlg.scene.window.sizeToScene()
             }
           }
         }
