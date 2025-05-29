@@ -80,4 +80,6 @@ open class TaskListenerAdapter(private val allEventsHandler: ()->Unit = {}) : Ta
 }
 
 fun createTaskListenerWithTimerBarrier(timerBarrier: TimerBarrier) =
-  TaskListenerAdapter(allEventsHandler = { timerBarrier.inc() })
+  TaskListenerAdapter(allEventsHandler = {
+    timerBarrier.inc() }
+  )

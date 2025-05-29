@@ -23,7 +23,10 @@ import biz.ganttproject.customproperty.CalculatedPropertyUpdater
 import biz.ganttproject.customproperty.CustomPropertyListener
 import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.storage.db.tables.records.TaskRecord
-import net.sourceforge.ganttproject.ProjectEventListener
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.storage.ProjectDatabase.*
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
@@ -40,6 +43,25 @@ class LazyProjectDatabaseProxy(
   private val databaseFactory: () -> ProjectDatabase,
   private val taskManager: () -> TaskManager,
   private val filterUpdater: () -> Unit): ProjectDatabase {
+
+  var projectOpenActivityFactory: ProjectOpenActivityFactory? = null
+  set(value) {
+    field = value
+    value?.addListener(this::onProjectOpenStateMachine)
+  }
+
+  private fun onProjectOpenStateMachine(sm: ProjectOpenStateMachine) {
+    // We wait for the state when task and resource tables are initialized with the project data
+    sm.stateTablesReady.await {
+      sm.scope.launch {
+        withContext(Dispatchers.IO) {
+          sm.transition(ProjectOpenActivityCalculatedModelReady(it.project)) {
+            projectEventListenerImpl.whenTablesInitialized(it.project)
+          }
+        }
+      }
+    }
+  }
 
   var isProjectOpen: Boolean = false
 

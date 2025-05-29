@@ -22,6 +22,8 @@ import biz.ganttproject.app.Barrier
 import biz.ganttproject.core.option.GPOptionGroup
 import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.ProjectOpenActivityFactory
+import net.sourceforge.ganttproject.ProjectOpenStateMachine
 import net.sourceforge.ganttproject.document.Document
 import java.io.IOException
 
@@ -33,7 +35,9 @@ interface ProjectUIFacade {
   fun ensureProjectSaved(project: IGanttProject): Barrier<Boolean>
 
   @Throws(IOException::class, Document.DocumentException::class)
-  fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?, authenticationFlow: AuthenticationFlow? = null)
+  fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?, authenticationFlow: AuthenticationFlow? = null): ProjectOpenStateMachine
   fun createProject(project: IGanttProject)
   fun getOptionGroups(): Array<GPOptionGroup>
+
+  val projectOpenActivityFactory: ProjectOpenActivityFactory
 }

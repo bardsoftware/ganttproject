@@ -53,15 +53,16 @@ internal class ProjectEventListenerImpl(
     }
   }
 
+  fun whenTablesInitialized(project: IGanttProject) {
+    projectDatabase.isProjectOpen = true
+    projectDatabase.onCustomColumnChange(project.taskCustomColumnManager)
+    project.taskManager.tasks.forEach(projectDatabase::insertTask)
+    calculatedPropertyUpdater.update()
+    filterUpdater()
+  }
+
   override fun projectOpened(barrierRegistry: BarrierEntrance, barrier: Barrier<IGanttProject>) {
     projectDatabase.shutdown()
-    barrier.await {
-      projectDatabase.isProjectOpen = true
-      projectDatabase.onCustomColumnChange(it.taskCustomColumnManager)
-      it.taskManager.tasks.forEach(projectDatabase::insertTask)
-      calculatedPropertyUpdater.update()
-      filterUpdater()
-    }
   }
 
   override fun projectClosed() = withLogger({ "Failed to close project" }) {

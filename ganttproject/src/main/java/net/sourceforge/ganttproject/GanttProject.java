@@ -271,7 +271,9 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     startupLogger.debug("8. finalizing...");
     // applyComponentOrientation(GanttLanguage.getInstance()
     // .getComponentOrientation());
-    getTaskManager().addTaskListener(GanttProjectImplKt.createProjectModificationListener(this, getUIFacade()));
+    getProjectUIFacade().getProjectOpenActivityFactory().addListener(
+      GanttProjectImplKt.createProjectModificationListener(this, getUIFacade())
+    );
     //++addMouseListenerToAllContainer(this.getComponents());
 
     // Add globally available actions/key strokes
@@ -286,6 +288,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     } catch (IOException e) {
       gpLogger.error(Arrays.toString(e.getStackTrace()), new Object[]{}, ImmutableMap.of(), e);
     }
+    DesktopIntegration.setup(GanttProject.this);
   }
 
   public WindowGeometry getWindowGeometry() {
@@ -469,14 +472,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
   void doShow() {
-    //++
-    //    setVisible(true);
-//    boundsLogger.debug("Bounds after setVisible: {}", new Object[]{getBounds()}, ImmutableMap.of());
-    DesktopIntegration.setup(GanttProject.this);
-    getProject().setModified(false);
-    //getActiveChart().reset();
     getRssFeedChecker().run();
-//++    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
   }
 
   @Override
@@ -499,13 +495,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     myObservableDocument.set(document);
     updateTitle();
     refresh();
-//    for (Chart chart : PluginManager.getViewProviders()) {
-//      chart.reset();
-//    }
-
-    // myDelayManager.fireDelayObservation(); // it is done in repaint2
-    //++ addMouseListenerToAllContainer(this.getComponents());
-
     getProjectImpl().fireProjectOpened();
   }
 

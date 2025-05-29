@@ -291,13 +291,30 @@ internal fun <T> (IGanttProject).restoreProject(listeners: List<ProjectEventList
 }
 
 
-internal fun createProjectModificationListener(project: IGanttProject, uiFacade: UIFacade) =
-  createTaskListenerWithTimerBarrier(timerBarrier = TimerBarrier(1000).apply {
-    await { project.setModified() }
-  }).also {
-      it.taskAddedHandler = {
-        project.setModified()
-        uiFacade.viewManager.getView(UIFacade.GANTT_INDEX.toString()).isActive = true
-        uiFacade.refresh()
-      }
+internal fun createProjectModificationListener(project: IGanttProject, uiFacade: UIFacade): ProjectOpenActivityListener {
+  val timerBarrier = TimerBarrier(1000).apply {
+    await {
+      project.setModified()
     }
+  }
+  val taskListener = createTaskListenerWithTimerBarrier(timerBarrier).also {
+    it.taskAddedHandler = {
+      project.setModified()
+      uiFacade.viewManager.getView(UIFacade.GANTT_INDEX.toString()).isActive = true
+      uiFacade.refresh()
+    }
+  }
+  project.taskManager.addTaskListener(taskListener)
+  return { stateMachine ->
+    stateMachine.stateStarted.await {
+      timerBarrier.isPaused = true
+    }
+    stateMachine.stateCompleted.await {
+      timerBarrier.isPaused = false
+      project.isModified = false
+    }
+    stateMachine.stateFailed.await {
+      timerBarrier.isPaused = false
+    }
+  }
+}

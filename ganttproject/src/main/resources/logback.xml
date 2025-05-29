@@ -29,7 +29,7 @@
     <logger name="io.milton.httpclient" level="INFO"/>
 
     <logger name="App" level="INFO"/>
-    <logger name="App.Barrier" level="INFO"/>
+    <logger name="App.Barrier" level="DEBUG"/>
     <logger name="App.Dirs" level="INFO"/>
     <logger name="App.Update" level="INFO"/>
     <logger name="Cloud.Document" level="INFO"/>
@@ -42,6 +42,7 @@
     <logger name="Import.MSProject" level="INFO"/>
     <logger name="Print" level="INFO"/>
     <logger name="Print.ImageProcessor" level="INFO"/>
+    <logger name="Project.OpenStateMachine" level="DEBUG"/>
     <logger name="ProjectDatabase" level="INFO"/>
     <logger name="ProjectDatabase.CalculatedProperty" level="INFO"/>
     <logger name="ResourceTable" level="INFO"/>

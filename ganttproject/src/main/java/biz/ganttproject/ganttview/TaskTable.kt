@@ -57,6 +57,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.ProjectOpenActivityFactory
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.export.TreeTableApi
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
@@ -87,7 +88,8 @@ class TaskTable(
   private val undoManager: GPUndoManager,
   val filterManager: TaskFilterManager,
   initializationPromise: TwoPhaseBarrierImpl<*>,
-  private val newTaskActor: NewTaskActor<Task>
+  private val newTaskActor: NewTaskActor<Task>,
+  projectOpenActivityFactory: ProjectOpenActivityFactory
 ):
   BaseTreeTableComponent<Task, TaskDefaultColumn>(
     GPTreeTableView<Task>(TreeItem(taskManager.taskHierarchy.rootTask)),
@@ -99,7 +101,8 @@ class TaskTable(
         TaskDefaultColumn.find(it)?.isIconified ?: false
       },
       allColumns = { TaskDefaultColumn.entries }
-    )
+    ),
+    projectOpenActivityFactory
   ) {
 
   private val isSortedProperty = SimpleBooleanProperty()

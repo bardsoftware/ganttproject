@@ -830,23 +830,19 @@ public abstract class GPTreeTableBase extends JXTreeTable implements CustomPrope
       @Override
       public void columnMoved(TableColumnModelEvent e) {
         if (e.getFromIndex() != e.getToIndex()) {
-          myProject.setModified();
         }
       }
 
       @Override
       public void columnAdded(TableColumnModelEvent e) {
-        myProject.setModified();
       }
 
       @Override
       public void columnRemoved(TableColumnModelEvent e) {
-        myProject.setModified();
       }
 
       @Override
       public void columnMarginChanged(ChangeEvent e) {
-        myProject.setModified();
       }
 
       @Override

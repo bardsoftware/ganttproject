@@ -232,8 +232,13 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   protected GanttProjectBase(Stage stage) {
     TaskDefaultColumn.setLocaleApi(key -> GanttLanguage.getInstance().getText(key));
 
-    var databaseProxy = new LazyProjectDatabaseProxy(SqlProjectDatabaseImpl.Factory::createInMemoryDatabase, this::getTaskManager,
-      () -> { getTaskFilterManager().refresh(); return Unit.INSTANCE; });
+    var databaseProxy = new LazyProjectDatabaseProxy(
+      SqlProjectDatabaseImpl.Factory::createInMemoryDatabase,
+      this::getTaskManager,
+      () -> {
+        getTaskFilterManager().refresh();
+        return Unit.INSTANCE;
+      });
 
     myProjectDatabase = databaseProxy;
     myTaskManagerConfig = new TaskManagerConfigImpl();
@@ -264,11 +269,14 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     }, newTaskActor, myProjectDatabase);
     myTaskTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(() ->
       new TaskTable(getProject(), getTaskManager(), myTaskTableChartConnector, myTaskCollapseView,
-        getTaskSelectionManager(), myTaskActions, getUndoManager(), getTaskFilterManager(), myUiInitializationPromise, newTaskActor)
+        getTaskSelectionManager(), myTaskActions, getUndoManager(), getTaskFilterManager(), myUiInitializationPromise,
+        newTaskActor, getProjectUIFacade().getProjectOpenActivityFactory())
     ));
     myResourceActions = new ResourceActionSet(getUIFacade().getResourceSelectionManager(), getUIFacade().getResourceSelectionManager(), getProject(), getUIFacade());
     myResourceTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(() ->
-      new ResourceTable(getProject(), getUndoManager(), getResourceSelectionManager(), myResourceActions, myResourceTableChartConnector)
+      new ResourceTable(getProject(), getUndoManager(), getResourceSelectionManager(), myResourceActions,
+        myResourceTableChartConnector,
+        getProjectUIFacade().getProjectOpenActivityFactory())
       ));
     myDocumentManager = new DocumentCreator(this, getUIFacade(), null) {
       @Override
@@ -295,6 +303,8 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
     myUndoManager.addUndoableEditListener(getTaskFilterManager().getUndoListener());
     myProjectUIFacade = new ProjectUIFacadeImpl(stage, myUIFacade, myDocumentManager, myUndoManager, myProjectImpl);
+    databaseProxy.setProjectOpenActivityFactory(myProjectUIFacade.getProjectOpenActivityFactory());
+
     myRssChecker = new RssFeedChecker(myUIFacade);
     myUIFacade.addOptions(myRssChecker.getUiOptions());
     updateTitle();

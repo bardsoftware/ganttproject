@@ -76,31 +76,21 @@ class StorageDialogBuilder(
   init {
     // This will be called when user opens a project.
     myDocumentReceiver = OpenDocumentReceiver { document: Document, authFlow: AuthenticationFlow ->
-      val onFinish = Channel<Boolean>()
       val killProgress = myDialogUi.toggleProgress(true)
-      CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
-        try {
-          onFinish.receive()
-          myDialogUi.close()
-        } catch (e: IOException) {
-          killProgress()
-          myDialogUi.error(e.message ?: "")
-          LOG.error("Failed to open document {}", document.uri, exception = e)
-        } catch (e: PaymentRequiredException) {
-          LOG.error("Failed to open document {}: payment required", document.uri, exception = e)
-          myDialogUi.error(e.message ?: "")
-        }
-        catch (e: Document.DocumentException) {
-          killProgress()
-          myDialogUi.error(e.message ?: "")
-          LOG.error("Failed to open document {}", document.uri, exception = e)
-        }
-      }
       val proxyAuthFlow: AuthenticationFlow = { onAuth ->
         killProgress()
         authFlow(onAuth)
       }
-      projectUi.openProject(documentManager.getProxyDocument(document), myProject, onFinish, proxyAuthFlow)
+      projectUi.openProject(documentManager.getProxyDocument(document), myProject, null, proxyAuthFlow).let { sm ->
+        sm.stateCompleted.await {
+          myDialogUi.close()
+        }
+        sm.stateFailed.await { stateFailed ->
+          killProgress()
+          myDialogUi.error(stateFailed.errorTitle)
+          LOG.error("Failed to open document {}", document.uri, exception = stateFailed.throwable)
+        }
+      }
     }
     // This will be called when user saves a project.
     myDocumentUpdater = Consumer { document ->

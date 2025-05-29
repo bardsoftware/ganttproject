@@ -39,6 +39,7 @@ import javafx.scene.input.KeyEvent
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
+import net.sourceforge.ganttproject.ProjectOpenActivityFactory
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.undo.GPUndoListener
@@ -55,7 +56,8 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
   internal val project: IGanttProject,
   private val undoManager: GPUndoManager,
   val customPropertyManager: CustomPropertyManager,
-  val builtinColumns: BuiltinColumns
+  val builtinColumns: BuiltinColumns,
+  private val projectOpenActivityFactory: ProjectOpenActivityFactory
 ) {
 
   val headerHeightProperty: ReadOnlyDoubleProperty get() = treeTable.headerHeight
@@ -71,6 +73,7 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
   )
   val columnListWidthProperty = SimpleObjectProperty<Pair<Double, Double>>()
   val rootItem: TreeItem<NodeType> = treeTable.root
+  protected var areChangesIgnored = false
 
   init {
     FXUtil.runLater {
@@ -95,6 +98,19 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
   }
 
   protected fun initProjectEventHandlers() {
+    projectOpenActivityFactory.addListener { sm ->
+      areChangesIgnored = true
+      val tablesReadyStateEntrance = sm.stateTablesReady.register("Reload ${this.javaClass.simpleName}")
+      sm.stateMainModelReady.await {
+        treeTable.reload(::sync, tablesReadyStateEntrance)
+      }
+      sm.stateTablesReady.await {
+        areChangesIgnored = false
+      }
+      sm.stateFailed.await {
+        areChangesIgnored = false
+      }
+    }
     project.addProjectEventListener(object : ProjectEventListener.Stub() {
       override fun projectRestoring(completion: Barrier<Document>) {
         completion.await {
@@ -103,7 +119,7 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
       }
 
       override fun projectOpened(barrierRegistry: BarrierEntrance, barrier: Barrier<IGanttProject>) {
-        treeTable.reload(::sync, barrierRegistry.register("Reload Task Table"))
+        //treeTable.reload(::sync, barrierRegistry.register("Reload Task Table"))
       }
 
       override fun projectCreated() {

@@ -162,7 +162,7 @@ class AppBuilder(args: Array<String>) {
   }
   fun withWindowVisible(): AppBuilder {
     whenAppInitialized { ganttProject ->
-      SwingUtilities.invokeLater { ganttProject.doShow() }
+      ganttProject.doShow()
     }
     return this
   }

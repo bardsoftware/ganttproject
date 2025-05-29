@@ -39,6 +39,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.ProjectOpenActivityFactory
 import net.sourceforge.ganttproject.ResourceDefaultColumn
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet
 import net.sourceforge.ganttproject.chart.export.TreeTableApi
@@ -90,11 +91,13 @@ data class ResourceTableChartConnector(
 /**
  * This class is a controller of the tree table UI widget that shows project human resources.
  */
-class ResourceTable(project: IGanttProject,
-                    private val undoManager: GPUndoManager,
-                    private val resourceSelectionManager: ResourceSelectionManager,
-                    val resourceActions: ResourceActionSet,
-                    private val resourceChartConnector: ResourceTableChartConnector) :
+class ResourceTable(
+  project: IGanttProject,
+  private val undoManager: GPUndoManager,
+  private val resourceSelectionManager: ResourceSelectionManager,
+  val resourceActions: ResourceActionSet,
+  private val resourceChartConnector: ResourceTableChartConnector,
+  projectOpenActivityFactory: ProjectOpenActivityFactory) :
   BaseTreeTableComponent<ResourceTableNode, ResourceDefaultColumn>(
     GPTreeTableView(TreeItem<ResourceTableNode>(RootNode())),
     project,
@@ -107,10 +110,11 @@ class ResourceTable(project: IGanttProject,
       allColumns = {
         ResourceDefaultColumn.entries
       }
-    )
+    ),
+    projectOpenActivityFactory
   ) {
 
-  override val tableModel = ResourceTableModel()
+  override val tableModel = ResourceTableModel(areChangesIgnored = { this.areChangesIgnored })
   private val resource2treeItem = mutableMapOf<HumanResource, TreeItem<ResourceNode>>()
   private val task2treeItem = mutableMapOf<ResourceAssignment, TreeItem<AssignmentNode>>()
   override val selectionKeeper = SelectionKeeper(logger = LOGGER, treeTable = this.treeTable, node2treeItem = { node ->
@@ -414,7 +418,8 @@ class ResourceSyncAlgorithm(
 /**
  * A model class that moves data between the table cells and HumanResource instances.
  */
-class ResourceTableModel: TableModel<ResourceTableNode, ResourceDefaultColumn> {
+class ResourceTableModel(private val areChangesIgnored: ()->Boolean)
+  : TableModel<ResourceTableNode, ResourceDefaultColumn> {
   override fun getValueAt(t: ResourceTableNode, defaultColumn: ResourceDefaultColumn): Any? {
     return when (t) {
         is ResourceNode -> {
@@ -451,6 +456,9 @@ class ResourceTableModel: TableModel<ResourceTableNode, ResourceDefaultColumn> {
   }
 
   override fun setValue(value: Any, node: ResourceTableNode, property: ResourceDefaultColumn) {
+    if (areChangesIgnored()) {
+      return
+    }
     if (node is ResourceNode) {
       when (property) {
         ResourceDefaultColumn.NAME -> node.resource.name = "$value"
@@ -469,6 +477,9 @@ class ResourceTableModel: TableModel<ResourceTableNode, ResourceDefaultColumn> {
   }
 
   override fun setValue(value: Any, node: ResourceTableNode, column: CustomPropertyDefinition) {
+    if (areChangesIgnored()) {
+      return
+    }
     if (node is ResourceNode) {
       node.resource.setValue(column, value)
     }

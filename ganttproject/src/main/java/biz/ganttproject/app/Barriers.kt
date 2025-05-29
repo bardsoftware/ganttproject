@@ -131,6 +131,15 @@ class TimerBarrier(intervalMillis: Long) : Barrier<Unit> {
   )
   private val counter = AtomicInteger(0)
 
+  var isPaused: Boolean = false
+    get() = field
+    set(value) {
+      field = value
+      if (!value) {
+        counter.set(0)
+      }
+    }
+
   override fun await(code: BarrierExit<Unit>) {
     exits.add(code)
   }
@@ -140,6 +149,9 @@ class TimerBarrier(intervalMillis: Long) : Barrier<Unit> {
   }
 
   private fun tick() {
+    if (isPaused) {
+      return
+    }
     val value = counter.get()
     if (value > 0) {
       exits.forEach { it(Unit) }

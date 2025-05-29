@@ -18,7 +18,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.lib.fx
 
-//import javafx.scene.control.skin.TreeTableCellSkin
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.*
 import biz.ganttproject.colorFromUiManager

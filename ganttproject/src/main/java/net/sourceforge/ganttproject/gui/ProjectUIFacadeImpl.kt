@@ -36,9 +36,7 @@ import javafx.scene.layout.Pane
 import javafx.stage.Window
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.GanttProjectImpl
-import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.document.Document
@@ -75,6 +73,8 @@ class ProjectUIFacadeImpl(
 
   private val myConverterGroup = GPOptionGroup("convert", ProjectOpenStrategy.milestonesOption)
   private var isSaving = false
+
+  override val projectOpenActivityFactory = ProjectOpenActivityFactory()
 
   override fun saveProject(project: IGanttProject): Barrier<Boolean> {
     if (isSaving) {
@@ -212,8 +212,14 @@ class ProjectUIFacadeImpl(
 
   @Throws(IOException::class, DocumentException::class)
   override fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?,
-                           authenticationFlow: AuthenticationFlow?) {
+                           authenticationFlow: AuthenticationFlow?): ProjectOpenStateMachine {
+    val stateMachine = projectOpenActivityFactory.createStateMachine(project)
     try {
+      stateMachine.state = ProjectOpenActivityStarted()
+      stateMachine.stateCalculatedModelReady.await {
+        stateMachine.state = ProjectOpenActivityCompleted()
+      }
+
       ProjectOpenStrategy(
         project = project,
         uiFacade = myWorkbenchFacade,
@@ -237,6 +243,7 @@ class ProjectUIFacadeImpl(
                     .checkLegacyMilestones()
                     .checkEarliestStartConstraints()
                     .runUiTasks()
+                  stateMachine.state = ProjectOpenActivityMainModelReady()
                   document.asOnlineDocument()?.let {
                     if (it is GPCloudDocument) {
                       it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
@@ -268,9 +275,12 @@ class ProjectUIFacadeImpl(
                       it.onboard(documentManager, webSocket)
                     }
                   }
-                  runBlocking { onFinish?.send(true) }
+                  runBlocking {
+                    onFinish?.send(true)
+                  }
                 } catch (ex: DocumentException) {
                   ex.printStackTrace()
+                  stateMachine.state = ProjectOpenActivityFailed("", ex)
                   onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
                 }
               }
@@ -285,6 +295,7 @@ class ProjectUIFacadeImpl(
                 onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("Can't open document $document", ex)
               }
             }
+            stateMachine.state = ProjectOpenActivityFailed("Can't open document $document", ex)
           }
           finally {
             DOCUMENT_LOGGER.debug("<<< openProject()")
@@ -295,6 +306,7 @@ class ProjectUIFacadeImpl(
     } catch (e: Exception) {
       throw DocumentException("Can't open document $document", e)
     }
+    return stateMachine
   }
 
   private fun beforeClose() {
