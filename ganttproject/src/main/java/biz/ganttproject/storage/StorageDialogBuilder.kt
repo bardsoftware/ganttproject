@@ -30,8 +30,6 @@ import javafx.scene.control.Label
 import javafx.scene.control.TextArea
 import javafx.scene.layout.*
 import javafx.stage.Screen
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
@@ -41,9 +39,7 @@ import net.sourceforge.ganttproject.gui.AuthenticationFlow
 import net.sourceforge.ganttproject.gui.ProjectUIFacade
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.controlsfx.control.NotificationPane
-import java.io.IOException
 import java.util.*
-import java.util.concurrent.Executors
 import java.util.function.Consumer
 import kotlin.math.max
 
@@ -87,7 +83,7 @@ class StorageDialogBuilder(
         }
         sm.stateFailed.await { stateFailed ->
           killProgress()
-          myDialogUi.error(stateFailed.errorTitle)
+          myDialogUi.error(stateFailed.errorTitle, stateFailed.errorDescription, stateFailed.throwable)
           LOG.error("Failed to open document {}", document.uri, exception = stateFailed.throwable)
         }
       }
@@ -120,7 +116,7 @@ class StorageDialogBuilder(
         if (e is PaymentRequiredException) {
           println(e.message)
         }
-        myDialogUi.error(e.message ?: "")
+        myDialogUi.error("Failed to save the document", e.message ?: "", e)
         LOG.error("Failed to save document {}", document.uri, exception = e)
       }
     }
@@ -255,8 +251,8 @@ class StorageDialogBuilder(
       dialogController.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(e.message ?: ""))
     }
 
-    fun error(message: String) {
-      dialogController.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(message))
+    fun error(title: String, description: String, ex: Throwable?) {
+      dialogController.showAlert(title, createAlertBody(description))
     }
 
     fun message(message: String) {

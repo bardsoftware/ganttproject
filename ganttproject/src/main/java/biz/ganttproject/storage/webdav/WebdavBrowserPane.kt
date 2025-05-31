@@ -165,7 +165,7 @@ class WebdavBrowserPane(private val myServer: WebDavServerDescriptor,
       }
       onFailed = EventHandler {
         showMaskPane.accept(false)
-        dialogUi.error("WebdavService failed!")
+        dialogUi.error("WebdavService failed!", "", null)
       }
       onCancelled = EventHandler {
         showMaskPane.accept(false)

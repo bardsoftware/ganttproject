@@ -20,45 +20,47 @@ package net.sourceforge.ganttproject
 
 import biz.ganttproject.app.SimpleBarrier
 import biz.ganttproject.app.TwoPhaseBarrierImpl
+import biz.ganttproject.app.i18n
 import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Possible states that the process or project opening passes.
  */
-sealed class ProjectOpenActivityState {
+sealed class ProjectOpenActivityState(val id: String) {
   override fun toString(): String {
     return this::class.java.simpleName
   }
 }
 /** This is the initial state when we just have created a state machine. */
-class ProjectOpenActivityCreated : ProjectOpenActivityState()
+class ProjectOpenActivityCreated : ProjectOpenActivityState("created")
 
 /** This is the state when project opening process started. */
-class ProjectOpenActivityStarted : ProjectOpenActivityState()
+class ProjectOpenActivityStarted : ProjectOpenActivityState("started")
 
 /**
  * At this state we have loaded the task and resource models from the document and have run all possible
  * checks that run on project opening, such as initial re-scheduling.
  */
-class ProjectOpenActivityMainModelReady: ProjectOpenActivityState()
+class ProjectOpenActivityMainModelReady: ProjectOpenActivityState("mainModelReady")
 
 /** This is the state when task and resource tables are filled with the project data */
-class ProjectOpenActivityTablesReady(val project: IGanttProject) : ProjectOpenActivityState()
+class ProjectOpenActivityTablesReady(val project: IGanttProject) : ProjectOpenActivityState("tablesReady")
 
 /** This is the state when calculated properties and filters are applied to the project data */
-class ProjectOpenActivityCalculatedModelReady(val project: IGanttProject) : ProjectOpenActivityState()
+class ProjectOpenActivityCalculatedModelReady(val project: IGanttProject) : ProjectOpenActivityState("calculatedModelReady")
 
 /** The state when the whole process is completed */
-class ProjectOpenActivityCompleted: ProjectOpenActivityState()
+class ProjectOpenActivityCompleted: ProjectOpenActivityState("completed")
 
 /**
  * This state indicates that the activity has failed.
  */
 class ProjectOpenActivityFailed(
   val errorTitle: String,
+  val errorDescription: String,
   val throwable: Throwable? = null
-): ProjectOpenActivityState()
+): ProjectOpenActivityState("failed")
 
 /**
  * The state machine that manages the states.
@@ -77,7 +79,7 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
   val stateCalculatedModelReady = SimpleBarrier<ProjectOpenActivityCalculatedModelReady>()
   val stateFailed = SimpleBarrier<ProjectOpenActivityFailed>()
 
-  var state: ProjectOpenActivityState? = ProjectOpenActivityCreated()
+  var state: ProjectOpenActivityState = ProjectOpenActivityCreated()
   set(state) {
     LOG.debug("Transitioning: {} => {}", field, state)
     fun doSetState(condition: Boolean, state: ProjectOpenActivityState, code: () -> Unit) {
@@ -86,7 +88,11 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
       try {
         code()
       } catch (ex: Exception) {
-        stateFailed.resolve(ProjectOpenActivityFailed(errorTitle = "Error", throwable = ex))
+        stateFailed.resolve(ProjectOpenActivityFailed(
+          errorTitle = i18n.formatText("error.title"),
+          errorDescription = i18n.formatText("error.state.${state.id}", ex.message ?: ""),
+          throwable = ex
+        ))
       }
     }
     when (state) {
@@ -129,12 +135,25 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
       code()
       state = targetState
     } catch (ex: Throwable) {
-      state = ProjectOpenActivityFailed(errorTitle = "Error", throwable = ex)
+      state = ProjectOpenActivityFailed(
+        errorTitle = i18n.formatText("error.title"),
+        errorDescription = i18n.formatText("error.state.${targetState.id}", ex.message ?: ""),
+        throwable = ex
+      )
     }
   }
 
   private fun assert(condition: Boolean, msg: ()->String) {
     if (!condition) error(msg())
+  }
+
+  fun fail(ex: Exception) {
+    state = ProjectOpenActivityFailed(
+      errorTitle = i18n.formatText("error.title"),
+      errorDescription = i18n.formatText("error.state.${state.id}", ex.message ?: ""),
+      throwable = ex
+
+    )
   }
 }
 
@@ -157,4 +176,8 @@ class ProjectOpenActivityFactory {
   }
 }
 
+private val i18n = i18n {
+  default()
+  prefix("project.open")
+}
 private val LOG = GPLogger.create("Project.OpenStateMachine")

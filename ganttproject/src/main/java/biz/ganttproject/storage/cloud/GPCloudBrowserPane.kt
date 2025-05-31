@@ -305,16 +305,16 @@ class GPCloudBrowserPane(
               HttpStatus.SC_FORBIDDEN, HttpStatus.SC_UNAUTHORIZED -> {
                 this@GPCloudBrowserPane.controller.start()
               }
-              else -> dialogUi.error(CLOUD_LOCALIZER.formatText("error.loadTeams.http", ex.status, ex.message ?: ""))
+              else -> dialogUi.error("Failed to load the teams", CLOUD_LOCALIZER.formatText("error.loadTeams.http", ex.status, ex.message ?: ""), ex)
             }
             LOG.error("Failed to load teams due to HTTP error {}", ex.status, exception = ex, kv = mapOf(
               "userId" to GPCloudOptions.userId.value
             ))
           }
-          null -> dialogUi.error(CLOUD_LOCALIZER.formatText("error.loadTeams.other", ""))
+          null -> dialogUi.error("Failed to load the teams", CLOUD_LOCALIZER.formatText("error.loadTeams.other", ""), null)
           else -> {
             LOG.error(msg = "Failed to load teams", exception = ex)
-            dialogUi.error(CLOUD_LOCALIZER.formatText("error.loadTeams.other", ex.message ?: ""))
+            dialogUi.error("Failed to load the teams", CLOUD_LOCALIZER.formatText("error.loadTeams.other", ex.message ?: ""), ex)
           }
         }
       }

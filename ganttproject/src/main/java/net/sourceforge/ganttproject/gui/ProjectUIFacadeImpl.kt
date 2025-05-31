@@ -280,7 +280,7 @@ class ProjectUIFacadeImpl(
                   }
                 } catch (ex: DocumentException) {
                   ex.printStackTrace()
-                  stateMachine.state = ProjectOpenActivityFailed("", ex)
+                  stateMachine.fail(ex)
                   onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
                 }
               }
@@ -295,7 +295,7 @@ class ProjectUIFacadeImpl(
                 onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("Can't open document $document", ex)
               }
             }
-            stateMachine.state = ProjectOpenActivityFailed("Can't open document $document", ex)
+            stateMachine.fail(ex)
           }
           finally {
             DOCUMENT_LOGGER.debug("<<< openProject()")
