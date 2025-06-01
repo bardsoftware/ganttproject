@@ -23,7 +23,7 @@ import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.ColumnList
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager
 
-fun loadView(xmlView: XmlView, zoomManager: ZoomManager, columnList: ColumnList) {
+fun loadView(xmlView: XmlView, zoomManager: ZoomManager, columnList: ColumnList, builtinColumns: List<ColumnList.Column>) {
   // Load zooming state
   xmlView.zoomingState?.let {
     zoomManager.setZoomState(it)
@@ -40,7 +40,7 @@ fun loadView(xmlView: XmlView, zoomManager: ZoomManager, columnList: ColumnList)
     // Set orders for the columns which had no orders defined
     val countPositiveOrders = stubs.count { it.order >= 0 }
     stubs.filter { it.order == -1 }.forEachIndexed { idx, stub -> stub.order = idx + countPositiveOrders }
-    val defaultColumns = TaskDefaultColumn.getColumnStubs().filter { defaultColumn ->
+    val defaultColumns = builtinColumns.filter { defaultColumn ->
         stubs.firstOrNull { it.id == defaultColumn.id } == null
     }.onEach { it.isVisible = false }
     columnList.importData(ColumnList.Immutable.fromList(stubs + defaultColumns), false)

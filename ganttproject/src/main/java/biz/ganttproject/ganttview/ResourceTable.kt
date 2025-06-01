@@ -373,6 +373,7 @@ class ResourceSyncAlgorithm(
         val childAssignment = (childItem.value as? AssignmentNode)?.assignment ?: return@forEachIndexed
         if (childAssignment.task == assignment.task) {
           LOGGER.debug("... it is the same assignment as [assignment]")
+          childItem.value = AssignmentNode(assignment)
           task2treeItem[assignment] = childItem as TreeItem<AssignmentNode>
         } else {
           LOGGER.debug("... it is different assignment, replacing")

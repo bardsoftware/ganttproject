@@ -23,6 +23,7 @@ import biz.ganttproject.core.io.XmlProject
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.customproperty.CustomPropertyManager
+import net.sourceforge.ganttproject.ResourceDefaultColumn
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.roles.Role
@@ -104,5 +105,5 @@ fun RoleManager.findRole(id: String): Role? {
 
 fun loadResourceView(xmlProject: XmlProject, zoomManager: ZoomManager, resourceColumns: ColumnList) {
   val xmlView = xmlProject.views.filter { "resource-table" == it.id }.firstOrNull() ?: return
-  loadView(xmlView, zoomManager, resourceColumns)
+  loadView(xmlView, zoomManager, resourceColumns, ResourceDefaultColumn.getColumnStubs())
 }

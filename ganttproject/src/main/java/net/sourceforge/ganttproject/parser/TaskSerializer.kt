@@ -22,23 +22,21 @@ import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.io.XmlProject
 import biz.ganttproject.core.io.XmlTasks.XmlTask
 import biz.ganttproject.core.model.task.ConstraintType
+import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.GPOption
-import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.customproperty.CustomColumnsException
+import biz.ganttproject.customproperty.CustomColumnsManager
 import biz.ganttproject.customproperty.SimpleSelect
 import biz.ganttproject.ganttview.BuiltInFilters
-import biz.ganttproject.ganttview.TaskFilter
 import biz.ganttproject.ganttview.TaskFilterManager
 import biz.ganttproject.lib.fx.TreeCollapseView
 import com.google.common.base.Charsets
-import com.google.common.xml.XmlEscapers
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager
 import net.sourceforge.ganttproject.task.CostStub
-import biz.ganttproject.customproperty.CustomColumnsManager
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskView
@@ -247,7 +245,7 @@ fun loadGanttView(
       xmlOption.text ?: xmlOption.value
     )
   }
-  loadView(xmlView, zoomManager, taskColumns)
+  loadView(xmlView, zoomManager, taskColumns, TaskDefaultColumn.getColumnStubs())
   xmlView.filters?.mapNotNull { xmlFilter ->
     val result = if (xmlFilter.isBuiltIn) {
       BuiltInFilters.allFilters.find { it.title == xmlFilter.title }
