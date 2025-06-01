@@ -219,6 +219,9 @@ class ProjectUIFacadeImpl(
       stateMachine.stateCalculatedModelReady.await {
         stateMachine.state = ProjectOpenActivityCompleted()
       }
+      stateMachine.stateCompleted.await {
+        undoManager.die()
+      }
 
       ProjectOpenStrategy(
         project = project,
@@ -237,7 +240,6 @@ class ProjectUIFacadeImpl(
               // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
               SwingUtilities.invokeLater {
                 try {
-                  beforeClose()
                   project.close()
                   strategy.openFileAsIs(doc)
                     .checkLegacyMilestones()
@@ -309,15 +311,9 @@ class ProjectUIFacadeImpl(
     return stateMachine
   }
 
-  private fun beforeClose() {
-    myWorkbenchFacade.setWorkbenchTitle(i18n.getText("appliTitle"))
-    undoManager.die()
-  }
-
   override fun createProject(project: IGanttProject) {
     ensureProjectSaved(project).await { result ->
       if (result) {
-        beforeClose()
         project.close()
         createNewProject(project, myWorkbenchFacade).await { projectData ->
           project.document = documentManager.newUntitledDocument()
@@ -331,6 +327,7 @@ class ProjectUIFacadeImpl(
           projectImpl.fireProjectCreated()
           // A new project just got created, so it is not yet modified
           projectImpl.isModified = false
+          undoManager.die()
         }
       }
     }

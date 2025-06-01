@@ -342,6 +342,7 @@ class ResourceSyncAlgorithm(
           val childRes = (childItem.value as? ResourceNode)?.resource ?: return@forEachIndexed
           if (childRes == hr) {
             LOGGER.debug("... it is the same as [hr]")
+            childItem.value = ResourceNode(hr)
             resource2treeItem[hr] = childItem as TreeItem<ResourceNode>
             syncAssignments(childItem, hr)
 
@@ -502,8 +503,10 @@ class ResourceColumnBuilder(private val tableModel: ResourceTableModel,
       createChoiceColumn(modelColumn.getName(),
         getValue = { tableModel.getValueAt(it, modelColumn) as Role?},
         setValue = { node, value ->
-          undoManager.undoableEdit("Edit Role") {
-            tableModel.setValue(value, node, modelColumn)
+          if (value != tableModel.getValueAt(node, modelColumn)) {
+            undoManager.undoableEdit("Edit Role") {
+              tableModel.setValue(value, node, modelColumn)
+            }
           }
         },
         allValues = { project.roleManager.enabledRoles.toList()},
