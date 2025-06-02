@@ -21,12 +21,14 @@ package net.sourceforge.ganttproject;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.core.table.ColumnList.Column;
 import biz.ganttproject.core.table.BuiltinColumn;
+import biz.ganttproject.customproperty.CustomPropertyClass;
 import com.google.common.base.MoreObjects;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -87,6 +89,19 @@ public enum ResourceDefaultColumn implements BuiltinColumn {
 
   public Class<?> getValueClass() {
     return myValueClass;
+  }
+
+  public CustomPropertyClass getColumnClass() {
+    if (myValueClass == Integer.class) {
+      return CustomPropertyClass.INTEGER;
+    }
+    if (myValueClass == BigDecimal.class) {
+      return CustomPropertyClass.DOUBLE;
+    }
+    if (myValueClass == GregorianCalendar.class) {
+      return CustomPropertyClass.DATE;
+    }
+    return CustomPropertyClass.TEXT;
   }
 
   public static ResourceDefaultColumn find(String id) {

@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.table
 
 import biz.ganttproject.core.table.ColumnList.Column
+import biz.ganttproject.customproperty.CustomPropertyClass
 
 /**
  * This interface represents meta-information of a built-in property of a model element (tasks or resources) for the
@@ -33,6 +34,7 @@ interface BuiltinColumn {
    */
   val valueClass: Class<*>
 
+  val columnClass: CustomPropertyClass
   /**
    * Localized property name to be shown in the UI, e.g. in the table header.
    */

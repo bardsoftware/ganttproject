@@ -31,7 +31,7 @@ fun loadView(xmlView: XmlView, zoomManager: ZoomManager, columnList: ColumnList,
   // Load displayed columns
   xmlView.fields?.map { xmlField ->
     val id: String = xmlField.id
-    val defaultColumn = TaskDefaultColumn.find(id)
+    val defaultColumn = builtinColumns.find {it.id == id }
     val name = if (defaultColumn == null) id else defaultColumn.getName()
     val order = xmlField.order
     val width = xmlField.width

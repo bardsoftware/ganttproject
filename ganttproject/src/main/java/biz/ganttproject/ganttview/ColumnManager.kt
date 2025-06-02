@@ -21,11 +21,13 @@ package biz.ganttproject.ganttview
 import biz.ganttproject.app.*
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.*
+import biz.ganttproject.core.table.BuiltinColumn
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.customproperty.*
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
+import net.sourceforge.ganttproject.ResourceDefaultColumn
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
@@ -41,7 +43,8 @@ class ColumnManager(
   calculationMethodValidator: CalculationMethodValidator,
   expressionAutoCompletion: (String, Int) -> List<Completion>,
   private val applyExecutor: ApplyExecutorType,
-  hasCalculatedProperties: Boolean
+  hasCalculatedProperties: Boolean,
+  builtinColumns: List<BuiltinColumn>
 ) {
 
   internal val escCloseEnabled = SimpleBooleanProperty(true)
@@ -52,7 +55,7 @@ class ColumnManager(
   internal val dialogModel: ItemListDialogModel<ColumnAsListItem> = ItemListDialogModel<ColumnAsListItem>(
     listItems,
     newItemFactory = {
-      ColumnAsListItem(null, isVisible = true, isCustom = true, customColumnsManager)
+      ColumnAsListItem(null, isVisible = true, isCustom = true, customColumnsManager, builtinColumns)
     },
     ourLocalizer
   )
@@ -81,13 +84,13 @@ class ColumnManager(
     // and they are ordered the same way are shown in the table.
     listItems.setAll(mergedColumns.sortedWith { col1, col2 -> columnsOrder(col1, col2) }.map { col ->
       val isCustom = customColumnsManager.definitions.find { it.id == col.id } != null
-      ColumnAsListItem(col, col.isVisible, isCustom, customColumnsManager)
+      ColumnAsListItem(col, col.isVisible, isCustom, customColumnsManager, builtinColumns)
     })
     customColumnsManager.definitions.forEach { def ->
       if (mergedColumns.find { it.id == def.id } == null) {
         val columnStub = ColumnList.ColumnStub(def.id, def.name, false, -1, -1)
         mergedColumns.add(columnStub)
-        listItems.add(ColumnAsListItem(columnStub, columnStub.isVisible, true, customColumnsManager))
+        listItems.add(ColumnAsListItem(columnStub, columnStub.isVisible, true, customColumnsManager, builtinColumns))
       }
     }
   }
@@ -276,7 +279,8 @@ internal class ColumnAsListItem(
   val column: ColumnList.Column?,
   isVisible: Boolean,
   val isCustom: Boolean,
-  val customColumnsManager: CustomPropertyManager,
+  customColumnsManager: CustomPropertyManager,
+  builtinColumns: List<BuiltinColumn>
 ): Item<ColumnAsListItem> {
 
   override val isEnabledProperty: BooleanProperty = SimpleBooleanProperty(isVisible)
@@ -304,7 +308,7 @@ internal class ColumnAsListItem(
         if (isCustom) {
           customColumn?.propertyClass
         } else {
-          TaskDefaultColumn.find(column?.id)?.customPropertyClass
+          builtinColumns.find { it.stub.id == column?.id}?.columnClass
         }
       } ?: CustomPropertyClass.TEXT
       defaultValue =
@@ -328,25 +332,32 @@ fun showResourceColumnManager(
   columnList: ColumnList, customColumnsManager: CustomPropertyManager, undoManager: GPUndoManager,
   projectDatabase: ProjectDatabase
 ) {
-  val localizer = RootLocalizer.createWithRootKey("resourceTable.columnManager", baseLocalizer = ourLocalizer)
-  showColumnManager(columnList, customColumnsManager, undoManager, localizer, projectDatabase, hasCalculatedProperties = false)
+  showColumnManager(
+    columnList, customColumnsManager, undoManager, projectDatabase, hasCalculatedProperties = false,
+    builtinColumns = ResourceDefaultColumn.entries
+  )
 }
 
 fun showTaskColumnManager(
   columnList: ColumnList, customColumnsManager: CustomPropertyManager, undoManager: GPUndoManager,
   projectDatabase: ProjectDatabase
 ) {
-  showColumnManager(columnList, customColumnsManager, undoManager, ourLocalizer, projectDatabase, hasCalculatedProperties = true)
+  showColumnManager(
+    columnList, customColumnsManager, undoManager, projectDatabase, hasCalculatedProperties = true,
+    builtinColumns = TaskDefaultColumn.entries
+  )
 }
 
-private fun showColumnManager(columnList: ColumnList, customColumnsManager: CustomPropertyManager,
-                              undoManager: GPUndoManager,
-                              localizer: Localizer,
-                              projectDatabase: ProjectDatabase,
-                              hasCalculatedProperties: Boolean = true) {
+private fun showColumnManager(
+  columnList: ColumnList, customColumnsManager: CustomPropertyManager,
+  undoManager: GPUndoManager,
+  projectDatabase: ProjectDatabase,
+  hasCalculatedProperties: Boolean = true,
+  builtinColumns: List<BuiltinColumn>
+) {
   dialog(title = RootLocalizer.formatText("customColumns"), id = "customColumns") { dlg ->
     val columnManager = ColumnManager(
-      columnList, customColumnsManager, CalculationMethodValidator(projectDatabase), ExpressionAutoCompletion()::complete, ApplyExecutorType.DIRECT, hasCalculatedProperties
+      columnList, customColumnsManager, CalculationMethodValidator(projectDatabase), ExpressionAutoCompletion()::complete, ApplyExecutorType.DIRECT, hasCalculatedProperties, builtinColumns
     )
     columnManager.escCloseEnabled.addListener { _, _, newValue -> dlg.setEscCloseEnabled(newValue) }
     columnManager.dialogPane.build(dlg)

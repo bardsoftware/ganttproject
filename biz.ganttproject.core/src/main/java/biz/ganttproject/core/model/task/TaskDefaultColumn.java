@@ -152,6 +152,8 @@ public enum TaskDefaultColumn implements BuiltinColumn {
     }
     return CustomPropertyClass.TEXT;
   }
+
+  public CustomPropertyClass getColumnClass() { return getCustomPropertyClass(); }
   public static class Functions {
     static Predicate<Object> NOT_EDITABLE = input -> false;
     static Predicate<Object> ALWAYS_EDITABLE = input -> true;
