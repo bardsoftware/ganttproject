@@ -386,6 +386,10 @@ internal val ourEditorLocalizer = run {
         val key = it.split('.', limit = 2)[0]
         RootLocalizer.create(key)
       }
+      it.startsWith("type.value") -> {
+        val key = it.split('.', limit = 3)[2]
+        RootLocalizer.create(key)
+      }
       it == "columnExists" -> RootLocalizer.create(it)
       it == "addItem" -> RootLocalizer.create("addCustomColumn")
       else -> null
