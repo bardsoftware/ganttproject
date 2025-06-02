@@ -50,7 +50,7 @@ class TestViewSerializer {
             XmlView.XmlField(id = TaskDefaultColumn.NAME.stub.id, name = "Name", width = 50, order = 0),
             XmlView.XmlField(id = TaskDefaultColumn.BEGIN_DATE.stub.id, name = "Begin date", width = 70, order = 1)
         ))
-        loadView(xmlView, ZoomManager(GPTimeUnitStack()), columnList)
+        loadView(xmlView, ZoomManager(GPTimeUnitStack()), columnList, TaskDefaultColumn.getColumnStubs())
         columnList.columns().first { it.id == TaskDefaultColumn.BEGIN_DATE.stub.id }.also {
             assertTrue(it.isVisible)
             assertEquals(70, it.width)
