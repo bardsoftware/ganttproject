@@ -230,7 +230,7 @@ class CustomColumnsPanel(
     }
   }
 
-  fun save(mutator: TaskMutator) {
+  fun save(mutator: (CustomPropertyHolder)->Unit) {
 //    CommonPanel.saveColumnWidths(myTable, ourColumnWidth)
     manager.removeListener(customPropertyListener)
     tableItems.forEach {
@@ -240,7 +240,7 @@ class CustomColumnsPanel(
     }
 
     try {
-      mutator.setCustomProperties(myHolder)
+      mutator(myHolder)
     } catch (e: CustomColumnsException) {
       throw RuntimeException(e)
     }

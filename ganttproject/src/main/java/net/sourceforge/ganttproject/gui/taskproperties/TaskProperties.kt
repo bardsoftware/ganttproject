@@ -44,9 +44,11 @@ class TaskPropertiesController(private val task: Task, private val projectDataba
   val validationErrors = FXCollections.observableArrayList<String>()
 
   fun save(): TaskMutator =
-    task.createMutator().also {
-      mainPropertiesPanel.save(it)
-      customPropertiesPanel.save(it)
+    task.createMutator().also { mutator ->
+      mainPropertiesPanel.save(mutator)
+      customPropertiesPanel.save {
+        mutator.setCustomProperties(it)
+      }
     }
 
   fun cancel() {

@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui;
 
+import biz.ganttproject.app.DialogController;
 import biz.ganttproject.core.calendar.GanttDaysOff;
 import biz.ganttproject.customproperty.CustomPropertyManager;
 import com.google.common.collect.Lists;
@@ -42,16 +43,16 @@ public class GanttDialogPerson {
   private static final GanttLanguage language = GanttLanguage.getInstance();
 
   private final TaskManager myTaskManager;
-  private final ProjectDatabase myProjectDatabase;
   private final HumanResourceManager myResourceManager;
   private final HumanResource person;
 
 
   private final UIFacade myUIFacade;
-  private final CustomPropertyManager myCustomPropertyManager;
   private final Runnable onHide;
   private ResourceAssignmentsPanel myAssignmentsPanel;
   private final MainPropertiesPanel mainPropertiesPanel;
+  private final CustomColumnsPanel customColumnsPanel;
+  private DialogController myDialogController = null;
 
 
   public GanttDialogPerson(HumanResourceManager resourceManager,
@@ -63,12 +64,12 @@ public class GanttDialogPerson {
                            Runnable onHide
                            ) {
     myResourceManager = resourceManager;
-    myCustomPropertyManager = customPropertyManager;
     myTaskManager = taskManager;
     myUIFacade = uiFacade;
-    myProjectDatabase = projectDatabase;
     this.person = person;
     mainPropertiesPanel = new MainPropertiesPanel(person);
+    customColumnsPanel = new CustomColumnsPanel(customPropertyManager, projectDatabase, CustomColumnsPanel.Type.RESOURCE,
+      myUIFacade.getUndoManager(), person, myUIFacade.getResourceColumnList());
     this.onHide = onHide;
   }
 
@@ -111,14 +112,10 @@ public class GanttDialogPerson {
             this::constructDaysOffPanel
           ),
           new PropertiesDialogTabProvider(tabPane -> {
-            var panel = new CustomColumnsPanel(myCustomPropertyManager, myProjectDatabase, CustomColumnsPanel.Type.RESOURCE,
-              myUIFacade.getUndoManager(), person, myUIFacade.getResourceColumnList());
-            tabPane.getTabs().add(new Tab(panel.getTitle(), panel.getFxNode()));
+            tabPane.getTabs().add(new Tab(customColumnsPanel.getTitle(), customColumnsPanel.getFxNode()));
             return Unit.INSTANCE;
           },
-            () -> {
-            return Unit.INSTANCE;
-            }
+            () -> Unit.INSTANCE
           ),
           PropertiesDialogKt.swingTab(
             language.getText("assignments"),
@@ -127,7 +124,11 @@ public class GanttDialogPerson {
               return myAssignmentsPanel.getComponent();
             }
           )
-        )
+        ),
+        dialogController -> {
+          myDialogController = dialogController;
+          return Unit.INSTANCE;
+        }
       );
     }
   }
@@ -153,6 +154,11 @@ public class GanttDialogPerson {
 
   private void applyChanges() {
     mainPropertiesPanel.save();
+    customColumnsPanel.save(customPropertyHolder -> {
+      // intentionally do nothing, as customPropertyHolder is already a resource being edited
+      return null;
+    });
+
     person.getDaysOff().clear();
     for (DateInterval interval : myDaysOffModel.getIntervals()) {
       person.addDaysOff(new GanttDaysOff(interval.start, interval.getEnd()));

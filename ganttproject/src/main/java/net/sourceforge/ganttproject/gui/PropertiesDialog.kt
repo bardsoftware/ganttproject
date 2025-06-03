@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui
 
+import biz.ganttproject.app.DialogController
 import biz.ganttproject.app.ErrorPane
 import biz.ganttproject.app.dialog
 import javafx.collections.ObservableList
@@ -65,7 +66,7 @@ fun swingTab(title: String, createContents: ()->JComponent): PropertiesDialogTab
  * - an observable list of validation errors to be shown in the dialog UI.
  */
 fun propertiesDialog(title: String, id: String, actions: List<GPAction>, validationErrors: ObservableList<String>,
-                     tabProviders: List<PropertiesDialogTabProvider>) {
+                     tabProviders: List<PropertiesDialogTabProvider>, setupCode: (DialogController)->Unit={}) {
   dialog(title, id) { dialogController ->
     dialogController.addStyleSheet("/biz/ganttproject/app/ErrorPane.css");
     dialogController.addStyleSheet("/biz/ganttproject/app/TabPane.css");
