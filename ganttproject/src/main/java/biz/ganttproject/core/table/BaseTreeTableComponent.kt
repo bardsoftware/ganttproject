@@ -106,6 +106,7 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
       }
       sm.stateTablesReady.await {
         areChangesIgnored = false
+        treeTable.updateWidth()
       }
       sm.stateFailed.await {
         areChangesIgnored = false

@@ -119,7 +119,12 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   fun setColumns(tableColumns: List<TreeTableColumn<T, out Any>>) {
     val totalPrefWidth = tableColumns.filter { it.isVisible }.sumOf { it.prefWidth }
     prefWidth = totalPrefWidth + vbarWidth()
+    println("total columns=$totalPrefWidth vbar=${vbarWidth()}")
     columns.setAll(tableColumns)
+    resizePolicy.resizeTable(this.width)
+  }
+  fun updateWidth() {
+    prefWidth = columns.sumOf { it.prefWidth } + vbarWidth()
     resizePolicy.resizeTable(this.width)
   }
 
