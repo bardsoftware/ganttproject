@@ -114,8 +114,6 @@ compileSass {
     }
 }
 
-processResources.dependsOn('compileSass')
-
 sourceSets {
     main {
         resources {
@@ -185,4 +183,6 @@ publishing {
 compileKotlin.dependsOn generateJooq
 compileKotlin.dependsOn compileSass
 compileJava.dependsOn compileSass
+processResources.dependsOn compileSass
+generatePomFileForCorePublication.dependsOn compileSass
 
