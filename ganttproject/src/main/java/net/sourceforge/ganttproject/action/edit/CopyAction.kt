@@ -16,50 +16,33 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.action.edit;
+package net.sourceforge.ganttproject.action.edit
 
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.view.GPViewManager;
-
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.gui.UIUtil
+import net.sourceforge.ganttproject.gui.view.GPViewManager
+import java.awt.event.ActionEvent
 
 //TODO Enable/Disable action on selection changes
-public class CopyAction extends GPAction {
-  private final GPViewManager myViewmanager;
-  private final UIFacade myUiFacade;
-
-  public CopyAction(GPViewManager viewManager, UIFacade uiFacade) {
-    super("copy");
-    myViewmanager = viewManager;
-    myUiFacade = uiFacade;
-  }
-
-  @Override
-  public void actionPerformed(ActionEvent e) {
-    if (calledFromAppleScreenMenu(e)) {
-      return;
-    }
-    myViewmanager.getSelectedArtefacts().startCopyClipboardTransaction();
-    myUiFacade.getActiveChart().focus();
-  }
-
-  @Override
-  public CopyAction asToolbarAction() {
-    final CopyAction result = new CopyAction(myViewmanager, myUiFacade);
-    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
-    this.addPropertyChangeListener(new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        if ("enabled".equals(evt.getPropertyName())) {
-          result.setEnabled((Boolean)evt.getNewValue());
+class CopyAction(private val myViewmanager: GPViewManager, private val myUiFacade: UIFacade) : GPAction("copy") {
+    override fun actionPerformed(e: ActionEvent) {
+        if (calledFromAppleScreenMenu(e)) {
+            return
         }
-      }
-    });
-    result.setEnabled(this.isEnabled());
-    return result;
-  }
+        myViewmanager.selectedArtefacts.startCopyClipboardTransaction()
+        myUiFacade.activeChart.focus()
+    }
+
+    override fun asToolbarAction(): CopyAction {
+        val result = CopyAction(myViewmanager, myUiFacade)
+        result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result))
+        this.addPropertyChangeListener { evt ->
+            if ("enabled" == evt.propertyName) {
+                result.isEnabled = (evt.newValue as Boolean)
+            }
+        }
+        result.isEnabled = this.isEnabled
+        return result
+    }
 }

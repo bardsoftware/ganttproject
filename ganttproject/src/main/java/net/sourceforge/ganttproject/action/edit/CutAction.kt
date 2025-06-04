@@ -16,58 +16,43 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.action.edit;
+package net.sourceforge.ganttproject.action.edit
 
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.view.GPViewManager;
-import net.sourceforge.ganttproject.undo.GPUndoManager;
-
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.gui.UIUtil
+import net.sourceforge.ganttproject.gui.view.GPViewManager
+import net.sourceforge.ganttproject.undo.GPUndoManager
+import java.awt.event.ActionEvent
 
 //TODO Enable/Disable action on selection changes
-public class CutAction extends GPAction {
-  private final GPViewManager myViewmanager;
-  private final GPUndoManager myUndoManager;
-  private final UIFacade myUiFacade;
-
-  public CutAction(GPViewManager viewManager, GPUndoManager undoManager, UIFacade uiFacade) {
-    super("cut");
-    myViewmanager = viewManager;
-    myUndoManager = undoManager;
-    myUiFacade = uiFacade;
-  }
-
-  @Override
-  public void actionPerformed(ActionEvent e) {
-    if (calledFromAppleScreenMenu(e)) {
-      return;
-    }
-//    myUndoManager.undoableEdit(getLocalizedName(), new Runnable() {
+class CutAction(
+    private val myViewmanager: GPViewManager,
+    private val myUndoManager: GPUndoManager,
+    private val myUiFacade: UIFacade
+) : GPAction("cut") {
+    override fun actionPerformed(e: ActionEvent) {
+        if (calledFromAppleScreenMenu(e)) {
+            return
+        }
+        //    myUndoManager.undoableEdit(getLocalizedName(), new Runnable() {
 //      @Override
 //      public void run() {
-        myViewmanager.getSelectedArtefacts().startMoveClipboardTransaction();
-//      }
-    //});
-    myUiFacade.getActiveChart().focus();
-  }
+        myViewmanager.selectedArtefacts.startMoveClipboardTransaction()
+        //      }
+        //});
+        myUiFacade.activeChart.focus()
+    }
 
-  @Override
-  public CutAction asToolbarAction() {
-    final CutAction result = new CutAction(myViewmanager, myUndoManager, myUiFacade);
-    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result));
-    this.addPropertyChangeListener(new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        if ("enabled".equals(evt.getPropertyName())) {
-          result.setEnabled((Boolean)evt.getNewValue());
+    override fun asToolbarAction(): CutAction {
+        val result = CutAction(myViewmanager, myUndoManager, myUiFacade)
+        result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result))
+        this.addPropertyChangeListener { evt ->
+            if ("enabled" == evt.propertyName) {
+                result.isEnabled = (evt.newValue as Boolean)
+            }
         }
-      }
-    });
-    result.setEnabled(this.isEnabled());
-    return result;
-  }
+        result.isEnabled = this.isEnabled
+        return result
+    }
 }
