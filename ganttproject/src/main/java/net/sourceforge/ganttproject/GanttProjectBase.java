@@ -257,7 +257,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     GPLogger.setUIFacade(myUIFacade);
     var newTaskActor = new NewTaskActor<Task>();
     newTaskActor.start();
-    myViewManager = new ViewManagerImpl(getProject(), myUIFacade, getUndoManager(), viewPane, PluginManager.getViewProviders());
+    myViewManager = new ViewManagerImpl(getProject(), myUIFacade, this::getUndoManager, viewPane, PluginManager.getViewProviders());
 
     myTaskActions = new TaskActions(getProject(), getUIFacade(), getTaskSelectionManager(),
         this::getViewManager,

@@ -31,27 +31,20 @@ import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import java.awt.event.ActionEvent;
+import java.util.function.Supplier;
 
 import static net.sourceforge.ganttproject.importer.BufferProjectImportKt.importBufferProject;
 
 //TODO Enable/Disable action depending on clipboard contents
 public class PasteAction extends GPAction {
   private final GPViewManager myViewmanager;
-  private final GPUndoManager myUndoManager;
+  private final Supplier<GPUndoManager> myUndoManager;
   private final IGanttProject myProject;
   private final UIFacade myUiFacade;
 
-  public PasteAction(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, GPUndoManager undoManager) {
+  public PasteAction(IGanttProject project, UIFacade uiFacade, GPViewManager viewManager, Supplier<GPUndoManager> undoManager) {
     super("paste");
     myViewmanager = viewManager;
-    myUndoManager = undoManager;
-    myProject = project;
-    myUiFacade = uiFacade;
-  }
-
-  private PasteAction(IGanttProject project, UIFacade uiFacade, GPViewManager viewmanager, IconSize size, GPUndoManager undoManager) {
-    super("paste", size);
-    myViewmanager = viewmanager;
     myUndoManager = undoManager;
     myProject = project;
     myUiFacade = uiFacade;
@@ -71,7 +64,7 @@ public class PasteAction extends GPAction {
     var clipboardProject = ClipboardContentsKt.getProjectFromClipboard(new BufferProject(myProject, myUiFacade));
     if (clipboardProject != null) {
       try {
-        myUndoManager.undoableEdit(getLocalizedName(), () -> pasteExternalDocument(clipboardProject));
+        myUndoManager.get().undoableEdit(getLocalizedName(), () -> pasteExternalDocument(clipboardProject));
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -91,7 +84,7 @@ public class PasteAction extends GPAction {
   }
 
   private void pasteInternalFlavor(final ChartSelection selection) {
-    myUndoManager.undoableEdit(getLocalizedName(), () -> {
+    myUndoManager.get().undoableEdit(getLocalizedName(), () -> {
       //myViewmanager.getActiveChart().paste(selection);
 
       selection.commitClipboardTransaction();

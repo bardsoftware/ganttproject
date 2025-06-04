@@ -19,16 +19,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.gui.view;
 
 import biz.ganttproject.FXUtil;
-import biz.ganttproject.app.UninitializedView;
-import biz.ganttproject.app.View;
-import biz.ganttproject.app.ViewPane;
+import biz.ganttproject.app.*;
 import javafx.scene.Node;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ProjectEventListener;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.edit.CopyAction;
-import net.sourceforge.ganttproject.action.edit.CutAction;
 import net.sourceforge.ganttproject.action.edit.PasteAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
@@ -39,6 +35,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -49,51 +46,32 @@ import java.util.stream.Collectors;
 public class ViewManagerImpl implements GPViewManager {
   private final Map<ViewProvider, View> myViews = new LinkedHashMap<>();
   private final ViewPane myViewPane;
-  //GPView mySelectedView;
 
-  //private final ViewDefinedAction myCopyAction = new ViewDefinedAction("copy");
-  private final CopyAction myCopyAction;
-  private final CutAction myCutAction;
+  private final CutCopyAction myCopyAction;
+  private final CutCopyAction myCutAction;
   private final PasteAction myPasteAction;
   private final ViewDefinedAction propertiesAction = new ViewDefinedAction("artefact.properties");
   private final ViewDefinedAction deleteAction = new ViewDefinedAction("artefact.delete");
   private final List<ViewProvider> myViewProviders;
   private boolean isInitialized = false;
 
-  public ViewManagerImpl(IGanttProject project, UIFacade uiFacade, GPUndoManager undoManager, ViewPane viewPane,
+  public ViewManagerImpl(IGanttProject project, UIFacade uiFacade, Supplier<GPUndoManager> undoManager, ViewPane viewPane,
                          List<ViewProvider> viewProviders) {
     myViewProviders = viewProviders;
     myViewPane = viewPane;
     project.addProjectEventListener(getProjectEventListener());
     // Create actions
-    myCopyAction = new CopyAction(this, uiFacade);
-    myCutAction = new CutAction(this, undoManager, uiFacade);
+    myCopyAction = ViewPaneKt.createCopyAction(this, uiFacade);
+    myCutAction = ViewPaneKt.createCutAction(this, uiFacade);
     myPasteAction = new PasteAction(project, uiFacade, this, undoManager);
 
     myViewPane.getSelectedViewProperty().subscribe(activeView -> {
       if (activeView != null) {
         propertiesAction.setDelegateAction(activeView.getPropertiesAction());
         deleteAction.setDelegateAction(activeView.getDeleteAction());
-        //myCopyAction.setDelegateAction(activeView.getCopyAction());
         updateActions();
       }
     });
-    /*
-    myTabs.getModel().addChangeListener(e -> {
-      GPView selectedView = (GPView) myTabs.getSelectedUserObject();
-      if (mySelectedView == selectedView) {
-        return;
-      }
-      if (mySelectedView != null) {
-        mySelectedView.setActive(false);
-        myViews.get(mySelectedView).setActive(false);
-      }
-      mySelectedView = selectedView;
-      mySelectedView.setActive(true);
-      myViews.get(mySelectedView).setActive(true);
-      updateActions();
-    });
-     */
   }
 
   public void init(ViewProvider... viewProviders) {
@@ -129,7 +107,8 @@ public class ViewManagerImpl implements GPViewManager {
 
   @Override
   public ChartSelection getSelectedArtefacts() {
-    return getSelectedView().getSelection();
+    var selectedView = getSelectedView();
+    return selectedView == null ? ChartSelection.EMPTY : selectedView.getSelection();
   }
 
   @Override

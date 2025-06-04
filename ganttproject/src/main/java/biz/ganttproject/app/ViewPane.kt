@@ -40,7 +40,12 @@ import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.chart.ChartSelection
 import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.gui.UIUtil
+import net.sourceforge.ganttproject.gui.view.GPViewManager
 import net.sourceforge.ganttproject.gui.view.ViewProvider
+import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskSelectionManager
+import java.awt.event.ActionEvent
 import javax.swing.JComponent
 import javax.swing.SwingUtilities
 
@@ -263,3 +268,64 @@ fun createViewComponents(
   return ViewComponents(image = imagePane, splitPane = splitPane, table = table)
 }
 
+/**
+ * Action that starts a cut/copy clipboard operation.
+ */
+class CutCopyAction(
+  actionId: String,
+  private val viewManager: GPViewManager,
+  private val uiFacade: UIFacade,
+  private val createAction: (GPViewManager, UIFacade)->CutCopyAction,
+  private val onAction: ()->Unit
+) : GPAction(actionId), TaskSelectionManager.Listener {
+  init {
+    uiFacade.taskSelectionManager.addSelectionListener(this)
+    uiFacade.resourceSelectionManager.addResourceListener { _, _ ->
+      updateAction()
+    }
+  }
+
+  override fun updateAction() {
+    super.updateAction()
+    isEnabled = !viewManager.selectedArtefacts.isEmpty
+  }
+
+  override fun actionPerformed(e: ActionEvent?) {
+    if (calledFromAppleScreenMenu(e)) {
+      return
+    }
+    onAction()
+    uiFacade.activeChart.focus()
+  }
+
+  override fun asToolbarAction(): GPAction {
+    val result = createAction(viewManager, uiFacade)
+    result.setFontAwesomeLabel(UIUtil.getFontawesomeLabel(result))
+    this.addPropertyChangeListener { evt ->
+      if ("enabled" == evt.propertyName) {
+        result.isEnabled = (evt.newValue as Boolean)
+      }
+    }
+    result.isEnabled = this.isEnabled
+    return result
+  }
+
+  override fun selectionChanged(currentSelection: MutableList<Task>?, source: Any?) {
+    updateAction()
+  }
+
+  override fun userInputConsumerChanged(newConsumer: Any?) {
+  }
+}
+
+fun createCutAction(viewManager: GPViewManager, uiFacade: UIFacade): CutCopyAction {
+  return CutCopyAction("cut", viewManager, uiFacade, ::createCutAction) {
+    viewManager.selectedArtefacts.startMoveClipboardTransaction()
+  }
+}
+
+fun createCopyAction(viewManager: GPViewManager, uiFacade: UIFacade): CutCopyAction {
+  return CutCopyAction("copy", viewManager, uiFacade, ::createCopyAction) {
+    viewManager.selectedArtefacts.startCopyClipboardTransaction()
+  }
+}
