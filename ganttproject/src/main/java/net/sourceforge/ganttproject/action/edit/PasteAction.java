@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.edit;
 
+import kotlin.Unit;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartSelection;
@@ -48,6 +49,16 @@ public class PasteAction extends GPAction {
     myUndoManager = undoManager;
     myProject = project;
     myUiFacade = uiFacade;
+    ClipboardContentsKt.onClipboardChange(isAvailable -> {
+      updateAction();
+      return Unit.INSTANCE;
+    });
+  }
+
+  @Override
+  public void updateAction() {
+    super.updateAction();
+    setEnabled(ClipboardContentsKt.hasClipboardData() || !myViewmanager.getSelectedArtefacts().isEmpty());
   }
 
   @Override
@@ -84,11 +95,7 @@ public class PasteAction extends GPAction {
   }
 
   private void pasteInternalFlavor(final ChartSelection selection) {
-    myUndoManager.get().undoableEdit(getLocalizedName(), () -> {
-      //myViewmanager.getActiveChart().paste(selection);
-
-      selection.commitClipboardTransaction();
-    });
+    myUndoManager.get().undoableEdit(getLocalizedName(), selection::commitClipboardTransaction);
   }
 
   @Override

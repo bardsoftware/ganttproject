@@ -216,3 +216,13 @@ fun getProjectFromClipboard(bufferProject: BufferProject): BufferProject? {
   }
   return null
 }
+
+fun onClipboardChange(listener: (Boolean)->Unit) {
+  Toolkit.getDefaultToolkit().systemClipboard.addFlavorListener {
+    listener(Toolkit.getDefaultToolkit().systemClipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR))
+  }
+}
+
+fun hasClipboardData() = Toolkit.getDefaultToolkit().systemClipboard.let {
+  it.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR) || it.isDataFlavorAvailable(GPTransferable.INTERNAL_DATA_FLAVOR)
+}
