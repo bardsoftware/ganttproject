@@ -148,7 +148,7 @@ public class HelpMenu {
       };
       File f = new File(autosaveDocument.getFilePath());
       myUiFacade.showOptionDialog(
-          JOptionPane.INFORMATION_MESSAGE,
+          JOptionPane.QUESTION_MESSAGE | UIFacade.HTML_MESSAGE_FORMAT,
           GanttLanguage.getInstance().formatText("help.recover.autosaveInfo", f.getName(), new Date(f.lastModified()),
               f.length()), new Action[] { ok, skip, CancelAction.CLOSE });
     }

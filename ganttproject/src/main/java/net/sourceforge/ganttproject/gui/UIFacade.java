@@ -79,6 +79,9 @@ public interface UIFacade {
 
   int RESOURCES_INDEX = 1;
 
+  int HTML_MESSAGE_FORMAT = 1 << 30;
+  int MARKDOWN_MESSAGE_FORMAT = 1 << 31;
+
   IntegerOption getDpiOption();
   GPOption<String> getLafOption();
 

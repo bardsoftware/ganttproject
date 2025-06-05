@@ -30,6 +30,9 @@ import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.sandec.mdfx.MarkdownView;
+import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
+import com.vladsch.flexmark.util.data.MutableDataSet;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Modality;
@@ -272,30 +275,43 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public void showOptionDialog(int messageType, String message, Action[] actions) {
-
+    var i18n = InternationalizationKt.getRootLocalizer();
     FXUtil.INSTANCE.runLater(() -> {
       Alert alert = null;
-      if (messageType == JOptionPane.INFORMATION_MESSAGE) {
+      var alertType = messageType & ~(HTML_MESSAGE_FORMAT | MARKDOWN_MESSAGE_FORMAT);
+      if (alertType == JOptionPane.INFORMATION_MESSAGE) {
         alert = new Alert(Alert.AlertType.INFORMATION);
         alert.initStyle(StageStyle.UNDECORATED);
-      } else if (messageType == JOptionPane.WARNING_MESSAGE) {
+        alert.setHeaderText("Information");
+      } else if (alertType == JOptionPane.WARNING_MESSAGE) {
         alert = new Alert(Alert.AlertType.WARNING);
+        alert.setHeaderText(i18n.formatText("warning"));
         alert.initStyle(StageStyle.UNDECORATED);
-      } else if (messageType == JOptionPane.QUESTION_MESSAGE) {
+      } else if (alertType == JOptionPane.QUESTION_MESSAGE) {
         alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.initStyle(StageStyle.DECORATED);
-        //alert.initOwner(myWindow);
+        alert.setHeaderText(i18n.formatText("question"));
+        alert.initStyle(StageStyle.UNDECORATED);
         alert.initModality(Modality.WINDOW_MODAL);
-//        DialogKt.showOptionDialog(myWindow, messageType, message, actions);
-        //return Unit.INSTANCE;
-      } else if (messageType == JOptionPane.ERROR_MESSAGE) {
+      } else if (alertType == JOptionPane.ERROR_MESSAGE) {
         alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText(i18n.formatText("error"));
         alert.initStyle(StageStyle.UNDECORATED);
       }
       assert alert != null;
 
       alert.initOwner(myWindow);
-      alert.setContentText(message);
+      if ((messageType & HTML_MESSAGE_FORMAT) != 0) {
+        alert.getDialogPane().setContent(new MarkdownView("""
+          %s
+          """.formatted(FlexmarkHtmlConverter.builder(new MutableDataSet()).build().convert(message))));
+      } else if ((messageType & MARKDOWN_MESSAGE_FORMAT) != 0) {
+        alert.getDialogPane().setContent(new MarkdownView("""
+          %s
+          """.formatted(message)));
+      } else {
+        alert.setContentText(message);
+      }
+
       List<ButtonType> buttons = new ArrayList<>();
       for (Action action : actions) {
         buttons.add(new ButtonType(action.getValue(Action.NAME).toString()));
