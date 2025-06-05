@@ -27,7 +27,7 @@ dependencies {
     testImplementation fileTree(dir: project.projectDir.absolutePath + "/resources")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.12.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.13.0'
     testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.12.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
 
