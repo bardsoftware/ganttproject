@@ -23,7 +23,8 @@ import biz.ganttproject.app.applicationFontSpec
 import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.render.TextLengthCalculatorImpl
 import biz.ganttproject.core.table.*
-import biz.ganttproject.core.time.TimeDuration
+import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyDefinition
 import javafx.scene.control.TreeItem
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration
@@ -43,6 +44,7 @@ fun <NodeType, BuiltinColumnType: BuiltinColumn> BaseTreeTableComponent<NodeType
   graphics2D: Graphics2D, builtinColumnValue: (NodeType, BuiltinColumnType)->String) {
   val treeTable = this
 
+  val customPropertyManager = treeTable.customPropertyManager
   val textMetrics = TextLengthCalculatorImpl((graphics2D.create() as Graphics2D).also {
     it.font = applicationFontSpec.value.asAwtFontOfSize(applicationFont.value.size.roundToInt())
   })
@@ -61,15 +63,25 @@ fun <NodeType, BuiltinColumnType: BuiltinColumn> BaseTreeTableComponent<NodeType
     // We will not print as columns the color and notes columns: they are shown as icons in the table UI.
     it.isVisible && !treeTable.builtinColumns.isZeroWidth(it.id)
   }
-  val columnMap: Map<ColumnList.Column, TableSceneBuilder.Table.Column> = visibleColumns.mapNotNull {
-    builtinColumns.find(it.id)?.let { defaultColumn ->
-      it to TableSceneBuilder.Table.Column(
-        name = it.name,
-        width = it.width,
-        isTreeColumn = treeTable.isTreeColumn(defaultColumn as BuiltinColumnType),
-        alignment = defaultColumn.alignment() ?: Canvas.HAlignment.LEFT
-      )
-    }
+  val columnMap: Map<ColumnList.Column, TableSceneBuilder.Table.Column> = visibleColumns.mapNotNull { column ->
+    val tableColumn: TableSceneBuilder.Table.Column? =
+      builtinColumns.find(column.id)?.let { defaultColumn ->
+        TableSceneBuilder.Table.Column(
+          name = column.name,
+          width = column.width,
+          isTreeColumn = treeTable.isTreeColumn(defaultColumn as BuiltinColumnType),
+          alignment = defaultColumn.alignment() ?: Canvas.HAlignment.LEFT
+        )
+      } ?:
+      customPropertyManager.getCustomPropertyDefinition(column.id)?.let { def ->
+        TableSceneBuilder.Table.Column(
+          name = column.name,
+          width = column.width,
+          isTreeColumn = false,
+          alignment = def.alignment()
+        )
+      }
+    tableColumn?.let { column to tableColumn}
   }.toMap()
   val treeItem2sceneItem = mutableMapOf<TreeItem<NodeType>, TreeTableSceneBuilder.Item>()
   val rootSceneItems = mutableListOf<TreeTableSceneBuilder.Item>()
@@ -81,7 +93,6 @@ fun <NodeType, BuiltinColumnType: BuiltinColumn> BaseTreeTableComponent<NodeType
         val value: String = treeTable.builtinColumns.find(it.id)?.let { tdc ->
           builtinColumnValue(item.value, tdc as BuiltinColumnType)
         } ?: run {
-          val customPropertyManager = treeTable.customPropertyManager
           val def = customPropertyManager.getCustomPropertyDefinition(it.id)
           if (def == null) {
             LOGGER.error("can't find def for custom property=${it.id}")
@@ -127,5 +138,11 @@ fun (BuiltinColumn?).alignment(): Canvas.HAlignment? {
     else -> Canvas.HAlignment.LEFT
   }
 }
+
+fun CustomPropertyDefinition.alignment(): Canvas.HAlignment =
+  when (this.propertyClass) {
+    CustomPropertyClass.INTEGER, CustomPropertyClass.DOUBLE -> Canvas.HAlignment.RIGHT
+    else -> Canvas.HAlignment.LEFT
+  }
 
 private val LOGGER = GPLogger.create("TaskTable.ImageBuilder")
