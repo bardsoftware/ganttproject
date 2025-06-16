@@ -196,7 +196,7 @@ if [ ! -f "$GP_HOME/eclipsito.jar" ]; then
   log "Can't find the required Eclipsito library at $GP_HOME/eclipsito.jar"
   exit 1
 fi
-CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME/lib/slf4j-api-2.0.4.jar:$GP_HOME/lib/slf4j-jdk14-2.0.4.jar:$GP_HOME"
+CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME/lib/slf4j-api-2.0.17.jar:$GP_HOME/lib/slf4j-jdk14-2.0.4.jar:$GP_HOME/lib/logback-core-1.5.18.jar:$GP_HOME/lib/logback-classic-1.5.18.jar:$GP_HOME"
 export CLASSPATH
 BOOT_CLASS=com.bardsoftware.eclipsito.Launch
 MACOS_ARGS="-Dapple.laf.useScreenMenuBar=true -Dcom.apple.macos.useScreenMenuBar=true	-Dcom.apple.mrj.application.apple.menu.about.name=GanttProject -Xdock:name=GanttProject -Xdock:icon=ganttproject.icns"

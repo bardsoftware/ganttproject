@@ -17,25 +17,25 @@
   <classPath>
     <mainClass>com.bardsoftware.eclipsito.Launch</mainClass>
     <cp>%EXEDIR%;%EXEDIR%\eclipsito.jar;%EXEDIR%\lib\slf4j-api-2.0.4.jar;%EXEDIR%\lib\slf4j-jdk14-2.0.4.jar</cp>
+    <cp>%EXEDIR%\lib\logback-classic-1.5.18.jar</cp>
+    <cp>%EXEDIR%\lib\logback-core-1.5.18.jar</cp>
   </classPath>
   <jre>
     <path>.\runtime\</path>
-    <bundledJre64Bit>true</bundledJre64Bit>
-    <bundledJreAsFallback>false</bundledJreAsFallback>
-    <minVersion>17</minVersion>
+    <requiresJdk>false</requiresJdk>
+    <requires64Bit>true</requires64Bit>
+    <minVersion>21</minVersion>
     <maxVersion></maxVersion>
-    <jdkPreference>preferJre</jdkPreference>
-    <runtimeBits>64/32</runtimeBits>
     <initialHeapSize>256</initialHeapSize>
     <maxHeapSize>2048</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>3.3.3292.0</fileVersion>
-    <txtFileVersion>GanttProject 3.3 Beta</txtFileVersion>
+    <fileVersion>3.3.3390.0</fileVersion>
+    <txtFileVersion>GanttProject 3.4 Beta</txtFileVersion>
     <fileDescription>GanttProject Launcher</fileDescription>
-    <copyright>Copyright (C) 2022 BarD Software s.r.o.</copyright>
-    <productVersion>3.3.3292.0</productVersion>
-    <txtProductVersion>GanttProject 3.3 Beta</txtProductVersion>
+    <copyright>Copyright (C) 2025 BarD Software s.r.o.</copyright>
+    <productVersion>3.3.3390.0</productVersion>
+    <txtProductVersion>GanttProject 3.4 Beta</txtProductVersion>
     <productName>GanttProject</productName>
     <companyName>BarD Software s.r.o.</companyName>
     <internalName>GanttProject</internalName>
@@ -45,9 +45,8 @@
   </versionInfo>
   <messages>
     <startupErr>GanttProject failed to start. Please visit https://help.ganttproject.biz to get support.</startupErr>
-    <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.
-        </bundledJreErr>
-    <jreVersionErr>GanttProject needs Java 17+ with JavaFX modules. Please visit https://help.ganttproject.biz to get support.</jreVersionErr>
+    <jreNotFoundErr>This application requires a Java Runtime Environment.</jreNotFoundErr>
+    <jreVersionErr>GanttProject needs Java 21+ with JavaFX modules. Please visit https://help.ganttproject.biz to get support.</jreVersionErr>
     <launcherErr>Java Runtime not found or is corrupted. Please visit https://help.ganttproject.biz to get support.
         </launcherErr>
     <instanceAlreadyExistsMsg>An application instance is already running.</instanceAlreadyExistsMsg>
