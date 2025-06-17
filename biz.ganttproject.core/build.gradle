@@ -17,7 +17,7 @@ dependencies {
     api "com.google.guava:guava:31.+"
     api "com.michael-bull.kotlin-result:kotlin-result:2.0.1"
 
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.0'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.1'
 
 
     testImplementation(
