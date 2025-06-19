@@ -22,8 +22,8 @@ configurations {
 
 dependencies {
     exported 'org.slf4j:slf4j-api:2.0.17'
-    exported 'ch.qos.logback:logback-core:1.5.18'
-    exported 'ch.qos.logback:logback-classic:1.5.18'
+    exported 'ch.qos.logback:logback-core:1.5.18-jpro'
+    exported 'ch.qos.logback:logback-classic:1.5.18-jpro'
     exported "org.slf4j:jul-to-slf4j:2.0.17"
     implementation "com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:0.64.+"
     implementation "com.vladsch.flexmark:flexmark-ext-tables:0.64.+"
