@@ -20,9 +20,9 @@ package biz.ganttproject.core.table
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.*
-import biz.ganttproject.customproperty.CustomColumnsValues
 import biz.ganttproject.customproperty.CustomPropertyClass
 import biz.ganttproject.customproperty.CustomPropertyDefinition
+import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.lib.fx.BuiltinColumns
 import biz.ganttproject.lib.fx.ColumnListImpl
@@ -203,7 +203,7 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
   }
 
   abstract fun isTreeColumn(column: BuiltinColumnType): Boolean
-  abstract fun getCustomValues(node: NodeType): CustomColumnsValues
+  abstract fun getCustomValues(node: NodeType): CustomPropertyHolder
   abstract fun loadDefaultColumns()
   protected abstract fun sync(keepFocus: Boolean = false)
   protected abstract fun onProperties()

@@ -36,7 +36,6 @@ import java.util.function.Supplier;
 
 import static net.sourceforge.ganttproject.importer.BufferProjectImportKt.importBufferProject;
 
-//TODO Enable/Disable action depending on clipboard contents
 public class PasteAction extends GPAction {
   private final GPViewManager myViewmanager;
   private final Supplier<GPUndoManager> myUndoManager;

@@ -51,7 +51,7 @@ class CustomColumnsValues(private val customPropertyManager: CustomPropertyManag
     eventDispatcher(CustomPropertyValueEventStub((def)))
   }
 
-  fun getValue(def: CustomPropertyDefinition): Any? {
+  override fun getValue(def: CustomPropertyDefinition): Any? {
     val result = mapCustomColumnValue[def.id]
     return result ?: def.defaultValue
   }

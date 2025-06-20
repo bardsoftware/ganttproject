@@ -27,7 +27,7 @@ import biz.ganttproject.core.table.ColumnList.ColumnStub
 import biz.ganttproject.core.table.SelectionKeeper
 import biz.ganttproject.core.table.reload
 import biz.ganttproject.core.time.TimeDuration
-import biz.ganttproject.customproperty.CustomColumnsValues
+import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
 import biz.ganttproject.task.ancestors
@@ -237,7 +237,7 @@ class TaskTable(
   }
 
   override fun isTreeColumn(column: TaskDefaultColumn) = column == TaskDefaultColumn.NAME
-  override fun getCustomValues(node: Task): CustomColumnsValues = node.customValues
+  override fun getCustomValues(node: Task): CustomPropertyHolder = node.customValues
 
   init {
     columnBuilder = TaskColumnBuilder(

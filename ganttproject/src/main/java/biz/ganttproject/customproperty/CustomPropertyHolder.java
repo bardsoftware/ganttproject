@@ -26,4 +26,27 @@ public interface CustomPropertyHolder {
 
   CustomProperty addCustomProperty(CustomPropertyDefinition definition, String defaultValueAsString) throws CustomColumnsException;
   void setValue(CustomPropertyDefinition def, Object value) throws CustomColumnsException;
+  Object getValue(CustomPropertyDefinition def);
+
+  CustomPropertyHolder EMPTY = new CustomPropertyHolder() {
+    @Override
+    public List<CustomProperty> getCustomProperties() {
+      return List.of();
+    }
+
+    @Override
+    public CustomProperty addCustomProperty(CustomPropertyDefinition definition, String defaultValueAsString) throws CustomColumnsException {
+      return null;
+    }
+
+    @Override
+    public void setValue(CustomPropertyDefinition def, Object value) throws CustomColumnsException {
+
+    }
+
+    @Override
+    public Object getValue(CustomPropertyDefinition def) {
+      return null;
+    }
+  };
 }

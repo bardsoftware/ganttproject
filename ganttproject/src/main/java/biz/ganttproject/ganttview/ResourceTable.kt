@@ -22,8 +22,8 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.core.table.*
 import biz.ganttproject.core.table.ColumnList.ColumnStub
-import biz.ganttproject.customproperty.CustomColumnsValues
 import biz.ganttproject.customproperty.CustomPropertyDefinition
+import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.lib.fx.*
 import javafx.beans.property.DoubleProperty
 import javafx.beans.property.IntegerProperty
@@ -230,9 +230,9 @@ class ResourceTable(
   }
 
   override fun isTreeColumn(column: ResourceDefaultColumn): Boolean = ResourceDefaultColumn.NAME == column
-  override fun getCustomValues(node: ResourceTableNode): CustomColumnsValues = when {
+  override fun getCustomValues(node: ResourceTableNode): CustomPropertyHolder = when {
     node is ResourceNode -> node.resource.customValues
-    node is AssignmentNode -> node.assignment.task.customValues
+    node is AssignmentNode -> CustomPropertyHolder.EMPTY
     else -> error("Unexpected node type")
   }
 

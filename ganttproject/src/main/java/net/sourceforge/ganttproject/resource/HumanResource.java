@@ -195,6 +195,11 @@ public class HumanResource implements CustomPropertyHolder {
     return myCustomProperties.getValue(def);
   }
 
+  @Override
+  public Object getValue(CustomPropertyDefinition def) {
+    return getCustomField(def);
+  }
+
   @Override public void setValue(CustomPropertyDefinition def, Object value) throws CustomColumnsException {
     myCustomProperties.setValue(def, value);
     fireResourceChanged();
