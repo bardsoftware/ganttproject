@@ -70,10 +70,10 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
         ganttProject.windowGeometry = WindowGeometry(stage.x, stage.y, stage.width, stage.height, stage.isMaximized)
         if (ganttProject.isModified) {
           it.consume()
-          ganttProject.quitApplication(true).await {result ->
-            if (result) {
-              Platform.exit()
-            }
+        }
+        ganttProject.quitApplication(true).await {result ->
+          if (result) {
+            Platform.exit()
           }
         }
       }

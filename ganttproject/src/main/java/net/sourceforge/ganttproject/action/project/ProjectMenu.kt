@@ -38,7 +38,9 @@ import javax.swing.JMenuItem
 class ProjectMenu(project: GanttProject, window: Window, key: String) : JMenu(GPAction.createVoidAction(key)) {
   private val webdavStorage = project.documentManager.webDavStorageUi as WebDavStorageImpl
 
-  private val newProjectAction = NewProjectAction(project)
+  private val newProjectAction = GPAction.create("project.new") {
+    project.newProject()
+  }
   val openProjectAction = StorageDialogAction(window,
       project, project.projectUIFacade, project.documentManager, webdavStorage.serversOption,
       StorageDialogBuilder.Mode.OPEN, "project.open"

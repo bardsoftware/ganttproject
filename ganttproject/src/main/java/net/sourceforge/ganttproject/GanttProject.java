@@ -680,7 +680,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getProjectImpl().fireProjectClosed();
     prjInfos = new PrjInfos();
     RoleManager.Access.getInstance().clear();
-    myObservableDocument.set(null);
     getTaskCustomColumnManager().reset();
     getResourceCustomPropertyManager().reset();
 

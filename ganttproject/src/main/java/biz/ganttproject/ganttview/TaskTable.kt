@@ -281,7 +281,6 @@ class TaskTable(
   }
 
   override fun loadDefaultColumns() = FXUtil.runLater {
-    treeTable.columns.clear()
     columnList.importData(ColumnList.Immutable.fromList(
       TaskDefaultColumn.getColumnStubs().map {
         ColumnStub(it)
@@ -291,7 +290,9 @@ class TaskTable(
       columns = columnList.columns(),
       currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
     )
-    treeTable.setColumns(tableColumns)
+    if (tableColumns.isNotEmpty()) {
+      treeTable.setColumns(tableColumns)
+    }
     reload()
     columns.addListener(ListChangeListener {
       onColumnsChange()

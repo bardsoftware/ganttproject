@@ -237,7 +237,6 @@ class ResourceTable(
   }
 
   override fun loadDefaultColumns() = FXUtil.runLater {
-    treeTable.columns.clear()
     columnList.importData(ColumnList.Immutable.fromList(
       ResourceDefaultColumn.getColumnStubs().map { ColumnStub(it) }.toList()
     ), false)
@@ -245,7 +244,9 @@ class ResourceTable(
       columns = columnList.columns(),
       currentColumns = treeTable.columns.map { it.userData as ColumnList.Column }.toList(),
     )
-    treeTable.setColumns(tableColumns)
+    if (tableColumns.isNotEmpty()) {
+      treeTable.setColumns(tableColumns)
+    }
     columns.addListener(ListChangeListener {
       onColumnsChange()
     })
