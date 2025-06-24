@@ -65,9 +65,9 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
 
   protected var projectModified: () -> Unit = { project.isModified = true }
   lateinit var columnBuilder: ColumnBuilder<NodeType, BuiltinColumnType>
-  protected val columns: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
-  val columnList: ColumnListImpl = ColumnListImpl(columns, customPropertyManager,
+  val columnList: ColumnListImpl = ColumnListImpl(customPropertyManager,
     { treeTable.columns },
+    { onColumnsChange() },
     { onColumnsChange() },
     builtinColumns
   )

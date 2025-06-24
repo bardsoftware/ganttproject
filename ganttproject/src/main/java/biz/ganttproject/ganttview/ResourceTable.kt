@@ -247,9 +247,6 @@ class ResourceTable(
     if (tableColumns.isNotEmpty()) {
       treeTable.setColumns(tableColumns)
     }
-    columns.addListener(ListChangeListener {
-      onColumnsChange()
-    })
   }
 
   override fun sync(keepFocus: Boolean) {

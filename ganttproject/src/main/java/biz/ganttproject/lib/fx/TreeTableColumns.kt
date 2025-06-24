@@ -24,6 +24,9 @@ import biz.ganttproject.core.table.ColumnList
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.scene.control.TreeTableColumn
 import biz.ganttproject.customproperty.CustomPropertyManager
+import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
+import javafx.collections.ObservableList
 
 /**
  * Provides a list of "built-in" columns, that is, those which are not
@@ -50,19 +53,21 @@ data class BuiltinColumns(
  * @author dbarashev@bardsoftware.com
  */
 class ColumnListImpl(
-        private val columnList: MutableList<ColumnList.Column>,
         private val customPropertyManager: CustomPropertyManager,
         private val tableColumns: () -> List<TreeTableColumn<*, *>>,
         private val onColumnChange: () -> Unit = {},
+        private val onColumnListChange: () -> Unit = {},
         private val builtinColumns: BuiltinColumns
 ) : ColumnList {
 
+  private val columnList: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
   val totalWidth: Double get() = totalWidthProperty.value
   val totalWidthProperty = SimpleDoubleProperty()
   val onColumnResize = this::updateTotalWidth
 
   init {
     updateTotalWidth()
+    columnList.addListener(ListChangeListener { onColumnListChange() })
   }
   override fun getSize(): Int = columnList.size
 

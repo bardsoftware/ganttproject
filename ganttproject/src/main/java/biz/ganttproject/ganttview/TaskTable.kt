@@ -294,9 +294,6 @@ class TaskTable(
       treeTable.setColumns(tableColumns)
     }
     reload()
-    columns.addListener(ListChangeListener {
-      onColumnsChange()
-    })
   }
 
 
