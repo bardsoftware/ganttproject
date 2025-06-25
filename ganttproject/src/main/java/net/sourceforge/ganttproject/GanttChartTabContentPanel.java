@@ -107,13 +107,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private final Supplier<TaskFilterActionSet> filterActions = Suppliers.memoize(() ->
     new TaskFilterActionSet(taskTable.getFilterManager(), getProject().getProjectDatabase())
   );
-  //private final TaskFilterActionSet
-  @Override
-  protected Component createButtonPanel() {
-    return createToolbarBuilder().withScene()
-      .build()
-      .getComponent();
-  }
 
   private FXToolbarBuilder createToolbarBuilder() {
     Button tableFilterButton = ToolbarKt.createButton(new TableButtonAction("taskTable.tableMenuFilter"), true);
@@ -150,7 +143,10 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   @Override
   public Function0<Unit> getRefresh() {
     return () -> {
-      getChart().reset();
+      SwingUtilities.invokeLater(() -> {
+        getChart().reset();
+        myViewComponents.getChartNode().autosize();
+      });
       return null;
     };
   }
@@ -169,11 +165,6 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   @NotNull
   public JComponent getChartComponent() {
     return myGanttChart;
-  }
-
-  @Override
-  protected @NotNull Component getTreeComponent() {
-    return null;
   }
 
   private TaskTable setupTaskTable() {

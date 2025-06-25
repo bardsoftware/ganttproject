@@ -59,9 +59,6 @@ internal abstract class ChartTabContentPanel(
   abstract val chartComponent: JComponent?
     get
 
-  protected abstract fun getTreeComponent(): Component?
-  protected abstract fun createButtonPanel(): Component?
-
   fun addChartPanel(panel: Component) {
     myPanels.add(panel)
   }

@@ -71,23 +71,6 @@ internal class ResourceChartTabContentPanel(
     resourceActions.resourceMoveDownAction
   )
 
-  override fun createButtonPanel(): Component? {
-    val builder = ToolbarBuilder()
-      .withHeight(24)
-      .withSquareButtons()
-      .withDpiOption(getUiFacade().dpiOption)
-      .withLafOption(getUiFacade().lafOption, null)
-    builder.addButton(resourceActions.resourceMoveUpAction.asToolbarAction())
-      .addButton(resourceActions.resourceMoveDownAction.asToolbarAction())
-
-    val toolbar = builder.build()
-    return toolbar.toolbar
-  }
-
-  override fun getTreeComponent(): Component {
-    return JLabel("Unused")
-  }
-
   private fun createToolbarBuilder(): FXToolbarBuilder {
     val manageColumnsButton: Button = createButton(GPAction.create("taskTable.tableMenuToggle") {
       manageColumnsAction.actionPerformed(null)

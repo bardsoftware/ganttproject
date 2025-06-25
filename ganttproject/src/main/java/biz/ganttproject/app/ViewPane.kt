@@ -75,7 +75,10 @@ interface View {
 class ViewPane {
   private val tabPane = TabPane().also {
     it.selectionModel.selectedItemProperty().subscribe { oldTab, newTab ->
-      selectedViewProperty.set(newTab?.userData as? ViewImpl)
+      (newTab?.userData as? ViewImpl)?.let {
+        it.refresh()
+        selectedViewProperty.set(it)
+      }
     }
   }
   val selectedViewProperty = SimpleObjectProperty<View?>()
@@ -96,7 +99,7 @@ class ViewPane {
     tabPane.tabs.add(tab)
     tabPane.layout()
     return ViewImpl(tabPane, tab, viewProvider.selection, viewProvider.chart, viewProvider.createAction,
-      viewProvider.deleteAction, viewProvider.propertiesAction).also {
+      viewProvider.deleteAction, viewProvider.propertiesAction, viewProvider.refresh).also {
       tab.userData = it
       if (tabPane.tabs.size == 1) {
         selectedViewProperty.set(it)
@@ -131,7 +134,16 @@ private class ViewImpl(
   override val chart: Chart,
   override val createAction: GPAction,
   override val deleteAction: GPAction,
-  override val propertiesAction: GPAction): View {
+  override val propertiesAction: GPAction,
+  private val refreshFn: () -> Unit
+): View {
+
+  override fun refresh() {
+    FXUtil.runLater {
+      refreshFn()
+      tabPane.layout()
+    }
+  }
 
   override var isVisible: Boolean = true
     set(value) {
@@ -179,7 +191,7 @@ class UninitializedView(private val viewPane: ViewPane, private val viewProvider
 /**
  * Components included into the view: image, split pane, a table node.
  */
-data class ViewComponents(val image: Pane, val splitPane: SplitPane, val table: Node) {
+data class ViewComponents(val image: Pane, val splitPane: SplitPane, val table: Node, val chartNode: SwingNode) {
   // Indicates if the split divider was initialized successfully.
   private var isDividerInitialized = false
 
@@ -224,6 +236,8 @@ fun createViewComponents(
   val imagePane = Pane(imageView).also { it.minHeight = defaultScaledHeight.toDouble() }
 
   val table = tableBuilder()
+  val swingNode = SwingNode()
+
   val splitPane = SplitPane().also {split ->
     var maxToolbarHeight = SimpleDoubleProperty(0.0)
     split.orientation = Orientation.HORIZONTAL
@@ -240,7 +254,6 @@ fun createViewComponents(
       add(table, null, growth = Priority.ALWAYS)
     })
 
-    val swingNode = SwingNode()
     val right = vbox {
       add(chartToolbarBuilder().also {
         it.heightProperty().subscribe { v ->
@@ -252,7 +265,9 @@ fun createViewComponents(
       })
       add(swingNode, null, Priority.ALWAYS)
     }
-    SwingUtilities.invokeLater { swingNode.content = chartBuilder() }
+    SwingUtilities.invokeLater {
+      swingNode.content = chartBuilder()
+    }
     split.items.add(right)
     split.setDividerPosition(0, 0.5)
 //    split.addEventHandler(KeyEvent.KEY_PRESSED) { evt ->
@@ -265,7 +280,7 @@ fun createViewComponents(
 //      }
 //    }
   }
-  return ViewComponents(image = imagePane, splitPane = splitPane, table = table)
+  return ViewComponents(image = imagePane, splitPane = splitPane, table = table, chartNode = swingNode)
 }
 
 /**
