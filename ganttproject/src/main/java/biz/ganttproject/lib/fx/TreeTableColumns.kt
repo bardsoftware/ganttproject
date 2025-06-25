@@ -57,30 +57,31 @@ class ColumnListImpl(
         private val tableColumns: () -> List<TreeTableColumn<*, *>>,
         private val onColumnChange: () -> Unit = {},
         private val onColumnListChange: () -> Unit = {},
-        private val builtinColumns: BuiltinColumns
+        private val builtinColumns: BuiltinColumns,
+        columnList: List<ColumnList.Column> = emptyList()
 ) : ColumnList {
 
-  private val columnList: ObservableList<ColumnList.Column> = FXCollections.observableArrayList()
+  private val columnStorage: ObservableList<ColumnList.Column> = FXCollections.observableArrayList(columnList)
   val totalWidth: Double get() = totalWidthProperty.value
   val totalWidthProperty = SimpleDoubleProperty()
   val onColumnResize = this::updateTotalWidth
 
   init {
     updateTotalWidth()
-    columnList.addListener(ListChangeListener { onColumnListChange() })
+    columnStorage.addListener(ListChangeListener { onColumnListChange() })
   }
-  override fun getSize(): Int = columnList.size
+  override fun getSize(): Int = columnStorage.size
 
-  override fun getField(index: Int): ColumnList.Column = columnList[index]
+  override fun getField(index: Int): ColumnList.Column = columnStorage[index]
 
-  override fun clear() = synchronized(columnList) {
-    columnList.clear()
+  override fun clear() = synchronized(columnStorage) {
+    columnStorage.clear()
     updateTotalWidth()
   }
 
   override fun add(id: String, order: Int, width: Int) {
-    synchronized(columnList) {
-      (this.columnList.firstOrNull { it.id == id } ?: run {
+    synchronized(columnStorage) {
+      (this.columnStorage.firstOrNull { it.id == id } ?: run {
         customPropertyManager.getCustomPropertyDefinition(id)?.let { def ->
           ColumnList.ColumnStub(id, def.name, true,
             if (order == -1) tableColumns().count { it.isVisible } else order,
@@ -88,7 +89,7 @@ class ColumnListImpl(
           )
         }
       })?.let {
-        this.columnList.add(it)
+        this.columnStorage.add(it)
       }
       updateTotalWidth()
     }
@@ -130,8 +131,8 @@ class ColumnListImpl(
     // Here we merge the imported list with the currently available one.
     // We maintain the invariant: the list prefix [0, idxImported) is the same in the imported list and
     // in the result list.
-    synchronized(columnList) {
-      val currentList = columnList.map { it }.toMutableList()
+    synchronized(columnStorage) {
+      val currentList = columnStorage.map { it }.toMutableList()
       importedList.forEachIndexed { idxImported, column ->
         val idxCurrent = currentList.indexOfFirst { it.id == column.id }
         if (idxCurrent >= 0) {
@@ -169,8 +170,8 @@ class ColumnListImpl(
         currentList.subList(importedList.size, currentList.size).clear()
       }
 
-      columnList.clear()
-      columnList.addAll(currentList)
+      columnStorage.clear()
+      columnStorage.addAll(currentList)
       FXUtil.runLater {
         updateTotalWidth()
       }
@@ -178,29 +179,29 @@ class ColumnListImpl(
   }
 
   override fun exportData(): List<ColumnList.Column> {
-    synchronized(columnList) {
+    synchronized(columnStorage) {
       reloadWidthFromUi()
       return copyOf()
     }
   }
 
   fun columns(): List<ColumnList.Column> {
-    synchronized(columnList) {
+    synchronized(columnStorage) {
       return copyOf()
     }
   }
 
   private fun updateTotalWidth() {
-    totalWidthProperty.value = columnList.filter { it.isVisible  }.sumOf {
+    totalWidthProperty.value = columnStorage.filter { it.isVisible  }.sumOf {
       if (builtinColumns.isZeroWidth(it.id)) 0 else it.width
     }.toDouble()
   }
 
   fun reloadWidthFromUi() {
-    synchronized(columnList) {
+    synchronized(columnStorage) {
       tableColumns().forEachIndexed { index, column ->
         (column.userData as ColumnList.Column).let { userData ->
-          columnList.firstOrNull { it.id == userData.id }?.let {
+          columnStorage.firstOrNull { it.id == userData.id }?.let {
             it.order = index
             it.width = column.width.toInt()
           }

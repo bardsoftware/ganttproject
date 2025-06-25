@@ -34,7 +34,7 @@ class ColumnListTest {
       ColumnList.ColumnStub("tpd4", "duration", true, 4, 30),
     )
     val currentList = ColumnListImpl(columnList = storage, customPropertyManager = CustomColumnsManager(), tableColumns = { emptyList() }, builtinColumns = builtinColumns)
-
+    val col1 = currentList.columns()
     val storage1 = mutableListOf<ColumnList.Column>(
       ColumnList.ColumnStub("tpd2", "name", true, 1, 30),
       ColumnList.ColumnStub("tpd4", "duration", true, 2, 30),
@@ -44,7 +44,8 @@ class ColumnListTest {
       builtinColumns = builtinColumns),
       false
     )
-    assertEquals(storage, storage1)
+    val col2 = currentList.columns()
+    assertEquals(col1, col2)
   }
 
   @Test
@@ -57,6 +58,7 @@ class ColumnListTest {
       tableColumns = { emptyList() },
       builtinColumns = builtinColumns
     )
+    val col1 = currentList.columns()
     val storage1 = mutableListOf<ColumnList.Column>(
       ColumnList.ColumnStub("tpd1", "id", true, 1, 30),
       ColumnList.ColumnStub("tpd2", "name", true, 2, 30),
@@ -65,7 +67,8 @@ class ColumnListTest {
     )
     currentList.importData(ColumnListImpl(columnList = storage1, customPropertyManager = CustomColumnsManager(),
       tableColumns =  { emptyList() }, builtinColumns = builtinColumns), false)
-    assertEquals(storage, storage1)
+    val col2 = currentList.columns()
+    assertEquals(col1, col2)
   }
 
 }
