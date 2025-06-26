@@ -12,6 +12,8 @@ jpackage -t msi -d build -i ganttproject-builder/dist-bin/ -n %WINDOWS_APP_FOLDE
   --java-options "--add-exports javafx.base/com.sun.javafx.logging=ALL-UNNAMED --add-exports javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED" ^
   --java-options "--add-exports javafx.controls/com.sun.javafx.scene.control.skin=ALL-UNNAMED --add-exports javafx.controls/com.sun.javafx.scene.control.skin.resources=ALL-UNNAMED" ^
   --java-options "--add-exports javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED" ^
+  --java-options "--add-exports javafx.graphics/com.sun.javafx.application=ALL-UNNAMED" ^
+  --java-options "--add-exports javafx.graphics/com.sun.glass.ui=ALL-UNNAMED" ^
   --java-options "--add-exports javafx.graphics/com.sun.javafx.scene.traversal=ALL-UNNAMED" ^
   --java-options "--add-exports javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED" ^
   --java-options "--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED" ^
