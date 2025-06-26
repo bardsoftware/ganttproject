@@ -19,12 +19,13 @@
 package biz.ganttproject.app
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.lib.fx.installDockIcon
 import biz.ganttproject.lib.fx.vbox
 import javafx.application.Application
 import javafx.application.Platform
+import javafx.application.Preloader
 import javafx.event.EventHandler
 import javafx.scene.Scene
-import javafx.scene.image.Image
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
@@ -33,11 +34,27 @@ import net.sourceforge.ganttproject.APP_LOGGER
 import net.sourceforge.ganttproject.GanttProject
 import javax.swing.SwingUtilities
 
-class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() {
+// This barrier is used to connect non-UI code with the JavaFX objects at the early stage
+// when JavaFX app is being initialized.
+val applicationBarrier = SimpleBarrier<GanttProjectFxApp>()
+
+/**
+ * GanttProject JavaFX application. This class is the entry point for the entire user interface.
+ */
+class GanttProjectFxApp : Application() {
+
+  lateinit var ganttProject: GanttProject
+  lateinit var stage: Stage
 
   override fun start(stage: Stage) {
+    this.stage = stage
+    applicationBarrier.resolve(this)
     try {
       APP_LOGGER.debug(">>> start()")
+      DialogPlacement.applicationWindow = stage
+
+      // The topmost component, a vertical box that includes a menu bar, a toolbar, a tabbed pane with the views,
+      // and a status bar.
       val vbox = vbox {
         add(convertMenu(ganttProject.menuBar))
         add(ganttProject.createToolbar().build().toolbar)
@@ -85,7 +102,6 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
         stage.isMaximized = it.isMaximized
       }
 
-      stage.icons += Image(GanttProjectFxApp::class.java.getResourceAsStream("/icons/ganttproject-logo-512.png"))
       ganttProject.title.let {
         stage.title = it.value
         it.addListener { _, _, newValue ->
@@ -119,6 +135,13 @@ class GanttProjectFxApp(private val ganttProject: GanttProject) : Application() 
   }
 }
 
+class GanttProjectFxPreloader: Preloader() {
+  override fun start(stage: Stage) {
+    com.sun.glass.ui.Application.GetApplication().setName(RootLocalizer.formatText("appliTitle"));
+    stage.installDockIcon()
+  }
+
+}
 data class WindowGeometry(
   val leftX: Double = 0.0,
   val topY: Double = 0.0,

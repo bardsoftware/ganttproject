@@ -26,6 +26,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.parser.ParserFactory
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import java.io.IOException
+import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import javax.swing.undo.CannotRedoException
 import javax.swing.undo.CannotUndoException
@@ -49,8 +50,10 @@ open class UndoManagerImpl(
 
   init {
     GanttLanguage.getInstance().addListener {
-      UIManager.getDefaults()["AbstractUndoableEdit.undoText"] = GanttLanguage.getInstance().getText("undo")
-      UIManager.getDefaults()["AbstractUndoableEdit.redoText"] = GanttLanguage.getInstance().getText("redo")
+      SwingUtilities.invokeLater {
+        UIManager.getDefaults()["AbstractUndoableEdit.undoText"] = GanttLanguage.getInstance().getText("undo")
+        UIManager.getDefaults()["AbstractUndoableEdit.redoText"] = GanttLanguage.getInstance().getText("redo")
+      }
     }
   }
 

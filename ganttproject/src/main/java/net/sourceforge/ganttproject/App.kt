@@ -18,15 +18,17 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject
 
-import biz.ganttproject.FXUtil
 import biz.ganttproject.LoggerApi
 import biz.ganttproject.app.*
 import biz.ganttproject.platform.DummyUpdater
 import biz.ganttproject.storage.cloud.GPCloudEnv
 import biz.ganttproject.storage.cloud.getCloudEnv
 import com.beust.jcommander.JCommander
+import com.sun.javafx.application.LauncherImpl
 import javafx.application.Platform
-import javafx.stage.Stage
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.export.CommandLineExportApplication
 import net.sourceforge.ganttproject.gui.CommandLineProjectOpenStrategy
 import net.sourceforge.ganttproject.language.GanttLanguage
@@ -58,32 +60,39 @@ fun main(args: Array<String>) {
 fun startUiApp(configure: (GanttProject) -> Unit = {}) {
   APP_LOGGER.debug("Starting the UI.")
   Platform.setImplicitExit(true)
-  FXUtil.startup{
-    Thread.setDefaultUncaughtExceptionHandler { t, e ->
-      APP_LOGGER.error("Uncaught exception", e)
-      e.printStackTrace()
-    }
-    try {
-      val stage = Stage()
-      DialogPlacement.applicationWindow = stage
-      val ganttProject = GanttProject(stage)
-      configure(ganttProject)
-      val app = GanttProjectFxApp(ganttProject)
-      ganttProject.notificationManagerImpl.setOwner(stage)
-      app.init()
-      app.start(stage)
-      APP_LOGGER.debug("Main frame created")
-    } catch (e: Throwable) {
-      APP_LOGGER.error("Failure when launching application", exception = e)
-      e.printStackTrace()
-      val msg = """Failed to launch the UI:
+  applicationBarrier.await { ganttProjectFxApp ->
+      Thread.setDefaultUncaughtExceptionHandler { t, e ->
+        APP_LOGGER.error("Uncaught exception", e)
+        e.printStackTrace()
+      }
+      try {
+        val ganttProject = GanttProject(ganttProjectFxApp.stage)
+        configure(ganttProject)
+        ganttProjectFxApp.ganttProject = ganttProject
+        ganttProject.notificationManagerImpl.setOwner(ganttProjectFxApp.stage)
+        APP_LOGGER.debug("Main frame created")
+      } catch (e: Throwable) {
+        APP_LOGGER.error("Failure when launching application", exception = e)
+        e.printStackTrace()
+        val msg = """Failed to launch the UI:
         |${e.message}
         |
         |More details in the log file: ${GPLogger.getLogFile()} 
       """.trimMargin()
-      JOptionPane.showMessageDialog(null, msg, "Failed to launch the UI", JOptionPane.ERROR_MESSAGE)
-      System.exit(1)
-    }
+        JOptionPane.showMessageDialog(null, msg, "Failed to launch the UI", JOptionPane.ERROR_MESSAGE)
+        System.exit(1)
+      }
+  }
+  val job = GlobalScope.launch {
+    // This hack was borrowed from StackOverflow: https://stackoverflow.com/questions/31219169/javafx-application-name-on-gnome/54467323#54467323
+    LauncherImpl.launchApplication(
+      GanttProjectFxApp::class.java,
+      GanttProjectFxPreloader::class.java,
+      arrayOf()
+    )
+  }
+  runBlocking {
+    job.join()
   }
 }
 
