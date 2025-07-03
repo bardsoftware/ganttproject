@@ -70,6 +70,7 @@ cp build-cfg/GanttProject.desktop $OUTPUT/GanttProject
 cp build-cfg/ganttproject.svg $OUTPUT/GanttProject/
 
 mv tmp/plugins $OUTPUT/GanttProject/lib/app/
+mv appimagetool $OUTPUT
 rm $OUTPUT/GanttProject/lib/app/plugins/base/ganttproject/lib/javafx-*
 ls $OUTPUT
 
@@ -77,5 +78,5 @@ cd $OUTPUT/GanttProject
 mv bin app
 ln -s app/GanttProject AppRun
 cd ..
-appimagetool GanttProject/ GanttProject.AppImage
-rm -rf GanttProject/ runtime/
+./appimagetool GanttProject/ GanttProject.AppImage
+rm -rf GanttProject/ runtime/ appimagetool

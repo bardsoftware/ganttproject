@@ -39,6 +39,9 @@ jobs:
                   echo "===== PLUGINS ====="
                   ls ganttproject-builder/dist-bin/plugins/base
                   
+                  wget -O appimagetool https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage
+                  chmod 755 ./appimagetool
+                  
                   build-bin/package-lin.sh build/distributions
                   
                   echo "===== DISTRIBUTIONS ====="
