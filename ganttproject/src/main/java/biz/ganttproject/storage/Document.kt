@@ -55,6 +55,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.XMLConstants
 
 
 /**
@@ -309,6 +310,7 @@ private val domParser = DocumentBuilderFactory.newInstance().also {
   it.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
   it.setFeature("http://xml.org/sax/features/external-general-entities", false)
   it.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+  it.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true)
 }
 
 @Throws(SAXException::class)
