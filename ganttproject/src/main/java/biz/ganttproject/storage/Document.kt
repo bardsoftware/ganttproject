@@ -311,6 +311,8 @@ private val domParser = DocumentBuilderFactory.newInstance().also {
   it.setFeature("http://xml.org/sax/features/external-general-entities", false)
   it.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
   it.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true)
+  it.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD, "")
+  it.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_SCHEMA, "")
 }
 
 @Throws(SAXException::class)
