@@ -327,6 +327,14 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
       }
       val validatedText = textEditor.textProperty().validated(composedValidator)
       setupValidation(option, textEditor, validatedText)
+
+      val converter = createDateConverter()
+      option.addWatcher {
+        if (it.trigger != textEditor) {
+          textEditor.text = converter.toString(option.value)
+        }
+      }
+
       option.isWritable.addWatcher {
         if (it.newValue) {
           validatedText.validate(textEditor.text, null)
@@ -341,7 +349,7 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
         }
       }
       setupDisabled(option, picker.disableProperty())
-      picker.converter = createDateConverter()
+      picker.converter = converter
     }
   }
 
@@ -376,11 +384,6 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
         validationErrors[property] = it.newValue
       }
     }
-    property.addWatcher {
-      if (it.trigger != textField) {
-        textField.text = property.value.toString()
-      }
-    }
     validatedText.addWatcher { evt ->
       evt.newValue?.let {
         property.set(it, textField)
@@ -392,6 +395,12 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
     return TextField().also { textField ->
       val validatedText = textField.textProperty().validated(DoubleValidator)
       setupValidation(property, textField, validatedText)
+      property.addWatcher {
+        if (it.trigger != textField) {
+          textField.text = it.newValue.toString()
+        }
+      }
+
       setupDisabled(property, textField.disableProperty())
       textField.text = property.value.toString()
     }
@@ -401,6 +410,11 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
     return TextField().also { textField ->
       val validatedText = textField.textProperty().validated(MoneyValidator)
       setupValidation(property, textField, validatedText)
+      property.addWatcher {
+        if (it.trigger != textField) {
+          textField.text = it.newValue.toString()
+        }
+      }
       setupDisabled(property, textField.disableProperty())
       textField.text = property.value.toString()
     }
