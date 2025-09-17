@@ -44,6 +44,7 @@ jobs:
           java-package: jdk+fx
           cache: 'gradle'
       - name: Build GanttProject
+        timeout-minutes: 10
         run: ./gradlew --no-daemon build
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
