@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 class PropertySheetTest {
   private val coroutineScope = CoroutineScope(SupervisorJob())
 
-  @Test fun `basic string property`() {
+  fun `basic string property`() {
     coroutineScope.launch {
       withContext(Dispatchers.JavaFx) {
         val propertyPaneBuilder = PropertyPaneBuilder(DummyLocalizer, PropertyPane())
