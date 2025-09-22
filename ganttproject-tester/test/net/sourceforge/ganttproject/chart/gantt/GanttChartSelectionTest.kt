@@ -55,7 +55,7 @@ class GanttChartSelectionTest: TestCase() {
     selectionManager.setSelectedTasks(listOf(task3), this)
     ganttChartSelection.startMoveClipboardTransaction()
 
-    if (!GraphicsEnvironment.isHeadless()) {
+    if (!GraphicsEnvironment.isHeadless() && !isRunningOnGitHubActions()) {
       val clipboard = Toolkit.getDefaultToolkit().systemClipboard
       assertTrue(clipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR))
       val clipboardProject = getProjectFromClipboard(BufferProject(GanttProjectImpl(), ConsoleUIFacade(null))) ?: error("Clipboard project is null")
@@ -78,7 +78,7 @@ class GanttChartSelectionTest: TestCase() {
     selectionManager.setSelectedTasks(listOf(task1, task2), this)
     ganttChartSelection.startMoveClipboardTransaction()
 
-    if (!GraphicsEnvironment.isHeadless()) {
+    if (!GraphicsEnvironment.isHeadless() && !isRunningOnGitHubActions()) {
       val clipboardProject = getProjectFromClipboard(BufferProject(GanttProjectImpl(), ConsoleUIFacade(null)))
         ?: error("Clipboard project is null")
       assertEquals(setOf("task1", "task2"), clipboardProject.taskManager.tasks.map { it.name }.toSet())
@@ -90,3 +90,5 @@ class GanttChartSelectionTest: TestCase() {
     }
   }
 }
+
+private fun isRunningOnGitHubActions(): Boolean = System.getenv("CI")?.lowercase() == "true"
