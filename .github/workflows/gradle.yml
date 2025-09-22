@@ -45,7 +45,7 @@ jobs:
           cache: 'gradle'
       - name: Build GanttProject
         timeout-minutes: 8
-        run: apt install -yy xvfb && xvfb-run ./gradlew --no-daemon build
+        run: sudo apt install -yy xvfb && xvfb-run ./gradlew --no-daemon build
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
