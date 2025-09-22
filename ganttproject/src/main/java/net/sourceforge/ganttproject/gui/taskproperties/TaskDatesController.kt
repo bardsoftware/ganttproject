@@ -25,9 +25,11 @@ import biz.ganttproject.core.option.ObservableEnum
 import biz.ganttproject.core.option.ObservableInt
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
+import javafx.application.Platform
 import net.sourceforge.ganttproject.task.Task
 import org.w3c.util.DateParser
 import java.time.LocalDate
+import java.util.Calendar
 
 /**
  * Manages a group of related fields of a task properties dialog: start date, end date and duration.
@@ -43,7 +45,8 @@ class TaskDatesController(private val task: Task, milestoneOption: ObservableBoo
   // TODO: get back "around project start" validator.
   //    var validator = DateValidators.INSTANCE.aroundProjectStart(myProject.getTaskManager().getProjectStart());
   internal val startDateOption = ObservableDate("startDate", task.start.toLocalDate())
-  internal val endDateOption = ObservableDate("endDate", task.end.toLocalDate())
+  internal val endDateOption = ObservableDate("realEndDate", task.end.toLocalDate())
+  internal val displayEndDateOption = ObservableDate("endDate", task.end.displayValue.toLocalDate())
   internal val durationOption = ObservableInt("duration", task.duration.value.toInt())
   internal val schedulingOptions = ObservableEnum("scheduling.manual", CalculatedPart.END,
     CalculatedPart.entries.toTypedArray()
@@ -53,18 +56,18 @@ class TaskDatesController(private val task: Task, milestoneOption: ObservableBoo
     when (calculatedPart) {
       CalculatedPart.START -> {
         startDateOption.setWritable(false)
-        endDateOption.setWritable(true)
+        displayEndDateOption.setWritable(true)
         durationOption.setWritable(true)
       }
       CalculatedPart.END -> {
-        endDateOption.setWritable(false)
+        displayEndDateOption.setWritable(false)
         startDateOption.setWritable(true)
         durationOption.setWritable(true)
       }
       CalculatedPart.DURATION -> {
         durationOption.setWritable(false)
         startDateOption.setWritable(true)
-        endDateOption.setWritable(true)
+        displayEndDateOption.setWritable(true)
       }
     }
   }
@@ -74,7 +77,7 @@ class TaskDatesController(private val task: Task, milestoneOption: ObservableBoo
     milestoneOption.addWatcher { event ->
       if (event.newValue) {
         durationOption.setWritable(false)
-        endDateOption.setWritable(false)
+        displayEndDateOption.setWritable(false)
         startDateOption.setWritable(true)
         schedulingOptions.setWritable(false)
       } else {
@@ -86,21 +89,31 @@ class TaskDatesController(private val task: Task, milestoneOption: ObservableBoo
     onSchedulingOptionChange(schedulingOptions.value)
 
     startDateOption.addWatcher { event ->
-      if (event.trigger != this) {
+      if (event.trigger != this@TaskDatesController) {
         FXUtil.runLater {
           event.newValue?.let(::setStart)
         }
       }
     }
     endDateOption.addWatcher { event ->
-      if (event.trigger != this) {
         FXUtil.runLater {
+          displayEndDateOption.value = event.newValue?.asDisplayValue()
           event.newValue?.let(::setEnd)
+        }
+    }
+    displayEndDateOption.addWatcher { event ->
+      if (event.trigger != this@TaskDatesController) {
+        FXUtil.runLater {
+          event.newValue?.let(GanttCalendar::fromLocalDate)?.let {
+            it.plusOneDay().toLocalDate()?.let { realEndDate ->
+              endDateOption.set(realEndDate, event.trigger)
+            }
+          }
         }
       }
     }
     durationOption.addWatcher { event ->
-      if (event.trigger != this) {
+      if (event.trigger != this@TaskDatesController) {
         setLength(event.newValue)
       }
     }
@@ -139,6 +152,9 @@ class TaskDatesController(private val task: Task, milestoneOption: ObservableBoo
       setEnd(endDate, false)
     }
   }
+
+  fun GanttCalendar.plusOneDay() = this.apply { add(Calendar.DATE, 1) }
+  fun LocalDate.asDisplayValue() = GanttCalendar.fromLocalDate(this).displayValue.toLocalDate()
 
   private fun setEnd(endDate: LocalDate, recalculateStart: Boolean = true) {
     endDateOption.set(endDate, this)

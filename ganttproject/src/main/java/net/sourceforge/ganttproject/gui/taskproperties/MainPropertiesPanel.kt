@@ -124,7 +124,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
       skip()
       dropdown(taskDatesController.schedulingOptions)
       date(taskDatesController.startDateOption)
-      date(taskDatesController.endDateOption)
+      date(taskDatesController.displayEndDateOption)
       numeric(taskDatesController.durationOption) {
         minValue = 1
       }
@@ -214,6 +214,9 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
     projectTaskOption.ifChanged(taskMutator::setProjectTask)
     taskDatesController.startDateOption.ifChanged { value ->
       taskMutator.setStart(GanttCalendar.fromLocalDate(value))
+    }
+    taskDatesController.endDateOption.ifChanged { value ->
+      taskMutator.setEnd(GanttCalendar.fromLocalDate(value))
     }
     taskDatesController.durationOption.ifChanged { value ->
       taskMutator.setDuration(task.manager.createLength(value.toLong()))

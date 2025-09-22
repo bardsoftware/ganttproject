@@ -47,7 +47,9 @@ class ObservableImpl<T>(initValue: T): GPObservable<T> {
   fun set(newValue: T, trigger: Any? = null) {
     val oldValue = mutableValue
     mutableValue = newValue
-    firePropertyChanged(oldValue, newValue, trigger)
+    if (oldValue != newValue) {
+      firePropertyChanged(oldValue, newValue, trigger)
+    }
   }
 
   override var value: T
