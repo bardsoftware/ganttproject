@@ -39,6 +39,7 @@ import javafx.scene.control.ContentDisplay
 import javafx.scene.layout.*
 import javafx.scene.shape.Rectangle
 import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.Task.Priority
 import net.sourceforge.ganttproject.task.TaskMutator
@@ -123,8 +124,12 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
 
       skip()
       dropdown(taskDatesController.schedulingOptions)
-      date(taskDatesController.startDateOption)
-      date(taskDatesController.displayEndDateOption)
+      date(taskDatesController.startDateOption) {
+        stringConverter = GanttLanguage.getInstance().shortDateConverter
+      }
+      date(taskDatesController.displayEndDateOption) {
+        stringConverter = GanttLanguage.getInstance().shortDateConverter
+      }
       numeric(taskDatesController.durationOption) {
         minValue = 1
       }

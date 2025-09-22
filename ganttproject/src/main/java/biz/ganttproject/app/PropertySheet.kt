@@ -38,12 +38,11 @@ import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
+import javafx.util.StringConverter
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.GPColorChooser
-import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.util.BrowserControl
 import org.controlsfx.control.textfield.CustomTextField
-import org.w3c.util.DateParser
 import java.awt.event.ActionEvent
 import java.io.File
 import java.math.BigDecimal
@@ -113,8 +112,11 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
     })
   }
 
-  fun date(property: ObservableDate) {
-    rowBuilders.add(createOptionItem(property, createDateOptionEditor(property)))
+  fun date(property: ObservableDate, options: (DateDisplayOptions.()->Unit)? = null) {
+    rowBuilders.add(run {
+      val optionValues = options?.let { DateDisplayOptions().apply(it) } ?: DateDisplayOptions()
+      createOptionItem(property, createDateOptionEditor(property, optionValues))
+    })
   }
 
   fun numeric(property: ObservableInt, optionValues: (IntDisplayOptions.()->Unit)? = null) {
@@ -306,29 +308,29 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
 
   }
 
-  fun createDateOptionEditor(option: ObservableDate): Node {
+  fun createDateOptionEditor(option: ObservableDate, displayOptions: DateDisplayOptions = DateDisplayOptions()): DatePicker {
     return DatePicker(option.value ?: LocalDate.now()).also { picker ->
       option.addWatcher { evt ->
         if (evt.trigger != picker) picker.value = evt.newValue
       }
 
       val textEditor = picker.editor
-      val composedValidator = ValueValidator<LocalDate?> {
+      val composedValidator = ValueValidator<LocalDate?> { unvalidatedValue ->
         try {
-          val parsedDate = GanttLanguage.getInstance().parseDate(it)?.let(DateParser::toLocalDate)
-            ?: throw ValidationException("The date $it can't be parsed using the current date format")
+          val parsedDate = displayOptions.stringConverter.fromString(unvalidatedValue)
+            ?: throw ValidationException("The date $unvalidatedValue can't be parsed using the current date format")
           option.validator.invoke(ObservableEvent(option.value, parsedDate, textEditor)).onFailure { msg ->
             throw ValidationException(msg)
           }
           parsedDate
         } catch (ex: ParseException) {
-          throw ValidationException("The date $it can't be parsed using the current date format", ex)
+          throw ValidationException("The date $unvalidatedValue can't be parsed using the current date format", ex)
         }
       }
       val validatedText = textEditor.textProperty().validated(composedValidator)
       setupValidation(option, textEditor, validatedText)
 
-      val converter = createDateConverter()
+      val converter = displayOptions.stringConverter
       option.addWatcher {
         if (it.trigger != textEditor) {
           textEditor.text = converter.toString(option.value)
@@ -626,6 +628,11 @@ data class IntDisplayOptions(
   var minValue: Int = 0,
   var maxValue: Int = Int.MAX_VALUE,
 ) : PropertyDisplayOptions<Int>()
+
+data class DateDisplayOptions(
+  var stringConverter: StringConverter<LocalDate> = createDateConverter()
+): PropertyDisplayOptions<LocalDate>()
+
 data class DropdownDisplayOptions<E>(
   var cellFactory: ((ListCell<Pair<E, String>>, Pair<E, String>) -> Node)? = null
 ): PropertyDisplayOptions<E>()
@@ -670,4 +677,3 @@ object DoubleValidator: ValueValidator<Double> {
       throw ValidationException(ex)
     }
 }
-

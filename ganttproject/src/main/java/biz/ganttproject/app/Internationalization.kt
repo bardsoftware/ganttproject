@@ -27,10 +27,14 @@ import javafx.beans.value.ObservableValue
 import javafx.util.StringConverter
 import net.sourceforge.ganttproject.language.GanttLanguage
 import org.w3c.util.DateParser
+import java.text.DateFormat
 import java.text.MessageFormat
 import java.text.NumberFormat
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.*
+import javax.swing.text.DateFormatter
 
 /**
  * Localized string is an observable localized string with parameters.
@@ -231,15 +235,23 @@ fun String.removeMnemonicsPlaceholder(): String = this.replace("$", "")
 
 fun getNumberFormat(): NumberFormat = NumberFormat.getInstance(ourLocale)
 
-fun createDateConverter(): StringConverter<LocalDate> = StringConverterImpl(ourLocale)
+fun createDateConverter(): StringConverter<LocalDate> = LocaleBasedDateConverter(ourLocale)
 
-class StringConverterImpl(val locale: Locale) : StringConverter<LocalDate>() {
+class LocaleBasedDateConverter(val locale: Locale) : StringConverter<LocalDate>()   {
+  private val delegate = FormatterBasedDateConverter(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(locale))
+  override fun toString(date: LocalDate?) = delegate.toString(date)
+  override fun fromString(str: String?) = delegate.fromString(str)
+}
+
+class FormatterBasedDateConverter(val shortDateFormat: DateTimeFormatter) : StringConverter<LocalDate>() {
   override fun toString(date: LocalDate?): String? =
-    date?.let { GanttLanguage.getInstance().formatShortDate(GanttCalendar.fromLocalDate(it)) }
+    date?.let(shortDateFormat::format)
 
 
   override fun fromString(str: String?): LocalDate? =
-    str?.let { DateParser.toLocalDate(GanttLanguage.getInstance().parseDate(it)) }
+    str?.let {
+      LocalDate.parse(str, shortDateFormat)
+    }
 }
 
 data class Translation(val locale: Locale, val mapKey: (String) -> String?)

@@ -19,11 +19,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package net.sourceforge.ganttproject.language;
 
+import biz.ganttproject.app.FormatterBasedDateConverter;
 import biz.ganttproject.app.InternationalizationImplKt;
 import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.option.GPAbstractOption;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.customproperty.PropertyTypeEncoder;
+import javafx.util.StringConverter;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 import org.w3c.util.DateParser;
@@ -35,6 +37,8 @@ import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -50,6 +54,7 @@ import java.util.TimeZone;
  * Class for the language
  */
 public class GanttLanguage {
+
   public class Event extends EventObject {
     public Event(GanttLanguage language) {
       super(language);
@@ -93,6 +98,7 @@ public class GanttLanguage {
   private SimpleDateFormat currentDateFormat = null;
 
   private SimpleDateFormat shortCurrentDateFormat = null;
+  private FormatterBasedDateConverter shortDateConverter = null;
 
   private SimpleDateFormat myLongFormat;
 
@@ -142,6 +148,10 @@ public class GanttLanguage {
     return shortCurrentDateFormat;
   }
 
+  public StringConverter<LocalDate> getShortDateConverter() {
+    return shortDateConverter;
+  }
+
   public SimpleDateFormat getRecurringDateFormat() {
     return myRecurringDateFormat;
   }
@@ -154,6 +164,7 @@ public class GanttLanguage {
 
   private void applyDateFormatLocale(Locale locale) {
     myDateFormatLocale = locale;
+
     setShortDateFormat((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale));
     currentDateFormat = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
     currentTimeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
@@ -168,6 +179,7 @@ public class GanttLanguage {
 
   public void setShortDateFormat(SimpleDateFormat dateFormat) {
     shortCurrentDateFormat = dateFormat;
+    shortDateConverter = new FormatterBasedDateConverter(DateTimeFormatter.ofPattern(dateFormat.toPattern(), currentLocale));
     UIManager.put("JXDatePicker.shortFormat", shortCurrentDateFormat.toPattern());
     fireLanguageChanged();
   }
