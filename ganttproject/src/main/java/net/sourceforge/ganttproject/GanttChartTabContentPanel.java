@@ -64,7 +64,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private final Supplier<TaskTable> myTaskTableSupplier;
   private final TaskActions myTaskActions;
   private final Function0<Unit> myInitializationCompleted;
-  private final GPObservable<Cursor> myCursorProperty;
+  private final GPObservable<GPCursor> myCursorProperty;
   private TaskTable taskTable;
   private ViewComponents myViewComponents;
   private final GanttChartSelection mySelection;
@@ -72,7 +72,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
                             JComponent ganttChart,
-                            GPObservable<Cursor> cursorProperty, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
+                            GPObservable<GPCursor> cursorProperty, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
                             TaskActions taskActions, BarrierEntrance initializationPromise) {
     super(project, workbenchFacade, workbenchFacade.getGanttChart());
     myInitializationCompleted = initializationPromise.register("Task table inserted into the component tree");

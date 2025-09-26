@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.gantt;
 
+import biz.ganttproject.app.GPCursor;
 import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
 import biz.ganttproject.print.PrintChartApi;
@@ -107,7 +108,7 @@ public class GanttChartController extends AbstractChartImplementation implements
     setActiveInteraction(new ChangeTaskEndInteraction(taskBoundary, new TimelineFacadeImpl(super.getChartModel(),
         getTaskManager()), getUIFacade(),
         getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
-    setCursor(GanttGraphicArea.E_RESIZE_CURSOR);
+    setCursor(GPCursor.DragTaskEnd);
   }
 
   @Override
@@ -115,14 +116,14 @@ public class GanttChartController extends AbstractChartImplementation implements
     setActiveInteraction(new ChangeTaskStartInteraction(e, taskBoundary, new TimelineFacadeImpl(getChartModel(),
         getTaskManager()), getUIFacade(),
         getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
-    setCursor(GanttGraphicArea.W_RESIZE_CURSOR);
+    setCursor(GPCursor.DragTaskStart);
   }
 
   @Override
   public void beginChangeTaskProgressInteraction(MouseEvent e, TaskProgressChartItem taskProgress) {
     setActiveInteraction(new ChangeTaskProgressInteraction(e, taskProgress, new TimelineFacadeImpl(getChartModel(),
         getTaskManager()), t -> TaskRendererImpl2.getTaskRectangles(t, myChartModel), getUIFacade()));
-    setCursor(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);
+    setCursor(GPCursor.DragTaskProgress);
   }
 
   @Override
@@ -139,7 +140,7 @@ public class GanttChartController extends AbstractChartImplementation implements
       public Hardness getDefaultHardness() {
         return Hardness.parse(getTaskManager().getDependencyHardnessOption().getValue());
       }
-    }, getUIFacade(), getTaskManager().getDependencyCollection()));
+    }, getUIFacade(), getTaskManager().getDependencyCollection(), getChartComponent().getCursorProperty()));
 
   }
 

@@ -23,6 +23,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.Action;
 
+import biz.ganttproject.app.GPCursor;
 import net.sourceforge.ganttproject.AbstractChartImplementation;
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.action.GPAction;
@@ -76,7 +77,7 @@ public class MouseListenerBase extends MouseAdapter {
 
   @Override
   public void mouseEntered(MouseEvent e) {
-    myChartComponent.setDefaultCursor();
+    myChartComponent.getCursorProperty().setValue(GPCursor.Default);
   }
 
   @Override

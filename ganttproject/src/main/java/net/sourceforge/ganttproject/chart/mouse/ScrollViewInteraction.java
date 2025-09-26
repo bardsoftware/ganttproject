@@ -18,9 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.mouse;
 
+import biz.ganttproject.app.GPCursor;
 import biz.ganttproject.core.option.GPObservable;
-import net.sourceforge.ganttproject.ChartComponentBase;
-import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartModelBase.ScrollingSession;
 
@@ -31,18 +30,18 @@ import java.awt.event.MouseWheelEvent;
 
 public class ScrollViewInteraction extends MouseInteractionBase implements MouseInteraction {
   private final double myWheelFactor = Double.parseDouble(GPAction.getKeyStrokeText("mouse.wheel.factor"));
-  private final GPObservable<Cursor> myCursorProperty;
+  private final GPObservable<GPCursor> myCursorProperty;
   private int myCurY;
   private int myCurX;
   private final ScrollingSession myScrollingSession;
 
-  public ScrollViewInteraction(MouseEvent e, TimelineFacade timelineFacade, GPObservable<Cursor> cursorProperty) {
+  public ScrollViewInteraction(MouseEvent e, TimelineFacade timelineFacade, GPObservable<GPCursor> cursorProperty) {
     super(timelineFacade.getDateAt(0), timelineFacade);
     myScrollingSession = timelineFacade.createScrollingSession(e.getX(), e.getY());
     myCurX = e.getX();
     myCurY = e.getY();
     myCursorProperty = cursorProperty;
-    myCursorProperty.setValue(GanttGraphicArea.CURSOR_DRAG);
+    myCursorProperty.setValue(GPCursor.DragView);
   }
 
   @Override
@@ -72,6 +71,6 @@ public class ScrollViewInteraction extends MouseInteractionBase implements Mouse
   @Override
   public void finish() {
     myScrollingSession.finish();
-    myCursorProperty.setValue(ChartComponentBase.DEFAULT_CURSOR);
+    myCursorProperty.setValue(GPCursor.Default);
   }
 }

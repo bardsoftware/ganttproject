@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject
 
 import biz.ganttproject.app.FXToolbarBuilder
+import biz.ganttproject.app.GPCursor
 import biz.ganttproject.app.ViewComponents
 import biz.ganttproject.app.createButton
 import biz.ganttproject.app.createViewComponents
@@ -49,7 +50,7 @@ internal class ResourceChartTabContentPanel(
   workbenchFacade: UIFacade,
   private val tableSupplier: Supplier<ResourceTable>,
   override val chartComponent: JComponent,
-  private val cursorProperty: GPObservable<Cursor>
+  private val cursorProperty: GPObservable<GPCursor>
 ) : ChartTabContentPanel(project, workbenchFacade, workbenchFacade.resourceChart), ViewProvider {
 
   private lateinit var viewComponents: ViewComponents

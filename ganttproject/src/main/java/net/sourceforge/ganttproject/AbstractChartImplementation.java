@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.GPCursor;
 import biz.ganttproject.core.chart.grid.Offset;
 import biz.ganttproject.core.option.FontOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -149,7 +150,7 @@ public abstract class AbstractChartImplementation implements TimelineChart, Zoom
     // Skip as we already have a project instance.
   }
 
-  protected void setCursor(Cursor cursor) {
+  protected void setCursor(GPCursor cursor) {
     myChartComponent.getCursorProperty().setValue(cursor);
   }
 

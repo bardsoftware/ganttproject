@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
+import biz.ganttproject.app.GPCursor;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
@@ -44,27 +45,8 @@ import java.io.IOException;
 import java.util.Date;
 
 public abstract class ChartComponentBase extends JPanel implements TimelineChart {
-  public static final Cursor HAND_CURSOR = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-  public static final Cursor DEFAULT_CURSOR;
-  public static final Cursor CURSOR_DRAG;
 
-  static {
-    Cursor drag = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-    Cursor hand = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-    try {
-       drag = Toolkit.getDefaultToolkit().createCustomCursor(
-           ImageIO.read(ChartComponentBase.class.getResource("/icons/16x16/chart-drag.png")),
-           new Point(16, 16), ChartComponentBase.class.getSimpleName() + "-drag");
-       hand = Toolkit.getDefaultToolkit().createCustomCursor(
-           ImageIO.read(ChartComponentBase.class.getResource("/icons/16x16/chart-hand.png")),
-           new Point(16, 16), ChartComponentBase.class.getSimpleName() + "-hand");
-    } catch (HeadlessException | IOException | IndexOutOfBoundsException e) {
-      GPLogger.logToLogger(e);
-    }
-    CURSOR_DRAG = drag;
-    DEFAULT_CURSOR = hand;
-  }
-  private final ObservableImpl<Cursor> myCursorProperty = new ObservableImpl<>(HAND_CURSOR);
+  private final ObservableImpl<GPCursor> myCursorProperty = new ObservableImpl<>(GPCursor.Default);
   private final IGanttProject myProject;
 
   private final ZoomManager myZoomManager;
@@ -120,7 +102,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     return null;
   }
 
-  public GPObservable<Cursor> getCursorProperty() {
+  public GPObservable<GPCursor> getCursorProperty() {
     return myCursorProperty;
   }
 
@@ -165,10 +147,6 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
 
   protected UIConfiguration getUIConfiguration() {
     return myProject.getUIConfiguration();
-  }
-
-  public void setDefaultCursor() {
-    setCursor(DEFAULT_CURSOR);
   }
 
   public Action getOptionsDialogAction() {

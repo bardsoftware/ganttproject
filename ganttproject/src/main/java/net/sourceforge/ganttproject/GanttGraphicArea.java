@@ -60,18 +60,6 @@ import static net.sourceforge.ganttproject.task.event.TaskListenerAdapterKt.crea
 public class GanttGraphicArea extends ChartComponentBase implements GanttChart, CustomPropertyListener,
     ProjectEventListener {
 
-  static {
-    Toolkit toolkit = Toolkit.getDefaultToolkit();
-    URL cursorResource = GanttGraphicArea.class.getClassLoader().getResource("icons/cursorpercent.gif");
-    Image image = toolkit.getImage(cursorResource);
-    CHANGE_PROGRESS_CURSOR = toolkit.createCustomCursor(image, new Point(10, 5), "CursorPercent");
-  }
-
-  public static final Cursor W_RESIZE_CURSOR = new Cursor(Cursor.W_RESIZE_CURSOR);
-
-  public static final Cursor E_RESIZE_CURSOR = new Cursor(Cursor.E_RESIZE_CURSOR);
-
-  public static final Cursor CHANGE_PROGRESS_CURSOR;
   private final TaskTableChartConnector taskTableChartConnector;
   private final Supplier<TaskTableActionConnector> taskTableActionFacade;
 

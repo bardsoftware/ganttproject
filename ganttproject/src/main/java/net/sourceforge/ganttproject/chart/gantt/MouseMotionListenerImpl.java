@@ -18,12 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.gantt;
 
+import biz.ganttproject.app.GPCursor;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.option.GPObservable;
 import biz.ganttproject.core.time.CalendarFactory;
 import com.google.common.base.Strings;
 import net.sourceforge.ganttproject.ChartComponentBase;
-import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.chart.item.*;
 import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -37,7 +37,7 @@ import java.util.Date;
 class MouseMotionListenerImpl extends MouseMotionListenerBase {
   private final ChartComponentBase myChartComponent;
   private final GanttChartController myChartController;
-  private final GPObservable<Cursor> myCursorProperty;
+  private final GPObservable<GPCursor> myCursorProperty;
 
   public MouseMotionListenerImpl(GanttChartController chartImplementation,
                                  UIFacade uiFacade, ChartComponentBase chartComponent) {
@@ -55,7 +55,7 @@ class MouseMotionListenerImpl extends MouseMotionListenerBase {
     myChartController.hideTooltip();
     if (taskUnderPoint == null) {
       //myChartComponent.setDefaultCursor();
-      myCursorProperty.setValue(GanttGraphicArea.DEFAULT_CURSOR);
+      myCursorProperty.setValue(GPCursor.Default);
 
       if (itemUnderPoint instanceof CalendarChartItem) {
         CalendarEvent event = findCalendarEvent(((CalendarChartItem) itemUnderPoint).getDate());
@@ -77,22 +77,22 @@ class MouseMotionListenerImpl extends MouseMotionListenerBase {
       }
     }
     else if (itemUnderPoint instanceof TaskBoundaryChartItem && !taskUnderPoint.isMilestone()) {
-      Cursor cursor = ((TaskBoundaryChartItem) itemUnderPoint).isStartBoundary() ? GanttGraphicArea.W_RESIZE_CURSOR
-          : GanttGraphicArea.E_RESIZE_CURSOR;
+      var cursor = ((TaskBoundaryChartItem) itemUnderPoint).isStartBoundary() ? GPCursor.DragTaskStart
+          : GPCursor.DragTaskEnd;
       myCursorProperty.setValue(cursor);
     }
     // special cursor
     else if (itemUnderPoint instanceof TaskProgressChartItem) {
-      myCursorProperty.setValue(GanttGraphicArea.CHANGE_PROGRESS_CURSOR);
+      myCursorProperty.setValue(GPCursor.DragTaskProgress);
     }
     else if (itemUnderPoint instanceof TaskNotesChartItem && taskUnderPoint.getNotes() != null) {
-      myCursorProperty.setValue(ChartComponentBase.HAND_CURSOR);
+      myCursorProperty.setValue(GPCursor.DragView);
       myChartController.showTooltip(e.getX(), e.getY(),
           GanttLanguage.getInstance().formatText(
               "task.notesTooltip.pattern", taskUnderPoint.getNotes().replace("\n", "<br>")));
     }
     else {
-      myCursorProperty.setValue(ChartComponentBase.HAND_CURSOR);
+      myCursorProperty.setValue(GPCursor.Default);
     }
 
   }

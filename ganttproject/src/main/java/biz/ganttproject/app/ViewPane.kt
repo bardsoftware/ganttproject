@@ -226,7 +226,7 @@ fun createViewComponents(
   tableBuilder: ()->Node,
   chartToolbarBuilder: ()-> Region,
   chartBuilder: ()-> JComponent,
-  cursorProperty: GPObservable<java.awt.Cursor>,
+  cursorProperty: GPObservable<GPCursor>,
   dpiOption: IntegerOption): ViewComponents {
 
   val defaultScaledHeight =
@@ -277,14 +277,7 @@ fun createViewComponents(
     split.items.add(right)
     split.setDividerPosition(0, 0.5)
     cursorProperty.addWatcher { evt ->
-      swingNode.cursor = when (evt.newValue) {
-        GanttGraphicArea.E_RESIZE_CURSOR -> Cursor.E_RESIZE
-        GanttGraphicArea.W_RESIZE_CURSOR -> Cursor.W_RESIZE
-        GanttGraphicArea.CHANGE_PROGRESS_CURSOR -> PERCENT_CURSOR
-        GanttGraphicArea.HAND_CURSOR -> Cursor.HAND
-        GanttGraphicArea.CURSOR_DRAG -> DRAG_CURSOR
-        else -> Cursor.DEFAULT
-      }
+      swingNode.cursor = evt.newValue.fxCursor
     }
 //    split.addEventHandler(KeyEvent.KEY_PRESSED) { evt ->
 //      println("split: evt=$evt")
