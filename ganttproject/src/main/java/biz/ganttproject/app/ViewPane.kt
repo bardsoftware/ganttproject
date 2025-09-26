@@ -19,13 +19,17 @@
 package biz.ganttproject.app
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.core.option.GPObservable
 import biz.ganttproject.core.option.IntegerOption
+import biz.ganttproject.core.option.ObservableImpl
 import biz.ganttproject.lib.fx.vbox
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.embed.swing.SwingNode
 import javafx.geometry.Orientation
 import javafx.geometry.Rectangle2D
+import javafx.scene.Cursor
+import javafx.scene.ImageCursor
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.SplitPane
@@ -36,6 +40,7 @@ import javafx.scene.image.ImageView
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
+import net.sourceforge.ganttproject.GanttGraphicArea
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.chart.ChartSelection
@@ -221,6 +226,7 @@ fun createViewComponents(
   tableBuilder: ()->Node,
   chartToolbarBuilder: ()-> Region,
   chartBuilder: ()-> JComponent,
+  cursorProperty: GPObservable<java.awt.Cursor>,
   dpiOption: IntegerOption): ViewComponents {
 
   val defaultScaledHeight =
@@ -270,6 +276,16 @@ fun createViewComponents(
     }
     split.items.add(right)
     split.setDividerPosition(0, 0.5)
+    cursorProperty.addWatcher { evt ->
+      swingNode.cursor = when (evt.newValue) {
+        GanttGraphicArea.E_RESIZE_CURSOR -> Cursor.E_RESIZE
+        GanttGraphicArea.W_RESIZE_CURSOR -> Cursor.W_RESIZE
+        GanttGraphicArea.CHANGE_PROGRESS_CURSOR -> PERCENT_CURSOR
+        GanttGraphicArea.HAND_CURSOR -> Cursor.HAND
+        GanttGraphicArea.CURSOR_DRAG -> DRAG_CURSOR
+        else -> Cursor.DEFAULT
+      }
+    }
 //    split.addEventHandler(KeyEvent.KEY_PRESSED) { evt ->
 //      println("split: evt=$evt")
 //      println("accelerators=${DialogPlacement.applicationWindow?.scene?.accelerators}")
@@ -283,6 +299,16 @@ fun createViewComponents(
   return ViewComponents(image = imagePane, splitPane = splitPane, table = table, chartNode = swingNode)
 }
 
+private val PERCENT_CURSOR: Cursor = createCursor("icons/cursorpercent.gif")
+private val DRAG_CURSOR: Cursor = createCursor("icons/16x16/chart-drag.png")
+
+private fun createCursor(imageResource: String) = run {
+  val url = GanttGraphicArea::class.java.classLoader.getResource(imageResource)
+  if (url != null) {
+    val image = Image(url.toExternalForm())
+    ImageCursor(image, 10.0, 5.0)  // hotspot matches AWT (10, 5)
+  } else Cursor.DEFAULT
+}
 /**
  * Action that starts a cut/copy clipboard operation.
  */

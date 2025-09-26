@@ -24,6 +24,7 @@ import biz.ganttproject.app.createButton
 import biz.ganttproject.app.createViewComponents
 import biz.ganttproject.core.option.DefaultDoubleOption
 import biz.ganttproject.core.option.DoubleOption
+import biz.ganttproject.core.option.GPObservable
 import biz.ganttproject.core.option.GPOption
 import biz.ganttproject.ganttview.ResourceTable
 import biz.ganttproject.ganttview.showResourceColumnManager
@@ -36,20 +37,19 @@ import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.chart.ChartSelection
-import net.sourceforge.ganttproject.chart.overview.ToolbarBuilder
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.UIUtil
 import net.sourceforge.ganttproject.gui.view.ViewProvider
-import java.awt.Component
+import java.awt.Cursor
 import java.util.function.Supplier
 import javax.swing.JComponent
-import javax.swing.JLabel
 
 internal class ResourceChartTabContentPanel(
   project: IGanttProject,
   workbenchFacade: UIFacade,
   private val tableSupplier: Supplier<ResourceTable>,
-  override val chartComponent: JComponent
+  override val chartComponent: JComponent,
+  private val cursorProperty: GPObservable<Cursor>
 ) : ChartTabContentPanel(project, workbenchFacade, workbenchFacade.resourceChart), ViewProvider {
 
   private lateinit var viewComponents: ViewComponents
@@ -123,6 +123,7 @@ internal class ResourceChartTabContentPanel(
           chartToolbarBox
         },
         chartBuilder = { chartComponent },
+        cursorProperty = cursorProperty,
         getUiFacade().dpiOption
       )
       imageHeight = { viewComponents.image.height.toInt() }

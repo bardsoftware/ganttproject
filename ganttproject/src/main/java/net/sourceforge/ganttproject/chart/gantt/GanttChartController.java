@@ -38,7 +38,6 @@ import net.sourceforge.ganttproject.chart.mouse.*;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskSelectionManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency.Hardness;
 
 import javax.swing.*;
@@ -57,7 +56,6 @@ public class GanttChartController extends AbstractChartImplementation implements
   private final MouseMotionListenerImpl myMouseMotionListener;
   private final TaskTableChartConnector myTaskTableConnector;
   protected CustomBalloonTip myTooltip;
-  private final TaskSelectionManager mySelectionManager;
 
   public GanttChartController(IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel,
                               ChartComponentBase chartComponent, ChartViewState chartViewState,
@@ -69,7 +67,6 @@ public class GanttChartController extends AbstractChartImplementation implements
     myChartModel = chartModel;
     myMouseListener = new MouseListenerImpl(this, uiFacade, chartComponent, taskTableActionFacade);
     myMouseMotionListener = new MouseMotionListenerImpl(this, uiFacade, chartComponent);
-    mySelectionManager = uiFacade.getTaskSelectionManager();
 //    mySelection = new GanttChartSelection(myTaskManager, mySelectionManager);
     myTaskTableConnector = taskTableConnector;
     myTaskTableConnector.getVisibleTasks().addListener(

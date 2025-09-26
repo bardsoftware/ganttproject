@@ -150,7 +150,7 @@ public abstract class AbstractChartImplementation implements TimelineChart, Zoom
   }
 
   protected void setCursor(Cursor cursor) {
-    myChartComponent.setCursor(cursor);
+    myChartComponent.getCursorProperty().setValue(cursor);
   }
 
   protected UIFacade getUIFacade() {
@@ -170,7 +170,7 @@ public abstract class AbstractChartImplementation implements TimelineChart, Zoom
   public void beginScrollViewInteraction(MouseEvent e) {
     TimelineFacadeImpl timelineFacade = new TimelineFacadeImpl(getChartModel(), myProject.getTaskManager());
     timelineFacade.setVScrollController(myVScrollController);
-    setActiveInteraction(new ScrollViewInteraction(e, timelineFacade));
+    setActiveInteraction(new ScrollViewInteraction(e, timelineFacade, myChartComponent.getCursorProperty()));
   }
 
   public MouseInteraction finishInteraction() {

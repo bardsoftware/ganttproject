@@ -18,9 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.core.option.FontOption;
-import biz.ganttproject.core.option.GPOptionGroup;
-import biz.ganttproject.core.option.IntegerOption;
+import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
@@ -66,6 +64,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     CURSOR_DRAG = drag;
     DEFAULT_CURSOR = hand;
   }
+  private final ObservableImpl<Cursor> myCursorProperty = new ObservableImpl<>(HAND_CURSOR);
   private final IGanttProject myProject;
 
   private final ZoomManager myZoomManager;
@@ -119,6 +118,10 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
       return this;
     }
     return null;
+  }
+
+  public GPObservable<Cursor> getCursorProperty() {
+    return myCursorProperty;
   }
 
   public abstract ChartViewState getViewState();

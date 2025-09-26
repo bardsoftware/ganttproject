@@ -19,9 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.app.*;
-import biz.ganttproject.core.option.DefaultDoubleOption;
-import biz.ganttproject.core.option.DoubleOption;
-import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.*;
 import biz.ganttproject.ganttview.TaskFilterActionSet;
 import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.task.TaskActions;
@@ -66,13 +64,15 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private final Supplier<TaskTable> myTaskTableSupplier;
   private final TaskActions myTaskActions;
   private final Function0<Unit> myInitializationCompleted;
+  private final GPObservable<Cursor> myCursorProperty;
   private TaskTable taskTable;
   private ViewComponents myViewComponents;
   private final GanttChartSelection mySelection;
   private final DoubleOption myDividerOption = new DefaultDoubleOption("divider", 0.5);
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
-                            JComponent ganttChart, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
+                            JComponent ganttChart,
+                            GPObservable<Cursor> cursorProperty, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
                             TaskActions taskActions, BarrierEntrance initializationPromise) {
     super(project, workbenchFacade, workbenchFacade.getGanttChart());
     myInitializationCompleted = initializationPromise.register("Task table inserted into the component tree");
@@ -80,6 +80,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
     myTaskTableSupplier = taskTableSupplier;
     myWorkbenchFacade = workbenchFacade;
     myGanttChart = ganttChart;
+    myCursorProperty = cursorProperty;
     // FIXME KeyStrokes of these 2 actions are not working...
     myCriticalPathAction = new CalculateCriticalPathAction(project.getTaskManager(), uiConfiguration, workbenchFacade);
     myCriticalPathAction.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY);
@@ -214,6 +215,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       },
       /*chartBuilder=*/
       this::getChartComponent,
+      myCursorProperty,
       myWorkbenchFacade.getDpiOption()
     );
 
