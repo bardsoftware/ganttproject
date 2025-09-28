@@ -20,18 +20,22 @@ package net.sourceforge.ganttproject.gui.taskproperties
 
 import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.option.ObservableDate
+import com.google.common.util.concurrent.MoreExecutors
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
 import net.sourceforge.ganttproject.TestSetupHelper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.w3c.util.DateParser
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class TaskDatesControllerTest {
   @Test
   fun `basic dates controller test`() {
+    val coroutineScope = CoroutineScope(MoreExecutors.directExecutor().asCoroutineDispatcher())
     val task = TestSetupHelper.newTaskManagerBuilder().build().newTaskBuilder().withName("task1").build()
     val milestoneOption = ObservableBoolean("foo", false)
-    TaskDatesController(task, milestoneOption).let {
+    TaskDatesController(task, milestoneOption, coroutineScope).let {
       it.startDateOption.set(LocalDate.parse("2025-09-22"), "picker")
       assertEquals("2025-09-22", it.startDateOption.toIsoDate())
       assertEquals("2025-09-22", it.displayEndDateOption.toIsoDate())
@@ -41,4 +45,6 @@ class TaskDatesControllerTest {
   }
 }
 
-private fun ObservableDate.toIsoDate() = this.value?.let(DateParser::toJavaDate)?.let(DateParser::getIsoDateNoHours)
+private fun ObservableDate.toIsoDate(): String? {
+  return this.value?.let(DateTimeFormatter.ISO_DATE::format)
+}

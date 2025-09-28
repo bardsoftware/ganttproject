@@ -38,6 +38,9 @@ import javafx.scene.control.Button
 import javafx.scene.control.ContentDisplay
 import javafx.scene.layout.*
 import javafx.scene.shape.Rectangle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.javafx.JavaFx
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.task.Task
@@ -59,9 +62,10 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   val validationErrors = FXCollections.observableArrayList<String>()
   var defaultColor: ColorOption? = null
 
+  private val coroutineScope = CoroutineScope(Dispatchers.JavaFx)
   private val nameOption = ObservableString("name", task.name)
   private val milestoneOption = ObservableBoolean("milestone", task.isMilestone)
-  private val taskDatesController = TaskDatesController(task, milestoneOption)
+  private val taskDatesController = TaskDatesController(task, milestoneOption, coroutineScope)
   private val projectTaskOption = ObservableBoolean("projectTask", task.isProjectTask)
   private val hasEarliestStart = ObservableBoolean("hasEarliestStart", task.thirdDateConstraint == 1)
   private val earliestStartOption = ObservableDate("earliestBegin",

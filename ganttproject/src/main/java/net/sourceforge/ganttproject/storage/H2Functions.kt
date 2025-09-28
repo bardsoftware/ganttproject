@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject.storage
 
 import net.sourceforge.ganttproject.task.TaskManager
 import java.math.BigDecimal
-import java.util.*
+import java.time.LocalDate
 import java.util.concurrent.atomic.AtomicReference
 
 object H2Functions {
@@ -31,6 +31,7 @@ fun taskCost(taskId: Int): BigDecimal {
   return H2Functions.taskManager.get()?.getTask(taskId)?.cost?.value ?: BigDecimal.ZERO
 }
 
-fun taskEndDate(taskId: Int): Date? {
-  return H2Functions.taskManager.get()?.getTask(taskId)?.end?.time
+fun taskEndDate(taskId: Int): LocalDate? {
+  val task = H2Functions.taskManager.get()?.getTask(taskId)
+  return task?.end?.toLocalDate()
 }

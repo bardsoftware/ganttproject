@@ -18,14 +18,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui.taskproperties
 
-import biz.ganttproject.FXUtil
 import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.option.ObservableDate
 import biz.ganttproject.core.option.ObservableEnum
 import biz.ganttproject.core.option.ObservableInt
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
-import javafx.application.Platform
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.task.Task
 import org.w3c.util.DateParser
 import java.time.LocalDate
@@ -38,7 +38,7 @@ import java.util.Calendar
  *
  * Besides, only the start date can be enabled if a task is a milestone.
  */
-class TaskDatesController(private val task: Task, milestoneOption: ObservableBoolean) {
+class TaskDatesController(private val task: Task, milestoneOption: ObservableBoolean, private val coroutineScope: CoroutineScope) {
   private val isMilestone = task.isMilestone()
   private val calendar = task.manager.calendar
 
@@ -90,20 +90,20 @@ class TaskDatesController(private val task: Task, milestoneOption: ObservableBoo
 
     startDateOption.addWatcher { event ->
       if (event.trigger != this@TaskDatesController) {
-        FXUtil.runLater {
+        coroutineScope.launch {
           event.newValue?.let(::setStart)
         }
       }
     }
     endDateOption.addWatcher { event ->
-        FXUtil.runLater {
+        coroutineScope.launch {
           displayEndDateOption.value = event.newValue?.asDisplayValue()
           event.newValue?.let(::setEnd)
         }
     }
     displayEndDateOption.addWatcher { event ->
       if (event.trigger != this@TaskDatesController) {
-        FXUtil.runLater {
+        coroutineScope.launch {
           event.newValue?.let(GanttCalendar::fromLocalDate)?.let {
             it.plusOneDay().toLocalDate()?.let { realEndDate ->
               endDateOption.set(realEndDate, event.trigger)
