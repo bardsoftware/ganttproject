@@ -67,8 +67,5 @@ class ShiftTaskTreeAlgorithmTest: TaskTestCase() {
     assertEquals(TestSetupHelper.newThursday(), task2.start)
     assertEquals(TestSetupHelper.newThursday(), task3.start)
     assertEquals(TestSetupHelper.newWendesday(), task4.start)
-
   }
-
-
 }
