@@ -198,6 +198,7 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
   protected void moveProject(TimeDuration moveDuration) throws AlgorithmException {
     var shiftTaskTreeAlgorithm = new ShiftTaskTreeAlgorithm(getProject().getTaskManager(), buildMoveScope(), !myMoveStartingTasks.isSelected());
     shiftTaskTreeAlgorithm.run(moveDuration);
+    shiftTaskTreeAlgorithm.commit();
   }
 
   @Override
