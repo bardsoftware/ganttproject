@@ -63,23 +63,32 @@ val calendarsDir: File? by lazy {
  * Platform-dependent directory to store temporary files for caching or auto-save purposes.
  */
 val cacheDir: File? by lazy {
-  val fancyFolder = AppDirsFactory.getInstance()
-    .getUserCacheDir("GanttProject", GPVersion.getCurrentShortVersionNumber(), "BarD Software")
-    .asWritableDir(tryCreate = true)
+  val fancyFolder = try {
+    AppDirsFactory.getInstance()
+      .getUserCacheDir("GanttProject", GPVersion.getCurrentShortVersionNumber(), "BarD Software")
+      .asWritableDir(tryCreate = true)
+  } catch (e: Exception) {
+    LOG.error("Failed to get user cache dir", exception = e)
+    null
+  }
   if (fancyFolder != null) {
+    LOG.info("Cache directory={} was set using AppDirs library", fancyFolder.absolutePath)
     return@lazy fancyFolder
   }
+  LOG.info("Can't find the cache directory using AppDirs. Let's try other ways.")
   // We failed to create a fancy OS-dependent folder, let's try other ways.
   // On Linux we look into /var/tmp
   if (SystemUtils.IS_OS_LINUX) {
     val linuxTmpDir = "/var/tmp".asWritableDir()
     if (linuxTmpDir != null) {
+      LOG.info("Cache directory={} was hardcoded because we're on Linux", linuxTmpDir)
       return@lazy linuxTmpDir
     }
   }
   // We also try using the directory specified in the system property.
   val systemTmpDir = System.getProperty("java.io.tmpdir")?.asWritableDir()
   if (systemTmpDir != null) {
+    LOG.info("Cache directory={} was set from java.io.tmpdir system property", systemTmpDir.absolutePath)
     return@lazy systemTmpDir
   }
   // Finally, let's try to create a temporary file, wherever it is, and use it's containing folder.
@@ -90,6 +99,7 @@ val cacheDir: File? by lazy {
     null
   }
   if (hackyTmpDir != null) {
+    LOG.info("Cache directory={} was created using File.createTempFile()", hackyTmpDir.absolutePath)
     return@lazy hackyTmpDir
   }
   LOG.error("Failed to find temporary directory")
