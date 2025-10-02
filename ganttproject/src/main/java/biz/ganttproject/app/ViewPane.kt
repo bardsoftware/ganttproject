@@ -227,19 +227,25 @@ fun createViewComponents(
   chartToolbarBuilder: ()-> Region,
   chartBuilder: ()-> JComponent,
   cursorProperty: GPObservable<GPCursor>,
+  logoImage: Image?,
   dpiOption: IntegerOption): ViewComponents {
 
   val defaultScaledHeight =
     (UIFacade.DEFAULT_LOGO.iconHeight * dpiOption.value / (1f * UIFacade.DEFAULT_DPI)).toInt()
-  val image = Image(ViewPane::class.java.getResourceAsStream("/icons/big.png"))
   val imageView = ImageView().apply {
-    this.image = image
+    this.image = logoImage ?: Image(ViewPane::class.java.getResourceAsStream("/icons/big.png"))
     fitHeight = defaultScaledHeight.toDouble()
-    //isPreserveRatio = true
-    viewport = Rectangle2D(0.0, 0.0, image.width, defaultScaledHeight.toDouble())
-
+    isPreserveRatio = true
+    isSmooth = true
+    isCache = true
+    // Ensure we scale instead of crop: clear viewport so entire image is shown scaled to height
+    viewport = null
   }
-  val imagePane = Pane(imageView).also { it.minHeight = defaultScaledHeight.toDouble() }
+  val imagePane = Pane(imageView).also {
+    it.minHeight = defaultScaledHeight.toDouble()
+    it.prefHeight = defaultScaledHeight.toDouble()
+    it.maxHeight = defaultScaledHeight.toDouble()
+  }
 
   val table = tableBuilder()
   val swingNode = SwingNode()

@@ -25,6 +25,7 @@ import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.task.TaskActions;
 import com.google.common.base.Suppliers;
 import javafx.application.Platform;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -51,6 +52,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -194,6 +196,8 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
 
     @Override
   public Node getNode() {
+    var image = myWorkbenchFacade.getLogo();
+    var fxImage = (image instanceof BufferedImage bimg) ? SwingFXUtils.toFXImage(bimg, null) : null;
     myViewComponents = ViewPaneKt.createViewComponents(
       /*toolbarBuilder=*/      () -> {
         var toolbar = createToolbarBuilder().build().getToolbar$ganttproject();
@@ -216,6 +220,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       /*chartBuilder=*/
       this::getChartComponent,
       myCursorProperty,
+      fxImage,
       myWorkbenchFacade.getDpiOption()
     );
 

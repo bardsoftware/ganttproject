@@ -22,6 +22,7 @@ import biz.ganttproject.app.applicationFont
 import biz.ganttproject.app.getGlyphIcon
 import javafx.animation.FadeTransition
 import javafx.application.Platform
+import javafx.embed.swing.SwingFXUtils
 import javafx.event.ActionEvent
 import javafx.geometry.Pos
 import javafx.scene.Node
@@ -31,15 +32,11 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.paint.Color
 import javafx.stage.Window
 import javafx.util.Duration
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.javafx.JavaFx
-import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.ActionUtil
-import java.lang.Runnable
+import java.awt.image.BufferedImage
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 
@@ -369,4 +366,5 @@ fun createButton(action: GPAction, onlyIcon: Boolean = true): Button {
   }
 }
 
+fun BufferedImage.asJavaFxImage() = SwingFXUtils.toFXImage(this, null)
 private val fxScope = CoroutineScope(Dispatchers.JavaFx)

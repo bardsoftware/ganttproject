@@ -18,17 +18,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject
 
-import biz.ganttproject.app.FXToolbarBuilder
-import biz.ganttproject.app.GPCursor
-import biz.ganttproject.app.ViewComponents
-import biz.ganttproject.app.createButton
-import biz.ganttproject.app.createViewComponents
+import biz.ganttproject.app.*
 import biz.ganttproject.core.option.DefaultDoubleOption
 import biz.ganttproject.core.option.DoubleOption
 import biz.ganttproject.core.option.GPObservable
 import biz.ganttproject.core.option.GPOption
 import biz.ganttproject.ganttview.ResourceTable
 import biz.ganttproject.ganttview.showResourceColumnManager
+import javafx.embed.swing.SwingFXUtils
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.ToolBar
@@ -41,7 +38,7 @@ import net.sourceforge.ganttproject.chart.ChartSelection
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.UIUtil
 import net.sourceforge.ganttproject.gui.view.ViewProvider
-import java.awt.Cursor
+import java.awt.image.BufferedImage
 import java.util.function.Supplier
 import javax.swing.JComponent
 
@@ -103,6 +100,10 @@ internal class ResourceChartTabContentPanel(
 
   override val node: Node
     get() {
+      val fxImage = (getUiFacade().getLogo() as? BufferedImage)?.let {
+        SwingFXUtils.toFXImage(it, null)
+      }
+
       viewComponents = createViewComponents(
         tableToolbarBuilder = {
           val toolbar: ToolBar = createToolbarBuilder().build().toolbar
@@ -125,6 +126,7 @@ internal class ResourceChartTabContentPanel(
         },
         chartBuilder = { chartComponent },
         cursorProperty = cursorProperty,
+        fxImage,
         getUiFacade().dpiOption
       )
       imageHeight = { viewComponents.image.height.toInt() }
