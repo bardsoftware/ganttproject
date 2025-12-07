@@ -32,6 +32,7 @@ import javafx.scene.layout.Priority
 import javafx.stage.Stage
 import net.sourceforge.ganttproject.APP_LOGGER
 import net.sourceforge.ganttproject.GanttProject
+import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
 // This barrier is used to connect non-UI code with the JavaFX objects at the early stage
@@ -130,6 +131,12 @@ class GanttProjectFxApp : Application() {
       APP_LOGGER.debug("... done.")
     } catch (ex: Exception) {
       ex.printStackTrace()
+      val msg = """
+        Failed to start GanttProject: ${ex.message}
+        Please refer to the log file for more details.
+        """
+      JOptionPane.showMessageDialog(null, msg, "Failed to start", JOptionPane.ERROR_MESSAGE)
+      System.exit(1)
     }
     APP_LOGGER.debug("<<< start()")
   }

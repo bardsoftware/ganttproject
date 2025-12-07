@@ -582,6 +582,9 @@ class TaskTable(
   }
 }
 
+/**
+ * This is the algorithm of synchronizing the model (which is a task hierarchy) with the view (which is a tree table).
+ */
 internal class SyncAlgorithm(
   private val treeModel: TaskContainmentHierarchyFacade,
   private val task2treeItem: MutableMap<Task, TreeItem<Task>>,
@@ -610,7 +613,11 @@ internal class SyncAlgorithm(
         false
       } else {
         if (child == null) {
-          parentItem.children.remove(idx, parentItem.children.size)
+          // This indicates that we reached the end of the children in the model. If there are any remaining nodes
+          // in the parent's children list in the view, we remove them.
+          if (idx < parentItem.children.size) {
+            parentItem.children.remove(idx, parentItem.children.size)
+          }
         } else {
           LOGGER.debug("...parentItem.children={}", parentItem.children)
           if (parentItem.children.size > idx) {

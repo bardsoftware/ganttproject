@@ -23,6 +23,7 @@ import net.sourceforge.ganttproject.TestSetupHelper
 import net.sourceforge.ganttproject.task.Task
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
 
 class TaskTableTest {
   @Test
@@ -72,6 +73,27 @@ class TaskTableTest {
     assertEquals(1, rootItem.children.size)
   }
 
+  @Test
+  fun `filtered task sync`() {
+    val taskModel = TestSetupHelper.newTaskManagerBuilder().build()
+    val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
+    val voidFilter: TaskFilterFxn = {_, _ -> true}
+    val rootItem = TreeItem(taskModel.rootTask)
+    val task0 = taskModel.newTaskBuilder().withName("Task0").withParent(taskModel.rootTask).build()
+    val task1 = taskModel.newTaskBuilder().withName("Task1").withParent(taskModel.rootTask).build()
+    val task2 = taskModel.newTaskBuilder().withName("Task2").withParent(taskModel.rootTask).build()
 
+    val sync = SyncAlgorithm(taskModel.taskHierarchy, task2treeItem, rootItem, voidFilter) {}
+    sync.sync()
 
+    val filter: TaskFilterFxn = {_, child -> child == null || child.name == "Task0" }
+
+    task2treeItem.clear()
+    val sync2 = SyncAlgorithm(taskModel.taskHierarchy, task2treeItem, rootItem, filter) {}
+    sync2.sync()
+
+    assertEquals(2, task2treeItem.size)
+    assertNotNull(task2treeItem[task0])
+    assertEquals(1, rootItem.children.size)
+  }
 }
