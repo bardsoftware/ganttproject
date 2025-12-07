@@ -17,6 +17,7 @@ jobs:
               run: |
                   git submodule sync --recursive
                   git submodule update --init --force --recursive --depth=1
+                  cd biz.ganttproject.app.localization
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'

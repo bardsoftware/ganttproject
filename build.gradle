@@ -8,9 +8,10 @@ ext.distBinDir = file('ganttproject-builder/dist-bin')
 ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins/base")
 
 def readVersion() {
-    return Files.readString(Paths.get(rootProject.projectDir.absolutePath, "ganttproject-builder", "VERSION")).trim()
+    def envVersion = System.getenv("VERSION")
+    return envVersion == null ? Files.readString(Paths.get(rootProject.projectDir.absolutePath, "ganttproject-builder", "VERSION")).trim() : envVersion
 }
-version = System.getenv("VERSION") == null ? readVersion() : System.getenv("VERSION")
+version = readVersion()
 // Config for all projects: deps come from Maven repository,
 // compile using Java 17, libs normally sit in lib
 allprojects {
@@ -66,6 +67,7 @@ allprojects {
 
 subprojects {
     group 'biz.ganttproject'
+    //version = "${readVersion()}"
     version = new Date().format("yy.MM.dd") + "-SNAPSHOT"
 }
 
