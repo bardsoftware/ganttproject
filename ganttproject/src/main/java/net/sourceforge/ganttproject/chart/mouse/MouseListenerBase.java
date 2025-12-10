@@ -64,7 +64,6 @@ public class MouseListenerBase extends MouseAdapter {
     String text = MouseUtil.toString(e);
     if (e.isPopupTrigger() || text.equals(GPAction.getKeyStrokeText("mouse.contextMenu"))) {
       showPopupMenu(e);
-      return;
     }
   }
 

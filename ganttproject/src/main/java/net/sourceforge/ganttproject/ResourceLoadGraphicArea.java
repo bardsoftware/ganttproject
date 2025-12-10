@@ -116,11 +116,6 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
     if (myMouseListener == null) {
       myMouseListener = new MouseListenerBase(getUIFacade(), this, getImplementation()) {
         @Override
-        protected Action[] getPopupMenuActions(MouseEvent e) {
-          return new Action[] { getOptionsDialogAction() };
-        }
-
-        @Override
         public void mousePressed(MouseEvent e) {
           String text = MouseUtil.toString(e);
           super.mousePressed(e);

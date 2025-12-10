@@ -19,11 +19,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import biz.ganttproject.app.GPCursor;
+import biz.ganttproject.app.MenuBuilder;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.core.time.TimeUnitStack;
 import biz.ganttproject.print.PrintChartApi;
+import kotlin.Unit;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.view.ViewChartOptionsDialogAction;
 import net.sourceforge.ganttproject.chart.*;
 import net.sourceforge.ganttproject.chart.mouse.MouseInteraction;
@@ -34,14 +37,12 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomListener;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
 import net.sourceforge.ganttproject.task.TaskManager;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
-import java.io.IOException;
 import java.util.Date;
 
 public abstract class ChartComponentBase extends JPanel implements TimelineChart {
@@ -106,6 +107,11 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     return myCursorProperty;
   }
 
+  public Unit buildContextMenu(MenuBuilder menuBuilder) {
+    menuBuilder.items(getOptionsDialogAction());
+    return Unit.INSTANCE;
+  }
+
   public abstract ChartViewState getViewState();
 
   public ZoomListener getZoomListener() {
@@ -149,7 +155,7 @@ public abstract class ChartComponentBase extends JPanel implements TimelineChart
     return myProject.getUIConfiguration();
   }
 
-  public Action getOptionsDialogAction() {
+  public GPAction getOptionsDialogAction() {
     return myOptionsDialogAction;
   }
 

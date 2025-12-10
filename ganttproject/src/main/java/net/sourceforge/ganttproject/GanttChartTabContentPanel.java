@@ -56,6 +56,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProvider {
@@ -67,6 +68,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private final TaskActions myTaskActions;
   private final Function0<Unit> myInitializationCompleted;
   private final GPObservable<GPCursor> myCursorProperty;
+  private final Consumer<MenuBuilder> myContextMenuBuilder;
   private TaskTable taskTable;
   private ViewComponents myViewComponents;
   private final GanttChartSelection mySelection;
@@ -74,7 +76,9 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
 
   GanttChartTabContentPanel(IGanttProject project, UIFacade workbenchFacade,
                             JComponent ganttChart,
-                            GPObservable<GPCursor> cursorProperty, UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
+                            GPObservable<GPCursor> cursorProperty,
+                            Consumer<MenuBuilder> contextMenuBuilder,
+                            UIConfiguration uiConfiguration, Supplier<TaskTable> taskTableSupplier,
                             TaskActions taskActions, BarrierEntrance initializationPromise) {
     super(project, workbenchFacade, workbenchFacade.getGanttChart());
     myInitializationCompleted = initializationPromise.register("Task table inserted into the component tree");
@@ -83,6 +87,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
     myWorkbenchFacade = workbenchFacade;
     myGanttChart = ganttChart;
     myCursorProperty = cursorProperty;
+    myContextMenuBuilder = contextMenuBuilder;
     // FIXME KeyStrokes of these 2 actions are not working...
     myCriticalPathAction = new CalculateCriticalPathAction(project.getTaskManager(), uiConfiguration, workbenchFacade);
     myCriticalPathAction.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY);
@@ -116,7 +121,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
     tableFilterButton.setOnAction(event -> {
       var tableFilterMenu = new ContextMenu();
       tableFilterMenu.getItems().clear();
-      filterActions.get().tableFilterActions(new MenuBuilderFx(tableFilterMenu));
+      filterActions.get().tableFilterActions(new MenuBuilderFx(tableFilterMenu, null));
       tableFilterMenu.show(tableFilterButton, Side.BOTTOM, 0.0, 0.0);
       event.consume();
     });
@@ -220,6 +225,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       /*chartBuilder=*/
       this::getChartComponent,
       myCursorProperty,
+      this::buildContextMenu,
       fxImage,
       myWorkbenchFacade.getDpiOption()
     );
@@ -234,6 +240,11 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
     taskTable.loadDefaultColumns();
     myInitializationCompleted.invoke();
     return myViewComponents.getSplitPane();
+  }
+
+  private @NotNull Unit buildContextMenu(@NotNull MenuBuilder menuBuilder) {
+    myContextMenuBuilder.accept(menuBuilder);
+    return Unit.INSTANCE;
   }
 
   @NotNull

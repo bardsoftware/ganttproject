@@ -47,7 +47,8 @@ internal class ResourceChartTabContentPanel(
   workbenchFacade: UIFacade,
   private val tableSupplier: Supplier<ResourceTable>,
   override val chartComponent: JComponent,
-  private val cursorProperty: GPObservable<GPCursor>
+  private val cursorProperty: GPObservable<GPCursor>,
+  private val buildContextMenu: (MenuBuilder) -> Unit
 ) : ChartTabContentPanel(project, workbenchFacade, workbenchFacade.resourceChart), ViewProvider {
 
   private lateinit var viewComponents: ViewComponents
@@ -126,6 +127,9 @@ internal class ResourceChartTabContentPanel(
         },
         chartBuilder = { chartComponent },
         cursorProperty = cursorProperty,
+        contextMenuActions = {
+          this.buildContextMenu(it)
+        },
         fxImage,
         getUiFacade().dpiOption
       )

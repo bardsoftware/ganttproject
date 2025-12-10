@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart.gantt;
 
-import biz.ganttproject.app.MenuBuilderAsList;
 import biz.ganttproject.ganttview.TaskTableActionConnector;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -72,18 +71,6 @@ class MouseListenerImpl extends MouseListenerBase {
     if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
       myTaskTableActionFacade.get().getTaskPropertiesAction().invoke().actionPerformed(null);
     }
-  }
-
-  @Override
-  protected Action[] getPopupMenuActions(MouseEvent e) {
-    List<Action> result = Lists.newArrayList();
-    var menuBuilder = new MenuBuilderAsList();
-    myTaskTableActionFacade.get().getContextMenuActions().invoke(menuBuilder);
-    menuBuilder.actions().forEach(gpAction -> result.add(gpAction));
-    result.add(GPAction.SEPARATOR);
-
-    Arrays.asList(myChartComponent.getPopupMenuActions(e)).forEach(it -> result.add(it));
-    return result.toArray(new Action[result.size()]);
   }
 
   @Override

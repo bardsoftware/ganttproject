@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import biz.ganttproject.app.Barrier;
 import biz.ganttproject.app.BarrierEntrance;
+import biz.ganttproject.app.MenuBuilder;
 import biz.ganttproject.app.TimerBarrier;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
@@ -30,6 +31,7 @@ import biz.ganttproject.ganttview.TaskTableActionConnector;
 import biz.ganttproject.ganttview.TaskTableChartConnector;
 import com.google.common.collect.Lists;
 import kotlin.Unit;
+import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.*;
 import net.sourceforge.ganttproject.chart.gantt.GanttChartController;
 import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
@@ -178,8 +180,16 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     return actions.toArray(new Action[0]);
   }
 
-  private List<Action> createToggleHolidayAction(int x) {
-    List<Action> result = Lists.newArrayList();
+  public Unit buildContextMenu(MenuBuilder builder) {
+    taskTableActionFacade.get().getContextMenuActions().invoke(builder);
+    builder.separator();
+    builder.items(getOptionsDialogAction(), myPublicHolidayDialogAction);
+    builder.items(createToggleHolidayAction(builder.getClickPosition().component1().intValue()));
+    return Unit.INSTANCE;
+  }
+
+  private List<GPAction> createToggleHolidayAction(int x) {
+    List<GPAction> result = Lists.newArrayList();
     ChartItem chartItem = myChartModel.getChartItemWithCoordinates(x, 0);
     if (chartItem instanceof CalendarChartItem) {
       Date date = ((CalendarChartItem) chartItem).getDate();

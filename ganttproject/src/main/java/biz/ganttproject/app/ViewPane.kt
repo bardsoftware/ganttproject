@@ -21,22 +21,23 @@ package biz.ganttproject.app
 import biz.ganttproject.FXUtil
 import biz.ganttproject.core.option.GPObservable
 import biz.ganttproject.core.option.IntegerOption
-import biz.ganttproject.core.option.ObservableImpl
 import biz.ganttproject.lib.fx.vbox
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.embed.swing.SwingNode
 import javafx.geometry.Orientation
-import javafx.geometry.Rectangle2D
 import javafx.scene.Cursor
 import javafx.scene.ImageCursor
 import javafx.scene.Node
 import javafx.scene.Parent
+import javafx.scene.control.ContextMenu
 import javafx.scene.control.SplitPane
 import javafx.scene.control.Tab
 import javafx.scene.control.TabPane
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
+import javafx.scene.input.MouseButton
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
@@ -227,6 +228,7 @@ fun createViewComponents(
   chartToolbarBuilder: ()-> Region,
   chartBuilder: ()-> JComponent,
   cursorProperty: GPObservable<GPCursor>,
+  contextMenuActions: (MenuBuilder)->Unit,
   logoImage: Image?,
   dpiOption: IntegerOption): ViewComponents {
 
@@ -279,6 +281,18 @@ fun createViewComponents(
     }
     SwingUtilities.invokeLater {
       swingNode.content = chartBuilder()
+    }
+    swingNode.addEventHandler(MouseEvent.MOUSE_CLICKED) { event ->
+      if (event.button == MouseButton.SECONDARY) {
+        ContextMenu().let {
+          it.isAutoHide = true
+          contextMenuActions(MenuBuilderFx(it, event.x to event.y))
+          it.scene.stylesheets.add("/biz/ganttproject/app/menu.css")
+          it.styleClass.add("context-menu")
+          it.show(swingNode.scene.window, event.screenX, event.screenY)
+        }
+
+      }
     }
     split.items.add(right)
     split.setDividerPosition(0, 0.5)

@@ -212,11 +212,11 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     startupLogger.debug("4. creating views...");
 
     myGanttChartTabContent = new GanttChartTabContentPanel(
-        getProject(), getUIFacade(), area.getJComponent(), area.getCursorProperty(),
+        getProject(), getUIFacade(), area.getJComponent(), area.getCursorProperty(), area::buildContextMenu,
         getUIConfiguration(), myTaskTableSupplier, myTaskActions, myUiInitializationPromise);
 
     myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(),
-      myResourceTableSupplier, resourceChart, resourceChart.getCursorProperty());
+      myResourceTableSupplier, resourceChart, resourceChart.getCursorProperty(), resourceChart::buildContextMenu);
 //++
 //    addComponentListener(new ComponentAdapter() {
 //      @Override

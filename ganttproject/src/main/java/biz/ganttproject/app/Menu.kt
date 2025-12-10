@@ -63,9 +63,10 @@ interface MenuBuilder {
   fun items(actions: Collection<GPAction>)
   fun separator()
   fun submenu(title: String, code: (MenuBuilder)->Unit)
+  val clickPosition: Pair<Double, Double>?
 }
 
-class MenuBuilderFx(private val contextMenu: ContextMenu) : MenuBuilder {
+class MenuBuilderFx(private val contextMenu: ContextMenu, override val clickPosition: Pair<Double, Double>? = null) : MenuBuilder {
   private val stack = Stack<Function1<MenuItem, Unit>>()
   init {
     stack.push {
@@ -119,7 +120,7 @@ private fun JPopupMenu.wrapper(): MenuWrapper = MenuWrapper(
   item = { this.add(it) }
 )
 
-class MenuBuilderSwing() : MenuBuilder {
+class MenuBuilderSwing(override val clickPosition: Pair<Double, Double>? = null) : MenuBuilder {
   private val stack = Stack<MenuWrapper>()
 
   constructor(rootMenu: JPopupMenu) : this() {
@@ -177,6 +178,7 @@ class MenuBuilderSwing() : MenuBuilder {
 
 class MenuBuilderAsList : MenuBuilder {
   private val actionList = mutableListOf<GPAction>()
+  override val clickPosition: Pair<Double, Double>? = null
   override fun items(vararg actions: GPAction) {
     actionList.addAll(actions)
   }
