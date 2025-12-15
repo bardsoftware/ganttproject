@@ -27,7 +27,6 @@ import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.storage.ColumnConsumer
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.task.Task
@@ -105,10 +104,13 @@ object BuiltInFilters {
 /**
  * Manages the filters, both built-in and custom.
  */
-class TaskFilterManager(taskManager: TaskManager, private val projectDatabase: ProjectDatabase) {
-  private val customFilterResults: MutableSet<Int> = mutableSetOf()
-  private val customFilterFxn: TaskFilterFxn = { _, child ->
-    child?.taskID?.let { customFilterResults.contains(it) } != false
+class TaskFilterManager(private val taskManager: TaskManager, private val projectDatabase: ProjectDatabase) {
+  // This is a set of task IDs that are retained by the current active filter.
+  private val filterResults: MutableSet<Int> = mutableSetOf()
+  val filterFxn: TaskFilterFxn = { _, child ->
+    (child?.taskID?.let { filterResults.contains(it) } != false).also {
+      if (it) LOGGER.debug("Custom filter returned true for task $child. currently filtered tasks: $filterResults")
+    }
   }
 
   val options: List<GPOption<*>> = listOf(
@@ -145,9 +147,7 @@ class TaskFilterManager(taskManager: TaskManager, private val projectDatabase: P
         recentFilterList.add(0, value)
         while (recentFilterList.size > RECENT_FILTER_LIST_SIZE) { recentFilterList.removeLast() }
       }
-      if (!value.isBuiltIn) {
-        refreshCustomFilterResults()
-      }
+      refreshCustomFilterResults()
       fireFilterChanged(value)
       sync()
     }
@@ -167,7 +167,7 @@ class TaskFilterManager(taskManager: TaskManager, private val projectDatabase: P
   }
 
   fun createCustomFilter() = TaskFilter("", "",
-    filterFxn = { parent, child -> customFilterFxn(parent, child)},
+    filterFxn = { parent, child -> filterFxn(parent, child)},
     isBuiltIn = false
   )
 
@@ -186,18 +186,50 @@ class TaskFilterManager(taskManager: TaskManager, private val projectDatabase: P
   fun refresh() = refreshCustomFilterResults()
 
   private fun refreshCustomFilterResults() {
-    customFilterResults.clear()
+    LOGGER.debug(">>> refresh()")
+    filterResults.clear()
+
+    val retainedTasks = mutableListOf<Task>()
     if (!activeFilter.isBuiltIn) {
-      LOGGER.debug(">>> refreshCustomFilterResults()")
+      LOGGER.debug("... refreshing custom filter")
       LOGGER.debug("... active filter={}", activeFilter)
       projectDatabase.mapTasks(
         ColumnConsumer(SimpleSelect("uid", "num", whereExpression = activeFilter.expression, CustomPropertyClass.INTEGER.javaClass)) { taskNum, value ->
           LOGGER.debug("... adding task={} to the results", taskNum)
-          customFilterResults.add(taskNum)
+          taskManager.getTask(taskNum)?.let(retainedTasks::add)
         })
-      LOGGER.debug("<<< refreshCustomFilterResults()")
+    } else {
+      taskManager.tasks.forEach { task ->
+        val parent = taskManager.taskHierarchy.getContainer(task)
+        if (activeFilter.filterFxn(parent, task)) {
+          retainedTasks.add(task)
+        }
+      }
     }
 
+    val retainedTaskNums = retainedTasks.map { it.taskID }.toMutableSet()
+    val ancestors = retainedTasks.mapNotNull { task ->
+      val parent = taskManager.taskHierarchy.getContainer(task)
+      if (!retainedTaskNums.contains(parent?.taskID)) {
+        retainedTaskNums.add(parent.taskID)
+        parent
+      } else null
+    }.toMutableList()
+
+    while (ancestors.isNotEmpty()) {
+      val next = ancestors.removeFirst()
+      taskManager.taskHierarchy.getContainer(next)?.let { parent ->
+        if (!retainedTaskNums.contains(parent.taskID)) {
+          ancestors.add(parent)
+          retainedTasks.add(parent)
+          retainedTaskNums.add(parent.taskID)
+        }
+      }
+    }
+    LOGGER.debug("<<< refresh()")
+
+    filterResults.clear()
+    filterResults.addAll(retainedTaskNums)
     sync()
 //
   }

@@ -33,10 +33,11 @@ class TaskTableTest {
     val filter: TaskFilterFxn = {_, _ -> false }
     val rootItem = TreeItem(taskModel.rootTask)
 
-    val sync = SyncAlgorithm(taskModel.taskHierarchy, task2treeItem, rootItem, filter) {}
+    val sync = SyncAlgorithm(taskModel.taskHierarchy, task2treeItem, rootItem, filter, {}, taskModel.taskCount)
     sync.sync()
     assertEquals(1, task2treeItem.size)
     assertEquals(taskModel.rootTask, task2treeItem.keys.first())
+    assertEquals(0, sync.filteredCount)
   }
 
   @Test
@@ -46,12 +47,13 @@ class TaskTableTest {
     val filter: TaskFilterFxn = {_, _ -> true }
     val rootItem = TreeItem(taskModel.rootTask)
 
-    val sync = SyncAlgorithm(taskModel.taskHierarchy, task2treeItem, rootItem, filter) {}
-    sync.sync()
-
+    task2treeItem.clear()
     taskModel.newTaskBuilder().withName("Task0").withParent(taskModel.rootTask).build()
+
+    val sync = SyncAlgorithm(taskModel.taskHierarchy, task2treeItem, rootItem, filter, {}, taskModel.taskCount)
     sync.sync()
     assertEquals(2, task2treeItem.size)
+    assertEquals(0, sync.filteredCount)
   }
 
   @Test
@@ -63,7 +65,7 @@ class TaskTableTest {
     val task0 = taskModel.newTaskBuilder().withName("Task0").withParent(taskModel.rootTask).build()
     val task1 = taskModel.newTaskBuilder().withName("Task1").withParent(taskModel.rootTask).build()
 
-    val sync = SyncAlgorithm(taskModel.taskHierarchy, task2treeItem, rootItem, filter) {}
+    val sync = SyncAlgorithm(taskModel.taskHierarchy, task2treeItem, rootItem, filter, {}, taskModel.taskCount)
     sync.sync()
 
     task1.move(task0)
@@ -71,6 +73,7 @@ class TaskTableTest {
     assertEquals(3, task2treeItem.size)
     assertEquals(task2treeItem[task0]!!, task2treeItem[task1]!!.parent)
     assertEquals(1, rootItem.children.size)
+    assertEquals(0, sync.filteredCount)
   }
 
   @Test
@@ -83,17 +86,18 @@ class TaskTableTest {
     val task1 = taskModel.newTaskBuilder().withName("Task1").withParent(taskModel.rootTask).build()
     val task2 = taskModel.newTaskBuilder().withName("Task2").withParent(taskModel.rootTask).build()
 
-    val sync = SyncAlgorithm(taskModel.taskHierarchy, task2treeItem, rootItem, voidFilter) {}
+    val sync = SyncAlgorithm(taskModel.taskHierarchy, task2treeItem, rootItem, voidFilter, {}, taskModel.taskCount)
     sync.sync()
 
     val filter: TaskFilterFxn = {_, child -> child == null || child.name == "Task0" }
 
     task2treeItem.clear()
-    val sync2 = SyncAlgorithm(taskModel.taskHierarchy, task2treeItem, rootItem, filter) {}
+    val sync2 = SyncAlgorithm(taskModel.taskHierarchy, task2treeItem, rootItem, filter, {}, taskModel.taskCount)
     sync2.sync()
 
     assertEquals(2, task2treeItem.size)
     assertNotNull(task2treeItem[task0])
     assertEquals(1, rootItem.children.size)
+    assertEquals(2, sync2.filteredCount)
   }
 }

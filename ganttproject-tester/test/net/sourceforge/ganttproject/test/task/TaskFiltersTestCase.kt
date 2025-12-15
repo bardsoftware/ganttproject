@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.test.task
 
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.ganttview.BuiltInFilters
+import biz.ganttproject.ganttview.TaskFilter
 import biz.ganttproject.ganttview.TaskFilterManager
 import net.sourceforge.ganttproject.TestSetupHelper
 import net.sourceforge.ganttproject.storage.ProjectDatabase
@@ -29,6 +30,7 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -130,6 +132,18 @@ class TaskFiltersTestCase {
     assertFalse(BuiltInFilters.inProgressTodayFilter.filterFxn(taskManager.rootTask, child))
   }
 
+  @Test
+  fun `Parent is not filtered out if at least one child is not filtered out`() {
+    var parent = createTask()
+    val child1 = taskManager.newTaskBuilder().withParent(parent).withName("child1").withCompletion(100).build()
+    val child2 = taskManager.newTaskBuilder().withParent(parent).withName("child2").withCompletion(0).build()
+    val filterManager = TaskFilterManager(taskManager, projectDatabase)
+    filterManager.activeFilter = TaskFilter("", "", filterFxn = { _, child -> child?.completionPercentage == 100 }, isBuiltIn = true)
+    assertTrue(filterManager.filterFxn( parent, child1))
+    assertFalse(filterManager.filterFxn(parent, child2))
+
+    assertTrue(filterManager.filterFxn(taskManager.rootTask, parent))
+  }
   private fun Task.shiftTask(days: Int) {
     this.createShiftMutator().also {
       it.shift(taskManager.createLength(GPTimeUnitStack.DAY, days.toFloat()))

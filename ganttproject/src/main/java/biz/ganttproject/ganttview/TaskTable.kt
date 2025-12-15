@@ -502,7 +502,7 @@ class TaskTable(
       val treeModel = taskManager.taskHierarchy
       task2treeItem.clear()
 
-      val syncAlgorithm = SyncAlgorithm(treeModel, task2treeItem, rootItem, filterManager.activeFilter.filterFxn, ::onCreateTreeItem)
+      val syncAlgorithm = SyncAlgorithm(treeModel, task2treeItem, rootItem, filterManager.filterFxn, ::onCreateTreeItem, taskManager.taskCount)
       syncAlgorithm.sync()
       val visibleTasks = getExpandedTasks()
       taskTableChartConnector.visibleTasks.setAll(visibleTasks)
@@ -590,10 +590,11 @@ internal class SyncAlgorithm(
   private val task2treeItem: MutableMap<Task, TreeItem<Task>>,
   private val rootItem: TreeItem<Task>,
   private val activeFilter: TaskFilterFxn,
-  private val onCreateTreeItem: (TreeItem<Task>) -> Unit
+  private val onCreateTreeItem: (TreeItem<Task>) -> Unit,
+  private val taskCount: Int
 ) {
 
-  internal var filteredCount = 0
+  internal val filteredCount get() = taskCount - task2treeItem.size + 1
 
   fun sync() {
     task2treeItem[treeModel.rootTask] = rootItem
@@ -609,7 +610,6 @@ internal class SyncAlgorithm(
           LOGGER.debug("It seemed to be removed before, because its sibling was filtered, so we just skip it here")
         }
         LOGGER.debug("...now parentItem.children={}", parentItem.children)
-        filteredCount++
         false
       } else {
         if (child == null) {
@@ -645,7 +645,6 @@ internal class SyncAlgorithm(
 
   internal fun Task.addChildTreeItem(child: Task, pos: Int = -1) =
     addChildTreeItem(this, child, pos, task2treeItem, onCreateTreeItem)
-
 }
 
 internal fun addChildTreeItem(parent: Task, child: Task, pos: Int = -1,

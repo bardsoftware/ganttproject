@@ -85,7 +85,7 @@ class AutoCompletionTextFieldBinding<T: Completion>(
   /** {@inheritDoc}  */
   override fun completeUserInput(completion: T) {
     val newText = completion.text
-    completionTarget.replaceText(completion.posStart, completion.posEnd, completion.text)
+    completionTarget.replaceText(completion.posStart.coerceAtLeast(0), completion.posEnd.coerceAtMost(completionTarget.text.length ), completion.text)
     completionTarget.positionCaret(completion.posStart + newText.length)
   }
 
