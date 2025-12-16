@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.sourceforge.ganttproject.storage
 
+import biz.ganttproject.app.Localizer
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
@@ -31,29 +32,45 @@ import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import org.h2.jdbc.JdbcException
 import java.awt.Color
 
+private val COLUMN_NOT_FOUND = "Column.(.*).not.found"
 private val SYNTAX_ERROR_PREFIX = """Syntax error in SQL statement """"
+private val DATA_CONVERSION_ERROR = """Data conversion error converting "(.*).to.(.*)""""
+private val DATA_CONVERSION_ERROR_PREFIX = """Data conversion error converting""""
 open class ProjectDatabaseException: Exception {
   constructor(message: String): super(message)
   constructor(message: String, cause: Throwable): super(message, cause)
 
-  val reason: String get() =
+  fun formatReason(i18n: Localizer): String {
     this.cause?.let {
       if (it.cause is JdbcException) {
-        var message = (it.cause as Throwable).message!!
-        val hasSqlStatement = message.indexOf("; SQL statement:")
-        if (hasSqlStatement != -1) {
-          return message.substring(0 until hasSqlStatement)
+        val message = (it.cause as Throwable).message!!
+        COLUMN_NOT_FOUND.toRegex().find(message)?.let { matchResult ->
+          return if (matchResult.groups.size > 1) {
+            i18n.formatText("expression.validation.columnNotFound", matchResult.groups[1]?.value ?: "")
+          } else i18n.formatText("expression.validation.columnNotFound")
         }
         if (message.startsWith(SYNTAX_ERROR_PREFIX)) {
           val posMarker = message.indexOf("[*]")
-          if (posMarker != -1) {
-            return message.substring(SYNTAX_ERROR_PREFIX.length until posMarker)
-          }
+          return if (posMarker != -1) {
+            val truncatedMsg = message.substring(SYNTAX_ERROR_PREFIX.length until posMarker)
+            val posWhereExpressionStart = truncatedMsg.lastIndexOf('(')
+            i18n.formatText("expression.validation.syntaxErrorAtPosition", truncatedMsg.length - posWhereExpressionStart)
+          } else i18n.formatText("expression.validation.syntax", message.substring(SYNTAX_ERROR_PREFIX.length))
         }
-        message
-      } else null
-    } ?: this.message ?: ""
-
+        DATA_CONVERSION_ERROR.toRegex().find(message)?.let { matchResult ->
+          return if (matchResult.groups.size >= 3) {
+            i18n.formatText(
+              "expression.validation.resultType", matchResult.groups[2]!!.value, matchResult.groups[1]!!.value
+            )
+          } else i18n.formatText("expression.validation.resultTypeNoArgs")
+        }
+        if (message.startsWith(DATA_CONVERSION_ERROR_PREFIX)) {
+          return i18n.formatText("expression.validation.resultTypeNoArgs")
+        }
+      }
+    }
+    return i18n.formatText("expression.validation.invalidExpression")
+  }
 }
 
 interface ProjectDatabaseTxn {

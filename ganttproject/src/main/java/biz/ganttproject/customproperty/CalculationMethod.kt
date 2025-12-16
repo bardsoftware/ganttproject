@@ -54,8 +54,8 @@ class CalculationMethodValidator(private val projectDatabase: ProjectDatabase) {
           projectDatabase.validateColumnConsumer(ColumnConsumer(calculationMethod) {_,_->})
         } catch (ex: ProjectDatabaseException) {
           //GPLogger.create("ProjectDatabase").error("calculation method validation failed: ${ex.reason}", exception = ex)
-          //ex.printStackTrace(System.out)
-          throw ValidationException(RootLocalizer.formatText("option.customPropertyDialog.expression.validation.syntax", ex.reason))
+          ex.printStackTrace(System.out)
+          throw ValidationException(ex.formatReason(RootLocalizer.createWithRootKey("option.customPropertyDialog")))
         }
       }
     }

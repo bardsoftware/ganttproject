@@ -21,6 +21,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 @import "dropdowns";
 
 .property-pane {
+  -fx-padding: 10;
   .btn-help-url {
     @include btn-toolbar-common();
     @include btn-toolbar-small();
