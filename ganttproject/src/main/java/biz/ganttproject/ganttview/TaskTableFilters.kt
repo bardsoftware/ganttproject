@@ -113,6 +113,7 @@ class TaskFilterManager(private val taskManager: TaskManager, private val projec
   val filterFxn: TaskFilterFxn = { _, child ->
     if (hasUpdatesInTxn.get()) {
       refreshCustomFilterResults()
+      hasUpdatesInTxn.set(false)
     }
     (child?.taskID?.let { filterResults.contains(it) } != false).also {
       if (it) LOGGER.debug("Custom filter returned true for task $child. currently filtered tasks: $filterResults")

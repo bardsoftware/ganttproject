@@ -62,7 +62,7 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
   Platform.setImplicitExit(true)
   applicationBarrier.await { ganttProjectFxApp ->
       Thread.setDefaultUncaughtExceptionHandler { t, e ->
-        APP_LOGGER.error("Uncaught exception", e)
+        APP_LOGGER.error("Uncaught exception", exception = e)
         e.printStackTrace()
       }
       try {
