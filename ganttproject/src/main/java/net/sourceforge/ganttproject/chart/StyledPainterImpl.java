@@ -273,6 +273,7 @@ public class StyledPainterImpl implements Painter {
     myRectangleRenderer.setGraphics(myGraphics);
     mySummaryTaskRenderer.setGraphics(myGraphics);
     myPolygonRenderer.setGraphics(myGraphics);
+    myGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
   }
 
   @Override
