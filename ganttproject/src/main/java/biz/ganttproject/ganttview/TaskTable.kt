@@ -363,12 +363,15 @@ class TaskTable(
             sync()
             treeTable.selectionModel.clearSelection()
             CellBehaviorBase.removeAnchor(treeTable)
-            // FIXME: this sometimes fails with NPE.
-            val treeItem = task2treeItem[e.task]!!
-            taskTableChartConnector.visibleTasks.clear()
-            taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
-            treeTable.selectionModel.select(treeItem)
-            runBlocking { newTaskActor.inboxChannel.send(TreeItemReady(treeItem)) }
+            val treeItem = task2treeItem[e.task]
+            if (treeItem != null) {
+              taskTableChartConnector.visibleTasks.clear()
+              taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())
+              treeTable.selectionModel.select(treeItem)
+              runBlocking { newTaskActor.inboxChannel.send(TreeItemReady(treeItem)) }
+            } else {
+              // TODO: should it happen, we need to reset the state machine to the initial state
+            }
           }
         } else {
           keepSelection {

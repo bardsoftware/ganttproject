@@ -19,8 +19,10 @@
 package net.sourceforge.ganttproject.undo
 
 import net.sourceforge.ganttproject.document.FileDocument
+import net.sourceforge.ganttproject.storage.LazyProjectDatabaseProxy
 import net.sourceforge.ganttproject.storage.SQL_PROJECT_DATABASE_OPTIONS
 import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl
+import net.sourceforge.ganttproject.storage.UndoableEditTxnImpl
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -30,6 +32,7 @@ import java.nio.file.Files
 class UndoManagerTest {
   @Test
   fun `failed undoable edit closes transaction`() {
+    System.setProperty("colloboque.on", "true")
     val dataSource = JdbcDataSource().also {
       it.setURL("jdbc:h2:mem:test$SQL_PROJECT_DATABASE_OPTIONS")
     }
@@ -43,7 +46,7 @@ class UndoManagerTest {
       displayName = "Test",
       newAutosave = { FileDocument(Files.createTempFile("qwe", "asd").toFile()) },
       restore = {},
-      projectDatabase = projectDatabase
+      txn = UndoableEditTxnImpl(databaseTxnFactory = projectDatabase::startTransaction, calculatedPropertyUpdater = {})
     )) {
       called = true
       throw RuntimeException()

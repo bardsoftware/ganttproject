@@ -166,40 +166,45 @@ class LazyProjectDatabaseProxy(
   fun createTaskEventListener(): TaskListener = projectEventListenerImpl
 
   fun createUndoTxnFactory(): UndoableEditTxnFactory = {
-    UndoableEditTxnImpl()
+    UndoableEditTxnImpl(
+      databaseTxnFactory = { getDatabase().startTransaction(it) },
+      calculatedPropertyUpdater = { calculatedPropertyUpdater.update() }
+    )
   }
 
   fun createTaskCustomPropertyListener(): CustomPropertyListener  = projectEventListenerImpl
+}
 
-  private inner class UndoableEditTxnImpl : UndoableEditTxn {
-    var txn: ProjectDatabaseTxn? = null
-    override fun start(displayName: String) {
-      txn = getDatabase().startTransaction(displayName)
+class UndoableEditTxnImpl(private val databaseTxnFactory: (String)-> ProjectDatabaseTxn, private val calculatedPropertyUpdater: ()->Unit) : UndoableEditTxn {
+  var txn: ProjectDatabaseTxn? = null
+  override fun start(displayName: String) {
+    txn = databaseTxnFactory(displayName)
+  }
+
+  override fun commit() {
+    try {
+      txn?.commit()
+      calculatedPropertyUpdater()
+    } catch (ex: ProjectDatabaseException) {
+      GPLogger.log(ex)
     }
-
-    override fun commit() {
-      try {
-        txn?.commit()
-        calculatedPropertyUpdater.update()
-      } catch (ex: ProjectDatabaseException) {
-        GPLogger.log(ex)
-      }
-      finally {
-        txn = null
-      }
-    }
-
-    override fun rollback(ex: Throwable) {
-    }
-
-    override fun undo() {
-      txn?.undo()
-    }
-
-    override fun redo() {
-      txn?.redo()
+    finally {
+      txn = null
     }
   }
+
+  override fun rollback(ex: Throwable) {
+    txn?.rollback()
+  }
+
+  override fun undo() {
+    txn?.undo()
+  }
+
+  override fun redo() {
+    txn?.redo()
+  }
 }
+
 
 
