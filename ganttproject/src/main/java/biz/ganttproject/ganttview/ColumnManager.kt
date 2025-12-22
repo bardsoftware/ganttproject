@@ -356,8 +356,9 @@ private fun showColumnManager(
   builtinColumns: List<BuiltinColumn>
 ) {
   dialog(title = RootLocalizer.formatText("customColumns"), id = "customColumns") { dlg ->
+    val expressionCompletion = ExpressionAutoCompletion(customColumnsManager)
     val columnManager = ColumnManager(
-      columnList, customColumnsManager, CalculationMethodValidator(projectDatabase), ExpressionAutoCompletion()::complete, ApplyExecutorType.DIRECT, hasCalculatedProperties, builtinColumns
+      columnList, customColumnsManager, CalculationMethodValidator(projectDatabase), expressionCompletion::complete, ApplyExecutorType.DIRECT, hasCalculatedProperties, builtinColumns
     )
     columnManager.escCloseEnabled.addListener { _, _, newValue -> dlg.setEscCloseEnabled(newValue) }
     columnManager.dialogPane.build(dlg)

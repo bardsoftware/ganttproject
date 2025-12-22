@@ -20,6 +20,7 @@ package biz.ganttproject.ganttview
 
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import java.awt.event.ActionEvent
@@ -84,10 +85,14 @@ class TaskFilterAction(
   }
 }
 
-class TaskFilterActionSet(private val taskFilterManager: TaskFilterManager, projectDatabase: ProjectDatabase) {
+class TaskFilterActionSet(
+  private val taskFilterManager: TaskFilterManager,
+  customPropertyManager: CustomPropertyManager,
+  projectDatabase: ProjectDatabase
+) {
   // Task filters -> actions
   private val filterDialogAction = GPAction.create("taskTable.filterDialog.action") {
-    showFilterDialog(taskFilterManager, projectDatabase)
+    showFilterDialog(taskFilterManager, customPropertyManager, projectDatabase)
   }
 
 

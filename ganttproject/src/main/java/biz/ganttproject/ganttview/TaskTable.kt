@@ -363,6 +363,7 @@ class TaskTable(
             sync()
             treeTable.selectionModel.clearSelection()
             CellBehaviorBase.removeAnchor(treeTable)
+            // FIXME: this sometimes fails with NPE.
             val treeItem = task2treeItem[e.task]!!
             taskTableChartConnector.visibleTasks.clear()
             taskTableChartConnector.visibleTasks.addAll(getExpandedTasks())

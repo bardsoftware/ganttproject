@@ -23,15 +23,12 @@ import biz.ganttproject.app.BarrierEntrance
 import biz.ganttproject.customproperty.CalculatedPropertyUpdater
 import biz.ganttproject.customproperty.CustomPropertyEvent
 import biz.ganttproject.customproperty.CustomPropertyListener
-import biz.ganttproject.ganttview.TaskFilterManager
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.ProjectEventListener
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.*
-import net.sourceforge.ganttproject.undo.GPUndoListener
-import javax.swing.event.UndoableEditEvent
 
 /**
  * Holds the current state of a Gantt project, updating it on events.
@@ -43,7 +40,7 @@ internal class ProjectEventListenerImpl(
   private val taskManagerSupplier: ()->TaskManager,
   private val calculatedPropertyUpdater: CalculatedPropertyUpdater,
   private val filterUpdater: ()->Unit)
-  : TaskListener, ProjectEventListener.Stub(), GPUndoListener, CustomPropertyListener {
+  : TaskListener, ProjectEventListener.Stub(), CustomPropertyListener {
 
   private fun withLogger(errorMessage: () -> String, body: () -> Unit) {
     try {
@@ -111,13 +108,6 @@ internal class ProjectEventListenerImpl(
     // ...
   }
 
-  override fun undoableEditHappened(e: UndoableEditEvent?) {
-    calculatedPropertyUpdater.update()
-  }
-
-  override fun undoOrRedoHappened() {
-  }
-
   override fun projectRestoring(completion: Barrier<Document?>) {
     completion.await {
       projectDatabase.shutdown()
@@ -125,9 +115,6 @@ internal class ProjectEventListenerImpl(
       taskManagerSupplier().tasks.forEach(projectDatabase::insertTask)
       calculatedPropertyUpdater.update();
     }
-  }
-
-  override fun undoReset() {
   }
 
   override fun customPropertyChange(event: CustomPropertyEvent) {

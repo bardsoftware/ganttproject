@@ -30,7 +30,7 @@ import java.io.File
 import java.math.BigDecimal
 import java.time.LocalDate
 
-data class Completion(val posStart: Int, val posEnd: Int, val text: String)
+data class Completion(val posStart: Int, val posEnd: Int, val text: String, val displayText: String = text)
 
 interface GPObservable<T> {
   var value: T

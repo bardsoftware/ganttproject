@@ -27,6 +27,7 @@ import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.customproperty.CalculationMethodValidator
 import biz.ganttproject.customproperty.CustomPropertyClass
+import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.customproperty.ExpressionAutoCompletion
 import biz.ganttproject.customproperty.SimpleSelect
 import javafx.collections.FXCollections
@@ -35,11 +36,16 @@ import net.sourceforge.ganttproject.storage.ProjectDatabase
 /**
  * Shows a dialog that allows for creating custom task filters.
  */
-fun showFilterDialog(filterManager: TaskFilterManager, projectDatabase: ProjectDatabase) {
+fun showFilterDialog(
+  filterManager: TaskFilterManager,
+  customPropertyManager: CustomPropertyManager,
+  projectDatabase: ProjectDatabase
+) {
   dialog(title = i18n.formatText("title")) { dlg ->
     val listItems = FXCollections.observableArrayList(filterManager.filters)
     val editItem = ObservableObject<TaskFilter?>("", null)
-    val editorModel = FilterEditorModel(editItem, CalculationMethodValidator(projectDatabase), ExpressionAutoCompletion()::complete)
+    val expressionCompletion = ExpressionAutoCompletion(customPropertyManager)
+    val editorModel = FilterEditorModel(editItem, CalculationMethodValidator(projectDatabase), expressionCompletion::complete)
     val dialogModel = ItemListDialogModel<TaskFilter>(
       listItems,
       newItemFactory = filterManager::createCustomFilter,

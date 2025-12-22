@@ -113,7 +113,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private final Label filterTaskLabel = new Label();
 
   private final Supplier<TaskFilterActionSet> filterActions = Suppliers.memoize(() ->
-    new TaskFilterActionSet(taskTable.getFilterManager(), getProject().getProjectDatabase())
+    new TaskFilterActionSet(taskTable.getFilterManager(), taskTable.getCustomPropertyManager(), getProject().getProjectDatabase())
   );
 
   private FXToolbarBuilder createToolbarBuilder() {

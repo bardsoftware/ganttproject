@@ -20,10 +20,6 @@ package net.sourceforge.ganttproject.undo
 
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.document.Document
-import net.sourceforge.ganttproject.storage.DummyTxn
-import net.sourceforge.ganttproject.storage.ProjectDatabase
-import net.sourceforge.ganttproject.storage.ProjectDatabaseException
-import net.sourceforge.ganttproject.storage.ProjectDatabaseTxn
 import java.io.IOException
 import javax.swing.undo.AbstractUndoableEdit
 import javax.swing.undo.CannotRedoException
@@ -40,26 +36,21 @@ class UndoableEditImpl(
     val displayName: String,
     val newAutosave: ()->Document,
     val restore: (Document)->Unit,
-    val projectDatabase: ProjectDatabase
+    val txn: UndoableEditTxn
   )
   private val myDocumentBefore: Document
 
   private val myDocumentAfter: Document
 
-  private val projectDatabaseTxn: ProjectDatabaseTxn
-
   init {
     myDocumentBefore = saveFile()
-    projectDatabaseTxn = try {
-      args.projectDatabase.startTransaction(args.displayName)
-    } catch (ex: ProjectDatabaseException) {
-      DummyTxn()
-    }
+    args.txn.start(args.displayName)
     try {
       editImpl.run()
-      projectDatabaseTxn.commit()
+      args.txn.commit()
     } catch (ex: Exception) {
       GPLogger.log(ex)
+      args.txn.rollback(ex)
       //projectDatabaseTxn.rollback()
     }
     myDocumentAfter = saveFile()
@@ -84,11 +75,7 @@ class UndoableEditImpl(
   override fun redo() {
     try {
       restoreDocument(myDocumentAfter)
-      try {
-        projectDatabaseTxn.redo()
-      } catch (e: ProjectDatabaseException) {
-        GPLogger.log(e)
-      }
+      args.txn.redo()
     } catch (e: Document.DocumentException) {
       undoRedoExceptionHandler(e)
     } catch (e: IOException) {
@@ -100,11 +87,7 @@ class UndoableEditImpl(
   override fun undo() {
     try {
       restoreDocument(myDocumentBefore)
-      try {
-        projectDatabaseTxn.undo()
-      } catch (e: ProjectDatabaseException) {
-        GPLogger.log(e)
-      }
+      args.txn.undo()
     } catch (e: Document.DocumentException) {
       undoRedoExceptionHandler(e)
     } catch (e: IOException) {

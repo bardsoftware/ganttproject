@@ -32,7 +32,8 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.task.event.TaskListener
-import net.sourceforge.ganttproject.undo.GPUndoListener
+import net.sourceforge.ganttproject.undo.UndoableEditTxn
+import net.sourceforge.ganttproject.undo.UndoableEditTxnFactory
 
 /**
  * ProjectDatabase implementation with lazy initialization. After each shutdown, a new database is created.
@@ -63,7 +64,7 @@ class LazyProjectDatabaseProxy(
     }
   }
 
-  var isProjectOpen: Boolean = false
+  var isProjectOpen: Boolean = true
 
   private var lazyProjectDatabase: ProjectDatabase? = null
   private val calculatedPropertyUpdater by lazy { CalculatedPropertyUpdater(this,
@@ -164,6 +165,41 @@ class LazyProjectDatabaseProxy(
   fun createProjectEventListener(): ProjectEventListener = projectEventListenerImpl
   fun createTaskEventListener(): TaskListener = projectEventListenerImpl
 
-  fun createUndoListener(): GPUndoListener = projectEventListenerImpl
+  fun createUndoTxnFactory(): UndoableEditTxnFactory = {
+    UndoableEditTxnImpl()
+  }
+
   fun createTaskCustomPropertyListener(): CustomPropertyListener  = projectEventListenerImpl
+
+  private inner class UndoableEditTxnImpl : UndoableEditTxn {
+    var txn: ProjectDatabaseTxn? = null
+    override fun start(displayName: String) {
+      txn = getDatabase().startTransaction(displayName)
+    }
+
+    override fun commit() {
+      try {
+        txn?.commit()
+        calculatedPropertyUpdater.update()
+      } catch (ex: ProjectDatabaseException) {
+        GPLogger.log(ex)
+      }
+      finally {
+        txn = null
+      }
+    }
+
+    override fun rollback(ex: Throwable) {
+    }
+
+    override fun undo() {
+      txn?.undo()
+    }
+
+    override fun redo() {
+      txn?.redo()
+    }
+  }
 }
+
+

@@ -227,7 +227,7 @@ class PropertyPaneBuilder(private val localizer: Localizer, private val gridPane
       else -> CustomTextField().also {
         AutoCompletionTextFieldBinding(textField = it, suggestionProvider = { req ->
           property.completions(req.userText, it.caretPosition)
-        }, converter = { it.text }).also {
+        }, converter = { it.displayText }).also {
           isEscCloseEnabled.bind(it.autoCompletionPopup.showingProperty().not())
         }
         displayOptions?.rightNode?.let { rightNode -> it.right = rightNode }

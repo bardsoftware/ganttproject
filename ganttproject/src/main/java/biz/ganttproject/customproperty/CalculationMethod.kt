@@ -22,7 +22,6 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.option.Completion
 import biz.ganttproject.storage.db.Tables
-import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ColumnConsumer
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException
@@ -69,13 +68,17 @@ private val ourTaskTableFields: List<String> = Tables.TASKVIEWFORCOMPUTEDCOLUMNS
   )
 }
 
-class ExpressionAutoCompletion {
+class ExpressionAutoCompletion(private val customColumnsManager: CustomPropertyManager) {
   fun complete(text: String, pos: Int): List<Completion> {
     var seekPos = min(pos, text.length - 1)
     while (seekPos >= 0 && (text[seekPos].isJavaIdentifierPart() || text[seekPos].isJavaIdentifierStart())) {
       seekPos--
     }
     val completionPrefix = if (seekPos + 1 in 0..text.length && pos+1 in 0..text.length) text.substring(seekPos + 1, pos + 1) else ""
-    return ourTaskTableFields.filter { it.startsWith(completionPrefix) }.sorted().map { Completion(seekPos + 1, pos + 1, it) }
+    return ourTaskTableFields.filter { it.startsWith(completionPrefix) }.sorted().map {
+      Completion(seekPos + 1, pos + 1, it, it)
+    } + customColumnsManager.definitions.filter { it.id.startsWith(completionPrefix) }.sortedBy { it.id }.map {
+      Completion(seekPos + 1, pos + 1, it.id, "${it.id} [${it.name}]")
+    }
   }
 }

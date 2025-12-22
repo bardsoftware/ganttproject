@@ -59,7 +59,7 @@ import java.util.*
 class AutoCompletionTextFieldBinding<T: Completion>(
   textField: TextField,
   suggestionProvider: Callback<ISuggestionRequest, Collection<T>>,
-  converter: (T)->String = {it.toString()}
+  converter: (T)->String = { it.toString() }
 ) : AutoCompletionBinding<T>(textField, suggestionProvider, converter) {
   /***************************************************************************
    * *

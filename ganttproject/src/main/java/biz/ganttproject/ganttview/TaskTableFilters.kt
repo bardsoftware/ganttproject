@@ -32,8 +32,9 @@ import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.event.TaskListenerAdapter
-import net.sourceforge.ganttproject.undo.GPUndoListener
-import javax.swing.event.UndoableEditEvent
+import net.sourceforge.ganttproject.undo.UndoableEditTxn
+import net.sourceforge.ganttproject.undo.UndoableEditTxnFactory
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Encapsulates the task filter properties.
@@ -107,7 +108,12 @@ object BuiltInFilters {
 class TaskFilterManager(private val taskManager: TaskManager, private val projectDatabase: ProjectDatabase) {
   // This is a set of task IDs that are retained by the current active filter.
   private val filterResults: MutableSet<Int> = mutableSetOf()
+  private val hasUpdatesInTxn = AtomicBoolean(false)
+
   val filterFxn: TaskFilterFxn = { _, child ->
+    if (hasUpdatesInTxn.get()) {
+      refreshCustomFilterResults()
+    }
     (child?.taskID?.let { filterResults.contains(it) } != false).also {
       if (it) LOGGER.debug("Custom filter returned true for task $child. currently filtered tasks: $filterResults")
     }
@@ -126,16 +132,8 @@ class TaskFilterManager(private val taskManager: TaskManager, private val projec
   // How many tasks are filtered out.
   val hiddenTaskCount = SimpleIntegerProperty(0)
 
-  // If we have a custom filter, we need to refresh its results on every undoable edit or undo/redo.
-  val undoListener = object: GPUndoListener {
-    override fun undoOrRedoHappened() {
-      refreshCustomFilterResults()
-    }
-    override fun undoReset() {}
-
-    override fun undoableEditHappened(e: UndoableEditEvent?) {
-      refreshCustomFilterResults()
-    }
+  fun createUndoTxnFactory(): UndoableEditTxnFactory = {
+    UndoableEditTxnImpl()
   }
 
   // This is the filter that is currently active.
@@ -161,8 +159,17 @@ class TaskFilterManager(private val taskManager: TaskManager, private val projec
 
   init {
     taskManager.addTaskListener(TaskListenerAdapter().also {
-      it.taskProgressChangedHandler = { _ -> if (activeFilter != VOID_FILTER) sync() }
-      it.taskScheduleChangedHandler = { _ -> if (activeFilter != VOID_FILTER) sync() }
+      it.taskProgressChangedHandler = { _ ->
+        hasUpdatesInTxn.set(true)
+        if (activeFilter != VOID_FILTER) sync()
+      }
+      it.taskScheduleChangedHandler = { _ ->
+        hasUpdatesInTxn.set(true)
+        if (activeFilter != VOID_FILTER) sync()
+      }
+      it.taskAddedHandler = {
+        hasUpdatesInTxn.set(true)
+      }
     })
   }
 
@@ -230,10 +237,27 @@ class TaskFilterManager(private val taskManager: TaskManager, private val projec
 
     filterResults.clear()
     filterResults.addAll(retainedTaskNums)
-    sync()
-//
   }
   internal var sync: ()->Unit = {}
+
+  private inner class UndoableEditTxnImpl : UndoableEditTxn {
+    override fun start(displayName: String) {}
+
+    override fun commit() {
+      refreshCustomFilterResults()
+      hasUpdatesInTxn.set(false)
+    }
+
+    override fun rollback(ex: Throwable) {}
+
+    override fun undo() {
+      refreshCustomFilterResults()
+    }
+
+    override fun redo() {
+      refreshCustomFilterResults()
+    }
+  }
 }
 
 private fun DefaultBooleanOption.asJavafxProperty() = SimpleBooleanProperty(this.value).also {

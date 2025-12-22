@@ -24,7 +24,6 @@ import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.parser.ParserFactory
-import net.sourceforge.ganttproject.storage.ProjectDatabase
 import java.io.IOException
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
@@ -32,6 +31,34 @@ import javax.swing.undo.CannotRedoException
 import javax.swing.undo.CannotUndoException
 import javax.swing.undo.UndoManager
 import javax.swing.undo.UndoableEditSupport
+
+interface UndoableEditTxn {
+  fun start(displayName: String)
+  fun commit()
+  fun rollback(ex: Throwable)
+  fun undo()
+  fun redo()
+}
+
+typealias UndoableEditTxnFactory = () -> UndoableEditTxn
+interface GPUndoManager {
+  fun undoableEdit(localizedName: String, runnableEdit: Runnable)
+  fun canUndo(): Boolean
+  fun canRedo(): Boolean
+
+  @Throws(CannotUndoException::class)
+  fun undo()
+
+  @Throws(CannotRedoException::class)
+  fun redo()
+
+  val undoPresentationName: String
+  val redoPresentationName: String
+  fun addUndoableEditListener(listener: GPUndoListener)
+  fun removeUndoableEditListener(listener: GPUndoListener)
+  fun die()
+  fun addUndoableEditTxnFactory(factory: UndoableEditTxnFactory)
+}
 
 /**
  * UndoManager implementation, it manages the undoable edits in GanttProject
@@ -41,12 +68,12 @@ import javax.swing.undo.UndoableEditSupport
 open class UndoManagerImpl(
   val project: IGanttProject?,
   private val myParserFactory: ParserFactory?,
-  val documentManager: DocumentManager,
-  val projectDatabase: ProjectDatabase
+  val documentManager: DocumentManager
 ) : GPUndoManager {
   private val myUndoEventDispatcher = UndoableEditSupport()
   private val mySwingUndoManager: UndoManager = UndoManager()
   private var swingEditImpl: UndoableEditImpl? = null
+  private val txnFactories = mutableListOf<UndoableEditTxnFactory>()
 
   init {
     GanttLanguage.getInstance().addListener {
@@ -59,11 +86,12 @@ open class UndoManagerImpl(
 
   override fun undoableEdit(localizedName: String, editImpl: Runnable) {
     try {
+
       swingEditImpl = UndoableEditImpl(UndoableEditImpl.Args(
         displayName = localizedName,
         newAutosave = { autoSaveManager.newAutoSaveDocument() },
         restore = { project?.restore(it) },
-        projectDatabase = projectDatabase
+        txn = CompositeUndoableEditTxn(txnFactories)
       ), editImpl)
       mySwingUndoManager.addEdit(swingEditImpl)
       fireUndoableEditHappened(swingEditImpl!!)
@@ -117,12 +145,11 @@ open class UndoManagerImpl(
     fireUndoOrRedoHappened()
   }
 
-  override fun getUndoPresentationName(): String {
-    return mySwingUndoManager.undoPresentationName
-  }
+  override val undoPresentationName get() = mySwingUndoManager.undoPresentationName
+  override val redoPresentationName get() = mySwingUndoManager.redoPresentationName
 
-  override fun getRedoPresentationName(): String {
-    return mySwingUndoManager.redoPresentationName
+  override fun addUndoableEditTxnFactory(factory: UndoableEditTxnFactory) {
+    txnFactories.add(factory)
   }
 
   override fun addUndoableEditListener(listener: GPUndoListener) {
@@ -140,4 +167,17 @@ open class UndoManagerImpl(
     mySwingUndoManager.discardAllEdits()
     fireUndoReset()
   }
+}
+
+private class CompositeUndoableEditTxn(private val factories: List<UndoableEditTxnFactory>) : UndoableEditTxn {
+  private val txns = factories.map { it() }
+  override fun start(displayName: String) = txns.forEach { it.start(displayName) }
+
+  override fun commit() = txns.forEach { it.commit() }
+
+  override fun rollback(ex: Throwable) = txns.forEach { it.rollback(ex) }
+
+  override fun undo() = txns.forEach { it.undo() }
+
+  override fun redo() = txns.forEach { it.redo() }
 }

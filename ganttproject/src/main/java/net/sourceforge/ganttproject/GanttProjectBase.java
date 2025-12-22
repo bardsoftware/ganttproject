@@ -294,14 +294,15 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
         return myResourceTableSupplier.get().getColumnList();
       }
     };
-    myUndoManager = new UndoManagerImpl(this, null, myDocumentManager, myProjectDatabase) {
+    myUndoManager = new UndoManagerImpl(this, null, myDocumentManager) {
       @Override
       protected ParserFactory getParserFactory() {
         return GanttProjectBase.this.getParserFactory();
       }
     };
-    myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
-    myUndoManager.addUndoableEditListener(getTaskFilterManager().getUndoListener());
+    myUndoManager.addUndoableEditTxnFactory(databaseProxy.createUndoTxnFactory());
+    //myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
+    myUndoManager.addUndoableEditTxnFactory(getTaskFilterManager().createUndoTxnFactory());
     myProjectUIFacade = new ProjectUIFacadeImpl(stage, myUIFacade, myDocumentManager, myUndoManager, myProjectImpl);
     databaseProxy.setProjectOpenActivityFactory(myProjectUIFacade.getProjectOpenActivityFactory());
 
