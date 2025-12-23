@@ -429,11 +429,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   }
 
   @Override
-  public void showSettingsDialog(String pageID) {
-    myUIFacade.showSettingsDialog(pageID);
-  }
-
-  @Override
   public NotificationManager getNotificationManager() {
     return myUIFacade.getNotificationManager();
   }

@@ -43,6 +43,7 @@ import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderPanel
 import net.sourceforge.ganttproject.gui.options.model.OptionPageProvider
 import net.sourceforge.ganttproject.plugins.PluginManager
+import javax.swing.SwingUtilities
 
 data class OptionPageItem(
   override var title: String,
@@ -60,7 +61,9 @@ data class OptionPageItem(
         it.buildNode()
       } else {
         SwingNode().also {
-          it.content = OptionPageProviderPanel(provider, project, uiFacade).component
+          SwingUtilities.invokeLater {
+            it.content = OptionPageProviderPanel(provider, project, uiFacade).component
+          }
         }
       }
     } ?: Label(title)

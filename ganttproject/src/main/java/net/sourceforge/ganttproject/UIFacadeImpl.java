@@ -49,7 +49,6 @@ import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.gui.*;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder.I18N;
-import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
 import net.sourceforge.ganttproject.gui.options.model.GP1XOptionConverter;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManager;
 import net.sourceforge.ganttproject.gui.scrolling.ScrollingManagerImpl;
@@ -400,12 +399,6 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     )));
   }
 
-  @Override
-  public void showSettingsDialog(String pageID) {
-    SettingsDialog2 dialog = new SettingsDialog2(myProject, this, "settings.app.pageOrder", "settings.app");
-    dialog.show(pageID);
-  }
-
   protected void onViewLog() {
     ViewLogDialog.show();
   }
@@ -619,11 +612,18 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
   private void updateFonts() {
     if (myOriginalFonts.isEmpty()) {
       UIDefaults defaults = UIManager.getDefaults();
-      for (Enumeration<Object> keys = defaults.keys(); keys.hasMoreElements(); ) {
-        String key = String.valueOf(keys.nextElement());
-        Object obj = UIManager.get(key);
-        if (obj instanceof Font f) {
-          myOriginalFonts.put(key, f);
+      for (int i = 0; i < 3; i++) {
+        try {
+          for (Enumeration<Object> keys = defaults.keys(); keys.hasMoreElements(); ) {
+            String key = String.valueOf(keys.nextElement());
+            Object obj = UIManager.get(key);
+            if (obj instanceof Font f) {
+              myOriginalFonts.put(key, f);
+            }
+          }
+          break;
+        } catch (ConcurrentModificationException e) {
+          continue;
         }
       }
     }

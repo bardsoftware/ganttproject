@@ -124,12 +124,7 @@ public class ConsoleUIFacade implements UIFacade {
     e.printStackTrace();
   }
 
-  public void showSettingsDialog(String pageID) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
+    @Override
   public GanttChart getGanttChart() {
     return myRealFacade == null ? null : myRealFacade.getGanttChart();
   }

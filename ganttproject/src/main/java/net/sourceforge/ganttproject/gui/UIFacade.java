@@ -110,7 +110,6 @@ public interface UIFacade {
 
   void showNotificationDialog(NotificationChannel channel, String message);
 
-  void showSettingsDialog(String pageID);
   /**
    * Shows the given exception in an error dialog and also puts it into the log
    * file
