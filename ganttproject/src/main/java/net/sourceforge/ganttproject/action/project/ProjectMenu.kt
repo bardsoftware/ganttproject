@@ -52,7 +52,7 @@ class ProjectMenu(project: GanttProject, window: Window, key: String) : JMenu(GP
       StorageDialogBuilder.Mode.SAVE, "project.saveas"
   )
 
-  private val projectSettingsAction = ProjectPropertiesAction(project)
+  private val projectSettingsAction = ProjectPropertiesAction(project.project, project.uiFacade)
   private val importAction = ProjectImportAction(project.uiFacade, project)
   private val exportAction = ProjectExportAction(
       project.uiFacade, project, project.ganttOptions.pluginPreferences)

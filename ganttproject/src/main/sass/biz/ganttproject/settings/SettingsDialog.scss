@@ -20,41 +20,45 @@
 .dlg-list-view-editor.dlg-settings {
   .content-pane {
     .list-view {
-      -fx-background-color: white;
+      -fx-background-color: transparent;
       -fx-border-width: 0;
+      -fx-padding: 2ex 0 2ex 0;
     }
     .column-item-cell {
+      -fx-background-color: transparent;
+      -fx-padding: 10;
       &.settings-item-header {
-        -fx-font-weight: 900;
-        -fx-font-size: 110%;
-        -fx-background-color: $gp-zebra-gray;
-        -fx-border-color: $gp-orange;
+        -fx-font-weight: bold;
+        -fx-font-size: 120%;
+        -fx-border-color: $gp-medium-gray;
         -fx-border-width: 0 0 2 0;
-        -fx-padding: 5 10 5 5;
+        -fx-padding: 5 10 5 0;
         -fx-background-insets: 1ex 0 0 0;
-        -fx-border-insets: 10 0 2 0;
+        -fx-border-insets: 10 0 5 10;
       }
       &.settings-item-page {
         -fx-fill: $gp-dark-gray;
         -fx-text-fill: $gp-dark-gray;
+        -fx-border-color: transparent;
+        -fx-border-width: 0 0 0 2;
         &:hover {
           -fx-cursor: hand;
           -fx-fill: $gp-medium-gray;
-          -fx-border-color: transparent;
-          -fx-border-width: 0 0 0 2;
+          -fx-background-color: whitesmoke;
         }
         &:selected {
-          -fx-border-color: $gp-medium-gray;
+          -fx-border-color: transparent;
+          -fx-background-color: $gp-orange;
           -fx-border-width: 0 0 0 2;
         }
 
       }
       &.settings-item-page {
-        -fx-background-color: white;
+        -fx-background-color: transparent;
       }
     }
     .column-item-cell-empty {
-      -fx-background-color: white;
+      -fx-background-color: transparent;
     }
   }
 }

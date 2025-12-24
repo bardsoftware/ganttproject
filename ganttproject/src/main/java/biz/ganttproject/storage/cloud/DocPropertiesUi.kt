@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.FxUiComponent
 import biz.ganttproject.app.*
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.VBoxBuilder
@@ -31,6 +32,7 @@ import javafx.embed.swing.JFXPanel
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
@@ -414,7 +416,7 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
   }
 }
 
-class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
+class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud"), FxUiComponent {
 
   private var paneElements: DocPropertiesUi.LockOfflinePaneElements? = null
   private var onActive: ()->Unit = {}
@@ -436,14 +438,17 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
   }
 
   private fun buildScene(): Scene {
-    val onlineDocument = this.project.document.asOnlineDocument() ?: return buildNotOnlineDocumentScene()
+    return Scene(buildNode() as Parent?)
+  }
+  override fun buildNode(): Node {
+    val onlineDocument = this.project.document.asOnlineDocument() ?: return buildNotOnlineDocumentNode()
     return if (onlineDocument is GPCloudDocument) {
       val group = BorderPane()
       val dialogBuildApi = DialogControllerPane(group)
       DocPropertiesUi(errorUi = {}, busyUi = {}).addContent(dialogBuildApi, onlineDocument, this::onOnlineDocFetch)
-      return Scene(group)
+      group
     } else {
-      buildNotOnlineDocumentScene()
+      buildNotOnlineDocumentNode()
     }
   }
 
@@ -477,7 +482,7 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
     }
   }
 
-  private fun buildNotOnlineDocumentScene(): Scene {
+  private fun buildNotOnlineDocumentNode(): Node {
     val wrapperPane = BorderPane()
     this.onActive = {
       val pageChanger = createFlowPageChanger(wrapperPane)
@@ -495,7 +500,7 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud") {
         }
       }
     }
-    return Scene(wrapperPane)
+    return wrapperPane
   }
 }
 

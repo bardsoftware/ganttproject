@@ -18,18 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.project;
 
-import net.sourceforge.ganttproject.GanttProject;
+import biz.ganttproject.settings.SettingsDialogFx;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.gui.options.SettingsDialog2;
+import net.sourceforge.ganttproject.gui.UIFacade;
 
 import java.awt.event.ActionEvent;
 
 class ProjectPropertiesAction extends GPAction {
-  private final GanttProject myMainFrame;
+  private final IGanttProject myProject;
+  private final UIFacade myUiFacade;
 
-  ProjectPropertiesAction(GanttProject mainFrame) {
+  ProjectPropertiesAction(IGanttProject project, UIFacade uiFacade) {
     super("project.properties");
-    myMainFrame = mainFrame;
+    myProject = project;
+    myUiFacade = uiFacade;
   }
 
   @Override
@@ -42,12 +45,13 @@ class ProjectPropertiesAction extends GPAction {
     if (calledFromAppleScreenMenu(e)) {
       return;
     }
-    myMainFrame.getUIFacade().getUndoManager().undoableEdit(getI18n(getID()), new Runnable() {
+    myUiFacade.getUndoManager().undoableEdit(getI18n(getID()), new Runnable() {
       @Override
       public void run() {
-        SettingsDialog2 settingsDialog = new SettingsDialog2(myMainFrame.getProject(), myMainFrame.getUIFacade(),
-            "settings.project.pageOrder", "project.properties.dialog.title");
-        settingsDialog.show();
+//        SettingsDialog2 settingsDialog = new SettingsDialog2(myMainFrame.getProject(), myMainFrame.getUIFacade(),
+//            "settings.project.pageOrder", "project.properties.dialog.title");
+//        settingsDialog.show();
+        new SettingsDialogFx(myProject, myUiFacade, "settings.project.pageOrder", "project.properties.dialog.title").showSettingsDialog();
       }
     });
   }
