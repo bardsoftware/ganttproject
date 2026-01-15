@@ -50,7 +50,7 @@ public class ExportFileWizardImpl extends WizardImpl {
   private static List<Exporter> ourExporters;
 
   public ExportFileWizardImpl(UIFacade uiFacade, IGanttProject project, Preferences pluginPreferences) {
-    super(uiFacade, language.getText("exportWizard.dialog.title"));
+    super(uiFacade, language.getText("exportWizard.dialog.title"), "wizard.export");
     final Preferences exportNode = pluginPreferences.node("/instance/net.sourceforge.ganttproject/export");
     myProject = project;
     myState = new State();

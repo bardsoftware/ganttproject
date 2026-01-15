@@ -58,7 +58,6 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -591,7 +590,7 @@ public class OptionsPageBuilder {
         Dialog dialog = myUiFacade.createDialog(
             colorChooser.buildComponent(),
             new Action[] {okAction, cancelAction},
-            myi18n.getColorChooserTitle(option));
+            myi18n.getColorChooserTitle(option), null);
         dialog.show();
       };
     };

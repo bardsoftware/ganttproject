@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action.view;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import javax.swing.Action;
@@ -64,7 +63,7 @@ public class ViewChartOptionsDialogAction extends GPAction {
         rollback();
       }
     };
-    myUIFacade.createDialog(createDialogComponent(), new Action[] { okAction, cancelAction }, "").show();
+    myUIFacade.createDialog(createDialogComponent(), new Action[] { okAction, cancelAction }, "", null).show();
   }
 
   private void commit() {

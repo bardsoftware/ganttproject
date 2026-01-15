@@ -67,11 +67,13 @@ public abstract class WizardImpl {
   private final String myTitle;
 
   private Dialog myDialog;
+  private String myDialogId;
 
-  public WizardImpl(UIFacade uiFacade, String title) {
+  public WizardImpl(UIFacade uiFacade, String title, String dialogId) {
     // super(frame, title, true);
     myUIFacade = uiFacade;
     myTitle = title;
+    myDialogId = dialogId;
     myCardLayout = new CardLayout();
     myPagesContainer = new JPanel(myCardLayout);
     myNextAction = new GPAction("next") {
@@ -132,10 +134,11 @@ public abstract class WizardImpl {
     myPagesContainer.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     adjustButtonState();
     myDialog = myUIFacade.createDialog(myPagesContainer, new Action[] { myBackAction, myNextAction, myOkAction,
-        myCancelAction }, myTitle);
+        myCancelAction }, myTitle, myDialogId);
     myDialog.show();
     myDialog.center(Centering.SCREEN);
   }
+
 
   protected void addPageComponent(WizardPage page, int index) {
     String currentTitle = getCurrentPage().getTitle();

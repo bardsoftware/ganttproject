@@ -355,7 +355,7 @@ internal class ProjectOpenStrategy(
           adjustTasks(taskManager)
           project.isModified = true
         }
-      }), i18n.getText("legacyMilestones.title")).show()
+      }), i18n.getText("legacyMilestones.title"), null).show()
     }
 
     private fun adjustTasks(taskManager: TaskManager) {

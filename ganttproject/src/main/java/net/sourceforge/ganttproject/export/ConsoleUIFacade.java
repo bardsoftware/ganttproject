@@ -99,7 +99,7 @@ public class ConsoleUIFacade implements UIFacade {
   }
 
   @Override
-  public Dialog createDialog(JComponent content, Action[] buttonActions, String title) {
+  public Dialog createDialog(JComponent content, Action[] buttonActions, String title, String dialogId) {
     return null;
   }
 

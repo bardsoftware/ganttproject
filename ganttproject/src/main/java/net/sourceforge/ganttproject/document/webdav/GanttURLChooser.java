@@ -481,7 +481,7 @@ class GanttURLChooser {
       public void actionPerformed(ActionEvent arg0) {
         WebDavOptionPageProvider optionPage = new WebDavOptionPageProvider();
         optionPage.init(myProject, myUiFacade);
-        myUiFacade.createDialog(optionPage.buildPageComponent(), new Action[] {CancelAction.CLOSE}, "").show();
+        myUiFacade.createDialog(optionPage.buildPageComponent(), new Action[] {CancelAction.CLOSE}, "", null).show();
         updateUsernameAndPassword();
         myReloadAction.actionPerformed(null);
       }

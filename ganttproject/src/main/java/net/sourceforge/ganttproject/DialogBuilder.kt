@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject
 
 import biz.ganttproject.app.DIALOG_STYLESHEET
 import biz.ganttproject.app.DialogController
+import biz.ganttproject.app.DialogPlacement
 import biz.ganttproject.app.dialogFxBuild
 import biz.ganttproject.colorFromUiManager
 import biz.ganttproject.lib.fx.vbox
@@ -50,7 +51,7 @@ import javax.swing.SwingUtilities
  * Implementation of a JavaFX dialog with the content UI written in Swing.
  * This is intended to be used as a temporary solution during the transition of the dialogs from Swing to JavaFX.
  */
-class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<Action>, private val title: String): UIFacade.Dialog {
+class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<Action>, private val title: String, private val dialogId: String? = null): UIFacade.Dialog {
   private lateinit var controller: DialogController
   lateinit var dialog: Dialog<Unit>
   private var isCommitted = false
@@ -191,7 +192,7 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
 
   override fun show() {
     Platform.runLater {
-      dialog = dialogFxBuild {
+      dialog = dialogFxBuild(owner=DialogPlacement.applicationWindow, id = dialogId) {
         controller = it
         it.addStyleSheet(DIALOG_STYLESHEET)
         it.addStyleClass("dlg")
@@ -276,8 +277,8 @@ class DialogImplSwingInFx(content: JComponent, private val buttonActions: Array<
   }
 
 }
-fun createDialogFx(content: JComponent, buttonActions: Array<Action>, title: String): UIFacade.Dialog =
-  DialogImplSwingInFx(content, buttonActions, title)
+fun createDialogFx(content: JComponent, buttonActions: Array<Action>, title: String, dialogId: String? = null): UIFacade.Dialog =
+  DialogImplSwingInFx(content, buttonActions, title, dialogId)
 
 private fun centerStage(stage: Stage, width: Double, height: Double) {
   val screenBounds = Screen.getPrimary().getVisualBounds()

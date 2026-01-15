@@ -260,7 +260,7 @@ public abstract class TextFieldAndFileChooserComponent extends JPanel {
 //      setFile(fc.getSelectedFile());
 //      onFileChosen(myFile);
 //    }
-    myUiFacade.createDialog(fc, dialogActions, "").show();
+    myUiFacade.createDialog(fc, dialogActions, "", null).show();
   }
 
   private File getWorkingDir() {

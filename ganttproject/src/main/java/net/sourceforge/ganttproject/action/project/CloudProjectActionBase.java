@@ -54,7 +54,7 @@ abstract class CloudProjectActionBase extends GPAction {
     DocumentStorageUi webdavStorage = myDocumentManager.getWebDavStorageUi();
     DocumentStorageUi.Components components = isOpenUrl ? webdavStorage.open(document, receiver) : webdavStorage.save(document, receiver);
     myUiFacade.createDialog(components.contentPane, components.actions,
-        GanttLanguage.getInstance().getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url"))).show();
+        GanttLanguage.getInstance().getCorrectedLabel((isOpenUrl ? "project.open.url" : "project.save.url")), null).show();
     return result[0] == null ? null : myDocumentManager.getProxyDocument(result[0]);
   }
 }

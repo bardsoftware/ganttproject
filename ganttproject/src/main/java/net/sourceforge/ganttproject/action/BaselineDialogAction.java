@@ -29,9 +29,6 @@ import javax.swing.*;
 
 import net.sourceforge.ganttproject.GanttPreviousState;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.action.CancelAction;
-import net.sourceforge.ganttproject.action.GPAction;
-import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
 import net.sourceforge.ganttproject.gui.EditableList;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -143,6 +140,6 @@ public class BaselineDialogAction extends GPAction {
     JPanel contentPanel = new JPanel(new BorderLayout());
     contentPanel.add(list.createDefaultComponent(), BorderLayout.CENTER);
     contentPanel.add(optionsBuilder.createGroupComponent(myUiFacade.getGanttChart().getBaselineColorOptions()), BorderLayout.SOUTH);
-    myUiFacade.createDialog(contentPanel, actions, getI18n("baseline.dialog.title")).show();
+    myUiFacade.createDialog(contentPanel, actions, getI18n("baseline.dialog.title"), null).show();
   }
 }

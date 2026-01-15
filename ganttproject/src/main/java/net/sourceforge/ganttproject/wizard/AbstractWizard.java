@@ -92,7 +92,7 @@ public class AbstractWizard {
     myCancelAction = new CancelAction();
     myPagesContainer.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     myDialog = myUIFacade.createDialog(myPagesContainer, new Action[] { myBackAction, myNextAction, myOkAction,
-        myCancelAction }, myTitle);
+        myCancelAction }, myTitle, null);
     addPageComponent(firstPage);
     myPages.add(firstPage);
     myDialog.layout();

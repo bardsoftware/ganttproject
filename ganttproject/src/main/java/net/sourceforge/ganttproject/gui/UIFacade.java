@@ -104,7 +104,7 @@ public interface UIFacade {
 
   void showOptionDialog(int messageType, String message, Action[] actions);
 
-  Dialog createDialog(JComponent content, Action[] buttonActions, String title);
+  Dialog createDialog(JComponent content, Action[] buttonActions, String title, String dialogId);
 
   void showErrorDialog(String errorMessage);
 

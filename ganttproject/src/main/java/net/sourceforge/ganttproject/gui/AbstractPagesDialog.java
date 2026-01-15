@@ -61,7 +61,7 @@ public abstract class AbstractPagesDialog {
       }
     };
     myUIFacade.createDialog(getComponent(), new Action[]{okAction, CancelAction.EMPTY},
-        GanttLanguage.getInstance().getCorrectedLabel(myTitleKey)).show();
+        GanttLanguage.getInstance().getCorrectedLabel(myTitleKey), null).show();
     if (pageID != null) {
       for (int i = 0; i < myItems.size(); i++) {
         if (pageID.equals(myItems.get(i).id)) {

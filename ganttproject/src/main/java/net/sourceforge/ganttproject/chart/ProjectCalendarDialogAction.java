@@ -20,20 +20,17 @@ package net.sourceforge.ganttproject.chart;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.util.logging.Level;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 
-import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.action.OkAction;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.ProjectCalendarOptionPageProvider;
-import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
  * This action shows a project calendar settings page.
@@ -69,7 +66,7 @@ public class ProjectCalendarDialogAction extends GPAction {
           }
         });
       }
-    }, CancelAction.EMPTY }, getLocalizedDescription()).show();
+    }, CancelAction.EMPTY }, getLocalizedDescription(), null).show();
   }
 
   private void onCalendarEditCommited(ProjectCalendarOptionPageProvider configPage) {

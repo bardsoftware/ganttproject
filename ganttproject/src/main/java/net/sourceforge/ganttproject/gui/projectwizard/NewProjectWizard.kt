@@ -45,7 +45,7 @@ fun createNewProject(project: IGanttProject, uiFacade: UIFacade): Barrier<NewPro
   val calendarCopy = project.activeCalendar.copy()
   val weekendPage = WeekendConfigurationPage(calendarCopy, i18n, uiFacade)
 
-  val newProjectWizard = object : WizardImpl(uiFacade, i18n.newProjectWizardWindowTitle) {
+  val newProjectWizard = object : WizardImpl(uiFacade, i18n.newProjectWizardWindowTitle, "wizard.newProject") {
     override fun onOkPressed() {
       super.onOkPressed()
       result.resolve(NewProjectData(
