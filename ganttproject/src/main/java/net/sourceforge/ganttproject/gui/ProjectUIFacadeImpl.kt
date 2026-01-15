@@ -314,8 +314,8 @@ class ProjectUIFacadeImpl(
   override fun createProject(project: IGanttProject) {
     ensureProjectSaved(project).await { result ->
       if (result) {
-        project.close()
         createNewProject(project, myWorkbenchFacade).await { projectData ->
+          project.close()
           project.document = documentManager.newUntitledDocument()
 
           project.projectName = projectData.name
