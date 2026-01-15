@@ -64,7 +64,7 @@ jpackage --type app-image \
     --arguments '--verbosity 4' \
     --arguments '--version-dirs plugins:~/.ganttproject.d/updates' \
     --arguments '--app net.sourceforge.ganttproject.GanttProject' \
-    --copyright 'Copyright (C) 2025 BarD Software s.r.o.' \
+    --copyright 'Copyright (C) 2026 BarD Software s.r.o.' \
     --vendor 'BarD Software s.r.o.' \
     --app-version "${VERSION}" \
     --runtime-image "${OUTPUT}"/runtime \

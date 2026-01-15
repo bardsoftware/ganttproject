@@ -8,7 +8,7 @@ env:
     BUILD_NUMBER: 3390
     VERSION: 3.3.3390
     WINDOWS_APP_FOLDER_NAME: GanttProject-3.4-BetaI
-    MAC_APP_NAME: GanttProject 3.3 Beta I
+    MAC_APP_NAME: GanttProject 3.4 Beta I
     MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE }}
     MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_PWD }}
     MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_NAME }}
@@ -29,7 +29,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 21.0.7
+                  java-version: 21.0.9
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
@@ -80,7 +80,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 21.0.7
+                  java-version: 21.0.9
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
@@ -151,7 +151,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 21.0.7
+                  java-version: 21.0.9
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
@@ -199,7 +199,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 21.0.7
+                  java-version: 21.0.9
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject

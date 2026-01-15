@@ -22,7 +22,7 @@ jpackage -t msi -d build -i ganttproject-builder/dist-bin/ -n %WINDOWS_APP_FOLDE
   --runtime-image runtime --win-dir-chooser --win-menu --win-menu-group "GanttProject" ^
   --description "Free project scheduling and project management application with Gantt chart" ^
   --app-version %VERSION% ^
-  --copyright "Copyright 2024 BarD Software s.r.o." ^
+  --copyright "Copyright 2026 BarD Software s.r.o." ^
   --vendor "BarD Software s.r.o." ^
   --license-file LICENSE ^
   --file-associations build-cfg\file-associations.properties ^
