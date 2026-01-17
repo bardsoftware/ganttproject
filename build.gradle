@@ -101,6 +101,7 @@ def installLibs(jar, project) {
         from(jar.outputs.getFiles().getFiles().flatten())
         from(project.configurations.compileClasspath.minus(project.configurations.providedCompile.resolve())) {
             include "*.jar"
+            exclude "javafx*.jar"
         }
         rename { filename -> filename + ".lib" }
     }

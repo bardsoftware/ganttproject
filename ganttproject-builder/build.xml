@@ -56,7 +56,7 @@
              homepage="https://www.ganttproject.biz/"
              section="editors"
              priority="optional"
-             depends="java17-runtime | bellsoft-java17-runtime | zulu17-jre | openjdk-17-jre | openjdk-21-jre | bellsoft-java21-runtime | zulu21-jre"
+             depends="java21-runtime"
              conflicts="ganttproject-praha"
              replaces="ganttproject-praha"
              postrm="${distDebWork}/postrm"
@@ -82,6 +82,7 @@ GanttProject is distributed under GPLv3.
                 <include name="*.jar"/>
                 <include name="*.gan"/>
                 <include name="logging.properties"/>
+                <include name="logback.xml"/>
                 <include name="lib/**"/>
             </tarfileset>
             <tarfileset dir="${distBin}" filemode="755" prefix="usr/share/${package.name}">

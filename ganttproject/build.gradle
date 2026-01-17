@@ -140,6 +140,18 @@ task copyPlugin(dependsOn: jar) {
                 include "logback.xml"
             }
         }
+        def bootstrapLibDir = new File(rootProject.distBinDir, "lib")
+        copy {
+            into(bootstrapLibDir)
+            from(project.configurations.compileClasspath.minus(project.configurations.providedCompile.resolve())) {
+                if (project.hasProperty("withJavafx")) {
+                    include "javafx*.jar"
+                } else {
+                    exclude "*"
+                }
+            }
+        }
+
         copy {
             into(pluginDistDir)
             from(fileTree(".")) {

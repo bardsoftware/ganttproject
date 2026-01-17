@@ -5,13 +5,17 @@ buildscript {
             url "https://plugins.gradle.org/m2/"
         }
     }
-    dependencies {
-        classpath 'org.openjfx:javafx-plugin:0.1.0'
-    }
+//    dependencies {
+//        classpath 'org.openjfx:javafx-plugin:0.1.0'
+//    }
 }
 
-apply plugin: 'org.openjfx.javafxplugin'
-
+//apply plugin: 'org.openjfx.javafxplugin'
+//javafx {
+//    version = "21"
+//    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.swing' ]
+//}
+//
 ext {
     libDir = 'lib'
 }
@@ -68,10 +72,10 @@ dependencies {
     exported fileTree(dir: project.ext.libDir, include: ['*.jar'])
 }
 
-javafx {
-    version = "17"
-    modules = [ "javafx.controls","javafx.swing","javafx.web" ]
-}
+//javafx {
+//    version = "17"
+//    modules = [ "javafx.controls","javafx.swing","javafx.web" ]
+//}
 
 def pluginDistDir = new File(rootProject.pluginsDir, project.name)
 task copyPlugin(dependsOn: assemble) {
@@ -87,9 +91,6 @@ task copyPlugin(dependsOn: assemble) {
             into(new File(pluginDistDir, "lib"))
             from(configurations.exported) {
                 include "*.jar"
-                if (!project.hasProperty("withJavafx")) {
-                    exclude "javafx*.jar"
-                }
                 exclude "slf4j*.jar"
                 exclude "logback*.jar"
             }

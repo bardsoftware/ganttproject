@@ -189,7 +189,9 @@ if [ ! -f "$GP_HOME/eclipsito.jar" ]; then
   log "Can't find the required Eclipsito library at $GP_HOME/eclipsito.jar"
   exit 1
 fi
-CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME/lib/slf4j-api-2.0.17.jar:$GP_HOME/lib/logback-core-1.5.18.jar:$GP_HOME/lib/logback-classic-1.5.18.jar:$GP_HOME"
+CLASSPATH="$CLASSPATH:$GP_HOME/eclipsito.jar:$GP_HOME";
+for f in "$GP_HOME"/lib/*; do [ -f "$f" ] && CLASSPATH="$CLASSPATH:$f"; done
+
 export CLASSPATH
 BOOT_CLASS=com.bardsoftware.eclipsito.Launch
 
