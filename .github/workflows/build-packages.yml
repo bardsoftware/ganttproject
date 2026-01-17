@@ -6,7 +6,7 @@ on:
         paths: ['ganttproject-builder/BUILD-HISTORY-MAJOR']
 env:
     BUILD_NUMBER: 3390
-    VERSION: 3.3.3390
+    VERSION: 3.4.3390
     WINDOWS_APP_FOLDER_NAME: GanttProject-3.4-BetaI
     MAC_APP_NAME: GanttProject 3.4 Beta I
     MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE }}

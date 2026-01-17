@@ -78,5 +78,5 @@ cd $OUTPUT/GanttProject
 mv bin app
 ln -s app/GanttProject AppRun
 cd ..
-./appimagetool GanttProject/ GanttProject.AppImage
+./appimagetool GanttProject/ "ganttproject-${VERSION}.AppImage"
 rm -rf GanttProject/ runtime/ appimagetool
