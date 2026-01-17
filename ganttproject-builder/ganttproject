@@ -141,11 +141,11 @@ check_java() {
 
   VERSION="$( $JAVA_COMMAND -version 2>&1 | grep version | head -n 1)"
   log "...found $VERSION"
-  [[ "$VERSION" =~ 21\.? ]] && return 0;
-  [[ "$VERSION" =~ 22\.? ]] && return 0;
-  [[ "$VERSION" =~ 23\.? ]] && return 0;
-  [[ "$VERSION" =~ 24\.? ]] && return 0;
-  [[ "$VERSION" =~ 25\.? ]] && return 0;
+  [[ "$VERSION" =~ \"21\. ]] && return 0;
+  [[ "$VERSION" =~ \"22\. ]] && log "... this is not yet supported, sorry" && set JAVA_COMMAND="" && return 1;
+  [[ "$VERSION" =~ \"23\. ]] && log "... this is not yet supported, sorry" && set JAVA_COMMAND="" && return 1;
+  [[ "$VERSION" =~ \"24\. ]] && log "... this is not yet supported, sorry" && set JAVA_COMMAND="" && return 1;
+  [[ "$VERSION" =~ \"25\. ]] && log "... this is not yet supported, sorry" && set JAVA_COMMAND="" && return 1;
   log "...this seems to be an old Java Runtime (or maybe just too new)";
   JAVA_COMMAND=""
   return 1

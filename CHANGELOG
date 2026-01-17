@@ -1,3 +1,20 @@
+ganttproject (3.4.3390) unstable; urgency=low
+  * This is a beta version of GanttProject 3.4
+  * GanttProject 3.4 key updates:
+    - Custom filters
+    - Custom columns are supported in the calculated columns and filters
+    - Custom column values can be shown on the chart
+    - Installing updates from ZIP archives
+    - User interface lifting
+    - Auto-reopen of the last opened project
+    - Migration to Java 21
+    - AppImage package for Linux
+
+    The list of closed issues is available at
+    https://github.com/bardsoftware/ganttproject/milestone/20
+
+ -- Dmitry Barashev <contact@ganttproject.biz>  Mon, 5 Dec 2022 12:00:00 +0000
+
 ganttproject (3.3.3292) unstable; urgency=low
   * This is a beta version of GanttProject 3.3
   * GanttProject 3.3 key updates:
