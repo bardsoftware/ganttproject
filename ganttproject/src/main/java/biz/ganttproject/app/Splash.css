@@ -8,3 +8,7 @@
   -fx-padding: 40 0 0 60;
 }
 
+.version {
+  -fx-font-size: 20;
+  -fx-text-fill: whitesmoke;
+}

@@ -16,7 +16,7 @@
   <icon>ganttproject.ico</icon>
   <classPath>
     <mainClass>com.bardsoftware.eclipsito.Launch</mainClass>
-    <cp>%EXEDIR%;%EXEDIR%\eclipsito.jar;%EXEDIR%\lib\slf4j-api-2.0.4.jar;%EXEDIR%\lib\slf4j-jdk14-2.0.4.jar</cp>
+    <cp>%EXEDIR%;%EXEDIR%\eclipsito.jar;%EXEDIR%\lib\slf4j-api-2.0.17.jar;</cp>
     <cp>%EXEDIR%\lib\logback-classic-1.5.18.jar</cp>
     <cp>%EXEDIR%\lib\logback-core-1.5.18.jar</cp>
   </classPath>
@@ -28,13 +28,14 @@
     <maxVersion></maxVersion>
     <initialHeapSize>256</initialHeapSize>
     <maxHeapSize>2048</maxHeapSize>
+    <opt>-Dgpcloud=prod -Dorg.jooq.no-logo=true</opt>
   </jre>
   <versionInfo>
-    <fileVersion>3.3.3390.0</fileVersion>
-    <txtFileVersion>GanttProject 3.4 Beta</txtFileVersion>
+    <fileVersion>3.4.3390.0</fileVersion>
+    <txtFileVersion>GanttProject 3.4 Beta I</txtFileVersion>
     <fileDescription>GanttProject Launcher</fileDescription>
-    <copyright>Copyright (C) 2025 BarD Software s.r.o.</copyright>
-    <productVersion>3.3.3390.0</productVersion>
+    <copyright>Copyright (C) 2026 BarD Software s.r.o.</copyright>
+    <productVersion>3.4.3390.0</productVersion>
     <txtProductVersion>GanttProject 3.4 Beta</txtProductVersion>
     <productName>GanttProject</productName>
     <companyName>BarD Software s.r.o.</companyName>

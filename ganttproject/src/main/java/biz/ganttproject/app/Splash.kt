@@ -22,6 +22,7 @@ import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
 import javafx.geometry.Pos
 import javafx.scene.Scene
+import javafx.scene.control.Label
 import javafx.scene.effect.DropShadow
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
@@ -52,10 +53,14 @@ fun showAsync(): CompletableFuture<Runnable> {
       it.styleClass.add("heart")
     }
 
+    val textSplash = Label("3.4 Beta I").also {
+      it.styleClass.add("version")
+    }
     val stackPane = StackPane().also {
-      it.children.addAll(mainSplash, heartSplash)
+      it.children.addAll(mainSplash, heartSplash, textSplash)
     }
     StackPane.setAlignment(heartSplash, Pos.TOP_LEFT)
+    StackPane.setAlignment(textSplash, Pos.CENTER)
     val splashScene = Scene(stackPane)
     splashScene.stylesheets.add("/biz/ganttproject/app/Splash.css")
     splashScene.fill = javafx.scene.paint.Color.TRANSPARENT
