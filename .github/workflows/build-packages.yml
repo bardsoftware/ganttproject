@@ -116,9 +116,9 @@ jobs:
                   scoop bucket add extras
                   scoop install nsis
             - name: Print NSIS version
-              run: makensis -VERSION
+              run: C:\Users\runneradmin\scoop\shims\makensis -VERSION
             - name: Print NSIS compile flags
-              run: makensis -HDRINFO
+              run: C:\Users\runneradmin\scoop\shims\makensis -HDRINFO
 
             - name: Prepare files for NSIS
               run: |
@@ -129,7 +129,7 @@ jobs:
             - name: Build NSIS package
               run: |
                   cd ganttproject-builder\dist-win
-                  makensis ganttproject.nsi
+                  C:\Users\runneradmin\scoop\shims\makensis ganttproject.nsi
                   dir
                   mv ganttproject-$env:VERSION.exe ..\..\build
 
@@ -187,7 +187,7 @@ jobs:
                   gsutil cp ./ganttproject-$VERSION-silicon.dmg gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$VERSION-silicon.dmg;
 
     macOS_intel:
-        runs-on: macos-13
+        runs-on: macos-15-intel
         steps:
             - uses: actions/checkout@v3
             - name: Checkout submodules
