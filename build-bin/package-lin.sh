@@ -71,7 +71,7 @@ cp build-cfg/ganttproject.svg $OUTPUT/GanttProject/
 
 mv tmp/plugins $OUTPUT/GanttProject/lib/app/
 mv appimagetool $OUTPUT
-rm $OUTPUT/GanttProject/lib/app/plugins/base/ganttproject/lib/javafx-*
+rm $OUTPUT/GanttProject/lib/app/lib/javafx-*
 ls $OUTPUT
 
 cd $OUTPUT/GanttProject
