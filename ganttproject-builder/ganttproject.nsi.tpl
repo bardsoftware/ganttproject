@@ -120,7 +120,7 @@ Section "Start Menu Shortcuts"
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\${APPFOLDERNAME}"
   CreateShortCut "$SMPROGRAMS\${APPFOLDERNAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\${APPFOLDERNAME}\GanttProject $VERSION.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject.ico"
+  CreateShortCut "$SMPROGRAMS\${APPFOLDERNAME}\GanttProject ${VERSION}.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject.ico"
   CreateShortCut "$SMPROGRAMS\${APPFOLDERNAME}\HouseBuildingSample.lnk" "$INSTDIR\HouseBuildingSample.gan" "" "$INSTDIR\ganttproject.ico"
   CreateShortCut "$INSTDIR\Run GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject.ico"
   CreateShortCut "$DESKTOP\GanttProject $VERSION.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject.ico"

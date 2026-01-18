@@ -19,7 +19,7 @@ jpackage -t msi -d build -i ganttproject-builder/dist-bin/ -n %WINDOWS_APP_FOLDE
   --java-options "--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED" ^
   --java-options "--add-exports javafx.graphics/com.sun.javafx.util=ALL-UNNAMED" ^
   --java-options "--add-opens java.desktop/sun.swing=ALL-UNNAMED" ^
-  --runtime-image runtime --win-dir-chooser --win-menu --win-menu-group "GanttProject" ^
+  --runtime-image runtime --win-dir-chooser --win-menu --win-menu-group "%WINDOWS_APP_FOLDER_NAME%" ^
   --description "Free project scheduling and project management application with Gantt chart" ^
   --app-version %VERSION% ^
   --copyright "Copyright 2026 BarD Software s.r.o." ^
