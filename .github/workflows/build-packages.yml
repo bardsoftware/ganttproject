@@ -167,7 +167,7 @@ jobs:
 
             - name: Sign GanttProject.app
               run: |
-                  build-bin/notarize.sh $VERSION "BarD Software s.r.o" "$MACOS_NOTARIZE_PASSWORD" all
+                  build-bin/notarize.sh $VERSION "BarD Software s.r.o. Developer Key" "$MACOS_NOTARIZE_PASSWORD" all
 
             - id: 'auth'
               uses: 'google-github-actions/auth@v1'

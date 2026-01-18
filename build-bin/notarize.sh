@@ -21,9 +21,11 @@ do_prepare2() {
   ENTITLEMENTS="build-cfg/ganttproject.entitlements.xml"
 
   echo "Signing libraries and executables..."
+  find "$APP_PATH" -type f \( -name "*.dylib" -or -name "*.so" -or -perm +111 \) -not -path "$RUNTIME_PATH/*"
   find "$APP_PATH" -type f \( -name "*.dylib" -or -name "*.so" -or -perm +111 \) -not -path "$RUNTIME_PATH/*" -exec codesign --timestamp -f -s "$SIG" --prefix com.bardsoftware. --entitlements "$ENTITLEMENTS" --options runtime -v --keychain "$KEYCHAIN" {} \;
 
   echo "Signing Java runtime..."
+  find "$RUNTIME_PATH" -type f \( -name "*.dylib" -or -name "*.so" -or -perm +111 \)
   find "$RUNTIME_PATH" -type f \( -name "*.dylib" -or -name "*.so" -or -perm +111 \) -exec codesign --timestamp -f -s "$SIG" --prefix com.bardsoftware. --entitlements "$ENTITLEMENTS" --options runtime -v --keychain "$KEYCHAIN" {} \;
   codesign -f --timestamp --entitlements "$ENTITLEMENTS" -s "$SIG" --prefix com.bardsoftware. --options runtime -v --keychain "$KEYCHAIN" "$RUNTIME_PATH"
 
@@ -31,7 +33,7 @@ do_prepare2() {
   codesign -f --timestamp --entitlements "$ENTITLEMENTS" -s "$SIG" --prefix com.bardsoftware. --options runtime -v --keychain "$KEYCHAIN" "$APP_PATH"
 
   echo "Verifying signature..."
-  codesign -vvv --deep --strict "$APP_PATH"
+  codesign -f -vvv --deep --strict "$APP_PATH"
   spctl -a -t exec -vv "$APP_PATH"
 }
 
