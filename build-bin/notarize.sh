@@ -22,12 +22,18 @@ do_prepare2() {
 
   echo "Signing libraries and executables..."
   find "$APP_PATH" -type f \( -name "*.dylib" -or -name "*.so" -or -perm +111 \) -not -path "$RUNTIME_PATH/*"
+  echo "... go! ..."
   find "$APP_PATH" -type f \( -name "*.dylib" -or -name "*.so" -or -perm +111 \) -not -path "$RUNTIME_PATH/*" -exec codesign --timestamp -f -s "$SIG" --prefix com.bardsoftware. --entitlements "$ENTITLEMENTS" --options runtime -v --keychain "$KEYCHAIN" {} \;
+  echo "...done"
+  echo "----------------------------------"
 
   echo "Signing Java runtime..."
   find "$RUNTIME_PATH" -type f \( -name "*.dylib" -or -name "*.so" -or -perm +111 \)
+  echo "... go! ..."
   find "$RUNTIME_PATH" -type f \( -name "*.dylib" -or -name "*.so" -or -perm +111 \) -exec codesign --timestamp -f -s "$SIG" --prefix com.bardsoftware. --entitlements "$ENTITLEMENTS" --options runtime -v --keychain "$KEYCHAIN" {} \;
   codesign -f --timestamp --entitlements "$ENTITLEMENTS" -s "$SIG" --prefix com.bardsoftware. --options runtime -v --keychain "$KEYCHAIN" "$RUNTIME_PATH"
+  echo "...done"
+  echo "----------------------------------"
 
   echo "Signing the application bundle..."
   codesign -f --timestamp --entitlements "$ENTITLEMENTS" -s "$SIG" --prefix com.bardsoftware. --options runtime -v --keychain "$KEYCHAIN" "$APP_PATH"
