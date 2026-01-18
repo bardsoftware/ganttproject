@@ -15,6 +15,26 @@ codesign -vvv --deep --strict build/GanttProject.app
 spctl -a -t exec -vv build/GanttProject.app
 }
 
+do_prepare2() {
+  APP_PATH="build/GanttProject.app"
+  RUNTIME_PATH="$APP_PATH/Contents/runtime"
+  ENTITLEMENTS="build-cfg/ganttproject.entitlements.xml"
+
+  echo "Signing libraries and executables..."
+  find "$APP_PATH" -type f \( -name "*.dylib" -or -name "*.so" -or -perm +111 \) -not -path "$RUNTIME_PATH/*" -exec codesign --timestamp -f -s "$SIG" --prefix com.bardsoftware. --entitlements "$ENTITLEMENTS" --options runtime -v --keychain "$KEYCHAIN" {} \;
+
+  echo "Signing Java runtime..."
+  find "$RUNTIME_PATH" -type f \( -name "*.dylib" -or -name "*.so" -or -perm +111 \) -exec codesign --timestamp -f -s "$SIG" --prefix com.bardsoftware. --entitlements "$ENTITLEMENTS" --options runtime -v --keychain "$KEYCHAIN" {} \;
+  codesign -f --timestamp --entitlements "$ENTITLEMENTS" -s "$SIG" --prefix com.bardsoftware. --options runtime -v --keychain "$KEYCHAIN" "$RUNTIME_PATH"
+
+  echo "Signing the application bundle..."
+  codesign -f --timestamp --entitlements "$ENTITLEMENTS" -s "$SIG" --prefix com.bardsoftware. --options runtime -v --keychain "$KEYCHAIN" "$APP_PATH"
+
+  echo "Verifying signature..."
+  codesign -vvv --deep --strict "$APP_PATH"
+  spctl -a -t exec -vv "$APP_PATH"
+}
+
 do_notarize() {
   xcrun notarytool submit --apple-id contact@bardsoftware.com --team-id QDCH4KTVP7  --password $NOTARIZE_PASSWORD --wait build/ganttproject-1.0.dmg
 }
@@ -34,7 +54,7 @@ do_all2() {
     security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
 
     echo "------------------ SIGNING ------------------------"
-    do_prepare
+    do_prepare2
     jpackage --type dmg --app-image build/GanttProject.app -n "ganttproject" --dest build/
 
     echo "------------------ NOTARIZING ------------------------"
@@ -62,14 +82,14 @@ do_all() {
     security find-identity -v -p codesigning "$KEYCHAIN"
 
     echo "------------------ SIGNING ------------------------"
-    # Update KEYCHAIN variable so do_prepare uses our new keychain
+    # Update KEYCHAIN variable so do_prepare2 uses our new keychain
     # In notarize.sh, KEYCHAIN is defined at the top as:
     # KEYCHAIN=${5:-"~/Library/Keychains/login.keychain-db"}
-    # We want do_prepare to use the local build.keychain we just created.
-    # We can either export it or pass it if do_prepare was designed for it.
-    # do_prepare uses $KEYCHAIN in its codesign calls.
+    # We want do_prepare2 to use the local build.keychain we just created.
+    # We can either export it or pass it if do_prepare2 was designed for it.
+    # do_prepare2 uses $KEYCHAIN in its codesign calls.
     
-    do_prepare
+    do_prepare2
     jpackage --type dmg --app-image build/GanttProject.app -n "ganttproject" --dest build/
 
     echo "------------------ NOTARIZING ------------------------"
@@ -81,7 +101,7 @@ do_all() {
 
 case $COMMAND in
 sign)
-    do_prepare
+    do_prepare2
     ;;
 notarize)
     do_notarize
