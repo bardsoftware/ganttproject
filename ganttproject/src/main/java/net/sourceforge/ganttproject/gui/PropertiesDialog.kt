@@ -21,19 +21,13 @@ package net.sourceforge.ganttproject.gui
 import biz.ganttproject.app.DialogController
 import biz.ganttproject.app.ErrorPane
 import biz.ganttproject.app.dialog
+import biz.ganttproject.app.setSwingBackground
 import javafx.collections.ObservableList
-import javafx.geometry.Insets
-import javafx.scene.control.ButtonBar
-import javafx.scene.control.TabPane
-import javafx.scene.layout.Background
-import javafx.scene.layout.BackgroundFill
-import javafx.scene.layout.CornerRadii
-import javafx.scene.layout.Region
-import net.sourceforge.ganttproject.action.GPAction
-import biz.ganttproject.colorFromUiManager
 import javafx.embed.swing.SwingNode
 import javafx.scene.control.Tab
+import javafx.scene.control.TabPane
 import javafx.scene.layout.StackPane
+import net.sourceforge.ganttproject.action.GPAction
 import javax.swing.JComponent
 import javax.swing.SwingUtilities
 
@@ -101,16 +95,7 @@ fun propertiesDialog(title: String, id: String, actions: List<GPAction>, validat
     // This is hack for the dialogs showing Swing components. We set the background color of the dialog panes
     // to be the same as the Panel background in the current Swing LAF.
     dialogController.onShown = {
-      dialogController.walkTree { node ->
-        if (node is ButtonBar
-          || node.styleClass.intersect(listOf("tab-header-background", "tab-contents", "swing-background")).isNotEmpty()) {
-
-          (node as Region).background =
-            Background(BackgroundFill(
-              "Panel.background".colorFromUiManager(), CornerRadii.EMPTY, Insets.EMPTY
-            ))
-        }
-      }
+      dialogController.setSwingBackground()
       tabProviders.first().requestFocus()
       dialogController.resize()
     }

@@ -28,8 +28,8 @@ import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.export.ExportFileWizardImpl.State;
 import net.sourceforge.ganttproject.filter.ExtensionBasedFileFilter;
 import net.sourceforge.ganttproject.gui.FileChooserPageBase;
+import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.FileUtil;
 import org.eclipse.core.runtime.IStatus;
@@ -51,8 +51,8 @@ class FileChooserPage extends FileChooserPageBase {
 
   private final GPOptionGroup myWebPublishingGroup;
 
-  FileChooserPage(State state, IGanttProject project, WizardImpl wizardImpl, Preferences prefs) {
-    super(wizardImpl, prefs);
+  FileChooserPage(State state, IGanttProject project, Preferences prefs, UIFacade uiFacade) {
+    super(prefs, project.getDocument(), uiFacade);
     myState = state;
     myProject = project;
     myWebPublishingGroup = new GPOptionGroup("exporter.webPublishing", new GPOption[] { state.getPublishInWebOption() });

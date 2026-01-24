@@ -54,7 +54,7 @@ public class ProjectExportAction extends GPAction {
     if (calledFromAppleScreenMenu(e)) {
       return;
     }
-    WizardImpl wizard = new ExportFileWizardImpl(myUIFacade, myProject, myPluginPrerences);
+    var wizard = new ExportFileWizardImpl(myUIFacade, myProject, myPluginPrerences);
     wizard.show();
   }
 }

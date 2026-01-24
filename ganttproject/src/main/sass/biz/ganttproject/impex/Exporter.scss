@@ -49,6 +49,18 @@
       -fx-accent: $gp-error
     }
   }
+}
 
+.dlg-export-wizard {
+  .header {
+    @include dialog-header($gp-orange);
+  }
+  .content-pane {
+    @include dialog-content-padding();
+    -fx-border-width: 0;
+  }
+  .button-pane {
+    @include dialog-button-pane();
+  }
 }
 

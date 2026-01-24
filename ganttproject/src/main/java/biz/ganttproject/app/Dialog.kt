@@ -20,6 +20,7 @@ package biz.ganttproject.app
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.centerOnOwner
+import biz.ganttproject.colorFromUiManager
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.walkTree
 import com.sandec.mdfx.MDFXNode
@@ -29,6 +30,7 @@ import javafx.animation.Transition
 import javafx.application.Platform
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import javafx.geometry.Insets
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.*
@@ -747,3 +749,18 @@ object DialogPlacement {
 
 const val DIALOG_STYLESHEET = "/biz/ganttproject/app/Dialog.css"
 
+fun DialogController.setSwingBackground() {
+  walkTree { node ->
+    if (node is ButtonBar
+      || node.styleClass.intersect(listOf("tab-header-background", "tab-contents", "swing-background")).isNotEmpty()
+    ) {
+
+      (node as Region).background =
+        Background(
+          BackgroundFill(
+            "Panel.background".colorFromUiManager(), CornerRadii.EMPTY, Insets.EMPTY
+          )
+        )
+    }
+  }
+}

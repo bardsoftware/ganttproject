@@ -20,11 +20,14 @@ package net.sourceforge.ganttproject.export;
 
 import java.io.File;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import biz.ganttproject.app.InternationalizationKt;
+import kotlin.Unit;
+import net.sourceforge.ganttproject.gui.projectwizard.WizardBuilder;
+import net.sourceforge.ganttproject.gui.projectwizard.WizardImplFxKt;
 import org.osgi.service.prefs.Preferences;
 
 import biz.ganttproject.core.option.BooleanOption;
@@ -34,13 +37,12 @@ import biz.ganttproject.core.option.DefaultBooleanOption;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.plugins.PluginManager;
 
 /**
  * @author bard
  */
-public class ExportFileWizardImpl extends WizardImpl {
+public class ExportFileWizardImpl {
 
   private final IGanttProject myProject;
 
@@ -48,9 +50,12 @@ public class ExportFileWizardImpl extends WizardImpl {
 
   private static Exporter ourLastSelectedExporter;
   private static List<Exporter> ourExporters;
+  private final WizardBuilder wizardBuilder = new WizardBuilder();
 
   public ExportFileWizardImpl(UIFacade uiFacade, IGanttProject project, Preferences pluginPreferences) {
-    super(uiFacade, language.getText("exportWizard.dialog.title"), "wizard.export");
+    wizardBuilder.setTitle(InternationalizationKt.getRootLocalizer().formatText("exportWizard.dialog.title"));
+    wizardBuilder.setDialogId("wizard.export");
+
     final Preferences exportNode = pluginPreferences.node("/instance/net.sourceforge.ganttproject/export");
     myProject = project;
     myState = new State();
@@ -68,31 +73,39 @@ public class ExportFileWizardImpl extends WizardImpl {
     for (Exporter e : ourExporters) {
       e.setContext(project, uiFacade, pluginPreferences);
     }
-    addPage(new ExporterChooserPage(ourExporters, myState));
-    addPage(new FileChooserPage(myState, myProject, this, exportNode));
+
+    var fileChooserPage = new FileChooserPage(myState, myProject, exportNode, uiFacade);
+    wizardBuilder.addPage(new ExporterChooserPage(ourExporters, myState));
+    wizardBuilder.addPage(fileChooserPage);
+    wizardBuilder.setOnOk(() -> {
+      onOkPressed();
+      return Unit.INSTANCE;
+    });
+    fileChooserPage.selectedUrlProperty.addListener((observable, oldValue, newValue) -> {
+      wizardBuilder.getNeedsRefresh().set(true, this);
+    });
+    wizardBuilder.setCanFinish(this::canFinish);
   }
 
-  @Override
   protected boolean canFinish() {
     return myState.getExporter() != null && myState.myUrl != null && "file".equals(myState.getUrl().getProtocol());
   }
 
-  @Override
   protected void onOkPressed() {
-    super.onOkPressed();
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          ExportFinalizationJob finalizationJob = new ExportFinalizationJobImpl();
-          if ("file".equals(myState.getUrl().getProtocol())) {
-            myState.getExporter().run(new File(myState.getUrl().toURI()), finalizationJob);
-          }
-        } catch (Exception e) {
-          GPLogger.log(e);
+    SwingUtilities.invokeLater(() -> {
+      try {
+        ExportFinalizationJob finalizationJob = new ExportFinalizationJobImpl();
+        if ("file".equals(myState.getUrl().getProtocol())) {
+          myState.getExporter().run(new File(myState.getUrl().toURI()), finalizationJob);
         }
+      } catch (Exception e) {
+        GPLogger.log(e);
       }
     });
+  }
+
+  public void show() {
+    WizardImplFxKt.showWizard(wizardBuilder);
   }
 
   private class ExportFinalizationJobImpl implements ExportFinalizationJob {

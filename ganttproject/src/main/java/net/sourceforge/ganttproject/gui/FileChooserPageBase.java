@@ -22,9 +22,9 @@ import biz.ganttproject.app.InternationalizationKt;
 import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import javafx.beans.property.SimpleObjectProperty;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardImpl;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -39,19 +39,20 @@ import java.net.URL;
 
 public abstract class FileChooserPageBase implements WizardPage {
   protected static final String PREF_SELECTED_FILE = "selected_file";
+  private final Document myDocument;
 
-  private TextFieldAndFileChooserComponent myChooser;
+  private final TextFieldAndFileChooserComponent myChooser;
   private final OptionsPageBuilder myOptionsBuilder;
   private final JPanel mySecondaryOptionsComponent;
-  private final WizardImpl myWizard;
   private final JLabel myFileLabel = new JLabel("");
-  private BooleanOption myOverwriteOption = new DefaultBooleanOption("overwrite");
+  private final BooleanOption myOverwriteOption = new DefaultBooleanOption("overwrite");
 
   private final Preferences myPreferences;
 
-  protected FileChooserPageBase(WizardImpl wizard, Preferences prefs) {
+  public SimpleObjectProperty selectedUrlProperty = new SimpleObjectProperty<URL>();
+  protected FileChooserPageBase(Preferences prefs, Document document, UIFacade uiFacade) {
     myPreferences = prefs;
-    myWizard = wizard;
+    myDocument = document;
     myOptionsBuilder = new OptionsPageBuilder();
     mySecondaryOptionsComponent = new JPanel(new BorderLayout());
     mySecondaryOptionsComponent.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
@@ -69,7 +70,12 @@ public abstract class FileChooserPageBase implements WizardPage {
         return super.getValue(key);
       }
     });
-
+    myChooser = new TextFieldAndFileChooserComponent(uiFacade, getFileChooserTitle()) {
+      @Override
+      protected void onFileChosen(File file) {
+        tryChosenFile(file);
+      }
+    };
   }
 
   protected abstract String getFileChooserTitle();
@@ -79,11 +85,10 @@ public abstract class FileChooserPageBase implements WizardPage {
   }
   /** @return a default export filename */
   protected String getDefaultFileName() {
-    Document document = myWizard.getUIFacade().getGanttChart().getProject().getDocument();
-    if (document == null) {
+    if (myDocument == null) {
       return "document.gan";
     }
-    return document.getFileName();
+    return myDocument.getFileName();
   }
 
   protected int getFileChooserSelectionMode() {
@@ -101,12 +106,6 @@ public abstract class FileChooserPageBase implements WizardPage {
   @Override
   public Component getComponent() {
       JPanel myComponent = new JPanel(new BorderLayout());
-    myChooser = new TextFieldAndFileChooserComponent(myWizard.getUIFacade(), getFileChooserTitle()) {
-      @Override
-      protected void onFileChosen(File file) {
-        tryChosenFile(file);
-      }
-    };
     myChooser.setFileSelectionMode(getFileChooserSelectionMode());
     JComponent contentPanel = new JPanel(new BorderLayout());
     Box fileBox = Box.createVerticalBox();
@@ -154,7 +153,7 @@ public abstract class FileChooserPageBase implements WizardPage {
       myChooser.setFileFilter(createFileFilter());
       loadPreferences();
       onSelectedUrlChange(getSelectedUrl());
-      myWizard.getDialog().layout();
+      //myWizard.getDialog().layout();
     }
   }
 
@@ -179,7 +178,7 @@ public abstract class FileChooserPageBase implements WizardPage {
   protected abstract GPOptionGroup[] getOptionGroups();
 
   protected void onSelectedUrlChange(URL selectedUrl) {
-    myWizard.adjustButtonState();
+    selectedUrlProperty.set(selectedUrl);
   }
 
   protected IStatus setSelectedFile(File file) {
