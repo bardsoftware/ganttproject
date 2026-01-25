@@ -457,9 +457,9 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
   override fun setContent(content: Node) {
     this.content = content
     content.styleClass.add("content-pane")
-    this.stackPane.children.add(content)
+    this.dialogPane.content = this.stackPane
     this.onShown = {
-      this.dialogPane.content = this.stackPane
+      this.stackPane.children.add(content)
       this.resize()
     }
   }
@@ -513,7 +513,7 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
   override fun resize() {
     dialogPane.minWidth = dialogPane.width
     dialogPane.buttonBar.minWidth = max(dialogPane.buttonBar.minWidth, dialogPane.width)
-    dialogPane.requestLayout()
+    dialogPane.layout()
     dialogPane.scene?.window?.sizeToScene()
   }
 
