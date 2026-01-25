@@ -245,34 +245,37 @@ object FXUtil {
       }
     }
   */
+  fun transitionNode(node: Node, replacePane: ()->Unit, resizer: ()->Unit) {
+    val fadeIn = FadeTransition(Duration.seconds(0.5), node)
+    fadeIn.fromValue = 0.0
+    fadeIn.toValue = 1.0
+
+    val fadeOut = FadeTransition(Duration.seconds(0.5), node)
+    fadeOut.fromValue = 1.0
+    fadeOut.toValue = 0.1
+    fadeOut.play()
+    //Exception("Fade out! ").printStackTrace()
+    fadeOut.setOnFinished {
+      //Exception("Fade in!").printStackTrace()
+      replacePane()
+      fadeIn.setOnFinished {
+        //borderPane.requestLayout()
+        resizer()
+      }
+      fadeIn.play()
+    }
+  }
   fun transitionCenterPane(borderPane: BorderPane, newCenter: javafx.scene.Node?, resizer: () -> Unit) {
     if (newCenter == null) { return }
-    val replacePane = Runnable {
+    val replacePane = {
       borderPane.center = newCenter
       //resizer()
     }
     if (borderPane.center == null) {
-      replacePane.run()
+      replacePane()
       resizer()
     } else {
-      val fadeIn = FadeTransition(Duration.seconds(0.5), borderPane)
-      fadeIn.fromValue = 0.0
-      fadeIn.toValue = 1.0
-
-      val fadeOut = FadeTransition(Duration.seconds(0.5), borderPane)
-      fadeOut.fromValue = 1.0
-      fadeOut.toValue = 0.1
-      fadeOut.play()
-      //Exception("Fade out! ").printStackTrace()
-      fadeOut.setOnFinished {
-        //Exception("Fade in!").printStackTrace()
-        replacePane.run()
-        fadeIn.setOnFinished {
-          borderPane.requestLayout()
-          resizer()
-        }
-        fadeIn.play()
-      }
+      transitionNode(borderPane, replacePane, resizer)
     }
   }
 }

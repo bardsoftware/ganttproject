@@ -56,8 +56,11 @@
     @include dialog-header($gp-orange);
   }
   .content-pane {
+    -fx-pref-height: 600;
+    -fx-pref-width: 600;
     @include dialog-content-padding();
     -fx-border-width: 0;
+    //-fx-border-color: red;
   }
   .button-pane {
     @include dialog-button-pane();

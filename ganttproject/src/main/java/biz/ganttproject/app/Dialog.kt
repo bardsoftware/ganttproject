@@ -22,12 +22,14 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.centerOnOwner
 import biz.ganttproject.colorFromUiManager
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.printCss
 import biz.ganttproject.walkTree
 import com.sandec.mdfx.MDFXNode
 import javafx.animation.FadeTransition
 import javafx.animation.ParallelTransition
 import javafx.animation.Transition
 import javafx.application.Platform
+import javafx.embed.swing.SwingNode
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Insets
@@ -53,6 +55,7 @@ import net.sourceforge.ganttproject.gui.UIFacade
 import java.util.Stack
 import java.util.concurrent.CountDownLatch
 import javax.swing.SwingUtilities
+import kotlin.math.max
 
 /**
  * Some utility code for building nice dialogs. Provides the following features:
@@ -90,6 +93,7 @@ fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (Di
       dialogPane.stylesheets.addAll(DIALOG_STYLESHEET)
       dialogBuildApi.setEscCloseEnabled(true)
       contentBuilder(dialogBuildApi)
+
       when (dialogBuildApi.frameStyle) {
         FrameStyle.NATIVE_FRAME -> initStyle(StageStyle.DECORATED)
         FrameStyle.NO_FRAME -> initStyle(StageStyle.UNDECORATED)
@@ -129,6 +133,7 @@ fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (Di
   }
 
 class DialogPaneExt : DialogPane() {
+  lateinit var buttonBar: HBox
   private lateinit var errorPaneWrapper: StackPane
 
   fun setButtonBarNode(node: Node) {
@@ -139,16 +144,21 @@ class DialogPaneExt : DialogPane() {
     errorPaneWrapper.isManaged = true
   }
   override fun createButtonBar(): Node {
-    val buttonBar = StackPane(super.createButtonBar())
+    val buttonBar = StackPane(super.createButtonBar()).also {
+      it.minWidth = Region.USE_PREF_SIZE
+    }
     errorPaneWrapper = StackPane().also {
-      it.styleClass.addAll("swing-background", "hide")
+      it.styleClass.addAll("hide")
       it.isManaged = false
     }
     return HBox().apply {
-      styleClass.addAll("button-pane", "swing-background")
+      styleClass.addAll("button-pane")
+      minWidth = Region.USE_PREF_SIZE
       HBox.setHgrow(buttonBar, Priority.ALWAYS)
       HBox.setHgrow(errorPaneWrapper, Priority.SOMETIMES)
       children.addAll(errorPaneWrapper, buttonBar)
+    }.also {
+      this.buttonBar = it
     }
   }
 }
@@ -433,7 +443,9 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
       }
     }
   override var onClosed: () -> Unit = {}
-  private val stackPane = StackPane().also { it.styleClass.add("layers") }
+  private val stackPane = StackPane().also {
+    it.styleClass.add("layers")
+  }
   private var content: Node = Region()
   private var cancelAction: CancelAction? = null
 
@@ -445,9 +457,9 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
   override fun setContent(content: Node) {
     this.content = content
     content.styleClass.add("content-pane")
-    this.dialogPane.content = this.stackPane
+    this.stackPane.children.add(content)
     this.onShown = {
-      this.stackPane.children.add(content)
+      this.dialogPane.content = this.stackPane
       this.resize()
     }
   }
@@ -499,7 +511,9 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
   }
 
   override fun resize() {
-    dialogPane.layout()
+    dialogPane.minWidth = dialogPane.width
+    dialogPane.buttonBar.minWidth = max(dialogPane.buttonBar.minWidth, dialogPane.width)
+    dialogPane.requestLayout()
     dialogPane.scene?.window?.sizeToScene()
   }
 
@@ -748,19 +762,65 @@ object DialogPlacement {
 }
 
 const val DIALOG_STYLESHEET = "/biz/ganttproject/app/Dialog.css"
-
+private val SWING_BACKGROUND_STYLES = setOf("tab-header-background", "tab-contents", "swing-background")
 fun DialogController.setSwingBackground() {
-  walkTree { node ->
-    if (node is ButtonBar
-      || node.styleClass.intersect(listOf("tab-header-background", "tab-contents", "swing-background")).isNotEmpty()
-    ) {
+  val background = Background(
+    BackgroundFill(
+      "Panel.background".colorFromUiManager(), CornerRadii.EMPTY, Insets.EMPTY
+    )
+  )
 
-      (node as Region).background =
-        Background(
-          BackgroundFill(
-            "Panel.background".colorFromUiManager(), CornerRadii.EMPTY, Insets.EMPTY
-          )
-        )
+  walkTree {
+    if (it is Region && it.styleClass.intersect(SWING_BACKGROUND_STYLES).isNotEmpty()) {
+      it.background = background
     }
   }
+}
+
+fun main() {
+  class PureFxTestApp : javafx.application.Application() {
+    override fun start(primaryStage: javafx.stage.Stage) {
+      val btnOpen = Button("Open Pure JavaFX Dialog")
+      btnOpen.onAction = EventHandler {
+        val dialog = Dialog<Unit>()
+        dialog.title = "Pure JavaFX Layout Test"
+
+        val pane = object : DialogPane() {
+          override fun createButtonBar(): Node {
+            // This mimics the structure in DialogPaneExt
+            val buttonBar = super.createButtonBar()
+            val errorPaneWrapper = StackPane().apply {
+              isManaged = false
+              isVisible = false
+            }
+            return HBox(10.0).apply {
+              styleClass.add("button-pane")
+              HBox.setHgrow(buttonBar, Priority.ALWAYS)
+              children.addAll(errorPaneWrapper, buttonBar)
+            }
+          }
+        }
+
+//        pane.content = Label("This dialog uses pure JavaFX components.\nCheck if the buttons below are clipped.").apply {
+//          padding = Insets(20.0)
+////          minWidth = 200.0
+//        }
+        pane.content = StackPane()//SwingNode()
+
+        pane.buttonTypes.addAll(
+          ButtonType.OK,
+          ButtonType.APPLY,
+          ButtonType.CANCEL,
+          ButtonType("Very Long Button Label")
+        )
+
+        dialog.dialogPane = pane
+        dialog.showAndWait()
+      }
+
+      primaryStage.scene = javafx.scene.Scene(StackPane(btnOpen), 300.0, 200.0)
+      primaryStage.show()
+    }
+  }
+  javafx.application.Application.launch(PureFxTestApp::class.java)
 }

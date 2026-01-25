@@ -115,6 +115,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 
 .dlg {
     -fx-background-color: transparent;
+  .content-pane {
+    -fx-pref-height: 600;
+    -fx-pref-width: 600;
+  }
 
     .button-pane {
       @include dialog-button-pane();

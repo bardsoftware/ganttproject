@@ -46,6 +46,9 @@ $alert-foreground: #721c24;
   -fx-padding: 2*$default-vertical-padding 1em $default-vertical-padding 1em;
   -fx-background-color: whitesmoke;
   //-fx-border-color: yellow;
+  .button-bar {
+    -fx-background-color: transparent;
+  }
 }
 
 .dialog-alert {
