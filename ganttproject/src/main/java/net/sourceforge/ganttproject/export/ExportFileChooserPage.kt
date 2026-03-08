@@ -19,7 +19,9 @@
 package net.sourceforge.ganttproject.export
 
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.core.option.FileExtensionFilter
 import biz.ganttproject.core.option.GPOptionGroup
+import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.storage.asLocalDocument
 import biz.ganttproject.storage.getDefaultLocalFolder
 import com.github.michaelbull.result.Err
@@ -49,7 +51,8 @@ internal class ExportFileChooserPage(
   myProject.document, uiFacade,
   fileChooserTitle = i18n.formatText("selectFileToExport"),
   fileChooserSelectionMode = JFileChooser.FILES_AND_DIRECTORIES,
-  pageTitle = i18n.formatText("selectFileToExport")
+  pageTitle = i18n.formatText("selectFileToExport"),
+  errorMessage = ObservableString("", "")
 ) {
   private val myWebPublishingGroup: GPOptionGroup = GPOptionGroup(
     "exporter.webPublishing", myState.publishInWebOption
@@ -60,10 +63,12 @@ internal class ExportFileChooserPage(
     proposeChosenFile = {
       proposeOutputFile(myProject, myState.exporter) ?: File(defaultFileName)
     }
-    overwriteOption.addChangeValueListener { tryChosenFile(chooser.file) }
-    selectedFileProperty.addListener { _, _, newValue ->
-      myState.file = newValue
+    fxFile.addWatcher {
+      myState.file = it.newValue
     }
+//    selectedFileProperty.addListener { _, _, newValue ->
+//      myState.file = newValue
+//    }
   }
 
   override fun validateFile(file: File?): Result<File, String> {
@@ -71,7 +76,7 @@ internal class ExportFileChooserPage(
       return Err("File cannot be null")
     }
 
-    overwriteOption.getIsWritableProperty().set(false, this)
+    fxOverwrite.isWritable.value = false
     if (!file.exists()) {
       val parent = file.getParentFile()
       if (!parent.exists()) {
@@ -101,8 +106,8 @@ internal class ExportFileChooserPage(
         )
       }
     } else {
-      overwriteOption.getIsWritableProperty().set(true, this)
-      if (!overwriteOption.isChecked()) {
+      fxOverwrite.isWritable.value = true
+      if (!fxOverwrite.value) {
         return Err(i18n.formatText("fileChooser.warning.fileExists"))
       }
     }
@@ -113,10 +118,7 @@ internal class ExportFileChooserPage(
     return myState.exporter.getCustomOptionsUI() ?: super.createSecondaryOptionsPanel()
   }
 
-  override fun createFileFilter(): FileFilter =
-    ExtensionBasedFileFilter(
-      myState.exporter.getFileNamePattern(), myState.exporter.getFileTypeDescription()
-    )
+  override fun createFileFilter(): FileExtensionFilter = FileExtensionFilter(myState.exporter.getFileTypeDescription(), listOf(myState.exporter.getFileNamePattern()))
 
   override val optionGroups: List<GPOptionGroup>
     get() = listOf(myWebPublishingGroup) + (myState.exporter?.secondaryOptions ?: emptyList())

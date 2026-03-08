@@ -295,7 +295,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
       }
 
       val resultFile = fileChooser.showOpenDialog(null)
-      option.value = resultFile
+      option.set(resultFile, textField)
       resultFile?.let {
         textField.text = it.absolutePath
       }
@@ -306,8 +306,14 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
       onClick = { onBrowse() },
       styleClass = "btn"
     )
+    textField.text = option.value?.absolutePath ?: ""
     textField.id = option.id
     displayOptions?.editorStyles?.let(textField.styleClass::addAll)
+    option.addWatcher {
+      if (it.trigger != textField) {
+        textField.text = option.value?.absolutePath ?: ""
+      }
+    }
     return textField
 //    return HBox().apply {
 //      HBox.setHgrow(textField, Priority.ALWAYS)

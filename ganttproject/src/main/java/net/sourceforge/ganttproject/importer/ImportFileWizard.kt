@@ -19,6 +19,7 @@
 package net.sourceforge.ganttproject.importer
 
 import biz.ganttproject.app.*
+import biz.ganttproject.core.option.FileExtensionFilter
 import biz.ganttproject.core.option.GPOptionGroup
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -27,7 +28,6 @@ import com.github.michaelbull.result.andThen
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.Node
 import net.sourceforge.ganttproject.IGanttProject
-import net.sourceforge.ganttproject.filter.ExtensionBasedFileFilter
 import net.sourceforge.ganttproject.gui.FileChooserPageBase
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.projectwizard.WizardModel
@@ -37,7 +37,6 @@ import net.sourceforge.ganttproject.plugins.PluginManager.getExtensions
 import org.osgi.service.prefs.Preferences
 import java.awt.Component
 import java.io.File
-import javax.swing.filechooser.FileFilter
 
 /**
  * Wizard for importing files into a Gantt project.
@@ -48,7 +47,7 @@ class ImportFileWizard(uiFacade: UIFacade, project: IGanttProject, pluginPrefere
   init {
     importers.forEach { it.setContext(project, uiFacade, pluginPreferences) }
     val filePage = ImportFileChooserPage(wizardModel, project, pluginPreferences, uiFacade)
-    filePage.selectedFileProperty.addListener { _, _, _ ->
+    filePage.fxFile.addWatcher {
       wizardModel.needsRefresh.set(true, this)
     }
     wizardModel.importer = importers.firstOrNull()
@@ -95,7 +94,9 @@ class ImporterWizardModel: WizardModel() {
   val customPageProperty = SimpleObjectProperty<WizardPage?>(null)
 
   init {
-    canFinish = { importer != null && file != null }
+    canFinish = {
+      importer != null && file != null && errorMessage.value.isNullOrBlank()
+    }
     hasNext = { when (currentPage) {
       0 -> importer != null
       1 -> customPageProperty.get() != null && file != null
@@ -148,31 +149,31 @@ private class ImporterChooserPageFx(importers: List<Importer>, model: ImporterWi
  * Wizard page for choosing a file to import from.
  */
 private class ImportFileChooserPage(
-  private val state: ImporterWizardModel, project: IGanttProject, private val prefs: Preferences, uiFacade: UIFacade)
+  private val model: ImporterWizardModel, project: IGanttProject, private val prefs: Preferences, uiFacade: UIFacade)
   : FileChooserPageBase(project.document, uiFacade, fileChooserTitle = "",
-  pageTitle = i18n.formatText("importerFileChooserPageTitle")) {
+  pageTitle = i18n.formatText("importerFileChooserPageTitle"), errorMessage = model.errorMessage) {
 
-  val importer get() = state.importer
+  val importer get() = model.importer
 
-  override val preferences: Preferences get() = prefs.node(state.importer?.id ?: "")
+  override val preferences: Preferences get() = prefs.node(model.importer?.id ?: "")
 
   init {
     hasOverwriteOption = false
-    selectedFileProperty.addListener { _, _, newValue ->
-      state.file = newValue
+    fxFile.addWatcher {
+      model.file = it.newValue
     }
   }
 
-  override fun createFileFilter(): FileFilter? =
+  override fun createFileFilter(): FileExtensionFilter? =
     importer?.let {
-      return ExtensionBasedFileFilter(it.getFileNamePattern(), it.getFileTypeDescription())
+      FileExtensionFilter(it.getFileTypeDescription(), it.getFileNamePattern().split("|").map { "*.$it" })
     }
 
   override val optionGroups: List<GPOptionGroup> = emptyList()
 
   override fun validateFile(file: File?): Result<File?, String?> {
     return super.validateFile(file).andThen { file ->
-      if (file?.isDirectory ?: false) {
+      if (file?.isDirectory == true) {
         Err("It is a directory")
       } else {
         Ok(file)

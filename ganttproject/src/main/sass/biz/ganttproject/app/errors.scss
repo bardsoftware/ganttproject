@@ -20,7 +20,7 @@
 @import "theme";
 
 @mixin error-label() {
-  -fx-text-fill: $gp-error;
+  -fx-text-fill: $gp-medium-gray;
   -fx-font-weight: bold;
   -fx-font-size: normal;
 }
