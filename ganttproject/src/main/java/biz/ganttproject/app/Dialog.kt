@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.app
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.app.DialogPlacement.applicationWindow
 import biz.ganttproject.centerOnOwner
 import biz.ganttproject.colorFromUiManager
 import biz.ganttproject.lib.fx.VBoxBuilder
@@ -169,6 +170,8 @@ class DialogPaneExt : DialogPane() {
 }
 
 private val dialogStack = mutableListOf<Dialog<*>>()
+fun topWindow(): Window? = dialogStack.lastOrNull()?.dialogPane?.scene?.window ?: applicationWindow
+
 fun dialog(title: String? = null,  id: String? = null, contentBuilder: (DialogController) -> Unit) {
   Platform.runLater {
     try {

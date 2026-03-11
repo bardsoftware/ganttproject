@@ -19,26 +19,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.export;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 
 import biz.ganttproject.app.InternationalizationCoreKt;
 import kotlin.Unit;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardModel;
 import net.sourceforge.ganttproject.gui.projectwizard.WizardImplFxKt;
 import org.osgi.service.prefs.Preferences;
 
-import biz.ganttproject.core.option.BooleanOption;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
-import biz.ganttproject.core.option.DefaultBooleanOption;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.plugins.PluginManager;
+
+import static net.sourceforge.ganttproject.export.ExportFileWizardImplKt.getOurLastSelectedExporter;
+
 
 /**
  * @author bard
@@ -47,11 +45,9 @@ public class ExportFileWizardImpl {
 
   private final IGanttProject myProject;
 
-  private final State myState;
 
-  private static Exporter ourLastSelectedExporter;
   private static List<Exporter> ourExporters;
-  private final WizardModel wizardModel = new WizardModel();
+  private final ExportWizardModel wizardModel = new ExportWizardModel();
 
   public ExportFileWizardImpl(UIFacade uiFacade, IGanttProject project, Preferences pluginPreferences) {
     wizardModel.setTitle(InternationalizationCoreKt.getRootLocalizer().formatText("exportWizard.dialog.title"));
@@ -59,46 +55,35 @@ public class ExportFileWizardImpl {
 
     final Preferences exportNode = pluginPreferences.node("/instance/net.sourceforge.ganttproject/export");
     myProject = project;
-    myState = new State();
-    myState.myPublishInWebOption.setValue(exportNode.getBoolean("publishInWeb", false));
-    myState.myPublishInWebOption.addChangeValueListener(new ChangeValueListener() {
+    wizardModel.getPublishInWebOption().setValue(exportNode.getBoolean("publishInWeb", false));
+    wizardModel.getPublishInWebOption().addChangeValueListener(new ChangeValueListener() {
       @Override
       public void changeValue(ChangeValueEvent event) {
-        exportNode.putBoolean("publishInWeb", myState.myPublishInWebOption.getValue());
+        exportNode.putBoolean("publishInWeb", wizardModel.getPublishInWebOption().getValue());
       }
     });
     if (ourExporters == null) {
       ourExporters = PluginManager.getExporters();
     }
-    myState.setExporter(ourLastSelectedExporter == null ? ourExporters.get(0) : ourLastSelectedExporter);
+    wizardModel.setExporter(getOurLastSelectedExporter() == null ? ourExporters.get(0) : getOurLastSelectedExporter());
     for (Exporter e : ourExporters) {
       e.setContext(project, uiFacade, pluginPreferences);
     }
 
-    var fileChooserPage = new ExportFileChooserPage(myState, myProject, exportNode, uiFacade);
-    fileChooserPage.getSelectedFileProperty().addListener( (observable, oldValue, newValue) -> {
-      wizardModel.getNeedsRefresh().set(true, this);
-    });
-    wizardModel.addPage(new ExporterChooserPageFx(ourExporters, myState));
+    var fileChooserPage = new ExportFileChooserPage(wizardModel, myProject, exportNode);
+    wizardModel.addPage(new ExporterChooserPageFx(ourExporters, wizardModel));
     wizardModel.addPage(fileChooserPage);
     wizardModel.setOnOk(() -> {
       onOkPressed();
       return Unit.INSTANCE;
     });
-    wizardModel.setCanFinish(this::canFinish);
-  }
-
-  protected boolean canFinish() {
-    return myState.getExporter() != null && myState.myUrl != null && "file".equals(myState.getUrl().getProtocol());
   }
 
   protected void onOkPressed() {
     SwingUtilities.invokeLater(() -> {
       try {
         ExportFinalizationJob finalizationJob = new ExportFinalizationJobImpl();
-        if ("file".equals(myState.getUrl().getProtocol())) {
-          myState.getExporter().run(new File(myState.getUrl().toURI()), finalizationJob);
-        }
+        wizardModel.getExporter().run(wizardModel.getFile(), finalizationJob);
       } catch (Exception e) {
         GPLogger.log(e);
       }
@@ -112,53 +97,11 @@ public class ExportFileWizardImpl {
   private class ExportFinalizationJobImpl implements ExportFinalizationJob {
     @Override
     public void run(File[] exportedFiles) {
-      if (myState.getPublishInWebOption().isChecked() && exportedFiles.length > 0) {
+      if (wizardModel.getPublishInWebOption().isChecked() && exportedFiles.length > 0) {
         WebPublisher publisher = new WebPublisher();
         publisher.run(exportedFiles, myProject.getDocumentManager().getFTPOptions());
       }
     }
   }
 
-  public static class State {
-    private Exporter myExporter;
-
-    private final BooleanOption myPublishInWebOption = new DefaultBooleanOption("exporter.publishInWeb");
-
-    private URL myUrl;
-    private File myFile;
-
-    void setExporter(Exporter exporter) {
-      myExporter = exporter;
-      ExportFileWizardImpl.ourLastSelectedExporter = exporter;
-    }
-
-    Exporter getExporter() {
-      return myExporter;
-    }
-
-    BooleanOption getPublishInWebOption() {
-      return myPublishInWebOption;
-    }
-
-    public URL getUrl() {
-      return myUrl;
-    }
-
-    public void setFile(File file) {
-      myFile = file;
-      if (file != null) {
-        try {
-          myUrl = file.toURI().toURL();
-        } catch (MalformedURLException e) {
-          throw new RuntimeException(e);
-        }
-      } else {
-        myUrl = null;
-      }
-    }
-
-    public File getFile() {
-      return myFile;
-    }
-  }
 }

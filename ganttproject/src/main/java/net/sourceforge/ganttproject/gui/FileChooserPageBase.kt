@@ -18,15 +18,14 @@
  */
 package net.sourceforge.ganttproject.gui
 
-//import biz.ganttproject.platform.getMeaningfulMessage
-//import biz.ganttproject.platform.getMeaningfulMessage
+import biz.ganttproject.app.FXThread
 import biz.ganttproject.app.PropertySheetBuilder
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.i18n
 import biz.ganttproject.core.option.*
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
-import javafx.beans.property.SimpleObjectProperty
 import javafx.embed.swing.SwingNode
 import javafx.scene.Node
 import javafx.scene.control.Label
@@ -41,15 +40,14 @@ import java.awt.Component
 import java.io.File
 import javax.swing.BorderFactory
 import javax.swing.JFileChooser
-import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 
 /**
  * Base class for the file chooser pages in the Import and Export wizards.
  */
 abstract class FileChooserPageBase protected constructor(
   private val myDocument: Document?,
-  uiFacade: UIFacade?,
   val fileChooserTitle: String?,
   val pageTitle: String?,
   val fileChooserSelectionMode: Int = JFileChooser.FILES_ONLY,
@@ -73,18 +71,12 @@ abstract class FileChooserPageBase protected constructor(
     }
   protected val fxOverwrite = ObservableBoolean("overwrite", false)
   abstract val preferences: Preferences
-  val selectedFileProperty: SimpleObjectProperty<File?> = SimpleObjectProperty<File?>(null)
   private val secondaryOptionsSwingNode = SwingNode()
 
   init {
     fxFile.addWatcher { event ->
       tryChosenFile(event.newValue)
     }
-//    selectedFileProperty.addListener { _, _, newValue ->
-//      if (fxFile.value != newValue) {
-//        fxFile.value = newValue
-//      }
-//    }
     fxOverwrite.addWatcher { tryChosenFile(fxFile.value) }
   }
 
@@ -92,8 +84,18 @@ abstract class FileChooserPageBase protected constructor(
   override val fxComponent: Node by lazy {
     val root = BorderPane()
     root.styleClass.add("file-chooser-page")
-    val sheet = PropertySheetBuilder(RootLocalizer).pane {
+    val i18n = i18n {
+      default()
+      map(mapOf(
+        "file.label" to "file",
+        "overwrite.label" to "option.exporter.overwrite.label.trailing"
+      ))
+    }
+    val sheet = PropertySheetBuilder(i18n).pane {
       file(fxFile) {
+        chooserTitle = fileChooserTitle ?: ""
+        isSaveNotOpen = fileChooserSelectionMode != JFileChooser.FILES_ONLY
+        browseButtonText = RootLocalizer.formatText("fileChooser.browse")
         editorStyles.add("file-chooser")
         this@FileChooserPageBase.extensionFilters = this.extensionFilters
       }
@@ -107,7 +109,6 @@ abstract class FileChooserPageBase protected constructor(
 
     fun showError(msg: String?) {
       if (msg != null) {
-        //UIUtil.setupErrorLabel(myFileLabel, it.newValue)
         root.bottom = HBox().apply {
           styleClass.add("alert-embedded-box")
           children.add(Label(msg).also { it.styleClass.add("alert-error") })
@@ -116,10 +117,12 @@ abstract class FileChooserPageBase protected constructor(
         root.bottom = null
       }
     }
-    errorMessage.addWatcher { showError(it.newValue) }
+    errorMessage.addWatcher {
+      FXThread.runLater {
+        showError(it.newValue)
+      }
+    }
     showError(errorMessage.value)
-    // We need to update the secondary options panel when it's created.
-    // In FileChooserPageBase, it's updated in setActive(true).
     root
   }
 
@@ -146,9 +149,6 @@ abstract class FileChooserPageBase protected constructor(
   private val mySecondaryOptionsComponent = JPanel(BorderLayout()).also {
     it.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0))
   }
-  private val myFileLabel = JLabel("")
-//  protected val overwriteOption: BooleanOption = DefaultBooleanOption("overwrite")
-//
   protected var hasOverwriteOption: Boolean = true
   protected var updateChosenFile: (File) -> File = { it }
   protected var proposeChosenFile: () -> File = { File(defaultFileName) }
@@ -160,39 +160,13 @@ abstract class FileChooserPageBase protected constructor(
   override val title: String get() = pageTitle ?: ""
 
   fun tryChosenFile(file: File?) {
-    myFileLabel.setOpaque(true)
     validateFile(file).onSuccess {
-      //selectedFileProperty.set(file)
-      //UIUtil.clearErrorLabel(myFileLabel)
       showError(null)
       preferences.put(PREF_SELECTED_FILE, fxFile.value?.absolutePath)
     }.onFailure {
       showError(it ?: "Something went wrong")
-      //UIUtil.setupErrorLabel(myFileLabel, it)
     }
   }
-
-//  override val component: Component by lazy {
-//    val myComponent = JPanel(BorderLayout())
-//    chooser.setFileSelectionMode(this.fileChooserSelectionMode)
-//    val contentPanel: JComponent = JPanel(BorderLayout())
-//    val fileBox = Box.createVerticalBox()
-//    chooser.setAlignmentX(Component.LEFT_ALIGNMENT)
-//    fileBox.add(this.chooser)
-//    myFileLabel.setAlignmentX(Component.LEFT_ALIGNMENT)
-//    fileBox.add(myFileLabel)
-//    if (hasOverwriteOption) {
-//      fileBox.add(
-//        myOptionsBuilder.createOptionComponent(
-//          GPOptionGroup("exporter", this.overwriteOption), this.overwriteOption
-//        )
-//      )
-//    }
-//    contentPanel.add(fileBox, BorderLayout.NORTH)
-//    contentPanel.add(mySecondaryOptionsComponent, BorderLayout.CENTER)
-//    myComponent.add(contentPanel, BorderLayout.NORTH)
-//    myComponent
-//  }
 
   protected open fun loadPreferences() {
     val oldFile = preferences.get(PREF_SELECTED_FILE, null)
@@ -216,13 +190,13 @@ abstract class FileChooserPageBase protected constructor(
       for (optionGroup in optionGroups) {
         optionGroup.lock()
       }
-      mySecondaryOptionsComponent.removeAll()
-      mySecondaryOptionsComponent.add(createSecondaryOptionsPanel(), BorderLayout.NORTH)
+      SwingUtilities.invokeLater {
+        mySecondaryOptionsComponent.removeAll()
+        mySecondaryOptionsComponent.add(createSecondaryOptionsPanel(), BorderLayout.NORTH)
+      }
 
       secondaryOptionsSwingNode.content = mySecondaryOptionsComponent
-      fileFilter = createFileFilter().also {
-        println("filter = $it")
-      }
+      fileFilter = createFileFilter()
       loadPreferences()
     }
   }

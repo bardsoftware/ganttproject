@@ -21,54 +21,50 @@ package net.sourceforge.ganttproject.export
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.FileExtensionFilter
 import biz.ganttproject.core.option.GPOptionGroup
-import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.storage.asLocalDocument
 import biz.ganttproject.storage.getDefaultLocalFolder
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import net.sourceforge.ganttproject.IGanttProject
-import net.sourceforge.ganttproject.filter.ExtensionBasedFileFilter
 import net.sourceforge.ganttproject.gui.FileChooserPageBase
-import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.gui.UIUtil
 import net.sourceforge.ganttproject.util.FileUtil.replaceExtension
 import org.osgi.service.prefs.Preferences
 import java.awt.Component
 import java.io.File
 import javax.swing.JFileChooser
-import javax.swing.filechooser.FileFilter
 
 /**
  * A wizard page for choosing a file to export to.
  */
 internal class ExportFileChooserPage(
-  private val myState: ExportFileWizardImpl.State,
+  private val myState: ExportWizardModel,
   private val myProject: IGanttProject,
-  override val preferences: Preferences,
-  uiFacade: UIFacade?
+  override val preferences: Preferences
 ) : FileChooserPageBase(
-  myProject.document, uiFacade,
+  myProject.document,
   fileChooserTitle = i18n.formatText("selectFileToExport"),
   fileChooserSelectionMode = JFileChooser.FILES_AND_DIRECTORIES,
   pageTitle = i18n.formatText("selectFileToExport"),
-  errorMessage = ObservableString("", "")
+  errorMessage = myState.errorMessage
 ) {
   private val myWebPublishingGroup: GPOptionGroup = GPOptionGroup(
     "exporter.webPublishing", myState.publishInWebOption
   ).also { it.isTitled = false }
 
   init {
-    updateChosenFile = { replaceExtension(it, myState.exporter.proposeFileExtension()) }
+    updateChosenFile = { file ->
+      myState.exporter?.let {
+        replaceExtension(file, it.proposeFileExtension())
+      } ?: file
+    }
     proposeChosenFile = {
-      proposeOutputFile(myProject, myState.exporter) ?: File(defaultFileName)
+      myState.exporter?.let {proposeOutputFile(myProject, it) } ?: File(defaultFileName)
     }
     fxFile.addWatcher {
       myState.file = it.newValue
     }
-//    selectedFileProperty.addListener { _, _, newValue ->
-//      myState.file = newValue
-//    }
   }
 
   override fun validateFile(file: File?): Result<File, String> {
@@ -115,10 +111,12 @@ internal class ExportFileChooserPage(
   }
 
   override fun createSecondaryOptionsPanel(): Component {
-    return myState.exporter.getCustomOptionsUI() ?: super.createSecondaryOptionsPanel()
+    return myState.exporter?.getCustomOptionsUI() ?: super.createSecondaryOptionsPanel()
   }
 
-  override fun createFileFilter(): FileExtensionFilter = FileExtensionFilter(myState.exporter.getFileTypeDescription(), listOf(myState.exporter.getFileNamePattern()))
+  override fun createFileFilter(): FileExtensionFilter? = myState.exporter?.let {
+    FileExtensionFilter(it.getFileTypeDescription(), listOf(it.getFileNamePattern()))
+  }
 
   override val optionGroups: List<GPOptionGroup>
     get() = listOf(myWebPublishingGroup) + (myState.exporter?.secondaryOptions ?: emptyList())

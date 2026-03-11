@@ -67,8 +67,13 @@ data class FileExtensionFilter(val description: String, val extensions: List<Str
 /**
  * Options for displaying file chooser fields in a property pane.
  */
-data class FileDisplayOptions(val extensionFilters: MutableList<FileExtensionFilter> = mutableListOf<FileExtensionFilter>()) :
-  PropertyDisplayOptions<File>()
+data class FileDisplayOptions(
+  var isSaveNotOpen: Boolean = false,
+  var allowMultipleSelection: Boolean = false,
+  var browseButtonText: String = "Browse...",
+  var chooserTitle: String = "Choose a file",
+  val extensionFilters: MutableList<FileExtensionFilter> = mutableListOf())
+  : PropertyDisplayOptions<File>()
 
 /**
  * Options for displaying integer fields in a property pane.

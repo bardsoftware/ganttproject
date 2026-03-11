@@ -46,10 +46,7 @@ class ImportFileWizard(uiFacade: UIFacade, project: IGanttProject, pluginPrefere
   private val wizardModel = ImporterWizardModel()
   init {
     importers.forEach { it.setContext(project, uiFacade, pluginPreferences) }
-    val filePage = ImportFileChooserPage(wizardModel, project, pluginPreferences, uiFacade)
-    filePage.fxFile.addWatcher {
-      wizardModel.needsRefresh.set(true, this)
-    }
+    val filePage = ImportFileChooserPage(wizardModel, project, pluginPreferences)
     wizardModel.importer = importers.firstOrNull()
     wizardModel.addPage(ImporterChooserPageFx(importers, wizardModel))
     wizardModel.addPage(filePage)
@@ -88,6 +85,7 @@ class ImporterWizardModel: WizardModel() {
     set(value) {
       field = value
       importer?.setFile(value)
+      needsRefresh.set(true, this)
     }
 
   // Some importers, e.g. ICS importer, provide a custom page that is appended to the wizard.
@@ -95,11 +93,13 @@ class ImporterWizardModel: WizardModel() {
 
   init {
     canFinish = {
-      importer != null && file != null && errorMessage.value.isNullOrBlank()
+      (importer != null && file != null && errorMessage.value.isNullOrBlank()).also {
+        //println("canFinish=$it")
+      }
     }
     hasNext = { when (currentPage) {
       0 -> importer != null
-      1 -> customPageProperty.get() != null && file != null
+      1 -> customPageProperty.get() != null && file != null && errorMessage.value.isNullOrBlank()
       else -> false
     } }
     onOk = { importer?.run() }
@@ -149,8 +149,9 @@ private class ImporterChooserPageFx(importers: List<Importer>, model: ImporterWi
  * Wizard page for choosing a file to import from.
  */
 private class ImportFileChooserPage(
-  private val model: ImporterWizardModel, project: IGanttProject, private val prefs: Preferences, uiFacade: UIFacade)
-  : FileChooserPageBase(project.document, uiFacade, fileChooserTitle = "",
+  private val model: ImporterWizardModel, project: IGanttProject, private val prefs: Preferences)
+  : FileChooserPageBase(project.document,
+  fileChooserTitle = i18n.formatText("importerFileChooserPageTitle"),
   pageTitle = i18n.formatText("importerFileChooserPageTitle"), errorMessage = model.errorMessage) {
 
   val importer get() = model.importer

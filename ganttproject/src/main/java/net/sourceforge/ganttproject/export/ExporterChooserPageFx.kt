@@ -20,14 +20,13 @@ package net.sourceforge.ganttproject.export
 
 import biz.ganttproject.app.*
 import javafx.scene.Node
-import net.sourceforge.ganttproject.export.ExportFileWizardImpl.State
 import net.sourceforge.ganttproject.gui.projectwizard.WizardPage
 import java.awt.Component
 
 /**
  * This is the first page of the export wizard that allows the user to choose an exporter.
  */
-class ExporterChooserPageFx(exporters: List<Exporter>, private val model: State) : WizardPage {
+class ExporterChooserPageFx(exporters: List<Exporter>, private val model: ExportWizardModel) : WizardPage {
   override val title: String = i18n.formatText("option.exporter.title")
   override val component: Component? = null
 
@@ -61,7 +60,7 @@ class ExporterChooserPageFx(exporters: List<Exporter>, private val model: State)
 
   override fun setActive(b: Boolean) {
     if (!b) {
-      model.exporter.options.commit()
+      model.exporter?.options?.commit()
     }
   }
 }
