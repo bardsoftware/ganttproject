@@ -24,8 +24,8 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 import biz.ganttproject.app.InternationalizationCoreKt;
+import biz.ganttproject.app.WizardKt;
 import kotlin.Unit;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardImplFxKt;
 import org.osgi.service.prefs.Preferences;
 
 import biz.ganttproject.core.option.ChangeValueEvent;
@@ -89,7 +89,7 @@ public class ExportFileWizardImpl {
   }
 
   public void show() {
-    WizardImplFxKt.showWizard(wizardModel);
+    WizardKt.showWizard(wizardModel);
   }
 
   private class ExportFinalizationJobImpl implements ExportFinalizationJob {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026 Dmitry Barashev, BarD Software s.r.o.
+ * Copyright (c) 2003-2026 Dmitry Barashev, BarD Software s.r.o.
  *
  * This file is part of GanttProject, an open-source project management tool.
  *
@@ -16,13 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.gui.projectwizard
+package biz.ganttproject.app
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.app.DialogController
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.dialog
-import biz.ganttproject.app.setSwingBackground
 import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.lib.fx.vbox
@@ -39,8 +35,22 @@ import kotlinx.coroutines.withContext
 import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
+import javafx.scene.Node
+import java.awt.Component
 import javax.swing.JComponent
 import kotlin.coroutines.EmptyCoroutineContext
+
+/**
+ * Shows a wizard dialog using the provided builder.
+ */
+fun showWizard(model: WizardModel) {
+  dialog(model.title, model.id) { ctrl ->
+    val ui = WizardUiFx(ctrl, model)
+    ui.show(ctrl)
+  }
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
  * Import/Export wizard model.
@@ -86,19 +96,33 @@ open class WizardModel(val id: String, val title: String) {
   fun start() {
     needsRefresh.set(false, this)
   }
-
-
 }
+
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
- * Shows a wizard dialog using the provided builder.
+ * A single page in a wizard dialog.
  */
-fun showWizard(model: WizardModel) {
-  dialog(model.title, model.id) { ctrl ->
-    val ui = WizardUiFx(ctrl, model)
-    ui.show(ctrl)
-  }
+interface WizardPage {
+  /** Page title */
+  val title: String
+
+  /** JavaFX component that makes the page. May be null if this is a legacy Swing page. */
+  val fxComponent: Node? get() = null
+
+  /**
+   * Swing component that makes the page. May be null if this is a modern JavaFX page.
+   */
+  val component: Component?
+
+  /**
+   * This is set to `true` when the page becomes active, that is, it becomes the current page in the wizard.
+   * This is set to `false` when the page becomes inactive, that is, a user navigates to another page.
+   */
+  fun setActive(b: Boolean)
 }
+
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
  * Implements a wizard dialog UI using Java FX.

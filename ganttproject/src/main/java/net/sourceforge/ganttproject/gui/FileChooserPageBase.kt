@@ -33,7 +33,7 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage
+import biz.ganttproject.app.WizardPage
 import org.osgi.service.prefs.Preferences
 import java.awt.BorderLayout
 import java.awt.Component

@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject.export
 
 import biz.ganttproject.core.option.BooleanOption
 import biz.ganttproject.core.option.DefaultBooleanOption
-import net.sourceforge.ganttproject.gui.projectwizard.WizardModel
+import biz.ganttproject.app.WizardModel
 import java.io.File
 
 /**

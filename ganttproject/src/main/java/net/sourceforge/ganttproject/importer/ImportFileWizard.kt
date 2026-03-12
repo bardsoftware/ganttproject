@@ -30,9 +30,9 @@ import javafx.scene.Node
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.gui.FileChooserPageBase
 import net.sourceforge.ganttproject.gui.UIFacade
-import net.sourceforge.ganttproject.gui.projectwizard.WizardModel
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage
-import net.sourceforge.ganttproject.gui.projectwizard.showWizard
+import biz.ganttproject.app.WizardModel
+import biz.ganttproject.app.WizardPage
+import biz.ganttproject.app.showWizard
 import net.sourceforge.ganttproject.plugins.PluginManager.getExtensions
 import org.osgi.service.prefs.Preferences
 import java.awt.Component
