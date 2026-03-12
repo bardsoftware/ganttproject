@@ -30,9 +30,9 @@ import javafx.scene.Node
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.gui.FileChooserPageBase
 import net.sourceforge.ganttproject.gui.UIFacade
-import net.sourceforge.ganttproject.gui.projectwizard.WizardModel
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage
-import net.sourceforge.ganttproject.gui.projectwizard.showWizard
+import biz.ganttproject.app.WizardModel
+import biz.ganttproject.app.WizardPage
+import biz.ganttproject.app.showWizard
 import net.sourceforge.ganttproject.plugins.PluginManager.getExtensions
 import org.osgi.service.prefs.Preferences
 import java.awt.Component
@@ -40,6 +40,11 @@ import java.io.File
 
 /**
  * Wizard for importing files into a Gantt project.
+ *
+ * An import wizard consists of 2-3 pages.
+ * On the first page, the user chooses an importer.
+ * On the second page, the user chooses a file to import.
+ * On the third page, some importers may show a preview of the imported data.
  */
 class ImportFileWizard(uiFacade: UIFacade, project: IGanttProject, pluginPreferences: Preferences,
                        importers: List<Importer> = getImporters()) {
@@ -65,12 +70,11 @@ class ImportFileWizard(uiFacade: UIFacade, project: IGanttProject, pluginPrefere
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// --------------------------------------------------------------------------------------------------------------------
 
 /**
  * Model for the import wizard, managing importer and file selection.
  */
-class ImporterWizardModel: WizardModel() {
+class ImporterWizardModel: WizardModel("wizard.import", i18n.formatText("importWizard.dialog.title")) {
   // Selected importer. Updates a customPageProperty with the custom page of the importer, if any.
   var importer: Importer? = null
     set(value) {
@@ -93,9 +97,7 @@ class ImporterWizardModel: WizardModel() {
 
   init {
     canFinish = {
-      (importer != null && file != null && errorMessage.value.isNullOrBlank()).also {
-        //println("canFinish=$it")
-      }
+      importer != null && file != null && errorMessage.value.isNullOrBlank()
     }
     hasNext = { when (currentPage) {
       0 -> importer != null
@@ -110,7 +112,6 @@ private fun getImporters(): MutableList<Importer> {
   return getExtensions(Importer.EXTENSION_POINT_ID, Importer::class.java)
 }
 
-// --------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -143,7 +144,6 @@ private class ImporterChooserPageFx(importers: List<Importer>, model: ImporterWi
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// --------------------------------------------------------------------------------------------------------------------
 
 /**
  * Wizard page for choosing a file to import from.
@@ -175,7 +175,7 @@ private class ImportFileChooserPage(
   override fun validateFile(file: File?): Result<File?, String?> {
     return super.validateFile(file).andThen { file ->
       if (file?.isDirectory == true) {
-        Err("It is a directory")
+        Err(i18n.formatText("document.storage.error.write.isDirectory"))
       } else {
         Ok(file)
       }

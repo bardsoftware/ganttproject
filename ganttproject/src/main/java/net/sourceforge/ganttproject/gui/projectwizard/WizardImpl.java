@@ -30,6 +30,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import biz.ganttproject.app.WizardPage;
 import com.google.common.collect.Maps;
 
 import net.sourceforge.ganttproject.action.CancelAction;

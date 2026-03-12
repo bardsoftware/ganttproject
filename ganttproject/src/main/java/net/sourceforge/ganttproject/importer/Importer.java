@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
 
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
+import biz.ganttproject.app.WizardPage;
 import org.osgi.service.prefs.Preferences;
 
 import biz.ganttproject.core.option.GPOptionGroup;

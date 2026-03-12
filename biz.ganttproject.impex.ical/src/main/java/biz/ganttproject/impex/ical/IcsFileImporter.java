@@ -26,7 +26,7 @@ import net.fortuna.ical4j.data.ParserException;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
+import biz.ganttproject.app.WizardPage;
 import net.sourceforge.ganttproject.importer.ImporterBase;
 
 import javax.swing.*;
