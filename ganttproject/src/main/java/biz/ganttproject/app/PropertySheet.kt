@@ -100,7 +100,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
 
   fun file(property: ObservableFile, optionValues: (FileDisplayOptions.()->Unit)? = null) {
     rowBuilders.add(run {
-      val options = optionValues?.let { FileDisplayOptions().apply(it) }
+      val options = optionValues?.let { FileDisplayOptions().apply(it) } ?: FileDisplayOptions()
       createOptionItem(property, createFileOptionEditor(property, options))
     })
   }
@@ -272,52 +272,9 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
     return textField
   }
 
-  private fun createFileOptionEditor(option: ObservableFile, displayOptions: FileDisplayOptions? = null): Node {
-    val textField = CustomTextField()
-    val onBrowse = {
-      val fileChooser = FileChooser();
-      var initialFile: File?  = File(textField.text)
-      while (initialFile?.exists() == false) {
-        initialFile = initialFile.parentFile
-      }
-      initialFile?.let {
-        if (it.isDirectory) {
-          fileChooser.initialDirectory = it
-        } else {
-          fileChooser.initialDirectory = it.parentFile
-        }
-      }
-      fileChooser.title = "Choose a file"
-      displayOptions?.let {
-        it.extensionFilters.forEach {filter ->
-          fileChooser.extensionFilters.add(FileChooser.ExtensionFilter(filter.description, filter.extensions))
-        }
-      }
 
-      val resultFile = fileChooser.showOpenDialog(null)
-      option.value = resultFile
-      resultFile?.let {
-        textField.text = it.absolutePath
-      }
-    }
-    textField.right = buildFontAwesomeButton(
-      iconName = FontAwesomeIcon.SEARCH.name,
-      label = "Browse...",
-      onClick = { onBrowse() },
-      styleClass = "btn"
-    )
-    textField.id = option.id
-    displayOptions?.editorStyles?.let(textField.styleClass::addAll)
-    return textField
-//    return HBox().apply {
-//      HBox.setHgrow(textField, Priority.ALWAYS)
-//      children.add(textField)
-//      children.add(Region().also {
-//        it.padding = Insets(0.0, 5.0, 0.0, 0.0)
-//      })
-//      children.add(btn)
-//    }
-
+  private fun createFileOptionEditor(option: ObservableFile, displayOptions: FileDisplayOptions = FileDisplayOptions()): Node {
+    return FileOptionEditor(option, displayOptions).node
   }
 
   fun createDateOptionEditor(option: ObservableDate, displayOptions: DateDisplayOptions = DateDisplayOptions(createDateConverter())): DatePicker {

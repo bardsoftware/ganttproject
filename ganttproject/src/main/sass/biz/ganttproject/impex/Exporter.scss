@@ -16,9 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
+@import "../app/textfields";
 @import "../app/theme";
 @import "../app/dialogs";
 @import "../app/buttons";
+@import "../app/errors";
 @import "../app/validation";
 
 .dlg-export-progress {
@@ -78,6 +80,19 @@
       .label {
         -fx-min-width: 8em;
         -fx-alignment: center-right;
+      }
+    }
+  }
+
+  .file-chooser-page {
+    .file-chooser {
+      @include textfield-with-button($gp-light-gray, $gp-dark-gray);
+    }
+
+    .alert-embedded-box {
+      @include error-embedded-box($gp-error);
+      .alert-error {
+        @include error-label();
       }
     }
   }

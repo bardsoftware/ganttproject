@@ -24,11 +24,13 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.app.setSwingBackground
 import biz.ganttproject.core.option.ObservableBoolean
+import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.lib.fx.vbox
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.embed.swing.SwingNode
 import javafx.event.ActionEvent
 import javafx.scene.control.Button
+import javafx.scene.control.Label
 import javafx.scene.layout.StackPane
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,13 +53,16 @@ open class WizardModel {
   var title: String = ""
   var dialogId: String = ""
   var onOk: () -> Unit = {}
-  var canFinish: () -> Boolean = { true }
+  var canFinish: () -> Boolean = { errorMessage.value.isNullOrBlank() }
   var hasNext: () -> Boolean = { currentPage < pages.size - 1 }
   var currentPage = 0
 
   val pages = mutableListOf<WizardPage>()
-  val needsRefresh = ObservableBoolean("", false)
+  val needsRefresh = ObservableBoolean("needsRefresh", false)
   val pageCountProperty = SimpleIntegerProperty(0)
+  val errorMessage = ObservableString("", "").also {
+    it.addWatcher { needsRefresh.set(true, this) }
+  }
 
   fun addPage(page: WizardPage) {
     pages.add(page)
@@ -72,6 +77,12 @@ open class WizardModel {
   fun hasPrev(): Boolean {
     return currentPage > 0
   }
+
+  fun start() {
+    needsRefresh.set(false, this)
+  }
+
+
 }
 
 /**
@@ -131,12 +142,14 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
     })
 
     model.needsRefresh.addWatcher { evt ->
-      if (evt.newValue && evt.trigger != this) {
-        adjustButtonState()
+      if (evt.trigger != this) {
+        if (evt.newValue) {
+          adjustButtonState()
+        }
         model.needsRefresh.set(false, this)
       }
     }
-
+    model.start()
     ctrl.resize()
   }
   fun show(ctrl: DialogController) {

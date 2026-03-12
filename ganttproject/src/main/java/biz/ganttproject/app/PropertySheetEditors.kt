@@ -18,17 +18,21 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
-import biz.ganttproject.core.option.DropdownDisplayOptions
-import biz.ganttproject.core.option.ObservableChoice
-import biz.ganttproject.core.option.ObservableProperty
+import biz.ganttproject.core.option.*
+import biz.ganttproject.lib.fx.buildFontAwesomeButton
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.control.ComboBox
 import javafx.scene.control.ListCell
 import javafx.scene.layout.HBox
+import javafx.stage.FileChooser
 import javafx.util.Callback
 import javafx.util.StringConverter
+import org.controlsfx.control.textfield.CustomTextField
+import java.io.File
+import java.util.*
 
 /**
  * Creates a dropdown editor for the given choice option.
@@ -71,4 +75,75 @@ fun <E> createDropdownEditor(option: ObservableProperty<E>, key2i18n: List<Pair<
     }
     comboBox.value = key2i18n.find { it.first == option.value }
   })
+}
+
+private val ourTimer = Timer()
+
+class FileOptionEditor(private val option: ObservableFile, private val displayOptions: FileDisplayOptions = FileDisplayOptions()) {
+  private val textField = CustomTextField()
+  private var myTimerTask: TimerTask? = null
+
+  val node: Node = textField
+  init {
+    textField.right = buildFontAwesomeButton(
+      iconName = FontAwesomeIcon.SEARCH.name,
+      label = displayOptions.browseButtonText,
+      onClick = { onBrowse() },
+      styleClass = "btn"
+    )
+    textField.text = option.value?.absolutePath ?: ""
+    textField.id = option.id
+    textField.textProperty().addListener {
+      onTextChange()
+    }
+    displayOptions.editorStyles.let(textField.styleClass::addAll)
+    option.addWatcher {
+      if (it.trigger != textField) {
+        textField.text = option.value?.absolutePath ?: ""
+      }
+    }
+  }
+
+  private fun onBrowse() {
+    val fileChooser = FileChooser()
+    var initialFile: File? = File(textField.text)
+    while (initialFile?.exists() == false) {
+      initialFile = initialFile.parentFile
+    }
+    initialFile?.let {
+      if (it.isDirectory) {
+        fileChooser.initialDirectory = it
+      } else {
+        fileChooser.initialDirectory = it.parentFile
+      }
+    }
+    fileChooser.title = displayOptions.chooserTitle.ifBlank { "Choose a file" }
+    displayOptions.let {
+      it.extensionFilters.forEach {filter ->
+        fileChooser.extensionFilters.add(FileChooser.ExtensionFilter(filter.description, filter.extensions))
+      }
+    }
+
+    val ownerWindow = topWindow()
+    val resultFile =
+      if (displayOptions.isSaveNotOpen) fileChooser.showSaveDialog(ownerWindow)
+      else fileChooser.showOpenDialog(ownerWindow)
+    resultFile?.let {
+      option.set(resultFile, textField)
+      textField.text = it.absolutePath
+    }
+  }
+
+  private fun onTextChange() {
+    if (myTimerTask == null) {
+      myTimerTask = object : TimerTask() {
+        override fun run() {
+          val file = File(textField.text)
+          option.set(file, textField)
+          myTimerTask = null
+        }
+      }
+      ourTimer.schedule(myTimerTask, 1000)
+    }
+  }
 }
