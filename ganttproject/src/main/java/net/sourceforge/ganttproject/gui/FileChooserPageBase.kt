@@ -18,22 +18,16 @@
  */
 package net.sourceforge.ganttproject.gui
 
-import biz.ganttproject.app.FXThread
-import biz.ganttproject.app.PropertySheetBuilder
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.i18n
+import biz.ganttproject.app.*
 import biz.ganttproject.core.option.*
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
 import javafx.embed.swing.SwingNode
 import javafx.scene.Node
-import javafx.scene.control.Label
 import javafx.scene.layout.BorderPane
-import javafx.scene.layout.HBox
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder
-import biz.ganttproject.app.WizardPage
 import org.osgi.service.prefs.Preferences
 import java.awt.BorderLayout
 import java.awt.Component
@@ -107,22 +101,15 @@ abstract class FileChooserPageBase protected constructor(
 
     root.center = secondaryOptionsSwingNode
 
-    fun showError(msg: String?) {
-      if (msg != null) {
-        root.bottom = HBox().apply {
-          styleClass.add("alert-embedded-box")
-          children.add(Label(msg).also { it.styleClass.add("alert-error") })
-        }
-      } else {
-        root.bottom = null
-      }
-    }
-    errorMessage.addWatcher {
+    val errorPane = ErrorPane()
+    root.bottom = errorPane.fxNode
+
+    errorMessage.addWatcher { evt ->
       FXThread.runLater {
-        showError(it.newValue)
+        errorPane.onError(evt.newValue?.let(::html2md))
       }
     }
-    showError(errorMessage.value)
+    errorPane.onError(errorMessage.value?.let(::html2md))
     root
   }
 

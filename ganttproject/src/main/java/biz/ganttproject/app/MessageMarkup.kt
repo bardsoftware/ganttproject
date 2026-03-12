@@ -1,5 +1,5 @@
-/*!
- * Copyright (c) 2025 Dmitry Barashev, BarD Software s.r.o.
+/*
+ * Copyright (c) 2026 Dmitry Barashev, BarD Software s.r.o.
  *
  * This file is part of GanttProject, an open-source project management tool.
  *
@@ -16,24 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-@import "theme";
-@import "errors";
+package biz.ganttproject.app
 
-.hint-validation {
-  -fx-padding: 3 2 3 0;
-  -fx-text-fill: $gp-dark-gray;
-}
+import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
+import com.vladsch.flexmark.util.data.MutableDataSet
 
-.hint-validation-pane {
-  @include error-embedded-box($gp-orange);
-  &.noerror {
-    /*visibility: hidden;*/
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-  }
-}
+fun String.isHtml() = HTML_TAGS.any { this.contains(it, ignoreCase = true) }
+fun html2md(html: String) =
+  if (html.isHtml()) {
+    FlexmarkHtmlConverter.builder(MutableDataSet()).build().convert(html)
+  } else html
 
-.hint .glyph-icon {
-  -fx-fill: -gp-dark-gray;
-  -fx-padding: 3 3 3 3;
-}
+private val HTML_TAGS = setOf("<br>", "<br/>", "<html>", "<body>", "<p>")

@@ -183,6 +183,7 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
   }
   fun show(ctrl: DialogController) {
       ctrl.addStyleSheet("/biz/ganttproject/app/Dialog.css")
+      ctrl.addStyleSheet("/biz/ganttproject/app/ErrorPane.css")
       ctrl.addStyleSheet("/biz/ganttproject/impex/Exporter.css")
       ctrl.addStyleClass("dlg", "dlg-export-wizard", "swing-background")
       ctrl.setHeader(vbox {
