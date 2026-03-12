@@ -47,12 +47,10 @@ public class ExportFileWizardImpl {
 
 
   private static List<Exporter> ourExporters;
-  private final ExportWizardModel wizardModel = new ExportWizardModel();
+  private final ExportWizardModel wizardModel = new ExportWizardModel(
+    "wizard.export", InternationalizationCoreKt.getRootLocalizer().formatText("exportWizard.dialog.title"));
 
   public ExportFileWizardImpl(UIFacade uiFacade, IGanttProject project, Preferences pluginPreferences) {
-    wizardModel.setTitle(InternationalizationCoreKt.getRootLocalizer().formatText("exportWizard.dialog.title"));
-    wizardModel.setDialogId("wizard.export");
-
     final Preferences exportNode = pluginPreferences.node("/instance/net.sourceforge.ganttproject/export");
     myProject = project;
     wizardModel.getPublishInWebOption().setValue(exportNode.getBoolean("publishInWeb", false));

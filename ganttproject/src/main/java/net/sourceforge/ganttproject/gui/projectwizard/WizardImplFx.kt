@@ -26,11 +26,9 @@ import biz.ganttproject.app.setSwingBackground
 import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.lib.fx.vbox
-import javafx.beans.property.SimpleIntegerProperty
 import javafx.embed.swing.SwingNode
 import javafx.event.ActionEvent
 import javafx.scene.control.Button
-import javafx.scene.control.Label
 import javafx.scene.layout.StackPane
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,31 +45,38 @@ import kotlin.coroutines.EmptyCoroutineContext
 /**
  * Import/Export wizard model.
  */
-open class WizardModel {
+open class WizardModel(val id: String, val title: String) {
   val i18n = RootLocalizer
   val coroutineScope = CoroutineScope(EmptyCoroutineContext)
-  var title: String = ""
-  var dialogId: String = ""
-  var onOk: () -> Unit = {}
-  var canFinish: () -> Boolean = { errorMessage.value.isNullOrBlank() }
-  var hasNext: () -> Boolean = { currentPage < pages.size - 1 }
-  var currentPage = 0
 
-  val pages = mutableListOf<WizardPage>()
+  // This is executed when user clicks "OK" button
+  var onOk: () -> Unit = {}
+
+  // Returns `true` if it is okay to finish the wizard.
+  var canFinish: () -> Boolean = { errorMessage.value.isNullOrBlank() }
+
+  // Returns `true` if it is okay to go to the next page.
+  var hasNext: () -> Boolean = { currentPage < pages.size - 1 }
+
+  // Current page index.
+  internal var currentPage = 0
+
+  internal val pages = mutableListOf<WizardPage>()
+
+  // Indicates that the wizard buttons, such as Next or OK, need to be refreshed.
   val needsRefresh = ObservableBoolean("needsRefresh", false)
-  val pageCountProperty = SimpleIntegerProperty(0)
+
+  // In case of errors, this string will contain a localized error message.
   val errorMessage = ObservableString("", "").also {
     it.addWatcher { needsRefresh.set(true, this) }
   }
 
   fun addPage(page: WizardPage) {
     pages.add(page)
-    pageCountProperty.set(pages.size)
   }
 
   fun removePage(page: WizardPage) {
     pages.remove(page)
-    pageCountProperty.set(pages.size)
   }
 
   fun hasPrev(): Boolean {
@@ -88,9 +93,9 @@ open class WizardModel {
 /**
  * Shows a wizard dialog using the provided builder.
  */
-fun showWizard(builder: WizardModel) {
-  dialog(builder.title, builder.dialogId) { ctrl ->
-    val ui = WizardUiFx(ctrl, builder)
+fun showWizard(model: WizardModel) {
+  dialog(model.title, model.id) { ctrl ->
+    val ui = WizardUiFx(ctrl, model)
     ui.show(ctrl)
   }
 }
