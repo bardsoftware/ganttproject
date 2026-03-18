@@ -20,12 +20,20 @@ package net.sourceforge.ganttproject.gui
 
 import biz.ganttproject.app.*
 import biz.ganttproject.core.option.*
+import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.embed.swing.SwingNode
 import javafx.scene.Node
+import javafx.scene.control.Label
+import javafx.scene.control.ListCell
+import javafx.scene.control.ListView
 import javafx.scene.layout.BorderPane
+import javafx.scene.layout.HBox
+import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder
 import org.osgi.service.prefs.Preferences
@@ -48,6 +56,9 @@ abstract class FileChooserPageBase protected constructor(
   val errorMessage: ObservableString
 ) : WizardPage {
   val fxFile = ObservableFile("file", null)
+  val chosenFiles = FXCollections.observableArrayList<ChosenFile>()
+  var allowMultipleChoice: Boolean = false
+
   private var fileFilter: FileExtensionFilter? = null
     set(value) {
       field = value
@@ -70,6 +81,14 @@ abstract class FileChooserPageBase protected constructor(
   init {
     fxFile.addWatcher { event ->
       tryChosenFile(event.newValue)
+      if (allowMultipleChoice) {
+        event.newValue?.let {
+          val newChosenFile = ChosenFile(event.newValue!!, chosenFiles, this::validateFile)
+          if (!chosenFiles.contains(newChosenFile)) {
+            chosenFiles.add(newChosenFile)
+          }
+        }
+      }
     }
     fxOverwrite.addWatcher { tryChosenFile(fxFile.value) }
   }
@@ -99,7 +118,17 @@ abstract class FileChooserPageBase protected constructor(
     }
     root.top = sheet.node
 
-    root.center = secondaryOptionsSwingNode
+    if (allowMultipleChoice) {
+      val listView = ListView(chosenFiles).also {
+        it.styleClass.add("chosen-files-list")
+      }
+      listView.setCellFactory { _ -> ChosenFileListCell() }
+      root.center = listView.apply {
+        prefHeight = 200.0
+      }
+    } else {
+      root.center = secondaryOptionsSwingNode
+    }
 
     val errorPane = ErrorPane()
     root.bottom = errorPane.fxNode
@@ -198,6 +227,45 @@ abstract class FileChooserPageBase protected constructor(
 
   protected open fun validateFile(file: File?): Result<File?, String?> {
     return basicValidateFile(file)
+  }
+}
+
+class ChosenFile(val file: File, val chosenFiles: ObservableList<ChosenFile>, val validator: (File) -> Result<File?, String?>) {
+  val isValid: Boolean get() = validator(file).isOk
+
+  fun remove() {
+    chosenFiles.remove(this)
+  }
+
+}
+
+class ChosenFileListCell: ListCell<ChosenFile>() {
+  override fun updateItem(item: ChosenFile?, empty: Boolean) {
+    super.updateItem(item, empty)
+    if (empty || item == null) {
+      text = null
+      graphic = null
+    } else {
+      graphic = HBox().also { hbox ->
+        hbox.styleClass.add("chosen-file-item")
+        if (this.isSelected) {
+          hbox.styleClass.add("selected")
+        } else {
+          hbox.styleClass.remove("selected")
+        }
+        val label = Label(item.file.name).also { label ->
+          HBox.setHgrow(label, Priority.ALWAYS)
+          label.maxWidth = Double.MAX_VALUE
+        }
+        val removeButton = buildFontAwesomeButton("trash", null, {
+          item.remove()
+        })
+        if (!item.isValid) {
+          hbox.styleClass.add("validation-error")
+        }
+        hbox.children.addAll(label, removeButton)
+      }
+    }
   }
 }
 

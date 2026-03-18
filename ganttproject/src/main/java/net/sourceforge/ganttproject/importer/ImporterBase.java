@@ -27,6 +27,7 @@ import net.sourceforge.ganttproject.gui.UIFacade;
 import biz.ganttproject.app.WizardPage;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.util.collect.Pair;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.service.prefs.Preferences;
 
 import java.io.File;
@@ -45,6 +46,7 @@ public abstract class ImporterBase implements Importer {
    */
   private Preferences myPrefs;
   private File myFile;
+  private @NotNull ImporterWizardModel myModel;
 
   protected ImporterBase(String id) {
     myID = id;
@@ -116,6 +118,15 @@ public abstract class ImporterBase implements Importer {
   @Override
   public WizardPage getCustomPage() {
     return null;
+  }
+
+  @Override
+  public void setModel(@NotNull ImporterWizardModel wizardModel) {
+    myModel = wizardModel;
+  }
+
+  protected ImporterWizardModel getModel() {
+    return myModel;
   }
 
   protected void reportErrors(List<Pair<Level, String>> errors, String loggerName) {

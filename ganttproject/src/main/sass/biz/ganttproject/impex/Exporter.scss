@@ -88,6 +88,11 @@
     .file-chooser {
       @include textfield-with-button($gp-light-gray, $gp-dark-gray);
     }
+    .chosen-files-list {
+      .validation-error {
+        @include validation-error();
+      }
+    }
 
     .alert-embedded-box {
       @include error-embedded-box($gp-error);
