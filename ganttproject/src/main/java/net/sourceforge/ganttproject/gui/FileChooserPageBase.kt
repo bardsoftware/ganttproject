@@ -20,7 +20,9 @@ package net.sourceforge.ganttproject.gui
 
 import biz.ganttproject.app.*
 import biz.ganttproject.core.option.*
+import biz.ganttproject.lib.fx.GPListCell
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
+import biz.ganttproject.lib.fx.hbox
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
@@ -28,12 +30,14 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.embed.swing.SwingNode
 import javafx.scene.Node
+import javafx.scene.control.ContentDisplay
 import javafx.scene.control.Label
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
+import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder
 import org.osgi.service.prefs.Preferences
@@ -120,9 +124,9 @@ abstract class FileChooserPageBase protected constructor(
 
     if (allowMultipleChoice) {
       val listView = ListView(chosenFiles).also {
-        it.styleClass.add("chosen-files-list")
+        it.styleClass.addAll("chosen-files-list", "swing-background")
       }
-      listView.setCellFactory { _ -> ChosenFileListCell() }
+      listView.setCellFactory { _ -> ListCellImpl() }
       root.center = listView.apply {
         prefHeight = 200.0
       }
@@ -239,6 +243,25 @@ class ChosenFile(val file: File, val chosenFiles: ObservableList<ChosenFile>, va
 
 }
 
+class ListCellImpl: GPListCell<ChosenFile>() {
+  override fun updateItem(item: ChosenFile?, empty: Boolean) {
+    whenNotEmpty(item, empty) { chosenFile ->
+      graphic = hbox {
+        styleClasses.add("chosen-file-item")
+        if (!chosenFile.isValid) {
+          styleClasses.add("validation-error")
+        }
+        isSelected = this@ListCellImpl.isSelected
+        label = chosenFile.file.name.asObservable()
+        actions.add(GPAction.create("impex.fileChooserPage.action.remove") {
+          FXThread.runLater(chosenFile::remove)
+        }.also {
+          it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.GRAPHIC_ONLY)
+        })
+      }
+    }
+  }
+}
 class ChosenFileListCell: ListCell<ChosenFile>() {
   override fun updateItem(item: ChosenFile?, empty: Boolean) {
     super.updateItem(item, empty)

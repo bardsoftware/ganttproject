@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import biz.ganttproject.lib.fx.GPListCell
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.property.BooleanProperty
@@ -33,22 +34,7 @@ import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
 import net.sourceforge.ganttproject.document.webdav.WebDavResource
 
-open class FolderViewCell<T: FolderItem> : ListCell<ListViewItem<T>>() {
-  protected fun whenNotEmpty(item: ListViewItem<T>?, empty: Boolean, code: FolderViewCell<T>.(item: ListViewItem<T>) -> Unit) {
-    if (item == null) {
-      text = ""
-      graphic = null
-      return
-    }
-    super.updateItem(item, empty)
-    if (empty) {
-      text = ""
-      graphic = null
-      return
-    }
-    code(this, item)
-  }
-}
+open class FolderViewCell<T: FolderItem> : GPListCell<ListViewItem<T>>()
 /**
  * Creates a list cell with the folder item name in bigger font, folder item base path above in smaller font
  * and folder item tags in the bottom right corner.
@@ -206,3 +192,5 @@ class CellWithButtons<T: FolderItem>(
     return btnBox
   }
 }
+
+
