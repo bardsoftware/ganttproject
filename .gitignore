@@ -7,3 +7,16 @@ dist-bin
 ganttproject-builder/dist-win
 ganttproject-builder/dist-bin
 ganttproject-builder/runtime
+# === Ajouts DevOps TP ===
+# Docker
+infra/docker/.env
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/.terraform.lock.hcl
+
+# OS Windows
+Thumbs.db
+desktop.ini
