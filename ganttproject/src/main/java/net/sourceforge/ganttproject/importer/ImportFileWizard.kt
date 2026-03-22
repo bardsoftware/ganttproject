@@ -89,10 +89,11 @@ class ImporterWizardModel: WizardModel("wizard.import", i18n.formatText("importW
     }
 
   // Selected file.
-  var file: File? = null
+  var file: File?
     set(value) {
       files = listOfNotNull(value)
     }
+    get() = files.firstOrNull()
 
   var files: List<File> = emptyList()
     set(value) {
@@ -163,7 +164,7 @@ private class ImportFileChooserPage(
   pageTitle = i18n.formatText("importerFileChooserPageTitle"),
   errorMessage = model.errorMessage) {
 
-  override val optionGroups: List<GPOptionGroup> = emptyList()
+  override val optionGroups: List<GPOptionGroup> get() = importer?.secondaryOptions?.toList() ?: emptyList()
   override val preferences: Preferences get() = prefs.node(model.importer?.id ?: "")
 
   val importer get() = model.importer
@@ -173,13 +174,17 @@ private class ImportFileChooserPage(
     chosenFiles.addListener(ListChangeListener {
       model.files = chosenFiles.mapNotNull { if (it.isValid) it.file else null }
     })
+    fxFile.addWatcher {
+      model.file = it.newValue
+    }
   }
 
   override fun setActive(isActive: Boolean) {
-    super.setActive(isActive)
     if (isActive) {
       allowMultipleChoice = importer is ImporterFromGanttFile
+      model.files = emptyList()
     }
+    super.setActive(isActive)
   }
 
   override fun createFileFilter(): FileExtensionFilter? =

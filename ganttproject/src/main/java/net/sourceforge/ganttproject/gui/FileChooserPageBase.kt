@@ -23,6 +23,7 @@ import biz.ganttproject.core.option.*
 import biz.ganttproject.lib.fx.GPListCell
 import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.lib.fx.hbox
+import biz.ganttproject.lib.fx.vbox
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
@@ -98,6 +99,8 @@ abstract class FileChooserPageBase protected constructor(
   }
 
   override val component: Component? = null
+  private var resetCenterPane: ()->Unit = {}
+
   override val fxComponent: Node by lazy {
     val root = BorderPane()
     root.styleClass.add("file-chooser-page")
@@ -122,18 +125,20 @@ abstract class FileChooserPageBase protected constructor(
     }
     root.top = sheet.node
 
-    if (allowMultipleChoice) {
-      val listView = ListView(chosenFiles).also {
-        it.styleClass.addAll("chosen-files-list", "swing-background")
+    resetCenterPane = {
+      root.center = vbox {
+        if (allowMultipleChoice) {
+          val listView = ListView(chosenFiles).also {
+            it.styleClass.addAll("chosen-files-list", "swing-background")
+            it.setCellFactory { _ -> ListCellImpl() }
+            it.prefHeight = 200.0
+          }
+          add(listView)
+        }
+        add(secondaryOptionsSwingNode)
       }
-      listView.setCellFactory { _ -> ListCellImpl() }
-      root.center = listView.apply {
-        prefHeight = 200.0
-      }
-    } else {
-      root.center = secondaryOptionsSwingNode
     }
-
+    resetCenterPane()
     val errorPane = ErrorPane()
     root.bottom = errorPane.fxNode
 
@@ -218,6 +223,7 @@ abstract class FileChooserPageBase protected constructor(
       secondaryOptionsSwingNode.content = mySecondaryOptionsComponent
       fileFilter = createFileFilter()
       loadPreferences()
+      resetCenterPane()
     }
   }
 
