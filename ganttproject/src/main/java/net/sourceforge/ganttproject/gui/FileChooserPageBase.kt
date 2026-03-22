@@ -268,34 +268,5 @@ class ListCellImpl: GPListCell<ChosenFile>() {
     }
   }
 }
-class ChosenFileListCell: ListCell<ChosenFile>() {
-  override fun updateItem(item: ChosenFile?, empty: Boolean) {
-    super.updateItem(item, empty)
-    if (empty || item == null) {
-      text = null
-      graphic = null
-    } else {
-      graphic = HBox().also { hbox ->
-        hbox.styleClass.add("chosen-file-item")
-        if (this.isSelected) {
-          hbox.styleClass.add("selected")
-        } else {
-          hbox.styleClass.remove("selected")
-        }
-        val label = Label(item.file.name).also { label ->
-          HBox.setHgrow(label, Priority.ALWAYS)
-          label.maxWidth = Double.MAX_VALUE
-        }
-        val removeButton = buildFontAwesomeButton("trash", null, {
-          item.remove()
-        })
-        if (!item.isValid) {
-          hbox.styleClass.add("validation-error")
-        }
-        hbox.children.addAll(label, removeButton)
-      }
-    }
-  }
-}
 
 const val PREF_SELECTED_FILE: String = "selected_file"
