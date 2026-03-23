@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.gui.projectwizard;
 
 import java.awt.Component;
 
+import biz.ganttproject.app.WizardPage;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.options.ProjectSettingsPanel;
 

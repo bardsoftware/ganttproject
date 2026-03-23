@@ -20,7 +20,8 @@ package net.sourceforge.ganttproject.importer;
 
 import java.io.File;
 
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
+import biz.ganttproject.app.WizardPage;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.service.prefs.Preferences;
 
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -45,4 +46,6 @@ public interface Importer {
   void setFile(File file);
 
   WizardPage getCustomPage();
+
+  void setModel(@NotNull ImporterWizardModel wizardModel);
 }

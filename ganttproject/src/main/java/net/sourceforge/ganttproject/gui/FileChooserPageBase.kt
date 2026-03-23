@@ -18,22 +18,29 @@
  */
 package net.sourceforge.ganttproject.gui
 
-import biz.ganttproject.app.FXThread
-import biz.ganttproject.app.PropertySheetBuilder
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.i18n
+import biz.ganttproject.app.*
 import biz.ganttproject.core.option.*
+import biz.ganttproject.lib.fx.GPListCell
+import biz.ganttproject.lib.fx.buildFontAwesomeButton
+import biz.ganttproject.lib.fx.hbox
+import biz.ganttproject.lib.fx.vbox
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.embed.swing.SwingNode
 import javafx.scene.Node
+import javafx.scene.control.ContentDisplay
 import javafx.scene.control.Label
+import javafx.scene.control.ListCell
+import javafx.scene.control.ListView
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Priority
+import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage
 import org.osgi.service.prefs.Preferences
 import java.awt.BorderLayout
 import java.awt.Component
@@ -54,6 +61,9 @@ abstract class FileChooserPageBase protected constructor(
   val errorMessage: ObservableString
 ) : WizardPage {
   val fxFile = ObservableFile("file", null)
+  val chosenFiles = FXCollections.observableArrayList<ChosenFile>()
+  var allowMultipleChoice: Boolean = false
+
   private var fileFilter: FileExtensionFilter? = null
     set(value) {
       field = value
@@ -76,11 +86,21 @@ abstract class FileChooserPageBase protected constructor(
   init {
     fxFile.addWatcher { event ->
       tryChosenFile(event.newValue)
+      if (allowMultipleChoice) {
+        event.newValue?.let {
+          val newChosenFile = ChosenFile(event.newValue!!, chosenFiles, this::validateFile)
+          if (!chosenFiles.contains(newChosenFile)) {
+            chosenFiles.add(newChosenFile)
+          }
+        }
+      }
     }
     fxOverwrite.addWatcher { tryChosenFile(fxFile.value) }
   }
 
   override val component: Component? = null
+  private var resetCenterPane: ()->Unit = {}
+
   override val fxComponent: Node by lazy {
     val root = BorderPane()
     root.styleClass.add("file-chooser-page")
@@ -105,24 +125,29 @@ abstract class FileChooserPageBase protected constructor(
     }
     root.top = sheet.node
 
-    root.center = secondaryOptionsSwingNode
-
-    fun showError(msg: String?) {
-      if (msg != null) {
-        root.bottom = HBox().apply {
-          styleClass.add("alert-embedded-box")
-          children.add(Label(msg).also { it.styleClass.add("alert-error") })
+    resetCenterPane = {
+      root.center = vbox {
+        if (allowMultipleChoice) {
+          val listView = ListView(chosenFiles).also {
+            it.styleClass.addAll("chosen-files-list", "swing-background")
+            it.setCellFactory { _ -> ListCellImpl() }
+            it.prefHeight = 200.0
+          }
+          add(listView)
         }
-      } else {
-        root.bottom = null
+        add(secondaryOptionsSwingNode)
       }
     }
-    errorMessage.addWatcher {
+    resetCenterPane()
+    val errorPane = ErrorPane()
+    root.bottom = errorPane.fxNode
+
+    errorMessage.addWatcher { evt ->
       FXThread.runLater {
-        showError(it.newValue)
+        errorPane.onError(evt.newValue?.let(::html2md))
       }
     }
-    showError(errorMessage.value)
+    errorPane.onError(errorMessage.value?.let(::html2md))
     root
   }
 
@@ -198,6 +223,7 @@ abstract class FileChooserPageBase protected constructor(
       secondaryOptionsSwingNode.content = mySecondaryOptionsComponent
       fileFilter = createFileFilter()
       loadPreferences()
+      resetCenterPane()
     }
   }
 
@@ -211,6 +237,35 @@ abstract class FileChooserPageBase protected constructor(
 
   protected open fun validateFile(file: File?): Result<File?, String?> {
     return basicValidateFile(file)
+  }
+}
+
+class ChosenFile(val file: File, val chosenFiles: ObservableList<ChosenFile>, val validator: (File) -> Result<File?, String?>) {
+  val isValid: Boolean get() = validator(file).isOk
+
+  fun remove() {
+    chosenFiles.remove(this)
+  }
+
+}
+
+class ListCellImpl: GPListCell<ChosenFile>() {
+  override fun updateItem(item: ChosenFile?, empty: Boolean) {
+    whenNotEmpty(item, empty) { chosenFile ->
+      graphic = hbox {
+        styleClasses.add("chosen-file-item")
+        if (!chosenFile.isValid) {
+          styleClasses.add("validation-error")
+        }
+        isSelected = this@ListCellImpl.isSelected
+        label = chosenFile.file.name.asObservable()
+        actions.add(GPAction.create("impex.fileChooserPage.action.remove") {
+          FXThread.runLater(chosenFile::remove)
+        }.also {
+          it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.GRAPHIC_ONLY)
+        })
+      }
+    }
   }
 }
 

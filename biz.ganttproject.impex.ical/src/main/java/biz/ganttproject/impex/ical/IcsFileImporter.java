@@ -24,10 +24,14 @@ import biz.ganttproject.app.InternationalizationCoreKt;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import net.fortuna.ical4j.data.ParserException;
 import net.sourceforge.ganttproject.GPLogger;
+import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage;
+import biz.ganttproject.app.WizardPage;
 import net.sourceforge.ganttproject.importer.ImporterBase;
+import net.sourceforge.ganttproject.importer.ImporterWizardModel;
+import org.jetbrains.annotations.NotNull;
+import org.osgi.service.prefs.Preferences;
 
 import javax.swing.*;
 import java.io.*;
@@ -47,12 +51,25 @@ public class IcsFileImporter extends ImporterBase {
 
   public IcsFileImporter() {
     super("impex.ics");
-    myEditorPage = null;
   }
 
   @Override
   public String getFileNamePattern() {
     return "ics";
+  }
+
+  @Override
+  public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences) {
+    super.setContext(project, uiFacade, preferences);
+    myEditorPage = new CalendarEditorPage(uiFacade);
+  }
+
+  @Override
+  public void setModel(@NotNull ImporterWizardModel wizardModel) {
+    super.setModel(wizardModel);
+    if (myEditorPage != null) {
+      myEditorPage.setModel(wizardModel);
+    }
   }
 
   @Override
@@ -82,36 +99,17 @@ public class IcsFileImporter extends ImporterBase {
     return super.isReady() && myEditorPage.getEvents() != null;
   }
 
-  @Override
-  public void setFile(File file) {
-    super.setFile(file);
-    myEditorPage.setFile(file);
-    if (file != null && file.exists() && file.canRead()) {
-      myEditorPage.setEvents(readEvents(file));
-    }
-  }
-
   /**
    * Calendar editor page which wraps a {@link CalendarEditorPanel} instance
    */
   static class CalendarEditorPage implements WizardPage {
     private final UIFacade myUiFacade;
-    private File myFile;
     private final JPanel myPanel = new JPanel();
     private List<CalendarEvent> myEvents;
+    private ImporterWizardModel myModel;
 
     public CalendarEditorPage(UIFacade uiFacade) {
       myUiFacade = uiFacade;
-    }
-
-    private void setFile(File f) {
-      myFile = f;
-    }
-    void setEvents(List<CalendarEvent> events) {
-      myEvents = events;
-    }
-    List<CalendarEvent> getEvents() {
-      return myEvents;
     }
 
     public String getTitle() {
@@ -120,22 +118,34 @@ public class IcsFileImporter extends ImporterBase {
     public JComponent getComponent() {
       return myPanel;
     }
+    void setModel(ImporterWizardModel model) {
+      myModel = model;
+    }
+    List<CalendarEvent> getEvents() {
+      return myEvents;
+    }
+
+    private File getFile() {
+      return myModel.getFile();
+    }
 
     @Override
     public void setActive(boolean b) {
       if (b) {
         myPanel.removeAll();
-        if (myFile != null && myFile.exists() && myFile.canRead()) {
+        var file = getFile();
+        if (file != null && file.exists() && file.canRead()) {
+          myEvents = readEvents(file);
           if (myEvents != null) {
             myPanel.add(new CalendarEditorPanel(myUiFacade, myEvents, null).createComponent());
             return;
           } else {
-            LOGGER.error("No events found in file {}", new Object[]{myFile}, Collections.emptyMap(), null);
+            LOGGER.error("No events found in file {}", new Object[]{file}, Collections.emptyMap(), null);
           }
         } else {
-          LOGGER.error("File {} is NOT readable", new Object[]{myFile}, Collections.emptyMap(), null);
+          LOGGER.error("File {} is NOT readable", new Object[]{file}, Collections.emptyMap(), null);
         }
-        myPanel.add(new JLabel(ourLocalizer.formatText("impex.ics.filePage.error.noEvents", myFile.getAbsolutePath())));
+        myPanel.add(new JLabel(ourLocalizer.formatText("impex.ics.filePage.error.noEvents", file.getAbsolutePath())));
       }
     }
   }

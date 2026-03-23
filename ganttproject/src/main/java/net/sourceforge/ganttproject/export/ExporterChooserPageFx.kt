@@ -20,7 +20,7 @@ package net.sourceforge.ganttproject.export
 
 import biz.ganttproject.app.*
 import javafx.scene.Node
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage
+import biz.ganttproject.app.WizardPage
 import java.awt.Component
 
 /**

@@ -80,11 +80,13 @@ public class ImporterFromGanttFile extends ImporterBase {
   public void run() {
     final File selectedFile = getFile();
     final IGanttProject targetProject = getProject();
-    final BufferProject bufferProject = createBufferProject(targetProject, getUiFacade());
     getUiFacade().getUndoManager().undoableEdit("Import", new Runnable() {
       @Override
       public void run() {
-        ImporterFromGanttFile.this.run(selectedFile, targetProject, bufferProject);
+        getModel().getFiles().forEach( file -> {
+          final BufferProject bufferProject = createBufferProject(targetProject, getUiFacade());
+          ImporterFromGanttFile.this.run(file, targetProject, bufferProject);
+        });
       }
     });
   }

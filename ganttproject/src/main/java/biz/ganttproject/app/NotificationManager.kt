@@ -23,8 +23,6 @@ import biz.ganttproject.findDescendant
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
 import com.sandec.mdfx.MarkdownView
-import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
-import com.vladsch.flexmark.util.data.MutableDataSet
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
@@ -46,7 +44,10 @@ import javafx.stage.Popup
 import javafx.stage.Stage
 import javafx.stage.Window
 import javafx.util.Callback
-import net.sourceforge.ganttproject.gui.*
+import net.sourceforge.ganttproject.gui.NotificationChannel
+import net.sourceforge.ganttproject.gui.NotificationItem
+import net.sourceforge.ganttproject.gui.NotificationManager
+import net.sourceforge.ganttproject.gui.ViewLogDialog
 import org.apache.commons.text.StringEscapeUtils
 import org.controlsfx.control.Notifications
 import java.net.URI
@@ -300,11 +301,7 @@ private fun NotificationItem.asMarkdownView() =
   }
 
 
-private fun NotificationItem.isHtml() =
-  HTML_TAGS.any { myBody.contains(it, ignoreCase = true) }
-
-private fun html2md(html: String) =
-  FlexmarkHtmlConverter.builder(MutableDataSet()).build().convert(html)
+private fun NotificationItem.isHtml() = myBody.isHtml()
 
 private fun Window.isNotificationPopup() =
   this is Popup && run {
@@ -313,7 +310,6 @@ private fun Window.isNotificationPopup() =
     }
   } != null
 
-private val HTML_TAGS = setOf("<br>", "<br/>", "<html>", "<body>", "<p>")
 private val ERROR_ICON = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_CIRCLE)
 private val WARNING_ICON = FontAwesomeIconView(FontAwesomeIcon.EXCLAMATION_CIRCLE)
 private val NEWS_ICON = MaterialIconView(MaterialIcon.ANNOUNCEMENT)

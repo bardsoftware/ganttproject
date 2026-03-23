@@ -30,9 +30,10 @@ import javafx.scene.Node
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.gui.FileChooserPageBase
 import net.sourceforge.ganttproject.gui.UIFacade
-import net.sourceforge.ganttproject.gui.projectwizard.WizardModel
-import net.sourceforge.ganttproject.gui.projectwizard.WizardPage
-import net.sourceforge.ganttproject.gui.projectwizard.showWizard
+import biz.ganttproject.app.WizardModel
+import biz.ganttproject.app.WizardPage
+import biz.ganttproject.app.showWizard
+import javafx.collections.ListChangeListener
 import net.sourceforge.ganttproject.plugins.PluginManager.getExtensions
 import org.osgi.service.prefs.Preferences
 import java.awt.Component
@@ -40,12 +41,20 @@ import java.io.File
 
 /**
  * Wizard for importing files into a Gantt project.
+ *
+ * An import wizard consists of 2-3 pages.
+ * On the first page, the user chooses an importer.
+ * On the second page, the user chooses a file to import.
+ * On the third page, some importers may show a preview of the imported data.
  */
 class ImportFileWizard(uiFacade: UIFacade, project: IGanttProject, pluginPreferences: Preferences,
                        importers: List<Importer> = getImporters()) {
   private val wizardModel = ImporterWizardModel()
   init {
-    importers.forEach { it.setContext(project, uiFacade, pluginPreferences) }
+    importers.forEach {
+      it.setContext(project, uiFacade, pluginPreferences)
+      it.setModel(wizardModel)
+    }
     val filePage = ImportFileChooserPage(wizardModel, project, pluginPreferences)
     wizardModel.importer = importers.firstOrNull()
     wizardModel.addPage(ImporterChooserPageFx(importers, wizardModel))
@@ -65,12 +74,11 @@ class ImportFileWizard(uiFacade: UIFacade, project: IGanttProject, pluginPrefere
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// --------------------------------------------------------------------------------------------------------------------
 
 /**
  * Model for the import wizard, managing importer and file selection.
  */
-class ImporterWizardModel: WizardModel() {
+class ImporterWizardModel: WizardModel("wizard.import", i18n.formatText("importWizard.dialog.title")) {
   // Selected importer. Updates a customPageProperty with the custom page of the importer, if any.
   var importer: Importer? = null
     set(value) {
@@ -81,10 +89,15 @@ class ImporterWizardModel: WizardModel() {
     }
 
   // Selected file.
-  var file: File? = null
+  var file: File?
+    set(value) {
+      files = listOfNotNull(value)
+    }
+    get() = files.firstOrNull()
+
+  var files: List<File> = emptyList()
     set(value) {
       field = value
-      importer?.setFile(value)
       needsRefresh.set(true, this)
     }
 
@@ -93,13 +106,11 @@ class ImporterWizardModel: WizardModel() {
 
   init {
     canFinish = {
-      (importer != null && file != null && errorMessage.value.isNullOrBlank()).also {
-        //println("canFinish=$it")
-      }
+      importer != null && files.isNotEmpty() && errorMessage.value.isNullOrBlank()
     }
     hasNext = { when (currentPage) {
       0 -> importer != null
-      1 -> customPageProperty.get() != null && file != null && errorMessage.value.isNullOrBlank()
+      1 -> customPageProperty.get() != null && files.isNotEmpty() && errorMessage.value.isNullOrBlank()
       else -> false
     } }
     onOk = { importer?.run() }
@@ -110,7 +121,6 @@ private fun getImporters(): MutableList<Importer> {
   return getExtensions(Importer.EXTENSION_POINT_ID, Importer::class.java)
 }
 
-// --------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -143,7 +153,6 @@ private class ImporterChooserPageFx(importers: List<Importer>, model: ImporterWi
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// --------------------------------------------------------------------------------------------------------------------
 
 /**
  * Wizard page for choosing a file to import from.
@@ -152,17 +161,30 @@ private class ImportFileChooserPage(
   private val model: ImporterWizardModel, project: IGanttProject, private val prefs: Preferences)
   : FileChooserPageBase(project.document,
   fileChooserTitle = i18n.formatText("importerFileChooserPageTitle"),
-  pageTitle = i18n.formatText("importerFileChooserPageTitle"), errorMessage = model.errorMessage) {
+  pageTitle = i18n.formatText("importerFileChooserPageTitle"),
+  errorMessage = model.errorMessage) {
+
+  override val optionGroups: List<GPOptionGroup> get() = importer?.secondaryOptions?.toList() ?: emptyList()
+  override val preferences: Preferences get() = prefs.node(model.importer?.id ?: "")
 
   val importer get() = model.importer
 
-  override val preferences: Preferences get() = prefs.node(model.importer?.id ?: "")
-
   init {
     hasOverwriteOption = false
+    chosenFiles.addListener(ListChangeListener {
+      model.files = chosenFiles.mapNotNull { if (it.isValid) it.file else null }
+    })
     fxFile.addWatcher {
       model.file = it.newValue
     }
+  }
+
+  override fun setActive(isActive: Boolean) {
+    if (isActive) {
+      allowMultipleChoice = importer is ImporterFromGanttFile
+      model.files = emptyList()
+    }
+    super.setActive(isActive)
   }
 
   override fun createFileFilter(): FileExtensionFilter? =
@@ -170,12 +192,10 @@ private class ImportFileChooserPage(
       FileExtensionFilter(it.getFileTypeDescription(), it.getFileNamePattern().split("|").map { "*.$it" })
     }
 
-  override val optionGroups: List<GPOptionGroup> = emptyList()
-
   override fun validateFile(file: File?): Result<File?, String?> {
     return super.validateFile(file).andThen { file ->
       if (file?.isDirectory == true) {
-        Err("It is a directory")
+        Err(i18n.formatText("document.storage.error.write.isDirectory"))
       } else {
         Ok(file)
       }

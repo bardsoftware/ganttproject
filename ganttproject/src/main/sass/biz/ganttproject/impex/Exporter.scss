@@ -88,6 +88,41 @@
     .file-chooser {
       @include textfield-with-button($gp-light-gray, $gp-dark-gray);
     }
+    .chosen-files-list {
+      -fx-background-color: transparent;
+      .list-cell {
+        -fx-padding: 0;
+        -fx-background-color: $gp-light-gray;
+        &:empty {
+          -fx-background-color: transparent;
+        }
+        &:focused * {
+          -fx-text-fill: $gp-dark-gray;
+        }
+      }
+      .chosen-file-item {
+        -fx-text-fill: $gp-dark-gray;
+        -fx-background-color: $gp-zebra-gray;
+        -fx-padding: 2 5;
+        -fx-border-width: 0;
+        -fx-alignment: center-left;
+        &:focused {
+          -fx-text-fill: $gp-dark-gray;
+          -fx-border-width: 0;
+        }
+
+        .button {
+          @include btn-toolbar-common();
+          @include btn-toolbar-small();
+        }
+      }
+      .validation-error {
+        @include validation-error();
+      }
+      .virtual-flow {
+        -fx-background-color: transparent;
+      }
+    }
 
     .alert-embedded-box {
       @include error-embedded-box($gp-error);
