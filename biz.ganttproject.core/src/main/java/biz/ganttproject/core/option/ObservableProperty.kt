@@ -112,6 +112,9 @@ class ObservableChoice<T>(id: String, initValue: T, val allValues: List<T>, val 
 class ObservableFile(id: String, initValue: File? = null)
   : ObservableProperty<File?>(id, initValue)
 
+class ObservableFiles(id: String, initValue: List<File> = emptyList())
+  : ObservableProperty<List<File>>(id, initValue)
+
 class ObservableObject<T>(id: String = "", initValue: T?)
   : ObservableProperty<T?>(id, initValue)
 

@@ -38,6 +38,11 @@ interface PropertyPaneBuilder {
    * Adds a dropdown editor for the given property with the list values.
    */
   fun <T> dropdown(property: ObservableChoice<T>, displayOptions: (DropdownDisplayOptions<T>.() -> Unit)? = null)
+
+  /**
+   * Adds an editor for the given property with the list of files.
+   */
+  fun files(property: ObservableFiles, optionValues: (FileDisplayOptions.() -> Unit)? = null)
 }
 
 enum class LabelPosition {

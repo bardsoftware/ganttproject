@@ -105,6 +105,13 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
     })
   }
 
+  override fun files(property: ObservableFiles, optionValues: (FileDisplayOptions.() -> Unit)?) {
+    rowBuilders.add(run {
+      val options = optionValues?.let { FileDisplayOptions().apply(it) } ?: FileDisplayOptions()
+      createOptionItem(property, createFilesOptionEditor(property, options))
+    })
+  }
+
   fun checkbox(property: ObservableBoolean) {
     rowBuilders.add(run {
       createOptionItem(property, createBooleanOptionEditor(property))
@@ -184,6 +191,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
       is ObservableEnum -> createEnumerationOptionEditor(option)
       is ObservableChoice -> createChoiceOptionEditor(option)
       is ObservableFile -> createFileOptionEditor(option)
+      is ObservableFiles -> createFilesOptionEditor(option)
       is ObservableDate -> createDateOptionEditor(option)
       is ObservableInt -> createIntOptionEditor(option)
       is ObservableDouble -> createDoubleOptionEditor(option)
@@ -275,6 +283,10 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
 
   private fun createFileOptionEditor(option: ObservableFile, displayOptions: FileDisplayOptions = FileDisplayOptions()): Node {
     return FileOptionEditor(option, displayOptions).node
+  }
+
+  private fun createFilesOptionEditor(option: ObservableFiles, displayOptions: FileDisplayOptions = FileDisplayOptions()): Node {
+    return FilesOptionEditor(option, displayOptions).node
   }
 
   fun createDateOptionEditor(option: ObservableDate, displayOptions: DateDisplayOptions = DateDisplayOptions(createDateConverter())): DatePicker {

@@ -147,3 +147,72 @@ class FileOptionEditor(private val option: ObservableFile, private val displayOp
     }
   }
 }
+
+class FilesOptionEditor(private val option: ObservableFiles, private val displayOptions: FileDisplayOptions = FileDisplayOptions()) {
+  private val textField = CustomTextField()
+  private var myTimerTask: TimerTask? = null
+
+  val node: Node = textField
+  init {
+    textField.right = buildFontAwesomeButton(
+      iconName = FontAwesomeIcon.SEARCH.name,
+      label = displayOptions.browseButtonText,
+      onClick = { onBrowse() },
+      styleClass = "btn"
+    )
+    textField.text = option.value.joinToString(File.pathSeparator) { it.absolutePath }
+    textField.id = option.id
+    textField.textProperty().addListener {
+      onTextChange()
+    }
+    displayOptions.editorStyles.let(textField.styleClass::addAll)
+    option.addWatcher {
+      if (it.trigger != textField) {
+        textField.text = option.value.joinToString(File.pathSeparator) { it.absolutePath }
+      }
+    }
+  }
+
+  private fun onBrowse() {
+    val fileChooser = FileChooser()
+    val paths = textField.text.split(File.pathSeparator).filter { it.isNotBlank() }
+    var initialFile: File? = paths.firstOrNull()?.let { File(it) }
+    while (initialFile?.exists() == false) {
+      initialFile = initialFile.parentFile
+    }
+    initialFile?.let {
+      if (it.isDirectory) {
+        fileChooser.initialDirectory = it
+      } else {
+        fileChooser.initialDirectory = it.parentFile
+      }
+    }
+    fileChooser.title = displayOptions.chooserTitle.ifBlank { "Choose files" }
+    displayOptions.let {
+      it.extensionFilters.forEach {filter ->
+        fileChooser.extensionFilters.add(FileChooser.ExtensionFilter(filter.description, filter.extensions))
+      }
+    }
+
+    val ownerWindow = topWindow()
+    val resultFiles = fileChooser.showOpenMultipleDialog(ownerWindow)
+    resultFiles?.let {
+      option.set(resultFiles, textField)
+      textField.text = it.joinToString(File.pathSeparator) { f -> f.absolutePath }
+    }
+  }
+
+  private fun onTextChange() {
+    if (myTimerTask == null) {
+      myTimerTask = object : TimerTask() {
+        override fun run() {
+          val paths = textField.text.split(File.pathSeparator).filter { it.isNotBlank() }
+          val files = paths.map { File(it) }
+          option.set(files, textField)
+          myTimerTask = null
+        }
+      }
+      ourTimer.schedule(myTimerTask, 1000)
+    }
+  }
+}

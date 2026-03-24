@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.gui
 import biz.ganttproject.app.*
 import biz.ganttproject.core.option.*
 import biz.ganttproject.lib.fx.GPListCell
-import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import biz.ganttproject.lib.fx.hbox
 import biz.ganttproject.lib.fx.vbox
 import com.github.michaelbull.result.Result
@@ -32,12 +31,8 @@ import javafx.collections.ObservableList
 import javafx.embed.swing.SwingNode
 import javafx.scene.Node
 import javafx.scene.control.ContentDisplay
-import javafx.scene.control.Label
-import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
 import javafx.scene.layout.BorderPane
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Priority
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder
@@ -61,6 +56,7 @@ abstract class FileChooserPageBase protected constructor(
   val errorMessage: ObservableString
 ) : WizardPage {
   val fxFile = ObservableFile("file", null)
+  val fxFiles = ObservableFiles("files", emptyList())
   val chosenFiles = FXCollections.observableArrayList<ChosenFile>()
   var allowMultipleChoice: Boolean = false
 
@@ -84,17 +80,6 @@ abstract class FileChooserPageBase protected constructor(
   private val secondaryOptionsSwingNode = SwingNode()
 
   init {
-    fxFile.addWatcher { event ->
-      tryChosenFile(event.newValue)
-      if (allowMultipleChoice) {
-        event.newValue?.let {
-          val newChosenFile = ChosenFile(event.newValue!!, chosenFiles, this::validateFile)
-          if (!chosenFiles.contains(newChosenFile)) {
-            chosenFiles.add(newChosenFile)
-          }
-        }
-      }
-    }
     fxOverwrite.addWatcher { tryChosenFile(fxFile.value) }
   }
 
@@ -108,16 +93,53 @@ abstract class FileChooserPageBase protected constructor(
       default()
       map(mapOf(
         "file.label" to "file",
+        "files.label" to "file",
         "overwrite.label" to "option.exporter.overwrite.label.trailing"
       ))
     }
+    if (allowMultipleChoice) {
+      fxFiles.addWatcher {
+        chosenFiles.clear()
+        it.newValue.forEach { file ->
+          val newChosenFile = ChosenFile(file, fxFiles,chosenFiles, this::validateFile)
+          if (!chosenFiles.contains(newChosenFile)) {
+            chosenFiles.add(newChosenFile)
+          }
+        }
+      }
+
+    } else {
+      fxFile.addWatcher { event ->
+        tryChosenFile(event.newValue)
+//        if (allowMultipleChoice) {
+//          event.newValue?.let {
+//            val newChosenFile = ChosenFile(event.newValue!!, fxFchosenFiles, this::validateFile)
+//            if (!chosenFiles.contains(newChosenFile)) {
+//              chosenFiles.add(newChosenFile)
+//            }
+//          }
+//        }
+      }
+    }
+
     val sheet = PropertySheetBuilder(i18n).pane {
-      file(fxFile) {
-        chooserTitle = fileChooserTitle ?: ""
-        isSaveNotOpen = fileChooserSelectionMode != JFileChooser.FILES_ONLY
-        browseButtonText = RootLocalizer.formatText("fileChooser.browse")
-        editorStyles.add("file-chooser")
-        this@FileChooserPageBase.extensionFilters = this.extensionFilters
+      if (allowMultipleChoice) {
+        files(fxFiles) {
+          chooserTitle = fileChooserTitle ?: ""
+          isSaveNotOpen = fileChooserSelectionMode != JFileChooser.FILES_ONLY
+          browseButtonText = RootLocalizer.formatText("fileChooser.browse")
+          allowMultipleSelection = true
+          editorStyles.add("file-chooser")
+          this@FileChooserPageBase.extensionFilters = this.extensionFilters
+        }
+      } else {
+        file(fxFile) {
+          chooserTitle = fileChooserTitle ?: ""
+          isSaveNotOpen = fileChooserSelectionMode != JFileChooser.FILES_ONLY
+          browseButtonText = RootLocalizer.formatText("fileChooser.browse")
+          editorStyles.add("file-chooser")
+          this@FileChooserPageBase.extensionFilters = this.extensionFilters
+        }
       }
       if (hasOverwriteOption) {
         checkbox(fxOverwrite)
@@ -208,8 +230,12 @@ abstract class FileChooserPageBase protected constructor(
       for (optionGroup in optionGroups) {
         optionGroup.commit()
       }
-      fxFile.value?.let {
-        preferences.put(PREF_SELECTED_FILE, it.absolutePath)
+      if (allowMultipleChoice) {
+        // TODO: restore fxFiles too?
+      } else {
+        fxFile.value?.let {
+          preferences.put(PREF_SELECTED_FILE, it.absolutePath)
+        }
       }
     } else {
       for (optionGroup in optionGroups) {
@@ -240,11 +266,11 @@ abstract class FileChooserPageBase protected constructor(
   }
 }
 
-class ChosenFile(val file: File, val chosenFiles: ObservableList<ChosenFile>, val validator: (File) -> Result<File?, String?>) {
+class ChosenFile(val file: File, val fileOption: ObservableFiles, val chosenFiles: ObservableList<ChosenFile>, val validator: (File) -> Result<File?, String?>) {
   val isValid: Boolean get() = validator(file).isOk
 
   fun remove() {
-    chosenFiles.remove(this)
+    fileOption.set(fileOption.value.filter { it != file }, chosenFiles)
   }
 
 }
