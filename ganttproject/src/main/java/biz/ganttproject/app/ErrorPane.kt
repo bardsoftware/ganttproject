@@ -37,7 +37,7 @@ class ErrorPane {
   }
 
   fun onError(it: String?) {
-    if (it == null) {
+    if (it.isNullOrBlank()) {
       errorPane.isVisible = false
       if (!errorPane.styleClass.contains("noerror")) {
         errorPane.styleClass.add("noerror")

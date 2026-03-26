@@ -21,9 +21,7 @@ package biz.ganttproject.app
 import biz.ganttproject.core.chart.render.Style
 import biz.ganttproject.core.option.*
 import biz.ganttproject.lib.fx.AutoCompletionTextFieldBinding
-import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import com.github.michaelbull.result.onFailure
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
@@ -37,13 +35,11 @@ import javafx.scene.control.Spinner
 import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
-import javafx.stage.FileChooser
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.GPColorChooser
 import net.sourceforge.ganttproject.util.BrowserControl
 import org.controlsfx.control.textfield.CustomTextField
 import java.awt.event.ActionEvent
-import java.io.File
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.NumberFormat
@@ -282,11 +278,11 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
 
 
   private fun createFileOptionEditor(option: ObservableFile, displayOptions: FileDisplayOptions = FileDisplayOptions()): Node {
-    return FileOptionEditor(option, displayOptions).node
+    return SingleFileOptionEditor(option, displayOptions).node
   }
 
   private fun createFilesOptionEditor(option: ObservableFiles, displayOptions: FileDisplayOptions = FileDisplayOptions()): Node {
-    return FilesOptionEditor(option, displayOptions).node
+    return MultipleFilesOptionEditor(option, displayOptions).node
   }
 
   fun createDateOptionEditor(option: ObservableDate, displayOptions: DateDisplayOptions = DateDisplayOptions(createDateConverter())): DatePicker {

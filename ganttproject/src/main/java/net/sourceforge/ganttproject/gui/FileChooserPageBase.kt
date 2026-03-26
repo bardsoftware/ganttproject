@@ -98,15 +98,17 @@ abstract class FileChooserPageBase protected constructor(
       ))
     }
     if (allowMultipleChoice) {
-      fxFiles.addWatcher {
+      val updateFileList = { files: List<File> ->
         chosenFiles.clear()
-        it.newValue.forEach { file ->
+        files.forEach { file ->
           val newChosenFile = ChosenFile(file, fxFiles,chosenFiles, this::validateFile)
           if (!chosenFiles.contains(newChosenFile)) {
             chosenFiles.add(newChosenFile)
           }
         }
       }
+      fxFiles.addWatcher { updateFileList(it.newValue) }
+      updateFileList(fxFiles.value)
 
     } else {
       fxFile.addWatcher { event ->
