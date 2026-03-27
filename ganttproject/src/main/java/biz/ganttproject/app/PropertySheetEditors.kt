@@ -28,6 +28,7 @@ import javafx.scene.control.ComboBox
 import javafx.scene.control.ListCell
 import javafx.scene.layout.HBox
 import javafx.stage.FileChooser
+import javafx.stage.Window
 import javafx.util.Callback
 import javafx.util.StringConverter
 import org.controlsfx.control.textfield.CustomTextField
@@ -79,11 +80,12 @@ fun <E> createDropdownEditor(option: ObservableProperty<E>, key2i18n: List<Pair<
 
 private val ourTimer = Timer()
 
-class FileOptionEditor(private val option: ObservableFile, private val displayOptions: FileDisplayOptions = FileDisplayOptions()) {
-  private val textField = CustomTextField()
-  private var myTimerTask: TimerTask? = null
+abstract class FileOptionEditorBase<T>(val option: ObservableProperty<T>, protected val displayOptions: FileDisplayOptions = FileDisplayOptions()) {
+  protected val textField = CustomTextField()
+  protected var myTimerTask: TimerTask? = null
 
   val node: Node = textField
+
   init {
     textField.right = buildFontAwesomeButton(
       iconName = FontAwesomeIcon.SEARCH.name,
@@ -91,7 +93,7 @@ class FileOptionEditor(private val option: ObservableFile, private val displayOp
       onClick = { onBrowse() },
       styleClass = "btn"
     )
-    textField.text = option.value?.absolutePath ?: ""
+    textField.text = getTextFieldValue(option)
     textField.id = option.id
     textField.textProperty().addListener {
       onTextChange()
@@ -99,14 +101,14 @@ class FileOptionEditor(private val option: ObservableFile, private val displayOp
     displayOptions.editorStyles.let(textField.styleClass::addAll)
     option.addWatcher {
       if (it.trigger != textField) {
-        textField.text = option.value?.absolutePath ?: ""
+        textField.text = getTextFieldValue(option)
       }
     }
   }
 
   private fun onBrowse() {
     val fileChooser = FileChooser()
-    var initialFile: File? = File(textField.text)
+    var initialFile: File? = getInitialFileForChooser()
     while (initialFile?.exists() == false) {
       initialFile = initialFile.parentFile
     }
@@ -124,26 +126,79 @@ class FileOptionEditor(private val option: ObservableFile, private val displayOp
       }
     }
 
-    val ownerWindow = topWindow()
-    val resultFile =
-      if (displayOptions.isSaveNotOpen) fileChooser.showSaveDialog(ownerWindow)
-      else fileChooser.showOpenDialog(ownerWindow)
-    resultFile?.let {
-      option.set(resultFile, textField)
-      textField.text = it.absolutePath
-    }
+    showFileChooser(fileChooser, topWindow())
   }
+
+  protected abstract fun getInitialFileForChooser(): File?
+  protected abstract fun getTextFieldValue(option: ObservableProperty<T>): String?
+  protected abstract fun processTextFieldValue()
+  protected abstract fun setOptionValue(value: T)
+  protected abstract fun showFileChooser(fileChooser: FileChooser, owner: Window?)
 
   private fun onTextChange() {
     if (myTimerTask == null) {
       myTimerTask = object : TimerTask() {
         override fun run() {
-          val file = File(textField.text)
-          option.set(file, textField)
+          processTextFieldValue()
           myTimerTask = null
         }
       }
       ourTimer.schedule(myTimerTask, 1000)
     }
   }
+}
+
+class SingleFileOptionEditor(private val fileOption: ObservableFile, displayOptions: FileDisplayOptions = FileDisplayOptions())
+  : FileOptionEditorBase<File?>(fileOption, displayOptions) {
+  override fun getInitialFileForChooser(): File? =
+    File(textField.text)
+
+
+  override fun getTextFieldValue(option: ObservableProperty<File?>): String? =
+    option.value?.absolutePath ?: ""
+
+  override fun processTextFieldValue() {
+    val file = File(textField.text)
+    setOptionValue(file)
+  }
+
+  override fun setOptionValue(value: File?) {
+    fileOption.set(value, textField)
+  }
+
+  override fun showFileChooser(fileChooser: FileChooser, ownerWindow: Window?) {
+    val resultFile =
+      if (displayOptions.isSaveNotOpen) fileChooser.showSaveDialog(ownerWindow)
+      else fileChooser.showOpenDialog(ownerWindow)
+    resultFile?.let {
+      setOptionValue(resultFile)
+      textField.text = getTextFieldValue(option)
+    }
+  }
+}
+
+class MultipleFilesOptionEditor(private val fileOption: ObservableFiles, displayOptions: FileDisplayOptions = FileDisplayOptions())
+  : FileOptionEditorBase<List<File>>(fileOption, displayOptions) {
+  override fun getInitialFileForChooser(): File? =
+    textField.text.split(File.pathSeparator).filter { it.isNotBlank() }.firstOrNull()?.let { File(it) }
+
+
+  override fun getTextFieldValue(option: ObservableProperty<List<File>>): String? =
+    option.value.joinToString(File.pathSeparator) { it.absolutePath }
+
+  override fun processTextFieldValue() {
+    val paths = textField.text.split(File.pathSeparator).filter { it.isNotBlank() }
+    val files = paths.map { File(it) }
+    option.set(files, textField)
+  }
+
+  override fun setOptionValue(value: List<File>) {
+    option.set(value, textField)
+  }
+
+  override fun showFileChooser(fileChooser: FileChooser, owner: Window?) {
+    setOptionValue(fileChooser.showOpenMultipleDialog(owner))
+    textField.text = getTextFieldValue(option)
+  }
+
 }

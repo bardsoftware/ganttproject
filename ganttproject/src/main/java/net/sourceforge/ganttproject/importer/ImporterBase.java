@@ -103,11 +103,11 @@ public abstract class ImporterBase implements Importer {
 
   @Override
   public void setFile(File file) {
-    myFile = file;
+    myModel.setFile(file);
   }
 
   protected File getFile() {
-    return myFile;
+    return myModel.getFile();
   }
 
   @Override

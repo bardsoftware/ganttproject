@@ -21,9 +21,7 @@ package biz.ganttproject.app
 import biz.ganttproject.core.chart.render.Style
 import biz.ganttproject.core.option.*
 import biz.ganttproject.lib.fx.AutoCompletionTextFieldBinding
-import biz.ganttproject.lib.fx.buildFontAwesomeButton
 import com.github.michaelbull.result.onFailure
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
@@ -37,13 +35,11 @@ import javafx.scene.control.Spinner
 import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
-import javafx.stage.FileChooser
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.gui.GPColorChooser
 import net.sourceforge.ganttproject.util.BrowserControl
 import org.controlsfx.control.textfield.CustomTextField
 import java.awt.event.ActionEvent
-import java.io.File
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.NumberFormat
@@ -102,6 +98,13 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
     rowBuilders.add(run {
       val options = optionValues?.let { FileDisplayOptions().apply(it) } ?: FileDisplayOptions()
       createOptionItem(property, createFileOptionEditor(property, options))
+    })
+  }
+
+  override fun files(property: ObservableFiles, optionValues: (FileDisplayOptions.() -> Unit)?) {
+    rowBuilders.add(run {
+      val options = optionValues?.let { FileDisplayOptions().apply(it) } ?: FileDisplayOptions()
+      createOptionItem(property, createFilesOptionEditor(property, options))
     })
   }
 
@@ -184,6 +187,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
       is ObservableEnum -> createEnumerationOptionEditor(option)
       is ObservableChoice -> createChoiceOptionEditor(option)
       is ObservableFile -> createFileOptionEditor(option)
+      is ObservableFiles -> createFilesOptionEditor(option)
       is ObservableDate -> createDateOptionEditor(option)
       is ObservableInt -> createIntOptionEditor(option)
       is ObservableDouble -> createDoubleOptionEditor(option)
@@ -274,7 +278,11 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
 
 
   private fun createFileOptionEditor(option: ObservableFile, displayOptions: FileDisplayOptions = FileDisplayOptions()): Node {
-    return FileOptionEditor(option, displayOptions).node
+    return SingleFileOptionEditor(option, displayOptions).node
+  }
+
+  private fun createFilesOptionEditor(option: ObservableFiles, displayOptions: FileDisplayOptions = FileDisplayOptions()): Node {
+    return MultipleFilesOptionEditor(option, displayOptions).node
   }
 
   fun createDateOptionEditor(option: ObservableDate, displayOptions: DateDisplayOptions = DateDisplayOptions(createDateConverter())): DatePicker {
