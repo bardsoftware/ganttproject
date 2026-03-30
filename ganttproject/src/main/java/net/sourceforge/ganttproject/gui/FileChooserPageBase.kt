@@ -33,6 +33,12 @@ import javafx.scene.Node
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.ListView
 import javafx.scene.layout.BorderPane
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.withContext
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder
@@ -53,7 +59,8 @@ abstract class FileChooserPageBase protected constructor(
   val fileChooserTitle: String?,
   val pageTitle: String?,
   val fileChooserSelectionMode: Int = JFileChooser.FILES_ONLY,
-  val errorMessage: ObservableString
+  val errorMessage: ObservableString,
+  val coroutineScope: CoroutineScope
 ) : WizardPage {
   val fxFile = ObservableFile("file", null)
   val fxFiles = ObservableFiles("files", emptyList())
@@ -150,16 +157,33 @@ abstract class FileChooserPageBase protected constructor(
     root.top = sheet.node
 
     resetCenterPane = {
-      root.center = vbox {
-        if (allowMultipleChoice) {
-          val listView = ListView(chosenFiles).also {
-            it.styleClass.addAll("chosen-files-list", "swing-background")
-            it.setCellFactory { _ -> ListCellImpl() }
-            it.prefHeight = 200.0
+      coroutineScope.launch {
+        val addOptionsComponentSwing: Boolean = withContext(Dispatchers.JavaFx) {
+          val optionsComponentFx: Node? = createSecondaryOptionsPanelFx()
+          root.center = vbox {
+            if (allowMultipleChoice) {
+              val listView = ListView(chosenFiles).also {
+                it.styleClass.addAll("chosen-files-list", "swing-background")
+                it.setCellFactory { _ -> ListCellImpl() }
+                it.prefHeight = 200.0
+              }
+              add(listView)
+            }
+            if (optionsComponentFx == null) {
+              add(secondaryOptionsSwingNode)
+            } else {
+              add(optionsComponentFx)
+            }
           }
-          add(listView)
+          return@withContext optionsComponentFx == null
         }
-        add(secondaryOptionsSwingNode)
+        if (addOptionsComponentSwing) {
+          withContext(Dispatchers.Swing) {
+            mySecondaryOptionsComponent.removeAll()
+            mySecondaryOptionsComponent.add(createSecondaryOptionsPanel(), BorderLayout.NORTH)
+            secondaryOptionsSwingNode.content = mySecondaryOptionsComponent
+          }
+        }
       }
     }
     resetCenterPane()
@@ -243,21 +267,18 @@ abstract class FileChooserPageBase protected constructor(
       for (optionGroup in optionGroups) {
         optionGroup.lock()
       }
-      SwingUtilities.invokeLater {
-        mySecondaryOptionsComponent.removeAll()
-        mySecondaryOptionsComponent.add(createSecondaryOptionsPanel(), BorderLayout.NORTH)
-      }
 
-      secondaryOptionsSwingNode.content = mySecondaryOptionsComponent
       fileFilter = createFileFilter()
       loadPreferences()
       resetCenterPane()
     }
   }
 
-  protected open fun createSecondaryOptionsPanel(): Component {
+  protected open fun createSecondaryOptionsPanel(): Component? {
     return myOptionsBuilder.buildPlanePage(this.optionGroups.toTypedArray())
   }
+
+  protected open fun createSecondaryOptionsPanelFx(): Node? = null
 
   protected abstract fun createFileFilter(): FileExtensionFilter?
 

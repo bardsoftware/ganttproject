@@ -39,8 +39,10 @@ import java.util.List;
  */
 public class ExporterToImage extends ExporterBase {
 
-  private final ExportFileFormatOption<ImageFileFormat> myFileTypeOption =
-    new ExportFileFormatOption<>("impex.image.fileformat", ImageFileFormat.PNG, Arrays.stream(ImageFileFormat.values()).toList());
+  private final ObservableEnumerationOption<ImageFileFormat> myFileTypeOption =
+    new ObservableEnumerationOption<>("impex.image.fileformat", ImageFileFormat.PNG, Arrays.stream(ImageFileFormat.values()).toList());
+//  private final ExportFileFormatOption<ImageFileFormat> myFileTypeOption =
+//    new ExportFileFormatOption<>("impex.image.fileformat", ImageFileFormat.PNG, Arrays.stream(ImageFileFormat.values()).toList());
 
   private final GPOptionGroup myOptions = new GPOptionGroup("impex.image", myFileTypeOption);
 

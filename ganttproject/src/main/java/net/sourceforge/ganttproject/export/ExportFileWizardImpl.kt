@@ -24,7 +24,7 @@ import biz.ganttproject.app.showWizard
 import biz.ganttproject.core.option.BooleanOption
 import biz.ganttproject.core.option.ChangeValueEvent
 import biz.ganttproject.core.option.ChangeValueListener
-import biz.ganttproject.core.option.DefaultBooleanOption
+import biz.ganttproject.core.option.ObservableBooleanOption
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.DocumentManager
@@ -38,7 +38,7 @@ import javax.swing.SwingUtilities
  * The model of the export wizard.
  */
 class ExportWizardModel(id: String, title: String, private val ftpOptions: DocumentManager.FTPOptions) : WizardModel(id, title) {
-  val publishInWebOption: BooleanOption = DefaultBooleanOption("exporter.publishInWeb")
+  val publishInWebOption: BooleanOption = ObservableBooleanOption("exporter.publishInWeb")
 
   var exporter: Exporter? = null
     set(exporter) {

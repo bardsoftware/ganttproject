@@ -186,6 +186,10 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
     this.validator = validator;
   }
 
+  @Override
+  public void visitPropertyPaneBuilder(PropertyPaneBuilder builder) {
+    builder.title("--- MISSING: " + getID() + " ---");
+  }
 
   protected PropertyChangeSupport getPropertyChangeSupport() {
     return myPropertyChangeSupport;

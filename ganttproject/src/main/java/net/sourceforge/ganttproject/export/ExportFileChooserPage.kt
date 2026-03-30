@@ -18,17 +18,23 @@
  */
 package net.sourceforge.ganttproject.export
 
+import biz.ganttproject.app.LocalizedString
+import biz.ganttproject.app.Localizer
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.properties
 import biz.ganttproject.core.option.FileExtensionFilter
+import biz.ganttproject.core.option.GPOption
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.storage.asLocalDocument
 import biz.ganttproject.storage.getDefaultLocalFolder
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import javafx.scene.Node
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.gui.FileChooserPageBase
 import net.sourceforge.ganttproject.gui.UIUtil
+import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder
 import net.sourceforge.ganttproject.util.FileUtil.replaceExtension
 import org.osgi.service.prefs.Preferences
 import java.awt.Component
@@ -47,7 +53,8 @@ internal class ExportFileChooserPage(
   fileChooserTitle = i18n.formatText("selectFileToExport"),
   fileChooserSelectionMode = JFileChooser.FILES_AND_DIRECTORIES,
   pageTitle = i18n.formatText("selectFileToExport"),
-  errorMessage = myState.errorMessage
+  errorMessage = myState.errorMessage,
+  coroutineScope = myState.coroutineScope,
 ) {
   private val myWebPublishingGroup: GPOptionGroup = GPOptionGroup(
     "exporter.webPublishing", myState.publishInWebOption
@@ -110,8 +117,24 @@ internal class ExportFileChooserPage(
     return Ok(file)
   }
 
-  override fun createSecondaryOptionsPanel(): Component {
-    return myState.exporter?.getCustomOptionsUI() ?: super.createSecondaryOptionsPanel()
+  override fun createSecondaryOptionsPanel(): Component? {
+    return myState.exporter?.getCustomOptionsUI()
+  }
+
+  override fun createSecondaryOptionsPanelFx(): Node? {
+    val optionI18n = i18n.createWithRootKey("option")
+    val optionGroupI18n = i18n
+    return properties(optionI18n) {
+      this.skip(2)
+      myState.publishInWebOption.visitPropertyPaneBuilder(this)
+      myState.exporter?.secondaryOptions?.forEach { optionGroup ->
+        this.skip(2)
+        this.title(optionGroupI18n.create(OptionsPageBuilder.I18N.getCanonicalOptionGroupLabelKey(optionGroup)))
+        optionGroup.options.forEach { option ->
+          option.visitPropertyPaneBuilder(this)
+        }
+      }
+    }
   }
 
   override fun createFileFilter(): FileExtensionFilter? = myState.exporter?.let {
@@ -154,3 +177,12 @@ fun proposeOutputFile(project: IGanttProject, exporter: Exporter): File? {
 }
 
 private val i18n = RootLocalizer
+
+class GPOptionLocalizer(private val delegate: Localizer, private val options: List<GPOption<*>>): Localizer {
+  override fun create(key: String): LocalizedString  = LocalizedString(delegate.formatText(key), this)
+
+  override fun formatTextOrNull(key: String, vararg args: Any): String? {
+    return delegate.formatTextOrNull(key, *args)
+  }
+
+}

@@ -81,13 +81,13 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
     rowBuilders.add(LabelRowBuilder(title.value, "title"))
   }
 
-  fun title(title: String) = title(localizer.create(title))
+  override fun title(title: String) = title(localizer.create(title))
 
   fun skip(rowNum: Int = 1) {
     rowBuilders.add(LabelRowBuilder("\n".repeat(rowNum), "skip"))
   }
 
-  fun text(property: ObservableString, optionValues: (TextDisplayOptions.()->Unit)? = null) {
+  override fun text(property: ObservableString, optionValues: (TextDisplayOptions.()->Unit)?) {
     rowBuilders.add(run {
       val options = optionValues?.let { TextDisplayOptions().apply(it) }
       createOptionItem(property, createStringOptionEditor(property, options), options)
@@ -108,7 +108,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
     })
   }
 
-  fun checkbox(property: ObservableBoolean) {
+  override fun checkbox(property: ObservableBoolean) {
     rowBuilders.add(run {
       createOptionItem(property, createBooleanOptionEditor(property))
     })

@@ -66,7 +66,6 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class OptionsPageBuilder {
   I18N myi18n = new I18N();
-  private Component myParentComponent;
   private final LayoutApi myLayoutApi;
   private UIFacade myUiFacade;
   private DecimalFormat myFormat;
@@ -276,7 +275,7 @@ public class OptionsPageBuilder {
       result = createValidatingComponent((DoubleOption) option, (ValueValidator<Double>)ValidatorsKt.getDoubleValidator());
     } else if (option instanceof MoneyOption) {
       result = createValidatingComponent((MoneyOption) option, new ValueValidator<BigDecimal>() {
-        private NumberFormat myFormat;
+        private final NumberFormat myFormat;
         {
           DecimalFormat format = (DecimalFormat) NumberFormat.getNumberInstance(GanttLanguage.getInstance().getLocale());
           format.setParseBigDecimal(true);
@@ -719,27 +718,27 @@ public class OptionsPageBuilder {
   }
 
   public static class I18N {
-    private String myOptionKeyPrefix = "option.";
-    private String myOptionGroupKeyPrefix = "optionGroup.";
-    private String myOptionPageKeyPrefix = "optionPage.";
+    private static String myOptionKeyPrefix = "option.";
+    private static final String myOptionGroupKeyPrefix = "optionGroup.";
+    private static final String myOptionPageKeyPrefix = "optionPage.";
 
     public I18N() {
     }
 
-    protected boolean hasValue(String key) {
+    protected static boolean hasValue(String key) {
       return GanttLanguage.getInstance().getText(key) != null;
     }
-    protected String getValue(String key) {
+    protected static String getValue(String key) {
       String result = GanttLanguage.getInstance().getText(key);
       return result == null ? key : result;
     }
 
-    public String getValue(GPOptionGroup group, String canonicalKey) {
+    public static String getValue(GPOptionGroup group, String canonicalKey) {
       String key = group == null ? null : group.getI18Nkey(canonicalKey);
       return getValue(key == null ? canonicalKey : key);
     }
 
-    public String getPageTitle(String pageID) {
+    public static String getPageTitle(String pageID) {
       return getValue(getCanonicalOptionPageTitleKey(pageID));
     }
 
@@ -747,12 +746,12 @@ public class OptionsPageBuilder {
       return GanttLanguage.getInstance().getText(myOptionPageKeyPrefix + pageID + ".description");
     }
 
-    public String getOptionGroupLabel(GPOptionGroup group) {
+    public static String getOptionGroupLabel(GPOptionGroup group) {
       String canonicalKey = getCanonicalOptionGroupLabelKey(group);
       return getValue(group, canonicalKey);
     }
 
-    public String getOptionLabel(GPOptionGroup group, GPOption<?> option) {
+    public static String getOptionLabel(GPOptionGroup group, GPOption<?> option) {
       String result = null;
       if (group != null) {
         String keyWithGroup = String.format("%s%s.%s.label", myOptionKeyPrefix, group.getID(), option.getID());
@@ -765,23 +764,23 @@ public class OptionsPageBuilder {
       return getValue(group, canonicalKey);
     }
 
-    public final String getCanonicalOptionPageLabelKey(String pageID) {
+    public static final String getCanonicalOptionPageLabelKey(String pageID) {
       return myOptionPageKeyPrefix + pageID + ".label";
     }
 
-    public final String getCanonicalOptionPageTitleKey(String pageID) {
+    public static final String getCanonicalOptionPageTitleKey(String pageID) {
       return myOptionPageKeyPrefix + pageID + ".title";
     }
 
-    public String getCanonicalOptionPageDescriptionKey(String pageID) {
+    public static String getCanonicalOptionPageDescriptionKey(String pageID) {
       return myOptionPageKeyPrefix + pageID + ".description";
     }
 
-    public final String getCanonicalOptionGroupLabelKey(GPOptionGroup group) {
+    public static final String getCanonicalOptionGroupLabelKey(GPOptionGroup group) {
       return myOptionGroupKeyPrefix + group.getID() + ".label";
     }
 
-    public final String getCanonicalOptionLabelKey(GPOption<?> option) {
+    public static final String getCanonicalOptionLabelKey(GPOption<?> option) {
       return myOptionKeyPrefix + option.getID() + ".label";
     }
 

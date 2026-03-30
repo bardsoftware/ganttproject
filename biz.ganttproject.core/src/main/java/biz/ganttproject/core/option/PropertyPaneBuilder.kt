@@ -30,6 +30,11 @@ import java.time.LocalDate
  */
 interface PropertyPaneBuilder {
   /**
+   * Adds a checkbox editor for the given boolean property.
+   */
+  fun checkbox(property: ObservableBoolean)
+
+  /**
    * Adds a dropdown editor for the given property with enum values.
    */
   fun <E: Enum<E>> dropdown(property: ObservableEnum<E>, optionValues: (DropdownDisplayOptions<E>.()->Unit)? = null)
@@ -43,6 +48,10 @@ interface PropertyPaneBuilder {
    * Adds an editor for the given property with the list of files.
    */
   fun files(property: ObservableFiles, optionValues: (FileDisplayOptions.() -> Unit)? = null)
+
+  fun text(property: ObservableString, optionValues: (TextDisplayOptions.() -> Unit)? = null)
+
+  fun title(title: String)
 }
 
 enum class LabelPosition {

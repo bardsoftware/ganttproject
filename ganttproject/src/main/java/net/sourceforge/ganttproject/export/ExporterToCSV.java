@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class ExporterToCSV extends ExporterBase {
-  private final ExportFileFormatOption<SpreadsheetFormat> myFormatOption = new ExportFileFormatOption<>("impex.csv.format", SpreadsheetFormat.CSV, Arrays.stream(SpreadsheetFormat.values()).toList());
+  private final ObservableEnumerationOption<SpreadsheetFormat> myFormatOption = new ObservableEnumerationOption<>("impex.csv.format", SpreadsheetFormat.CSV, Arrays.stream(SpreadsheetFormat.values()).toList());
 
 
   private final GPOptionGroup myOptions = new GPOptionGroup("impex.csv", new GPOption[]{myFormatOption});
