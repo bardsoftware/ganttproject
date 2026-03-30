@@ -43,8 +43,8 @@ public abstract class ExporterBase implements Exporter {
   private Chart myResourceChart;
   private UIFacade myUIFacade;
   private Preferences myRootPreferences;
-  private DefaultDateOption myExportRangeStart;
-  private DefaultDateOption myExportRangeEnd;
+  private ObservableDateOption myExportRangeStart;
+  private ObservableDateOption myExportRangeEnd;
 
   protected static final GanttLanguage language = GanttLanguage.getInstance();
 
@@ -56,7 +56,7 @@ public abstract class ExporterBase implements Exporter {
     myUIFacade = uiFacade;
     myRootPreferences = prefs;
     Preferences prefNode = prefs.node("/instance/net.sourceforge.ganttproject/export");
-    myExportRangeStart = new DefaultDateOption("export.range.start", myGanttChart.getStartDate());
+    myExportRangeStart = new ObservableDateOption("export.range.start", myGanttChart.getStartDate());
     myExportRangeStart.loadPersistentValue(prefNode.get(
         "export-range-start", DateParser.getIsoDate(myGanttChart.getStartDate())));
     myExportRangeStart.addChangeValueListener(event -> {
@@ -69,7 +69,7 @@ public abstract class ExporterBase implements Exporter {
         return new kotlin.Pair(true, "");
       }
     });
-    myExportRangeEnd = new DefaultDateOption("export.range.end", myGanttChart.getEndDate());
+    myExportRangeEnd = new ObservableDateOption("export.range.end", myGanttChart.getEndDate());
     myExportRangeEnd.loadPersistentValue(prefNode.get(
         "export-range-end", DateParser.getIsoDate(myGanttChart.getEndDate())));
     myExportRangeEnd.setValueValidator(date -> {
@@ -84,11 +84,11 @@ public abstract class ExporterBase implements Exporter {
     });
   }
 
-  protected DefaultDateOption getExportRangeStartOption() {
+  protected DateOption getExportRangeStartOption() {
     return myExportRangeStart;
   }
 
-  protected DefaultDateOption getExportRangeEndOption() {
+  protected DateOption getExportRangeEndOption() {
     return myExportRangeEnd;
   }
 

@@ -51,6 +51,11 @@ interface PropertyPaneBuilder {
 
   fun text(property: ObservableString, optionValues: (TextDisplayOptions.() -> Unit)? = null)
 
+  /**
+   * Adds a date editor for the given property.
+   */
+  fun date(property: ObservableDate, options: (DateDisplayOptions.() -> Unit)? = null)
+
   fun title(title: String)
 }
 

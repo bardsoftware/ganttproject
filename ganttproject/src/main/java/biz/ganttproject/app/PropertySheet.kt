@@ -120,7 +120,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
     })
   }
 
-  fun date(property: ObservableDate, options: (DateDisplayOptions.()->Unit)? = null) {
+  override fun date(property: ObservableDate, options: (DateDisplayOptions.()->Unit)?) {
     rowBuilders.add(run {
       val optionValues = options?.let { DateDisplayOptions(createDateConverter()).apply(it) } ?: DateDisplayOptions(createDateConverter())
       createOptionItem(property, createDateOptionEditor(property, optionValues))

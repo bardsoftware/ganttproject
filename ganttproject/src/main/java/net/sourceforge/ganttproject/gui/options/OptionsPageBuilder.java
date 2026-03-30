@@ -100,7 +100,6 @@ public class OptionsPageBuilder {
   }
 
   public OptionsPageBuilder(Component parentComponent, LayoutApi layoutApi) {
-    myParentComponent = parentComponent;
     myLayoutApi = layoutApi;
   }
 
