@@ -79,11 +79,11 @@ public class ITextEngine extends AbstractEngine {
     mySubstitutionModel.init();
     JPanel result = new JPanel(new BorderLayout());
     result.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-    OptionsPageBuilder builder = new OptionsPageBuilder();
+//    OptionsPageBuilder builder = new OptionsPageBuilder();
 
-    List<GPOptionGroup> options = new ArrayList<GPOptionGroup>();
-    options.addAll(myExporter.getSecondaryOptions());
-    result.add(builder.buildPlanePage(options.toArray(new GPOptionGroup[0])), BorderLayout.NORTH);
+//    List<GPOptionGroup> options = new ArrayList<GPOptionGroup>();
+//    options.addAll(myExporter.getSecondaryOptions());
+//    result.add(builder.buildPlanePage(options.toArray(new GPOptionGroup[0])), BorderLayout.NORTH);
     result.add(createFontPanel(), BorderLayout.CENTER);
     return result;
   }

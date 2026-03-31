@@ -56,6 +56,11 @@ interface PropertyPaneBuilder {
    */
   fun date(property: ObservableDate, options: (DateDisplayOptions.() -> Unit)? = null)
 
+  /**
+   * Adds an integer editor for the given property.
+   */
+  fun numeric(property: ObservableInt, options: (IntDisplayOptions.() -> Unit)? = null)
+
   fun title(title: String)
 }
 

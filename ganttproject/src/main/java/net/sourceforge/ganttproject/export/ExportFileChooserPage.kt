@@ -25,12 +25,17 @@ import biz.ganttproject.app.properties
 import biz.ganttproject.core.option.FileExtensionFilter
 import biz.ganttproject.core.option.GPOption
 import biz.ganttproject.core.option.GPOptionGroup
+import biz.ganttproject.lib.fx.vbox
 import biz.ganttproject.storage.asLocalDocument
 import biz.ganttproject.storage.getDefaultLocalFolder
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import javafx.embed.swing.SwingNode
 import javafx.scene.Node
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.gui.FileChooserPageBase
 import net.sourceforge.ganttproject.gui.UIUtil
@@ -39,6 +44,7 @@ import net.sourceforge.ganttproject.util.FileUtil.replaceExtension
 import org.osgi.service.prefs.Preferences
 import java.awt.Component
 import java.io.File
+import javax.swing.JComponent
 import javax.swing.JFileChooser
 
 /**
@@ -124,15 +130,22 @@ internal class ExportFileChooserPage(
   override fun createSecondaryOptionsPanelFx(): Node? {
     val optionI18n = i18n.createWithRootKey("option")
     val optionGroupI18n = i18n
-    return properties(optionI18n) {
-      this.skip(2)
-      myState.publishInWebOption.visitPropertyPaneBuilder(this)
-      myState.exporter?.secondaryOptions?.forEach { optionGroup ->
+    return vbox {
+      add(properties(optionI18n) {
         this.skip(2)
-        this.title(optionGroupI18n.create(OptionsPageBuilder.I18N.getCanonicalOptionGroupLabelKey(optionGroup)))
-        optionGroup.options.forEach { option ->
-          option.visitPropertyPaneBuilder(this)
+        myState.publishInWebOption.visitPropertyPaneBuilder(this)
+        myState.exporter?.secondaryOptions?.forEach { optionGroup ->
+          this.skip(2)
+          this.title(optionGroupI18n.create(OptionsPageBuilder.I18N.getCanonicalOptionGroupLabelKey(optionGroup)))
+          optionGroup.options.forEach { option ->
+            option.visitPropertyPaneBuilder(this)
+          }
         }
+      })
+
+      val swingNode = SwingNode().also { add(it) }
+      myState.coroutineScope.launch(Dispatchers.Swing) {
+        myState.exporter?.getCustomOptionsUI()?.let { swingNode.content = it as JComponent }
       }
     }
   }

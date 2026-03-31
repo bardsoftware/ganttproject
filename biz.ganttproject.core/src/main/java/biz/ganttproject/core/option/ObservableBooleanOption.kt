@@ -22,27 +22,12 @@ package biz.ganttproject.core.option
  * Implementation of [BooleanOption] that delegates to [ObservableBoolean].
  */
 class ObservableBooleanOption(
-    private val delegate: ObservableBoolean
-) : GPAbstractOption<Boolean>(delegate.id, delegate.value), BooleanOption {
+    delegate: ObservableBoolean
+) : ObservableAbstractOption<Boolean>(delegate), BooleanOption {
 
     constructor(id: String, value: Boolean = false) : this(ObservableBoolean(id, value))
 
-    init {
-        delegate.addWatcher { event ->
-            resetValue(event.newValue, false, event.trigger)
-        }
-    }
-
     override fun getValue(): Boolean = delegate.value
-
-    override fun setValue(value: Boolean?) {
-        setValue(value, null)
-    }
-
-    override fun setValue(value: Boolean?, clientId: Any?) {
-        if (value == null) return
-        delegate.set(value, clientId)
-    }
 
     override fun isChecked(): Boolean = delegate.value
 
@@ -50,17 +35,13 @@ class ObservableBooleanOption(
         delegate.value = !delegate.value
     }
 
-    override fun getIsWritableProperty(): ObservableProperty<Boolean> = delegate.isWritable as ObservableProperty<Boolean>
-
-    override fun isWritable(): Boolean = delegate.isWritable.value
-
     override fun getPersistentValue(): String = delegate.value.toString()
 
     override fun loadPersistentValue(value: String?) {
-        setValue(value?.toBoolean())
+        setValue(value?.toBoolean() ?: false)
     }
 
     override fun visitPropertyPaneBuilder(builder: PropertyPaneBuilder) {
-        builder.checkbox(delegate)
+        builder.checkbox(delegate as ObservableBoolean)
     }
 }

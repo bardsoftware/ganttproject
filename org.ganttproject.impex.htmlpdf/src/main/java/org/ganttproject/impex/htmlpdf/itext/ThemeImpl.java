@@ -30,6 +30,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEvent;
 import com.itextpdf.text.pdf.PdfWriter;
+import javafx.util.StringConverter;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.export.ExportException;
@@ -88,10 +89,20 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   private IGanttProject myProject;
   private UIFacade myUIFacade;
   private String myLeftSubcolontitle;
-  private final BooleanOption myShowNotesOption = new DefaultBooleanOption("export.itext.showNotes");
-  private final BooleanOption myLandscapeOption = new DefaultBooleanOption("export.itext.landscape");
-  private final EnumerationOption myPageSizeOption = new DefaultEnumerationOption<>("export.itext.pageSize",
-    ourSizes.toArray(new String[0]));
+  private final BooleanOption myShowNotesOption = new ObservableBooleanOption("export.itext.showNotes", true);
+  private final BooleanOption myLandscapeOption = new ObservableBooleanOption("export.itext.landscape", true);
+  private final EnumerationOption myPageSizeOption = new ObservableChoiceOption<>("export.itext.pageSize",
+    ourSizes.get(0), ourSizes, new StringConverter<String>() {
+    @Override
+    public String toString(String object) {
+      return object;
+    }
+
+    @Override
+    public String fromString(String string) {
+      return string;
+    }
+  });
   private final IntegerOption myFontSizeOption = new DefaultIntegerOption("export.itext.fontSize", FONT_SIZE);
 
   private final GPOptionGroup myPageOptions = new GPOptionGroup("export.itext.page", myPageSizeOption, myFontSizeOption,

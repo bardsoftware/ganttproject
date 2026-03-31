@@ -1,5 +1,5 @@
 /*
-Copyright 2003-2012 Dmitry Barashev, GanttProject Team
+Copyright 2003-2026 Dmitry Barashev, GanttProject Team, BarD Software s.r.o
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -16,26 +16,22 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package biz.ganttproject.core.option;
+package biz.ganttproject.core.option
 
-public class DefaultIntegerOption extends GPAbstractOption<Integer> implements IntegerOption {
-  public DefaultIntegerOption(String id) {
-    this(id, 0);
-  }
+class DefaultIntegerOption(
+    id: String,
+    initialValue: Int = 0
+) : ObservableAbstractOption<Int>(ObservableInt(id, initialValue)), IntegerOption {
 
-  public DefaultIntegerOption(String id, Integer initialValue) {
-    super(id, initialValue);
-  }
+    constructor(id: String) : this(id, 0)
 
-  @Override
-  public String getPersistentValue() {
-    int value = getValue();
-    return String.valueOf(value);
-  }
+    override fun getPersistentValue(): String = value.toString()
 
-  @Override
-  public void loadPersistentValue(String value) {
-    int intValue = Integer.parseInt(value);
-    resetValue(intValue, true);
-  }
+    override fun loadPersistentValue(value: String?) {
+        setValue(value?.toInt() ?: 0)
+    }
+
+    override fun visitPropertyPaneBuilder(builder: PropertyPaneBuilder) {
+        builder.numeric(delegate as ObservableInt)
+    }
 }

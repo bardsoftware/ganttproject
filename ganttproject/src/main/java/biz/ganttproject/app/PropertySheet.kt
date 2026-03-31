@@ -127,7 +127,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
     })
   }
 
-  fun numeric(property: ObservableInt, optionValues: (IntDisplayOptions.()->Unit)? = null) {
+  override fun numeric(property: ObservableInt, optionValues: (IntDisplayOptions.()->Unit)?) {
     rowBuilders.add(run {
       val options = optionValues?.let { IntDisplayOptions().apply(it) } ?: IntDisplayOptions()
       createOptionItem(property, createIntOptionEditor(property, options))
