@@ -23,10 +23,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.scene.Parent;
 import org.ganttproject.impex.htmlpdf.itext.ITextEngine;
 import org.ganttproject.impex.htmlpdf.itext.ITextStylesheet;
 
 import biz.ganttproject.core.option.GPOptionGroup;
+import org.jetbrains.annotations.Nullable;
 
 
 public class ExporterToPDF extends StylesheetExporterBase {
@@ -83,6 +85,11 @@ public class ExporterToPDF extends StylesheetExporterBase {
       return myITextEngine.getCustomOptionsUI();
     }
     return null;
+  }
+
+  @Override
+  public @Nullable Parent createCustomOptionsUiFx() {
+    return myITextEngine.createCustomOptionsUiFx();
   }
 
   @Override

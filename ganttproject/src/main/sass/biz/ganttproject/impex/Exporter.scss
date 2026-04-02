@@ -19,6 +19,7 @@
 @import "../app/textfields";
 @import "../app/theme";
 @import "../app/dialogs";
+@import "../app/dropdowns";
 @import "../app/buttons";
 @import "../app/errors";
 @import "../app/validation";
@@ -129,6 +130,10 @@
       .alert-error {
         @include error-label();
       }
+    }
+
+    .font-substitution-table  {
+      @include dropdown-normal();
     }
   }
 }

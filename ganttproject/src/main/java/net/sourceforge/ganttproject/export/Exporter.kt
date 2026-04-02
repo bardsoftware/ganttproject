@@ -1,5 +1,5 @@
 /*
-Copyright 2005-2012 GanttProject Team
+Copyright 2005-2026 Dmitry Barashev, GanttProject Team, BarD Software s.r.o.
 
 This file is part of GanttProject, an opensource project management tool.
 
@@ -16,42 +16,42 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sourceforge.ganttproject.export;
+package net.sourceforge.ganttproject.export
 
-import biz.ganttproject.core.option.GPOptionGroup;
-import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.UIFacade;
-import org.jetbrains.annotations.Nullable;
-import org.osgi.service.prefs.Preferences;
-
-import java.awt.*;
-import java.io.File;
-import java.util.List;
+import biz.ganttproject.core.option.GPOptionGroup
+import javafx.scene.Parent
+import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.gui.UIFacade
+import org.osgi.service.prefs.Preferences
+import java.awt.Component
+import java.io.File
 
 /**
  * @author bard
  */
-public interface Exporter {
-  String getFileTypeDescription();
+interface Exporter {
+    val fileTypeDescription: String
 
-  GPOptionGroup getOptions();
+    val options: GPOptionGroup
 
-  List<GPOptionGroup> getSecondaryOptions();
+    val secondaryOptions: MutableList<GPOptionGroup>?
 
-  String getFileNamePattern();
+    val fileNamePattern: String
 
-  void run(File outputFile, ExportFinalizationJob finalizationJob) throws Exception;
+    @Throws(Exception::class)
+    fun run(outputFile: File, finalizationJob: ExportFinalizationJob?)
 
-  // File proposeOutputFile(IGanttProject project);
-  String proposeFileExtension();
+    // File proposeOutputFile(IGanttProject project);
+    fun proposeFileExtension(): String
 
-  String[] getFileExtensions();
+    val fileExtensions: Array<String>
 
-  @Nullable
-  Exporter withFormat(String format);
-  //String[] getCommandLineKeys();
+    fun withFormat(format: String): Exporter?
 
-  void setContext(IGanttProject project, UIFacade uiFacade, Preferences prefs);
+    //String[] getCommandLineKeys();
+    fun setContext(project: IGanttProject, uiFacade: UIFacade, prefs: Preferences)
 
-  Component getCustomOptionsUI();
+    val customOptionsUI: Component?
+
+  fun createCustomOptionsUiFx(): Parent? { return null }
 }

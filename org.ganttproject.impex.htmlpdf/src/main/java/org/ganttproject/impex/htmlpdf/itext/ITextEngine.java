@@ -19,13 +19,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package org.ganttproject.impex.htmlpdf.itext;
 
 import biz.ganttproject.core.option.GPOptionGroup;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.Parent;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.ExporterBase;
 import net.sourceforge.ganttproject.export.ExporterBase.ExporterJob;
 import net.sourceforge.ganttproject.gui.UIFacade;
-import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IStatus;
@@ -36,6 +37,7 @@ import org.ganttproject.impex.htmlpdf.ExporterToPDF;
 import org.ganttproject.impex.htmlpdf.Stylesheet;
 import org.ganttproject.impex.htmlpdf.StylesheetFactoryImpl;
 import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.service.prefs.Preferences;
 
 import javax.swing.*;
@@ -47,7 +49,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -75,25 +76,17 @@ public class ITextEngine extends AbstractEngine {
   }
 
   public Component getCustomOptionsUI() {
+    return null;
+  }
+
+  public @Nullable Parent createCustomOptionsUiFx() {
     waitRegisterFonts();
     mySubstitutionModel.init();
-    JPanel result = new JPanel(new BorderLayout());
-    result.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-//    OptionsPageBuilder builder = new OptionsPageBuilder();
-
-//    List<GPOptionGroup> options = new ArrayList<GPOptionGroup>();
-//    options.addAll(myExporter.getSecondaryOptions());
-//    result.add(builder.buildPlanePage(options.toArray(new GPOptionGroup[0])), BorderLayout.NORTH);
-    result.add(createFontPanel(), BorderLayout.CENTER);
-    return result;
+    return new FontSubstitutionPanel(mySubstitutionModel, new SimpleStringProperty("")).getComponentFx();
   }
 
   public String[] getCommandLineKeys() {
     return new String[] { "itext" };
-  }
-
-  private Component createFontPanel() {
-    return new FontSubstitutionPanel(mySubstitutionModel).getComponent();
   }
 
   public void setContext(IGanttProject project, UIFacade uiFacade, Preferences preferences, Stylesheet stylesheet) {
@@ -228,4 +221,5 @@ public class ITextEngine extends AbstractEngine {
     };
     return result;
   }
+
 }

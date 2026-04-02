@@ -31,20 +31,14 @@ import biz.ganttproject.storage.getDefaultLocalFolder
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import javafx.embed.swing.SwingNode
 import javafx.scene.Node
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.swing.Swing
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.gui.FileChooserPageBase
 import net.sourceforge.ganttproject.gui.UIUtil
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder
 import net.sourceforge.ganttproject.util.FileUtil.replaceExtension
 import org.osgi.service.prefs.Preferences
-import java.awt.Component
 import java.io.File
-import javax.swing.JComponent
 import javax.swing.JFileChooser
 
 /**
@@ -123,10 +117,6 @@ internal class ExportFileChooserPage(
     return Ok(file)
   }
 
-  override fun createSecondaryOptionsPanel(): Component? {
-    return myState.exporter?.getCustomOptionsUI()
-  }
-
   override fun createSecondaryOptionsPanelFx(): Node? {
     val optionI18n = i18n.createWithRootKey("option")
     val optionGroupI18n = i18n
@@ -143,15 +133,12 @@ internal class ExportFileChooserPage(
         }
       })
 
-      val swingNode = SwingNode().also { add(it) }
-      myState.coroutineScope.launch(Dispatchers.Swing) {
-        myState.exporter?.getCustomOptionsUI()?.let { swingNode.content = it as JComponent }
-      }
+      myState.exporter?.createCustomOptionsUiFx()?.let(this::add)
     }
   }
 
   override fun createFileFilter(): FileExtensionFilter? = myState.exporter?.let {
-    FileExtensionFilter(it.getFileTypeDescription(), listOf(it.getFileNamePattern()))
+    FileExtensionFilter(it.fileTypeDescription, listOf(it.fileNamePattern))
   }
 
   override val optionGroups: List<GPOptionGroup>

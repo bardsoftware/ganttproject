@@ -85,7 +85,7 @@ class ExportWizardModel(id: String, title: String, private val ftpOptions: Docum
 }
 
 class ExportFileWizardImpl(
-  uiFacade: UIFacade?,
+  uiFacade: UIFacade,
   project: IGanttProject,
   pluginPreferences: Preferences,
   exporters: MutableList<Exporter> = findExporters()
