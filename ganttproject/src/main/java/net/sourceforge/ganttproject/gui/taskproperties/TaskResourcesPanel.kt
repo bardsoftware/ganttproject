@@ -230,7 +230,7 @@ class TaskResourcesPanel(
   private fun createCostPanel(): Region {
     val propertyPane = PropertyPane()
     val builder = PropertyPaneBuilderImpl(i18n, propertyPane)
-    val radioUi = builder.createRadioButtonOptionEditor(costIsCalculated)
+    val radioUi = builder.createRadioButtonOptionEditor(costIsCalculated, null)
     propertyPane.add(radioUi.yesButton, 0, 1)
     propertyPane.add(radioUi.noButton, 0, 2)
     costIsCalculated.value = task.cost.isCalculated

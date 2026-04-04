@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.core.option
 
+import javafx.geometry.HPos
+import javafx.geometry.VPos
 import javafx.scene.Node
 import javafx.scene.control.ListCell
 import javafx.util.StringConverter
@@ -29,6 +31,12 @@ import java.time.LocalDate
  * row per element.
  */
 interface PropertyPaneBuilder {
+  fun binaryChoice(property: ObservableBoolean, options: (BooleanDisplayOptions.() -> Unit)? = null)
+  /**
+   * Adds a checkbox editor for the given boolean property.
+   */
+  fun checkbox(property: ObservableBoolean)
+
   /**
    * Adds a dropdown editor for the given property with enum values.
    */
@@ -43,6 +51,22 @@ interface PropertyPaneBuilder {
    * Adds an editor for the given property with the list of files.
    */
   fun files(property: ObservableFiles, optionValues: (FileDisplayOptions.() -> Unit)? = null)
+
+  fun radio(property: ObservableBoolean)
+
+  fun text(property: ObservableString, optionValues: (TextDisplayOptions.() -> Unit)? = null)
+
+  /**
+   * Adds a date editor for the given property.
+   */
+  fun date(property: ObservableDate, options: (DateDisplayOptions.() -> Unit)? = null)
+
+  /**
+   * Adds an integer editor for the given property.
+   */
+  fun numeric(property: ObservableInt, options: (IntDisplayOptions.() -> Unit)? = null)
+
+  fun title(title: String)
 }
 
 enum class LabelPosition {
@@ -53,10 +77,22 @@ enum class LabelPosition {
  * A family of options for displaying properties in a property pane.
  */
 sealed class PropertyDisplayOptions<P> {
+  var labelText: String? = null
   var labelPosition: LabelPosition = LabelPosition.LEFT
+  var labelHAlignment: HPos = HPos.RIGHT
+  var labelVAlignment: VPos = VPos.CENTER
   val editorStyles = mutableListOf<String>()
 }
 
+enum class BooleanEditorStyle {
+  CHECKBOX, RADIO, TOGGLE
+}
+
+data class BooleanDisplayOptions(
+  var editorStyle: BooleanEditorStyle = BooleanEditorStyle.CHECKBOX,
+  var yesLabel: String? = null,
+  var noLabel: String? = null,
+) : PropertyDisplayOptions<Boolean>()
 /**
  * Options for displaying text fields in a property pane.
  */

@@ -18,16 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package biz.ganttproject.impex.msproject2;
 
-import biz.ganttproject.core.option.DefaultEnumerationOption;
-import biz.ganttproject.core.option.EnumerationOption;
-import biz.ganttproject.core.option.GPOption;
-import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.core.option.*;
 import net.sf.mpxj.MPXJException;
 import net.sf.mpxj.ProjectFile;
 import net.sf.mpxj.mpx.MPXWriter;
 import net.sf.mpxj.mspdi.MSPDIWriter;
 import net.sf.mpxj.writer.ProjectWriter;
-import net.sourceforge.ganttproject.export.ExportFileFormatOption;
 import net.sourceforge.ganttproject.export.ExporterBase;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -44,9 +40,11 @@ import java.util.List;
  */
 public class ExporterToMsProjectFile extends ExporterBase {
 
-  private final ExportFileFormatOption<MsProjectFileFormat> myFileFormatOption = new ExportFileFormatOption(
-    "impex.msproject.fileformat", MsProjectFileFormat.MPX, Arrays.stream(MsProjectFileFormat.values()).toList());
-  private final LocaleOption myLanguageOption = new LocaleOption();
+  private final ObservableEnumerationOption<MsProjectFileFormat> myFileFormatOption = new ObservableEnumerationOption<>(
+    "impex.msproject.fileformat", MsProjectFileFormat.MPX, Arrays.stream(MsProjectFileFormat.values()).toList()
+  );
+  //private final LocaleOption myLanguageOption = new LocaleOption();
+  private final ExportMPXLocaleOption myLanguageOption = new ExportMPXLocaleOption();
 
   private final GPOptionGroup myOptions = new GPOptionGroup("exporter.msproject", new GPOption[] { myFileFormatOption });
 
@@ -55,7 +53,7 @@ public class ExporterToMsProjectFile extends ExporterBase {
   public ExporterToMsProjectFile() {
     myOptions.setTitled(false);
     myMPXOptions.setTitled(false);
-    myLanguageOption.setSelectedLocale(language.getLocale());
+    //myLanguageOption.setSelectedLocale(language.getLocale());
   }
 
   @Override
@@ -121,8 +119,8 @@ public class ExporterToMsProjectFile extends ExporterBase {
   private ProjectWriter createProjectWriter() {
     if (myFileFormatOption.getSelectedValue() == MsProjectFileFormat.MPX) {
       MPXWriter result = new MPXWriter();
-      if (myLanguageOption.getSelectedLocale() != null) {
-        result.setLocale(myLanguageOption.getSelectedLocale());
+      if (myLanguageOption.getSelectedValue() != null) {
+        result.setLocale(myLanguageOption.getSelectedValue());
       }
       return result;
     }

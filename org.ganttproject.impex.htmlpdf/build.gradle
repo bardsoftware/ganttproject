@@ -1,6 +1,11 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm"
+}
+
 configurations {
     implementation.extendsFrom(providedCompile)
 }
+
 dependencies {
     providedCompile project(path: ':biz.ganttproject.app.libs', configuration: 'exported')
     providedCompile project(path: ':biz.ganttproject.core')

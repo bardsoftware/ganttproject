@@ -162,7 +162,8 @@ private class ImportFileChooserPage(
   : FileChooserPageBase(project.document,
   fileChooserTitle = i18n.formatText("importerFileChooserPageTitle"),
   pageTitle = i18n.formatText("importerFileChooserPageTitle"),
-  errorMessage = model.errorMessage) {
+  errorMessage = model.errorMessage,
+  coroutineScope = model.coroutineScope) {
 
   override val optionGroups: List<GPOptionGroup> get() = importer?.secondaryOptions?.toList() ?: emptyList()
   override val preferences: Preferences get() = prefs.node(model.importer?.id ?: "")
