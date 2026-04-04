@@ -1,6 +1,7 @@
 /*
+Copyright (C) 2003-2026 Dmitry Barashev, BarD Software s.r.o.
+
 GanttProject is an opensource project management tool.
-Copyright (C) 2024 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,26 +23,28 @@ package biz.ganttproject.core.option
  * Implementation of [BooleanOption] that delegates to [ObservableBoolean].
  */
 class ObservableBooleanOption(
-    delegate: ObservableBoolean
+  delegate: ObservableBoolean
 ) : ObservableAbstractOption<Boolean>(delegate), BooleanOption {
 
-    constructor(id: String, value: Boolean = false) : this(ObservableBoolean(id, value))
+  var displayOptions: BooleanDisplayOptions.()->Unit = {}
 
-    override fun getValue(): Boolean = delegate.value
+  constructor(id: String, value: Boolean = false) : this(ObservableBoolean(id, value))
 
-    override fun isChecked(): Boolean = delegate.value
+  override fun getValue(): Boolean = delegate.value
 
-    override fun toggle() {
-        delegate.value = !delegate.value
-    }
+  override fun isChecked(): Boolean = delegate.value
 
-    override fun getPersistentValue(): String = delegate.value.toString()
+  override fun toggle() {
+    delegate.value = !delegate.value
+  }
 
-    override fun loadPersistentValue(value: String?) {
-        setValue(value?.toBoolean() ?: false)
-    }
+  override fun getPersistentValue(): String = delegate.value.toString()
 
-    override fun visitPropertyPaneBuilder(builder: PropertyPaneBuilder) {
-        builder.checkbox(delegate as ObservableBoolean)
-    }
+  override fun loadPersistentValue(value: String?) {
+    setValue(value?.toBoolean() ?: false)
+  }
+
+  override fun visitPropertyPaneBuilder(builder: PropertyPaneBuilder) {
+    builder.binaryChoice(delegate as ObservableBoolean, displayOptions)
+  }
 }

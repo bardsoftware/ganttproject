@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf.itext;
 
+import biz.ganttproject.app.InternationalizationCoreKt;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.core.table.ColumnList;
@@ -30,7 +31,9 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEvent;
 import com.itextpdf.text.pdf.PdfWriter;
+import javafx.geometry.VPos;
 import javafx.util.StringConverter;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.export.ExportException;
@@ -89,9 +92,9 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   private IGanttProject myProject;
   private UIFacade myUIFacade;
   private String myLeftSubcolontitle;
-  private final BooleanOption myShowNotesOption = new ObservableBooleanOption("export.itext.showNotes", true);
-  private final BooleanOption myLandscapeOption = new ObservableBooleanOption("export.itext.landscape", true);
-  private final EnumerationOption myPageSizeOption = new ObservableChoiceOption<>("export.itext.pageSize",
+  private final ObservableBooleanOption myShowNotesOption = new ObservableBooleanOption("export.itext.showNotes", true);
+  private final ObservableBooleanOption myLandscapeOption = new ObservableBooleanOption("export.itext.landscape", true);
+  private final ObservableChoiceOption<String> myPageSizeOption = new ObservableChoiceOption<>("export.itext.pageSize",
     ourSizes.get(0), ourSizes, new StringConverter<String>() {
     @Override
     public String toString(String object) {
@@ -137,19 +140,19 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
       protected void applyLocale(Locale locale) {
       }
     };
-    GPOptionGroup languageOptions = new GPOptionGroup("export.itext.language", myLanguageOption);
-    languageOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(languageOptions), "language");
-    languageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLanguageOption), "language");
-
+//    GPOptionGroup languageOptions = new GPOptionGroup("export.itext.language", myLanguageOption);
+//    languageOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(languageOptions), "language");
+//    languageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLanguageOption), "language");
+//
     myDataOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(myDataOptions), "show");
-    myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption), "notes");
-    myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption) + ".yes", "yes");
-    myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption) + ".no", "no");
-
+//    myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption), "notes");
+//    myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption) + ".yes", "yes");
+//    myDataOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myShowNotesOption) + ".no", "no");
+//
     myPageOptions.setI18Nkey(i18n.getCanonicalOptionGroupLabelKey(myPageOptions), "choosePaperFormat");
-    myPageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLandscapeOption) + ".yes", "landscape");
-    myPageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLandscapeOption) + ".no", "portrait");
-    myPageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myPageSizeOption), "paperSize");
+//    myPageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLandscapeOption) + ".yes", "landscape");
+//    myPageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myLandscapeOption) + ".no", "portrait");
+//    myPageOptions.setI18Nkey(i18n.getCanonicalOptionLabelKey(myPageSizeOption), "paperSize");
 
     myPageOptions.lock();
     myDataOptions.lock();
@@ -159,17 +162,33 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
         myPrefs.put("page-size", myPageSizeOption.getValue());
       }
     });
+    myPageSizeOption.setDisplayOptions(proto -> {
+      proto.setLabelText(InternationalizationCoreKt.getRootLocalizer().formatText("paperSize"));
+      return Unit.INSTANCE;
+    });
     myShowNotesOption.loadPersistentValue("true");
     myShowNotesOption.addChangeValueListener(event -> {
       if (myPrefs != null) {
         myPrefs.putBoolean("export-notes", myShowNotesOption.isChecked());
       }
     });
+    myShowNotesOption.setDisplayOptions(proto -> {
+      proto.setLabelText(InternationalizationCoreKt.getRootLocalizer().formatText("notes"));
+      return Unit.INSTANCE;
+    });
     myLandscapeOption.addChangeValueListener(event -> {
       if (myPrefs != null) {
         myPrefs.put("page-orientation", myLandscapeOption.isChecked() ? "landscape" : "portrait");
       }
     });
+    myLandscapeOption.setDisplayOptions(proto -> {
+      proto.setEditorStyle(BooleanEditorStyle.RADIO);
+      proto.setLabelVAlignment(VPos.TOP);
+      proto.setYesLabel(InternationalizationCoreKt.getRootLocalizer().formatText("landscape"));
+      proto.setNoLabel(InternationalizationCoreKt.getRootLocalizer().formatText("portrait"));
+      return Unit.INSTANCE;
+    });
+
     myFontSizeOption.addChangeValueListener(evt -> {
       if (myPrefs != null) {
         myPrefs.putInt("font-size", myFontSizeOption.getValue());

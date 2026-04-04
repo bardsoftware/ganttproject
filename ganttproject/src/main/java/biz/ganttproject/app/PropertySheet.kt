@@ -108,15 +108,33 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
     })
   }
 
-  override fun checkbox(property: ObservableBoolean) {
-    rowBuilders.add(run {
-      createOptionItem(property, createBooleanOptionEditor(property))
-    })
+  override fun binaryChoice(property: ObservableBoolean, options: (BooleanDisplayOptions.() -> Unit)?) {
+    val options = options?.let { BooleanDisplayOptions().apply(it) } ?: BooleanDisplayOptions()
+    when (options.editorStyle) {
+      BooleanEditorStyle.CHECKBOX -> doCheckbox(property, options)
+      BooleanEditorStyle.RADIO -> doRadio(property, options)
+      else -> {
+        println("Unsupported editor style: ${options.editorStyle}, using checkbox")
+        checkbox(property)
+      }
+    }
   }
 
-  fun radio(property: ObservableBoolean) {
+  override fun checkbox(property: ObservableBoolean) {
+    doCheckbox(property, null)
+  }
+
+  private fun doCheckbox(property: ObservableBoolean, displayOptions: BooleanDisplayOptions?) {
+    rowBuilders.add(createOptionItem(property, createBooleanOptionEditor(property), displayOptions))
+  }
+
+  override fun radio(property: ObservableBoolean) {
+    doRadio(property, null)
+  }
+
+  private fun doRadio(property: ObservableBoolean, displayOptions: BooleanDisplayOptions?) {
     rowBuilders.add(run {
-      createOptionItem(property, createRadioButtonOptionEditor(property).component)
+      createOptionItem(property, createRadioButtonOptionEditor(property, displayOptions).component, displayOptions)
     })
   }
 
@@ -155,7 +173,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
   override fun <T> dropdown(property: ObservableChoice<T>, displayOptions: (DropdownDisplayOptions<T>.()->Unit)?) {
     rowBuilders.add(run {
       val options = displayOptions?.let { DropdownDisplayOptions<T>().apply(it) }
-      createOptionItem(property, createChoiceOptionEditor(property, options))
+      createOptionItem(property, createChoiceOptionEditor(property, options), options)
     })
   }
   fun color(property: ObservableColor) {
@@ -166,21 +184,21 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
     rowBuilders.add(createOptionItem(property, node))
   }
 
-  private fun createOptionItem(property: ObservableProperty<*>, editor: Node, options: PropertyDisplayOptions<*>? = null): OptionRowBuilder {
+  private fun createOptionItem(property: ObservableProperty<*>, editor: Node, displayOptions: PropertyDisplayOptions<*>? = null): OptionRowBuilder {
     property.isWritable.addWatcher { evt -> editor.isDisable = !evt.newValue }
     if (onRequestFocus == null) {
       onRequestFocus = { editor.requestFocus() }
     }
-    return OptionRowBuilder(property, editor, getOptionLabel(property), options)
+    return OptionRowBuilder(property, editor, getOptionLabel(property, displayOptions), displayOptions)
   }
 
   fun <T> add(property: ObservableProperty<T>, displayOptions: PropertyDisplayOptions<T>? = null) {
     rowBuilders.add(run {
-      createOptionEditorAndLabel(property)
+      createOptionEditorAndLabel(property, displayOptions)
     })
   }
 
-  private fun createOptionEditorAndLabel(option: ObservableProperty<*>): OptionRowBuilder {
+  private fun createOptionEditorAndLabel(option: ObservableProperty<*>, displayOptions: PropertyDisplayOptions<*>?): OptionRowBuilder {
     val editor = when (option) {
       is ObservableBoolean -> createBooleanOptionEditor(option)
       is ObservableString -> createStringOptionEditor(option)
@@ -199,7 +217,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
     option.isWritable.addWatcher { evt -> editor.isDisable = !evt.newValue }
     editor.isDisable = option.isWritable.value.not()
 
-    return OptionRowBuilder(option, editor, getOptionLabel(option), null)
+    return OptionRowBuilder(option, editor, getOptionLabel(option, displayOptions), null)
   }
 
   fun createBooleanOptionEditor(option: ObservableBoolean): Node {
@@ -216,8 +234,8 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
 
   }
 
-  fun createRadioButtonOptionEditor(option: ObservableBoolean): BooleanOptionRadioUi {
-    return BooleanOptionRadioUi(option, localizer)
+  fun createRadioButtonOptionEditor(option: ObservableBoolean, displayOptions: BooleanDisplayOptions?): BooleanOptionRadioUi {
+    return BooleanOptionRadioUi(option, displayOptions, localizer)
   }
 
   private fun <E: Enum<E>> createEnumerationOptionEditor(
@@ -441,7 +459,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
   private fun createNoEditor(option: GPOption<*>) = Label(option.value?.toString())
 
 
-  private fun getOptionLabel(option: ObservableProperty<*>) = localizer.formatText("${option.id}.label")
+  private fun getOptionLabel(option: ObservableProperty<*>, displayOptions: PropertyDisplayOptions<*>?) = displayOptions?.labelText ?: localizer.formatText("${option.id}.label")
 
   inner class OptionRowBuilder(
     val option: ObservableProperty<*>,
@@ -463,12 +481,12 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
           LabelPosition.LEFT -> {
             grid.add(label, 0, idx)
             GridPane.setHgrow(label, Priority.NEVER)
-            GridPane.setHalignment(label, HPos.RIGHT)
+            GridPane.setHalignment(label, options?.labelHAlignment ?: HPos.RIGHT)
           }
           LabelPosition.ABOVE -> {
             grid.add(label, 0, idx, 2, 1)
             GridPane.setHgrow(label, Priority.NEVER)
-            GridPane.setHalignment(label, HPos.LEFT)
+            GridPane.setHalignment(label, options?.labelHAlignment ?: HPos.LEFT)
             resultRow++
           }
         }
@@ -477,9 +495,12 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
           editor.minWidth = MIN_COLUMN_WIDTH
           editor.maxWidth = Double.MAX_VALUE
         }
-        if (editor is TextArea) {
-          GridPane.setValignment(label, VPos.TOP)
+        val valign = options?.labelVAlignment ?: run {
+          if (editor is TextArea) {
+            VPos.TOP
+          } else VPos.CENTER
         }
+        GridPane.setValignment(label, valign)
         label.labelFor = editor
         HBox(editor).also {hbox ->
           HBox.setHgrow(editor, Priority.ALWAYS)
@@ -642,8 +663,8 @@ object DoubleValidator: ValueValidator<Double> {
  * A JavaFX UI component for boolean options represented as radio buttons.
  * Similar to OptionsPageBuilder.BooleanOptionRadioUi but for JavaFX.
  */
-class BooleanOptionRadioUi(option: ObservableBoolean, localizer: Localizer) {
-  val yesButton = RadioButton(localizer.formatText("${option.id}.yes")).also { radio ->
+class BooleanOptionRadioUi(option: ObservableBoolean, displayOptions: BooleanDisplayOptions?, localizer: Localizer) {
+  val yesButton = RadioButton(displayOptions?.yesLabel ?: localizer.formatText("${option.id}.yes")).also { radio ->
     radio.isSelected = option.value
     radio.onAction = EventHandler {
       if (!option.value) {
@@ -652,7 +673,7 @@ class BooleanOptionRadioUi(option: ObservableBoolean, localizer: Localizer) {
     }
   }
 
-  val noButton = RadioButton(localizer.formatText("${option.id}.no")).also { radio ->
+  val noButton = RadioButton(displayOptions?.noLabel ?: localizer.formatText("${option.id}.no")).also { radio ->
     radio.isSelected = !option.value
     radio.onAction = EventHandler {
       if (option.value) {

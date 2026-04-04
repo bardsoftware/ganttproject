@@ -1,6 +1,7 @@
 /*
+Copyright (C) 2003-2026 Dmitry Barashev, BarD Software s.r.o.
+
 GanttProject is an opensource project management tool.
-Copyright (C) 2024 Dmitry Barashev, GanttProject Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -30,6 +31,7 @@ open class ObservableChoiceOption<T>(
 
   constructor(id: String, value: T, allValues: List<T>, converter: StringConverter<T>) : this(ObservableChoice(id, value, allValues, converter))
   private var myValueLocalizer: Function<String, String>? = null
+  var displayOptions: DropdownDisplayOptions<T>.() -> Unit = {}
 
   init {
     delegate.addWatcher { event ->
@@ -73,6 +75,6 @@ open class ObservableChoiceOption<T>(
   }
 
   override fun visitPropertyPaneBuilder(builder: PropertyPaneBuilder) {
-    builder.dropdown(this.delegate)
+    builder.dropdown(this.delegate, this.displayOptions)
   }
 }

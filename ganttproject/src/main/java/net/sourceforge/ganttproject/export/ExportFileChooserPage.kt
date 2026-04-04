@@ -117,7 +117,7 @@ internal class ExportFileChooserPage(
     return Ok(file)
   }
 
-  override fun createSecondaryOptionsPanelFx(): Node? {
+  override fun createSecondaryOptionsPanelFx(): Node {
     val optionI18n = i18n.createWithRootKey("option")
     val optionGroupI18n = i18n
     return vbox {
@@ -126,7 +126,10 @@ internal class ExportFileChooserPage(
         myState.publishInWebOption.visitPropertyPaneBuilder(this)
         myState.exporter?.secondaryOptions?.forEach { optionGroup ->
           this.skip(2)
-          this.title(optionGroupI18n.create(OptionsPageBuilder.I18N.getCanonicalOptionGroupLabelKey(optionGroup)))
+          val titleKey = OptionsPageBuilder.I18N.getCanonicalOptionGroupLabelKey(optionGroup).let {
+            optionGroup.getI18Nkey(it) ?: it
+          }
+          this.title(optionGroupI18n.formatText(titleKey))
           optionGroup.options.forEach { option ->
             option.visitPropertyPaneBuilder(this)
           }
