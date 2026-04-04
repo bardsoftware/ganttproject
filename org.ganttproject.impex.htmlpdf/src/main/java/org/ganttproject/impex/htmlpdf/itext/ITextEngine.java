@@ -18,9 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.ganttproject.impex.htmlpdf.itext;
 
+import biz.ganttproject.FXUtil;
+import biz.ganttproject.app.FXThread;
 import biz.ganttproject.core.option.GPOptionGroup;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Parent;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
@@ -51,15 +56,19 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 public class ITextEngine extends AbstractEngine {
   private ITextStylesheet myStylesheet;
   private final TTFontCache myFontCache;
   private FontSubstitutionModel mySubstitutionModel;
-  private Object myFontsMutex = new Object();
-  private boolean myFontsReady = false;
   private ExporterToPDF myExporter;
+  private final ExecutorService fontRegisterExecutor = Executors.newSingleThreadExecutor();
+  private final CompletableFuture<Void> fontRegisterFuture = new CompletableFuture<>();
 
   public ITextEngine(ExporterToPDF exporter) {
     myExporter = exporter;
@@ -80,9 +89,17 @@ public class ITextEngine extends AbstractEngine {
   }
 
   public @Nullable Parent createCustomOptionsUiFx() {
-    waitRegisterFonts();
-    mySubstitutionModel.init();
-    return new FontSubstitutionPanel(mySubstitutionModel, new SimpleStringProperty("")).getComponentFx();
+    var borderPane = new BorderPane();
+    borderPane.setCenter(new Label("Loading fonts..."));
+    fontRegisterFuture.thenRun(() -> {
+      mySubstitutionModel.init();
+      var substitutionPanel = new FontSubstitutionPanel(mySubstitutionModel, new SimpleStringProperty("")).getComponentFx();
+      FXThread.INSTANCE.runLater(() -> {
+        FXUtil.INSTANCE.transitionCenterPane(borderPane, substitutionPanel, () -> Unit.INSTANCE);
+        return Unit.INSTANCE;
+      });
+    });
+    return borderPane;
   }
 
   public String[] getCommandLineKeys() {
@@ -126,48 +143,24 @@ public class ITextEngine extends AbstractEngine {
   }
 
   private void registerFonts() {
-    Thread fontReadingThread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        var logger = GPLogger.create("Export.Pdf.Fonts");
-        try {
-          // Random waiting seems silly, depending on the available
-          // resources (CPU speed, number of processes running etc)
-          // this might take longer or shorter...
-          // FIXME Add some better way of determining whether the fonts can be
-          // read already
-          Thread.sleep(10000);
-          logger.debug("Scanning font directories...");
-        } catch (InterruptedException e) {
-          // TODO Auto-generated catch block
-          GPLogger.logToLogger(e);
-        }
-        registerFontDirectories();
-        synchronized (ITextEngine.this.myFontsMutex) {
-          myFontsReady = true;
-          myFontsMutex.notifyAll();
-        }
-        logger.debug("Scanning font directories completed");
+    fontRegisterExecutor.submit(() -> {
+      var logger = GPLogger.create("Export.Pdf.Fonts");
+      try {
+        // Random waiting seems silly, depending on the available
+        // resources (CPU speed, number of processes running etc)
+        // this might take longer or shorter...
+        // FIXME Add some better way of determining whether the fonts can be
+        // read already
+        Thread.sleep(10000);
+        logger.debug("Scanning font directories...");
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        GPLogger.logToLogger(e);
       }
+      registerFontDirectories();
+      logger.debug("Scanning font directories completed");
+      fontRegisterFuture.complete(null);
     });
-    fontReadingThread.setPriority(Thread.MIN_PRIORITY);
-    fontReadingThread.start();
-  }
-
-  private void waitRegisterFonts() {
-    while (myFontsMutex != null) {
-      synchronized (myFontsMutex) {
-        if (myFontsReady) {
-          break;
-        }
-        try {
-          myFontsMutex.wait();
-        } catch (InterruptedException e) {
-          GPLogger.log(e);
-          break;
-        }
-      }
-    }
   }
 
   protected void registerFontDirectories() {
@@ -198,8 +191,14 @@ public class ITextEngine extends AbstractEngine {
   }
 
   public ExporterJob[] createJobs(File outputFile, List<File> resultFiles) {
-    waitRegisterFonts();
-    return new ExporterJob[] { createTransformationJob(outputFile) };
+    try {
+      fontRegisterFuture.get();
+      return new ExporterJob[] { createTransformationJob(outputFile) };
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private ExporterJob createTransformationJob(final File outputFile) {
