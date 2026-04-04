@@ -253,10 +253,7 @@ class ProjectFileImporterImpl(private val myProjectFile: ProjectFile, private va
       }
       var def = myResourceCustomPropertyMapping.get(rf) ?: run {
         convertDataType(rf)?.let { propertyClass ->
-          var name = r.parentFile.customFields[rf].alias
-          if (name == null) {
-            name = rf.name
-          }
+          var name = r.parentFile.customFields.getOrCreate(rf)?.alias ?: rf.name
           myNativeProject.resourceCustomPropertyManager.createDefinition(propertyClass, name, null).also {
             it.attributes.put(CustomPropertyMapping.MSPROJECT_TYPE, rf.name)
             myResourceCustomPropertyMapping.put(rf, it)
@@ -435,10 +432,7 @@ class ProjectFileImporterImpl(private val myProjectFile: ProjectFile, private va
       val mpxjTaskField = ProjectFileImporter.convert(tf)
       val def = myTaskCustomPropertyMapping.getOrElse(mpxjTaskField) {
         convertDataType(tf)?.let { propertyClass ->
-          var name = t.parentFile.customFields[tf].alias
-          if (name == null) {
-            name = mpxjTaskField.name
-          }
+          var name = t.parentFile.customFields.getOrCreate(tf)?.alias ?: mpxjTaskField.name
 
           val def = myNativeProject.taskCustomColumnManager.createDefinition(propertyClass, name, null)
           def.attributes[CustomPropertyMapping.MSPROJECT_TYPE] = mpxjTaskField.name
