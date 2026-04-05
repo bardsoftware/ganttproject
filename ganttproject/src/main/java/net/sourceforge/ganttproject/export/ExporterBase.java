@@ -163,7 +163,7 @@ public abstract class ExporterBase implements Exporter {
   }
 
   @Override
-  public void run(final File outputFile, final ExportFinalizationJob finalizationJob) throws Exception {
+  public void run(final File outputFile, final ExportFinalizationJob finalizationJob, JobMonitor<IStatus> jobMonitor) throws Exception {
     //final IJobManager jobManager = Job.getJobManager();
     final List<File> resultFiles = new ArrayList<>();
 
@@ -175,7 +175,10 @@ public abstract class ExporterBase implements Exporter {
         return Status.OK_STATUS;
       }
     });
-    ExporterBackgroundJobsKt.export(jobs, new JobMonitorDialogFx<>(this.getFileTypeDescription(), jobs.size()));
+    if (jobMonitor == null) {
+      jobMonitor = new JobMonitorDialogFx<>(this.getFileTypeDescription(), jobs.size());
+    }
+    ExporterBackgroundJobsKt.export(jobs, jobMonitor);
 //
 //    final IProgressMonitor monitor = jobManager.createProgressGroup();
 //    Job driverJob = new Job("Running export") {

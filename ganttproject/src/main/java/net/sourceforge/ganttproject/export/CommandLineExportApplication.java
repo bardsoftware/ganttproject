@@ -113,7 +113,7 @@ public class CommandLineExportApplication {
     final CountDownLatch latch = new CountDownLatch(1);
     try {
       ExportFinalizationJob finalizationJob = exportedFiles -> latch.countDown();
-      exporter.run(outputFile, finalizationJob);
+      exporter.run(outputFile, finalizationJob, null);
       latch.await();
     } catch (Exception e) {
       consoleUI.showErrorDialog(e);

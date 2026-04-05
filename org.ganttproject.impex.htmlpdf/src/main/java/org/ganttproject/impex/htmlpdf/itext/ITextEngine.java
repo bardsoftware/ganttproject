@@ -20,10 +20,11 @@ package org.ganttproject.impex.htmlpdf.itext;
 
 import biz.ganttproject.FXUtil;
 import biz.ganttproject.app.FXThread;
+import biz.ganttproject.app.InternationalizationCoreKt;
+import biz.ganttproject.app.Spinner;
 import biz.ganttproject.core.option.GPOptionGroup;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Parent;
-import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.GPLogger;
@@ -90,7 +91,12 @@ public class ITextEngine extends AbstractEngine {
 
   public @Nullable Parent createCustomOptionsUiFx() {
     var borderPane = new BorderPane();
-    borderPane.setCenter(new Label("Loading fonts..."));
+    var spinner = new Spinner(Spinner.State.INITIAL, 0.75);
+    spinner.statusTextProperty().set(InternationalizationCoreKt.getRootLocalizer().formatText("exportWizard.pdf.spinner.searchingFonts"));
+    borderPane.setCenter(spinner.getPane());
+    if (!fontRegisterFuture.isDone()) {
+      spinner.setState(Spinner.State.WAITING);
+    }
     fontRegisterFuture.thenRun(() -> {
       mySubstitutionModel.init();
       var substitutionPanel = new FontSubstitutionPanel(mySubstitutionModel, new SimpleStringProperty("")).getComponentFx();
@@ -206,6 +212,11 @@ public class ITextEngine extends AbstractEngine {
       @Override
       protected IStatus run() {
         assert myStylesheet != null;
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
         try(OutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile))) {
           ((ThemeImpl) myStylesheet).run(getProject(), getUiFacade(), out);
         } catch (ExportException e) {

@@ -39,7 +39,7 @@ interface Exporter {
     val fileNamePattern: String
 
     @Throws(Exception::class)
-    fun run(outputFile: File, finalizationJob: ExportFinalizationJob?)
+    fun run(outputFile: File, finalizationJob: ExportFinalizationJob?, jobMonitor: JobMonitor<org.eclipse.core.runtime.IStatus>?)
 
     // File proposeOutputFile(IGanttProject project);
     fun proposeFileExtension(): String

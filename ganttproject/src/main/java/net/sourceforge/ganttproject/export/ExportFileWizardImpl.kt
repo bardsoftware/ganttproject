@@ -30,6 +30,7 @@ import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.plugins.PluginManager
+import org.eclipse.core.runtime.IStatus
 import org.osgi.service.prefs.Preferences
 import java.io.File
 import javax.swing.SwingUtilities
@@ -56,17 +57,17 @@ class ExportWizardModel(id: String, title: String, private val ftpOptions: Docum
     canFinish = {
       exporter != null && file != null && errorMessage.value.isNullOrBlank()
     }
-    onOk = {
-      exportAndFinalize()
+    onOk = { monitor ->
+      exportAndFinalize(monitor)
     }
   }
 
-  private fun exportAndFinalize() {
+  private fun exportAndFinalize(monitor: JobMonitor<IStatus>) {
     exporter?.let { selectedExporter ->
       SwingUtilities.invokeLater(Runnable {
         try {
           val finalizationJob = ExportFinalizationJobImpl()
-          selectedExporter.run(this.file!!, finalizationJob)
+          selectedExporter.run(this.file!!, finalizationJob, monitor)
         } catch (e: Exception) {
           GPLogger.log(e)
         }
