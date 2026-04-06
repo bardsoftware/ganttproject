@@ -21,10 +21,14 @@ package biz.ganttproject.app
 import biz.ganttproject.FXUtil
 import biz.ganttproject.storage.cloud.GPCloudStorage
 import javafx.animation.*
+import javafx.beans.property.SimpleStringProperty
+import javafx.geometry.Pos
+import javafx.scene.control.Label
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Region
+import javafx.scene.layout.VBox
 import javafx.util.Duration
 
 /**
@@ -33,7 +37,7 @@ import javafx.util.Duration
  *
  * @author dbarashev@bardsoftware.com
  */
-class Spinner(initialState: State = State.INITIAL) {
+class Spinner @JvmOverloads constructor(initialState: State = State.INITIAL, private val scale: Double = 1.0) {
   enum class State {
     INITIAL, WAITING, ATTENTION
   }
@@ -41,8 +45,16 @@ class Spinner(initialState: State = State.INITIAL) {
     BEE_BW, CIRCLE_COLOR
   }
   private var iconView = createIconView(IconType.BEE_BW)
+  @get:JvmName("statusTextProperty")
+  val statusTextProperty = SimpleStringProperty("")
+  private val statusLabel = Label().apply {
+    textProperty().bind(statusTextProperty)
+  }
   private val iconPane = BorderPane().apply {
-    center = iconView
+    center = VBox().apply {
+      alignment = Pos.CENTER
+      children.addAll(iconView, statusLabel)
+    }
   }
   private var animationStopper: (()->Unit) ? = null
 
@@ -54,12 +66,18 @@ class Spinner(initialState: State = State.INITIAL) {
       State.WAITING -> animationStopper = iconView.rotate()
       State.ATTENTION -> {
         iconView = createIconView(IconType.CIRCLE_COLOR)
-        FXUtil.transitionCenterPane(iconPane, iconView) {}
-        animationStopper = iconView.jump()
+        FXUtil.transitionCenterPane(iconPane, VBox().apply {
+          alignment = Pos.CENTER
+          children.addAll(iconView, statusLabel)
+        }) {}
+        animationStopper = iconView.jump(scale)
       }
       State.INITIAL -> {
         iconView = createIconView(IconType.BEE_BW)
-        FXUtil.transitionCenterPane(iconPane, iconView) {}
+        FXUtil.transitionCenterPane(iconPane, VBox().apply {
+          alignment = Pos.CENTER
+          children.addAll(iconView, statusLabel)
+        }) {}
       }
     }
     field = value
@@ -77,7 +95,7 @@ class Spinner(initialState: State = State.INITIAL) {
               IconType.CIRCLE_COLOR -> "/icons/ganttproject-logo-512.png"
             }
         ),
-        128.0, 128.0, false, true))
+        128.0 * scale, 128.0 * scale, false, true))
 
 }
 
@@ -97,16 +115,16 @@ private fun (ImageView).rotate() : ()->Unit {
 //  }
 }
 
-private fun (ImageView).jump() : ()->Unit {
+private fun (ImageView).jump(scale: Double = 1.0) : ()->Unit {
   val longJump = TranslateTransition(Duration.millis(200.0), this)
   longJump.interpolatorProperty().set(Interpolator.SPLINE(.1, .1, .7, .7))
-  longJump.byY = -30.0
+  longJump.byY = -30.0 * scale
   longJump.isAutoReverse = true
   longJump.cycleCount = 2
 
   val shortJump = TranslateTransition(Duration.millis(100.0), this)
   shortJump.interpolatorProperty().set(Interpolator.SPLINE(.1, .1, .7, .7))
-  shortJump.byY = -15.0
+  shortJump.byY = -15.0 * scale
   shortJump.isAutoReverse = true
   shortJump.cycleCount = 6
 

@@ -44,6 +44,7 @@ interface JobMonitor<T> {
   fun setJobStarted(jobNumber: Int, jobName: String)
   fun setJobCompleted(jobNumber: Int, jobResult: Result<T, Exception>)
   fun setOnCancel(cancelHandler: () -> Unit)
+  fun setProcessCompleted()
 }
 
 class JobMonitorDialogFx<T>(private val title: String, private val jobCount: Int): JobMonitor<T> {
@@ -107,6 +108,10 @@ class JobMonitorDialogFx<T>(private val title: String, private val jobCount: Int
     this.onCancel = cancelHandler
   }
 
+  override fun setProcessCompleted() {
+    TODO("Not yet implemented")
+  }
+
   override fun setJobCompleted(jobNumber: Int, jobResult: Result<T, Exception>) {
     val jobNumber1 = jobNumber + 1
     FXUtil.runLater {
@@ -153,6 +158,7 @@ fun export(jobs: List<ExporterJob>, jobMonitor: JobMonitor<IStatus>) {
         }
       }
     }
+    jobMonitor.setProcessCompleted()
   }
   jobMonitor.setOnCancel { job.cancel("Cancelled by user") }
 }
