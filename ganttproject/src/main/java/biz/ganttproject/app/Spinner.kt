@@ -45,15 +45,10 @@ class Spinner @JvmOverloads constructor(initialState: State = State.INITIAL, pri
     BEE_BW, CIRCLE_COLOR
   }
   private var iconView = createIconView(IconType.BEE_BW)
-  @get:JvmName("statusTextProperty")
-  val statusTextProperty = SimpleStringProperty("")
-  private val statusLabel = Label().apply {
-    textProperty().bind(statusTextProperty)
-  }
   private val iconPane = BorderPane().apply {
     center = VBox().apply {
       alignment = Pos.CENTER
-      children.addAll(iconView, statusLabel)
+      children.addAll(iconView)
     }
   }
   private var animationStopper: (()->Unit) ? = null
@@ -68,7 +63,7 @@ class Spinner @JvmOverloads constructor(initialState: State = State.INITIAL, pri
         iconView = createIconView(IconType.CIRCLE_COLOR)
         FXUtil.transitionCenterPane(iconPane, VBox().apply {
           alignment = Pos.CENTER
-          children.addAll(iconView, statusLabel)
+          children.addAll(iconView)
         }) {}
         animationStopper = iconView.jump(scale)
       }
@@ -76,7 +71,7 @@ class Spinner @JvmOverloads constructor(initialState: State = State.INITIAL, pri
         iconView = createIconView(IconType.BEE_BW)
         FXUtil.transitionCenterPane(iconPane, VBox().apply {
           alignment = Pos.CENTER
-          children.addAll(iconView, statusLabel)
+          children.addAll(iconView)
         }) {}
       }
     }

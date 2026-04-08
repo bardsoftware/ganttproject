@@ -136,5 +136,28 @@
       @include dropdown-normal();
     }
   }
+
+  /*TODO(short-term): extract this CSS to the job monitor file  */
+  .wizard-job-monitor {
+    .job-status-label {
+      -fx-text-fill: $gp-dark-gray;
+      -fx-background-color: $gp-zebra-gray;
+      -fx-padding: 2 5;
+      -fx-border-width: 0;
+      -fx-alignment: center-left;
+      &:focused {
+        -fx-text-fill: $gp-dark-gray;
+        -fx-border-width: 0;
+      }
+
+      .button {
+        @include btn-toolbar-common();
+        @include btn-toolbar-small();
+        .glyph-icon {
+          -fx-fill: red;
+        }
+      }
+    }
+  }
 }
 

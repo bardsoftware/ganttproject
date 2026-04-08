@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject.export;
 import biz.ganttproject.LoggerApi;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.FileConverter;
+import kotlin.coroutines.EmptyCoroutineContext;
+import kotlinx.coroutines.CoroutineScope;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.PluginPreferencesImpl;
@@ -113,7 +115,7 @@ public class CommandLineExportApplication {
     final CountDownLatch latch = new CountDownLatch(1);
     try {
       ExportFinalizationJob finalizationJob = exportedFiles -> latch.countDown();
-      exporter.run(outputFile, finalizationJob, null);
+      exporter.run((CoroutineScope) () -> EmptyCoroutineContext.INSTANCE, outputFile, finalizationJob, null);
       latch.await();
     } catch (Exception e) {
       consoleUI.showErrorDialog(e);

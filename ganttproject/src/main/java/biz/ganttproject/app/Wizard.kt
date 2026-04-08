@@ -24,6 +24,8 @@ import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.lib.fx.vbox
 import javafx.embed.swing.SwingNode
 import javafx.event.ActionEvent
+import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.layout.StackPane
 import kotlinx.coroutines.CoroutineScope
@@ -35,15 +37,9 @@ import kotlinx.coroutines.withContext
 import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
-import javafx.scene.Node
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.fold
-import net.sourceforge.ganttproject.export.JobMonitor
-import org.eclipse.core.runtime.IStatus
 import java.awt.Component
 import javax.swing.JComponent
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.text.set
 
 /**
  * Shows a wizard dialog using the provided builder.
@@ -65,7 +61,7 @@ open class WizardModel(val id: String, val title: String) {
   val coroutineScope = CoroutineScope(EmptyCoroutineContext)
 
   // This is executed when user clicks "OK" button
-  var onOk: (monitor: JobMonitor<IStatus>) -> Unit = {}
+  var onOk: (monitor: JobMonitorModel) -> Unit = {}
 
   // Returns `true` if it is okay to finish the wizard.
   var canFinish: () -> Boolean = { errorMessage.value.isNullOrBlank() }
@@ -272,11 +268,20 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
 
   private fun onOkPressed(whenDone: ()->Unit) {
     currentPage.setActive(false)
-    model.onOk(createJobMonitor(whenDone))
+    val monitor = createJobMonitor(whenDone)
+    model.onOk(monitor.model)
   }
 
-  private fun createJobMonitor(whenDone: ()->Unit): JobMonitor<IStatus> {
-    return JobMonitorImpl(this, whenDone)
+  private fun createJobMonitor(whenDone: ()->Unit): JobMonitorImpl {
+    val setComponent: (Parent)->Unit = { component ->
+      FXUtil.transitionNode(stackPane, {
+        stackPane.children.clear()
+        stackPane.children.add(component)
+      }, {})
+    }
+    return JobMonitorImpl(model = JobMonitorModel(), i18n = this.i18n, setComponent = setComponent).also {
+      it.styleClasses.add("wizard-job-monitor")
+    }
   }
 
   private fun onCancelPressed() {
@@ -286,43 +291,4 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
   private val currentPage: WizardPage
     get() = pages[model.currentPage]
 
-  private class JobMonitorImpl(private val wizardUi: WizardUiFx, private val whenDone: ()->Unit) : JobMonitor<IStatus> {
-    private val spinner = Spinner()
-    private val stackPane = wizardUi.stackPane
-    private val i18n = wizardUi.i18n
-
-    override fun setJobStarted(jobNumber: Int, jobName: String) {
-      wizardUi.coroutineScope.launch(Dispatchers.JavaFx) {
-        if (jobNumber == 0) {
-          spinner.state = Spinner.State.WAITING
-          FXUtil.transitionNode(stackPane, {
-            stackPane.children.clear()
-            stackPane.children.add(spinner.pane)
-          }, {})
-        }
-        spinner.statusTextProperty.set(jobName)
-      }
-    }
-
-    override fun setJobCompleted(jobNumber: Int, jobResult: Result<IStatus, Exception>) {
-      wizardUi.coroutineScope.launch(Dispatchers.JavaFx) {
-        jobResult.fold(
-          success = {
-          },
-          failure = {
-            spinner.state = Spinner.State.ATTENTION
-            spinner.statusTextProperty.set(i18n.formatText("exportWizard.failure"))
-          }
-        )
-      }
-    }
-
-    override fun setOnCancel(cancelHandler: () -> Unit) {
-      TODO("Not yet implemented")
-    }
-
-    override fun setProcessCompleted() {
-      whenDone()
-    }
-  }
 }

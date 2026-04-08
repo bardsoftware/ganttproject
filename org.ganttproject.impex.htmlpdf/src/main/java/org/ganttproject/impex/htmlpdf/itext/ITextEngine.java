@@ -23,19 +23,21 @@ import biz.ganttproject.app.FXThread;
 import biz.ganttproject.app.InternationalizationCoreKt;
 import biz.ganttproject.app.Spinner;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.lib.fx.VBoxBuilder;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.export.ExportException;
 import net.sourceforge.ganttproject.export.ExporterBase;
-import net.sourceforge.ganttproject.export.ExporterBase.ExporterJob;
+import net.sourceforge.ganttproject.export.ExporterJob;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.ganttproject.impex.htmlpdf.AbstractEngine;
@@ -46,7 +48,6 @@ import org.ganttproject.impex.htmlpdf.fonts.TTFontCache;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.prefs.Preferences;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -92,8 +93,15 @@ public class ITextEngine extends AbstractEngine {
   public @Nullable Parent createCustomOptionsUiFx() {
     var borderPane = new BorderPane();
     var spinner = new Spinner(Spinner.State.INITIAL, 0.75);
-    spinner.statusTextProperty().set(InternationalizationCoreKt.getRootLocalizer().formatText("exportWizard.pdf.spinner.searchingFonts"));
-    borderPane.setCenter(spinner.getPane());
+    var statusLabel = InternationalizationCoreKt.getRootLocalizer().create("exportWizard.pdf.spinner.searchingFonts");
+
+    var boxBuilder = new VBoxBuilder();
+    boxBuilder.add(spinner.getPane());
+    boxBuilder.add(new Label(statusLabel.getValue()));
+    var vbox = boxBuilder.getVbox();
+    vbox.setAlignment(Pos.CENTER);
+    borderPane.setCenter(vbox);
+
     if (!fontRegisterFuture.isDone()) {
       spinner.setState(Spinner.State.WAITING);
     }
@@ -208,28 +216,19 @@ public class ITextEngine extends AbstractEngine {
   }
 
   private ExporterJob createTransformationJob(final File outputFile) {
-    ExporterJob result = new ExporterJob("Generating PDF") {
-      @Override
-      protected IStatus run() {
-        assert myStylesheet != null;
-        try {
-          Thread.sleep(5000);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-        try(OutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile))) {
-          ((ThemeImpl) myStylesheet).run(getProject(), getUiFacade(), out);
-        } catch (ExportException e) {
-          throw new RuntimeException(e);
-        } catch (FileNotFoundException e) {
-          throw new RuntimeException(e);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-        return Status.OK_STATUS;
+    return new PDFExportJob("Generating PDF", () -> {
+      assert myStylesheet != null;
+      try(OutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile))) {
+        ((ThemeImpl) myStylesheet).run(getProject(), getUiFacade(), out);
+      } catch (ExportException e) {
+        throw new RuntimeException(e);
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
-    };
-    return result;
+      return Status.OK_STATUS;
+    });
   }
 
 }

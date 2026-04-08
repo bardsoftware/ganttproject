@@ -21,8 +21,8 @@ package org.ganttproject.impex.htmlpdf;
 import biz.ganttproject.core.option.GPOptionGroup;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.export.ExportException;
+import net.sourceforge.ganttproject.export.ExporterJob;
 import net.sourceforge.ganttproject.util.FileUtil;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.xml.sax.SAXException;
 
@@ -81,143 +81,128 @@ public class ExporterToHTML extends StylesheetExporterBase {
   }
 
   private ExporterJob createGenerateGanttChartJob(final File outputFile, final List<File> resultFiles) {
-    ExporterJob result = new ExporterJob("generate gantt chart") {
-      @Override
-      protected IStatus run() {
-        try {
-          int zoomLevel = getPreferences().getInt("zoom", -1);
-          var exportSettings = createExportSettings();
-          RenderedImage ganttChartImage = getGanttChart().asPrintChartApi().exportChart(
-              exportSettings.getStartDate(), exportSettings.getEndDate(), zoomLevel, exportSettings.isCommandLineMode());
-          File ganttChartImageFile;
-          ganttChartImageFile = replaceExtension(outputFile, GANTT_CHART_FILE_EXTENSION);
-          ImageIO.write(ganttChartImage, PNG_FORMAT_NAME, ganttChartImageFile);
-          resultFiles.add(ganttChartImageFile);
-        } catch (IOException e) {
-          getUIFacade().showErrorDialog(e);
-          return Status.CANCEL_STATUS;
-        } catch (OutOfMemoryError e) {
-          getUIFacade().showErrorDialog(new RuntimeException("Out of memory when creating Gantt chart image", e));
-          return Status.CANCEL_STATUS;
-        }
-        return Status.OK_STATUS;
+    return new HTMLExportJob("generate gantt chart", () -> {
+      try {
+        int zoomLevel = getPreferences().getInt("zoom", -1);
+        var exportSettings = createExportSettings();
+        RenderedImage ganttChartImage = getGanttChart().asPrintChartApi().exportChart(
+            exportSettings.getStartDate(), exportSettings.getEndDate(), zoomLevel, exportSettings.isCommandLineMode());
+        File ganttChartImageFile;
+        ganttChartImageFile = replaceExtension(outputFile, GANTT_CHART_FILE_EXTENSION);
+        ImageIO.write(ganttChartImage, PNG_FORMAT_NAME, ganttChartImageFile);
+        resultFiles.add(ganttChartImageFile);
+      } catch (IOException e) {
+        getUIFacade().showErrorDialog(e);
+        return Status.CANCEL_STATUS;
+      } catch (OutOfMemoryError e) {
+        getUIFacade().showErrorDialog(new RuntimeException("Out of memory when creating Gantt chart image", e));
+        return Status.CANCEL_STATUS;
       }
-    };
-    return result;
+      return Status.OK_STATUS;
+    });
   }
 
   private ExporterJob createGenerateResourceChartJob(final File outputFile, final List<File> resultFiles) {
-    ExporterJob result = new ExporterJob("Generate resource chart") {
-      @Override
-      protected IStatus run() {
-        try {
-          int zoomLevel = getPreferences().getInt("zoom", -1);
-          var exportSettings = createExportSettings();
-          RenderedImage resourceChartImage = getResourceChart().asPrintChartApi().exportChart(
-              exportSettings.getStartDate(), exportSettings.getEndDate(), zoomLevel, exportSettings.isCommandLineMode());
-          File resourceChartImageFile = replaceExtension(outputFile, RESOURCE_CHART_FILE_EXTENSION);
-          ImageIO.write(resourceChartImage, PNG_FORMAT_NAME, resourceChartImageFile);
-          resultFiles.add(resourceChartImageFile);
-        } catch (IOException e) {
-          getUIFacade().showErrorDialog(e);
-          return Status.CANCEL_STATUS;
-        } catch (OutOfMemoryError e) {
-          getUIFacade().showErrorDialog(new RuntimeException("Out of memory when creating resource chart image", e));
-          return Status.CANCEL_STATUS;
-        }
-        return Status.OK_STATUS;
+    return new HTMLExportJob("Generate resource chart", () -> {
+      try {
+        int zoomLevel = getPreferences().getInt("zoom", -1);
+        var exportSettings = createExportSettings();
+        RenderedImage resourceChartImage = getResourceChart().asPrintChartApi().exportChart(
+            exportSettings.getStartDate(), exportSettings.getEndDate(), zoomLevel, exportSettings.isCommandLineMode());
+        File resourceChartImageFile = replaceExtension(outputFile, RESOURCE_CHART_FILE_EXTENSION);
+        ImageIO.write(resourceChartImage, PNG_FORMAT_NAME, resourceChartImageFile);
+        resultFiles.add(resourceChartImageFile);
+      } catch (IOException e) {
+        getUIFacade().showErrorDialog(e);
+        return Status.CANCEL_STATUS;
+      } catch (OutOfMemoryError e) {
+        getUIFacade().showErrorDialog(new RuntimeException("Out of memory when creating resource chart image", e));
+        return Status.CANCEL_STATUS;
       }
-    };
-    return result;
+      return Status.OK_STATUS;
+    });
   }
 
   private ExporterJob createGeneratePagesJob(final File outputFile, final List<File> resultFiles) {
-    ExporterJob result = new ExporterJob("Generate HTML pages") {
-
-      @Override
-      protected IStatus run() {
-        try {
-          {
-            TransformerHandler handler = mySelectedStylesheet.createTitlePageHandler();
-            handler.setResult(new StreamResult(outputFile));
-            mySerializer.serialize(handler, outputFile);
-            resultFiles.add(outputFile);
-          }
-          {
-            TransformerHandler handler = mySelectedStylesheet.createTasksPageHandler();
-            File tasksPageFile = appendSuffixBeforeExtension(outputFile, "-tasks");
-            handler.setResult(new StreamResult(tasksPageFile));
-            mySerializer.serialize(handler, outputFile);
-            resultFiles.add(tasksPageFile);
-          }
-          {
-            TransformerHandler handler = mySelectedStylesheet.createGanttChartPageHandler();
-            File chartPageFile = appendSuffixBeforeExtension(outputFile, "-chart");
-            handler.setResult(new StreamResult(chartPageFile));
-            mySerializer.serialize(handler, outputFile);
-            resultFiles.add(chartPageFile);
-          }
-          {
-            TransformerHandler handler = mySelectedStylesheet.createResourcesPageHandler();
-            File resourcesPageFile = appendSuffixBeforeExtension(outputFile, "-resources");
-            handler.setResult(new StreamResult(resourcesPageFile));
-            mySerializer.serialize(handler, outputFile);
-            resultFiles.add(resourcesPageFile);
-          }
-        } catch (SAXException e) {
-          getUIFacade().showErrorDialog(e);
-          return Status.CANCEL_STATUS;
-        } catch (IOException e) {
-          getUIFacade().showErrorDialog(e);
-          return Status.CANCEL_STATUS;
-        } catch (OutOfMemoryError e) {
-          getUIFacade().showErrorDialog(new RuntimeException("Out of memory when running XSL transformation", e));
-          return Status.CANCEL_STATUS;
-        } catch (ExportException e) {
-          getUIFacade().showErrorDialog(e);
-          return Status.CANCEL_STATUS;
+    return new HTMLExportJob("Generate HTML pages", () -> {
+      try {
+        {
+          TransformerHandler handler = mySelectedStylesheet.createTitlePageHandler();
+          handler.setResult(new StreamResult(outputFile));
+          mySerializer.serialize(handler, outputFile);
+          resultFiles.add(outputFile);
         }
-        return Status.OK_STATUS;
+        {
+          TransformerHandler handler = mySelectedStylesheet.createTasksPageHandler();
+          File tasksPageFile = appendSuffixBeforeExtension(outputFile, "-tasks");
+          handler.setResult(new StreamResult(tasksPageFile));
+          mySerializer.serialize(handler, outputFile);
+          resultFiles.add(tasksPageFile);
+        }
+        {
+          TransformerHandler handler = mySelectedStylesheet.createGanttChartPageHandler();
+          File chartPageFile = appendSuffixBeforeExtension(outputFile, "-chart");
+          handler.setResult(new StreamResult(chartPageFile));
+          mySerializer.serialize(handler, outputFile);
+          resultFiles.add(chartPageFile);
+        }
+        {
+          TransformerHandler handler = mySelectedStylesheet.createResourcesPageHandler();
+          File resourcesPageFile = appendSuffixBeforeExtension(outputFile, "-resources");
+          handler.setResult(new StreamResult(resourcesPageFile));
+          mySerializer.serialize(handler, outputFile);
+          resultFiles.add(resourcesPageFile);
+        }
+      } catch (SAXException e) {
+        getUIFacade().showErrorDialog(e);
+        return Status.CANCEL_STATUS;
+      } catch (IOException e) {
+        getUIFacade().showErrorDialog(e);
+        return Status.CANCEL_STATUS;
+      } catch (OutOfMemoryError e) {
+        getUIFacade().showErrorDialog(new RuntimeException("Out of memory when running XSL transformation", e));
+        return Status.CANCEL_STATUS;
+      } catch (ExportException e) {
+        getUIFacade().showErrorDialog(e);
+        return Status.CANCEL_STATUS;
       }
-    };
-    return result;
+      return Status.OK_STATUS;
+    });
   }
 
   private ExporterJob createCopyImagesJob(final File outputFile, final List<File> resultFiles) {
-    ExporterJob result = new ExporterJob("Copying images") {
-      @Override
-      protected IStatus run() {
-        try {
-          File imagesDir = mySelectedStylesheet.getImagesDirectory();
-          if (imagesDir != null && imagesDir.isDirectory() && imagesDir.exists()) {
-            File[] lof = imagesDir.listFiles();
-            if (lof.length != 0) {
-              File resultImagesDir = new File(outputFile.getParentFile(), imagesDir.getName());
-              if (resultImagesDir.mkdir()) {
-                for (int i = 0; i < lof.length; i++) {
-                  File nextInFile = lof[i];
-                  if (nextInFile.isDirectory()) {
-                    continue;
-                  }
-                  File outFile = new File(resultImagesDir, nextInFile.getName());
-                  outFile.createNewFile();
-                  FileInputStream inStream = new FileInputStream(nextInFile);
-                  FileOutputStream outStream = new FileOutputStream(outFile);
-                  byte[] buffer = new byte[(int) nextInFile.length()];
-                  inStream.read(buffer);
-                  outStream.write(buffer);
+    return new HTMLExportJob("Copying images", () -> {
+      try {
+        File imagesDir = mySelectedStylesheet.getImagesDirectory();
+        if (imagesDir != null && imagesDir.isDirectory() && imagesDir.exists()) {
+          File[] lof = imagesDir.listFiles();
+          if (lof != null && lof.length != 0) {
+            File resultImagesDir = new File(outputFile.getParentFile(), imagesDir.getName());
+            if (resultImagesDir.mkdir()) {
+              for (int i = 0; i < lof.length; i++) {
+                File nextInFile = lof[i];
+                if (nextInFile.isDirectory()) {
+                  continue;
                 }
+                File outFile = new File(resultImagesDir, nextInFile.getName());
+                outFile.createNewFile();
+                FileInputStream inStream = new FileInputStream(nextInFile);
+                FileOutputStream outStream = new FileOutputStream(outFile);
+                byte[] buffer = new byte[(int) nextInFile.length()];
+                inStream.read(buffer);
+                outStream.write(buffer);
+                inStream.close();
+                outStream.close();
               }
             }
           }
-        } catch (IOException e) {
-          getUIFacade().showErrorDialog(e);
-          return Status.CANCEL_STATUS;
         }
-        return Status.OK_STATUS;
+      } catch (IOException e) {
+        getUIFacade().showErrorDialog(e);
+        return Status.CANCEL_STATUS;
       }
-    };
-    return result;
+      return Status.OK_STATUS;
+    });
   }
 
   @Override

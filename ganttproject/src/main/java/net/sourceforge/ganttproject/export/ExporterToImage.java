@@ -21,7 +21,6 @@ package net.sourceforge.ganttproject.export;
 import biz.ganttproject.core.option.*;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import javax.imageio.ImageIO;
@@ -93,33 +92,29 @@ public class ExporterToImage extends ExporterBase {
   }
 
   private ExporterJob createImageExportJob(final File outputFile) {
-    ExporterJob result = new ExporterJob("Export project") {
-      @Override
-      protected IStatus run() {
-        Chart chart = getUIFacade().getActiveChart();
+    return new ImageExportJob("Export project", () -> {
+      Chart chart = getUIFacade().getActiveChart();
 
-        // Test if there is an active chart
-        if (chart == null) {
-          // If not, it means we are running CLI
-          String chartToExport = getPreferences().get("chart", null);
+      // Test if there is an active chart
+      if (chart == null) {
+        // If not, it means we are running CLI
+        String chartToExport = getPreferences().get("chart", null);
 
-          // Default is to print Gantt chart
-          chart = "resource".equals(chartToExport) ? getResourceChart() : getGanttChart();
-        }
-        var exportSettings = createExportSettings();
-        int zoomLevel = getPreferences().getInt("zoom", -1);
-        RenderedImage renderedImage = chart.asPrintChartApi().exportChart(
-            exportSettings.getStartDate(), exportSettings.getEndDate(), zoomLevel, exportSettings.isCommandLineMode());
-        try {
-          ImageIO.write(renderedImage, getSelectedFormatExtension(), outputFile);
-        } catch (IOException e) {
-          getUIFacade().showErrorDialog(e);
-          return Status.CANCEL_STATUS;
-        }
-        return Status.OK_STATUS;
+        // Default is to print Gantt chart
+        chart = "resource".equals(chartToExport) ? getResourceChart() : getGanttChart();
       }
-    };
-    return result;
+      var exportSettings = createExportSettings();
+      int zoomLevel = getPreferences().getInt("zoom", -1);
+      RenderedImage renderedImage = chart.asPrintChartApi().exportChart(
+          exportSettings.getStartDate(), exportSettings.getEndDate(), zoomLevel, exportSettings.isCommandLineMode());
+      try {
+        ImageIO.write(renderedImage, getSelectedFormatExtension(), outputFile);
+      } catch (IOException e) {
+        getUIFacade().showErrorDialog(e);
+        return Status.CANCEL_STATUS;
+      }
+      return Status.OK_STATUS;
+    });
   }
 
   @Override

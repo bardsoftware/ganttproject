@@ -34,17 +34,18 @@ data class HBoxBuilder(
   var label: ObservableStringValue = SimpleStringProperty(""),
   val actions: MutableList<GPAction> = mutableListOf(),
   var isSelected: Boolean = false,
-  val styleClasses: MutableList<String> = mutableListOf()
+  val styleClasses: MutableList<String> = mutableListOf(),
+  var labelMaxWidth: Double = Double.MAX_VALUE
 ) {
   fun build(): Region {
     val btnBox = HBox().also {
-      it.children.addAll(actions.map(::createButton))
+      it.children.addAll(actions.map { createButton(it, false)})
       it.styleClass.add("action-buttons")
     }
     return HBox().also {
       it.children.addAll(listOf(Label().also { labelControl ->
         labelControl.textProperty().bind(label)
-        labelControl.maxWidth = Double.MAX_VALUE
+        labelControl.maxWidth = labelMaxWidth
         HBox.setHgrow(labelControl, Priority.ALWAYS)
       }, btnBox))
       it.styleClass.addAll(styleClasses)
