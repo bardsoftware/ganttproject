@@ -62,17 +62,17 @@ class ExportWizardModel(id: String, title: String, private val ftpOptions: Docum
   }
 
   private fun exportAndFinalize(monitor: JobMonitorModel) {
-    val btnCancel = ProgressButtonState("Cancel", styleClass = "btn-cancel") {
+    val btnCancel = ProgressButtonState(RootLocalizer.formatText("cancel"), styleClass = "btn-cancel") {
       coroutineScope.cancel()
       monitor.statusText.set("Cancelled")
       monitor.processState.set(JobState.Idle)
     }
-    val btnOpenFile = ProgressButtonState("Open File", styleClass = "btn-regular") {
+    val btnOpenFile = ProgressButtonState(RootLocalizer.formatText("storageService.local.open.fileChooser.title"), styleClass = "btn-regular") {
       this.file?.let {
         openFile(it)
       }
     }
-    val btnViewLog = ProgressButtonState("View Log", styleClass = "btn-regular") {
+    val btnViewLog = ProgressButtonState(RootLocalizer.formatText("viewLog"), styleClass = "btn-regular") {
       ViewLogDialog.show()
     }
     exporter?.let { selectedExporter ->
@@ -92,6 +92,7 @@ class ExportWizardModel(id: String, title: String, private val ftpOptions: Docum
             }
             is JobState.ProcessFailed -> {
               monitor.progressButtonState.set(btnViewLog)
+              monitor.statusText.set(RootLocalizer.formatText("exportWizard.failure"))
             }
             else -> {}
           }

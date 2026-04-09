@@ -8,6 +8,7 @@ import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.lib.fx.hbox
 import biz.ganttproject.lib.fx.vbox
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.onFailure
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.Parent
@@ -74,6 +75,9 @@ class JobMonitorImpl(
         }
         if (newState is JobState.ProcessStarted) {
           setComponent(createComponent())
+        }
+        if (newState is JobState.ProcessFailed) {
+          newState.result.onFailure { error -> errorPane.onError(error.message ?: "") }
         }
       }
     }

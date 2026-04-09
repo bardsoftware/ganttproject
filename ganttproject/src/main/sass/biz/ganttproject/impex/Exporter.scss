@@ -165,7 +165,7 @@
           -fx-font-weight: bold;
 
           &:hover {
-            -fx-background-color: derive($gp-zebra-gray, -10%), derive($gp-error, 20%);
+            -fx-background-color: derive($gp-error, -20%), derive($gp-error, 20%);
           }
         }
         &.btn-regular {
@@ -176,7 +176,7 @@
           -fx-font-weight: bold;
 
           &:hover {
-            -fx-background-color: derive($gp-zebra-gray, -10%), derive($gp-light-gray, 20%);
+            -fx-background-color: derive($gp-light-gray, -10%), derive($gp-light-gray, 20%);
           }
         }
 
