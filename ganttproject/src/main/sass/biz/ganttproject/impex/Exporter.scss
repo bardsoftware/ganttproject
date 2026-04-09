@@ -142,20 +142,44 @@
     .job-status-label {
       -fx-text-fill: $gp-dark-gray;
       -fx-background-color: $gp-zebra-gray;
-      -fx-padding: 2 5;
       -fx-border-width: 0;
       -fx-alignment: center-left;
+      -fx-background-radius: 3;
       &:focused {
         -fx-text-fill: $gp-dark-gray;
         -fx-border-width: 0;
       }
 
+      .label {
+        -fx-padding: 2 5;
+      }
+
       .button {
         @include btn-toolbar-common();
-        @include btn-toolbar-small();
-        .glyph-icon {
-          -fx-fill: red;
+
+        &.btn-cancel {
+          -fx-background-color: $gp-zebra-gray, $gp-error;
+          -fx-background-insets: 0, 1;
+          -fx-background-radius: 3, 3;
+          -fx-text-fill: white;
+          -fx-font-weight: bold;
+
+          &:hover {
+            -fx-background-color: derive($gp-zebra-gray, -10%), derive($gp-error, 20%);
+          }
         }
+        &.btn-regular {
+          -fx-background-color: $gp-zebra-gray, $gp-light-gray;
+          -fx-background-insets: 0, 1;
+          -fx-background-radius: 3, 3;
+          -fx-text-fill: $gp-dark-gray;
+          -fx-font-weight: bold;
+
+          &:hover {
+            -fx-background-color: derive($gp-zebra-gray, -10%), derive($gp-light-gray, 20%);
+          }
+        }
+
       }
     }
   }

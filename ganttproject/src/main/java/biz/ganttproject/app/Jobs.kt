@@ -1,5 +1,6 @@
 package biz.ganttproject.app
 
+import biz.ganttproject.ButtonBuilder
 import biz.ganttproject.core.option.ObservableEvent
 import biz.ganttproject.core.option.ObservableInt
 import biz.ganttproject.core.option.ObservableObject
@@ -14,7 +15,6 @@ import javafx.scene.layout.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
-import net.sourceforge.ganttproject.action.GPAction
 import org.eclipse.core.runtime.IStatus
 
 interface JobMonitor<T> {
@@ -23,7 +23,8 @@ interface JobMonitor<T> {
   fun setProcessCompleted(processResult: Result<T, Exception>)
 }
 
-data class ProgressButtonState(val text: String, val action: ()->Unit)
+data class ProgressButtonState(val text: String, val styleClass: String = "", val action: ()->Unit)
+
 sealed class JobState {
   object Idle : JobState()
   object ProcessStarted : JobState()
@@ -33,7 +34,7 @@ sealed class JobState {
 }
 class JobMonitorModel {
   val processState = ObservableObject<JobState>("", JobState.Idle)
-  val progressButtonState = ObservableObject<ProgressButtonState>("", ProgressButtonState("", {}))
+  val progressButtonState = ObservableObject("", ProgressButtonState("", styleClass = "",{}))
   val statusText = ObservableString("", "")
   val errorText = ObservableString("", "")
   val jobCount = ObservableInt("", 0)
@@ -49,9 +50,14 @@ class JobMonitorImpl(
   private val spinner = Spinner()
   private val errorPane = ErrorPane()
   private val coroutineScope = CoroutineScope(Dispatchers.JavaFx)
-  private val progressAction = GPAction.create("job.cancel") {
-    model.progressButtonState.value?.action?.invoke()
-  }
+  private val progressActionButton = ButtonBuilder(
+    action = {
+      model.progressButtonState.value?.action?.invoke()
+    }
+  )
+//  private val progressAction = GPAction.create("job.cancel") {
+//    model.progressButtonState.value?.action?.invoke()
+//  }
   private val progressLabel = SimpleStringProperty("")
 
   init {
@@ -63,7 +69,8 @@ class JobMonitorImpl(
           is JobState.ProcessStarted -> Spinner.State.WAITING
           is JobState.ProcessCompleted -> Spinner.State.INITIAL
           is JobState.ProcessFailed -> Spinner.State.ATTENTION
-          else -> Spinner.State.INITIAL
+          is JobState.Idle -> Spinner.State.INITIAL
+          else -> spinner.state
         }
         if (newState is JobState.ProcessStarted) {
           setComponent(createComponent())
@@ -80,7 +87,9 @@ class JobMonitorImpl(
       println("progress button state changed: ${event.newValue}")
       FXThread.runLater {
         event.newValue?.let {
-          progressAction.localizedNameObservable.observable.set(it.text)
+          progressActionButton.text.observable.set(it.text)
+          progressActionButton.styleClass.remove(event.oldValue?.styleClass)
+          progressActionButton.styleClass.add(it.styleClass)
         }
       }
     }
@@ -126,7 +135,8 @@ class JobMonitorImpl(
       add(
         hbox {
           label = progressLabel
-          actions.add(progressAction)
+          button(progressActionButton)
+          //actions.add(progressAction)
           styleClasses.add("job-status-label")
         }.apply {
           maxWidth = 400.0

@@ -18,6 +18,7 @@
  */
 package biz.ganttproject.lib.fx
 
+import biz.ganttproject.ButtonBuilder
 import biz.ganttproject.createButton
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ObservableStringValue
@@ -37,9 +38,19 @@ data class HBoxBuilder(
   val styleClasses: MutableList<String> = mutableListOf(),
   var labelMaxWidth: Double = Double.MAX_VALUE
 ) {
+  private val buttons = mutableListOf<ButtonBuilder>()
+  fun button(builder: ButtonBuilder.()->Unit) {
+    buttons.add(ButtonBuilder().apply(builder))
+  }
+  fun button(builder: ButtonBuilder) {
+    buttons.add(builder)
+  }
+
+
   fun build(): Region {
     val btnBox = HBox().also {
       it.children.addAll(actions.map { createButton(it, false)})
+      it.children.addAll(buttons.map { it.build() })
       it.styleClass.add("action-buttons")
     }
     return HBox().also {

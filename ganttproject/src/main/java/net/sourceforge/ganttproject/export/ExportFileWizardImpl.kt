@@ -23,11 +23,13 @@ import biz.ganttproject.core.option.BooleanOption
 import biz.ganttproject.core.option.ChangeValueEvent
 import biz.ganttproject.core.option.ChangeValueListener
 import biz.ganttproject.core.option.ObservableBooleanOption
+import biz.ganttproject.lib.fx.openFile
 import kotlinx.coroutines.cancel
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.gui.ViewLogDialog
 import net.sourceforge.ganttproject.plugins.PluginManager
 import org.osgi.service.prefs.Preferences
 import java.io.File
@@ -60,16 +62,18 @@ class ExportWizardModel(id: String, title: String, private val ftpOptions: Docum
   }
 
   private fun exportAndFinalize(monitor: JobMonitorModel) {
-    val btnCancel = ProgressButtonState("Cancel") {
+    val btnCancel = ProgressButtonState("Cancel", styleClass = "btn-cancel") {
       coroutineScope.cancel()
       monitor.statusText.set("Cancelled")
       monitor.processState.set(JobState.Idle)
     }
-    val btnOpenFile = ProgressButtonState("Open File") {
-      println("Will open the file")
+    val btnOpenFile = ProgressButtonState("Open File", styleClass = "btn-regular") {
+      this.file?.let {
+        openFile(it)
+      }
     }
-    val btnViewLog = ProgressButtonState("View Log") {
-      println("Will view the log")
+    val btnViewLog = ProgressButtonState("View Log", styleClass = "btn-regular") {
+      ViewLogDialog.show()
     }
     exporter?.let { selectedExporter ->
       try {

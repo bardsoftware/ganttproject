@@ -18,27 +18,35 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject
 
-import biz.ganttproject.app.FXThread
-import biz.ganttproject.app.applicationFont
-import biz.ganttproject.app.getGlyphIcon
+import biz.ganttproject.app.*
 import javafx.animation.FadeTransition
-import javafx.application.Platform
+import javafx.beans.binding.Bindings
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.value.ObservableBooleanValue
+import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
+import javafx.collections.ObservableList
 import javafx.embed.swing.SwingFXUtils
 import javafx.event.ActionEvent
+import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.*
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.BorderPane
 import javafx.scene.paint.Color
+import javafx.scene.text.Text
 import javafx.stage.Window
 import javafx.util.Duration
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.action.GPAction
-import net.sourceforge.ganttproject.gui.ActionUtil
 import java.awt.image.BufferedImage
 import javax.swing.SwingUtilities
+import javax.swing.Timer
 import javax.swing.UIManager
 
 interface FxUiComponent {
@@ -305,6 +313,59 @@ fun centerOnOwner(child: Window, owner: Window) {
   child.y = owner.y + owner.height / 2.0 - child.height / 2.0
 }
 
+enum class ButtonContentDisplay {
+  TEXT_ONLY, GRAPHIC_ONLY, TEXT_AND_GRAPHIC
+}
+data class ButtonBuilder(
+  val action: ()->Unit = {},
+  val text: LocalizedString = RootLocalizer.create(""),
+  val isEnabled: ObservableBooleanValue = SimpleBooleanProperty(true),
+  val contentDisplay: ButtonContentDisplay = ButtonContentDisplay.TEXT_ONLY,
+  val styleClass: ObservableList<String> = FXCollections.observableArrayList(),
+  val glyphIcon: Text? = null,
+  val hasAutoRepeat: Boolean = false
+  ) {
+  fun build(): Button {
+    if (contentDisplay != ButtonContentDisplay.TEXT_ONLY && glyphIcon == null) {
+      error("Button content display is $contentDisplay but glyph icon is missing")
+    }
+    return Button("", glyphIcon).apply {
+      this.contentDisplay = this@ButtonBuilder.contentDisplay.asContentDisplayFx()
+      this.alignment = Pos.CENTER_LEFT
+      if (this.contentDisplay != ContentDisplay.GRAPHIC_ONLY) {
+        this.textProperty().bind(this@ButtonBuilder.text)
+      } else {
+        this.styleClass.add("graphic-only")
+      }
+      this.onAction = EventHandler {
+        this@ButtonBuilder.action()
+      }
+      this.disableProperty().bind(Bindings.not(this@ButtonBuilder.isEnabled))
+      if (hasAutoRepeat) {
+        setupAutoRepeat(this, this@ButtonBuilder.action, 200)
+      }
+      this.styleClass.addAll(this@ButtonBuilder.styleClass)
+      this@ButtonBuilder.styleClass.addListener(ListChangeListener { change ->
+        while (change.next()) {
+          if (change.wasRemoved()) {
+            this.styleClass.removeAll(change.removed)
+          }
+          if (change.wasAdded()) {
+            this.styleClass.addAll(change.addedSubList)
+          }
+        }
+      })
+    }
+  }
+}
+
+private fun ButtonContentDisplay.asContentDisplayFx() =
+  when (this) {
+    ButtonContentDisplay.TEXT_ONLY -> ContentDisplay.TEXT_ONLY
+    ButtonContentDisplay.GRAPHIC_ONLY -> ContentDisplay.GRAPHIC_ONLY
+    ButtonContentDisplay.TEXT_AND_GRAPHIC -> ContentDisplay.RIGHT
+  }
+
 fun createButton(action: GPAction, onlyIcon: Boolean = true): Button {
   val icon = action.getGlyphIcon()
   val contentDisplay = action.getValue(GPAction.TEXT_DISPLAY) as? ContentDisplay ?: if (onlyIcon) ContentDisplay.GRAPHIC_ONLY else ContentDisplay.RIGHT
@@ -330,11 +391,43 @@ fun createButton(action: GPAction, onlyIcon: Boolean = true): Button {
       this.isDisable = !action.isEnabled
     }
     if (hasAutoRepeat) {
-      ActionUtil.setupAutoRepeat(this, action, 200);
+      setupAutoRepeat(this, { action.actionPerformed(null) }, 200);
     }
+
     //applyFontStyle(this)
   }
 }
 
 fun BufferedImage.asJavaFxImage() = SwingFXUtils.toFXImage(this, null)
 private val fxScope = CoroutineScope(Dispatchers.JavaFx)
+
+
+fun setupAutoRepeat(button: Button, action: ()->Unit, intervalMs: Int) {
+  class MouseHandlerImpl {
+    private var myTimer: Timer? = null
+    fun createPressedHandler(): EventHandler<MouseEvent?> {
+      return EventHandler { event: MouseEvent? ->
+        if (myTimer == null) {
+          myTimer = Timer(intervalMs) { action() }
+          myTimer!!.setInitialDelay(intervalMs)
+          myTimer!!.setDelay(intervalMs / 2)
+          myTimer!!.setRepeats(true)
+          myTimer!!.start()
+        }
+      }
+    }
+
+    fun createReleasedHandler(): EventHandler<MouseEvent?> {
+      return EventHandler { event: MouseEvent? ->
+        if (myTimer != null) {
+          myTimer!!.stop()
+          myTimer = null
+        }
+      }
+    }
+  }
+
+  val handler = MouseHandlerImpl()
+  button.setOnMousePressed(handler.createPressedHandler())
+  button.setOnMouseReleased(handler.createReleasedHandler())
+}
