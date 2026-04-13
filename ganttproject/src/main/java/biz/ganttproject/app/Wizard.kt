@@ -30,6 +30,7 @@ import javafx.scene.control.Button
 import javafx.scene.layout.StackPane
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
@@ -38,6 +39,7 @@ import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
 import java.awt.Component
+import javax.swing.Action
 import javax.swing.JComponent
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -57,8 +59,9 @@ fun showWizard(model: WizardModel) {
  * Import/Export wizard model.
  */
 open class WizardModel(val id: String, val title: String) {
+  open val okRunActionKey: String = "ok"
   val i18n = RootLocalizer
-  val coroutineScope = CoroutineScope(EmptyCoroutineContext)
+  val coroutineScope = CoroutineScope(EmptyCoroutineContext + SupervisorJob())
 
   // This is executed when user clicks "OK" button
   var onOk: (monitor: JobMonitorModel) -> Unit = {}
@@ -71,6 +74,11 @@ open class WizardModel(val id: String, val title: String) {
 
   // Current page index.
   internal var currentPage = 0
+    set(value) {
+      field = value
+      onSetCurrentPage(value)
+    }
+  protected open fun onSetCurrentPage(page: Int) {}
 
   internal val pages = mutableListOf<WizardPage>()
 
@@ -135,6 +143,10 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
   private var nextButton: Button = Button()
   private var backButton: Button = Button()
   private var finishButton: Button = Button()
+  private var onOkAction: ()->Unit = ::onOkRun
+  private val okAction = OkAction.create(model.okRunActionKey) {
+    onOkAction()
+  }
   private val stackPane = StackPane().also {
     it.styleClass.add("page-container")
     it.styleClass.add("swing-background")
@@ -164,12 +176,10 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
       }
     }!!
 
-    finishButton = ctrl.setupButton(OkAction.create("ok") {
-      onOkPressed(ctrl::hide)
-    }) { btn ->
+    finishButton = ctrl.setupButton(okAction) { btn ->
       btn.addEventFilter(ActionEvent.ACTION) {
         it.consume()
-        onOkPressed(ctrl::hide)
+        onOkAction()
       }
     }!!
 
@@ -261,18 +271,36 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
   private fun adjustButtonState() {
     backButton.isDisable = !model.hasPrev()
     nextButton.isDisable = !model.hasNext()
+    okAction.putValue(Action.NAME, RootLocalizer.formatText(model.okRunActionKey))
     finishButton.isDisable = !canFinish()
   }
 
   private fun canFinish(): Boolean = model.canFinish()
 
-  private fun onOkPressed(whenDone: ()->Unit) {
+  private fun onOkRun() {
     currentPage.setActive(false)
-    val monitor = createJobMonitor(whenDone)
+    val monitor = createJobMonitor()
+    finishButton.isDisable = true
+    monitor.model.processState.addWatcher { event ->
+      FXThread.runLater {
+        if (event.newValue is JobState.ProcessCompleted) {
+          okAction.putValue(Action.NAME, RootLocalizer.formatText("close"))
+          onOkAction = ::onOkClose
+          finishButton.isDisable = false
+        }
+        if (event.newValue is JobState.ProcessFailed) {
+          finishButton.isDisable = false
+        }
+      }
+    }
     model.onOk(monitor.model)
   }
 
-  private fun createJobMonitor(whenDone: ()->Unit): JobMonitorImpl {
+  private fun onOkClose() {
+    ctrl.hide()
+  }
+
+  private fun createJobMonitor(): JobMonitorImpl {
     val setComponent: (Parent)->Unit = { component ->
       FXUtil.transitionNode(stackPane, {
         stackPane.children.clear()
