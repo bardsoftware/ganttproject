@@ -35,16 +35,16 @@ class ExporterChooserPageFx(exporters: List<Exporter>, private val model: Export
     "title.$index.help" to { LocalizedString("", DummyLocalizer)}
   )}.toMap()
 
-  override val fxComponent: Node? by lazy {
-    val optionPaneBuilder = OptionPaneBuilder<Exporter>().apply {
-      this.i18n = MappingLocalizer(titles, DummyLocalizer::create)
-      this.styleClass = "exporter-chooser-page"
-      elements = exporters.mapIndexed { index, exporter ->
-        OptionElementData("title.${index}", exporter, isSelected = (index == 0),
-          customContent = buildCustomContent(exporter))
-      }
-      onSelect = { model.exporter = it }
+  private val optionPaneBuilder = OptionPaneBuilder<Exporter>().apply {
+    this.i18n = MappingLocalizer(titles, DummyLocalizer::create)
+    this.styleClass = "exporter-chooser-page"
+    elements = exporters.mapIndexed { index, exporter ->
+      OptionElementData("title.${index}", exporter, isSelected = (index == 0),
+        customContent = buildCustomContent(exporter))
     }
+    onSelect = { model.exporter = it }
+  }
+  override val fxComponent: Node? by lazy {
     optionPaneBuilder.buildPane()
   }
 
@@ -61,6 +61,8 @@ class ExporterChooserPageFx(exporters: List<Exporter>, private val model: Export
   override fun setActive(b: Boolean) {
     if (!b) {
       model.exporter?.options?.commit()
+    } else {
+      optionPaneBuilder.selectedElement?.userData?.let { model.exporter = it}
     }
   }
 }

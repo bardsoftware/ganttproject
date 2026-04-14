@@ -56,9 +56,6 @@ class JobMonitorImpl(
       model.progressButtonState.value?.action?.invoke()
     }
   )
-//  private val progressAction = GPAction.create("job.cancel") {
-//    model.progressButtonState.value?.action?.invoke()
-//  }
   private val progressLabel = SimpleStringProperty("")
 
   init {

@@ -153,8 +153,6 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
   }
   private val titleString = i18n.create("exportWizard.page.header")
 
-  private var onCancel: () -> Unit = {}
-
   init {
     backButton = ctrl.setupButton(GPAction.create("back") {
       backPage()
@@ -184,9 +182,9 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
     }!!
 
     // Cancel Button
-    ctrl.setupButton(CancelAction.create("cancel") {
-      onCancelPressed()
-    })
+//    ctrl.setupButton(CancelAction.create("cancel") {
+//      onCancelPressed()
+//    })
 
     model.needsRefresh.addWatcher { evt ->
       if (evt.trigger != this) {
@@ -266,6 +264,7 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
         adjustButtonState()
       })
     }
+    onOkAction = ::onOkRun
   }
 
   private fun adjustButtonState() {
