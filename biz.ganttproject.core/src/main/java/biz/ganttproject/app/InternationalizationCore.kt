@@ -155,7 +155,7 @@ open class DefaultLocalizer(
     return try {
       this.currentTranslation.value?.let { tr ->
         tr.mapKey(prefixedKey)?.let { value ->
-          MessageFormat.format(value, *args)
+          MessageFormat.format(value.replace("$",""), *args)
         } ?: this.baseLocalizer().formatTextOrNull(key, *args)
       }
     } catch (ex: MissingResourceException) {

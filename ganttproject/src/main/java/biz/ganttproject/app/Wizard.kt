@@ -35,7 +35,6 @@ import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
-import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
 import java.awt.Component
@@ -142,10 +141,13 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
   private val i18n = RootLocalizer
   private var nextButton: Button = Button()
   private var backButton: Button = Button()
+
+  // Finish button is the button that completes the wizard configuration and runs the wizard process (e.g. export)
+  // If the wizard process completes successfully, it changes its title and behavior to Close the wizard.
   private var finishButton: Button = Button()
-  private var onOkAction: ()->Unit = ::onOkRun
-  private val okAction = OkAction.create(model.okRunActionKey) {
-    onOkAction()
+  private var finishActionHandler: ()->Unit = ::onOkRun
+  private val finishAction = OkAction.create(model.okRunActionKey) {
+    finishActionHandler()
   }
   private val stackPane = StackPane().also {
     it.styleClass.add("page-container")
@@ -174,10 +176,10 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
       }
     }!!
 
-    finishButton = ctrl.setupButton(okAction) { btn ->
+    finishButton = ctrl.setupButton(finishAction) { btn ->
       btn.addEventFilter(ActionEvent.ACTION) {
         it.consume()
-        onOkAction()
+        finishActionHandler()
       }
     }!!
 
@@ -264,13 +266,13 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
         adjustButtonState()
       })
     }
-    onOkAction = ::onOkRun
+    finishActionHandler = ::onOkRun
   }
 
   private fun adjustButtonState() {
     backButton.isDisable = !model.hasPrev()
     nextButton.isDisable = !model.hasNext()
-    okAction.putValue(Action.NAME, RootLocalizer.formatText(model.okRunActionKey))
+    finishAction.putValue(Action.NAME, RootLocalizer.formatText(model.okRunActionKey))
     finishButton.isDisable = !canFinish()
   }
 
@@ -283,8 +285,8 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
     monitor.model.processState.addWatcher { event ->
       FXThread.runLater {
         if (event.newValue is JobState.ProcessCompleted) {
-          okAction.putValue(Action.NAME, RootLocalizer.formatText("close"))
-          onOkAction = ::onOkClose
+          finishAction.putValue(Action.NAME, RootLocalizer.formatText("close"))
+          finishActionHandler = ::onOkClose
           finishButton.isDisable = false
         }
         if (event.newValue is JobState.ProcessFailed) {
