@@ -23,6 +23,7 @@
 @import "../app/buttons";
 @import "../app/errors";
 @import "../app/validation";
+@import "../app/JobMonitor";
 
 .dlg-export-progress {
   -fx-min-height: 200;
@@ -137,51 +138,8 @@
     }
   }
 
-  /*TODO(short-term): extract this CSS to the job monitor file  */
   .wizard-job-monitor {
-    .job-status-label {
-      -fx-text-fill: $gp-dark-gray;
-      -fx-background-color: $gp-zebra-gray;
-      -fx-border-width: 0;
-      -fx-alignment: center-left;
-      -fx-background-radius: 3;
-      &:focused {
-        -fx-text-fill: $gp-dark-gray;
-        -fx-border-width: 0;
-      }
-
-      .label {
-        -fx-padding: 2 5;
-      }
-
-      .button {
-        @include btn-toolbar-common();
-
-        &.btn-cancel {
-          -fx-background-color: $gp-zebra-gray, $gp-error;
-          -fx-background-insets: 0, 1;
-          -fx-background-radius: 3, 3;
-          -fx-text-fill: white;
-          -fx-font-weight: bold;
-
-          &:hover {
-            -fx-background-color: derive($gp-error, -20%), derive($gp-error, 20%);
-          }
-        }
-        &.btn-regular {
-          -fx-background-color: $gp-zebra-gray, $gp-light-gray;
-          -fx-background-insets: 0, 1;
-          -fx-background-radius: 3, 3;
-          -fx-text-fill: $gp-dark-gray;
-          -fx-font-weight: bold;
-
-          &:hover {
-            -fx-background-color: derive($gp-light-gray, -10%), derive($gp-light-gray, 20%);
-          }
-        }
-
-      }
-    }
+    @include job-monitor-pane();
   }
 }
 

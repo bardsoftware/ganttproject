@@ -1,3 +1,21 @@
+/*
+Copyright 2026 Dmitry Barashev, BarD Software s.r.o
+
+This file is part of GanttProject, an opensource project management tool.
+
+GanttProject is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+GanttProject is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
+*/
 package biz.ganttproject.app
 
 import biz.ganttproject.ButtonBuilder
@@ -24,15 +42,37 @@ interface JobMonitor<T> {
   fun setProcessCompleted(processResult: Result<T, Exception>)
 }
 
+/**
+ * JobMonitor UI component is a spinner with a progres pane underneath. In the progress page we show a status
+ * label and a progress button that allows for cancelling the process while the process is running or execute some other
+ * action when the process is completed.
+ *
+ * This data class is a progress button state, which includes a label, a style class and an action.
+ */
 data class ProgressButtonState(val text: String, val styleClass: String = "", val action: ()->Unit)
 
+/**
+ * A process that consists of a sequence of jobs may be in one of these states.
+ */
 sealed class JobState {
+  // The process is idle.
   object Idle : JobState()
+  // The process has started.
   object ProcessStarted : JobState()
+  // The process completes successfully.
   object ProcessCompleted : JobState()
+  // A job with the given title has started.
   data class JobStarted(val title: String) : JobState()
+  // The process failed.
   data class ProcessFailed(val result: Result<IStatus, Exception>) : JobState()
 }
+
+/**
+ * Represents a model for monitoring job states and related UI elements.
+ *
+ * This class provides observable properties to track and update the state of a job process,
+ * the progress button state, status and error messages, as well as the count of jobs.
+ */
 class JobMonitorModel {
   val processState = ObservableObject<JobState>("", JobState.Idle)
   val progressButtonState = ObservableObject("", ProgressButtonState("", styleClass = "",{}))
@@ -41,7 +81,19 @@ class JobMonitorModel {
   val jobCount = ObservableInt("", 0)
 }
 
-
+/**
+ * Implementation of a job monitoring UI component.
+ *
+ * This class monitors the state of job processes, updates UI components
+ * such as spinners and error panes based on the current state, and manages
+ * user interactions such as clicking progress buttons.
+ *
+ * Behavior:
+ * - Reacts to changes in `processState` by updating the spinner state and rendering appropriate components.
+ * - Updates a progress label whenever `statusText` changes.
+ * - Handles changes in the progress button's state (`progressButtonState`), updating its appearance and action.
+ * - Displays error messages through an error pane when `errorText` changes.
+ */
 class JobMonitorImpl(
   val model: JobMonitorModel,
   private val setComponent: (Parent)->Unit,
@@ -102,33 +154,6 @@ class JobMonitorImpl(
     }
   }
 
-//  override fun startProcess() {
-//    coroutineScope.launch {
-//      model.processState.set(JobState.ProcessStarted)
-//      setComponent(createComponent())
-//    }
-//  }
-//
-//  override fun setJobStarted(jobNumber: Int, jobName: String) {
-//    coroutineScope.launch {
-//      model.statusText.set(jobName)
-//    }
-//  }
-//
-//  override fun setProcessCompleted(processResult: Result<IStatus, Exception>) {
-//    coroutineScope.launch {
-//      processResult.fold(
-//        success = {
-//          model.processState.set(JobState.ProcessCompleted)
-//        },
-//        failure = {
-//          model.errorText.set(it.message ?: i18n.formatText("exportWizard.failure"))
-//          model.processState.set(JobState.ProcessFailed(processResult))
-//        }
-//      )
-//    }
-//  }
-
   private fun createComponent(): Parent {
     return vbox {
       addClasses(styleClasses)
@@ -137,10 +162,7 @@ class JobMonitorImpl(
         hbox {
           label = progressLabel
           button(progressActionButton)
-          //actions.add(progressAction)
           styleClasses.add("job-status-label")
-        }.apply {
-          maxWidth = 400.0
         }, alignment = Pos.CENTER, growth = Priority.NEVER)
       add(errorPane.fxNode, alignment = Pos.CENTER, growth = Priority.NEVER)
     }.also {
