@@ -104,7 +104,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
   override fun files(property: ObservableFiles, optionValues: (FileDisplayOptions.() -> Unit)?) {
     rowBuilders.add(run {
       val options = optionValues?.let { FileDisplayOptions().apply(it) } ?: FileDisplayOptions()
-      createOptionItem(property, createFilesOptionEditor(property, options))
+      createOptionItem(property, createFilesOptionEditor(property, options), options)
     })
   }
 

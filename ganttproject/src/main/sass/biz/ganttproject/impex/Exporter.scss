@@ -91,7 +91,11 @@
       @include textfield-with-button($gp-light-gray, $gp-dark-gray);
     }
     .chosen-files-list {
-      -fx-background-color: transparent;
+      -fx-background-color: derive($gp-light-gray, -20%), $gp-light-gray;
+      -fx-background-insets: 0, 1;
+      -fx-background-radius: 3, 3;
+      -fx-padding: 2;
+
       .list-cell {
         -fx-padding: 0;
         -fx-background-color: $gp-light-gray;
