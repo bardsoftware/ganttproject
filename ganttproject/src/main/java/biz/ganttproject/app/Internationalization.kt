@@ -29,7 +29,11 @@ private var ourLocale: Locale = Locale.getDefault()
 
 fun setLocale(locale: Locale) {
   ourLocale = locale
-  ourCurrentTranslation.value = createTranslation(locale) ?: defaultTranslation
+  // Touching defaultTranslation ensures that DEFAULT_TRANSLATION_LOCALIZER is initialized
+  // (its assignment is a side-effect of the lazy initializer). Without it, locales whose
+  // properties file is missing keys fall back to a DummyLocalizer and return null.
+  val fallback = defaultTranslation
+  ourCurrentTranslation.value = createTranslation(locale) ?: fallback
 }
 
 fun getCurrentLocale() = ourLocale
