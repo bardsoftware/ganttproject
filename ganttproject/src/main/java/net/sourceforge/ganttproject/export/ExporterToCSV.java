@@ -26,7 +26,6 @@ import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttProject;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import java.awt.*;
@@ -83,36 +82,32 @@ public class ExporterToCSV extends ExporterBase {
   }
 
   private ExporterJob createCVSExportJob(final File outputFile) {
-    ExporterJob result = new ExporterJob("Export project") {
-      @Override
-      protected IStatus run() {
-        OutputStream outputStream = null;
-        try {
-          outputFile.createNewFile();
-          outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
-          CSVOptions csvOptions = ((GanttProject) getProject()).getGanttOptions().getCSVOptions();
+    return new CSVExportJob("Export project", () -> {
+      OutputStream outputStream = null;
+      try {
+        outputFile.createNewFile();
+        outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
+        CSVOptions csvOptions = ((GanttProject) getProject()).getGanttOptions().getCSVOptions();
 
-          // TODO Fix this ugly hack!! Ie make the settings available in a proper way
-          GanttCSVExport exporter = new GanttCSVExport(getProject(), csvOptions);
-          try (SpreadsheetWriter writer = exporter.createWriter(outputStream, myFormatOption.getSelectedValue())) {
-            exporter.save(writer);
-          }
-        } catch (Exception e) {
-          getUIFacade().showErrorDialog(e);
-          return Status.CANCEL_STATUS;
-        } finally {
-          if (outputStream != null) {
-            try {
-              outputStream.close();
-            } catch (IOException e) {
-              GPLogger.logToLogger(e);
-            }
+        // TODO Fix this ugly hack!! Ie make the settings available in a proper way
+        GanttCSVExport exporter = new GanttCSVExport(getProject(), csvOptions);
+        try (SpreadsheetWriter writer = exporter.createWriter(outputStream, myFormatOption.getSelectedValue())) {
+          exporter.save(writer);
+        }
+      } catch (Exception e) {
+        getUIFacade().showErrorDialog(e);
+        return Status.CANCEL_STATUS;
+      } finally {
+        if (outputStream != null) {
+          try {
+            outputStream.close();
+          } catch (IOException e) {
+            GPLogger.logToLogger(e);
           }
         }
-        return Status.OK_STATUS;
       }
-    };
-    return result;
+      return Status.OK_STATUS;
+    });
   }
 
   @Override

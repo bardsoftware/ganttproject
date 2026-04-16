@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.scene.Parent;
+import net.sourceforge.ganttproject.export.ExporterJob;
 import org.ganttproject.impex.htmlpdf.itext.ITextEngine;
 import org.ganttproject.impex.htmlpdf.itext.ITextStylesheet;
 

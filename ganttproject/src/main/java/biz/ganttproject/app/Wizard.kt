@@ -24,26 +24,23 @@ import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.lib.fx.vbox
 import javafx.embed.swing.SwingNode
 import javafx.event.ActionEvent
+import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.layout.StackPane
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
-import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
-import javafx.scene.Node
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.fold
-import net.sourceforge.ganttproject.export.JobMonitor
-import org.eclipse.core.runtime.IStatus
 import java.awt.Component
+import javax.swing.Action
 import javax.swing.JComponent
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.text.set
 
 /**
  * Shows a wizard dialog using the provided builder.
@@ -61,11 +58,12 @@ fun showWizard(model: WizardModel) {
  * Import/Export wizard model.
  */
 open class WizardModel(val id: String, val title: String) {
+  open val okRunActionKey: String = "ok"
   val i18n = RootLocalizer
-  val coroutineScope = CoroutineScope(EmptyCoroutineContext)
+  val coroutineScope = CoroutineScope(EmptyCoroutineContext + SupervisorJob())
 
   // This is executed when user clicks "OK" button
-  var onOk: (monitor: JobMonitor<IStatus>) -> Unit = {}
+  var onOk: (monitor: JobMonitorModel) -> Unit = {}
 
   // Returns `true` if it is okay to finish the wizard.
   var canFinish: () -> Boolean = { errorMessage.value.isNullOrBlank() }
@@ -75,6 +73,11 @@ open class WizardModel(val id: String, val title: String) {
 
   // Current page index.
   internal var currentPage = 0
+    set(value) {
+      field = value
+      onSetCurrentPage(value)
+    }
+  protected open fun onSetCurrentPage(page: Int) {}
 
   internal val pages = mutableListOf<WizardPage>()
 
@@ -138,14 +141,19 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
   private val i18n = RootLocalizer
   private var nextButton: Button = Button()
   private var backButton: Button = Button()
+
+  // Finish button is the button that completes the wizard configuration and runs the wizard process (e.g. export)
+  // If the wizard process completes successfully, it changes its title and behavior to Close the wizard.
   private var finishButton: Button = Button()
+  private var finishActionHandler: ()->Unit = ::onOkRun
+  private val finishAction = OkAction.create(model.okRunActionKey) {
+    finishActionHandler()
+  }
   private val stackPane = StackPane().also {
     it.styleClass.add("page-container")
     it.styleClass.add("swing-background")
   }
   private val titleString = i18n.create("exportWizard.page.header")
-
-  private var onCancel: () -> Unit = {}
 
   init {
     backButton = ctrl.setupButton(GPAction.create("back") {
@@ -168,19 +176,17 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
       }
     }!!
 
-    finishButton = ctrl.setupButton(OkAction.create("ok") {
-      onOkPressed(ctrl::hide)
-    }) { btn ->
+    finishButton = ctrl.setupButton(finishAction) { btn ->
       btn.addEventFilter(ActionEvent.ACTION) {
         it.consume()
-        onOkPressed(ctrl::hide)
+        finishActionHandler()
       }
     }!!
 
     // Cancel Button
-    ctrl.setupButton(CancelAction.create("cancel") {
-      onCancelPressed()
-    })
+//    ctrl.setupButton(CancelAction.create("cancel") {
+//      onCancelPressed()
+//    })
 
     model.needsRefresh.addWatcher { evt ->
       if (evt.trigger != this) {
@@ -260,23 +266,51 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
         adjustButtonState()
       })
     }
+    finishActionHandler = ::onOkRun
   }
 
   private fun adjustButtonState() {
     backButton.isDisable = !model.hasPrev()
     nextButton.isDisable = !model.hasNext()
+    finishAction.putValue(Action.NAME, RootLocalizer.formatText(model.okRunActionKey))
     finishButton.isDisable = !canFinish()
   }
 
   private fun canFinish(): Boolean = model.canFinish()
 
-  private fun onOkPressed(whenDone: ()->Unit) {
+  private fun onOkRun() {
     currentPage.setActive(false)
-    model.onOk(createJobMonitor(whenDone))
+    val monitor = createJobMonitor()
+    finishButton.isDisable = true
+    monitor.model.processState.addWatcher { event ->
+      FXThread.runLater {
+        if (event.newValue is JobState.ProcessCompleted) {
+          finishAction.putValue(Action.NAME, RootLocalizer.formatText("close"))
+          finishActionHandler = ::onOkClose
+          finishButton.isDisable = false
+        }
+        if (event.newValue is JobState.ProcessFailed) {
+          finishButton.isDisable = false
+        }
+      }
+    }
+    model.onOk(monitor.model)
   }
 
-  private fun createJobMonitor(whenDone: ()->Unit): JobMonitor<IStatus> {
-    return JobMonitorImpl(this, whenDone)
+  private fun onOkClose() {
+    ctrl.hide()
+  }
+
+  private fun createJobMonitor(): JobMonitorImpl {
+    val setComponent: (Parent)->Unit = { component ->
+      FXUtil.transitionNode(stackPane, {
+        stackPane.children.clear()
+        stackPane.children.add(component)
+      }, {})
+    }
+    return JobMonitorImpl(model = JobMonitorModel(), i18n = this.i18n, setComponent = setComponent).also {
+      it.styleClasses.add("wizard-job-monitor")
+    }
   }
 
   private fun onCancelPressed() {
@@ -286,43 +320,4 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
   private val currentPage: WizardPage
     get() = pages[model.currentPage]
 
-  private class JobMonitorImpl(private val wizardUi: WizardUiFx, private val whenDone: ()->Unit) : JobMonitor<IStatus> {
-    private val spinner = Spinner()
-    private val stackPane = wizardUi.stackPane
-    private val i18n = wizardUi.i18n
-
-    override fun setJobStarted(jobNumber: Int, jobName: String) {
-      wizardUi.coroutineScope.launch(Dispatchers.JavaFx) {
-        if (jobNumber == 0) {
-          spinner.state = Spinner.State.WAITING
-          FXUtil.transitionNode(stackPane, {
-            stackPane.children.clear()
-            stackPane.children.add(spinner.pane)
-          }, {})
-        }
-        spinner.statusTextProperty.set(jobName)
-      }
-    }
-
-    override fun setJobCompleted(jobNumber: Int, jobResult: Result<IStatus, Exception>) {
-      wizardUi.coroutineScope.launch(Dispatchers.JavaFx) {
-        jobResult.fold(
-          success = {
-          },
-          failure = {
-            spinner.state = Spinner.State.ATTENTION
-            spinner.statusTextProperty.set(i18n.formatText("exportWizard.failure"))
-          }
-        )
-      }
-    }
-
-    override fun setOnCancel(cancelHandler: () -> Unit) {
-      TODO("Not yet implemented")
-    }
-
-    override fun setProcessCompleted() {
-      whenDone()
-    }
-  }
 }

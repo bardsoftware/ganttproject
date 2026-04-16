@@ -18,22 +18,22 @@
  */
 package net.sourceforge.ganttproject.export
 
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.WizardModel
-import biz.ganttproject.app.showWizard
+import biz.ganttproject.app.*
 import biz.ganttproject.core.option.BooleanOption
 import biz.ganttproject.core.option.ChangeValueEvent
 import biz.ganttproject.core.option.ChangeValueListener
 import biz.ganttproject.core.option.ObservableBooleanOption
+import biz.ganttproject.lib.fx.openFile
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.gui.ViewLogDialog
 import net.sourceforge.ganttproject.plugins.PluginManager
-import org.eclipse.core.runtime.IStatus
 import org.osgi.service.prefs.Preferences
 import java.io.File
-import javax.swing.SwingUtilities
 
 /**
  * The model of the export wizard.
@@ -45,6 +45,7 @@ class ExportWizardModel(id: String, title: String, private val ftpOptions: Docum
     set(exporter) {
       field = exporter
       ourLastSelectedExporter = exporter
+      needsRefresh.set(true, this)
     }
 
   var file: File? = null
@@ -52,6 +53,8 @@ class ExportWizardModel(id: String, title: String, private val ftpOptions: Docum
       field = value
       needsRefresh.set(true, this)
     }
+
+  override val okRunActionKey: String = "project.export"
 
   init {
     canFinish = {
@@ -62,16 +65,57 @@ class ExportWizardModel(id: String, title: String, private val ftpOptions: Docum
     }
   }
 
-  private fun exportAndFinalize(monitor: JobMonitor<IStatus>) {
-    exporter?.let { selectedExporter ->
-      SwingUtilities.invokeLater(Runnable {
+  override fun onSetCurrentPage(page: Int) {
+    if (page == 0) {
+      exporter = null
+      needsRefresh.set(true, this)
+    }
+  }
+
+  private fun exportAndFinalize(monitor: JobMonitorModel) {
+    coroutineScope.launch {
+      val thisScope = this
+      val btnCancel = ProgressButtonState(RootLocalizer.formatText("cancel"), styleClass = "btn-cancel") {
+        thisScope.cancel()
+        monitor.statusText.set("Cancelled")
+        monitor.processState.set(JobState.Idle)
+      }
+      val btnOpenFile = ProgressButtonState(RootLocalizer.formatText("storageService.local.open.fileChooser.title"), styleClass = "btn-regular") {
+        this@ExportWizardModel.file?.let {
+          openFile(it)
+        }
+      }
+      val btnViewLog = ProgressButtonState(RootLocalizer.formatText("viewLog"), styleClass = "btn-regular") {
+        ViewLogDialog.show()
+      }
+      exporter?.let { selectedExporter ->
         try {
+          monitor.statusText.set("Exporting...")
+          monitor.processState.addWatcher { event ->
+            when (val j = event.newValue) {
+              is JobState.ProcessStarted -> {
+                monitor.progressButtonState.set(btnCancel)
+              }
+              is JobState.JobStarted -> {
+                monitor.statusText.set(j.title)
+              }
+              is JobState.ProcessCompleted -> {
+                monitor.progressButtonState.set(btnOpenFile)
+                monitor.statusText.set("Written to ${file?.absolutePath}")
+              }
+              is JobState.ProcessFailed -> {
+                monitor.progressButtonState.set(btnViewLog)
+                monitor.statusText.set(RootLocalizer.formatText("exportWizard.failure"))
+              }
+              else -> {}
+            }
+          }
           val finalizationJob = ExportFinalizationJobImpl()
-          selectedExporter.run(this.file!!, finalizationJob, monitor)
+          selectedExporter.run(thisScope, this@ExportWizardModel.file!!, finalizationJob, monitor)
         } catch (e: Exception) {
           GPLogger.log(e)
         }
-      })
+      }
     }
   }
 

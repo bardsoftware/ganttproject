@@ -18,8 +18,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.export
 
+import biz.ganttproject.app.JobMonitorModel
 import biz.ganttproject.core.option.GPOptionGroup
 import javafx.scene.Parent
+import kotlinx.coroutines.CoroutineScope
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.gui.UIFacade
 import org.osgi.service.prefs.Preferences
@@ -39,7 +41,7 @@ interface Exporter {
     val fileNamePattern: String
 
     @Throws(Exception::class)
-    fun run(outputFile: File, finalizationJob: ExportFinalizationJob?, jobMonitor: JobMonitor<org.eclipse.core.runtime.IStatus>?)
+    fun run(coroutineScope: CoroutineScope, outputFile: File, finalizationJob: ExportFinalizationJob?, jobMonitor: JobMonitorModel)
 
     // File proposeOutputFile(IGanttProject project);
     fun proposeFileExtension(): String

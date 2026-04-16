@@ -25,7 +25,7 @@ import net.sf.mpxj.mpx.MPXWriter;
 import net.sf.mpxj.mspdi.MSPDIWriter;
 import net.sf.mpxj.writer.ProjectWriter;
 import net.sourceforge.ganttproject.export.ExporterBase;
-import org.eclipse.core.runtime.IStatus;
+import net.sourceforge.ganttproject.export.ExporterJob;
 import org.eclipse.core.runtime.Status;
 
 import java.awt.*;
@@ -96,24 +96,21 @@ public class ExporterToMsProjectFile extends ExporterBase {
   }
 
   private ExporterJob createExportJob(final File outputFile) {
-    return new ExporterJob("Export project") {
-      @Override
-      protected IStatus run() {
-        ProjectFile outProject;
-        try {
-          outProject = new ProjectFileExporter(getProject()).run();
-          ProjectWriter writer = createProjectWriter();
-          writer.write(outProject, outputFile);
-        } catch (MPXJException e) {
-          getUIFacade().showErrorDialog(e);
-          return Status.CANCEL_STATUS;
-        } catch (IOException e) {
-          getUIFacade().showErrorDialog(e);
-          return Status.CANCEL_STATUS;
-        }
-        return Status.OK_STATUS;
+    return new MSProjectExportJob("Export project", () -> {
+      ProjectFile outProject;
+      try {
+        outProject = new ProjectFileExporter(getProject()).run();
+        ProjectWriter writer = createProjectWriter();
+        writer.write(outProject, outputFile);
+      } catch (MPXJException e) {
+        getUIFacade().showErrorDialog(e);
+        return Status.CANCEL_STATUS;
+      } catch (IOException e) {
+        getUIFacade().showErrorDialog(e);
+        return Status.CANCEL_STATUS;
       }
-    };
+      return Status.OK_STATUS;
+    });
   }
 
   private ProjectWriter createProjectWriter() {

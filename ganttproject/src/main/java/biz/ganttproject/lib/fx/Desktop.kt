@@ -7,6 +7,7 @@ import net.sourceforge.ganttproject.GanttProject
 import java.awt.Desktop
 import java.awt.Taskbar
 import java.awt.Toolkit
+import java.io.File
 import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
@@ -24,6 +25,14 @@ fun openInBrowser(url: String) {
     } catch (e: URISyntaxException) {
       GPLogger.log(e)
     }
+  }
+}
+
+fun openFile(file: File) {
+  SwingUtilities.invokeLater {
+    try {
+      Desktop.getDesktop().open(file)
+    } catch (e: IOException) {}
   }
 }
 

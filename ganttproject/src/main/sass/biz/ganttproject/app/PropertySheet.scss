@@ -34,8 +34,9 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   .title {
-    -fx-font-weight: bold;
+    //-fx-font-weight: bold;
     -fx-font-size: 120%;
+    -fx-font-family: "DejaVu Sans Condensed", sans-serif;
   }
   .skip {
     -fx-font-size: 20%;

@@ -34,18 +34,9 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.StackPane
 import kotlinx.coroutines.*
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.export.ExporterBase.ExporterJob
 import net.sourceforge.ganttproject.gui.ViewLogDialog
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
-import java.util.concurrent.Executors
-
-interface JobMonitor<T> {
-  fun setJobStarted(jobNumber: Int, jobName: String)
-  fun setJobCompleted(jobNumber: Int, jobResult: Result<T, Exception>)
-  fun setOnCancel(cancelHandler: () -> Unit)
-  fun setProcessCompleted()
-}
 
 class JobMonitorDialogFx<T>(private val title: String, private val jobCount: Int): JobMonitor<T> {
   private var onCancel: () -> Unit = {}
@@ -95,35 +86,22 @@ class JobMonitorDialogFx<T>(private val title: String, private val jobCount: Int
     }
   }
 
-  override fun setJobStarted(jobNumber: Int, jobName: String) {
+  override fun startProcess() {
     if (this.dlg == null) {
       FXUtil.runLater(this::createDialog)
     }
+  }
+
+  override fun setJobStarted(jobNumber: Int, jobName: String) {
     FXUtil.runLater {
       this.jobName.set(jobName)
     }
   }
-
-  override fun setOnCancel(cancelHandler: () -> Unit) {
-    this.onCancel = cancelHandler
-  }
-
-  override fun setProcessCompleted() {
-    TODO("Not yet implemented")
-  }
-
-  override fun setJobCompleted(jobNumber: Int, jobResult: Result<T, Exception>) {
-    val jobNumber1 = jobNumber + 1
+  override fun setProcessCompleted(processResult: Result<T, Exception>) {
     FXUtil.runLater {
-      jobResult.fold(
+      processResult.fold(
         success = {
-          if (jobNumber1 == jobCount) {
-            this.dlg?.hide()
-          } else {
-            val progress = jobNumber1.toDouble() / jobCount.toDouble()
-            this.progressValue.set(progress)
-            this.jobName.set("")
-          }
+          this.dlg?.hide()
         },
         failure = {
           LOG.error("Failed to export", exception = it)
@@ -138,30 +116,38 @@ class JobMonitorDialogFx<T>(private val title: String, private val jobCount: Int
     }
   }
 }
-fun export(jobs: List<ExporterJob>, jobMonitor: JobMonitor<IStatus>) {
-  val job = exporterScope.launch {
+
+fun export(coroutineScope: CoroutineScope, jobs: List<ExporterJob>, jobMonitor: JobMonitorModel) {
     var result: Result<IStatus, Exception> = Ok(Status.OK_STATUS)
-    jobs.forEachIndexed { index, job ->
-      result = result.andThen {
-        try {
-          jobMonitor.setJobStarted(index, job.name)
-          val status = job.run()
-          if (status.isOK) {
-            Ok(status)
-          } else {
-            Err(RuntimeException(status.message))
+    jobMonitor.processState.set(JobState.ProcessStarted)
+    coroutineScope.launch {
+      delay(2000)
+      jobMonitor.jobCount.set(jobs.size)
+      for (job in jobs) {
+        jobMonitor.processState.set(JobState.JobStarted(job.name))
+        delay(2000)
+        result = result.andThen {
+          try {
+            val jobStatus = job.run()
+            if (jobStatus.isOK) {
+              Ok(jobStatus)
+            } else {
+              Err(RuntimeException(jobStatus.message))
+            }
+          } catch (ex: Exception) {
+            Err(ex)
           }
-        } catch (ex: Exception) {
-          Err(ex)
-        }.also {
-          jobMonitor.setJobCompleted(index, it)
+        }
+        if (result.isErr) {
+          break
         }
       }
+      if (result.isErr) {
+        jobMonitor.processState.set(JobState.ProcessFailed(result))
+      } else {
+        jobMonitor.processState.set(JobState.ProcessCompleted)
+      }
     }
-    jobMonitor.setProcessCompleted()
-  }
-  jobMonitor.setOnCancel { job.cancel("Cancelled by user") }
 }
 
-internal val exporterScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 private val LOG = GPLogger.create("Export")

@@ -23,6 +23,7 @@
 @import "../app/buttons";
 @import "../app/errors";
 @import "../app/validation";
+@import "../app/JobMonitor";
 
 .dlg-export-progress {
   -fx-min-height: 200;
@@ -135,6 +136,10 @@
     .font-substitution-table  {
       @include dropdown-normal();
     }
+  }
+
+  .wizard-job-monitor {
+    @include job-monitor-pane();
   }
 }
 

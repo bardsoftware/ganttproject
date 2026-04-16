@@ -69,6 +69,7 @@ class OptionPaneBuilder<T> {
 
   var toggleGroup: ToggleGroup = ToggleGroup()
 
+  var selectedElement: OptionElementData<T>? = null
   var onSelect: (T) -> Unit = {}
 
   fun buildPane(): Pane {
@@ -92,10 +93,12 @@ class OptionPaneBuilder<T> {
         btn.toggleGroup = lockGroup
         btn.isSelected = element.isSelected
         btn.onAction = EventHandler {
+          this.selectedElement = element
           onSelect(element.userData)
           enableCustomNode(index)
         }
       }
+      this.selectedElement = this.elements.firstOrNull()
       vbox.add(btn)
 
       if (this.i18n.formatTextOrNull("${element.i18nKey}.help") != null) {

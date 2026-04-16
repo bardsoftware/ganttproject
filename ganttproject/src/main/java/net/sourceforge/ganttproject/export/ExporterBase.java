@@ -18,14 +18,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.export;
 
+import biz.ganttproject.app.JobMonitorModel;
 import biz.ganttproject.core.option.*;
+import kotlinx.coroutines.CoroutineScope;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttExportSettings;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.prefs.Preferences;
@@ -163,80 +164,18 @@ public abstract class ExporterBase implements Exporter {
   }
 
   @Override
-  public void run(final File outputFile, final ExportFinalizationJob finalizationJob, JobMonitor<IStatus> jobMonitor) throws Exception {
-    //final IJobManager jobManager = Job.getJobManager();
+  public void run(final CoroutineScope coroutineScope, final File outputFile, final ExportFinalizationJob finalizationJob, JobMonitorModel jobMonitor) throws Exception {
     final List<File> resultFiles = new ArrayList<>();
 
     var jobs = new ArrayList<>(Arrays.asList(createJobs(outputFile, resultFiles)));
-    jobs.add(new ExporterJob("Finalizing") {
-      @Override
-      protected IStatus run() {
-        finalizationJob.run(resultFiles.toArray(new File[0]));
-        return Status.OK_STATUS;
-      }
-    });
-    if (jobMonitor == null) {
-      jobMonitor = new JobMonitorDialogFx<>(this.getFileTypeDescription(), jobs.size());
-    }
-    ExporterBackgroundJobsKt.export(jobs, jobMonitor);
-//
-//    final IProgressMonitor monitor = jobManager.createProgressGroup();
-//    Job driverJob = new Job("Running export") {
-//      @Override
-//      protected IStatus run(IProgressMonitor monitor) {
-//        monitor.beginTask("Running export", jobs.size());
-//        for (ExporterJob job : jobs) {
-//          if (monitor.isCanceled()) {
-//            jobManager.cancel(EXPORT_JOB_FAMILY);
-//            return Status.CANCEL_STATUS;
-//          }
-//          monitor.subTask(job.getName());
-//          final IStatus state;
-//          try {
-//            state = job.run();
-//          } catch (Throwable e) {
-//            GPLogger.log(new RuntimeException("Export failure. Failed subtask: " + job.getName(), e));
-//            monitor.setCanceled(true);
-//            continue;
-//          }
-//
-//          if (state.isOK() == false) {
-//            GPLogger.log(new RuntimeException("Export failure. Failed subtask: " + job.getName(), state.getException()));
-//            monitor.setCanceled(true);
-//            continue;
-//          }
-//          // Sub task for export is finished without problems
-//          // So, updated the total amount of work with the current
-//          // work performed
-//          monitor.worked(1);
-//          // and remove the sub task description
-//          // (convenient for debugging to know the sub task is
-//          // finished properly)
-//          monitor.subTask(null);
-//        }
-//        monitor.done();
-//        return Status.OK_STATUS;
-//      }
-//    };
-//    driverJob.setProgressGroup(monitor, 0);
-//    driverJob.schedule();
+    jobs.add(new JavaExporterJob("Finalizing", () -> {
+      finalizationJob.run(resultFiles.toArray(new File[0]));
+      return Status.OK_STATUS;
+    }));
+    ExporterBackgroundJobsKt.export(coroutineScope, jobs, jobMonitor);
   }
 
   /** @return a list with {@link ExporterJob}s required to actually export the current format */
   protected abstract ExporterJob[] createJobs(File outputFile, List<File> resultFiles);
-
-  public abstract static class ExporterJob {
-    private final String myName;
-
-    protected ExporterJob(String name) {
-      myName = name;
-    }
-
-    String getName() {
-      return myName;
-    }
-
-    protected abstract IStatus run();
-  }
 
 }

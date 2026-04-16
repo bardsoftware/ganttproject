@@ -53,6 +53,7 @@ import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.gui.UIFacade
 import java.util.concurrent.CountDownLatch
+import javax.swing.Action
 import javax.swing.SwingUtilities
 import kotlin.math.max
 
@@ -496,6 +497,11 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
     }
     return setupButton(buttonType) { btn ->
       btn.text = action.name
+      action.addPropertyChangeListener { event ->
+        if (event.propertyName == Action.NAME) {
+          btn.text = action.name
+        }
+      }
       btn.onAction = EventHandler {
         action.actionPerformed(null)
       }

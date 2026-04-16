@@ -141,6 +141,9 @@ class VBoxBuilder(vararg classes: String) {
     this.vbox.styleClass.addAll(classes)
   }
 
+  fun addClasses(classes: Iterable<String>) {
+    this.vbox.styleClass.addAll(classes)
+  }
   fun addStylesheets(vararg stylesheets: String) {
     this.vbox.stylesheets.addAll(stylesheets)
   }
