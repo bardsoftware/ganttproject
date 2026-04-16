@@ -34,7 +34,7 @@ public interface GPOption<T> {
 
   Runnable addChangeValueListener(ChangeValueListener listener, int priority);
 
-  ObservableProperty<Boolean> getIsWritableProperty();
+  GPObservable<Boolean> getIsWritableProperty();
   boolean isWritable();
 
   void addPropertyChangeListener(PropertyChangeListener listener);

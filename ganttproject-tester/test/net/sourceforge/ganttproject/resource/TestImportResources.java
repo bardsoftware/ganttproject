@@ -10,7 +10,7 @@ public class TestImportResources extends TestCase {
 
     public void testMergeResourcesByName() {
         MergeResourcesOption mergeOption = new MergeResourcesOption();
-        mergeOption.setValue(MergeResourcesOption.BY_NAME);
+        mergeOption.setSelectedValue(MergeResourcesEnum.BY_NAME);
 
         HumanResourceManager mergeTo = new HumanResourceManager(null, new CustomColumnsManager());
         mergeTo.add(new HumanResource("joe", 1, mergeTo));
@@ -30,7 +30,7 @@ public class TestImportResources extends TestCase {
 
     public void testMergeByID() {
         MergeResourcesOption mergeOption = new MergeResourcesOption();
-        mergeOption.setValue(MergeResourcesOption.BY_ID);
+        mergeOption.setSelectedValue(MergeResourcesEnum.BY_ID);
 
         HumanResourceManager mergeTo = new HumanResourceManager(null, new CustomColumnsManager());
         mergeTo.add(new HumanResource("joe", 1, mergeTo));

@@ -104,7 +104,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
   override fun files(property: ObservableFiles, optionValues: (FileDisplayOptions.() -> Unit)?) {
     rowBuilders.add(run {
       val options = optionValues?.let { FileDisplayOptions().apply(it) } ?: FileDisplayOptions()
-      createOptionItem(property, createFilesOptionEditor(property, options))
+      createOptionItem(property, createFilesOptionEditor(property, options), options)
     })
   }
 
@@ -166,7 +166,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
   override fun <E: Enum<E>> dropdown(property: ObservableEnum<E>, optionValues: (DropdownDisplayOptions<E>.()->Unit)?) {
     rowBuilders.add(run {
       val options = optionValues?.let { DropdownDisplayOptions<E>().apply(it) }
-      createOptionItem(property, createEnumerationOptionEditor(property, options))
+      createOptionItem(property, createEnumerationOptionEditor(property, displayOptions = options), options)
     })
   }
 
@@ -241,9 +241,10 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
   private fun <E: Enum<E>> createEnumerationOptionEditor(
     option: ObservableEnum<E>, displayOptions: DropdownDisplayOptions<E>? = null): Node {
 
-    val key2i18n: List<Pair<E, String>> = option.allValues.map {
-      it to localizer.formatText("${option.id}.value.${it.name.lowercase()}")
-    }.toList()
+    val value2string = displayOptions?.value2string ?: {
+      localizer.formatText("${option.id}.value.${it.name.lowercase()}")
+    }
+    val key2i18n: List<Pair<E, String>> = option.allValues.map { it to value2string(it) } .toList()
     return createDropdownEditor(option, key2i18n, displayOptions)
   }
 

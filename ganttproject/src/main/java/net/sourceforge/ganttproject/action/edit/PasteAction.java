@@ -29,6 +29,7 @@ import net.sourceforge.ganttproject.gui.view.GPViewManager;
 import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.importer.BufferProjectImportKt;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
+import net.sourceforge.ganttproject.resource.MergeResourcesEnum;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
 
 import java.awt.event.ActionEvent;
@@ -85,7 +86,7 @@ public class PasteAction extends GPAction {
   private void pasteExternalDocument(BufferProject clipboardProject) {
     try {
       HumanResourceMerger.MergeResourcesOption mergeOption = new HumanResourceMerger.MergeResourcesOption();
-      mergeOption.setValue(HumanResourceMerger.MergeResourcesOption.NO);
+      mergeOption.setSelectedValue(MergeResourcesEnum.NO);
       importBufferProject(myProject, clipboardProject, BufferProjectImportKt.asImportBufferProjectApi(myUiFacade),
           mergeOption, null, false);
     } catch (Exception e) {

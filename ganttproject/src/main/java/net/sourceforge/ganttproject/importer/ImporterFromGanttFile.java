@@ -28,6 +28,7 @@ import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
+import net.sourceforge.ganttproject.resource.MergeResourcesEnum;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import org.osgi.service.prefs.Preferences;
 
@@ -46,7 +47,6 @@ public class ImporterFromGanttFile extends ImporterBase {
 
   public ImporterFromGanttFile() {
     super("ganttprojectFiles");
-    myMergeResourcesOption.loadPersistentValue(HumanResourceMerger.MergeResourcesOption.BY_ID);
     myImportCalendarOption.setSelectedValue(ImportCalendarOption.Values.NO);
   }
 
@@ -65,8 +65,7 @@ public class ImporterFromGanttFile extends ImporterBase {
     super.setContext(project, uiFacade, preferences);
     final Preferences node = preferences.node("/instance/net.sourceforge.ganttproject/import");
     myMergeResourcesOption.lock();
-    myMergeResourcesOption.loadPersistentValue(node.get(myMergeResourcesOption.getID(),
-        HumanResourceMerger.MergeResourcesOption.BY_ID));
+    myMergeResourcesOption.loadPersistentValue(node.get(myMergeResourcesOption.getID(), MergeResourcesEnum.BY_ID.name().toLowerCase()));
     myMergeResourcesOption.commit();
     myMergeResourcesOption.addChangeValueListener(new ChangeValueListener() {
       @Override

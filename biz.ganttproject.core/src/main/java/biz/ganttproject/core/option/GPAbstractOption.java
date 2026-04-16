@@ -145,7 +145,7 @@ public abstract class GPAbstractOption<T> implements GPOption<T> {
   }
 
   private ObservableProperty<Boolean> isWritableProperty = new ObservableBoolean("", true);
-  public ObservableProperty<Boolean> getIsWritableProperty() {
+  public GPObservable<Boolean> getIsWritableProperty() {
     return isWritableProperty;
   }
   @Override

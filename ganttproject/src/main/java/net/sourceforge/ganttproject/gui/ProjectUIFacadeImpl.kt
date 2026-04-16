@@ -50,7 +50,7 @@ import net.sourceforge.ganttproject.importer.asImportBufferProjectApi
 import net.sourceforge.ganttproject.importer.importBufferProject
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.resource.HumanResourceMerger
-import net.sourceforge.ganttproject.resource.HumanResourceMerger.MergeResourcesOption.BY_ID
+import net.sourceforge.ganttproject.resource.MergeResourcesEnum
 import net.sourceforge.ganttproject.task.export
 import net.sourceforge.ganttproject.task.importFromDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
@@ -262,7 +262,7 @@ class ProjectUIFacadeImpl(
                           )
                           val mergeOption = HumanResourceMerger.MergeResourcesOption()
                           val importCalendarOption = ImportCalendarOption()
-                          mergeOption.loadPersistentValue(BY_ID)
+                          mergeOption.setSelectedValue(MergeResourcesEnum.BY_ID)
                           importCalendarOption.loadPersistentValue(ImportCalendarOption.Values.REPLACE.name)
                           importBufferProject(
                             project,
