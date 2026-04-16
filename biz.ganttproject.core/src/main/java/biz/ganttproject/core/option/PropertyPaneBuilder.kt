@@ -135,5 +135,6 @@ data class DateDisplayOptions(
  * Options for displaying dropdown fields in a property pane.
  */
 data class DropdownDisplayOptions<E>(
-  var cellFactory: ((ListCell<Pair<E, String>>, Pair<E, String>) -> Node)? = null
+  var cellFactory: ((ListCell<Pair<E, String>>, Pair<E, String>) -> Node)? = null,
+  var value2string: ((E) -> String)? = null
 ) : PropertyDisplayOptions<E>()

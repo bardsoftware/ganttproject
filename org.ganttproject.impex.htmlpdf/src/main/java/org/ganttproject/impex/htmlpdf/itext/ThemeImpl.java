@@ -95,7 +95,7 @@ class ThemeImpl extends StylesheetImpl implements PdfPageEvent, ITextStylesheet 
   private final ObservableBooleanOption myShowNotesOption = new ObservableBooleanOption("export.itext.showNotes", true);
   private final ObservableBooleanOption myLandscapeOption = new ObservableBooleanOption("export.itext.landscape", true);
   private final ObservableChoiceOption<String> myPageSizeOption = new ObservableChoiceOption<>("export.itext.pageSize",
-    ourSizes.get(0), ourSizes, new StringConverter<String>() {
+    ourSizes.get(0), ourSizes, new StringConverter<>() {
     @Override
     public String toString(String object) {
       return object;

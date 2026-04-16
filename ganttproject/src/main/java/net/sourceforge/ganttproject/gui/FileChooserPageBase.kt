@@ -104,63 +104,50 @@ abstract class FileChooserPageBase protected constructor(
         "overwrite.label" to "option.exporter.overwrite.label.trailing"
       ))
     }
-    if (allowMultipleChoice) {
-      val updateFileList = { files: List<File> ->
-        chosenFiles.clear()
-        files.forEach { file ->
-          val newChosenFile = ChosenFile(file, fxFiles,chosenFiles, this::validateFile)
-          if (!chosenFiles.contains(newChosenFile)) {
-            chosenFiles.add(newChosenFile)
-          }
+    val updateFileList = { files: List<File> ->
+      chosenFiles.clear()
+      files.forEach { file ->
+        val newChosenFile = ChosenFile(file, fxFiles,chosenFiles, this::validateFile)
+        if (!chosenFiles.contains(newChosenFile)) {
+          chosenFiles.add(newChosenFile)
         }
-      }
-      fxFiles.addWatcher { updateFileList(it.newValue) }
-      updateFileList(fxFiles.value)
-
-    } else {
-      fxFile.addWatcher { event ->
-        tryChosenFile(event.newValue)
-//        if (allowMultipleChoice) {
-//          event.newValue?.let {
-//            val newChosenFile = ChosenFile(event.newValue!!, fxFchosenFiles, this::validateFile)
-//            if (!chosenFiles.contains(newChosenFile)) {
-//              chosenFiles.add(newChosenFile)
-//            }
-//          }
-//        }
       }
     }
+    fxFiles.addWatcher { updateFileList(it.newValue) }
+    updateFileList(fxFiles.value)
 
-    val sheet = PropertySheetBuilder(i18n).pane {
-      if (allowMultipleChoice) {
-        files(fxFiles) {
-          chooserTitle = fileChooserTitle ?: ""
-          isSaveNotOpen = fileChooserSelectionMode != JFileChooser.FILES_ONLY
-          browseButtonText = RootLocalizer.formatText("fileChooser.browse")
-          allowMultipleSelection = true
-          editorStyles.add("file-chooser")
-          this@FileChooserPageBase.extensionFilters = this.extensionFilters
-        }
-      } else {
-        file(fxFile) {
-          chooserTitle = fileChooserTitle ?: ""
-          isSaveNotOpen = fileChooserSelectionMode != JFileChooser.FILES_ONLY
-          browseButtonText = RootLocalizer.formatText("fileChooser.browse")
-          editorStyles.add("file-chooser")
-          this@FileChooserPageBase.extensionFilters = this.extensionFilters
-        }
-      }
-      if (hasOverwriteOption) {
-        checkbox(fxOverwrite)
-      }
+    fxFile.addWatcher { event ->
+      tryChosenFile(event.newValue)
     }
-    root.top = sheet.node
 
     resetCenterPane = {
       coroutineScope.launch {
         val addOptionsComponentSwing: Boolean = withContext(Dispatchers.JavaFx) {
           val optionsComponentFx: Node? = createSecondaryOptionsPanelFx()
           root.center = vbox {
+            add(properties(i18n) {
+              if (allowMultipleChoice) {
+                files(fxFiles) {
+                  chooserTitle = fileChooserTitle ?: ""
+                  isSaveNotOpen = fileChooserSelectionMode != JFileChooser.FILES_ONLY
+                  browseButtonText = RootLocalizer.formatText("fileChooser.browse")
+                  allowMultipleSelection = true
+                  editorStyles.add("file-chooser")
+                  this@FileChooserPageBase.extensionFilters = this.extensionFilters
+                }
+              } else {
+                file(fxFile) {
+                  chooserTitle = fileChooserTitle ?: ""
+                  isSaveNotOpen = fileChooserSelectionMode != JFileChooser.FILES_ONLY
+                  browseButtonText = RootLocalizer.formatText("fileChooser.browse")
+                  editorStyles.add("file-chooser")
+                  this@FileChooserPageBase.extensionFilters = this.extensionFilters
+                }
+              }
+              if (hasOverwriteOption) {
+                checkbox(fxOverwrite)
+              }
+            })
             if (allowMultipleChoice) {
               val listView = ListView(chosenFiles).also {
                 it.styleClass.addAll("chosen-files-list", "swing-background")

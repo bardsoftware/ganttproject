@@ -23,8 +23,8 @@ import java.util.function.Function
 /**
  * Implementation of [EnumerationOption] that delegates to [ObservableEnum].
  */
-class ObservableEnumerationOption<E : Enum<E>>(
-  private val delegate: ObservableEnum<E>
+open class ObservableEnumerationOption<E : Enum<E>>(
+  protected val delegate: ObservableEnum<E>
 ) : GPAbstractOption<String>(delegate.id, delegate.value.name), EnumerationOption {
 
   constructor(id: String, value: E, allValues: List<E>) : this(ObservableEnum(id, value, allValues))
@@ -44,7 +44,7 @@ class ObservableEnumerationOption<E : Enum<E>>(
 
   override fun setValue(value: String?, clientId: Any?) {
     if (value == null) return
-    val enumValue = delegate.allValues.find { it.name == value }
+    val enumValue = delegate.allValues.find { it.name.equals(value, ignoreCase = true) }
     if (enumValue != null) {
       delegate.set(enumValue, clientId)
     }
@@ -59,7 +59,7 @@ class ObservableEnumerationOption<E : Enum<E>>(
 
   override fun getValueLocalizer(): Function<String, String>? = myValueLocalizer
 
-  override fun getPersistentValue(): String = value
+  override fun getPersistentValue(): String = value.lowercase()
 
   override fun loadPersistentValue(value: String?) {
     setValue(value)

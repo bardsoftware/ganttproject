@@ -104,4 +104,46 @@ public class DefaultEnumerationOption<T> extends GPAbstractOption<String> implem
   public Function<String, String> getValueLocalizer() {
     return myValueLocalizer;
   }
+
+  @Override
+  public void visitPropertyPaneBuilder(PropertyPaneBuilder builder) {
+    // Create an ObservableChoice from this enumeration option
+    ObservableChoice<String> observableChoice = new ObservableChoice<>(
+      getID(),
+      getValue() != null ? getValue() : (myValues.isEmpty() ? null : myValues.get(0)),
+      new ArrayList<>(myValues),
+      new javafx.util.StringConverter<String>() {
+        @Override
+        public String toString(String object) {
+          if (myValueLocalizer != null) {
+            return myValueLocalizer.apply(object);
+          }
+          return object;
+        }
+
+        @Override
+        public String fromString(String string) {
+          return string;
+        }
+      }
+    );
+
+    // Sync changes from the observable choice to the enumeration option
+    observableChoice.addWatcher(event -> {
+      if (!Objects.equals(getValue(), event.getNewValue())) {
+        setValue(event.getNewValue());
+      }
+      return null;
+    });
+
+    // Sync changes from the enumeration option to the observable choice
+    addChangeValueListener(event -> {
+      String newValue = (String) event.getNewValue();
+      if (!Objects.equals(observableChoice.getValue(), newValue)) {
+        observableChoice.set(newValue, null);
+      }
+    });
+
+    builder.dropdown(observableChoice, null);
+  }
 }

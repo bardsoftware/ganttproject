@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class OverwritingMerger implements HumanResourceMerger {
-  private final EnumerationOption myMergeOption;
+  private final MergeResourcesOption myMergeOption;
   private final Map<String, HumanResource> myCache = new HashMap<>();
 
-  public OverwritingMerger(EnumerationOption mergeOption) {
+  public OverwritingMerger(MergeResourcesOption mergeOption) {
     myMergeOption = mergeOption;
   }
 
@@ -68,19 +68,19 @@ public class OverwritingMerger implements HumanResourceMerger {
 
   @Override
   public HumanResource findNative(HumanResource foreign, HumanResourceManager nativeMgr) {
-    if (MergeResourcesOption.NO.equals(myMergeOption.getValue())) {
+    if (MergeResourcesEnum.NO.equals(myMergeOption.getSelectedValue())) {
       return null;
     }
-    if (MergeResourcesOption.BY_ID.equals(myMergeOption.getValue())) {
+    if (MergeResourcesEnum.BY_ID.equals(myMergeOption.getSelectedValue())) {
       return nativeMgr.getById(foreign.getId());
     }
-    if (MergeResourcesOption.BY_EMAIL.equals(myMergeOption.getValue())) {
+    if (MergeResourcesEnum.BY_EMAIL.equals(myMergeOption.getSelectedValue())) {
       if (myCache.isEmpty()) {
         buildEmailCache(nativeMgr);
       }
       return myCache.get(foreign.getMail());
     }
-    if (MergeResourcesOption.BY_NAME.equals(myMergeOption.getValue())) {
+    if (MergeResourcesEnum.BY_NAME.equals(myMergeOption.getSelectedValue())) {
       if (myCache.isEmpty()) {
         buildNameCache(nativeMgr);
       }

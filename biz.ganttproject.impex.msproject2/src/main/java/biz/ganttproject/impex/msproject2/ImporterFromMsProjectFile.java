@@ -50,7 +50,6 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
   private final GPOption[] myOptions = new GPOption[] { myMergeResourcesOption, myImportCalendarOption };
   public ImporterFromMsProjectFile() {
     super("impex.msproject2");
-    myMergeResourcesOption.loadPersistentValue(HumanResourceMerger.MergeResourcesOption.BY_ID);
     myImportCalendarOption.setSelectedValue(ImportCalendarOption.Values.NO);
   }
 

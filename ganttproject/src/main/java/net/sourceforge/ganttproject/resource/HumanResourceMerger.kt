@@ -16,26 +16,30 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package net.sourceforge.ganttproject.resource;
+package net.sourceforge.ganttproject.resource
 
-import java.util.Map;
+import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.core.option.ObservableEnumerationOption
+import biz.ganttproject.core.option.PropertyPaneBuilder
 
-import biz.ganttproject.core.option.DefaultEnumerationOption;
+enum class MergeResourcesEnum {
+  NO, BY_ID, BY_EMAIL, BY_NAME
+}
 
+interface HumanResourceMerger {
+    fun merge(existing2imported: MutableMap<HumanResource?, HumanResource?>?)
 
-public interface HumanResourceMerger {
-  void merge(Map<HumanResource, HumanResource> existing2imported);
+    fun findNative(foreign: HumanResource?, nativeMgr: HumanResourceManager?): HumanResource?
 
-  HumanResource findNative(HumanResource foreign, HumanResourceManager nativeMgr);
-
-  public static class MergeResourcesOption extends DefaultEnumerationOption<Object> {
-    public static final String NO = "mergeresources_no";
-    public static final String BY_ID = "mergeresources_by_id";
-    public static final String BY_EMAIL = "mergeresources_by_email";
-    public static final String BY_NAME = "mergeresources_by_name";
-
-    public MergeResourcesOption() {
-      super("impex.ganttprojectFiles.mergeResources", new String[] { NO, BY_ID, BY_EMAIL, BY_NAME });
+    class MergeResourcesOption : ObservableEnumerationOption<MergeResourcesEnum>("impex.mergeResources",
+      MergeResourcesEnum.BY_ID,
+      MergeResourcesEnum.entries
+    ) {
+      override fun visitPropertyPaneBuilder(builder: PropertyPaneBuilder) {
+        builder.dropdown(this.delegate) {
+          value2string = { RootLocalizer.formatText("optionValue.mergeresources_${it.name.lowercase()}.label") }
+          labelText = RootLocalizer.formatText("option.impex.ganttprojectFiles.mergeResources.label")
+        }
+      }
     }
-  }
 }

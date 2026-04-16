@@ -43,7 +43,6 @@ public class ImporterFromCsvFile extends ImporterBase {
 
   public ImporterFromCsvFile() {
     super("csvFiles");
-    myMergeResourcesOption.loadPersistentValue(HumanResourceMerger.MergeResourcesOption.BY_ID);
   }
 
   @Override
