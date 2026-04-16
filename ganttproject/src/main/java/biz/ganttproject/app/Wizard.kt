@@ -284,12 +284,9 @@ private class WizardUiFx(private val ctrl: DialogController, private val model: 
     finishButton.isDisable = true
     monitor.model.processState.addWatcher { event ->
       FXThread.runLater {
-        if (event.newValue is JobState.ProcessCompleted) {
+        if (event.newValue is JobState.ProcessCompleted || event.newValue is JobState.ProcessFailed) {
           finishAction.putValue(Action.NAME, RootLocalizer.formatText("close"))
           finishActionHandler = ::onOkClose
-          finishButton.isDisable = false
-        }
-        if (event.newValue is JobState.ProcessFailed) {
           finishButton.isDisable = false
         }
       }

@@ -35,6 +35,8 @@ import biz.ganttproject.app.WizardModel
 import biz.ganttproject.app.WizardPage
 import biz.ganttproject.app.showWizard
 import javafx.collections.ListChangeListener
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder
 import net.sourceforge.ganttproject.plugins.PluginManager.getExtensions
 import org.osgi.service.prefs.Preferences
@@ -81,6 +83,7 @@ class ImportFileWizard(uiFacade: UIFacade, project: IGanttProject, pluginPrefere
  * Model for the import wizard, managing importer and file selection.
  */
 class ImporterWizardModel: WizardModel("wizard.import", i18n.formatText("importWizard.dialog.title")) {
+  override val okRunActionKey: String = "project.import"
   // Selected importer. Updates a customPageProperty with the custom page of the importer, if any.
   var importer: Importer? = null
     set(value) {
@@ -115,8 +118,27 @@ class ImporterWizardModel: WizardModel("wizard.import", i18n.formatText("importW
       1 -> customPageProperty.get() != null && files.isNotEmpty() && errorMessage.value.isNullOrBlank()
       else -> false
     } }
-    onOk = { importer?.run() }
+    onOk = ::runImport
   }
+
+  private fun runImport(monitor: JobMonitorModel) {
+    coroutineScope.launch {
+      monitor.processState.set(JobState.ProcessStarted)
+      try {
+        monitor.statusText.set("Importing...")
+        delay(1000)
+
+        importer?.run()
+        monitor.processState.set(JobState.ProcessCompleted)
+        monitor.statusText.set("Import completed")
+      } catch (ex: Exception) {
+        monitor.processState.set(JobState.ProcessFailed(Err(ex)))
+        monitor.statusText.set("Import failed")
+        monitor.progressButtonState
+      }
+    }
+  }
+
 }
 
 private fun getImporters(): MutableList<Importer> {

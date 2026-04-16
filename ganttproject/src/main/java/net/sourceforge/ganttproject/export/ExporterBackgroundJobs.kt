@@ -121,11 +121,11 @@ fun export(coroutineScope: CoroutineScope, jobs: List<ExporterJob>, jobMonitor: 
     var result: Result<IStatus, Exception> = Ok(Status.OK_STATUS)
     jobMonitor.processState.set(JobState.ProcessStarted)
     coroutineScope.launch {
-      delay(2000)
+      delay(500)
       jobMonitor.jobCount.set(jobs.size)
       for (job in jobs) {
         jobMonitor.processState.set(JobState.JobStarted(job.name))
-        delay(2000)
+        delay(500)
         result = result.andThen {
           try {
             val jobStatus = job.run()
