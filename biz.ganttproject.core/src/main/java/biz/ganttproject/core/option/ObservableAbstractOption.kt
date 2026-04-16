@@ -41,7 +41,7 @@ abstract class ObservableAbstractOption<T>(
         delegate.set(value, clientId)
     }
 
-    override fun getIsWritableProperty(): ObservableProperty<Boolean> = delegate.isWritable as ObservableProperty<Boolean>
+    override fun getIsWritableProperty(): GPObservable<Boolean>? = delegate.isWritable
 
     override fun isWritable(): Boolean = delegate.isWritable.value
 }
