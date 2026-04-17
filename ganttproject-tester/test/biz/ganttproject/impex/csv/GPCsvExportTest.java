@@ -8,6 +8,7 @@ import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import net.sourceforge.ganttproject.GanttTask;
+import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -174,6 +175,35 @@ public class GPCsvExportTest extends TaskTestCase {
     assertEquals("1,\"#00ff00\"", lines[2].trim());
     assertEquals("2,\"#2a2a2a\"", lines[3].trim());
     assertEquals("3,", lines[4].trim());
+  }
+
+  public void testEarliestBeginColumn() throws Exception {
+    TaskManager taskManager = getTaskManager();
+    GanttTask task0 = taskManager.createTask();
+    task0.setStart(TestSetupHelper.newMonday());
+    task0.setDuration(taskManager.createLength(3));
+    task0.setThirdDate(TestSetupHelper.newMonday());
+
+    GanttTask task1 = taskManager.createTask();
+    task1.setStart(TestSetupHelper.newMonday());
+    task1.setDuration(taskManager.createLength(2));
+
+    CSVOptions csvOptions = enableOnly(TaskDefaultColumn.ID.getStub().getID(), TaskDefaultColumn.EARLIEST_BEGIN.getStub().getID());
+    GanttCSVExport exporter = new GanttCSVExport(
+        taskManager,
+        new HumanResourceManager(null, new CustomColumnsManager()),
+        new RoleManagerImpl(),
+        csvOptions
+    );
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    try (SpreadsheetWriter writer = new CsvWriterImpl(outputStream, CSVFormat.DEFAULT)) {
+      exporter.save(writer);
+    }
+    String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\\n");
+    assertEquals(3, lines.length);
+    assertEquals("tableColID,earliestBegin", lines[0].trim());
+    assertEquals("0,10/18/04", lines[1].trim());
+    assertEquals("1,", lines[2].trim());
   }
 
   public void testBomOption() throws Exception {

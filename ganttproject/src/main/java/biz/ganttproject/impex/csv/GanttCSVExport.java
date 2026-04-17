@@ -38,10 +38,7 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.roles.RoleManager;
-import net.sourceforge.ganttproject.task.ResourceAssignment;
-import net.sourceforge.ganttproject.task.Task;
-import net.sourceforge.ganttproject.task.TaskManager;
-import net.sourceforge.ganttproject.task.TaskProperties;
+import net.sourceforge.ganttproject.task.*;
 import net.sourceforge.ganttproject.util.ColorConvertion;
 import net.sourceforge.ganttproject.util.StringUtils;
 import org.apache.commons.csv.CSVFormat;
@@ -219,6 +216,13 @@ public class GanttCSVExport {
               break;
             case PRIORITY:
               writer.print(task.getPriority().getPersistentValue());
+              break;
+            case EARLIEST_BEGIN:
+              if (task.getThirdDateConstraint() == TaskImpl.EARLIESTBEGIN && task.getThird() != null) {
+                writer.print(task.getThird());
+              } else {
+                writer.print("");
+              }
               break;
             case INFO:
             case TYPE:

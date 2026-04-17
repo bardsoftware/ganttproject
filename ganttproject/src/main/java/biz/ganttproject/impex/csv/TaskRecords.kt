@@ -20,6 +20,7 @@ package biz.ganttproject.impex.csv
 
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.ColorOption
+import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.TimeUnitStack
 import com.google.common.base.Function
 import com.google.common.base.Joiner
@@ -30,6 +31,7 @@ import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskImpl
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.TaskProperties
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
@@ -74,7 +76,8 @@ class TaskRecords(
     OUTLINE_NUMBER(TaskDefaultColumn.OUTLINE_NUMBER.nameKey),
     COST(TaskDefaultColumn.COST.nameKey),
     COLOR(TaskDefaultColumn.COLOR.nameKey),
-    PRIORITY(TaskDefaultColumn.PRIORITY.nameKey);
+    PRIORITY(TaskDefaultColumn.PRIORITY.nameKey),
+    EARLIEST_BEGIN(TaskDefaultColumn.EARLIEST_BEGIN.nameKey);
 
     override fun toString(): String {
       // Return translated field name
@@ -165,6 +168,12 @@ class TaskRecords(
       builder = record.getInt(TaskDefaultColumn.ID.getName())?.let { builder.withId(it)} ?: builder
     }
     val task = builder.build()
+    if (record.isSet(TaskFields.EARLIEST_BEGIN.toString()) && record.get(TaskFields.EARLIEST_BEGIN.toString()).isNullOrBlank().not()) {
+      record.digDate(TaskFields.EARLIEST_BEGIN.toString(), this::addError)?.let {
+        task.thirdDateConstraint = TaskImpl.EARLIESTBEGIN
+        task.setThirdDate(CalendarFactory.createGanttCalendar(myTimeUnitStack.defaultTimeUnit.adjustLeft(it)))
+      }
+    }
     if (record.isSet(TaskDefaultColumn.ID.getName())) {
       record.getInt(TaskDefaultColumn.ID.getName())?.let {
         myTaskIdMap[it] = task
