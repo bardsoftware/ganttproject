@@ -53,7 +53,8 @@ public enum TaskDefaultColumn implements BuiltinColumn {
   RESOURCES(new ColumnList.ColumnStub("tpd13", null, false, -1, 20), String.class, "resources", Functions.NOT_EDITABLE, false),
   COLOR(new ColumnList.ColumnStub("tpd14", null, false, -1, 20), Color.class, "option.taskDefaultColor.label", null, true),
   NOTES(new ColumnList.ColumnStub("tpd15", null, true, -1, 20), String.class, "notes", null, true),
-  ATTACHMENTS(new ColumnList.ColumnStub("tpd16", null, false, -1, 20), Icon.class, "webLink", null, true);
+  ATTACHMENTS(new ColumnList.ColumnStub("tpd16", null, false, -1, 20), Icon.class, "webLink", null, true),
+  EARLIEST_BEGIN(new ColumnList.ColumnStub("tpd17", null, false, -1, 75), GregorianCalendar.class, "earliestBegin", Functions.ALWAYS_EDITABLE, false);
 
   private final boolean myIsIconified;
 

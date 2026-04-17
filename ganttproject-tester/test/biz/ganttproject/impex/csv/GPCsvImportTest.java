@@ -41,11 +41,14 @@ import net.sourceforge.ganttproject.roles.RoleManager;
 import net.sourceforge.ganttproject.roles.RoleManagerImpl;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.util.collect.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.w3c.util.DateParser;
+import org.w3c.util.InvalidDateException;
 
 import java.awt.*;
 import java.io.ByteArrayInputStream;
@@ -495,6 +498,37 @@ public class GPCsvImportTest extends TestCase {
     assertEquals(new Color(42, 42, 42), taskMap.get("t3").getColor());
     assertEquals(builder.getDefaultColor(), taskMap.get("t4").getColor());
     assertEquals(builder.getDefaultColor(), taskMap.get("t5").getColor());
+  }
+
+  public void testEarliestBeginColumn() throws IOException, InvalidDateException {
+    TaskManagerBuilder builder = TestSetupHelper.newTaskManagerBuilder();
+    TaskManager taskManager = builder.build();
+
+    String header1 = buildTaskHeader(
+        TaskRecords.TaskFields.ID,
+        TaskRecords.TaskFields.NAME,
+        TaskRecords.TaskFields.BEGIN_DATE,
+        TaskRecords.TaskFields.END_DATE,
+        TaskRecords.TaskFields.EARLIEST_BEGIN
+    );
+    String data1 = "1,t1,23/07/12,26/07/12,20/07/12";
+    String data2 = "2,t2,25/07/12,28/07/12,22/07/12";
+    String data3 = "3,t3,30/07/12,02/08/12,";
+
+    GanttCSVOpen importer = new GanttCSVOpen(createSupplier(
+        Joiner.on('\n').join(header1, data1, data2, data3).getBytes(Charsets.UTF_8)),
+        SpreadsheetFormat.CSV,
+        taskManager, null, null, builder.getTimeUnitStack());
+    importer.load();
+    Map<String, Task> taskMap = buildTaskMap(taskManager);
+    assertEquals(3, taskMap.size());
+
+    assertEquals(DateParser.parse("2012-07-20"), taskMap.get("t1").getThird().getTime());
+    assertEquals(TaskImpl.EARLIESTBEGIN,  taskMap.get("t1").getThirdDateConstraint());
+    assertEquals(DateParser.parse("2012-07-22"), taskMap.get("t2").getThird().getTime());
+    assertEquals(TaskImpl.EARLIESTBEGIN,  taskMap.get("t2").getThirdDateConstraint());
+    assertNull(taskMap.get("t3").getThird());
+    assertEquals(TaskImpl.NONE,  taskMap.get("t3").getThirdDateConstraint());
   }
 
   private List<Pair<SpreadsheetFormat, Supplier<InputStream>>> createPairs(String... data) throws Exception {
