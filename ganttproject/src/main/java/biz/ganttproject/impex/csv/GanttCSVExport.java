@@ -162,11 +162,7 @@ public class GanttCSVExport {
           continue;
         }
         TaskDefaultColumn defaultColumn = TaskDefaultColumn.find(entry.getKey());
-        if (defaultColumn == null) {
-          if ("webLink".equals(entry.getKey())) {
-            writer.print(getWebLink((GanttTask) task));
-          }
-        } else {
+        if (defaultColumn != null) {
           switch (defaultColumn) {
             case ID:
               writer.print(task.getTaskID());
@@ -217,6 +213,9 @@ public class GanttCSVExport {
             case PRIORITY:
               writer.print(task.getPriority().getPersistentValue());
               break;
+            case IS_CRITICAL:
+              writer.print(task.isCritical());
+              break;
             case EARLIEST_BEGIN:
               if (task.getThirdDateConstraint() == TaskImpl.EARLIESTBEGIN && task.getThird() != null) {
                 writer.print(task.getThird());
@@ -224,9 +223,11 @@ public class GanttCSVExport {
                 writer.print("");
               }
               break;
+            case ATTACHMENTS:
+              writer.print(getWebLink(task));
+              break;
             case INFO:
             case TYPE:
-            case ATTACHMENTS:
             default:
               break;
           }
@@ -336,7 +337,7 @@ public class GanttCSVExport {
   /**
    * @return the link of the task.
    */
-  private String getWebLink(GanttTask task) {
+  private String getWebLink(Task task) {
     return (task.getWebLink() == null || task.getWebLink().equals("http://") ? "" : task.getWebLink());
   }
 

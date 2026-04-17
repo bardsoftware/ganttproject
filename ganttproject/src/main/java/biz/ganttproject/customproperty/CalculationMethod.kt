@@ -63,7 +63,7 @@ class CalculationMethodValidator(private val projectDatabase: ProjectDatabase) {
 
 private val ourTaskTableFields: List<String> = Tables.TASKVIEWFORCOMPUTEDCOLUMNS.run {
   listOf(
-    COLOR.name, COST_MANUAL_VALUE.name, COMPLETION.name, DURATION.name, EARLIEST_START_DATE.name, IS_COST_CALCULATED.name,
+    COLOR.name, COST_MANUAL_VALUE.name, COMPLETION.name, DURATION.name, EARLIEST_START_DATE.name, IS_CRITICAL.name ,IS_COST_CALCULATED.name,
     IS_MILESTONE.name, IS_PROJECT_TASK.name, NAME.name, NOTES.name, ID.name, PRIORITY.name, START_DATE.name, WEB_LINK.name, COST.name, END_DATE.name
   )
 }
