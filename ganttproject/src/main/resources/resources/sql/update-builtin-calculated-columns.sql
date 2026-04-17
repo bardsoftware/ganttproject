@@ -1,1 +1,1 @@
-UPDATE Task SET end_date=TASK_END_DATE(num), cost=TASK_COST(num);
+UPDATE Task SET end_date=TASK_END_DATE(num), cost=TASK_COST(num), is_critical=TASK_IS_CRITICAL(num);

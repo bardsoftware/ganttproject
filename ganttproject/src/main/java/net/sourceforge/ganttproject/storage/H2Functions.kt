@@ -35,3 +35,7 @@ fun taskEndDate(taskId: Int): LocalDate? {
   val task = H2Functions.taskManager.get()?.getTask(taskId)
   return task?.end?.toLocalDate()
 }
+
+fun taskIsCritical(taskId: Int): Boolean {
+  return H2Functions.taskManager.get()?.getTask(taskId)?.isCritical ?: false
+}

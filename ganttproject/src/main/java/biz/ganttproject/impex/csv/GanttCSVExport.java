@@ -217,6 +217,9 @@ public class GanttCSVExport {
             case PRIORITY:
               writer.print(task.getPriority().getPersistentValue());
               break;
+            case IS_CRITICAL:
+              writer.print(task.isCritical());
+              break;
             case EARLIEST_BEGIN:
               if (task.getThirdDateConstraint() == TaskImpl.EARLIESTBEGIN && task.getThird() != null) {
                 writer.print(task.getThird());

@@ -183,6 +183,18 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
           )
       }
 
+      modelColumn.valueClass == java.lang.Boolean::class.java -> {
+        createBooleanColumn(
+            modelColumn.getName(),
+            getValue = { tableModel.getValueAt(it, modelColumn) as? Boolean? },
+            setValue = { node, value ->
+                undoManager.undoableEdit("Edit properties") {
+                    tableModel.setValue(value, node, modelColumn)
+                }
+            }
+
+        )
+      }
       else -> TreeTableColumn<NodeType, Any>(modelColumn.getName()).apply {
         setCellValueFactory {
           ReadOnlyStringWrapper(

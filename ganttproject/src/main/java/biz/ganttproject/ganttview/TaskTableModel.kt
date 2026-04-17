@@ -32,6 +32,7 @@ import biz.ganttproject.customproperty.CustomColumnsException
 import biz.ganttproject.customproperty.CustomPropertyDefinition
 import net.sourceforge.ganttproject.task.CostStub
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.TaskImpl
 import net.sourceforge.ganttproject.task.TaskProperties
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
@@ -62,6 +63,8 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager): T
       TaskDefaultColumn.COST           -> t.cost.value
       TaskDefaultColumn.COLOR          -> t.color
       TaskDefaultColumn.RESOURCES      -> t.assignments.joinToString(",") { it?.resource?.name ?: "" }
+      TaskDefaultColumn.EARLIEST_BEGIN -> if (t.thirdDateConstraint != 0) t.third else null
+      TaskDefaultColumn.IS_CRITICAL    -> t.isCritical
       else -> {
         null
       }
@@ -105,6 +108,14 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager): T
         runInUiThread {
           node.createMutator().let {
             it.setDuration(node.manager.createLength(tl.timeUnit, (value as Number).toInt().toFloat()))
+            it.commit()
+          }
+        }
+      }
+      TaskDefaultColumn.EARLIEST_BEGIN -> {
+        runInUiThread {
+          node.createMutator().let {
+            it.setThird(value as GanttCalendar, TaskImpl.EARLIESTBEGIN)
             it.commit()
           }
         }
