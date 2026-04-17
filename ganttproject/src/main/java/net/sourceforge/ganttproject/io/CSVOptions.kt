@@ -70,7 +70,6 @@ class CSVOptions {
         createTaskExportOption(taskColumn)
       }
     }
-    createTaskExportOption("webLink")
     myResourceOptions["id"] = DefaultBooleanOption("id", true)
     ResourceDefaultColumn.values().filter { it != ResourceDefaultColumn.ID }.map {
       DefaultBooleanOption(it.stub.id, true)
