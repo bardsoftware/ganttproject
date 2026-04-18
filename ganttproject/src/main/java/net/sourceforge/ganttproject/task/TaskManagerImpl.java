@@ -921,6 +921,8 @@ public class TaskManagerImpl implements TaskManager {
         mutator.setCritical(true);
         mutator.commit();
       }
+    } else {
+      resetCriticalPath();
     }
   }
 

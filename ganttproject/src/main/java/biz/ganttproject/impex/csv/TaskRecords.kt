@@ -77,11 +77,14 @@ class TaskRecords(
     COST(TaskDefaultColumn.COST.nameKey),
     COLOR(TaskDefaultColumn.COLOR.nameKey),
     PRIORITY(TaskDefaultColumn.PRIORITY.nameKey),
-    EARLIEST_BEGIN(TaskDefaultColumn.EARLIEST_BEGIN.nameKey);
+    EARLIEST_BEGIN(TaskDefaultColumn.EARLIEST_BEGIN.nameKey),
+    IS_CRITICAL(TaskDefaultColumn.IS_CRITICAL.nameKey);
 
     override fun toString(): String {
       // Return translated field name
-      return GanttLanguage.getInstance().getText(text)
+      return GanttLanguage.getInstance().getText(text) ?: run {
+        text
+      }
     }
   }
 

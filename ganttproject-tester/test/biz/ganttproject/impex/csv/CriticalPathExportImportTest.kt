@@ -51,6 +51,7 @@ class CriticalPathExportImportTest : TaskTestCase() {
 
   @Throws(Exception::class)
   fun testExportCriticalPath() {
+    taskManager.algorithmCollection.criticalPathAlgorithm.isEnabled = true
     val t1 = createTask()
     t1.setCritical(true)
     val t2 = createTask()

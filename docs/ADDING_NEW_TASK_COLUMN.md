@@ -1,6 +1,7 @@
 # How to Add a New Column to the Task Model
 
-This guide documents the steps required to add a new column to the task model in GanttProject, based on the implementation of the `IS_CRITICAL` column.
+This guide was produced by Claude AI. It documents the steps required to add a new column to the task model in GanttProject, 
+based on the implementation of the `IS_CRITICAL` column.
 
 ## Overview
 
@@ -61,6 +62,9 @@ SELECT
 Note: The view uses a placeholder value (`false`) since the actual value comes from calculated functions.
 
 #### 2.3 Create H2 Function
+
+This and subsequent steps in this section assume that the column is _calculated_. They are not necessary if the column
+is a _stored_ one.
 
 **File:** `ganttproject/src/main/java/net/sourceforge/ganttproject/storage/H2Functions.kt`
 
@@ -131,6 +135,8 @@ TaskDefaultColumn.IS_CRITICAL -> {
 ```
 
 ### 5. Add UI Column Builder Support
+
+This section makes sense if the column value class is not yet supported in the task table UI.
 
 **File:** `ganttproject/src/main/java/biz/ganttproject/core/table/ColumnBuilder.kt`
 
