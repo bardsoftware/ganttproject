@@ -67,14 +67,20 @@ class LazyProjectDatabaseProxy(
   var isProjectOpen: Boolean = true
 
   private var lazyProjectDatabase: ProjectDatabase? = null
-  private val calculatedPropertyUpdater by lazy { CalculatedPropertyUpdater(this,
-    { taskManager().customPropertyManager },
-    {
-      taskManager().tasks.map {
-        it.taskID to it.customValues
-      }.toMap()
+  private val calculatedPropertyUpdater by lazy {
+    CalculatedPropertyUpdater(this,
+      { taskManager().customPropertyManager },
+      {
+        taskManager().tasks.map {
+          it.taskID to it.customValues
+        }.toMap()
+      }
+    ).also {
+      taskManager().algorithmCollection.criticalPathAlgorithm.enabledOption.addWatcher { _ ->
+        it.update()
+      }
     }
-  ) }
+  }
 
   override fun updateBuiltInCalculatedColumns() {
     getDatabase().updateBuiltInCalculatedColumns()

@@ -108,6 +108,11 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
         areChangesIgnored = false
         treeTable.updateWidth()
       }
+      sm.stateCompleted.await {
+        FXThread.runLater {
+          treeTable.requestFocus()
+        }
+      }
       sm.stateFailed.await {
         areChangesIgnored = false
       }

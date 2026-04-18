@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.task.algorithm;
 
+import biz.ganttproject.core.option.ObservableBoolean;
 import net.sourceforge.ganttproject.task.Task;
 
 public interface CriticalPathAlgorithm {
@@ -28,4 +29,5 @@ public interface CriticalPathAlgorithm {
   Task[] getCriticalTasks();
   boolean isEnabled();
   void setEnabled(boolean value);
+  ObservableBoolean getEnabledOption();
 }

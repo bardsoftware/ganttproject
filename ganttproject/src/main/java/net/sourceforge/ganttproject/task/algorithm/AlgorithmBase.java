@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject.task.algorithm;
 
+import biz.ganttproject.core.option.ObservableBoolean;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.task.Task;
 
@@ -40,15 +41,19 @@ public class AlgorithmBase {
     }
   }
 
-  private boolean isEnabled = true;
+  private final ObservableBoolean isEnabledOption = new ObservableBoolean("isEnabled", true);
   private Diagnostic myDiagnostic = new DiagnosticStub();
 
   public void setEnabled(boolean enabled) {
-    isEnabled = enabled;
+    isEnabledOption.set(enabled, null);
   }
 
   public boolean isEnabled() {
-    return isEnabled;
+    return isEnabledOption.getValue();
+  }
+
+  public ObservableBoolean getEnabledOption() {
+    return isEnabledOption;
   }
 
   public void setDiagnostic(Diagnostic d) {

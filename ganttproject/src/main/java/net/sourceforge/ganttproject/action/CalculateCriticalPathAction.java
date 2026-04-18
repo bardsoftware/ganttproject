@@ -49,12 +49,12 @@ public class CalculateCriticalPathAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    setOn(!isOn());
-    updateAction();
-    if (isOn()) {
+    myUiFacade.getUndoManager().undoableEdit("Toggle Critical Path", () -> {
+      setOn(!isOn());
       myTaskManager.processCriticalPath(myTaskManager.getRootTask());
-    }
-    myUiFacade.refresh();
+      updateAction();
+      myUiFacade.refresh();
+    });
   }
 
   private void setOn(boolean on) {
