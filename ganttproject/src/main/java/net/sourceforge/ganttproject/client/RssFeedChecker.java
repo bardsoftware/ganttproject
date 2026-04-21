@@ -168,7 +168,7 @@ public class RssFeedChecker {
             }
           }
         } catch (Exception e) {
-          GPLogger.log(new RuntimeException("Failure reading news and updates: " + e.getMessage(), e));
+          GPLogger.logToLogger("Failed to fetch RSS: " + e.getMessage());
         } finally {
           GPLogger.log("RSS check finished");
         }
