@@ -37,8 +37,10 @@ val allMpxLocales: List<Locale> by lazy {
 }
 
 val findInitialLocale: Locale by lazy {
-  allMpxLocales.find { it == getCurrentLocale() } ?: allMpxLocales.first()
+  findLocale(getCurrentLocale().language) ?: findLocale(Locale.US.language) ?: allMpxLocales.first()
 }
+
+private fun findLocale(language: String): Locale?  = allMpxLocales.find { it.language == language }
 
 val stringConverter: StringConverter<Locale> = object : StringConverter<Locale>() {
   override fun toString(locale: Locale) = locale.getDisplayLanguage(getCurrentLocale())

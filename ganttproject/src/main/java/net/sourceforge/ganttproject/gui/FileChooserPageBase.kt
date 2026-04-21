@@ -117,7 +117,7 @@ abstract class FileChooserPageBase protected constructor(
     updateFileList(fxFiles.value)
 
     fxFile.addWatcher { event ->
-      tryChosenFile(event.newValue)
+       tryChosenFile(event.newValue)
     }
 
     resetCenterPane = {
@@ -257,6 +257,7 @@ abstract class FileChooserPageBase protected constructor(
 
       fileFilter = createFileFilter()
       loadPreferences()
+      tryChosenFile(fxFile.value)
       resetCenterPane()
     }
   }
