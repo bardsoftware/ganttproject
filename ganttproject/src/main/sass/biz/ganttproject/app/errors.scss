@@ -22,7 +22,7 @@
 @mixin error-label() {
   -fx-text-fill: $gp-medium-gray;
   -fx-font-weight: bold;
-  -fx-font-size: normal;
+  -fx-font-size: 85%;
 }
 
 /**

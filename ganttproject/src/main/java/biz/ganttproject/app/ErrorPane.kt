@@ -24,15 +24,20 @@ import javafx.scene.layout.HBox
 
 class ErrorPane {
   val hasErrorsProperty = SimpleBooleanProperty(false)
-  val fxNode get() = errorPane
+  val fxNode by lazy {
+    errorPane.styleClass.addAll(boxStyleClass, "noerror")
+    errorLabel.styleClass.addAll(labelStyleClass, "hint")
+    errorPane
+  }
+
+  var boxStyleClass = "hint-validation-pane"
+  var labelStyleClass = "hint-validation"
 
   private val errorLabel = Label().also {
-    it.styleClass.addAll("hint", "hint-validation")
     it.isWrapText = true
   }
 
   private val errorPane = HBox().also {
-    it.styleClass.addAll("hint-validation-pane", "noerror")
     it.children.add(errorLabel)
   }
 

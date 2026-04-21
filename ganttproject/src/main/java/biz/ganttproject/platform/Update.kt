@@ -20,6 +20,7 @@ package biz.ganttproject.platform
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.DialogController
+import biz.ganttproject.app.ErrorPane
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.createLogger
@@ -48,7 +49,7 @@ fun checkAvailableUpdates(updater: Updater, uiFacade: UIFacade) {
         }
       }
     }.exceptionally { ex ->
-      LOG.error(msg = "Failed to fetch updates from {}", UpdateOptions.updateUrl.value, exception = ex)
+      //LOG.error(msg = "Failed to fetch updates from {}", UpdateOptions.updateUrl.value, exception = ex)
       null
     }
   } else {
@@ -168,6 +169,7 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
     dialogApi.addStyleClass("dlg-platform-update")
     dialogApi.addStyleSheet(
       "/biz/ganttproject/app/Dialog.css",
+      "/biz/ganttproject/app/ErrorPane.css",
       "/biz/ganttproject/platform/Update.css"
     )
 
@@ -180,10 +182,17 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
       addClasses("content-pane")
       add(createGridPane(ourLocalizer, model))
 
-      add(HBox().apply {
-        styleClass.add("alert-embedded-box")
-        children.add(Label(ex.getMeaningfulMessage()).also { it.styleClass.add("alert-error") })
-      })
+      val errorPane = ErrorPane().also {
+        it.boxStyleClass = "alert-embedded-box"
+        it.labelStyleClass = "alert-error"
+      }
+      add(errorPane.fxNode)
+      errorPane.onError(ex.getMeaningfulMessage())
+//      add(HBox().apply {
+//        styleClass.add("alert-embedded-box")
+//        children.add(Label(ex.getMeaningfulMessage()).also { it.styleClass.add("alert-error") })
+//      })
+
       add(installFromZipUi.node)
       dialogApi.setContent(vbox)
     }
