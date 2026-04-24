@@ -8,9 +8,9 @@ val jooqVersion: String by project
 
 plugins {
     id("application")
-    id("org.jetbrains.kotlin.jvm") version "2.1.0"
+    id("org.jetbrains.kotlin.jvm") version "2.3.21"
     id("maven-publish")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.21"
     id("nu.studer.jooq") version "9.0"
 }
 
@@ -98,9 +98,6 @@ jooq {
 
 tasks.getByName<KotlinCompile>("compileKotlin") {
     dependsOn(":generateJooq")
-    kotlinOptions {
-        jvmTarget = "21"
-    }
 }
 
 tasks.register<Copy>("copyDbScriptMain") {

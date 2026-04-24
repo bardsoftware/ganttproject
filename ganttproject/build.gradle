@@ -93,15 +93,9 @@ jooq {
 }
 
 compileKotlin {
-    kotlinOptions {
-        jvmTarget = rootProject.java_version
-    }
 }
 
 compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = rootProject.java_version
-    }
 }
 
 compileSass {
@@ -177,8 +171,8 @@ task copyPlugin(dependsOn: jar) {
     }
 }
 
-mainClassName = "net.sourceforge.ganttproject.AppKt"
 application {
+    mainClass = "net.sourceforge.ganttproject.AppKt"
     applicationDefaultJvmArgs = project.ext.javaExportOptions + ["-Dorg.jooq.no-logo=true"] + (project.hasProperty("gpcloud") ? ["-Dgpcloud=${project.property("gpcloud")}"] : [])
 }
 

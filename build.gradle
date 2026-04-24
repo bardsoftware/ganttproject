@@ -2,7 +2,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "2.2.10" apply false
+    id "org.jetbrains.kotlin.jvm" version "2.3.21" apply false
 }
 ext.distBinDir = file('ganttproject-builder/dist-bin')
 ext.pluginsDir = file("ganttproject-builder/dist-bin/plugins/base")
@@ -50,8 +50,6 @@ allprojects {
             '--add-opens', 'java.desktop/sun.awt.X11=ALL-UNNAMED'
         ]
     }
-    sourceCompatibility = java_version
-    targetCompatibility = java_version
 
     clean {
         delete += "dist-bin"

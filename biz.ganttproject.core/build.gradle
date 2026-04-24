@@ -33,14 +33,8 @@ dependencies {
 }
 
 compileKotlin {
-    kotlinOptions {
-        jvmTarget = rootProject.java_version
-    }
 }
 compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = rootProject.java_version
-    }
 }
 
 test {

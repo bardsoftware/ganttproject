@@ -4,7 +4,6 @@ ext.launch4j = '/opt/launch4j/launch4j'
 // Directories where we build the distro
 ext.distBinDir = file('dist-bin')
 
-archivesBaseName = 'ganttproject'
 version = "${rootProject.version}"
 
 ant.importBuild 'build.xml'
@@ -56,7 +55,9 @@ task distBin(dependsOn: [
                 include "ganttproject"
                 include "ganttproject.command"
             }
-            fileMode 0755
+            filePermissions {
+                unix("rwxr-xr-x")
+            }
         }
         copy {
             into(rootProject.pluginsDir)
@@ -68,7 +69,7 @@ task distBin(dependsOn: [
 }
 
 tasks.register('distZip', Zip) {
-    archiveFileName = "$archivesBaseName-${version}.zip"
+    archiveFileName = "ganttproject-${version}.zip"
     destinationDirectory = new File(rootProject.buildDir, "distributions")
     from 'dist-bin'
 }
@@ -146,7 +147,6 @@ task distDebPre {
     }
 }
 
-
 task runApp(type: JavaExec, dependsOn: distBin) {
     workingDir = 'dist-bin'
     classpath = (
@@ -154,7 +154,7 @@ task runApp(type: JavaExec, dependsOn: distBin) {
             files('dist-bin') +
             fileTree(dir: 'dist-bin/lib', includes: ['*.jar'])
     )
-    main = 'com.bardsoftware.eclipsito.Launch'
+    mainClass = 'com.bardsoftware.eclipsito.Launch'
     args '--verbosity', '4', '--app', 'net.sourceforge.ganttproject.GanttProject', '--version-dirs', "plugins"
     jvmArgs = ['-ea'] + javaExportOptions
 }
@@ -166,7 +166,7 @@ task debugApp(type: JavaExec, dependsOn: distBin) {
             files('dist-bin') +
             fileTree(dir: 'dist-bin/lib', includes: ['*.jar'])
     )
-    main = 'com.bardsoftware.eclipsito.Launch'
+    mainClass = 'com.bardsoftware.eclipsito.Launch'
     args '--verbosity', '4', '--app', 'net.sourceforge.ganttproject.GanttProject', '--version-dirs', "plugins"
     jvmArgs = ['-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=y'] + javaExportOptions
 }
