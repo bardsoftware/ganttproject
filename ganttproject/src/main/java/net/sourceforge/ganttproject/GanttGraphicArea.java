@@ -18,10 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sourceforge.ganttproject;
 
-import biz.ganttproject.app.Barrier;
-import biz.ganttproject.app.BarrierEntrance;
-import biz.ganttproject.app.MenuBuilder;
-import biz.ganttproject.app.TimerBarrier;
+import biz.ganttproject.app.*;
 import biz.ganttproject.core.calendar.CalendarEvent;
 import biz.ganttproject.core.calendar.GPCalendar;
 import biz.ganttproject.core.option.*;
@@ -181,10 +178,16 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   }
 
   public Unit buildContextMenu(MenuBuilder builder) {
-    taskTableActionFacade.get().getContextMenuActions().invoke(builder);
-    builder.separator();
-    builder.items(getOptionsDialogAction(), myPublicHolidayDialogAction);
-    builder.items(createToggleHolidayAction(builder.getClickPosition().component1().intValue()));
+    SwingUtilities.invokeLater(() -> {
+      var toggleHolidayAction = createToggleHolidayAction(builder.getClickPosition().component1().intValue());
+      FXThread.INSTANCE.runLater(() -> {
+        taskTableActionFacade.get().getContextMenuActions().invoke(builder);
+        builder.separator();
+        builder.items(getOptionsDialogAction(), myPublicHolidayDialogAction);
+        builder.items(toggleHolidayAction);
+        return Unit.INSTANCE;
+      });
+    });
     return Unit.INSTANCE;
   }
 
