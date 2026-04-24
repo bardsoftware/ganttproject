@@ -1123,7 +1123,7 @@ public abstract class LabeledSkinBase<C extends Labeled> extends SkinBase<C> {
 
         result = sb.toString();
       } else {
-        result = Utils.computeClippedText(font, cleanText, wrapWidth, truncationStyle, ellipsisString);
+        result = UtilsReflectionHelper.computeClippedText(font, cleanText, wrapWidth, truncationStyle, ellipsisString);
       }
 
       if (result != null && result.endsWith("\n")) {
