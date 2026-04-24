@@ -53,7 +53,7 @@ fun showAsync(): CompletableFuture<Runnable> {
       it.styleClass.add("heart")
     }
 
-    val textSplash = Label("3.4 Beta III").also {
+    val textSplash = Label("3.4 Beta IV").also {
       it.styleClass.add("version")
     }
     val stackPane = StackPane().also {
