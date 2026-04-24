@@ -116,7 +116,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform"), FxUiCompo
       it.stylesheets.addAll(DIALOG_STYLESHEET)
     }
     val dialogBuildApi = DialogControllerPane(group)
-      val updateModel = UpdateDialogModel(filteredUpdates, filteredUpdates, fetchError = RuntimeException("FOOOOO"), restarter = { uiFacade.quitApplication(false) })
+      val updateModel = UpdateDialogModel(filteredUpdates, filteredUpdates, fetchError = ex, restarter = { uiFacade.quitApplication(false) })
       updatesAvailableDialog(updateModel, dialogBuildApi)
     return group
   }
