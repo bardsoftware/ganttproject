@@ -53,7 +53,7 @@ import org.eclipse.core.runtime.Platform as Eclipsito
 import biz.ganttproject.platform.UpdateDialogLocalizationKeys as Keys
 
 internal enum class ApplyAction {
-  UP_TO_DATE, INSTALL_FROM_CHANNEL, INSTALL_FROM_ZIP, DOWNLOAD_MAJOR, RESTART
+  UP_TO_DATE, INSTALL_FROM_CHANNEL, INSTALL_FROM_ZIP, VALID_ZIP_SELECTED, DOWNLOAD_MAJOR, RESTART
 }
 
 typealias InstallProgressMonitor = (Int)->Unit
@@ -87,6 +87,7 @@ internal fun createModel(allUpdates: List<UpdateMetadata>, showSkipped: Boolean,
 class UpdateDialogModel(
   internal val updates: List<UpdateMetadata>,
   private val visibleUpdates: List<UpdateMetadata>,
+  internal val fetchError: Throwable? = null,
   internal val installedVersion: String = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "3391",
   private val restarter: AppRestarter
   ) {
@@ -107,14 +108,15 @@ class UpdateDialogModel(
   val btnApplyText = SimpleStringProperty("")
   val btnApplyDisabled = SimpleBooleanProperty(false)
 
-  val btnCloseText = SimpleStringProperty("")
+  val btnCloseText = SimpleStringProperty(localizer.formatText("close"))
   val btnToggleSourceText = SimpleStringProperty("")
 
   internal var state: ApplyAction = ApplyAction.INSTALL_FROM_CHANNEL
     set(value) {
       when (value) {
         ApplyAction.UP_TO_DATE -> {
-          btnApplyText.value = "NO ACTION"
+          btnApplyText.value = localizer.formatText(Keys.BUTTON_OK)
+          btnApplyDisabled.set(true)
           btnToggleSourceText.value = localizer.formatText(Keys.INSTALL_FROM_ZIP)
         }
         ApplyAction.INSTALL_FROM_CHANNEL -> {
@@ -135,6 +137,11 @@ class UpdateDialogModel(
           btnApplyText.value = localizer.formatText(Keys.MAJOR_UPDATE_DOWNLOAD)
           btnToggleSourceText.value = localizer.formatText(Keys.INSTALL_FROM_ZIP)
           stateTitleProperty.value = ""
+        }
+        ApplyAction.VALID_ZIP_SELECTED -> {
+          btnApplyText.value = localizer.formatText(Keys.BUTTON_OK)
+          btnApplyDisabled.set(false)
+          btnToggleSourceText.value = localizer.formatText(Keys.INSTALL_FROM_CHANNEL)
         }
       }
       field = value
@@ -212,7 +219,7 @@ class UpdateDialogModel(
       ApplyAction.INSTALL_FROM_CHANNEL -> {
         applyMinorUpdates()
       }
-      ApplyAction.INSTALL_FROM_ZIP -> {
+      ApplyAction.INSTALL_FROM_ZIP, ApplyAction.VALID_ZIP_SELECTED -> {
         installFromZip()
       }
       ApplyAction.RESTART -> {

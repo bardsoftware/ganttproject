@@ -480,6 +480,11 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
     val btn = this.dialogPane.lookupButton(type)
     if (btn is Button) {
       btn.font = applicationFont.value
+      btn.styleClass.add("btn")
+      when (type) {
+        ButtonType.OK -> btn.styleClass.add("btn-attention")
+        ButtonType.CANCEL, ButtonType.CLOSE -> btn.styleClass.addAll("btn-regular", "secondary")
+      }
       code(btn)
       return btn
     }
@@ -504,11 +509,6 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
       }
       btn.onAction = EventHandler {
         action.actionPerformed(null)
-      }
-      btn.styleClass.add("btn")
-      when (buttonType) {
-        ButtonType.OK -> btn.styleClass.add("btn-attention")
-        ButtonType.CANCEL -> btn.styleClass.addAll("btn-regular", "secondary")
       }
       code(btn)
     }

@@ -19,6 +19,7 @@
 package biz.ganttproject.platform
 
 import biz.ganttproject.FXUtil
+import biz.ganttproject.app.ErrorPane
 import biz.ganttproject.app.Localizer
 import biz.ganttproject.lib.fx.createToggleSwitch
 import biz.ganttproject.lib.fx.openInBrowser
@@ -134,6 +135,12 @@ class UpdateFromChannel(private val model: UpdateDialogModel, private val locali
           showMajorUpdate()
         }
       }
+      val errorPane = ErrorPane().also {
+        it.boxStyleClass = "alert-embedded-box"
+        it.labelStyleClass = "alert-error"
+      }
+      add(errorPane.fxNode)
+      errorPane.onError(model.fetchError?.getMeaningfulMessage())
     }
   }
 

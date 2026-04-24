@@ -31,6 +31,11 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
     -fx-border-color: $gp-medium-gray;
     -fx-border-width: 1;
     -fx-border-radius: 0;
+
+    &:disabled {
+      -fx-control-inner-background: $gp-light-gray;
+      -fx-border-color: $gp-light-gray;
+    }
   }
 
   .title {

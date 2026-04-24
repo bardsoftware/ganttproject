@@ -268,8 +268,9 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
 
     val validatedText = textField.textProperty().validated(property.validator)
     property.isWritable.addWatcher {
+      textField.isDisable = !it.newValue
       if (it.newValue) {
-        validatedText.validate(textField.text, null)
+        validatedText.validate(textField.text ?: "", null)
       }
     }
     validatedText.addWatcher { evt ->

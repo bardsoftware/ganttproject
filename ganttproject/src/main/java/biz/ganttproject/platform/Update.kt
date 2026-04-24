@@ -20,7 +20,6 @@ package biz.ganttproject.platform
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.DialogController
-import biz.ganttproject.app.ErrorPane
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.createLogger
@@ -49,7 +48,7 @@ fun checkAvailableUpdates(updater: Updater, uiFacade: UIFacade) {
         }
       }
     }.exceptionally { ex ->
-      //LOG.error(msg = "Failed to fetch updates from {}", UpdateOptions.updateUrl.value, exception = ex)
+      LOG.error(msg = "Failed to fetch updates from {}", UpdateOptions.updateUrl.value, exception = ex)
       null
     }
   } else {
@@ -72,10 +71,6 @@ fun updatesAvailableDialog(model: UpdateDialogModel,
   )
 }
 
-fun updatesFetchErrorDialog(ex: Throwable, dialogController: DialogController) {
-  val dlg = UpdateDialog(UpdateDialogModel(listOf(), listOf(), restarter = {}))
-  dlg.addContent(ex, dialogController)
-}
 /**
  * UI with the information about the running GanttProject version, the list of available updates and
  * controls to install updates or disable update checking.
@@ -85,7 +80,7 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
   private lateinit var dialogApi: DialogController
   // Progress indicator
   private val installFromZipUi by lazy {
-    UpdateFromZip(ourLocalizer).also {
+    UpdateFromZip(model, ourLocalizer).also {
       model.installFromZip = { it.installUpdate() }
     }
   }
@@ -128,27 +123,24 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
       )
     })
 
-    if (model.state == ApplyAction.UP_TO_DATE) {
-      //dialogApi.removeButtonBar()
-    } else {
-      dialogApi.setupButton(ButtonType.APPLY) { btn ->
-        ButtonBar.setButtonUniformSize(btn, false)
-        btn.styleClass.add("btn-attention")
-        btn.maxWidth = Double.MAX_VALUE
-        model.setupApplyButton(btn)
-      }
+    dialogApi.setupButton(ButtonType.APPLY) { btn ->
+      ButtonBar.setButtonUniformSize(btn, false)
+      btn.styleClass.add("btn-attention")
+      btn.maxWidth = Double.MAX_VALUE
+      model.setupApplyButton(btn)
+    }
 
-      if (!isFromSettings) {
-        // If we show this dialog on start-up, we allow for skipping the update and add the appropriate button.
-        // This button will also behave like "close" button if we install the update.
-        dialogApi.setupButton(ButtonType.CLOSE) { btn ->
-          ButtonBar.setButtonUniformSize(btn, false)
-          btn.maxWidth = Double.MAX_VALUE
-          btn.styleClass.add("btn")
-          model.setupCloseButton(btn)
-        }
+    if (!isFromSettings) {
+      // If we show this dialog on start-up, we allow for skipping the update and add the appropriate button.
+      // This button will also behave like "close" button if we install the update.
+      dialogApi.setupButton(ButtonType.CLOSE) { btn ->
+        ButtonBar.setButtonUniformSize(btn, false)
+        btn.maxWidth = Double.MAX_VALUE
+        btn.styleClass.add("btn")
+        model.setupCloseButton(btn)
       }
     }
+
     dialogApi.setupButton(ButtonType("ZIP")) { btn ->
       btn.maxWidth = Double.MAX_VALUE
       btn.styleClass.addAll("btn", "btn-regular")
@@ -159,47 +151,9 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
     dialogApi.setContent(dialogContent)
     dialogApi.setButtonPaneNode(installFromChannelUi.progressLabel)
   }
-
-  /**
-   * This function builds a UI in case when we failed to connect to the update site and fetch the update metadata.
-   * We will show the installed version, the error message and "install from ZIP" box.
-   */
-  internal fun addContent(ex: Throwable, dialogApi: DialogController) {
-    this.dialogApi = dialogApi
-    dialogApi.addStyleClass("dlg-platform-update")
-    dialogApi.addStyleSheet(
-      "/biz/ganttproject/app/Dialog.css",
-      "/biz/ganttproject/app/ErrorPane.css",
-      "/biz/ganttproject/platform/Update.css"
-    )
-
-    dialogApi.setHeader(vbox {
-      addClasses("header")
-      addTitle(ourLocalizer.formatText("alert.title"))
-    })
-
-    vbox {
-      addClasses("content-pane")
-      add(createGridPane(ourLocalizer, model))
-
-      val errorPane = ErrorPane().also {
-        it.boxStyleClass = "alert-embedded-box"
-        it.labelStyleClass = "alert-error"
-      }
-      add(errorPane.fxNode)
-      errorPane.onError(ex.getMeaningfulMessage())
-//      add(HBox().apply {
-//        styleClass.add("alert-embedded-box")
-//        children.add(Label(ex.getMeaningfulMessage()).also { it.styleClass.add("alert-error") })
-//      })
-
-      add(installFromZipUi.node)
-      dialogApi.setContent(vbox)
-    }
-  }
 }
 
-private fun Throwable.getMeaningfulMessage(): String {
+internal fun Throwable.getMeaningfulMessage(): String {
   var cause: Throwable? = this
   while (cause != null && cause is CompletionException) {
     cause = cause.cause

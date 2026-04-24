@@ -45,7 +45,7 @@ import org.eclipse.core.runtime.Platform as Eclipsito
  * The file must match the signature.
  * This class provides a text area and a file path input, and provides validation that checks the signature.
  */
-class UpdateFromZip(localizer: Localizer) {
+class UpdateFromZip(private val model: UpdateDialogModel, localizer: Localizer) {
   private val paneTitle = localizer.formatText("zip.title")
   private val fileOption = ObservableFile("zip.file")
   private val signatureOption = ObservableString("zip.signature", validator = {sigValue ->
@@ -57,7 +57,7 @@ class UpdateFromZip(localizer: Localizer) {
       } catch (ex: Exception) {
         throw ValidationException(localizer.formatText("zip.validation.signature.mismatch"), ex)
       }
-    } ?: throw ValidationException(localizer.formatText("zip.validation.file.empty"))
+    } ?: ""// ?: throw ValidationException(localizer.formatText("zip.validation.file.empty"))
   })
 
   val propertySheet = PropertySheetBuilder(localizer).pane {
@@ -67,6 +67,7 @@ class UpdateFromZip(localizer: Localizer) {
     }
     text(signatureOption) {
       isMultiline = true
+      editorStyles.add("zip-signature")
     }
   }
 
@@ -105,6 +106,9 @@ class UpdateFromZip(localizer: Localizer) {
     val updateDisable = {
       val disable = signatureOption.value.isNullOrEmpty() || false == fileOption.value?.exists() || propertySheet.validationErrors.isNotEmpty()
       disableApply.value = disable
+      if (!disable) {
+        model.state = ApplyAction.VALID_ZIP_SELECTED
+      }
       if (propertySheet.validationErrors.isEmpty()) {
         onError(null)
       } else {
