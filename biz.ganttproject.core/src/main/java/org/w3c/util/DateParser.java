@@ -8,6 +8,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
@@ -282,13 +283,22 @@ public class DateParser {
         test(new Date());
     }
 
+  private static final DateFormat ourIsoDateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
   private static final DateFormat ourIsoDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
   public static Date toJavaDate(LocalDate localDate) {
     try {
       return ourIsoDateFormatter.parse(localDate.format(DateTimeFormatter.ISO_DATE));
     } catch (ParseException e) {
-      throw new RuntimeException("Failure parsing date " + localDate + " from MS Project file", e);
+      throw new RuntimeException("Failure parsing date " + localDate, e);
+    }
+  }
+
+  public static Date toJavaDate(LocalDateTime localDateTime) {
+    try {
+      return ourIsoDateTimeFormatter.parse(localDateTime.format(DateTimeFormatter.ISO_DATE_TIME));
+    } catch (ParseException e) {
+      throw new RuntimeException("Failure parsing date " + localDateTime, e);
     }
   }
 

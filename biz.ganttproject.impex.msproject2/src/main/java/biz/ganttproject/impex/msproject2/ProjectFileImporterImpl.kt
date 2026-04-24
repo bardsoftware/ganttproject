@@ -51,6 +51,7 @@ import net.sourceforge.ganttproject.task.dependency.constraint.FinishStartConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstraintImpl
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl
 import net.sourceforge.ganttproject.util.collect.Pair
+import org.w3c.util.DateParser
 import java.math.BigDecimal
 import java.text.MessageFormat
 import java.time.DayOfWeek
@@ -534,7 +535,7 @@ class ProjectFileImporterImpl(private val myProjectFile: ProjectFile, private va
         return@Function Pair.create<TimeDuration, TimeDuration>(getTaskManager().createLength(1), null)
       }
       val defaultTimeUnit = myNativeProject.timeUnitStack.defaultTimeUnit
-      var finishDate = ProjectFileImporter.toJavaDate(t.finish.toLocalDate())
+      var finishDate = DateParser.toJavaDate(t.finish)
       // If the finish time is at the midnight between the finish date and the next day then
       // this if condition will evaluate to false. Otherwise, e.g. when the finish date is at 20:00, we
       // will adjust it to the right properly.

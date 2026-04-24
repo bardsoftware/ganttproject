@@ -85,7 +85,7 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
       reportErrors(errors, "Import.MSProject");
     } catch (Exception e) {
       logger.error("Exception when importing {}", new Object[] {selectedFile}, Collections.emptyMap(), e);
-      getUiFacade().showErrorDialog(e);
+      throw new RuntimeException(e.getMessage(), e);
     } finally {
       getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().setEnabled(true);
       getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().setEnabled(true);
@@ -95,7 +95,8 @@ public class ImporterFromMsProjectFile extends ImporterBase implements Importer 
       getTaskManager().getAlgorithmCollection().getRecalculateTaskCompletionPercentageAlgorithm().run();
       getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
     } catch (TaskDependencyException e) {
-      getUiFacade().showErrorDialog(e);
+      logger.error("Exception when importing {}", new Object[] {selectedFile}, Collections.emptyMap(), e);
+      throw new RuntimeException(e.getMessage(), e);
     }
   }
 
