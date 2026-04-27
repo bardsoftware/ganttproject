@@ -139,7 +139,8 @@ public enum TaskDefaultColumn implements BuiltinColumn {
   }
 
   public String getName() {
-    return ourLocaleApi == null ? getNameKey() : ourLocaleApi.i18n(getNameKey());
+    var name = ourLocaleApi == null ? getNameKey() : ourLocaleApi.i18n(getNameKey());
+    return name == null ? getNameKey() : name;
   }
 
   public CustomPropertyClass getCustomPropertyClass() {

@@ -49,6 +49,9 @@ public class ArtefactAction extends GPAction implements ActionStateChangedListen
 
   @Override
   public void actionPerformed(ActionEvent e) {
+    if (myProvider == null) {
+      return;
+    }
     AbstractAction activeAction = myProvider.getActiveAction();
     activeAction.actionPerformed(e);
   }
@@ -73,6 +76,9 @@ public class ArtefactAction extends GPAction implements ActionStateChangedListen
 
   @Override
   public void actionStateChanged() {
+    if (myProvider == null) {
+      return;
+    }
     // State of a delegate action has been changed, so update out state as well
     GPAction activeAction = (GPAction) myProvider.getActiveAction();
     if (activeAction == null) {

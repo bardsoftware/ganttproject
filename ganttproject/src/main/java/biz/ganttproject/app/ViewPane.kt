@@ -42,6 +42,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import net.sourceforge.ganttproject.GanttGraphicArea
+import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.chart.Chart
 import net.sourceforge.ganttproject.chart.ChartSelection
@@ -65,20 +66,20 @@ interface View {
   val chart: Chart
   val id: String
 
-  val createAction: GPAction
+  val createAction: GPAction?
 
   /**
    * Deletes the selected objects in this view.
    */
-  val deleteAction: GPAction
+  val deleteAction: GPAction?
 
   /**
    * Opens a properties dialog for the selected objects in this view.
    */
-  val propertiesAction: GPAction
+  val propertiesAction: GPAction?
 }
 
-class ViewPane {
+class ViewPane(private val project: IGanttProject) {
   private val tabPane = TabPane().also {
     it.selectionModel.selectedItemProperty().subscribe { oldTab, newTab ->
       (newTab?.userData as? ViewImpl)?.let {
@@ -93,6 +94,7 @@ class ViewPane {
   fun createComponent(): Parent = tabPane
 
   fun createView(viewProvider: ViewProvider): View {
+    viewProvider.chart.init(project, project.uIConfiguration.dpiOption, project.uIConfiguration.chartFontOption)
     val node = viewProvider.node
 
     val id = viewProvider.id
@@ -138,9 +140,9 @@ private class ViewImpl(
   private val tab: Tab,
   override val selection: ChartSelection,
   override val chart: Chart,
-  override val createAction: GPAction,
-  override val deleteAction: GPAction,
-  override val propertiesAction: GPAction,
+  override val createAction: GPAction?,
+  override val deleteAction: GPAction?,
+  override val propertiesAction: GPAction?,
   private val refreshFn: () -> Unit
 ): View {
 
