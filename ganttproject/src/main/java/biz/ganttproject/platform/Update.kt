@@ -20,6 +20,7 @@ package biz.ganttproject.platform
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.DialogController
+import biz.ganttproject.app.ErrorPane
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.dialog
 import biz.ganttproject.createLogger
@@ -78,6 +79,7 @@ fun updatesAvailableDialog(model: UpdateDialogModel,
 internal class UpdateDialog(private val model: UpdateDialogModel) {
 
   private lateinit var dialogApi: DialogController
+  private val errorPane = ErrorPane()
   // Progress indicator
   private val installFromZipUi by lazy {
     UpdateFromZip(model, ourLocalizer).also {
@@ -102,6 +104,9 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
       if (oldValue == ApplyAction.INSTALL_FROM_ZIP && (newValue == ApplyAction.INSTALL_FROM_CHANNEL || newValue == ApplyAction.DOWNLOAD_MAJOR)) {
         FXUtil.transitionCenterPane(dialogContent, installFromChannelUi.node, dialogApi::resize)
       }
+      if (newValue == ApplyAction.RESTART) {
+        errorPane.onError(ourLocalizer.formatText("restartRequired"))
+      }
     }
     model.initState()
   }
@@ -113,6 +118,7 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
     dialogApi.addStyleSheet(
       "/biz/ganttproject/app/Dialog.css",
       "/biz/ganttproject/app/Util.css",
+      "/biz/ganttproject/app/ErrorPane.css",
       "/biz/ganttproject/platform/Update.css"
     )
 
@@ -148,6 +154,8 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
       ButtonBar.setButtonUniformSize(btn, false)
     }
     dialogContent.center = installFromChannelUi.node
+    dialogContent.bottom = errorPane.fxNode
+    errorPane.onError(null)
     dialogApi.setContent(dialogContent)
     dialogApi.setButtonPaneNode(installFromChannelUi.progressLabel)
   }

@@ -130,7 +130,7 @@ class UpdateDialogModel(
           btnToggleSourceText.value = localizer.formatText(Keys.INSTALL_FROM_CHANNEL)
         }
         ApplyAction.RESTART -> {
-          btnApplyText.value = localizer.formatText("restart")
+          btnApplyDisabled.set(true)
           btnCloseText.value = localizer.formatText("close")
         }
         ApplyAction.DOWNLOAD_MAJOR -> {
