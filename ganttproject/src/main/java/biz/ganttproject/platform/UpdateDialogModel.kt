@@ -24,16 +24,13 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.DefaultStringOption
 import biz.ganttproject.core.option.GPOptionGroup
+import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.createLogger
 import biz.ganttproject.lib.fx.openInBrowser
 import biz.ganttproject.platform.PgpUtil.verifyFile
 import com.bardsoftware.eclipsito.update.UpdateMetadata
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.mapEither
-import com.github.michaelbull.result.onSuccess
-import com.github.michaelbull.result.runCatching
 import com.google.common.base.Strings
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -41,16 +38,19 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.event.ActionEvent
 import javafx.scene.control.Button
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.Base64
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.concurrent.Executors
 import javax.swing.SwingUtilities
-import org.eclipse.core.runtime.Platform as Eclipsito
+import kotlin.coroutines.EmptyCoroutineContext
 import biz.ganttproject.platform.UpdateDialogLocalizationKeys as Keys
+import org.eclipse.core.runtime.Platform as Eclipsito
 
 internal enum class ApplyAction {
   UP_TO_DATE, INSTALL_FROM_CHANNEL, INSTALL_FROM_ZIP, VALID_ZIP_SELECTED, DOWNLOAD_MAJOR, RESTART
@@ -111,6 +111,9 @@ class UpdateDialogModel(
   val btnCloseText = SimpleStringProperty(localizer.formatText("close"))
   val btnToggleSourceText = SimpleStringProperty("")
 
+  val errorText = ObservableString("", "")
+  private val coroutineScope = CoroutineScope(EmptyCoroutineContext)
+
   internal var state: ApplyAction = ApplyAction.INSTALL_FROM_CHANNEL
     set(value) {
       when (value) {
@@ -164,7 +167,7 @@ class UpdateDialogModel(
   }
 
   // Starts installing the available updates one-by-one.
-  internal fun onDownload(): Result<Boolean, Throwable> {
+  internal fun onDownload(): Boolean {
     var installFuture: CompletableFuture<File>? = null
     for (update in updates.filter { !it.isMajorUpdate }.reversed()) {
       startProgressMonitor(update.version)?.let { progressMonitor ->
@@ -175,10 +178,10 @@ class UpdateDialogModel(
     }
     return try {
       installFuture?.join()
-      Ok(true)
+      true
     } catch (ex: CompletionException) {
       ourLogger.error("Failed to install updates", ex)
-      Err(ex.cause ?: ex)
+      throw ex.cause ?: ex
     }
   }
 
@@ -213,7 +216,7 @@ class UpdateDialogModel(
     }
   }
 
-  private suspend fun onApplyPressed() {
+  private fun onApplyPressed() {
     when (state) {
       ApplyAction.UP_TO_DATE -> {}
       ApplyAction.INSTALL_FROM_CHANNEL -> {
@@ -236,14 +239,26 @@ class UpdateDialogModel(
     hideDialog()
   }
 
-  private suspend fun applyMinorUpdates() {
-    btnApplyDisabled.set(true)
-    runCatching {
-      ourBackgroundScope.async {
-        onDownload()
-      }.await()
-    }.anyway { btnApplyDisabled.set(false) }.onSuccess {
-      state = ApplyAction.RESTART
+  private fun applyMinorUpdates() {
+    coroutineScope.launch {
+      withContext(Dispatchers.JavaFx) {
+        btnApplyDisabled.set(true)
+      }
+      try {
+        withContext(Dispatchers.IO) {
+          onDownload()
+        }
+        withContext(Dispatchers.JavaFx) {
+          state = ApplyAction.RESTART
+          errorText.set(null)
+        }
+      } catch (ex: Exception) {
+        withContext(Dispatchers.JavaFx) {
+          errorText.set(ex.message ?: "Unknown error")
+        }
+      } finally {
+        btnApplyDisabled.set(false)
+      }
     }
   }
 
@@ -259,18 +274,6 @@ class UpdateDialogModel(
   }
 }
 
-private fun <V,E> Result<V, E>.anyway(code: ()->Unit): Result<V,E> =
-  this.mapEither(
-    success = {
-      code()
-      it
-    },
-    failure = {
-      code()
-      it
-    }
-  )
-
 object UpdateOptions {
   val isCheckEnabled = DefaultBooleanOption("checkEnabled", true)
   val latestShownVersion = DefaultStringOption("latestShownVersion")
@@ -279,7 +282,6 @@ object UpdateOptions {
 
 }
 
-private val ourBackgroundScope = CoroutineScope(Executors.newFixedThreadPool(2).asCoroutineDispatcher())
 private val ourLogger = createLogger("Update.Download")
 const val UPGRADE_URL = "https://www.ganttproject.biz/download/upgrade"
 

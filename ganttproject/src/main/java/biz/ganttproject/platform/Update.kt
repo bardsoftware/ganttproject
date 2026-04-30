@@ -156,6 +156,10 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
     dialogContent.center = installFromChannelUi.node
     dialogContent.bottom = errorPane.fxNode
     errorPane.onError(null)
+    model.errorText.addWatcher {
+      errorPane.onError(it.newValue)
+    }
+
     dialogApi.setContent(dialogContent)
     dialogApi.setButtonPaneNode(installFromChannelUi.progressLabel)
   }
