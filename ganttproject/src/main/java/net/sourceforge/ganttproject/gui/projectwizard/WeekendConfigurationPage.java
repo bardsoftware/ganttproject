@@ -141,6 +141,7 @@ public class WeekendConfigurationPage implements WizardPage {
     }
     {
       myCalendarOption = createCalendarOption(calendar);
+      myCalendarOption.setSelectedValue(calendar);
       panel.add(builder.createOptionLabel(null, myCalendarOption));
       panel.add(builder.createOptionComponent(null, myCalendarOption));
       panel.add(new JPanel());
@@ -197,7 +198,7 @@ public class WeekendConfigurationPage implements WizardPage {
   private CalendarOption createCalendarOption(final GPCalendar calendar) {
     AlwaysWorkingTimeCalendarImpl emptyCalendar = new AlwaysWorkingTimeCalendarImpl();
     emptyCalendar.setName(GanttLanguage.getInstance().getText("none"));
-    List<GPCalendar> allCalendars = append(GPCalendarProvider.getInstance().getCalendars(), emptyCalendar, myCustomCalendar);
+    List<GPCalendar> allCalendars = append(GPCalendarProvider.getInstance().getCalendars(), emptyCalendar, myCustomCalendar, calendar);
     CalendarOption result = new CalendarOption(calendar, allCalendars);
     if (calendar.getBaseCalendarID() != null) {
       Collection<GPCalendar> filtered = Collections2.filter(allCalendars, new Predicate<GPCalendar>() {

@@ -43,6 +43,7 @@ fun createNewProject(project: IGanttProject, uiFacade: UIFacade): Barrier<NewPro
   val i18n = I18N()
   val projectNamePage = ProjectNamePage(project, i18n)
   val calendarCopy = project.activeCalendar.copy()
+  calendarCopy.name = project.projectName
   val weekendPage = WeekendConfigurationPage(calendarCopy, i18n, uiFacade)
 
   val newProjectWizard = object : WizardImpl(uiFacade, i18n.newProjectWizardWindowTitle, "wizard.newProject") {
