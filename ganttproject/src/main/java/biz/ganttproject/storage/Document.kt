@@ -41,6 +41,7 @@ import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import net.sourceforge.ganttproject.gui.ProjectUIFacade
+import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.storage.BaseTxnId
 import org.xml.sax.SAXException
 import java.io.File
@@ -341,13 +342,21 @@ fun String.asDocumentUrl(): Pair<URL, String> =
   }
 
 // Tries to open the most recent document, if the corresponding option is switched on.
-fun maybeOpenLastDocument(project: IGanttProject, projectUIFacade: ProjectUIFacade) {
+fun maybeOpenLastDocument(project: IGanttProject, uiFacade: UIFacade, projectUIFacade: ProjectUIFacade) {
   if (!reopenLastFileOption.isChecked) {
     return
   }
   val recentDocsConsumer = Consumer<List<RecentDocAsFolderItem>> { docList ->
     docList.firstOrNull()?.asDocument()?.let {
-      projectUIFacade.openProject(project.documentManager.getProxyDocument(it), project, null, null)
+      val stateMachine = projectUIFacade.openProject(project.documentManager.getProxyDocument(it), project, null, null)
+      stateMachine.stateFailed.await {
+        LOG.error("{}: {}", it.errorTitle, it.errorDescription, exception = it.throwable)
+        uiFacade.showErrorDialog("""
+          # ${it.errorTitle}
+          ----
+          ${it.errorDescription}
+        """.trimIndent())
+      }
     }
   }
   val busyIndicator = Consumer<Boolean> {  }

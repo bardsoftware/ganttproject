@@ -28,7 +28,18 @@ fun runStatements(dataSource: DataSource, statements: List<String>) {
     ${statements.joinToString(separator = ";\n")};
   """.trimIndent()
   println("Running \n $sqlScript")
-  runScript(dataSource, sqlScript)
+  dataSource.connection.use { cnx ->
+    statements.forEach { query ->
+      cnx.createStatement().use { stmt ->
+        try {
+          stmt.execute(query)
+        } catch (e: Exception) {
+          throw ProjectDatabaseException("Failed to execute statement: $query", e)
+        }
+      }
+    }
+    cnx.commit()
+  }
 }
 
 fun runScriptFromResource(dataSource: DataSource, path: String) {
