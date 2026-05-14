@@ -28,8 +28,8 @@ import net.sourceforge.ganttproject.util.ColorConvertion
 class CalendarSerializer(private val calendar: GPCalendarCalc) {
   fun loadCalendar(xmlProject: XmlProject) {
     val xmlCalendars = xmlProject.calendars
+    calendar.id = xmlProject.name
     calendar.baseCalendarID = xmlCalendars.baseId
-
     val xmlDayTypes = xmlCalendars.dayTypes
     for (i in 1..7) {
       calendar.setWeekDayType(i, GPCalendar.DayType.WORKING)

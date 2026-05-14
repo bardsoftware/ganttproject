@@ -349,6 +349,8 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     }
     result.setOnlyShowWeekends(getOnlyShowWeekends());
     result.setPublicHolidays(getPublicHolidays());
+    result.setID(getID());
+    result.setName(getName() == null ? getID() : getName());
     //result.publicHolidaysArray.addAll(publicHolidaysArray);
     return result;
   }

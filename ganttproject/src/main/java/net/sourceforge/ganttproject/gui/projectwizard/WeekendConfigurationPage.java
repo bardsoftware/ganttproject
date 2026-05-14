@@ -32,6 +32,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.calendar.CalendarEditorPanel;
 import net.sourceforge.ganttproject.calendar.GPCalendarProvider;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -203,6 +204,10 @@ public class WeekendConfigurationPage implements WizardPage {
     if (calendar.getBaseCalendarID() != null) {
       Collection<GPCalendar> filtered = Collections2.filter(allCalendars, new Predicate<GPCalendar>() {
         public boolean apply(GPCalendar cal) {
+          if (cal.getID() == null) {
+            GPLogger.create("Project.Properties.Calendar").warn("Skipped calendar=" + cal + " because it has null ID", null, null);
+            return false;
+          }
           return cal.getID().equals(calendar.getBaseCalendarID());
         }
       });
