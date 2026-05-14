@@ -224,7 +224,7 @@ class SearchCell : ListCell<SearchResult<*>>() {
         """.trimIndent()
       graphic = MDFXNode(resultMd).also {
         stylesheets.clear()
-        stylesheets.add("/biz/ganttproject/app/mdfx-default.css")
+        //stylesheets.add("/biz/ganttproject/app/mdfx-default.css")
       }
     }
   }

@@ -22,7 +22,7 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.findDescendant
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
-import com.sandec.mdfx.MarkdownView
+import com.sandec.mdfx.impl.GPMarkdownView
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import de.jensd.fx.glyphs.materialicons.MaterialIcon
@@ -48,7 +48,6 @@ import net.sourceforge.ganttproject.gui.NotificationChannel
 import net.sourceforge.ganttproject.gui.NotificationItem
 import net.sourceforge.ganttproject.gui.NotificationManager
 import net.sourceforge.ganttproject.gui.ViewLogDialog
-import org.apache.commons.text.StringEscapeUtils
 import org.controlsfx.control.Notifications
 import java.net.URI
 import java.time.LocalDateTime
@@ -298,11 +297,11 @@ private class CellImpl : ListCell<NotificationItem>() {
 }
 
 private fun NotificationItem.asMarkdownView() =
-  object : MarkdownView("""|
-      |**${myTitle}**
+  object : GPMarkdownView("""|
+      |# ${myTitle}
       |
       |${myBody}
-    """.trimMargin().also(StringEscapeUtils::unescapeJava)) {
+    """.trimMargin()) {
     override fun setLink(node: Node, link: String, description: String?) {
       node.cursor = Cursor.HAND
       node.setOnMouseClicked { this@asMarkdownView.myHyperlinkListener?.hyperlinkUpdate(

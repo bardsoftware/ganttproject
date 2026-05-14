@@ -25,7 +25,6 @@ $mdfx-bg-color-3: #eee;
 }
 
 .markdown-normal-flow {
-  -fx-font-size: normal;
   -fx-line-spacing: 4;
 }
 
@@ -35,16 +34,18 @@ $mdfx-bg-color-3: #eee;
 }
 .markdown-heading-1 {
   -fx-padding: 0 0 0.5ex 0;
+  -fx-font-size: 125%;
 }
 .markdown-heading-2 {
   -fx-padding: 0 0 0.4ex 0;
+  -fx-font-size: 120%;
 }
 .markdown-heading-3 { -fx-padding: 8 0 8 0; }
 .markdown-heading-4 { -fx-padding: 6 0 6 0; }
 .markdown-heading-5 { -fx-padding: 4 0 4 0; }
 
 .markdown-heading-1 .markdown-text {
-  -fx-font-size: 125%;
+  -fx-font-size: 150%;
 }
 
 .markdown-heading-2 .markdown-text {
@@ -153,4 +154,3 @@ $mdfx-bg-color-3: #eee;
   -fx-background-color: orange;
 }
 */
-
