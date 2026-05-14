@@ -19,7 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage
 
 import biz.ganttproject.app.LocalizedString
-import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.BooleanOption
 import biz.ganttproject.core.option.DefaultBooleanOption
 import biz.ganttproject.core.option.DefaultFileOption
@@ -34,14 +33,11 @@ import javafx.beans.value.ObservableBooleanValue
 import javafx.beans.value.ObservableObjectValue
 import kotlinx.coroutines.*
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
-import net.sourceforge.ganttproject.gui.ProjectUIFacade
-import net.sourceforge.ganttproject.gui.UIFacade
 import net.sourceforge.ganttproject.storage.BaseTxnId
 import org.xml.sax.SAXException
 import java.io.File
@@ -340,29 +336,6 @@ fun String.asDocumentUrl(): Pair<URL, String> =
       }
     }
   }
-
-// Tries to open the most recent document, if the corresponding option is switched on.
-fun maybeOpenLastDocument(project: IGanttProject, uiFacade: UIFacade, projectUIFacade: ProjectUIFacade) {
-  if (!reopenLastFileOption.isChecked) {
-    return
-  }
-  val recentDocsConsumer = Consumer<List<RecentDocAsFolderItem>> { docList ->
-    docList.firstOrNull()?.asDocument()?.let {
-      val stateMachine = projectUIFacade.openProject(project.documentManager.getProxyDocument(it), project, null, null)
-      stateMachine.stateFailed.await {
-        LOG.error("{}: {}", it.errorTitle, it.errorDescription, exception = it.throwable)
-        uiFacade.showErrorDialog("""
-          # ${it.errorTitle}
-          ----
-          ${it.errorDescription}
-        """.trimIndent())
-      }
-    }
-  }
-  val busyIndicator = Consumer<Boolean> {  }
-  val progressLabel = RootLocalizer.create("foo")
-  project.documentManager.loadRecentDocs(recentDocsConsumer, busyIndicator, progressLabel)
-}
 
 // Loads the list of the recent documents. It
 fun DocumentManager.loadRecentDocs(

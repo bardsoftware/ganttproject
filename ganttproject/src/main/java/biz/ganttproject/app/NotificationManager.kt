@@ -259,6 +259,17 @@ class NotificationManagerImpl : NotificationManager {
       updateUi()
     }
   }
+
+  override fun showDialog(title: String, notifications: List<NotificationItem>){
+    dialog(id = "errorLog") {dlg ->
+      setupNotificationDialog(dlg, title, notifications)
+      dlg.setupButton(ButtonType.NEXT) {btn ->
+        btn.styleClass.add("btn-regular")
+        btn.text = RootLocalizer.formatText("viewLog")
+        btn.onAction = EventHandler { ViewLogDialog.show() }
+      }
+    }
+  }
 }
 
 

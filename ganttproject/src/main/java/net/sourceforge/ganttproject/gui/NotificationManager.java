@@ -31,6 +31,8 @@ public interface NotificationManager {
 
   void showNotification(NotificationChannel channel);
 
+  void showDialog(String title, List<NotificationItem> notifications);
+
   HyperlinkListener DEFAULT_HYPERLINK_LISTENER = hyperlinkEvent -> {
     if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
       DesktopKt.openInBrowser(hyperlinkEvent.getURL().toString());

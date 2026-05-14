@@ -53,6 +53,7 @@ import java.awt.event.ActionEvent
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.Executors
+import java.util.function.Consumer
 import java.util.regex.Pattern
 import javax.swing.*
 
@@ -483,7 +484,7 @@ internal class CommandLineProjectOpenStrategy(
     if (path != null) {
       doOpenStartupDocument(path)
     } else {
-      maybeOpenLastDocument(project, uiFacade, projectUiFacade)
+      maybeOpenLastDocument()
     }
   }
   private fun doOpenStartupDocument(path: String) {
@@ -532,6 +533,38 @@ internal class CommandLineProjectOpenStrategy(
       }
     }
     return success
+  }
+
+  // Tries to open the most recent document, if the corresponding option is switched on.
+  fun maybeOpenLastDocument() {
+    if (!reopenLastFileOption.isChecked) {
+      return
+    }
+    val recentDocsConsumer = Consumer<List<RecentDocAsFolderItem>> { docList ->
+      docList.firstOrNull()?.asDocument()?.let { lastDocument ->
+        val stateMachine = projectUiFacade.openProject(
+          project.documentManager.getProxyDocument(lastDocument), project, null, null
+        )
+        stateMachine.stateFailed.await { error ->
+          val msg = """
+            Failed to open project: {}
+            {}
+            -------
+            {}
+          """.trimIndent()
+          DOCUMENT_ERROR_LOGGER.error(msg, lastDocument.uri, error.errorTitle, error.errorDescription, exception = error.throwable)
+          val notification = uiFacade.notificationManager.createNotification(
+            NotificationChannel.ERROR, error.errorTitle, error.errorDescription, null
+          )
+          uiFacade.notificationManager.showDialog(
+            RootLocalizer.formatText("project.open.error.title"),
+            listOf(notification))
+        }
+      }
+    }
+    val busyIndicator = Consumer<Boolean> {  }
+    val progressLabel = RootLocalizer.create("foo")
+    project.documentManager.loadRecentDocs(recentDocsConsumer, busyIndicator, progressLabel)
   }
 }
 
