@@ -39,6 +39,7 @@ import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.importer.Importer
+import net.sourceforge.ganttproject.importer.ImporterWizardModel
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.plugins.PluginManager
 import net.sourceforge.ganttproject.task.TaskImpl
@@ -134,9 +135,9 @@ internal class ProjectOpenStrategy(
         docChannel.close(ex)
       } catch (ex: SAXException) {
         // It is also possible that the document can't be parsed as XML.
-        throw Document.DocumentException(
+        docChannel.close(Document.DocumentException(
           RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex
-        )
+        ))
       } catch (ex: Exception) {
         docChannel.close(ex)
       }
@@ -498,26 +499,47 @@ internal class CommandLineProjectOpenStrategy(
   private fun doOpenStartupDocument(path: String) {
     DOCUMENT_LOGGER.debug(">>> openStartupDocument($path)")
     val document: Document = documentManager.getDocument(path)
-    val finishChannel = Channel<Boolean>()
-    CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
-      try {
-        finishChannel.receive()
-      } catch (e: Document.DocumentException) {
-        if (!tryImportDocument(document)) {
-          uiFacade.showErrorDialog(e)
-        }
-      } catch (e: IOException) {
-        // TODO: shall we try to import a document here? when it may make sense? CSV/MPP ?
-          uiFacade.showErrorDialog(e)
-      } catch (e: Exception) {
-        uiFacade.showErrorDialog(e)
+//    val finishChannel = Channel<Boolean>()
+//    CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
+//      try {
+//        finishChannel.receive()
+//      } catch (e: Document.DocumentException) {
+//        if (!tryImportDocument(document)) {
+//          uiFacade.showErrorDialog(e)
+//        }
+//      } catch (e: IOException) {
+//        // TODO: shall we try to import a document here? when it may make sense? CSV/MPP ?
+//          uiFacade.showErrorDialog(e)
+//      } catch (e: Exception) {
+//        uiFacade.showErrorDialog(e)
+//      }
+//
+//    }
+    projectUiFacade.openProject(document, project, null).apply {
+      stateCompleted.await {
+        DOCUMENT_LOGGER.debug("<<< openStartupDocument($path)")
       }
-      DOCUMENT_LOGGER.debug("<<< openStartupDocument($path)")
+      stateFailed.await { it ->
+        if (it.throwable is Document.DocumentException) {
+          tryImportDocument(document, it.throwable)
+        } else {
+          uiFacade.showErrorDialog(it.throwable)
+        }
+      }
     }
-    projectUiFacade.openProject(document, project, finishChannel)
   }
 
-  private fun tryImportDocument(document: Document): Boolean {
+  private fun tryImportDocument(document: Document, ex: Exception) {
+    try {
+      if (!doTryImportDocument(document)) {
+        uiFacade.showErrorDialog(ex)
+      }
+    } catch (e: Exception) {
+      uiFacade.showErrorDialog(e)
+    }
+  }
+
+  private fun doTryImportDocument(document: Document): Boolean {
     var success = false
     val importers = PluginManager.getExtensions(
       Importer.EXTENSION_POINT_ID,
@@ -528,6 +550,8 @@ internal class CommandLineProjectOpenStrategy(
         try {
           taskManager.setEventsEnabled(false)
           importer.setContext(project, uiFacade, preferences)
+          val wizardModel = ImporterWizardModel()
+          importer.setModel(wizardModel)
           importer.setFile(File(document.filePath))
           importer.run()
           success = true
