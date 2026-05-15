@@ -36,6 +36,7 @@ import javafx.scene.layout.Pane
 import javafx.stage.Window
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.swing.Swing
 import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.OkAction
@@ -209,13 +210,73 @@ class ProjectUIFacadeImpl(
     return result
   }
 
+  private suspend fun installColloboqueClient(project: IGanttProject, doc: Document) {
+    doc.asOnlineDocument()?.let {
+      if (it is GPCloudDocument) {
+        it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
+        project.projectDatabase.addExternalUpdatesListener {
+          Platform.runLater {
+            val emptyTaskManager = project.taskManager.emptyClone()
+            emptyTaskManager.importFromDatabase(project.projectDatabase.readAllTasks(), project.taskManager.taskHierarchy.export())
+            val bufferProject = BufferProject(
+              emptyTaskManager,
+              project.projectDatabase,
+              project.roleManager,
+              project.activeCalendar,
+              myWorkbenchFacade
+            )
+            val mergeOption = HumanResourceMerger.MergeResourcesOption()
+            val importCalendarOption = ImportCalendarOption()
+            mergeOption.setSelectedValue(MergeResourcesEnum.BY_ID)
+            importCalendarOption.loadPersistentValue(ImportCalendarOption.Values.REPLACE.name)
+            importBufferProject(
+              project,
+              bufferProject,
+              myWorkbenchFacade.asImportBufferProjectApi(),
+              mergeOption,
+              importCalendarOption,
+              closeCurrentProject = true
+            )
+          }
+        }
+        it.onboard(documentManager, webSocket)
+      }
+    }
+  }
+
+  private suspend fun onDocumentReady(project: IGanttProject, doc: Document, strategy: ProjectOpenStrategy) {
+    DOCUMENT_LOGGER.debug("... document is ready")
+    // If document is obtained, we need to run further steps.
+    // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
+    withContext(Dispatchers.Swing) {
+      project.close()
+      strategy.openFileAsIs(doc)
+        .checkLegacyMilestones()
+        .checkEarliestStartConstraints()
+        .runUiTasks()
+    }
+  }
 
   @Throws(IOException::class, DocumentException::class)
   override fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?,
                            authenticationFlow: AuthenticationFlow?): ProjectOpenStateMachine {
     val stateMachine = projectOpenActivityFactory.createStateMachine(project)
     try {
-      stateMachine.state = ProjectOpenActivityStarted()
+      val strategy = ProjectOpenStrategy(
+        project = project,
+        uiFacade = myWorkbenchFacade,
+        signin = authenticationFlow ?: this::signin,
+      )
+      stateMachine.transition(stateMachine.stateStarted, ProjectOpenActivityDocumentReady.ID) {
+          strategy.use {
+            ProjectOpenActivityDocumentReady(strategy.open(document))
+          }
+      }
+      stateMachine.transition(stateMachine.stateDocumentReady,ProjectOpenActivityMainModelReady.ID) {
+        onDocumentReady(project, it.document, strategy)
+        installColloboqueClient(project, it.document)
+        ProjectOpenActivityMainModelReady()
+      }
       stateMachine.stateCalculatedModelReady.await {
         stateMachine.state = ProjectOpenActivityCompleted()
       }
@@ -223,88 +284,35 @@ class ProjectUIFacadeImpl(
         undoManager.die()
       }
 
-      ProjectOpenStrategy(
-        project = project,
-        uiFacade = myWorkbenchFacade,
-        signin = authenticationFlow ?: this::signin,
-      ).use { strategy ->
-        DOCUMENT_LOGGER.debug(">>> openProject({})", document.uri)
-        // Run coroutine which fetches document and wait until it sends the result to the channel.
-        val docChannel = Channel<Document>()
-        CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
-          try {
-            DOCUMENT_LOGGER.debug("... waiting for the document")
-            docChannel.receive().also { doc ->
-              DOCUMENT_LOGGER.debug("... document is ready")
-              // If document is obtained, we need to run further steps.
-              // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
-              SwingUtilities.invokeLater {
-                try {
-                  project.close()
-                  strategy.openFileAsIs(doc)
-                    .checkLegacyMilestones()
-                    .checkEarliestStartConstraints()
-                    .runUiTasks()
-                  stateMachine.state = ProjectOpenActivityMainModelReady()
-                  document.asOnlineDocument()?.let {
-                    if (it is GPCloudDocument) {
-                      it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
-                      project.projectDatabase.addExternalUpdatesListener {
-                        Platform.runLater {
-                          val emptyTaskManager = project.taskManager.emptyClone()
-                          emptyTaskManager.importFromDatabase(project.projectDatabase.readAllTasks(), project.taskManager.taskHierarchy.export())
-                          val bufferProject = BufferProject(
-                            emptyTaskManager,
-                            project.projectDatabase,
-                            project.roleManager,
-                            project.activeCalendar,
-                            myWorkbenchFacade
-                          )
-                          val mergeOption = HumanResourceMerger.MergeResourcesOption()
-                          val importCalendarOption = ImportCalendarOption()
-                          mergeOption.setSelectedValue(MergeResourcesEnum.BY_ID)
-                          importCalendarOption.loadPersistentValue(ImportCalendarOption.Values.REPLACE.name)
-                          importBufferProject(
-                            project,
-                            bufferProject,
-                            myWorkbenchFacade.asImportBufferProjectApi(),
-                            mergeOption,
-                            importCalendarOption,
-                            closeCurrentProject = true
-                          )
-                        }
-                      }
-                      it.onboard(documentManager, webSocket)
-                    }
-                  }
-                  runBlocking {
-                    onFinish?.send(true)
-                  }
-                } catch (ex: DocumentException) {
-                  ex.printStackTrace()
-                  stateMachine.fail(ex)
-                  onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
-                }
-              }
-            }
-          } catch (ex: Exception) {
-            when (ex) {
-              // If channel was closed with a cause and it was because of HTTP 403, we show UI for sign-in
-              is DocumentException -> {
-                onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
-              }
-              else -> {
-                onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("Can't open document $document", ex)
-              }
-            }
-            stateMachine.fail(ex)
-          }
-          finally {
-            DOCUMENT_LOGGER.debug("<<< openProject()")
-          }
-        }
-        strategy.open(document, docChannel)
-      }
+      stateMachine.state = ProjectOpenActivityStarted()
+
+//      strategy.use { strategy ->
+//        DOCUMENT_LOGGER.debug(">>> openProject({})", document.uri)
+//        // Run coroutine which fetches document and wait until it sends the result to the channel.
+//        val docChannel = Channel<Document>()
+//        CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
+//          try {
+//            DOCUMENT_LOGGER.debug("... waiting for the document")
+//            docChannel.receive().also { doc ->
+//            }
+//          } catch (ex: Exception) {
+//            when (ex) {
+//              // If channel was closed with a cause and it was because of HTTP 403, we show UI for sign-in
+//              is DocumentException -> {
+//                onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
+//              }
+//              else -> {
+//                onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("Can't open document $document", ex)
+//              }
+//            }
+//            stateMachine.fail(ex)
+//          }
+//          finally {
+//            DOCUMENT_LOGGER.debug("<<< openProject()")
+//          }
+//        }
+//        strategy.open(document, docChannel)
+//      }
     } catch (e: Exception) {
       throw DocumentException("Can't open document $document", e)
     }

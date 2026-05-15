@@ -18,10 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject
 
+import biz.ganttproject.app.Barrier
 import biz.ganttproject.app.SimpleBarrier
 import biz.ganttproject.app.TwoPhaseBarrierImpl
 import biz.ganttproject.app.i18n
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import net.sourceforge.ganttproject.document.Document
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
@@ -39,10 +42,23 @@ class ProjectOpenActivityCreated : ProjectOpenActivityState("created")
 class ProjectOpenActivityStarted : ProjectOpenActivityState("started")
 
 /**
+ * At this state we have loaded the project document and are ready to proceed with loading the main model.
+ */
+class ProjectOpenActivityDocumentReady(val document: Document): ProjectOpenActivityState(ID) {
+  companion object {
+    val ID = "documentReady"
+  }
+}
+
+/**
  * At this state we have loaded the task and resource models from the document and have run all possible
  * checks that run on project opening, such as initial re-scheduling.
  */
-class ProjectOpenActivityMainModelReady: ProjectOpenActivityState("mainModelReady")
+class ProjectOpenActivityMainModelReady: ProjectOpenActivityState(ID) {
+  companion object {
+    val ID = "mainModelReady"
+  }
+}
 
 /** This is the state when task and resource tables are filled with the project data */
 class ProjectOpenActivityTablesReady(val project: IGanttProject) : ProjectOpenActivityState("tablesReady")
@@ -70,6 +86,8 @@ class ProjectOpenActivityFailed(
 class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope) {
   val stateStarted = SimpleBarrier<ProjectOpenActivityStarted>()
   val stateCompleted = SimpleBarrier<ProjectOpenActivityCompleted>()
+
+  val stateDocumentReady = SimpleBarrier<ProjectOpenActivityDocumentReady>()
   val stateMainModelReady = SimpleBarrier<ProjectOpenActivityMainModelReady>()
   val stateTablesReady = TwoPhaseBarrierImpl("Tables Initialized", ProjectOpenActivityTablesReady(project)).also { barrier ->
     barrier.await {
@@ -106,8 +124,13 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
           stateFailed.resolve(state)
         }
       }
-      is ProjectOpenActivityMainModelReady -> {
+      is ProjectOpenActivityDocumentReady -> {
         doSetState(field is ProjectOpenActivityStarted, state) {
+          stateDocumentReady.resolve(state)
+        }
+      }
+      is ProjectOpenActivityMainModelReady -> {
+        doSetState(field is ProjectOpenActivityDocumentReady, state) {
           stateMainModelReady.resolve(state)
         }
       }
@@ -130,7 +153,27 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
     }
   }
 
-  fun transition(targetState: ProjectOpenActivityState, code:()->Unit) {
+  fun <Source : ProjectOpenActivityState, Target : ProjectOpenActivityState> transition(
+    fromState: Barrier<Source>,
+    toStateId: String,
+    code: suspend (Source) -> Target
+  ) {
+    fromState.await { value ->
+      scope.launch {
+        state = try {
+          code(value)
+        } catch (ex: Throwable) {
+          ProjectOpenActivityFailed(
+                errorTitle = i18n.formatText("error.title"),
+                errorDescription = i18n.formatText("error.state.${toStateId}", ex.message ?: ""),
+                throwable = ex
+          )
+        }
+      }
+    }
+  }
+
+  fun transition(targetState: ProjectOpenActivityState, code: ()->Unit) {
     try {
       code()
       state = targetState

@@ -107,6 +107,14 @@ internal class ProjectOpenStrategy(
   private val openScope = CoroutineScope(Executors.newFixedThreadPool(3).asCoroutineDispatcher())
   private val sendingScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 
+  suspend fun open(document: Document): Document {
+    val docChannel = Channel<Document>()
+    open(document, docChannel)
+    return withContext(Dispatchers.IO) {
+      docChannel.receive()
+    }
+  }
+
   fun open(document: Document, docChannel: Channel<Document>) {
     val localChannel = Channel<Document>()
     openScope.launch {
