@@ -125,6 +125,11 @@ internal class ProjectOpenStrategy(
       stateMachine.state = ProjectOpenActivityDocumentReady(document)
       return
     }
+    stateMachine.stateAuthRequired.await {
+      signin.invoke {
+        println("success!!!")
+      }
+    }
     stateMachine.scope.launch {
       withContext(Dispatchers.IO) {
         try {

@@ -43,6 +43,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.javafx.JavaFx
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.ProjectOpenStateMachine
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.gui.ProjectOpenStrategy
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
@@ -55,6 +56,7 @@ import java.util.*
 import java.util.concurrent.Executors
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
+import kotlin.coroutines.EmptyCoroutineContext
 
 typealias OnLockDone = (JsonNode?) -> Unit
 typealias BusyUi = (Boolean) -> Unit
@@ -454,7 +456,8 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud"), F
 
   private fun onOnlineDocFetch(fetchResult: FetchResult) {
     val document = this.project.document
-    ProjectOpenStrategy(project, uiFacade) { onAuth -> onAuth() }.use { strategy ->
+    val stateMachine = ProjectOpenStateMachine(project, CoroutineScope(EmptyCoroutineContext))
+    ProjectOpenStrategy(project, uiFacade, signin = { onAuth -> onAuth() }, stateMachine).use { strategy ->
       val docChannel = Channel<Document>()
       CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
         try {

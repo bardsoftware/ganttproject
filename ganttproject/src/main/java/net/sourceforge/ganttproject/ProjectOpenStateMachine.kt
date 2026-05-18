@@ -118,6 +118,7 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
   val stateStarted = SimpleBarrier<ProjectOpenActivityStarted>()
   val stateCompleted = SimpleBarrier<ProjectOpenActivityCompleted>()
 
+  val stateAuthRequired = SimpleBarrier<ProjectOpenActivityAuthRequired>()
   val stateDocumentReady = SimpleBarrier<ProjectOpenActivityDocumentReady>()
   val stateMainModelReady = SimpleBarrier<ProjectOpenActivityMainModelReady>()
   val stateTablesReady = TwoPhaseBarrierImpl("Tables Initialized", ProjectOpenActivityTablesReady(project)).also { barrier ->
@@ -155,6 +156,11 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
           stateFailed.resolve(state)
         }
       }
+      is ProjectOpenActivityAuthRequired -> {
+        doSetState(field is ProjectOpenActivityStarted, state) {
+          stateAuthRequired.resolve(state)
+        }
+      }
       is ProjectOpenActivityDocumentReady -> {
         doSetState(field is ProjectOpenActivityStarted, state) {
           stateDocumentReady.resolve(state)
@@ -179,7 +185,7 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
         }
       }
       else -> {
-        error("Unexpected state: $state")
+        stateFailed.resolve(ProjectOpenActivityFailed("Unexpected state", "Unexpected state: $state"))
       }
     }
   }
