@@ -25,6 +25,10 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.DefaultEnumerationOption
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.*
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.fold
 import com.google.common.collect.Lists
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
@@ -34,6 +38,14 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.ProjectOpenActivityAuthRequired
+import net.sourceforge.ganttproject.ProjectOpenActivityDocumentForked
+import net.sourceforge.ganttproject.ProjectOpenActivityDocumentReady
+import net.sourceforge.ganttproject.ProjectOpenActivityOfflineAhead
+import net.sourceforge.ganttproject.ProjectOpenActivityPaymentRequired
+import net.sourceforge.ganttproject.ProjectOpenActivityState
+import net.sourceforge.ganttproject.ProjectOpenActivityUnsupportedFormat
+import net.sourceforge.ganttproject.ProjectOpenStateMachine
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.document.Document
@@ -52,7 +64,6 @@ import org.xml.sax.SAXException
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
 import java.io.File
-import java.io.IOException
 import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.regex.Pattern
@@ -71,6 +82,7 @@ internal class ProjectOpenStrategy(
   private val project: IGanttProject,
   private val uiFacade: UIFacade,
   private val signin: AuthenticationFlow,
+  private val stateMachine: ProjectOpenStateMachine
   ) : AutoCloseable {
   private val myDiagnostics: ProjectOpenDiagnosticImpl
   private val myCloseables = Lists.newArrayList<AutoCloseable>()
@@ -108,7 +120,46 @@ internal class ProjectOpenStrategy(
   private val openScope = CoroutineScope(Executors.newFixedThreadPool(3).asCoroutineDispatcher())
   private val sendingScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 
+  fun start(document: Document) {
+    val onlineDocument = document.asOnlineDocument() ?: run {
+      stateMachine.state = ProjectOpenActivityDocumentReady(document)
+      return
+    }
+    stateMachine.scope.launch {
+      withContext(Dispatchers.IO) {
+        try {
+          val currentFetch = onlineDocument.fetchResultProperty.get() ?: onlineDocument.fetch().also { it.update() }
+          processFetchResult(currentFetch, document).fold(
+            success = { doc -> stateMachine.state = ProjectOpenActivityDocumentReady(doc)},
+            failure = { stateMachine.state = it }
+          )
+        } catch (ex: ForbiddenException) {
+          // It is possible that we need to sign into GP Cloud to open a document.
+          stateMachine.state = ProjectOpenActivityAuthRequired(document)
+          //TODO
+          //signin { open(document, docChannel) }
+        } catch (ex: PaymentRequiredException) {
+          // Or probably we need to pay.
+          stateMachine.state = ProjectOpenActivityPaymentRequired(document)
+          //TODO
+          //docChannel.close(ex)
+        } catch (ex: SAXException) {
+          // It is also possible that the document can't be parsed as XML.
+          stateMachine.state = ProjectOpenActivityUnsupportedFormat(document)
+          //TODO
+//          docChannel.close(Document.DocumentException(
+//            RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex
+//          ))
+        } catch (ex: Exception) {
+          stateMachine.fail(ex)
+          //docChannel.close(ex)
+        }
+      }
+    }
+  }
+
   suspend fun open(document: Document): Document {
+
     val docChannel = Channel<Document>()
     open(document, docChannel)
     return withContext(Dispatchers.IO) {
@@ -122,6 +173,7 @@ internal class ProjectOpenStrategy(
       // Here we wait until the document is fetched, either from the cloud or locally.
       try {
         localChannel.receive().also {
+          //TODO
           it.checkWellFormed()
           // If the document was fetched successfully and it is well-formed, it is okay to send it to the document
           // channel.
@@ -152,7 +204,10 @@ internal class ProjectOpenStrategy(
         // It is an online document and we fetch it.
         try {
           val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
-          processFetchResult(currentFetch, document, localChannel)
+          processFetchResult(currentFetch, document).fold(
+            success = { doc -> stateMachine.state = ProjectOpenActivityDocumentReady(doc)},
+            failure = { stateMachine.state = it }
+          )
         } catch (ex: Exception) {
           localChannel.close(ex)
         }
@@ -160,34 +215,34 @@ internal class ProjectOpenStrategy(
     }
   }
 
-  private suspend fun processFetchResult(fetchResult: FetchResult, document: Document, successChannel: Channel<Document>) {
+  private fun processFetchResult(fetchResult: FetchResult, document: Document): Result<Document, ProjectOpenActivityState> {
     val onlineDoc = fetchResult.onlineDocument
     val mirrorDoc = onlineDoc.offlineMirror
-    val offlineChecksum = mirrorDoc?.checksum()
-    if (offlineChecksum == null) {
-      successChannel.send(document)
-      return
-    }
+    val offlineChecksum = mirrorDoc?.checksum() ?: return Ok(document)
+
     if (offlineChecksum == fetchResult.actualChecksum) {
       // Offline mirror and actual file online are identical, only version could change
       // Just read the online
-      successChannel.send(document)
-      return
+      return Ok(document)
     }
     if (fetchResult.syncVersion == fetchResult.actualVersion) {
       // This is the case when we have local modifications not yet written online,
       // e.g. because we have been offline for a while and went online
       // when GP was closed.
-      showOfflineIsAheadDialog(fetchResult, document, successChannel)
+      return Err(ProjectOpenActivityOfflineAhead(document, fetchResult))
+      // TODO
+      //showOfflineIsAheadDialog(fetchResult, document, successChannel)
     } else {
       // Online is different from mirror, and we have to find out if we had
       // any offline modifications.
       if (offlineChecksum == fetchResult.syncChecksum) {
-        successChannel.send(document)
-        return
+        //successChannel.send(document)
+        return Ok(document)
       } else {
         // Files modified both locally and online. Ask user which one wins
-        showForkDialog(fetchResult, document, successChannel)
+        return Err(ProjectOpenActivityDocumentForked(document, fetchResult))
+        // TODO
+        //showForkDialog(fetchResult, document, successChannel)
       }
     }
   }
@@ -287,6 +342,7 @@ internal class ProjectOpenStrategy(
     myOldDuration = project.taskManager.projectLength
     return Step1()
   }
+
 
   // This step checks if there are legacy 1-day milestones in the project.
   // If there are legacy milestones, we ask the user what shall we do with them.

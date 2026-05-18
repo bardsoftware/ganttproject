@@ -266,12 +266,16 @@ class ProjectUIFacadeImpl(
         project = project,
         uiFacade = myWorkbenchFacade,
         signin = authenticationFlow ?: this::signin,
+        stateMachine = stateMachine
       )
-      stateMachine.transition(stateMachine.stateStarted, ProjectOpenActivityDocumentReady.ID) {
-          strategy.use {
-            ProjectOpenActivityDocumentReady(strategy.open(document))
-          }
+      stateMachine.stateStarted.await {
+        strategy.start(document)
       }
+//      stateMachine.transition(stateMachine.stateStarted, ProjectOpenActivityDocumentReady.ID) {
+//          strategy.use {
+//            ProjectOpenActivityDocumentReady(strategy.open(document))
+//          }
+//      }
       stateMachine.transition(stateMachine.stateDocumentReady,ProjectOpenActivityMainModelReady.ID) {
         onDocumentReady(project, it.document, strategy)
         installColloboqueClient(project, it.document)

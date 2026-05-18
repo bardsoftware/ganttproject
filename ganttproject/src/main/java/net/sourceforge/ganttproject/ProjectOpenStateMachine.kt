@@ -22,6 +22,7 @@ import biz.ganttproject.app.Barrier
 import biz.ganttproject.app.SimpleBarrier
 import biz.ganttproject.app.TwoPhaseBarrierImpl
 import biz.ganttproject.app.i18n
+import biz.ganttproject.storage.FetchResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.document.Document
@@ -47,6 +48,36 @@ class ProjectOpenActivityStarted : ProjectOpenActivityState("started")
 class ProjectOpenActivityDocumentReady(val document: Document): ProjectOpenActivityState(ID) {
   companion object {
     val ID = "documentReady"
+  }
+}
+
+class ProjectOpenActivityOfflineAhead(val document: Document, val fetchResult: FetchResult): ProjectOpenActivityState(ID) {
+  companion object {
+    val ID = "offlineDocumentIsAhead"
+  }
+}
+
+class ProjectOpenActivityDocumentForked(val document: Document, val fetchResult: FetchResult): ProjectOpenActivityState(ID) {
+  companion object {
+    val ID = "documentForked"
+  }
+}
+
+class ProjectOpenActivityAuthRequired(val document: Document): ProjectOpenActivityState(ID) {
+  companion object {
+    val ID = "authRequired"
+  }
+}
+
+class ProjectOpenActivityPaymentRequired(val document: Document): ProjectOpenActivityState(ID) {
+  companion object {
+    val ID = "paymentRequired"
+  }
+}
+
+class ProjectOpenActivityUnsupportedFormat(val document: Document): ProjectOpenActivityState(ID) {
+  companion object {
+    val ID = "unsupportedFormat"
   }
 }
 
