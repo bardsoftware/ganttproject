@@ -515,14 +515,23 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
   }
 
   override fun toggleProgress(shown: Boolean): () -> Unit {
-    Platform.runLater {
-      createOverlayPane(this.content, this.stackPane) {pane ->
-        pane.center = Label("")
-        pane.opacity = 0.5
+    FXThread.runLater {
+      this.content.effect = BoxBlur().also { bb ->
+        bb.width = 5.0
+        bb.height = 5.0
+        bb.iterations = 2
       }
+//      createOverlayPane(this.content, this.stackPane) {pane ->
+//        pane.styleClass.add("overlay")
+//        pane.center = Label("")
+//        pane.opacity = 0.5
+//      }
     }
     return {
-      this.stackPane.children.removeIf { it.styleClass.contains("overlay") }
+      Platform.runLater {
+//        this.stackPane.children.removeIf { it.styleClass.contains("overlay") }
+        this.content.effect = null
+      }
     }
   }
 
