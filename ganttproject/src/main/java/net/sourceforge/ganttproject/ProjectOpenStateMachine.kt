@@ -51,13 +51,8 @@ class ProjectOpenActivityDocumentReady(val document: Document): ProjectOpenActiv
   }
 }
 
-class ProjectOpenActivityOfflineAhead(val document: Document, val fetchResult: FetchResult): ProjectOpenActivityState(ID) {
-  companion object {
-    val ID = "offlineDocumentIsAhead"
-  }
-}
-
-class ProjectOpenActivityDocumentForked(val document: Document, val fetchResult: FetchResult): ProjectOpenActivityState(ID) {
+class ProjectOpenActivityDocumentForked(val document: Document, val fetchResult: FetchResult, val forkCase: ForkCase): ProjectOpenActivityState(ID) {
+  enum class ForkCase { FORK, OFFLINE_AHEAD }
   companion object {
     val ID = "documentForked"
   }
@@ -66,18 +61,6 @@ class ProjectOpenActivityDocumentForked(val document: Document, val fetchResult:
 class ProjectOpenActivityAuthRequired(val document: Document): ProjectOpenActivityState(ID) {
   companion object {
     val ID = "authRequired"
-  }
-}
-
-class ProjectOpenActivityPaymentRequired(val document: Document): ProjectOpenActivityState(ID) {
-  companion object {
-    val ID = "paymentRequired"
-  }
-}
-
-class ProjectOpenActivityUnsupportedFormat(val document: Document): ProjectOpenActivityState(ID) {
-  companion object {
-    val ID = "unsupportedFormat"
   }
 }
 
@@ -117,8 +100,9 @@ class ProjectOpenActivityFailed(
 class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope) {
   val stateStarted = SimpleBarrier<ProjectOpenActivityStarted>()
   val stateCompleted = SimpleBarrier<ProjectOpenActivityCompleted>()
-
   val stateAuthRequired = SimpleBarrier<ProjectOpenActivityAuthRequired>()
+
+  val stateDocumentForked = SimpleBarrier<ProjectOpenActivityDocumentForked>()
   val stateDocumentReady = SimpleBarrier<ProjectOpenActivityDocumentReady>()
   val stateMainModelReady = SimpleBarrier<ProjectOpenActivityMainModelReady>()
   val stateTablesReady = TwoPhaseBarrierImpl("Tables Initialized", ProjectOpenActivityTablesReady(project)).also { barrier ->
@@ -147,7 +131,7 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
     }
     when (state) {
       is ProjectOpenActivityStarted -> {
-        doSetState(field is ProjectOpenActivityCreated, state) {
+        doSetState(field is ProjectOpenActivityCreated || field is ProjectOpenActivityAuthRequired, state) {
           stateStarted.resolve(state)
         }
       }
@@ -161,8 +145,13 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
           stateAuthRequired.resolve(state)
         }
       }
-      is ProjectOpenActivityDocumentReady -> {
+      is ProjectOpenActivityDocumentForked -> {
         doSetState(field is ProjectOpenActivityStarted, state) {
+          stateDocumentForked.resolve(state)
+        }
+      }
+      is ProjectOpenActivityDocumentReady -> {
+        doSetState(field is ProjectOpenActivityStarted || field is ProjectOpenActivityDocumentForked, state) {
           stateDocumentReady.resolve(state)
         }
       }

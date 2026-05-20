@@ -19,8 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui
 
-import biz.ganttproject.app.OptionElementData
-import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.DefaultEnumerationOption
 import biz.ganttproject.core.time.TimeDuration
@@ -30,22 +28,11 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.fold
 import com.google.common.collect.Lists
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.IGanttProject
-import net.sourceforge.ganttproject.ProjectOpenActivityAuthRequired
-import net.sourceforge.ganttproject.ProjectOpenActivityDocumentForked
-import net.sourceforge.ganttproject.ProjectOpenActivityDocumentReady
-import net.sourceforge.ganttproject.ProjectOpenActivityOfflineAhead
-import net.sourceforge.ganttproject.ProjectOpenActivityPaymentRequired
-import net.sourceforge.ganttproject.ProjectOpenActivityState
-import net.sourceforge.ganttproject.ProjectOpenActivityUnsupportedFormat
-import net.sourceforge.ganttproject.ProjectOpenStateMachine
+import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.document.Document
@@ -125,11 +112,6 @@ internal class ProjectOpenStrategy(
       stateMachine.state = ProjectOpenActivityDocumentReady(document)
       return
     }
-    stateMachine.stateAuthRequired.await {
-      signin.invoke {
-        println("success!!!")
-      }
-    }
     stateMachine.scope.launch {
       withContext(Dispatchers.IO) {
         try {
@@ -139,36 +121,22 @@ internal class ProjectOpenStrategy(
             failure = { stateMachine.state = it }
           )
         } catch (ex: ForbiddenException) {
+          DOCUMENT_ERROR_LOGGER.error("Access to document {} forbidden: {}", onlineDocument, ex.message.orEmpty())
           // It is possible that we need to sign into GP Cloud to open a document.
           stateMachine.state = ProjectOpenActivityAuthRequired(document)
-          //TODO
-          //signin { open(document, docChannel) }
         } catch (ex: PaymentRequiredException) {
           // Or probably we need to pay.
-          stateMachine.state = ProjectOpenActivityPaymentRequired(document)
-          //TODO
-          //docChannel.close(ex)
+          DOCUMENT_ERROR_LOGGER.error("Access to document {} permitted, but payment is required", onlineDocument)
+          stateMachine.fail(ex)
         } catch (ex: SAXException) {
           // It is also possible that the document can't be parsed as XML.
-          stateMachine.state = ProjectOpenActivityUnsupportedFormat(document)
-          //TODO
-//          docChannel.close(Document.DocumentException(
-//            RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex
-//          ))
+          stateMachine.fail(Document.DocumentException(
+            RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex
+          ))
         } catch (ex: Exception) {
           stateMachine.fail(ex)
-          //docChannel.close(ex)
         }
       }
-    }
-  }
-
-  suspend fun open(document: Document): Document {
-
-    val docChannel = Channel<Document>()
-    open(document, docChannel)
-    return withContext(Dispatchers.IO) {
-      docChannel.receive()
     }
   }
 
@@ -234,97 +202,18 @@ internal class ProjectOpenStrategy(
       // This is the case when we have local modifications not yet written online,
       // e.g. because we have been offline for a while and went online
       // when GP was closed.
-      return Err(ProjectOpenActivityOfflineAhead(document, fetchResult))
-      // TODO
-      //showOfflineIsAheadDialog(fetchResult, document, successChannel)
+      return Err(ProjectOpenActivityDocumentForked(document, fetchResult, ProjectOpenActivityDocumentForked.ForkCase.OFFLINE_AHEAD))
     } else {
       // Online is different from mirror, and we have to find out if we had
       // any offline modifications.
       if (offlineChecksum == fetchResult.syncChecksum) {
-        //successChannel.send(document)
         return Ok(document)
       } else {
         // Files modified both locally and online. Ask user which one wins
-        return Err(ProjectOpenActivityDocumentForked(document, fetchResult))
-        // TODO
-        //showForkDialog(fetchResult, document, successChannel)
+        return Err(ProjectOpenActivityDocumentForked(document, fetchResult, ProjectOpenActivityDocumentForked.ForkCase.FORK))
       }
     }
   }
-
-  enum class OpenOnlineDocumentChoice { USE_OFFLINE, USE_ONLINE, CANCEL }
-
-  private fun showOfflineIsAheadDialog(fetchResult: FetchResult, document: Document, successChannel: Channel<Document>) {
-    OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
-      i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.openWhenOfflineIsAhead")
-      styleClass = "dlg-lock"
-      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-      styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
-      graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
-      elements = listOf(
-          OptionElementData("useOffline", OpenOnlineDocumentChoice.USE_OFFLINE, true),
-          OptionElementData("useOnline", OpenOnlineDocumentChoice.USE_ONLINE),
-          OptionElementData("cancel", OpenOnlineDocumentChoice.CANCEL)
-      )
-
-      showDialog { choice ->
-        when (choice) {
-          OpenOnlineDocumentChoice.USE_OFFLINE -> {
-            fetchResult.useMirror = true
-            sendingScope.launch {
-              successChannel.send(document)
-            }
-          }
-          OpenOnlineDocumentChoice.USE_ONLINE -> {
-            sendingScope.launch {
-              successChannel.send(document)
-            }
-          }
-          OpenOnlineDocumentChoice.CANCEL -> {
-
-          }
-        }
-      }
-    }
-  }
-
-  private fun showForkDialog(fetchResult: FetchResult, document: Document, successChannel: Channel<Document>) {
-    OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
-      i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.openWhenDiverged")
-      styleClass = "dlg-lock"
-      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-      styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
-      graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
-      elements = listOf(
-          OptionElementData("useOffline", OpenOnlineDocumentChoice.USE_OFFLINE, true),
-          OptionElementData("useOnline", OpenOnlineDocumentChoice.USE_ONLINE),
-          OptionElementData("cancel", OpenOnlineDocumentChoice.CANCEL)
-      )
-
-      showDialog { choice ->
-        when (choice) {
-          OpenOnlineDocumentChoice.USE_OFFLINE -> {
-            fetchResult.useMirror = true
-            sendingScope.launch {
-              successChannel.send(document)
-            }
-          }
-          OpenOnlineDocumentChoice.USE_ONLINE -> {
-            sendingScope.launch {
-              successChannel.send(document)
-            }
-          }
-          OpenOnlineDocumentChoice.CANCEL -> {
-          }
-        }
-      }
-    }
-  }
-
-  private fun handleDocumentException(ex: Document.DocumentException) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
 
   // First we open file "as is", that is, without running any algorithms which
   // change task dates.

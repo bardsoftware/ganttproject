@@ -45,6 +45,9 @@ import net.sourceforge.ganttproject.document.Document.DocumentException
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
+import net.sourceforge.ganttproject.gui.projectopen.OpenOnlineDocumentChoice
+import net.sourceforge.ganttproject.gui.projectopen.showForkDialog
+import net.sourceforge.ganttproject.gui.projectopen.showOfflineIsAheadDialog
 import net.sourceforge.ganttproject.gui.projectwizard.createNewProject
 import net.sourceforge.ganttproject.importer.BufferProject
 import net.sourceforge.ganttproject.importer.asImportBufferProjectApi
@@ -262,6 +265,7 @@ class ProjectUIFacadeImpl(
                            authenticationFlow: AuthenticationFlow?): ProjectOpenStateMachine {
     val stateMachine = projectOpenActivityFactory.createStateMachine(project)
     try {
+      val authFlow = authenticationFlow ?: this::signin
       val strategy = ProjectOpenStrategy(
         project = project,
         uiFacade = myWorkbenchFacade,
@@ -271,14 +275,42 @@ class ProjectUIFacadeImpl(
       stateMachine.stateStarted.await {
         strategy.start(document)
       }
-//      stateMachine.transition(stateMachine.stateStarted, ProjectOpenActivityDocumentReady.ID) {
-//          strategy.use {
-//            ProjectOpenActivityDocumentReady(strategy.open(document))
-//          }
-//      }
+      stateMachine.stateAuthRequired.await {
+        authFlow {
+          if (stateMachine.state is ProjectOpenActivityAuthRequired) {
+            stateMachine.state = ProjectOpenActivityStarted()
+          }
+        }
+      }
+      stateMachine.stateDocumentForked.await { forkedDocument ->
+        fun handleChoice(choice: OpenOnlineDocumentChoice) {
+          when (choice) {
+            OpenOnlineDocumentChoice.USE_OFFLINE -> {
+              forkedDocument.fetchResult.useMirror = true
+              stateMachine.state = ProjectOpenActivityDocumentReady(forkedDocument.document)
+            }
+
+            OpenOnlineDocumentChoice.USE_ONLINE -> {
+              stateMachine.state = ProjectOpenActivityDocumentReady(forkedDocument.document)
+            }
+
+            OpenOnlineDocumentChoice.CANCEL -> {
+            }
+          }
+        }
+        when (forkedDocument.forkCase) {
+          ProjectOpenActivityDocumentForked.ForkCase.OFFLINE_AHEAD -> {
+            showOfflineIsAheadDialog(::handleChoice)
+          }
+          ProjectOpenActivityDocumentForked.ForkCase.FORK -> {
+            showForkDialog(::handleChoice)
+          }
+        }
+      }
       stateMachine.transition(stateMachine.stateDocumentReady,ProjectOpenActivityMainModelReady.ID) {
         onDocumentReady(project, it.document, strategy)
         installColloboqueClient(project, it.document)
+        // --------------------------------
         ProjectOpenActivityMainModelReady()
       }
       stateMachine.stateCalculatedModelReady.await {
