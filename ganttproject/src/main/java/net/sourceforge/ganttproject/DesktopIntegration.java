@@ -60,7 +60,7 @@ public class DesktopIntegration {
               if (result) {
                 Document myDocument = project.getDocumentManager().getDocument(file.getAbsolutePath());
                 try {
-                  projectUiFacade.openProject(myDocument, project, null, null);
+                  projectUiFacade.openProject(myDocument, project, null);
                 } catch (Document.DocumentException | IOException ex) {
                   uiFacade.showErrorDialog(ex);
                 }

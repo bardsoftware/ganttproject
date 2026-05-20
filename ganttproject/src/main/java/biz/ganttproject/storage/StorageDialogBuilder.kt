@@ -77,7 +77,7 @@ class StorageDialogBuilder(
         killProgress()
         authFlow(onAuth)
       }
-      projectUi.openProject(documentManager.getProxyDocument(document), myProject, null, proxyAuthFlow).let { sm ->
+      projectUi.openProject(documentManager.getProxyDocument(document), myProject, proxyAuthFlow).let { sm ->
         sm.stateCompleted.await {
           myDialogUi.close()
         }

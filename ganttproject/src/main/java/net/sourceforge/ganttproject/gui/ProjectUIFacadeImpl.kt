@@ -35,7 +35,6 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.stage.Window
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.swing.Swing
 import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.action.CancelAction
@@ -60,7 +59,6 @@ import net.sourceforge.ganttproject.task.importFromDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.Executors
 import java.util.logging.Level
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
@@ -78,7 +76,7 @@ class ProjectUIFacadeImpl(
   private val myConverterGroup = GPOptionGroup("convert", ProjectOpenStrategy.milestonesOption)
   private var isSaving = false
 
-  override val projectOpenActivityFactory = ProjectOpenActivityFactory()
+  override val projectOpenActivityFactory = ProjectOpenActivityFactory
 
   override fun saveProject(project: IGanttProject): Barrier<Boolean> {
     if (isSaving) {
@@ -261,7 +259,7 @@ class ProjectUIFacadeImpl(
   }
 
   @Throws(IOException::class, DocumentException::class)
-  override fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?,
+  override fun openProject(document: Document, project: IGanttProject,
                            authenticationFlow: AuthenticationFlow?): ProjectOpenStateMachine {
     val stateMachine = projectOpenActivityFactory.createStateMachine(project)
     try {

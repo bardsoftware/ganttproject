@@ -155,7 +155,7 @@ public class HelpMenu {
 
     protected void recover(Document recoverDocument) {
       try {
-        myProjectUiFacade.openProject(new ReadOnlyProxyDocument(recoverDocument), myProject, null, null);
+        myProjectUiFacade.openProject(new ReadOnlyProxyDocument(recoverDocument), myProject, null);
       } catch (Throwable e) {
         GPLogger.log(new RuntimeException("Failed to recover file " + recoverDocument.getFileName(), e));
       }

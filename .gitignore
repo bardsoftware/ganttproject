@@ -7,3 +7,4 @@ dist-bin
 ganttproject-builder/dist-win
 ganttproject-builder/dist-bin
 ganttproject-builder/runtime
+**/*.css.map

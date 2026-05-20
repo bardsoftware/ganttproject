@@ -271,6 +271,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     startupLogger.debug("8. finalizing...");
     // applyComponentOrientation(GanttLanguage.getInstance()
     // .getComponentOrientation());
+    // TODO: this shall be registered just once
     getProjectUIFacade().getProjectOpenActivityFactory().addListener(
       GanttProjectImplKt.createProjectModificationListener(this, getUIFacade())
     );
@@ -776,4 +777,3 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
 }
-

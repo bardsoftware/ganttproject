@@ -233,7 +233,7 @@ typealias ProjectOpenActivityListener = (ProjectOpenStateMachine) -> Unit
  * document. Listeners receive an instance of the state machine and can subscribe to the state changes
  * and run the appropriate code when a state machine enters into the state they are waiting for.
  */
-class ProjectOpenActivityFactory {
+object ProjectOpenActivityFactory {
   private val listeners = mutableListOf<ProjectOpenActivityListener>()
   fun addListener(l: ProjectOpenActivityListener) = listeners.add(l)
 
@@ -244,6 +244,7 @@ class ProjectOpenActivityFactory {
     }
   }
 }
+
 
 private val i18n = i18n {
   default()

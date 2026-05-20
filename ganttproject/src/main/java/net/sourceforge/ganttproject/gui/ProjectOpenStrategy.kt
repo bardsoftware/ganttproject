@@ -525,7 +525,7 @@ internal class CommandLineProjectOpenStrategy(
     val recentDocsConsumer = Consumer<List<RecentDocAsFolderItem>> { docList ->
       docList.firstOrNull()?.asDocument()?.let { lastDocument ->
         val stateMachine = projectUiFacade.openProject(
-          project.documentManager.getProxyDocument(lastDocument), project, null, null
+          project.documentManager.getProxyDocument(lastDocument), project, null
         )
         stateMachine.stateFailed.await { error ->
           val msg = """
