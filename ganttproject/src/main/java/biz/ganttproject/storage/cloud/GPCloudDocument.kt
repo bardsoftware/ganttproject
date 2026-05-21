@@ -132,17 +132,17 @@ class GPCloudDocument(val teamRefid: String?,
       }
     }
     get() {
-      return (field ?: {
-        val fp = this.projectIdFingerprint
-        val fileOptions = GPCloudOptions.cloudFiles.getFileOptions(fp)
-        val onlineOnly = fileOptions.onlineOnly.toBoolean()
-        val offlineMirrorPath = fileOptions.offlineMirror
-        if (!onlineOnly && offlineMirrorPath != null && Files.exists(Paths.get(offlineMirrorPath))) {
-          this.offlineDocumentFactory(offlineMirrorPath)
+      return (field ?: run {
+        val fp1 = projectIdFingerprint
+        val fileOptions1 = GPCloudOptions.cloudFiles.getFileOptions(fp1)
+        val onlineOnly1 = fileOptions1.onlineOnly.toBoolean()
+        val offlineMirrorPath1 = fileOptions1.offlineMirror
+        if (!onlineOnly1 && offlineMirrorPath1 != null && Files.exists(Paths.get(offlineMirrorPath1))) {
+          offlineDocumentFactory(offlineMirrorPath1)
         } else {
           null
         }
-      }()).also {
+      }).also {
         field = it
       }
     }
@@ -587,9 +587,13 @@ class GPCloudDocument(val teamRefid: String?,
   }
 }
 
-fun GPCloudDocument.onboard(documentManager: DocumentManager, webSocket: WebSocketClient) {
+fun GPCloudDocument.installOfflineMirror(documentManager: DocumentManager) {
   this.offlineDocumentFactory = { path -> documentManager.newDocument(path) }
   this.proxyDocumentFactory = documentManager::getProxyDocument
+}
+
+fun GPCloudDocument.onboard(documentManager: DocumentManager, webSocket: WebSocketClient) {
+  installOfflineMirror(documentManager)
   webSocket.register(this)
   this.projectRefid?.let { webSocket.sendProjectRefId(it) }
 
@@ -600,4 +604,3 @@ fun GPCloudDocument.onboard(documentManager: DocumentManager, webSocket: WebSock
 
 private val ourExecutor = Executors.newSingleThreadExecutor()
 private val LOG = GPLogger.create("Cloud.Document")
-

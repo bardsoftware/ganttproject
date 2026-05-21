@@ -23,6 +23,8 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.DefaultEnumerationOption
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.*
+import biz.ganttproject.storage.cloud.GPCloudDocument
+import biz.ganttproject.storage.cloud.installOfflineMirror
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
@@ -190,6 +192,7 @@ internal class ProjectOpenStrategy(
 
   private fun processFetchResult(fetchResult: FetchResult, document: Document): Result<Document, ProjectOpenActivityState> {
     val onlineDoc = fetchResult.onlineDocument
+    (onlineDoc as? GPCloudDocument)?.installOfflineMirror(project.documentManager)
     val mirrorDoc = onlineDoc.offlineMirror
     val offlineChecksum = mirrorDoc?.checksum() ?: return Ok(document)
 

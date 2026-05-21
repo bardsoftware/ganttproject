@@ -29,33 +29,27 @@ enum class OpenOnlineDocumentChoice { USE_OFFLINE, USE_ONLINE, CANCEL }
 fun showOfflineIsAheadDialog(handleChoice: (OpenOnlineDocumentChoice) -> Unit) {
   OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
     i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.openWhenOfflineIsAhead")
-    styleClass = "dlg-lock"
-    styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-    styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
-    graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
-    elements = listOf(
-      OptionElementData("useOffline", OpenOnlineDocumentChoice.USE_OFFLINE, true),
-      OptionElementData("useOnline", OpenOnlineDocumentChoice.USE_ONLINE),
-      OptionElementData("cancel", OpenOnlineDocumentChoice.CANCEL)
-    )
-
-    showDialog(handleChoice)
+    buildDialog(handleChoice)
   }
 }
 
 fun showForkDialog(handleChoice: (OpenOnlineDocumentChoice) -> Unit) {
   OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
     i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.openWhenDiverged")
-    styleClass = "dlg-lock"
-    styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-    styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
-    graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
-    elements = listOf(
-      OptionElementData("useOffline", OpenOnlineDocumentChoice.USE_OFFLINE, true),
-      OptionElementData("useOnline", OpenOnlineDocumentChoice.USE_ONLINE),
-      OptionElementData("cancel", OpenOnlineDocumentChoice.CANCEL)
-    )
-
-    showDialog(handleChoice)
+    buildDialog(handleChoice)
   }
+}
+
+private fun OptionPaneBuilder<OpenOnlineDocumentChoice>.buildDialog(handleChoice: (OpenOnlineDocumentChoice) -> Unit) {
+  styleClass = "dlg-lock"
+  styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
+  styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
+  graphic = FontAwesomeIconView(FontAwesomeIcon.CODE_FORK, "64")
+  elements = listOf(
+    OptionElementData("useOffline", OpenOnlineDocumentChoice.USE_OFFLINE, true),
+    OptionElementData("useOnline", OpenOnlineDocumentChoice.USE_ONLINE),
+    OptionElementData("cancel", OpenOnlineDocumentChoice.CANCEL)
+  )
+
+  showDialog(handleChoice)
 }
