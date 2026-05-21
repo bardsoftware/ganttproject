@@ -306,13 +306,16 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
   }
 
   fun createDateOptionEditor(option: ObservableDate, displayOptions: DateDisplayOptions = DateDisplayOptions(createDateConverter())): DatePicker {
-    return DatePicker(option.value ?: LocalDate.now()).also { picker ->
+    return DatePicker(option.value).also { picker ->
       option.addWatcher { evt ->
         if (evt.trigger != picker) picker.value = evt.newValue
       }
 
       val textEditor = picker.editor
       val composedValidator = ValueValidator<LocalDate?> { unvalidatedValue ->
+        if (unvalidatedValue.isNullOrBlank()) {
+          throw ValidationException("Empty date value")
+        }
         try {
           val parsedDate = displayOptions.stringConverter.fromString(unvalidatedValue)
             ?: throw ValidationException("The date $unvalidatedValue can't be parsed using the current date format")

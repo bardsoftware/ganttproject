@@ -66,6 +66,7 @@ public class I18N {
   final String[] myDayNames;
 
   public String getRoleSetDisplayName(RoleSet roleSet) {
-    return GanttLanguage.getInstance().getText("roleSet." + roleSet.getName() + ".displayName");
+    var localizedName =  GanttLanguage.getInstance().getText("roleSet." + roleSet.getName() + ".displayName");
+    return (localizedName == null) ? roleSet.getName() : localizedName;
   }
 }
