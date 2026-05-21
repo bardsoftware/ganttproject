@@ -254,6 +254,7 @@ class ProjectUIFacadeImpl(
           }
 
           OpenOnlineDocumentChoice.CANCEL -> {
+            stateMachine.cancel()
           }
         }
       }
@@ -269,6 +270,7 @@ class ProjectUIFacadeImpl(
     stateMachine.transition(stateMachine.stateDocumentReady,ProjectOpenActivityMainModelReady.ID) {
       onDocumentReady(stateMachine.project, it.document, strategy)
       installColloboqueClient(stateMachine.project, it.document)
+      strategy.close()
       // --------------------------------
       ProjectOpenActivityMainModelReady()
     }

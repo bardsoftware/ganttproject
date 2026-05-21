@@ -169,7 +169,7 @@ class ProjectOpenStateMachine(val project: IGanttProject, val scope: CoroutineSc
         }
       }
       is ProjectOpenActivityCompleted -> {
-        doSetState(field is ProjectOpenActivityCalculatedModelReady, state) {
+        doSetState(field is ProjectOpenActivityCalculatedModelReady || field is ProjectOpenActivityDocumentForked, state) {
           stateCompleted.resolve(state)
         }
       }
@@ -227,6 +227,10 @@ class ProjectOpenStateMachine(val project: IGanttProject, val scope: CoroutineSc
 
   fun start(document: Document) {
     state = ProjectOpenActivityStarted(document)
+  }
+
+  fun cancel() {
+    state = ProjectOpenActivityCompleted()
   }
 }
 
