@@ -31,8 +31,6 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.application.Platform
 import javafx.geometry.Pos
-import javafx.scene.layout.BorderPane
-import javafx.scene.layout.Pane
 import javafx.stage.Window
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
@@ -45,6 +43,7 @@ import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import net.sourceforge.ganttproject.gui.projectopen.OpenOnlineDocumentChoice
+import net.sourceforge.ganttproject.gui.projectopen.signinDialog
 import net.sourceforge.ganttproject.gui.projectopen.showForkDialog
 import net.sourceforge.ganttproject.gui.projectopen.showOfflineIsAheadDialog
 import net.sourceforge.ganttproject.gui.projectwizard.createNewProject
@@ -78,6 +77,9 @@ class ProjectUIFacadeImpl(
 
   override val projectOpenActivityFactory = ProjectOpenActivityFactory
 
+  init {
+    projectOpenActivityFactory.addBuilder(this::initStateMachine)
+  }
   override fun saveProject(project: IGanttProject): Barrier<Boolean> {
     if (isSaving) {
       GPLogger.logToLogger("We're saving the project now. This save request was rejected")
@@ -89,7 +91,7 @@ class ProjectUIFacadeImpl(
         afterSaveProject(project)
       }
       ProjectSaveFlow(project = project, onFinish = saveBarrier,
-        signin = this::signin,
+        signin = ::signinDialog,
         error = this::onError,
         saveAs = { saveProjectAs(project) }
       ).run()
@@ -132,35 +134,6 @@ class ProjectUIFacadeImpl(
 
   enum class CantWriteChoice {MAKE_COPY, CANCEL, RETRY}
 
-  private fun signin(onAuth: ()->Unit) {
-    dialog { controller ->
-      val wrapper = BorderPane()
-      controller.addStyleClass("dlg-lock", "dlg-cloud-file-options")
-      controller.addStyleSheet(
-        "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
-        "/biz/ganttproject/storage/StorageDialog.css"
-      )
-      wrapper.center = Pane().also {
-        it.prefHeight = 400.0
-        it.prefWidth = 400.0
-      }
-      controller.setContent(wrapper)
-      GPCloudUiFlowBuilder().apply {
-        flowPageChanger = createFlowPageChanger(wrapper, controller)
-        mainPage = object : EmptyFlowPage() {
-          override var active: Boolean
-            get() = super.active
-            set(value) {
-              if (value) {
-                controller.hide()
-                onAuth()
-              }
-            }
-        }
-        build().start()
-      }
-    }
-  }
 //  private fun formatWriteStatusMessage(doc: Document, canWrite: IStatus): String {
 //    assert(canWrite.code >= 0 && canWrite.code < Document.ErrorCode.values().size)
 //    return RootLocalizer.formatText(
@@ -258,67 +231,72 @@ class ProjectUIFacadeImpl(
     }
   }
 
+  private fun initStateMachine(stateMachine: ProjectOpenStateMachine) {
+    val strategy = ProjectOpenStrategy(
+      project = stateMachine.project,
+      uiFacade = myWorkbenchFacade,
+      signin = ::signinDialog,
+      stateMachine = stateMachine
+    )
+    stateMachine.stateStarted.await {
+      strategy.start(it.document)
+    }
+    stateMachine.stateDocumentForked.await { forkedDocument ->
+      fun handleChoice(choice: OpenOnlineDocumentChoice) {
+        when (choice) {
+          OpenOnlineDocumentChoice.USE_OFFLINE -> {
+            forkedDocument.fetchResult.useMirror = true
+            stateMachine.state = ProjectOpenActivityDocumentReady(forkedDocument.document)
+          }
+
+          OpenOnlineDocumentChoice.USE_ONLINE -> {
+            stateMachine.state = ProjectOpenActivityDocumentReady(forkedDocument.document)
+          }
+
+          OpenOnlineDocumentChoice.CANCEL -> {
+          }
+        }
+      }
+      when (forkedDocument.forkCase) {
+        ProjectOpenActivityDocumentForked.ForkCase.OFFLINE_AHEAD -> {
+          showOfflineIsAheadDialog(::handleChoice)
+        }
+        ProjectOpenActivityDocumentForked.ForkCase.FORK -> {
+          showForkDialog(::handleChoice)
+        }
+      }
+    }
+    stateMachine.transition(stateMachine.stateDocumentReady,ProjectOpenActivityMainModelReady.ID) {
+      onDocumentReady(stateMachine.project, it.document, strategy)
+      installColloboqueClient(stateMachine.project, it.document)
+      // --------------------------------
+      ProjectOpenActivityMainModelReady()
+    }
+    stateMachine.stateCalculatedModelReady.await {
+      stateMachine.state = ProjectOpenActivityCompleted()
+    }
+    stateMachine.stateCompleted.await {
+      undoManager.die()
+    }
+  }
+
+  fun installAuthFlow(sm: ProjectOpenStateMachine, authFlow: AuthenticationFlow) {
+    sm.stateAuthRequired.await { state ->
+      authFlow {
+        if (sm.state is ProjectOpenActivityAuthRequired) {
+          sm.state = ProjectOpenActivityStarted(state.document)
+        }
+      }
+    }
+  }
+
   @Throws(IOException::class, DocumentException::class)
   override fun openProject(document: Document, project: IGanttProject,
                            authenticationFlow: AuthenticationFlow?): ProjectOpenStateMachine {
     val stateMachine = projectOpenActivityFactory.createStateMachine(project)
     try {
-      val authFlow = authenticationFlow ?: this::signin
-      val strategy = ProjectOpenStrategy(
-        project = project,
-        uiFacade = myWorkbenchFacade,
-        signin = authenticationFlow ?: this::signin,
-        stateMachine = stateMachine
-      )
-      stateMachine.stateStarted.await {
-        strategy.start(document)
-      }
-      stateMachine.stateAuthRequired.await {
-        authFlow {
-          if (stateMachine.state is ProjectOpenActivityAuthRequired) {
-            stateMachine.state = ProjectOpenActivityStarted()
-          }
-        }
-      }
-      stateMachine.stateDocumentForked.await { forkedDocument ->
-        fun handleChoice(choice: OpenOnlineDocumentChoice) {
-          when (choice) {
-            OpenOnlineDocumentChoice.USE_OFFLINE -> {
-              forkedDocument.fetchResult.useMirror = true
-              stateMachine.state = ProjectOpenActivityDocumentReady(forkedDocument.document)
-            }
-
-            OpenOnlineDocumentChoice.USE_ONLINE -> {
-              stateMachine.state = ProjectOpenActivityDocumentReady(forkedDocument.document)
-            }
-
-            OpenOnlineDocumentChoice.CANCEL -> {
-            }
-          }
-        }
-        when (forkedDocument.forkCase) {
-          ProjectOpenActivityDocumentForked.ForkCase.OFFLINE_AHEAD -> {
-            showOfflineIsAheadDialog(::handleChoice)
-          }
-          ProjectOpenActivityDocumentForked.ForkCase.FORK -> {
-            showForkDialog(::handleChoice)
-          }
-        }
-      }
-      stateMachine.transition(stateMachine.stateDocumentReady,ProjectOpenActivityMainModelReady.ID) {
-        onDocumentReady(project, it.document, strategy)
-        installColloboqueClient(project, it.document)
-        // --------------------------------
-        ProjectOpenActivityMainModelReady()
-      }
-      stateMachine.stateCalculatedModelReady.await {
-        stateMachine.state = ProjectOpenActivityCompleted()
-      }
-      stateMachine.stateCompleted.await {
-        undoManager.die()
-      }
-
-      stateMachine.state = ProjectOpenActivityStarted()
+      installAuthFlow(stateMachine, authenticationFlow ?: ::signinDialog)
+      stateMachine.start(document)
 
 //      strategy.use { strategy ->
 //        DOCUMENT_LOGGER.debug(">>> openProject({})", document.uri)

@@ -30,8 +30,6 @@ import biz.ganttproject.lib.fx.GPTreeTableView
 import biz.ganttproject.lib.fx.depthFirstWalk
 import javafx.beans.property.ReadOnlyDoubleProperty
 import javafx.beans.property.SimpleObjectProperty
-import javafx.collections.FXCollections
-import javafx.collections.ObservableList
 import javafx.event.EventHandler
 import javafx.scene.control.TreeItem
 import javafx.scene.input.KeyCode
@@ -98,7 +96,7 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
   }
 
   protected fun initProjectEventHandlers() {
-    projectOpenActivityFactory.addListener { sm ->
+    projectOpenActivityFactory.addBuilder { sm ->
       areChangesIgnored = true
       val tablesReadyStateEntrance = sm.stateTablesReady.register("Reload ${this.javaClass.simpleName}")
       sm.stateMainModelReady.await {

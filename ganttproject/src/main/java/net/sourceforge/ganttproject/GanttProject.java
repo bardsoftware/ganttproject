@@ -272,7 +272,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     // applyComponentOrientation(GanttLanguage.getInstance()
     // .getComponentOrientation());
     // TODO: this shall be registered just once
-    getProjectUIFacade().getProjectOpenActivityFactory().addListener(
+    getProjectUIFacade().getProjectOpenActivityFactory().addBuilder(
       GanttProjectImplKt.createProjectModificationListener(this, getUIFacade())
     );
     //++addMouseListenerToAllContainer(this.getComponents());

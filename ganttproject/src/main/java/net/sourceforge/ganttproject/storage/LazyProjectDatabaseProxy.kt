@@ -48,7 +48,7 @@ class LazyProjectDatabaseProxy(
   var projectOpenActivityFactory: ProjectOpenActivityFactory? = null
   set(value) {
     field = value
-    value?.addListener(this::onProjectOpenStateMachine)
+    value?.addBuilder(this::onProjectOpenStateMachine)
   }
 
   private fun onProjectOpenStateMachine(sm: ProjectOpenStateMachine) {

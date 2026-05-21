@@ -22,7 +22,6 @@ import biz.ganttproject.FxUiComponent
 import biz.ganttproject.app.*
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.VBoxBuilder
-import biz.ganttproject.app.DialogControllerPane
 import biz.ganttproject.storage.*
 import com.fasterxml.jackson.databind.JsonNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -39,24 +38,23 @@ import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.ProjectOpenStateMachine
-import net.sourceforge.ganttproject.document.Document
-import net.sourceforge.ganttproject.gui.ProjectOpenStrategy
+import net.sourceforge.ganttproject.ProjectOpenActivityAuthRequired
+import net.sourceforge.ganttproject.ProjectOpenActivityFactory
+import net.sourceforge.ganttproject.ProjectOpenActivityStarted
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
+import net.sourceforge.ganttproject.gui.projectopen.signinDialog
 import net.sourceforge.ganttproject.language.GanttLanguage
 import java.awt.BorderLayout
 import java.awt.Component
 import java.io.IOException
 import java.time.Duration
 import java.util.*
-import java.util.concurrent.Executors
 import javax.swing.JPanel
-import javax.swing.SwingUtilities
-import kotlin.coroutines.EmptyCoroutineContext
 
 typealias OnLockDone = (JsonNode?) -> Unit
 typealias BusyUi = (Boolean) -> Unit
@@ -456,25 +454,15 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud"), F
 
   private fun onOnlineDocFetch(fetchResult: FetchResult) {
     val document = this.project.document
-    val stateMachine = ProjectOpenStateMachine(project, CoroutineScope(EmptyCoroutineContext))
-    ProjectOpenStrategy(project, uiFacade, signin = { onAuth -> onAuth() }, stateMachine).use { strategy ->
-      val docChannel = Channel<Document>()
-      CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
-        try {
-          docChannel.receive().also {
-            // If document is obtained, we need to run further steps.
-            // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
-            SwingUtilities.invokeLater {
-              uiFacade.undoManager.die()
-              project.close()
-              strategy.openFileAsIs(it)
-            }
+    ProjectOpenActivityFactory.createStateMachine(project).let { sm ->
+      sm.stateAuthRequired.await {
+        signinDialog {
+          if (sm.state is ProjectOpenActivityAuthRequired) {
+            sm.state = ProjectOpenActivityStarted(document)
           }
-        } catch (ex: Exception) {
-          GPLogger.log(ex)
         }
       }
-      strategy.open(document, docChannel)
+      sm.start(document)
     }
   }
 

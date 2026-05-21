@@ -40,7 +40,7 @@ sealed class ProjectOpenActivityState(val id: String) {
 class ProjectOpenActivityCreated : ProjectOpenActivityState("created")
 
 /** This is the state when project opening process started. */
-class ProjectOpenActivityStarted : ProjectOpenActivityState("started")
+class ProjectOpenActivityStarted(val document: Document) : ProjectOpenActivityState("started")
 
 /**
  * At this state we have loaded the project document and are ready to proceed with loading the main model.
@@ -97,7 +97,7 @@ class ProjectOpenActivityFailed(
  * States are represented as barriers, and code that is triggered on state transitions can
  * await() on the barriers.
  */
-class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope) {
+class ProjectOpenStateMachine(val project: IGanttProject, val scope: CoroutineScope) {
   val stateStarted = SimpleBarrier<ProjectOpenActivityStarted>()
   val stateCompleted = SimpleBarrier<ProjectOpenActivityCompleted>()
   val stateAuthRequired = SimpleBarrier<ProjectOpenActivityAuthRequired>()
@@ -224,9 +224,13 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
 
     )
   }
+
+  fun start(document: Document) {
+    state = ProjectOpenActivityStarted(document)
+  }
 }
 
-typealias ProjectOpenActivityListener = (ProjectOpenStateMachine) -> Unit
+typealias ProjectOpenStateMachineBuilder = (ProjectOpenStateMachine) -> Unit
 
 /**
  * This class creates project open activities. A new activity is created when GanttProject opens a project
@@ -234,13 +238,13 @@ typealias ProjectOpenActivityListener = (ProjectOpenStateMachine) -> Unit
  * and run the appropriate code when a state machine enters into the state they are waiting for.
  */
 object ProjectOpenActivityFactory {
-  private val listeners = mutableListOf<ProjectOpenActivityListener>()
-  fun addListener(l: ProjectOpenActivityListener) = listeners.add(l)
+  private val builders = mutableListOf<ProjectOpenStateMachineBuilder>()
+  fun addBuilder(l: ProjectOpenStateMachineBuilder) = builders.add(l)
 
   fun createStateMachine(project: IGanttProject): ProjectOpenStateMachine {
     val coroutineScope = CoroutineScope(EmptyCoroutineContext)
     return ProjectOpenStateMachine(project, coroutineScope).also { sm ->
-      listeners.forEach { it.invoke(sm) }
+      builders.forEach { it.invoke(sm) }
     }
   }
 }
