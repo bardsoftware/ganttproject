@@ -276,7 +276,7 @@ class GPCloudStatusBar(
           text = STATUS_BAR_LOCALIZER.formatText("mode.onlineOnly")
           graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD)
           tooltip = Tooltip(STATUS_BAR_LOCALIZER.formatText("mode.onlineOnly.tooltip"))
-          Decorator.removeAllDecorations(this)
+          //Decorator.removeAllDecorations(this)
           isDisable = false
         }
         this.btnLock.isDisable = false
@@ -286,7 +286,7 @@ class GPCloudStatusBar(
           text = STATUS_BAR_LOCALIZER.formatText("mode.mirror")
           graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD_DOWNLOAD)
           tooltip = Tooltip(STATUS_BAR_LOCALIZER.formatText("mode.mirror.tooltip"))
-          Decorator.removeAllDecorations(this)
+          //Decorator.removeAllDecorations(this)
           isDisable = false
         }
         this.btnLock.isDisable = false
@@ -296,7 +296,7 @@ class GPCloudStatusBar(
           text = STATUS_BAR_LOCALIZER.formatText("mode.offline")
           graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD_DOWNLOAD)
           tooltip = Tooltip(STATUS_BAR_LOCALIZER.formatText("mode.offline.tooltip"))
-          Decorator.addDecoration(this, GraphicDecoration(createWarningDecoration(), Pos.BOTTOM_LEFT, 6.0, -4.0))
+          //Decorator.addDecoration(this, GraphicDecoration(createWarningDecoration(), Pos.BOTTOM_LEFT, 6.0, -4.0))
           isDisable = true
         }
 
