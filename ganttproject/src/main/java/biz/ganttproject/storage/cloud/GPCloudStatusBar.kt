@@ -21,6 +21,7 @@ package biz.ganttproject.storage.cloud
 import biz.ganttproject.app.OptionElementData
 import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.createAlertBody
 import biz.ganttproject.app.dialog
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.lib.fx.createToggleSwitch
@@ -176,8 +177,16 @@ class GPCloudStatusBar(
     this.observableDocument.get().apply {
       val onlineDocument = this.asOnlineDocument()
       if (onlineDocument is GPCloudDocument) {
-        DocPropertiesUi(errorUi = {}, busyUi = {}).showDialog(onlineDocument) {
-          projectUIFacade.openProject(this, this@GPCloudStatusBar.project, null)
+        val docPropertiesUi = DocPropertiesUi(errorUi = {}, busyUi = {})
+        dialog { dlg ->
+          docPropertiesUi.addContent( dlg, onlineDocument) { unusedFetchResult ->
+            // If the fetch result is okay, its contents will be returned from the online document.
+            val sm = projectUIFacade.openProject(this, this@GPCloudStatusBar.project, null)
+            sm.stateFailed.await {
+              DOCUMENT_LOGGER.error("${it.errorTitle}: ${it.errorDescription}", exception = it.throwable)
+              dlg.showAlert(it.errorTitle, createAlertBody(it.errorDescription))
+            }
+          }
         }
       }
     }

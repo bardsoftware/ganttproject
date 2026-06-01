@@ -410,10 +410,6 @@ class DocPropertiesUi(val errorUi: ErrorUi, val busyUi: BusyUi) {
       }
     }
   }
-
-  fun showDialog(document: GPCloudDocument, fetchConsumer: (FetchResult) -> Unit) {
-    dialog { dialogController -> addContent( dialogController, document, fetchConsumer) }
-  }
 }
 
 class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud"), FxUiComponent {
@@ -444,15 +440,17 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud"), F
     val onlineDocument = this.project.document.asOnlineDocument() ?: return buildNotOnlineDocumentNode()
     return if (onlineDocument is GPCloudDocument) {
       val group = BorderPane()
-      val dialogBuildApi = DialogControllerPane(group)
-      DocPropertiesUi(errorUi = {}, busyUi = {}).addContent(dialogBuildApi, onlineDocument, this::onOnlineDocFetch)
+      val dlg = DialogControllerPane(group)
+      DocPropertiesUi(errorUi = {}, busyUi = {}).addContent(dlg, onlineDocument, { _ ->
+        onOnlineDocFetch(dlg)
+      })
       group
     } else {
       buildNotOnlineDocumentNode()
     }
   }
 
-  private fun onOnlineDocFetch(fetchResult: FetchResult) {
+  private fun onOnlineDocFetch(dlg: DialogController) {
     val document = this.project.document
     ProjectOpenActivityFactory.createStateMachine(project).let { sm ->
       sm.stateAuthRequired.await {
@@ -461,6 +459,10 @@ class ProjectPropertiesPageProvider : OptionPageProviderBase("project.cloud"), F
             sm.state = ProjectOpenActivityStarted(document)
           }
         }
+      }
+      sm.stateFailed.await {
+        DOCUMENT_LOGGER.error("${it.errorTitle}: ${it.errorDescription}", exception = it.throwable)
+        dlg.showAlert(it.errorTitle, createAlertBody(it.errorDescription))
       }
       sm.start(document)
     }

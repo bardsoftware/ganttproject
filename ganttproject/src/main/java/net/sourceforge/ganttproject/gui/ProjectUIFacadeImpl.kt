@@ -24,16 +24,19 @@ import biz.ganttproject.core.calendar.ImportCalendarOption
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.*
-import biz.ganttproject.storage.cloud.*
+import biz.ganttproject.storage.cloud.GPCloudDocument
+import biz.ganttproject.storage.cloud.installColloboque
+import biz.ganttproject.storage.cloud.onboard
+import biz.ganttproject.storage.cloud.webSocket
 import com.google.common.collect.Lists
 import com.sandec.mdfx.MDFXNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import javafx.application.Platform
 import javafx.geometry.Pos
 import javafx.stage.Window
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.withContext
 import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.OkAction
@@ -43,18 +46,11 @@ import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
 import net.sourceforge.ganttproject.gui.projectopen.OpenOnlineDocumentChoice
-import net.sourceforge.ganttproject.gui.projectopen.signinDialog
 import net.sourceforge.ganttproject.gui.projectopen.showForkDialog
 import net.sourceforge.ganttproject.gui.projectopen.showOfflineIsAheadDialog
+import net.sourceforge.ganttproject.gui.projectopen.signinDialog
 import net.sourceforge.ganttproject.gui.projectwizard.createNewProject
-import net.sourceforge.ganttproject.importer.BufferProject
-import net.sourceforge.ganttproject.importer.asImportBufferProjectApi
-import net.sourceforge.ganttproject.importer.importBufferProject
 import net.sourceforge.ganttproject.language.GanttLanguage
-import net.sourceforge.ganttproject.resource.HumanResourceMerger
-import net.sourceforge.ganttproject.resource.MergeResourcesEnum
-import net.sourceforge.ganttproject.task.export
-import net.sourceforge.ganttproject.task.importFromDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.io.File
 import java.io.IOException
@@ -187,32 +183,7 @@ class ProjectUIFacadeImpl(
   private suspend fun installColloboqueClient(project: IGanttProject, doc: Document) {
     doc.asOnlineDocument()?.let {
       if (it is GPCloudDocument) {
-        it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
-        project.projectDatabase.addExternalUpdatesListener {
-          Platform.runLater {
-            val emptyTaskManager = project.taskManager.emptyClone()
-            emptyTaskManager.importFromDatabase(project.projectDatabase.readAllTasks(), project.taskManager.taskHierarchy.export())
-            val bufferProject = BufferProject(
-              emptyTaskManager,
-              project.projectDatabase,
-              project.roleManager,
-              project.activeCalendar,
-              myWorkbenchFacade
-            )
-            val mergeOption = HumanResourceMerger.MergeResourcesOption()
-            val importCalendarOption = ImportCalendarOption()
-            mergeOption.setSelectedValue(MergeResourcesEnum.BY_ID)
-            importCalendarOption.loadPersistentValue(ImportCalendarOption.Values.REPLACE.name)
-            importBufferProject(
-              project,
-              bufferProject,
-              myWorkbenchFacade.asImportBufferProjectApi(),
-              mergeOption,
-              importCalendarOption,
-              closeCurrentProject = true
-            )
-          }
-        }
+        installColloboque(it, project, undoManager, myWorkbenchFacade)
         it.onboard(documentManager, webSocket)
       }
     }
@@ -231,6 +202,7 @@ class ProjectUIFacadeImpl(
     }
   }
 
+  private var cnt = 0
   private fun initStateMachine(stateMachine: ProjectOpenStateMachine) {
     val strategy = ProjectOpenStrategy(
       project = stateMachine.project,
@@ -268,6 +240,11 @@ class ProjectUIFacadeImpl(
       }
     }
     stateMachine.transition(stateMachine.stateDocumentReady,ProjectOpenActivityMainModelReady.ID) {
+
+      //      if (cnt > 1) {
+//        return@transition ProjectOpenActivityFailed("Test Failure", "Failure when fetching", RuntimeException("Foo"))
+//      }
+//      cnt++
       onDocumentReady(stateMachine.project, it.document, strategy)
       installColloboqueClient(stateMachine.project, it.document)
       strategy.close()
@@ -502,4 +479,4 @@ class ProjectSaveFlow(
 }
 
 private val DOCUMENT_LOGGER = GPLogger.create("Document.Info")
-private val DOCUMENT_ERROR_LOGGER = GPLogger.create("Document.Error")
+val DOCUMENT_ERROR_LOGGER = GPLogger.create("Document.Error")

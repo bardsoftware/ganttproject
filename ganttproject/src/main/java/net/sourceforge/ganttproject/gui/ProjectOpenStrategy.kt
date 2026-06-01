@@ -554,4 +554,3 @@ internal class CommandLineProjectOpenStrategy(
 }
 
 private val DOCUMENT_LOGGER = GPLogger.create("Document.Info")
-private val DOCUMENT_ERROR_LOGGER = GPLogger.create("Document.Error")

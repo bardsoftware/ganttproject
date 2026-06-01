@@ -388,3 +388,4 @@ fun DocumentManager.loadRecentDocs(
 }
 
 private val LOG = GPLogger.create("Document")
+val DOCUMENT_LOGGER = LOG

@@ -18,18 +18,59 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
+import biz.ganttproject.core.calendar.ImportCalendarOption
+import javafx.application.Platform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import net.sourceforge.ganttproject.GPLogger
+import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.importer.BufferProject
+import net.sourceforge.ganttproject.importer.asImportBufferProjectApi
+import net.sourceforge.ganttproject.importer.importBufferProject
+import net.sourceforge.ganttproject.resource.HumanResourceMerger
+import net.sourceforge.ganttproject.resource.MergeResourcesEnum
 import net.sourceforge.ganttproject.storage.*
+import net.sourceforge.ganttproject.task.export
+import net.sourceforge.ganttproject.task.importFromDatabase
 import net.sourceforge.ganttproject.undo.GPUndoListener
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.util.*
 import java.util.concurrent.Executors
 import javax.swing.event.UndoableEditEvent
+
+fun installColloboque(it: GPCloudDocument, project: IGanttProject, undoManager: GPUndoManager, uiFacade: UIFacade) {
+  if (!isColloboqueOn()) return
+  it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
+  project.projectDatabase.addExternalUpdatesListener {
+    Platform.runLater {
+      val emptyTaskManager = project.taskManager.emptyClone()
+      emptyTaskManager.importFromDatabase(project.projectDatabase.readAllTasks(), project.taskManager.taskHierarchy.export())
+      val bufferProject = BufferProject(
+        emptyTaskManager,
+        project.projectDatabase,
+        project.roleManager,
+        project.activeCalendar,
+        uiFacade
+      )
+      val mergeOption = HumanResourceMerger.MergeResourcesOption()
+      val importCalendarOption = ImportCalendarOption()
+      mergeOption.setSelectedValue(MergeResourcesEnum.BY_ID)
+      importCalendarOption.loadPersistentValue(ImportCalendarOption.Values.REPLACE.name)
+      importBufferProject(
+        project,
+        bufferProject,
+        uiFacade.asImportBufferProjectApi(),
+        mergeOption,
+        importCalendarOption,
+        closeCurrentProject = true
+      )
+    }
+  }
+}
 
 class ColloboqueClient(private val projectDatabase: ProjectDatabase, undoManager: GPUndoManager) {
   private val myBaseTxnCommitInfo = TxnCommitInfo(0)
@@ -174,6 +215,10 @@ private class TxnCommitInfo(var baseTxnId: BaseTxnId) {
     UUID.randomUUID().toString().replace("-", "").also {
       trackingCode = it
     }
+}
+
+private fun isColloboqueOn() = System.getProperty("enable_colloboque", System.getenv("ENABLE_COLLOBOQUE") ?: "false").lowercase().let {
+  it.toBooleanStrictOrNull() ?: false
 }
 
 private val LOG = GPLogger.create("Cloud.RealTimeSync")
