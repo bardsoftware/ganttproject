@@ -55,23 +55,21 @@ public class DesktopIntegration {
 
         @Override
         public void openFile(final File file) {
-          javax.swing.SwingUtilities.invokeLater(() -> {
-            var barrier = projectUiFacade.ensureProjectSaved(project);
-            barrier.await(result -> {
-              if (result) {
-                Document myDocument = project.getDocumentManager().getDocument(file.getAbsolutePath());
-                try {
-                  var sm = projectUiFacade.openProject(myDocument, project, null);
-                  sm.getStateFailed().await(error -> {
-                    ErrorHandlingKt.showProjectOpenErrorDialog(error, myDocument, uiFacade.getNotificationManager());
-                    return Unit.INSTANCE;
-                  });
-                } catch (Document.DocumentException | IOException ex) {
-                  uiFacade.showErrorDialog(ex);
-                }
+          var barrier = projectUiFacade.ensureProjectSaved(project);
+          barrier.await(result -> {
+            if (result) {
+              Document myDocument = project.getDocumentManager().getDocument(file.getAbsolutePath());
+              try {
+                var sm = projectUiFacade.openProject(myDocument, project, null);
+                sm.getStateFailed().await(error -> {
+                  ErrorHandlingKt.showProjectOpenErrorDialog(error, myDocument, uiFacade.getNotificationManager());
+                  return Unit.INSTANCE;
+                });
+              } catch (Document.DocumentException | IOException ex) {
+                uiFacade.showErrorDialog(ex);
               }
-              return Unit.INSTANCE;
-            });
+            }
+            return Unit.INSTANCE;
           });
         }
       });
