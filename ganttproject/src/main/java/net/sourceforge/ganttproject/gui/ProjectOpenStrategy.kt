@@ -39,6 +39,8 @@ import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
+import net.sourceforge.ganttproject.gui.projectopen.DOCUMENT_ERROR_LOGGER
+import net.sourceforge.ganttproject.gui.projectopen.showProjectOpenErrorDialog
 import net.sourceforge.ganttproject.importer.Importer
 import net.sourceforge.ganttproject.importer.ImporterWizardModel
 import net.sourceforge.ganttproject.language.GanttLanguage
@@ -531,19 +533,7 @@ internal class CommandLineProjectOpenStrategy(
           project.documentManager.getProxyDocument(lastDocument), project, null
         )
         stateMachine.stateFailed.await { error ->
-          val msg = """
-            Failed to open project: {}
-            {}
-            -------
-            {}
-          """.trimIndent()
-          DOCUMENT_ERROR_LOGGER.error(msg, lastDocument.uri, error.errorTitle, error.errorDescription, exception = error.throwable)
-          val notification = uiFacade.notificationManager.createNotification(
-            NotificationChannel.ERROR, error.errorTitle, error.errorDescription, null
-          )
-          uiFacade.notificationManager.showDialog(
-            RootLocalizer.formatText("project.open.error.title"),
-            listOf(notification))
+          error.showProjectOpenErrorDialog(lastDocument, uiFacade.notificationManager)
         }
       }
     }

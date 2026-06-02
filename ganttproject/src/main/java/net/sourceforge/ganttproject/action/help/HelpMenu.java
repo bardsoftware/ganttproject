@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.help;
 
 import biz.ganttproject.storage.AutoSaveManager;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.CancelAction;
@@ -31,6 +32,7 @@ import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.ViewLogDialog;
+import net.sourceforge.ganttproject.gui.projectopen.ErrorHandlingKt;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import javax.swing.*;
@@ -155,7 +157,11 @@ public class HelpMenu {
 
     protected void recover(Document recoverDocument) {
       try {
-        myProjectUiFacade.openProject(new ReadOnlyProxyDocument(recoverDocument), myProject, null);
+        var sm = myProjectUiFacade.openProject(new ReadOnlyProxyDocument(recoverDocument), myProject, null);
+        sm.getStateFailed().await(error -> {
+          ErrorHandlingKt.showProjectOpenErrorDialog(error, new ReadOnlyProxyDocument(recoverDocument), myUiFacade.getNotificationManager());
+          return Unit.INSTANCE;
+        });
       } catch (Throwable e) {
         GPLogger.log(new RuntimeException("Failed to recover file " + recoverDocument.getFileName(), e));
       }

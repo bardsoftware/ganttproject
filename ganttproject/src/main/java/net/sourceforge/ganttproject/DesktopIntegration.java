@@ -11,6 +11,7 @@ import net.sourceforge.ganttproject.action.edit.SettingsDialogAction;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.gui.ProjectUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
+import net.sourceforge.ganttproject.gui.projectopen.ErrorHandlingKt;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +61,11 @@ public class DesktopIntegration {
               if (result) {
                 Document myDocument = project.getDocumentManager().getDocument(file.getAbsolutePath());
                 try {
-                  projectUiFacade.openProject(myDocument, project, null);
+                  var sm = projectUiFacade.openProject(myDocument, project, null);
+                  sm.getStateFailed().await(error -> {
+                    ErrorHandlingKt.showProjectOpenErrorDialog(error, myDocument, uiFacade.getNotificationManager());
+                    return Unit.INSTANCE;
+                  });
                 } catch (Document.DocumentException | IOException ex) {
                   uiFacade.showErrorDialog(ex);
                 }

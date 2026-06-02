@@ -240,8 +240,7 @@ class ProjectUIFacadeImpl(
       }
     }
     stateMachine.transition(stateMachine.stateDocumentReady,ProjectOpenActivityMainModelReady.ID) {
-
-      //      if (cnt > 1) {
+//      if (cnt > 1) {
 //        return@transition ProjectOpenActivityFailed("Test Failure", "Failure when fetching", RuntimeException("Foo"))
 //      }
 //      cnt++
@@ -479,4 +478,3 @@ class ProjectSaveFlow(
 }
 
 private val DOCUMENT_LOGGER = GPLogger.create("Document.Info")
-val DOCUMENT_ERROR_LOGGER = GPLogger.create("Document.Error")

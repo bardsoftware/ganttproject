@@ -18,11 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud
 
-import biz.ganttproject.app.OptionElementData
-import biz.ganttproject.app.OptionPaneBuilder
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.createAlertBody
-import biz.ganttproject.app.dialog
+import biz.ganttproject.app.*
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.lib.fx.createToggleSwitch
 import biz.ganttproject.storage.*
@@ -36,7 +32,6 @@ import javafx.application.Platform
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableObjectValue
 import javafx.event.ActionEvent
-import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Label
@@ -46,7 +41,6 @@ import javafx.scene.layout.HBox
 import javafx.scene.shape.Circle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
@@ -55,9 +49,8 @@ import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.gui.ProjectUIFacade
 import net.sourceforge.ganttproject.gui.UIFacade
+import net.sourceforge.ganttproject.gui.projectopen.showProjectOpenErrorDialog
 import net.sourceforge.ganttproject.language.GanttLanguage
-import org.controlsfx.control.decoration.Decorator
-import org.controlsfx.control.decoration.GraphicDecoration
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -194,8 +187,7 @@ class GPCloudStatusBar(
 
   // This is called whenever open document changes and handles different cases.
   private fun onDocumentChange(oldDocument: Document?, newDocument: Document?) {
-    GlobalScope.launch(Dispatchers.JavaFx) {
-
+    FXThread.runLater {
       // First we un-proxy old and new documents.
       val newDoc = if (newDocument is ProxyDocument) {
         newDocument.realDocument
@@ -250,7 +242,7 @@ class GPCloudStatusBar(
   }
 
   private fun onLockStatusChange(newStatus: LockStatus) {
-    GlobalScope.launch(Dispatchers.JavaFx) {
+    FXThread.runLater {
       updateLockStatus(newStatus)
     }
   }
@@ -273,7 +265,7 @@ class GPCloudStatusBar(
   }
 
   private fun onOnlineModeChange(newValue: OnlineDocumentMode) {
-    GlobalScope.launch(Dispatchers.JavaFx) {
+    FXThread.runLater {
       updateOnlineMode(newValue)
     }
   }
@@ -343,7 +335,9 @@ class GPCloudStatusBar(
           GlobalScope.launch(Dispatchers.IO) {
             doc.fetch().also {
               it.update()
-              projectUIFacade.openProject(newDocument, this@GPCloudStatusBar.project, null)
+              projectUIFacade.openProject(newDocument, this@GPCloudStatusBar.project, null).apply {
+                stateFailed.await { error -> error.showProjectOpenErrorDialog(newDocument, uiFacade.notificationManager) }
+              }
             }
           }
         }
@@ -407,12 +401,12 @@ private class ReconnectStatus(private val label: Label) {
 
   private fun startCountdown(nextTry: Duration) {
     LOG.debug("The next ping is in {}. Starting countdown", nextTry)
-    GlobalScope.launch(Dispatchers.JavaFx) { this@ReconnectStatus.label.isVisible = true }
+    FXThread.runLater { this@ReconnectStatus.label.isVisible = true }
     val remainingSeconds = AtomicLong(nextTry.seconds)
     this.statusUpdateFuture = statusUpdateExecutor.scheduleWithFixedDelay({
       LOG.debug("... {} seconds", remainingSeconds.get())
       if (remainingSeconds.get() > 0) {
-        GlobalScope.launch(Dispatchers.JavaFx) { reconnectText.update(remainingSeconds.getAndDecrement().toString()) }
+        FXThread.runLater { reconnectText.update(remainingSeconds.getAndDecrement().toString()) }
       } else {
         throw RuntimeException("Cancelling this status update")
       }
