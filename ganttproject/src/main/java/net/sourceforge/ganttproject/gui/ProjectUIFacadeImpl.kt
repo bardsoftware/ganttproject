@@ -248,7 +248,7 @@ class ProjectUIFacadeImpl(
       installColloboqueClient(stateMachine.project, it.document)
       strategy.close()
       // --------------------------------
-      ProjectOpenActivityMainModelReady()
+      ProjectOpenActivityMainModelReady(it.document)
     }
     stateMachine.stateCalculatedModelReady.await {
       stateMachine.state = ProjectOpenActivityCompleted()

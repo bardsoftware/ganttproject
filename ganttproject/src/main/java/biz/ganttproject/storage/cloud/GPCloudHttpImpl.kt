@@ -38,6 +38,7 @@ import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.GPVersion
+import net.sourceforge.ganttproject.ProjectOpenActivityFactory
 import net.sourceforge.ganttproject.storage.*
 import okhttp3.*
 import org.apache.commons.codec.binary.Base64InputStream
@@ -275,6 +276,13 @@ class WebSocketClient {
   private val baseTxnIdListeners = mutableListOf<(String) -> Unit>()
   private var listeningDocument: GPCloudDocument? = null
 
+  init {
+    ProjectOpenActivityFactory.addBuilder { sm ->
+      sm.stateCompleted.await {
+        println("!!!!!!!!!")
+      }
+    }
+  }
   private fun getWebSocketUrl() = GPCLOUD_WEBSOCKET_URL
 
   private fun getConnectionSpecs() = if (isColloboqueLocalTest()) {

@@ -68,7 +68,7 @@ class ProjectOpenActivityAuthRequired(val document: Document): ProjectOpenActivi
  * At this state we have loaded the task and resource models from the document and have run all possible
  * checks that run on project opening, such as initial re-scheduling.
  */
-class ProjectOpenActivityMainModelReady: ProjectOpenActivityState(ID) {
+class ProjectOpenActivityMainModelReady(val document: Document) : ProjectOpenActivityState(ID) {
   companion object {
     val ID = "mainModelReady"
   }
@@ -93,16 +93,20 @@ class ProjectOpenActivityFailed(
 ): ProjectOpenActivityState("failed")
 
 /**
- * The state machine that manages the states.
+ * The state machine that manages the states of the project opening process.
  * States are represented as barriers, and code that is triggered on state transitions can
  * await() on the barriers.
  */
 class ProjectOpenStateMachine(val project: IGanttProject, val scope: CoroutineScope) {
+  // The project opening process started.
   val stateStarted = SimpleBarrier<ProjectOpenActivityStarted>()
+  // The project opening process completed successfully. It is okay to close the UI that might be waiting for the result.
   val stateCompleted = SimpleBarrier<ProjectOpenActivityCompleted>()
+  // We need authentication to proceed with the project opening process.
   val stateAuthRequired = SimpleBarrier<ProjectOpenActivityAuthRequired>()
-
+  // The document has been forked, and we may need to take a decision on how to proceed.
   val stateDocumentForked = SimpleBarrier<ProjectOpenActivityDocumentForked>()
+  // The document has been successfully loaded and is ready for further processing.
   val stateDocumentReady = SimpleBarrier<ProjectOpenActivityDocumentReady>()
   val stateMainModelReady = SimpleBarrier<ProjectOpenActivityMainModelReady>()
   val stateTablesReady = TwoPhaseBarrierImpl("Tables Initialized", ProjectOpenActivityTablesReady(project)).also { barrier ->
