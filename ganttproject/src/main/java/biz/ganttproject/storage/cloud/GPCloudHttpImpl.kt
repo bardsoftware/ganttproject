@@ -22,6 +22,7 @@ import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.DocumentUri
 import biz.ganttproject.storage.ForbiddenException
 import biz.ganttproject.storage.Path
+import biz.ganttproject.storage.asOnlineDocument
 import biz.ganttproject.storage.cloud.http.JsonTask
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -279,7 +280,9 @@ class WebSocketClient {
   init {
     ProjectOpenActivityFactory.addBuilder { sm ->
       sm.stateCompleted.await {
-        println("!!!!!!!!!")
+        it.document.asOnlineDocument()?.let {
+          webSocket.start()
+        }
       }
     }
   }

@@ -149,7 +149,7 @@ open class GanttProjectImpl(
     for (l in listeners) {
       l.projectOpened(barrier, barrier)
     }
-    barrier.isActive = true
+    barrier.activate(this)
   }
 
   @Throws(Document.DocumentException::class, IOException::class)

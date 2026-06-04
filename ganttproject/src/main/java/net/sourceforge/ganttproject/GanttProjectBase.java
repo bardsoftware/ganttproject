@@ -109,7 +109,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   private final RssFeedChecker myRssChecker;
   final TaskManagerConfigImpl myTaskManagerConfig;
   private final TaskManager myTaskManager;
-  protected final TwoPhaseBarrierImpl<UIFacade> myUiInitializationPromise;
+  protected final TwoPhaseBarrierImpl<UIFacade> myUiInitializationPromise = new TwoPhaseBarrierImpl<>("UI initialization");
   private Updater myUpdater;
   protected final TaskActions myTaskActions;
   private final GanttProjectImpl myProjectImpl;
@@ -252,7 +252,6 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
 
     myNotificationManager = new NotificationManagerImpl();
     myUIFacade = new UIFacadeImpl(stage, myNotificationManager, getProject(), this);
-    myUiInitializationPromise = new TwoPhaseBarrierImpl<>("UI initialization", myUIFacade);
 
     GPLogger.setUIFacade(myUIFacade);
     var newTaskActor = new NewTaskActor<Task>();
@@ -267,9 +266,11 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
         return myTaskTableSupplier.get().getActionConnector();
       }
     }, newTaskActor, myProjectDatabase);
+
+    var uiInitializationEntrance = myUiInitializationPromise.register("Task table initialization");
     myTaskTableSupplier = Suppliers.synchronizedSupplier(Suppliers.memoize(() ->
       new TaskTable(getProject(), getTaskManager(), myTaskTableChartConnector, myTaskCollapseView,
-        getTaskSelectionManager(), myTaskActions, getUndoManager(), getTaskFilterManager(), myUiInitializationPromise,
+        getTaskSelectionManager(), myTaskActions, getUndoManager(), getTaskFilterManager(), uiInitializationEntrance,
         newTaskActor, getProjectUIFacade().getProjectOpenActivityFactory())
     ));
     myResourceActions = new ResourceActionSet(getUIFacade().getResourceSelectionManager(), getUIFacade().getResourceSelectionManager(), getProject(), getUIFacade());

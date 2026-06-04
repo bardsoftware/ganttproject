@@ -75,13 +75,13 @@ class ProjectOpenActivityMainModelReady(val document: Document) : ProjectOpenAct
 }
 
 /** This is the state when task and resource tables are filled with the project data */
-class ProjectOpenActivityTablesReady(val project: IGanttProject) : ProjectOpenActivityState("tablesReady")
+class ProjectOpenActivityTablesReady(val project: IGanttProject, val document: Document) : ProjectOpenActivityState("tablesReady")
 
 /** This is the state when calculated properties and filters are applied to the project data */
-class ProjectOpenActivityCalculatedModelReady(val project: IGanttProject) : ProjectOpenActivityState("calculatedModelReady")
+class ProjectOpenActivityCalculatedModelReady(val project: IGanttProject, val document: Document) : ProjectOpenActivityState("calculatedModelReady")
 
 /** The state when the whole process is completed */
-class ProjectOpenActivityCompleted: ProjectOpenActivityState("completed")
+class ProjectOpenActivityCompleted(val project: IGanttProject, val document: Document) : ProjectOpenActivityState("completed")
 
 /**
  * This state indicates that the activity has failed.
@@ -109,7 +109,7 @@ class ProjectOpenStateMachine(val project: IGanttProject, val scope: CoroutineSc
   // The document has been successfully loaded and is ready for further processing.
   val stateDocumentReady = SimpleBarrier<ProjectOpenActivityDocumentReady>()
   val stateMainModelReady = SimpleBarrier<ProjectOpenActivityMainModelReady>()
-  val stateTablesReady = TwoPhaseBarrierImpl("Tables Initialized", ProjectOpenActivityTablesReady(project)).also { barrier ->
+  val stateTablesReady = TwoPhaseBarrierImpl<ProjectOpenActivityTablesReady>("Tables Initialized").also { barrier ->
     barrier.await {
       state = it
     }
@@ -162,6 +162,7 @@ class ProjectOpenStateMachine(val project: IGanttProject, val scope: CoroutineSc
       is ProjectOpenActivityMainModelReady -> {
         doSetState(field is ProjectOpenActivityDocumentReady, state) {
           stateMainModelReady.resolve(state)
+          stateTablesReady.activate(ProjectOpenActivityTablesReady(project, state.document))
         }
       }
       is ProjectOpenActivityTablesReady -> {
@@ -231,10 +232,6 @@ class ProjectOpenStateMachine(val project: IGanttProject, val scope: CoroutineSc
 
   fun start(document: Document) {
     state = ProjectOpenActivityStarted(document)
-  }
-
-  fun cancel() {
-    state = ProjectOpenActivityCompleted()
   }
 }
 

@@ -226,7 +226,7 @@ class ProjectUIFacadeImpl(
           }
 
           OpenOnlineDocumentChoice.CANCEL -> {
-            stateMachine.cancel()
+            stateMachine.state = ProjectOpenActivityCompleted(stateMachine.project, forkedDocument.document)
           }
         }
       }
@@ -251,7 +251,7 @@ class ProjectUIFacadeImpl(
       ProjectOpenActivityMainModelReady(it.document)
     }
     stateMachine.stateCalculatedModelReady.await {
-      stateMachine.state = ProjectOpenActivityCompleted()
+      stateMachine.state = ProjectOpenActivityCompleted(it.project, it.document)
     }
     stateMachine.stateCompleted.await {
       undoManager.die()

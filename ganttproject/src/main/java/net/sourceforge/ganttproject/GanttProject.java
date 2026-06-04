@@ -217,6 +217,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(),
       myResourceTableSupplier, resourceChart, resourceChart.getCursorProperty(), resourceChart::buildContextMenu);
+    myUiInitializationPromise.activate(getUiFacadeImpl());
 //++
 //    addComponentListener(new ComponentAdapter() {
 //      @Override
