@@ -89,7 +89,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
     TaskTexture.entries.toTypedArray()
   )
   private val copyStartDateAction = GPAction.create("option.taskProperties.main.earliestBegin.copyBeginDate") {
-    earliestStartOption.set(taskDatesController.startDateOption.value)
+    FXThread.runLater { earliestStartOption.set(taskDatesController.startDateOption.value) }
   }.also {
     it.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY)
     it.isEnabled = earliestStartOption.isWritable.value
@@ -143,7 +143,9 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
         HBox().apply {
           alignment = Pos.CENTER
           spacing = 5.0
-          val dateEditor = this@pane.createDateOptionEditor(earliestStartOption)
+          val dateEditor = this@pane.createDateOptionEditor(earliestStartOption, displayOptions = DateDisplayOptions(
+            stringConverter = GanttLanguage.getInstance().shortDateConverter
+          ))
           children.add(this@pane.createBooleanOptionEditor(hasEarliestStart))
           children.add(dateEditor)
           children.add(createButton(copyStartDateAction, onlyIcon = false).also {
