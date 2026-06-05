@@ -22,6 +22,7 @@ import javafx.util.StringConverter
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.time.format.FormatStyle
 import java.util.Locale
 
@@ -57,7 +58,11 @@ class FormatterBasedDateConverter(val shortDateFormat: DateTimeFormatter) : Stri
 
   override fun fromString(str: String?): LocalDate? =
     str?.let {
-      LocalDate.parse(str, shortDateFormat)
+      try {
+        LocalDate.parse(str.trim(), shortDateFormat)
+      } catch (ignored: DateTimeParseException) {
+        // Returning null indicates that the date string could not be parsed.
+        null
+      }
     }
 }
-
