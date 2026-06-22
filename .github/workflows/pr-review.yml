@@ -1,0 +1,35 @@
+name: Claude Review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened]
+
+jobs:
+  review:
+    name: Review PR
+    if: |
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    concurrency:
+      group: claude-review-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Review PR
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true
+          prompt: '/github-review ${{ github.event.pull_request.number }} ${{ github.repository }}'
+          claude_args: >-
+            --allowedTools "Skill(github-review),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh api:*),Bash(curl:*),Bash(find:*),Bash(grep:*),Bash(jq:*),Read,Glob,Grep"
+          show_full_output: true
