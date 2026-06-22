@@ -108,9 +108,6 @@ internal class ProjectOpenStrategy(
     }
   }
 
-  private val openScope = CoroutineScope(Executors.newFixedThreadPool(3).asCoroutineDispatcher())
-  private val sendingScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
-
   fun start(document: Document) {
     val onlineDocument = document.asOnlineDocument() ?: run {
       stateMachine.state = ProjectOpenActivityDocumentReady(document)
@@ -139,54 +136,6 @@ internal class ProjectOpenStrategy(
           ))
         } catch (ex: Exception) {
           stateMachine.fail(ex)
-        }
-      }
-    }
-  }
-
-  fun open(document: Document, docChannel: Channel<Document>) {
-    val localChannel = Channel<Document>()
-    openScope.launch {
-      // Here we wait until the document is fetched, either from the cloud or locally.
-      try {
-        localChannel.receive().also {
-          //TODO
-          it.checkWellFormed()
-          // If the document was fetched successfully and it is well-formed, it is okay to send it to the document
-          // channel.
-          docChannel.send(it)
-        }
-      } catch (ex: ForbiddenException) {
-        // It is possible that we need to sign into GP Cloud to open a document.
-        signin { open(document, docChannel) }
-      } catch (ex: PaymentRequiredException) {
-        // Or probably we need to pay.
-        docChannel.close(ex)
-      } catch (ex: SAXException) {
-        // It is also possible that the document can't be parsed as XML.
-        docChannel.close(Document.DocumentException(
-          RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex
-        ))
-      } catch (ex: Exception) {
-        docChannel.close(ex)
-      }
-    }
-    openScope.launch {
-      // In this coroutine we check if it is an online document and fetch it.
-      val online = document.asOnlineDocument()
-      if (online == null) {
-        // It is a local document, just send it to the next stage.
-        localChannel.send(document)
-      } else {
-        // It is an online document and we fetch it.
-        try {
-          val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
-          processFetchResult(currentFetch, document).fold(
-            success = { doc -> stateMachine.state = ProjectOpenActivityDocumentReady(doc)},
-            failure = { stateMachine.state = it }
-          )
-        } catch (ex: Exception) {
-          localChannel.close(ex)
         }
       }
     }
@@ -473,6 +422,9 @@ internal class CommandLineProjectOpenStrategy(
     projectUiFacade.openProject(document, project, null).apply {
       stateCompleted.await {
         DOCUMENT_LOGGER.debug("<<< openStartupDocument($path)")
+      }
+      stateCancelled.await {
+        DOCUMENT_LOGGER.debug("<<< openStartupDocument($path) cancelled")
       }
       stateFailed.await { it ->
         if (it.throwable is Document.DocumentException) {

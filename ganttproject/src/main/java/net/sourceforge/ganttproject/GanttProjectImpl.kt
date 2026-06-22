@@ -312,6 +312,9 @@ internal fun createProjectModificationListener(project: IGanttProject, uiFacade:
       timerBarrier.isPaused = false
       project.isModified = false
     }
+    stateMachine.stateCancelled.await {
+      timerBarrier.isPaused = false
+    }
     stateMachine.stateFailed.await {
       timerBarrier.isPaused = false
     }

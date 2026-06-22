@@ -91,6 +91,9 @@ class StorageDialogBuilder(
         sm.stateCompleted.await {
           myDialogUi.close()
         }
+        sm.stateCancelled.await {
+          myDialogUi.close()
+        }
         sm.stateFailed.await { stateFailed ->
           killProgress()
           myDialogUi.error(stateFailed.errorTitle, stateFailed.errorDescription, stateFailed.throwable)

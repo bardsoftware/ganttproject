@@ -226,7 +226,7 @@ class ProjectUIFacadeImpl(
           }
 
           OpenOnlineDocumentChoice.CANCEL -> {
-            stateMachine.state = ProjectOpenActivityCompleted(stateMachine.project, forkedDocument.document)
+            stateMachine.state = ProjectOpenActivityCancelled(stateMachine.project, forkedDocument.document)
           }
         }
       }
@@ -256,6 +256,10 @@ class ProjectUIFacadeImpl(
     stateMachine.stateCompleted.await {
       undoManager.die()
     }
+    stateMachine.stateCancelled.await {
+      // The user cancelled the opening process, so the previously open project remains intact.
+      // We keep the undo history of that project, hence no undoManager.die() here.
+    }
   }
 
   fun installAuthFlow(sm: ProjectOpenStateMachine, authFlow: AuthenticationFlow) {
@@ -275,34 +279,6 @@ class ProjectUIFacadeImpl(
     try {
       installAuthFlow(stateMachine, authenticationFlow ?: ::signinDialog)
       stateMachine.start(document)
-
-//      strategy.use { strategy ->
-//        DOCUMENT_LOGGER.debug(">>> openProject({})", document.uri)
-//        // Run coroutine which fetches document and wait until it sends the result to the channel.
-//        val docChannel = Channel<Document>()
-//        CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
-//          try {
-//            DOCUMENT_LOGGER.debug("... waiting for the document")
-//            docChannel.receive().also { doc ->
-//            }
-//          } catch (ex: Exception) {
-//            when (ex) {
-//              // If channel was closed with a cause and it was because of HTTP 403, we show UI for sign-in
-//              is DocumentException -> {
-//                onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
-//              }
-//              else -> {
-//                onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("Can't open document $document", ex)
-//              }
-//            }
-//            stateMachine.fail(ex)
-//          }
-//          finally {
-//            DOCUMENT_LOGGER.debug("<<< openProject()")
-//          }
-//        }
-//        strategy.open(document, docChannel)
-//      }
     } catch (e: Exception) {
       throw DocumentException("Can't open document $document", e)
     }

@@ -83,7 +83,13 @@ class TwoPhaseBarrierImpl<T>(private val name: String) : Barrier<T>, BarrierEntr
   val isActive: Boolean get() = value != null
 
   fun activate(exitValue: T) {
+    if (value != null) {
+      error("You can't activate the barrier twice. There is an existing value: $value")
+    }
     value = exitValue
+    if (counter.get() == 0) {
+      callExits()
+    }
   }
 
   override fun await(code: BarrierExit<T>) {

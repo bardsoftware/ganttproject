@@ -111,6 +111,12 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
           treeTable.requestFocus()
         }
       }
+      sm.stateCancelled.await {
+        areChangesIgnored = false
+        FXThread.runLater {
+          treeTable.requestFocus()
+        }
+      }
       sm.stateFailed.await {
         areChangesIgnored = false
       }

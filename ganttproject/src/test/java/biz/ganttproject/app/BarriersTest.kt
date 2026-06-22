@@ -21,6 +21,7 @@ package biz.ganttproject.app
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class BarriersTest {
 
@@ -54,4 +55,24 @@ class BarriersTest {
     assertTrue(exitCalled)
   }
 
+  @Test
+  fun `two phase barrier can't be activated twice`() {
+    val barrier = TwoPhaseBarrierImpl<Boolean>("Bar1")
+    barrier.activate(true)
+    assertThrows<IllegalStateException> {
+      barrier.activate(false)
+    }
+  }
+
+  @Test
+  fun `exits are called immediately upon activation`() {
+    var exitCalled = false
+    val barrier = TwoPhaseBarrierImpl<Boolean>("Bar1")
+    barrier.await {
+      assertTrue(it)
+      exitCalled = true
+    }
+    barrier.activate(true)
+    assertTrue(exitCalled)
+  }
 }

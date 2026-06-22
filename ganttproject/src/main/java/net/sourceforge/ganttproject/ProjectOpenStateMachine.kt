@@ -83,6 +83,9 @@ class ProjectOpenActivityCalculatedModelReady(val project: IGanttProject, val do
 /** The state when the whole process is completed */
 class ProjectOpenActivityCompleted(val project: IGanttProject, val document: Document) : ProjectOpenActivityState("completed")
 
+/** The state when the user cancels the project opening process, e.g. in the fork resolution dialog. */
+class ProjectOpenActivityCancelled(val project: IGanttProject, val document: Document) : ProjectOpenActivityState("cancelled")
+
 /**
  * This state indicates that the activity has failed.
  */
@@ -102,6 +105,8 @@ class ProjectOpenStateMachine(val project: IGanttProject, val scope: CoroutineSc
   val stateStarted = SimpleBarrier<ProjectOpenActivityStarted>()
   // The project opening process completed successfully. It is okay to close the UI that might be waiting for the result.
   val stateCompleted = SimpleBarrier<ProjectOpenActivityCompleted>()
+  // The project opening process was cancelled by the user. It is okay to close the UI that might be waiting for the result.
+  val stateCancelled = SimpleBarrier<ProjectOpenActivityCancelled>()
   // We need authentication to proceed with the project opening process.
   val stateAuthRequired = SimpleBarrier<ProjectOpenActivityAuthRequired>()
   // The document has been forked, and we may need to take a decision on how to proceed.
@@ -176,6 +181,11 @@ class ProjectOpenStateMachine(val project: IGanttProject, val scope: CoroutineSc
       is ProjectOpenActivityCompleted -> {
         doSetState(field is ProjectOpenActivityCalculatedModelReady || field is ProjectOpenActivityDocumentForked, state) {
           stateCompleted.resolve(state)
+        }
+      }
+      is ProjectOpenActivityCancelled -> {
+        doSetState(field is ProjectOpenActivityDocumentForked, state) {
+          stateCancelled.resolve(state)
         }
       }
       else -> {

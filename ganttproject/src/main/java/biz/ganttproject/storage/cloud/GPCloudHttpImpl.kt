@@ -281,7 +281,7 @@ class WebSocketClient {
     ProjectOpenActivityFactory.addBuilder { sm ->
       sm.stateCompleted.await {
         it.document.asOnlineDocument()?.let {
-          webSocket.start()
+          start()
         }
       }
     }
