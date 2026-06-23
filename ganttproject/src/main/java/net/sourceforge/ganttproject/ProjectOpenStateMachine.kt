@@ -248,9 +248,11 @@ class ProjectOpenStateMachine(val project: IGanttProject, val scope: CoroutineSc
 typealias ProjectOpenStateMachineBuilder = (ProjectOpenStateMachine) -> Unit
 
 /**
- * This class creates project open activities. A new activity is created when GanttProject opens a project
- * document. Listeners receive an instance of the state machine and can subscribe to the state changes
+ * This object creates project open activities. A new activity is created when GanttProject opens a project
+ * document. Builders receive an instance of the state machine and can subscribe to the state changes
  * and run the appropriate code when a state machine enters into the state they are waiting for.
+ *
+ * This is a singleton, so builders shall be registered wisely, just one per application run.
  */
 object ProjectOpenActivityFactory {
   private val builders = mutableListOf<ProjectOpenStateMachineBuilder>()

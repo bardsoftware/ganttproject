@@ -317,7 +317,7 @@ class DialogControllerSwing : DialogController {
 
   override fun toggleProgress(shown: Boolean): () -> Unit {
     val countDown = CountDownLatch(2)
-    GlobalScope.launch(Dispatchers.JavaFx) {
+    FXThread.runLater {
       val transition = createOverlayPane(this@DialogControllerSwing.content, this@DialogControllerSwing.contentStack) {pane ->
         pane.center = Spinner().let {
           it.state = Spinner.State.WAITING
@@ -400,31 +400,8 @@ class DialogControllerSwing : DialogController {
   }
 
   override fun removeButtonBar() {
-//    this.buttons.clear()
-//    this.buttonNodes.clear()
     this.buttonBarDisabled = true
-    //this.buttonBar = null
   }
-
-//  private fun updateButtons(buttonBar: ButtonBar) {
-//    buttonBar.buttons.clear()
-//    // show details button if expandable content is present
-//    var hasDefault = false
-//    for (cmd in buttons) {
-//      val button = buttonNodes.computeIfAbsent(cmd, ::createButton)
-//      // keep only first default button
-//      val buttonType = cmd.buttonData
-//      button.isDefaultButton = !hasDefault && buttonType != null && buttonType.isDefaultButton
-//      button.isCancelButton = buttonType != null && buttonType.isCancelButton
-//      hasDefault = hasDefault || buttonType != null && buttonType.isDefaultButton
-//      buttonBar.buttons.add(button)
-//
-//      button.addEventHandler(ActionEvent.ACTION) { ae: ActionEvent ->
-//        if (ae.isConsumed) return@addEventHandler
-//        hide()
-//      }
-//    }
-//  }
 
   private fun createButton(buttonType: ButtonType): Button {
     val button = Button(buttonType.text)
@@ -521,15 +498,9 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
         bb.height = 5.0
         bb.iterations = 2
       }
-//      createOverlayPane(this.content, this.stackPane) {pane ->
-//        pane.styleClass.add("overlay")
-//        pane.center = Label("")
-//        pane.opacity = 0.5
-//      }
     }
     return {
       Platform.runLater {
-//        this.stackPane.children.removeIf { it.styleClass.contains("overlay") }
         this.content.effect = null
       }
     }

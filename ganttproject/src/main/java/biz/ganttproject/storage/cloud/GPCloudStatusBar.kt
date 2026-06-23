@@ -277,6 +277,7 @@ class GPCloudStatusBar(
           text = STATUS_BAR_LOCALIZER.formatText("mode.onlineOnly")
           graphic = FontAwesomeIconView(FontAwesomeIcon.CLOUD)
           tooltip = Tooltip(STATUS_BAR_LOCALIZER.formatText("mode.onlineOnly.tooltip"))
+          // TODO(dbarashev): restore offline-only mode indication
           //Decorator.removeAllDecorations(this)
           isDisable = false
         }

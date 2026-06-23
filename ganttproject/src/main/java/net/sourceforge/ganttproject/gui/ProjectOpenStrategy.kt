@@ -30,10 +30,10 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.fold
 import com.google.common.collect.Lists
-import javafx.beans.value.ChangeListener
-import javafx.beans.value.ObservableValue
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
@@ -55,7 +55,6 @@ import org.xml.sax.SAXException
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
 import java.io.File
-import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.regex.Pattern
 import javax.swing.*
@@ -355,25 +354,7 @@ internal class ProjectOpenStrategy(
     }
   }
 
-  internal inner class Step4 {
-    fun onFetchResultChange(document: Document, callback: () -> Unit) {
-      val onlineDocument = document.asOnlineDocument()
-      if (onlineDocument != null) {
-        val changeListener = object : ChangeListener<FetchResult?> {
-          override fun changed(observable: ObservableValue<out FetchResult?>?, oldFetch: FetchResult?, newFetch: FetchResult?) {
-            println("oldFetch=${oldFetch?.actualChecksum} newFetch=${newFetch?.actualChecksum}")
-            if (oldFetch != null && newFetch != null) {
-              if (oldFetch.actualVersion != newFetch.actualVersion) {
-                observable?.removeListener(this)
-                callback()
-              }
-            }
-          }
-        }
-        onlineDocument.fetchResultProperty.addListener(changeListener)
-      }
-
-    }
+  internal class Step4 {
   }
   companion object {
     val milestonesOption = DefaultEnumerationOption(
@@ -403,22 +384,6 @@ internal class CommandLineProjectOpenStrategy(
   private fun doOpenStartupDocument(path: String) {
     DOCUMENT_LOGGER.debug(">>> openStartupDocument($path)")
     val document: Document = documentManager.getDocument(path)
-//    val finishChannel = Channel<Boolean>()
-//    CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
-//      try {
-//        finishChannel.receive()
-//      } catch (e: Document.DocumentException) {
-//        if (!tryImportDocument(document)) {
-//          uiFacade.showErrorDialog(e)
-//        }
-//      } catch (e: IOException) {
-//        // TODO: shall we try to import a document here? when it may make sense? CSV/MPP ?
-//          uiFacade.showErrorDialog(e)
-//      } catch (e: Exception) {
-//        uiFacade.showErrorDialog(e)
-//      }
-//
-//    }
     projectUiFacade.openProject(document, project, null).apply {
       stateCompleted.await {
         DOCUMENT_LOGGER.debug("<<< openStartupDocument($path)")
