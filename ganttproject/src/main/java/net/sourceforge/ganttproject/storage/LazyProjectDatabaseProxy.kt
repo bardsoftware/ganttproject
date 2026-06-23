@@ -48,7 +48,7 @@ class LazyProjectDatabaseProxy(
   var projectOpenActivityFactory: ProjectOpenActivityFactory? = null
   set(value) {
     field = value
-    value?.addListener(this::onProjectOpenStateMachine)
+    value?.addBuilder(this::onProjectOpenStateMachine)
   }
 
   private fun onProjectOpenStateMachine(sm: ProjectOpenStateMachine) {
@@ -56,7 +56,7 @@ class LazyProjectDatabaseProxy(
     sm.stateTablesReady.await {
       sm.scope.launch {
         withContext(Dispatchers.IO) {
-          sm.transition(ProjectOpenActivityCalculatedModelReady(it.project)) {
+          sm.transition(ProjectOpenActivityCalculatedModelReady(it.project, it.document)) {
             projectEventListenerImpl.whenTablesInitialized(it.project)
           }
         }

@@ -53,7 +53,6 @@ import net.sourceforge.ganttproject.task.event.createTaskListenerWithTimerBarrie
 import java.awt.Color
 import java.io.IOException
 import java.net.URL
-import javax.swing.SwingUtilities
 
 fun interface ErrorUi {
   fun show(ex: Exception)
@@ -150,7 +149,7 @@ open class GanttProjectImpl(
     for (l in listeners) {
       l.projectOpened(barrier, barrier)
     }
-    barrier.isActive = true
+    barrier.activate(this)
   }
 
   @Throws(Document.DocumentException::class, IOException::class)
@@ -291,7 +290,7 @@ internal fun <T> (IGanttProject).restoreProject(listeners: List<ProjectEventList
 }
 
 
-internal fun createProjectModificationListener(project: IGanttProject, uiFacade: UIFacade): ProjectOpenActivityListener {
+internal fun createProjectModificationListener(project: IGanttProject, uiFacade: UIFacade): ProjectOpenStateMachineBuilder {
   val timerBarrier = TimerBarrier(1000).apply {
     await {
       project.setModified()
@@ -312,6 +311,9 @@ internal fun createProjectModificationListener(project: IGanttProject, uiFacade:
     stateMachine.stateCompleted.await {
       timerBarrier.isPaused = false
       project.isModified = false
+    }
+    stateMachine.stateCancelled.await {
+      timerBarrier.isPaused = false
     }
     stateMachine.stateFailed.await {
       timerBarrier.isPaused = false

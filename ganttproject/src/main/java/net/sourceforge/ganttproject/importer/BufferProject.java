@@ -47,7 +47,7 @@ import net.sourceforge.ganttproject.task.TaskManagerImpl;
 public class BufferProject extends GanttProjectImpl implements ParserFactory {
   PrjInfos myProjectInfo = new PrjInfos();
   final DocumentManager myDocumentManager;
-  final UIFacade myUIfacade;
+  private final UIFacade myUIfacade;
   private final ColumnList myVisibleFields = new VisibleFieldsImpl();
   final ColumnList myResourceVisibleFields = new VisibleFieldsImpl();
   //private final HumanResourceManager myBufferResourceManager;

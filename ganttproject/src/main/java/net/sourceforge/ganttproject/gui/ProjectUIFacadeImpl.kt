@@ -24,18 +24,19 @@ import biz.ganttproject.core.calendar.ImportCalendarOption
 import biz.ganttproject.core.option.GPOptionGroup
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.storage.*
-import biz.ganttproject.storage.cloud.*
+import biz.ganttproject.storage.cloud.GPCloudDocument
+import biz.ganttproject.storage.cloud.installColloboque
+import biz.ganttproject.storage.cloud.onboard
+import biz.ganttproject.storage.cloud.webSocket
 import com.google.common.collect.Lists
 import com.sandec.mdfx.MDFXNode
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import javafx.application.Platform
 import javafx.geometry.Pos
-import javafx.scene.layout.BorderPane
-import javafx.scene.layout.Pane
 import javafx.stage.Window
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.withContext
 import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.OkAction
@@ -44,19 +45,15 @@ import net.sourceforge.ganttproject.document.Document.DocumentException
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ProxyDocument
 import net.sourceforge.ganttproject.document.webdav.WebDavStorageImpl
+import net.sourceforge.ganttproject.gui.projectopen.OpenOnlineDocumentChoice
+import net.sourceforge.ganttproject.gui.projectopen.showForkDialog
+import net.sourceforge.ganttproject.gui.projectopen.showOfflineIsAheadDialog
+import net.sourceforge.ganttproject.gui.projectopen.signinDialog
 import net.sourceforge.ganttproject.gui.projectwizard.createNewProject
-import net.sourceforge.ganttproject.importer.BufferProject
-import net.sourceforge.ganttproject.importer.asImportBufferProjectApi
-import net.sourceforge.ganttproject.importer.importBufferProject
 import net.sourceforge.ganttproject.language.GanttLanguage
-import net.sourceforge.ganttproject.resource.HumanResourceMerger
-import net.sourceforge.ganttproject.resource.MergeResourcesEnum
-import net.sourceforge.ganttproject.task.export
-import net.sourceforge.ganttproject.task.importFromDatabase
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.Executors
 import java.util.logging.Level
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
@@ -74,8 +71,11 @@ class ProjectUIFacadeImpl(
   private val myConverterGroup = GPOptionGroup("convert", ProjectOpenStrategy.milestonesOption)
   private var isSaving = false
 
-  override val projectOpenActivityFactory = ProjectOpenActivityFactory()
+  override val projectOpenActivityFactory = ProjectOpenActivityFactory
 
+  init {
+    projectOpenActivityFactory.addBuilder(this::initStateMachine)
+  }
   override fun saveProject(project: IGanttProject): Barrier<Boolean> {
     if (isSaving) {
       GPLogger.logToLogger("We're saving the project now. This save request was rejected")
@@ -87,7 +87,7 @@ class ProjectUIFacadeImpl(
         afterSaveProject(project)
       }
       ProjectSaveFlow(project = project, onFinish = saveBarrier,
-        signin = this::signin,
+        signin = ::signinDialog,
         error = this::onError,
         saveAs = { saveProjectAs(project) }
       ).run()
@@ -130,35 +130,6 @@ class ProjectUIFacadeImpl(
 
   enum class CantWriteChoice {MAKE_COPY, CANCEL, RETRY}
 
-  private fun signin(onAuth: ()->Unit) {
-    dialog { controller ->
-      val wrapper = BorderPane()
-      controller.addStyleClass("dlg-lock", "dlg-cloud-file-options")
-      controller.addStyleSheet(
-        "/biz/ganttproject/storage/cloud/GPCloudStorage.css",
-        "/biz/ganttproject/storage/StorageDialog.css"
-      )
-      wrapper.center = Pane().also {
-        it.prefHeight = 400.0
-        it.prefWidth = 400.0
-      }
-      controller.setContent(wrapper)
-      GPCloudUiFlowBuilder().apply {
-        flowPageChanger = createFlowPageChanger(wrapper, controller)
-        mainPage = object : EmptyFlowPage() {
-          override var active: Boolean
-            get() = super.active
-            set(value) {
-              if (value) {
-                controller.hide()
-                onAuth()
-              }
-            }
-        }
-        build().start()
-      }
-    }
-  }
 //  private fun formatWriteStatusMessage(doc: Document, canWrite: IStatus): String {
 //    assert(canWrite.code >= 0 && canWrite.code < Document.ErrorCode.values().size)
 //    return RootLocalizer.formatText(
@@ -209,102 +180,105 @@ class ProjectUIFacadeImpl(
     return result
   }
 
+  private suspend fun installColloboqueClient(project: IGanttProject, doc: Document) {
+    doc.asOnlineDocument()?.let {
+      if (it is GPCloudDocument) {
+        installColloboque(it, project, undoManager, myWorkbenchFacade)
+        it.onboard(documentManager, webSocket)
+      }
+    }
+  }
+
+  private suspend fun onDocumentReady(project: IGanttProject, doc: Document, strategy: ProjectOpenStrategy) {
+    DOCUMENT_LOGGER.debug("... document is ready")
+    // If document is obtained, we need to run further steps.
+    // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
+    withContext(Dispatchers.Swing) {
+      project.close()
+      strategy.openFileAsIs(doc)
+        .checkLegacyMilestones()
+        .checkEarliestStartConstraints()
+        .runUiTasks()
+    }
+  }
+
+  private var cnt = 0
+  private fun initStateMachine(stateMachine: ProjectOpenStateMachine) {
+    val strategy = ProjectOpenStrategy(
+      project = stateMachine.project,
+      uiFacade = myWorkbenchFacade,
+      signin = ::signinDialog,
+      stateMachine = stateMachine
+    )
+    stateMachine.stateStarted.await {
+      strategy.start(it.document)
+    }
+    stateMachine.stateDocumentForked.await { forkedDocument ->
+      fun handleChoice(choice: OpenOnlineDocumentChoice) {
+        when (choice) {
+          OpenOnlineDocumentChoice.USE_OFFLINE -> {
+            forkedDocument.fetchResult.useMirror = true
+            stateMachine.state = ProjectOpenActivityDocumentReady(forkedDocument.document)
+          }
+
+          OpenOnlineDocumentChoice.USE_ONLINE -> {
+            stateMachine.state = ProjectOpenActivityDocumentReady(forkedDocument.document)
+          }
+
+          OpenOnlineDocumentChoice.CANCEL -> {
+            stateMachine.state = ProjectOpenActivityCancelled(stateMachine.project, forkedDocument.document)
+          }
+        }
+      }
+      when (forkedDocument.forkCase) {
+        ProjectOpenActivityDocumentForked.ForkCase.OFFLINE_AHEAD -> {
+          showOfflineIsAheadDialog(::handleChoice)
+        }
+        ProjectOpenActivityDocumentForked.ForkCase.FORK -> {
+          showForkDialog(::handleChoice)
+        }
+      }
+    }
+    stateMachine.transition(stateMachine.stateDocumentReady,ProjectOpenActivityMainModelReady.ID) {
+//      if (cnt > 1) {
+//        return@transition ProjectOpenActivityFailed("Test Failure", "Failure when fetching", RuntimeException("Foo"))
+//      }
+//      cnt++
+      onDocumentReady(stateMachine.project, it.document, strategy)
+      installColloboqueClient(stateMachine.project, it.document)
+      strategy.close()
+      // --------------------------------
+      ProjectOpenActivityMainModelReady(it.document)
+    }
+    stateMachine.stateCalculatedModelReady.await {
+      stateMachine.state = ProjectOpenActivityCompleted(it.project, it.document)
+    }
+    stateMachine.stateCompleted.await {
+      undoManager.die()
+    }
+    stateMachine.stateCancelled.await {
+      // The user cancelled the opening process, so the previously open project remains intact.
+      // We keep the undo history of that project, hence no undoManager.die() here.
+    }
+  }
+
+  fun installAuthFlow(sm: ProjectOpenStateMachine, authFlow: AuthenticationFlow) {
+    sm.stateAuthRequired.await { state ->
+      authFlow {
+        if (sm.state is ProjectOpenActivityAuthRequired) {
+          sm.state = ProjectOpenActivityStarted(state.document)
+        }
+      }
+    }
+  }
 
   @Throws(IOException::class, DocumentException::class)
-  override fun openProject(document: Document, project: IGanttProject, onFinish: Channel<Boolean>?,
+  override fun openProject(document: Document, project: IGanttProject,
                            authenticationFlow: AuthenticationFlow?): ProjectOpenStateMachine {
     val stateMachine = projectOpenActivityFactory.createStateMachine(project)
     try {
-      stateMachine.state = ProjectOpenActivityStarted()
-      stateMachine.stateCalculatedModelReady.await {
-        stateMachine.state = ProjectOpenActivityCompleted()
-      }
-      stateMachine.stateCompleted.await {
-        undoManager.die()
-      }
-
-      ProjectOpenStrategy(
-        project = project,
-        uiFacade = myWorkbenchFacade,
-        signin = authenticationFlow ?: this::signin,
-      ).use { strategy ->
-        DOCUMENT_LOGGER.debug(">>> openProject({})", document.uri)
-        // Run coroutine which fetches document and wait until it sends the result to the channel.
-        val docChannel = Channel<Document>()
-        CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
-          try {
-            DOCUMENT_LOGGER.debug("... waiting for the document")
-            docChannel.receive().also { doc ->
-              DOCUMENT_LOGGER.debug("... document is ready")
-              // If document is obtained, we need to run further steps.
-              // Because of historical reasons they run in Swing thread (they may modify the state of Swing components)
-              SwingUtilities.invokeLater {
-                try {
-                  project.close()
-                  strategy.openFileAsIs(doc)
-                    .checkLegacyMilestones()
-                    .checkEarliestStartConstraints()
-                    .runUiTasks()
-                  stateMachine.state = ProjectOpenActivityMainModelReady()
-                  document.asOnlineDocument()?.let {
-                    if (it is GPCloudDocument) {
-                      it.colloboqueClient = ColloboqueClient(project.projectDatabase, undoManager)
-                      project.projectDatabase.addExternalUpdatesListener {
-                        Platform.runLater {
-                          val emptyTaskManager = project.taskManager.emptyClone()
-                          emptyTaskManager.importFromDatabase(project.projectDatabase.readAllTasks(), project.taskManager.taskHierarchy.export())
-                          val bufferProject = BufferProject(
-                            emptyTaskManager,
-                            project.projectDatabase,
-                            project.roleManager,
-                            project.activeCalendar,
-                            myWorkbenchFacade
-                          )
-                          val mergeOption = HumanResourceMerger.MergeResourcesOption()
-                          val importCalendarOption = ImportCalendarOption()
-                          mergeOption.setSelectedValue(MergeResourcesEnum.BY_ID)
-                          importCalendarOption.loadPersistentValue(ImportCalendarOption.Values.REPLACE.name)
-                          importBufferProject(
-                            project,
-                            bufferProject,
-                            myWorkbenchFacade.asImportBufferProjectApi(),
-                            mergeOption,
-                            importCalendarOption,
-                            closeCurrentProject = true
-                          )
-                        }
-                      }
-                      it.onboard(documentManager, webSocket)
-                    }
-                  }
-                  runBlocking {
-                    onFinish?.send(true)
-                  }
-                } catch (ex: DocumentException) {
-                  ex.printStackTrace()
-                  stateMachine.fail(ex)
-                  onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
-                }
-              }
-            }
-          } catch (ex: Exception) {
-            when (ex) {
-              // If channel was closed with a cause and it was because of HTTP 403, we show UI for sign-in
-              is DocumentException -> {
-                onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("", ex)
-              }
-              else -> {
-                onFinish?.close(ex) ?: DOCUMENT_ERROR_LOGGER.error("Can't open document $document", ex)
-              }
-            }
-            stateMachine.fail(ex)
-          }
-          finally {
-            DOCUMENT_LOGGER.debug("<<< openProject()")
-          }
-        }
-        strategy.open(document, docChannel)
-      }
+      installAuthFlow(stateMachine, authenticationFlow ?: ::signinDialog)
+      stateMachine.start(document)
     } catch (e: Exception) {
       throw DocumentException("Can't open document $document", e)
     }
@@ -480,4 +454,3 @@ class ProjectSaveFlow(
 }
 
 private val DOCUMENT_LOGGER = GPLogger.create("Document.Info")
-private val DOCUMENT_ERROR_LOGGER = GPLogger.create("Document.Error")

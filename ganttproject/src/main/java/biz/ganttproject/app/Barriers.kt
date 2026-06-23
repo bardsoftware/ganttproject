@@ -71,24 +71,31 @@ class SimpleBarrier<T> : Barrier<T> {
  * Once all registered entrance activities reach the barrier, it opens it's exit and
  * starts the exit activities.
  */
-class TwoPhaseBarrierImpl<T>(private val name: String, private val value: T) : Barrier<T>, BarrierEntrance {
+class TwoPhaseBarrierImpl<T>(private val name: String) : Barrier<T>, BarrierEntrance {
+  constructor(name: String, value: T): this(name) {
+    activate(value)
+  }
+  private var value: T? = null
   private val counter = AtomicInteger(0)
   private val exits = mutableListOf<BarrierExit<T>>()
   private val activities = mutableMapOf<String, OnBarrierReached>()
 
-  var isActive: Boolean = false
-  set(value) {
-    val wasActive = field
-    field = value
-    // If there are exits, but no activities, we call exit immediately
-    if (value && !wasActive && counter.get() == 0) {
-      exits.forEach { it(this.value) }
+  val isActive: Boolean get() = value != null
+
+  fun activate(exitValue: T) {
+    if (value != null) {
+      error("You can't activate the barrier twice. There is an existing value: $value")
+    }
+    value = exitValue
+    if (counter.get() == 0) {
+      callExits()
     }
   }
 
   override fun await(code: BarrierExit<T>) {
-    assert(!isActive) {
-      "You need to register barrier exits before it is activated"
+    if (isActive && counter.get() == 0) {
+      code(value!!)
+      return
     }
     exits.add(code)
   }
@@ -114,9 +121,14 @@ class TwoPhaseBarrierImpl<T>(private val name: String, private val value: T) : B
 
   private fun tick() {
     if (counter.decrementAndGet() == 0) {
-      BARRIER_LOGGER.debug("Barrier $name: reached.")
-      exits.forEach { it(value) }
+      callExits()
     }
+  }
+
+  private fun callExits() {
+    BARRIER_LOGGER.debug("Barrier $name: reached.")
+    val exitValue = value ?: error("No value was set for the barrier $name")
+    exits.forEach { it(exitValue) }
   }
 }
 

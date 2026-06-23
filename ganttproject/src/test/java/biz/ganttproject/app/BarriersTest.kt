@@ -21,34 +21,58 @@ package biz.ganttproject.app
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class BarriersTest {
 
   @Test
   fun `two phase barrier exit registered before entrance`() {
     var exitCalled = false
-    val barrier = TwoPhaseBarrierImpl<Boolean>("Bar1", true)
+    val barrier = TwoPhaseBarrierImpl<Boolean>("Bar1")
     barrier.await {
       assertTrue(it)
       exitCalled = true
     }
     assertFalse(exitCalled)
 
-    barrier.register("Entrance activity").let { entrance -> entrance() }
+    val entrance = barrier.register("Entrance activity")
+    barrier.activate(true)
+    entrance()
     assertTrue(exitCalled)
   }
 
   @Test
   fun `two phase barrier exit registered after entrance`() {
     var exitCalled = false
-    val barrier = TwoPhaseBarrierImpl<Boolean>("Bar1", true)
-    barrier.register("Entrance activity").let { entrance -> entrance() }
+    val barrier = TwoPhaseBarrierImpl<Boolean>("Bar1")
+    val entrance = barrier.register("Entrance activity")
+    barrier.activate(true)
+    entrance()
     barrier.await {
       assertTrue(it)
       exitCalled = true
     }
-    barrier.isActive = true
     assertTrue(exitCalled)
   }
 
+  @Test
+  fun `two phase barrier can't be activated twice`() {
+    val barrier = TwoPhaseBarrierImpl<Boolean>("Bar1")
+    barrier.activate(true)
+    assertThrows<IllegalStateException> {
+      barrier.activate(false)
+    }
+  }
+
+  @Test
+  fun `exits are called immediately upon activation`() {
+    var exitCalled = false
+    val barrier = TwoPhaseBarrierImpl<Boolean>("Bar1")
+    barrier.await {
+      assertTrue(it)
+      exitCalled = true
+    }
+    barrier.activate(true)
+    assertTrue(exitCalled)
+  }
 }

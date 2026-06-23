@@ -19,26 +19,30 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui
 
-import biz.ganttproject.app.OptionElementData
-import biz.ganttproject.app.OptionPaneBuilder
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.DefaultEnumerationOption
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.storage.*
+import biz.ganttproject.storage.cloud.GPCloudDocument
+import biz.ganttproject.storage.cloud.installOfflineMirror
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.fold
 import com.google.common.collect.Lists
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
-import javafx.beans.value.ChangeListener
-import javafx.beans.value.ObservableValue
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import net.sourceforge.ganttproject.GPLogger
-import net.sourceforge.ganttproject.IGanttProject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
+import net.sourceforge.ganttproject.gui.projectopen.DOCUMENT_ERROR_LOGGER
+import net.sourceforge.ganttproject.gui.projectopen.showProjectOpenErrorDialog
 import net.sourceforge.ganttproject.importer.Importer
+import net.sourceforge.ganttproject.importer.ImporterWizardModel
 import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.plugins.PluginManager
 import net.sourceforge.ganttproject.task.TaskImpl
@@ -51,8 +55,6 @@ import org.xml.sax.SAXException
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
 import java.io.File
-import java.io.IOException
-import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.regex.Pattern
 import javax.swing.*
@@ -70,6 +72,7 @@ internal class ProjectOpenStrategy(
   private val project: IGanttProject,
   private val uiFacade: UIFacade,
   private val signin: AuthenticationFlow,
+  private val stateMachine: ProjectOpenStateMachine
   ) : AutoCloseable {
   private val myDiagnostics: ProjectOpenDiagnosticImpl
   private val myCloseables = Lists.newArrayList<AutoCloseable>()
@@ -104,158 +107,66 @@ internal class ProjectOpenStrategy(
     }
   }
 
-  private val openScope = CoroutineScope(Executors.newFixedThreadPool(3).asCoroutineDispatcher())
-  private val sendingScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
-
-  fun open(document: Document, docChannel: Channel<Document>) {
-    val localChannel = Channel<Document>()
-    openScope.launch {
-      // Here we wait until the document is fetched, either from the cloud or locally.
-      try {
-        localChannel.receive().also {
-          it.checkWellFormed()
-          // If the document was fetched successfully and it is well-formed, it is okay to send it to the document
-          // channel.
-          docChannel.send(it)
-        }
-      } catch (ex: ForbiddenException) {
-        // It is possible that we need to sign into GP Cloud to open a document.
-        signin { open(document, docChannel) }
-      } catch (ex: PaymentRequiredException) {
-        // Or probably we need to pay.
-        docChannel.close(ex)
-      } catch (ex: SAXException) {
-        // It is also possible that the document can't be parsed as XML.
-        throw Document.DocumentException(
-          RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex
-        )
-      } catch (ex: Exception) {
-        docChannel.close(ex)
-      }
+  fun start(document: Document) {
+    val onlineDocument = document.asOnlineDocument() ?: run {
+      stateMachine.state = ProjectOpenActivityDocumentReady(document)
+      return
     }
-    openScope.launch {
-      // In this coroutine we check if it is an online document and fetch it.
-      val online = document.asOnlineDocument()
-      if (online == null) {
-        // It is a local document, just send it to the next stage.
-        localChannel.send(document)
-      } else {
-        // It is an online document and we fetch it.
+    stateMachine.scope.launch {
+      withContext(Dispatchers.IO) {
         try {
-          val currentFetch = online.fetchResultProperty.get() ?: online.fetch().also { it.update() }
-          processFetchResult(currentFetch, document, localChannel)
+          val currentFetch = onlineDocument.fetchResultProperty.get() ?: onlineDocument.fetch().also { it.update() }
+          processFetchResult(currentFetch, document).fold(
+            success = { doc -> stateMachine.state = ProjectOpenActivityDocumentReady(doc)},
+            failure = { stateMachine.state = it }
+          )
+        } catch (ex: ForbiddenException) {
+          DOCUMENT_ERROR_LOGGER.error("Access to document {} forbidden: {}", onlineDocument, ex.message.orEmpty())
+          // It is possible that we need to sign into GP Cloud to open a document.
+          stateMachine.state = ProjectOpenActivityAuthRequired(document)
+        } catch (ex: PaymentRequiredException) {
+          // Or probably we need to pay.
+          DOCUMENT_ERROR_LOGGER.error("Access to document {} permitted, but payment is required", onlineDocument)
+          stateMachine.fail(ex)
+        } catch (ex: SAXException) {
+          // It is also possible that the document can't be parsed as XML.
+          stateMachine.fail(Document.DocumentException(
+            RootLocalizer.formatText("document.error.read.unsupportedFormat"), ex
+          ))
         } catch (ex: Exception) {
-          localChannel.close(ex)
+          stateMachine.fail(ex)
         }
       }
     }
   }
 
-  private suspend fun processFetchResult(fetchResult: FetchResult, document: Document, successChannel: Channel<Document>) {
+  private fun processFetchResult(fetchResult: FetchResult, document: Document): Result<Document, ProjectOpenActivityState> {
     val onlineDoc = fetchResult.onlineDocument
+    (onlineDoc as? GPCloudDocument)?.installOfflineMirror(project.documentManager)
     val mirrorDoc = onlineDoc.offlineMirror
-    val offlineChecksum = mirrorDoc?.checksum()
-    if (offlineChecksum == null) {
-      successChannel.send(document)
-      return
-    }
+    val offlineChecksum = mirrorDoc?.checksum() ?: return Ok(document)
+
     if (offlineChecksum == fetchResult.actualChecksum) {
       // Offline mirror and actual file online are identical, only version could change
       // Just read the online
-      successChannel.send(document)
-      return
+      return Ok(document)
     }
     if (fetchResult.syncVersion == fetchResult.actualVersion) {
       // This is the case when we have local modifications not yet written online,
       // e.g. because we have been offline for a while and went online
       // when GP was closed.
-      showOfflineIsAheadDialog(fetchResult, document, successChannel)
+      return Err(ProjectOpenActivityDocumentForked(document, fetchResult, ProjectOpenActivityDocumentForked.ForkCase.OFFLINE_AHEAD))
     } else {
       // Online is different from mirror, and we have to find out if we had
       // any offline modifications.
       if (offlineChecksum == fetchResult.syncChecksum) {
-        successChannel.send(document)
-        return
+        return Ok(document)
       } else {
         // Files modified both locally and online. Ask user which one wins
-        showForkDialog(fetchResult, document, successChannel)
+        return Err(ProjectOpenActivityDocumentForked(document, fetchResult, ProjectOpenActivityDocumentForked.ForkCase.FORK))
       }
     }
   }
-
-  enum class OpenOnlineDocumentChoice { USE_OFFLINE, USE_ONLINE, CANCEL }
-
-  private fun showOfflineIsAheadDialog(fetchResult: FetchResult, document: Document, successChannel: Channel<Document>) {
-    OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
-      i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.openWhenOfflineIsAhead")
-      styleClass = "dlg-lock"
-      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-      styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
-      graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
-      elements = listOf(
-          OptionElementData("useOffline", OpenOnlineDocumentChoice.USE_OFFLINE, true),
-          OptionElementData("useOnline", OpenOnlineDocumentChoice.USE_ONLINE),
-          OptionElementData("cancel", OpenOnlineDocumentChoice.CANCEL)
-      )
-
-      showDialog { choice ->
-        when (choice) {
-          OpenOnlineDocumentChoice.USE_OFFLINE -> {
-            fetchResult.useMirror = true
-            sendingScope.launch {
-              successChannel.send(document)
-            }
-          }
-          OpenOnlineDocumentChoice.USE_ONLINE -> {
-            sendingScope.launch {
-              successChannel.send(document)
-            }
-          }
-          OpenOnlineDocumentChoice.CANCEL -> {
-
-          }
-        }
-      }
-    }
-  }
-
-  private fun showForkDialog(fetchResult: FetchResult, document: Document, successChannel: Channel<Document>) {
-    OptionPaneBuilder<OpenOnlineDocumentChoice>().run {
-      i18n = RootLocalizer.createWithRootKey(rootKey = "cloud.openWhenDiverged")
-      styleClass = "dlg-lock"
-      styleSheets.add("/biz/ganttproject/storage/cloud/GPCloudStorage.css")
-      styleSheets.add("/biz/ganttproject/storage/StorageDialog.css")
-      graphic = FontAwesomeIconView(FontAwesomeIcon.UNLOCK)
-      elements = listOf(
-          OptionElementData("useOffline", OpenOnlineDocumentChoice.USE_OFFLINE, true),
-          OptionElementData("useOnline", OpenOnlineDocumentChoice.USE_ONLINE),
-          OptionElementData("cancel", OpenOnlineDocumentChoice.CANCEL)
-      )
-
-      showDialog { choice ->
-        when (choice) {
-          OpenOnlineDocumentChoice.USE_OFFLINE -> {
-            fetchResult.useMirror = true
-            sendingScope.launch {
-              successChannel.send(document)
-            }
-          }
-          OpenOnlineDocumentChoice.USE_ONLINE -> {
-            sendingScope.launch {
-              successChannel.send(document)
-            }
-          }
-          OpenOnlineDocumentChoice.CANCEL -> {
-          }
-        }
-      }
-    }
-  }
-
-  private fun handleDocumentException(ex: Document.DocumentException) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
 
   // First we open file "as is", that is, without running any algorithms which
   // change task dates.
@@ -278,6 +189,7 @@ internal class ProjectOpenStrategy(
     myOldDuration = project.taskManager.projectLength
     return Step1()
   }
+
 
   // This step checks if there are legacy 1-day milestones in the project.
   // If there are legacy milestones, we ask the user what shall we do with them.
@@ -442,25 +354,7 @@ internal class ProjectOpenStrategy(
     }
   }
 
-  internal inner class Step4 {
-    fun onFetchResultChange(document: Document, callback: () -> Unit) {
-      val onlineDocument = document.asOnlineDocument()
-      if (onlineDocument != null) {
-        val changeListener = object : ChangeListener<FetchResult?> {
-          override fun changed(observable: ObservableValue<out FetchResult?>?, oldFetch: FetchResult?, newFetch: FetchResult?) {
-            println("oldFetch=${oldFetch?.actualChecksum} newFetch=${newFetch?.actualChecksum}")
-            if (oldFetch != null && newFetch != null) {
-              if (oldFetch.actualVersion != newFetch.actualVersion) {
-                observable?.removeListener(this)
-                callback()
-              }
-            }
-          }
-        }
-        onlineDocument.fetchResultProperty.addListener(changeListener)
-      }
-
-    }
+  internal class Step4 {
   }
   companion object {
     val milestonesOption = DefaultEnumerationOption(
@@ -490,26 +384,34 @@ internal class CommandLineProjectOpenStrategy(
   private fun doOpenStartupDocument(path: String) {
     DOCUMENT_LOGGER.debug(">>> openStartupDocument($path)")
     val document: Document = documentManager.getDocument(path)
-    val finishChannel = Channel<Boolean>()
-    CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch {
-      try {
-        finishChannel.receive()
-      } catch (e: Document.DocumentException) {
-        if (!tryImportDocument(document)) {
-          uiFacade.showErrorDialog(e)
-        }
-      } catch (e: IOException) {
-        // TODO: shall we try to import a document here? when it may make sense? CSV/MPP ?
-          uiFacade.showErrorDialog(e)
-      } catch (e: Exception) {
-        uiFacade.showErrorDialog(e)
+    projectUiFacade.openProject(document, project, null).apply {
+      stateCompleted.await {
+        DOCUMENT_LOGGER.debug("<<< openStartupDocument($path)")
       }
-      DOCUMENT_LOGGER.debug("<<< openStartupDocument($path)")
+      stateCancelled.await {
+        DOCUMENT_LOGGER.debug("<<< openStartupDocument($path) cancelled")
+      }
+      stateFailed.await { it ->
+        if (it.throwable is Document.DocumentException) {
+          tryImportDocument(document, it.throwable)
+        } else {
+          uiFacade.showErrorDialog(it.throwable)
+        }
+      }
     }
-    projectUiFacade.openProject(document, project, finishChannel)
   }
 
-  private fun tryImportDocument(document: Document): Boolean {
+  private fun tryImportDocument(document: Document, ex: Exception) {
+    try {
+      if (!doTryImportDocument(document)) {
+        uiFacade.showErrorDialog(ex)
+      }
+    } catch (e: Exception) {
+      uiFacade.showErrorDialog(e)
+    }
+  }
+
+  private fun doTryImportDocument(document: Document): Boolean {
     var success = false
     val importers = PluginManager.getExtensions(
       Importer.EXTENSION_POINT_ID,
@@ -520,6 +422,8 @@ internal class CommandLineProjectOpenStrategy(
         try {
           taskManager.setEventsEnabled(false)
           importer.setContext(project, uiFacade, preferences)
+          val wizardModel = ImporterWizardModel()
+          importer.setModel(wizardModel)
           importer.setFile(File(document.filePath))
           importer.run()
           success = true
@@ -543,22 +447,10 @@ internal class CommandLineProjectOpenStrategy(
     val recentDocsConsumer = Consumer<List<RecentDocAsFolderItem>> { docList ->
       docList.firstOrNull()?.asDocument()?.let { lastDocument ->
         val stateMachine = projectUiFacade.openProject(
-          project.documentManager.getProxyDocument(lastDocument), project, null, null
+          project.documentManager.getProxyDocument(lastDocument), project, null
         )
         stateMachine.stateFailed.await { error ->
-          val msg = """
-            Failed to open project: {}
-            {}
-            -------
-            {}
-          """.trimIndent()
-          DOCUMENT_ERROR_LOGGER.error(msg, lastDocument.uri, error.errorTitle, error.errorDescription, exception = error.throwable)
-          val notification = uiFacade.notificationManager.createNotification(
-            NotificationChannel.ERROR, error.errorTitle, error.errorDescription, null
-          )
-          uiFacade.notificationManager.showDialog(
-            RootLocalizer.formatText("project.open.error.title"),
-            listOf(notification))
+          error.showProjectOpenErrorDialog(lastDocument, uiFacade.notificationManager)
         }
       }
     }
@@ -569,4 +461,3 @@ internal class CommandLineProjectOpenStrategy(
 }
 
 private val DOCUMENT_LOGGER = GPLogger.create("Document.Info")
-private val DOCUMENT_ERROR_LOGGER = GPLogger.create("Document.Error")

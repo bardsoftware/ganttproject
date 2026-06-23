@@ -217,6 +217,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
     myResourceChartTabContent = new ResourceChartTabContentPanel(getProject(), getUIFacade(),
       myResourceTableSupplier, resourceChart, resourceChart.getCursorProperty(), resourceChart::buildContextMenu);
+    myUiInitializationPromise.activate(getUiFacadeImpl());
 //++
 //    addComponentListener(new ComponentAdapter() {
 //      @Override
@@ -271,7 +272,8 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     startupLogger.debug("8. finalizing...");
     // applyComponentOrientation(GanttLanguage.getInstance()
     // .getComponentOrientation());
-    getProjectUIFacade().getProjectOpenActivityFactory().addListener(
+    // TODO: this shall be registered just once
+    getProjectUIFacade().getProjectOpenActivityFactory().addBuilder(
       GanttProjectImplKt.createProjectModificationListener(this, getUIFacade())
     );
     //++addMouseListenerToAllContainer(this.getComponents());
@@ -776,4 +778,3 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   }
 
 }
-

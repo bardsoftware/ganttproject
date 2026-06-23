@@ -32,6 +32,9 @@ import javafx.scene.layout.*
 import javafx.stage.Screen
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.ProjectOpenActivityAuthRequired
+import net.sourceforge.ganttproject.ProjectOpenActivityFactory
+import net.sourceforge.ganttproject.ProjectOpenActivityStarted
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.document.ReadOnlyProxyDocument
@@ -77,8 +80,18 @@ class StorageDialogBuilder(
         killProgress()
         authFlow(onAuth)
       }
-      projectUi.openProject(documentManager.getProxyDocument(document), myProject, null, proxyAuthFlow).let { sm ->
+      ProjectOpenActivityFactory.createStateMachine(myProject).let { sm ->
+        sm.stateAuthRequired.await { state ->
+          proxyAuthFlow {
+            if (sm.state is ProjectOpenActivityAuthRequired) {
+              sm.state = ProjectOpenActivityStarted(state.document)
+            }
+          }
+        }
         sm.stateCompleted.await {
+          myDialogUi.close()
+        }
+        sm.stateCancelled.await {
           myDialogUi.close()
         }
         sm.stateFailed.await { stateFailed ->
@@ -86,6 +99,8 @@ class StorageDialogBuilder(
           myDialogUi.error(stateFailed.errorTitle, stateFailed.errorDescription, stateFailed.throwable)
           LOG.error("Failed to open document {}", document.uri, exception = stateFailed.throwable)
         }
+
+        sm.start(documentManager.getProxyDocument(document))
       }
     }
     // This will be called when user saves a project.

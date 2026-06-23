@@ -87,7 +87,7 @@ class TaskTable(
   private val taskActions: TaskActions,
   private val undoManager: GPUndoManager,
   val filterManager: TaskFilterManager,
-  initializationPromise: TwoPhaseBarrierImpl<*>,
+  private val initializationCompleted: OnBarrierReached,
   private val newTaskActor: NewTaskActor<Task>,
   projectOpenActivityFactory: ProjectOpenActivityFactory
 ):
@@ -132,7 +132,6 @@ class TaskTable(
   }
   private val placeholderEmpty by lazy { Pane() }
 
-  private val initializationCompleted = initializationPromise.register("Task table initialization")
   override val selectionKeeper = SelectionKeeper(logger = LOGGER, treeTable = this.treeTable, node2treeItem = { task ->
     taskManager.getTask(task.taskID)?.let {
       task2treeItem[it]

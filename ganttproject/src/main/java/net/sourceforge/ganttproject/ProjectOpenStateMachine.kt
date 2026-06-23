@@ -18,10 +18,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject
 
+import biz.ganttproject.app.Barrier
 import biz.ganttproject.app.SimpleBarrier
 import biz.ganttproject.app.TwoPhaseBarrierImpl
 import biz.ganttproject.app.i18n
+import biz.ganttproject.storage.FetchResult
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import net.sourceforge.ganttproject.document.Document
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
@@ -36,22 +40,51 @@ sealed class ProjectOpenActivityState(val id: String) {
 class ProjectOpenActivityCreated : ProjectOpenActivityState("created")
 
 /** This is the state when project opening process started. */
-class ProjectOpenActivityStarted : ProjectOpenActivityState("started")
+class ProjectOpenActivityStarted(val document: Document) : ProjectOpenActivityState("started")
+
+/**
+ * At this state we have loaded the project document and are ready to proceed with loading the main model.
+ */
+class ProjectOpenActivityDocumentReady(val document: Document): ProjectOpenActivityState(ID) {
+  companion object {
+    val ID = "documentReady"
+  }
+}
+
+class ProjectOpenActivityDocumentForked(val document: Document, val fetchResult: FetchResult, val forkCase: ForkCase): ProjectOpenActivityState(ID) {
+  enum class ForkCase { FORK, OFFLINE_AHEAD }
+  companion object {
+    val ID = "documentForked"
+  }
+}
+
+class ProjectOpenActivityAuthRequired(val document: Document): ProjectOpenActivityState(ID) {
+  companion object {
+    val ID = "authRequired"
+  }
+}
 
 /**
  * At this state we have loaded the task and resource models from the document and have run all possible
  * checks that run on project opening, such as initial re-scheduling.
  */
-class ProjectOpenActivityMainModelReady: ProjectOpenActivityState("mainModelReady")
+class ProjectOpenActivityMainModelReady(val document: Document) : ProjectOpenActivityState(ID) {
+  companion object {
+    val ID = "mainModelReady"
+  }
+}
 
 /** This is the state when task and resource tables are filled with the project data */
-class ProjectOpenActivityTablesReady(val project: IGanttProject) : ProjectOpenActivityState("tablesReady")
+class ProjectOpenActivityTablesReady(val project: IGanttProject, val document: Document) : ProjectOpenActivityState("tablesReady")
 
 /** This is the state when calculated properties and filters are applied to the project data */
-class ProjectOpenActivityCalculatedModelReady(val project: IGanttProject) : ProjectOpenActivityState("calculatedModelReady")
+class ProjectOpenActivityCalculatedModelReady(val project: IGanttProject, val document: Document) : ProjectOpenActivityState("calculatedModelReady")
 
 /** The state when the whole process is completed */
-class ProjectOpenActivityCompleted: ProjectOpenActivityState("completed")
+class ProjectOpenActivityCompleted(val project: IGanttProject, val document: Document) : ProjectOpenActivityState("completed")
+
+/** The state when the user cancels the project opening process, e.g. in the fork resolution dialog. */
+class ProjectOpenActivityCancelled(val project: IGanttProject, val document: Document) : ProjectOpenActivityState("cancelled")
 
 /**
  * This state indicates that the activity has failed.
@@ -63,15 +96,25 @@ class ProjectOpenActivityFailed(
 ): ProjectOpenActivityState("failed")
 
 /**
- * The state machine that manages the states.
+ * The state machine that manages the states of the project opening process.
  * States are represented as barriers, and code that is triggered on state transitions can
  * await() on the barriers.
  */
-class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope) {
+class ProjectOpenStateMachine(val project: IGanttProject, val scope: CoroutineScope) {
+  // The project opening process started.
   val stateStarted = SimpleBarrier<ProjectOpenActivityStarted>()
+  // The project opening process completed successfully. It is okay to close the UI that might be waiting for the result.
   val stateCompleted = SimpleBarrier<ProjectOpenActivityCompleted>()
+  // The project opening process was cancelled by the user. It is okay to close the UI that might be waiting for the result.
+  val stateCancelled = SimpleBarrier<ProjectOpenActivityCancelled>()
+  // We need authentication to proceed with the project opening process.
+  val stateAuthRequired = SimpleBarrier<ProjectOpenActivityAuthRequired>()
+  // The document has been forked, and we may need to take a decision on how to proceed.
+  val stateDocumentForked = SimpleBarrier<ProjectOpenActivityDocumentForked>()
+  // The document has been successfully loaded and is ready for further processing.
+  val stateDocumentReady = SimpleBarrier<ProjectOpenActivityDocumentReady>()
   val stateMainModelReady = SimpleBarrier<ProjectOpenActivityMainModelReady>()
-  val stateTablesReady = TwoPhaseBarrierImpl("Tables Initialized", ProjectOpenActivityTablesReady(project)).also { barrier ->
+  val stateTablesReady = TwoPhaseBarrierImpl<ProjectOpenActivityTablesReady>("Tables Initialized").also { barrier ->
     barrier.await {
       state = it
     }
@@ -97,7 +140,7 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
     }
     when (state) {
       is ProjectOpenActivityStarted -> {
-        doSetState(field is ProjectOpenActivityCreated, state) {
+        doSetState(field is ProjectOpenActivityCreated || field is ProjectOpenActivityAuthRequired, state) {
           stateStarted.resolve(state)
         }
       }
@@ -106,9 +149,25 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
           stateFailed.resolve(state)
         }
       }
-      is ProjectOpenActivityMainModelReady -> {
+      is ProjectOpenActivityAuthRequired -> {
         doSetState(field is ProjectOpenActivityStarted, state) {
+          stateAuthRequired.resolve(state)
+        }
+      }
+      is ProjectOpenActivityDocumentForked -> {
+        doSetState(field is ProjectOpenActivityStarted, state) {
+          stateDocumentForked.resolve(state)
+        }
+      }
+      is ProjectOpenActivityDocumentReady -> {
+        doSetState(field is ProjectOpenActivityStarted || field is ProjectOpenActivityDocumentForked, state) {
+          stateDocumentReady.resolve(state)
+        }
+      }
+      is ProjectOpenActivityMainModelReady -> {
+        doSetState(field is ProjectOpenActivityDocumentReady, state) {
           stateMainModelReady.resolve(state)
+          stateTablesReady.activate(ProjectOpenActivityTablesReady(project, state.document))
         }
       }
       is ProjectOpenActivityTablesReady -> {
@@ -120,17 +179,42 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
         }
       }
       is ProjectOpenActivityCompleted -> {
-        doSetState(field is ProjectOpenActivityCalculatedModelReady, state) {
+        doSetState(field is ProjectOpenActivityCalculatedModelReady || field is ProjectOpenActivityDocumentForked, state) {
           stateCompleted.resolve(state)
         }
       }
+      is ProjectOpenActivityCancelled -> {
+        doSetState(field is ProjectOpenActivityDocumentForked, state) {
+          stateCancelled.resolve(state)
+        }
+      }
       else -> {
-        error("Unexpected state: $state")
+        stateFailed.resolve(ProjectOpenActivityFailed("Unexpected state", "Unexpected state: $state"))
       }
     }
   }
 
-  fun transition(targetState: ProjectOpenActivityState, code:()->Unit) {
+  fun <Source : ProjectOpenActivityState, Target : ProjectOpenActivityState> transition(
+    fromState: Barrier<Source>,
+    toStateId: String,
+    code: suspend (Source) -> Target
+  ) {
+    fromState.await { value ->
+      scope.launch {
+        state = try {
+          code(value)
+        } catch (ex: Throwable) {
+          ProjectOpenActivityFailed(
+                errorTitle = i18n.formatText("error.title"),
+                errorDescription = i18n.formatText("error.state.${toStateId}", ex.message ?: ""),
+                throwable = ex
+          )
+        }
+      }
+    }
+  }
+
+  fun transition(targetState: ProjectOpenActivityState, code: ()->Unit) {
     try {
       code()
       state = targetState
@@ -155,26 +239,33 @@ class ProjectOpenStateMachine(project: IGanttProject, val scope: CoroutineScope)
 
     )
   }
+
+  fun start(document: Document) {
+    state = ProjectOpenActivityStarted(document)
+  }
 }
 
-typealias ProjectOpenActivityListener = (ProjectOpenStateMachine) -> Unit
+typealias ProjectOpenStateMachineBuilder = (ProjectOpenStateMachine) -> Unit
 
 /**
- * This class creates project open activities. A new activity is created when GanttProject opens a project
- * document. Listeners receive an instance of the state machine and can subscribe to the state changes
+ * This object creates project open activities. A new activity is created when GanttProject opens a project
+ * document. Builders receive an instance of the state machine and can subscribe to the state changes
  * and run the appropriate code when a state machine enters into the state they are waiting for.
+ *
+ * This is a singleton, so builders shall be registered wisely, just one per application run.
  */
-class ProjectOpenActivityFactory {
-  private val listeners = mutableListOf<ProjectOpenActivityListener>()
-  fun addListener(l: ProjectOpenActivityListener) = listeners.add(l)
+object ProjectOpenActivityFactory {
+  private val builders = mutableListOf<ProjectOpenStateMachineBuilder>()
+  fun addBuilder(l: ProjectOpenStateMachineBuilder) = builders.add(l)
 
   fun createStateMachine(project: IGanttProject): ProjectOpenStateMachine {
     val coroutineScope = CoroutineScope(EmptyCoroutineContext)
     return ProjectOpenStateMachine(project, coroutineScope).also { sm ->
-      listeners.forEach { it.invoke(sm) }
+      builders.forEach { it.invoke(sm) }
     }
   }
 }
+
 
 private val i18n = i18n {
   default()
