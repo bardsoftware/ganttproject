@@ -19,33 +19,26 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.storage.cloud
 
 import biz.ganttproject.FXUtil
-import biz.ganttproject.app.DIALOG_STYLESHEET
-import biz.ganttproject.app.RootLocalizer
-import biz.ganttproject.app.Spinner
+import biz.ganttproject.app.*
+import biz.ganttproject.core.option.LabelPosition
+import biz.ganttproject.core.option.ObservableString
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.isBrowseSupported
 import biz.ganttproject.lib.fx.openInBrowser
-import biz.ganttproject.lib.fx.vbox
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView
 import javafx.beans.property.SimpleStringProperty
 import javafx.event.ActionEvent
-import javafx.event.EventHandler
+import javafx.geometry.HPos
 import javafx.geometry.Pos
-import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.Label
-import javafx.scene.control.TextField
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.javafx.JavaFx
-import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.concurrent.schedule
 
@@ -59,6 +52,10 @@ import kotlin.concurrent.schedule
  * @author dbarashev@bardsoftware.com
  */
 class SigninPane() : FlowPage() {
+  companion object {
+    private const val SIGNIN_TIMEOUT_SECONDS = 60
+  }
+
   enum class Status {
     INIT, WAITING_FOR_BROWSER, WAITING_FOR_AUTH, AUTH_COMPLETED
   }
@@ -71,9 +68,11 @@ class SigninPane() : FlowPage() {
   private val indicatorPane = BorderPane().apply {
     styleClass.add("indicator-pane")
   }
+  val urlOption = ObservableString("foo1", "")
+  val tokenOption = ObservableString("foo2", "")
 
   private fun onStartCallback() {
-    GlobalScope.launch(Dispatchers.JavaFx) {
+    FXThread.runLater {
       status = Status.WAITING_FOR_AUTH
       spinner.state = Spinner.State.ATTENTION
 
@@ -82,7 +81,7 @@ class SigninPane() : FlowPage() {
   }
 
   fun createSigninPane(): Pane {
-    val uri = "$GPCLOUD_SIGNIN_URL?callback=${controller.httpd.listeningPort}"
+    val uri = "$GPCLOUD_SIGNIN_URL?callback=${controller.httpd.listeningPort}&timeout=$SIGNIN_TIMEOUT_SECONDS"
 
     val vboxBuilder = VBoxBuilder("signin-pane", "pane-service-contents")
     vboxBuilder.addTitle(ourLocalizer.formatText("title")).also {
@@ -99,24 +98,51 @@ class SigninPane() : FlowPage() {
     spinner.state = Spinner.State.WAITING
     statusText.value = ourLocalizer.formatText("text.browser_opening")
 
+    val copyButton = Button(ourLocalizer.formatText("button.copyLink"), FontAwesomeIconView(FontAwesomeIcon.COPY)).apply {
+      contentDisplay = ContentDisplay.RIGHT
+      addEventHandler(ActionEvent.ACTION) {
+        Clipboard.getSystemClipboard().setContent(ClipboardContent().apply {
+          putString(uri)
+        })
+      }
+    }
+
+    urlOption.value = uri
+    urlOption.isWritable.value = false
+    val submitButton = Button(ourLocalizer.formatText("button.submitToken")).apply {
+      addEventHandler(ActionEvent.ACTION) { submitToken(tokenOption.value ?: "") }
+    }
+
+    val tokenPane = properties(ourLocalizer) {
+      text(urlOption) {
+        labelText = ourLocalizer.formatText("text.browser_failed")
+        labelPosition = LabelPosition.ABOVE
+        labelHAlignment = HPos.LEFT
+        rightNode = copyButton
+      }
+      text(tokenOption) {
+        labelText = ourLocalizer.formatText("label.pasteToken")
+        labelHAlignment = HPos.LEFT
+        labelPosition = LabelPosition.ABOVE
+        rightNode = submitButton
+      }
+    }
+    vboxBuilder.add(tokenPane, Pos.CENTER, Priority.NEVER)
+
 
     vboxBuilder.vbox.let {
       it.stylesheets.addAll(
           DIALOG_STYLESHEET,
           "/biz/ganttproject/app/Util.css",
           "biz/ganttproject/storage/StorageDialog.css",
-          "/biz/ganttproject/storage/cloud/GPCloudSignupPane.css"
+          "biz/ganttproject/storage/cloud/GPCloudSignupPane.css"
       )
     }
-    GlobalScope.launch(Dispatchers.IO) {
+    FXThread.runLater {
       if (isBrowseSupported()) {
         status = Status.WAITING_FOR_BROWSER
         openInBrowser(uri.trim())
         startBrowserTimeout(uri)
-      } else {
-        GlobalScope.launch(Dispatchers.JavaFx) {
-          FXUtil.transitionCenterPane(indicatorPane, createUrlPane(uri)) {}
-        }
       }
     }
     return vboxBuilder.vbox
@@ -125,33 +151,25 @@ class SigninPane() : FlowPage() {
   private fun startBrowserTimeout(uri: String) {
     Timer().schedule(60000) {
       if (status == Status.WAITING_FOR_BROWSER) {
-        GlobalScope.launch(Dispatchers.JavaFx) {
-          FXUtil.transitionCenterPane(indicatorPane, createUrlPane(uri), {})
+        FXThread.runLater {
           statusText.value = ourLocalizer.formatText("text.browser_failed")
         }
       }
     }
   }
 
-  private fun createUrlPane(uri: String): Node {
-    return vbox {
-      i18n = ourLocalizer
-      vbox.spacing = 5.0
-      add(TextField().apply {
-        text = uri
-        isEditable = false
-        onMouseClicked = EventHandler { this.selectAll() }
-      }, Pos.CENTER, Priority.NEVER)
-      add(Button(i18n.formatText("button.copyLink"), FontAwesomeIconView(FontAwesomeIcon.COPY)).apply {
-        contentDisplay = ContentDisplay.RIGHT
-        styleClass.addAll("btn-attention")
-        addEventHandler(ActionEvent.ACTION) {
-          Clipboard.getSystemClipboard().setContent(ClipboardContent().apply {
-            putString(uri)
-          })
-        }
-      }, Pos.CENTER, Priority.NEVER)
+  private fun submitToken(rawInput: String) {
+    if (rawInput.isBlank()) return
+    val params = rawInput.split("&").associate {
+      val parts = it.split("=", limit = 2)
+      if (parts.size == 2) parts[0] to parts[1] else parts[0] to ""
     }
+    controller.httpd.onTokenReceived?.invoke(
+        params["token"],
+        params["validity"],
+        params["userId"],
+        params["websocketToken"]
+    )
   }
 
   override fun createUi(): Pane = createSigninPane()
@@ -161,6 +179,11 @@ class SigninPane() : FlowPage() {
   override fun setController(controller: GPCloudUiFlow) {
     this.controller = controller
     controller.httpd.onStart = ::onStartCallback
+    controller.httpd.onAuthReceived = {
+      FXUtil.runLater {
+        tokenOption.isWritable.value = false
+      }
+    }
   }
 }
 

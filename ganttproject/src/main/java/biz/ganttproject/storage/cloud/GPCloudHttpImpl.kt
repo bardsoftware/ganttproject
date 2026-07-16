@@ -446,6 +446,7 @@ typealias AuthStartCallback = ()->Unit
 
 class HttpServerImpl : NanoHTTPD("localhost", 0) {
   var onTokenReceived: AuthTokenCallback? = null
+  var onAuthReceived: (() -> Unit)? = null
   var onStart: AuthStartCallback? = null
 
   private fun getParam(session: IHTTPSession, key: String): String? {
@@ -465,6 +466,7 @@ class HttpServerImpl : NanoHTTPD("localhost", 0) {
 
         LOG.debug("Received Auth Token:{} validity:{}", token, validity)
         onTokenReceived?.invoke(token, validity, userId, websocketToken)
+        onAuthReceived?.invoke()
         newFixedLengthResponse("").apply {
           addHeader("Access-Control-Allow-Origin", GPCLOUD_ORIGIN)
         }

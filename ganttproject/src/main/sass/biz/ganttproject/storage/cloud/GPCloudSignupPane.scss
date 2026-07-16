@@ -29,8 +29,22 @@
 /*    -fx-fill: white;*/
 /*    -fx-text-fill: white;*/
 /*}*/
+@import "../../app/textfields";
+@import "../../app/theme";
 
-
+.signin-pane {
+  .property-pane {
+    HBox {
+      -fx-padding: 0 0 15 0;
+      -fx-border-color: red;
+      -fx-border-width: 0px;
+    }
+    -fx-padding: 30 10 0 10;
+    .custom-text-field {
+      @include textfield-with-button($gp-light-gray, $gp-dark-gray);
+    }
+  }
+}
 .signup-pane {
     -fx-padding: 20px;
     -fx-background-color: transparent;
