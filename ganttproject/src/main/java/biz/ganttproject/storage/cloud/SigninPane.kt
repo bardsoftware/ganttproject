@@ -22,6 +22,7 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.app.*
 import biz.ganttproject.core.option.LabelPosition
 import biz.ganttproject.core.option.ObservableString
+import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.isBrowseSupported
 import biz.ganttproject.lib.fx.openInBrowser
@@ -39,6 +40,7 @@ import javafx.scene.input.ClipboardContent
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import java.net.URLDecoder
 import java.util.*
 import kotlin.concurrent.schedule
 
@@ -51,7 +53,7 @@ import kotlin.concurrent.schedule
  *
  * @author dbarashev@bardsoftware.com
  */
-class SigninPane() : FlowPage() {
+class SigninPane : FlowPage() {
   companion object {
     private const val SIGNIN_TIMEOUT_SECONDS = 60
   }
@@ -68,8 +70,8 @@ class SigninPane() : FlowPage() {
   private val indicatorPane = BorderPane().apply {
     styleClass.add("indicator-pane")
   }
-  val urlOption = ObservableString("foo1", "")
-  val tokenOption = ObservableString("foo2", "")
+  private val urlOption = ObservableString("foo1", "")
+  private val tokenOption = ObservableString("foo2", "", validator = this::validateTokenString)
 
   private fun onStartCallback() {
     FXThread.runLater {
@@ -159,18 +161,32 @@ class SigninPane() : FlowPage() {
   }
 
   private fun submitToken(rawInput: String) {
-    if (rawInput.isBlank()) return
-    val params = rawInput.split("&").associate {
-      val parts = it.split("=", limit = 2)
-      if (parts.size == 2) parts[0] to parts[1] else parts[0] to ""
-    }
+    val params = parseTokenString(rawInput)
     controller.httpd.onTokenReceived?.invoke(
         params["token"],
         params["validity"],
         params["userId"],
         params["websocketToken"]
     )
+    controller.httpd.onAuthReceived?.invoke()
   }
+
+  private fun parseTokenString(rawInput: String): Map<String, String> =
+    if (rawInput.isBlank()) emptyMap()
+    else rawInput.split("&").associate {
+      val parts = it.split("=", limit = 2)
+      val key = URLDecoder.decode(parts[0], Charsets.UTF_8.name())
+      key to (parts.getOrNull(1)?.let { v -> URLDecoder.decode(v, Charsets.UTF_8.name()) } ?: "")
+    }
+
+  private fun validateTokenString(value: String) =
+    parseTokenString(value).let {
+      if (it["token"].isNullOrEmpty() || it["validity"].isNullOrEmpty() || it["userId"].isNullOrEmpty() || it["websocketToken"].isNullOrEmpty()) {
+        throw ValidationException("Invalid token string")
+      }
+      value
+    }
+
 
   override fun createUi(): Pane = createSigninPane()
 
