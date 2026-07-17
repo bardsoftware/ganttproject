@@ -279,9 +279,11 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
 
     validatedText.validationMessage.addWatcher {
       if (it.newValue == null) {
+        displayOptions?.isValid?.value = true
         textField.markValid()
         validationErrors.remove(property)
       } else {
+        displayOptions?.isValid?.value = false
         textField.markInvalid()
         validationErrors[property] = it.newValue
       }

@@ -54,9 +54,6 @@ import kotlin.concurrent.schedule
  * @author dbarashev@bardsoftware.com
  */
 class SigninPane : FlowPage() {
-  companion object {
-    private const val SIGNIN_TIMEOUT_SECONDS = 60
-  }
 
   enum class Status {
     INIT, WAITING_FOR_BROWSER, WAITING_FOR_AUTH, AUTH_COMPLETED
@@ -70,8 +67,8 @@ class SigninPane : FlowPage() {
   private val indicatorPane = BorderPane().apply {
     styleClass.add("indicator-pane")
   }
-  private val urlOption = ObservableString("foo1", "")
-  private val tokenOption = ObservableString("foo2", "", validator = this::validateTokenString)
+  private val urlOption = ObservableString("cloud.signin.url", "")
+  private val tokenOption = ObservableString("cloud.signin.token", "", validator = this::validateTokenString)
 
   private fun onStartCallback() {
     FXThread.runLater {
@@ -110,7 +107,6 @@ class SigninPane : FlowPage() {
     }
 
     urlOption.value = uri
-    urlOption.isWritable.value = false
     val submitButton = Button(ourLocalizer.formatText("button.submitToken")).apply {
       addEventHandler(ActionEvent.ACTION) { submitToken(tokenOption.value ?: "") }
     }
@@ -127,10 +123,13 @@ class SigninPane : FlowPage() {
         labelHAlignment = HPos.LEFT
         labelPosition = LabelPosition.ABOVE
         rightNode = submitButton
+        isValid.addWatcher {
+          submitButton.isDisable = !it.newValue
+        }
+        submitButton.isDisable = true
       }
     }
     vboxBuilder.add(tokenPane, Pos.CENTER, Priority.NEVER)
-
 
     vboxBuilder.vbox.let {
       it.stylesheets.addAll(
@@ -151,7 +150,7 @@ class SigninPane : FlowPage() {
   }
 
   private fun startBrowserTimeout(uri: String) {
-    Timer().schedule(60000) {
+    Timer().schedule(SIGNIN_TIMEOUT_SECONDS * 1000L) {
       if (status == Status.WAITING_FOR_BROWSER) {
         FXThread.runLater {
           statusText.value = ourLocalizer.formatText("text.browser_failed")
@@ -196,13 +195,14 @@ class SigninPane : FlowPage() {
     this.controller = controller
     controller.httpd.onStart = ::onStartCallback
     controller.httpd.onAuthReceived = {
-      FXUtil.runLater {
+      FXThread.runLater {
         tokenOption.isWritable.value = false
       }
     }
   }
 }
 
+private const val SIGNIN_TIMEOUT_SECONDS = 60
 
 private val ourLocalizer = RootLocalizer.createWithRootKey(
     rootKey = "cloud.signin",
