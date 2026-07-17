@@ -101,6 +101,7 @@ data class TextDisplayOptions(
   var isScreened: Boolean = false,
   var columnCount: Int = 40,
   var rightNode: Node? = null,
+  val isValid: ObservableBoolean = ObservableBoolean("",true),
 ) : PropertyDisplayOptions<String?>()
 
 data class FileExtensionFilter(val description: String, val extensions: List<String>)

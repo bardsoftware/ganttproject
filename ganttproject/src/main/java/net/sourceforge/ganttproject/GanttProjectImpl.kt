@@ -145,7 +145,7 @@ open class GanttProjectImpl(
   }
 
   protected open fun fireProjectOpened() {
-    val barrier = TwoPhaseBarrierImpl<IGanttProject>("Project opened", this)
+    val barrier = TwoPhaseBarrierImpl<IGanttProject>("Project opened")
     for (l in listeners) {
       l.projectOpened(barrier, barrier)
     }

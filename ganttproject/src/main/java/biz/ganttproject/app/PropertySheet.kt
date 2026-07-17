@@ -279,9 +279,11 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
 
     validatedText.validationMessage.addWatcher {
       if (it.newValue == null) {
+        displayOptions?.isValid?.value = true
         textField.markValid()
         validationErrors.remove(property)
       } else {
+        displayOptions?.isValid?.value = false
         textField.markInvalid()
         validationErrors[property] = it.newValue
       }
@@ -489,7 +491,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
             GridPane.setHalignment(label, options?.labelHAlignment ?: HPos.RIGHT)
           }
           LabelPosition.ABOVE -> {
-            grid.add(label, 0, idx, 2, 1)
+            grid.add(label, 0, idx, grid.columnCount, 1)
             GridPane.setHgrow(label, Priority.NEVER)
             GridPane.setHalignment(label, options?.labelHAlignment ?: HPos.LEFT)
             resultRow++
@@ -521,7 +523,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
               GridPane.setHgrow(hbox, Priority.SOMETIMES)
             }
             LabelPosition.ABOVE -> {
-              grid.add(hbox, 0, resultRow, 2, 1)
+              grid.add(hbox, 0, resultRow, grid.columnCount, 1)
               GridPane.setHgrow(hbox, Priority.ALWAYS)
             }
           }
