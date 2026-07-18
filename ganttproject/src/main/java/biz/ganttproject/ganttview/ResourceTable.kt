@@ -384,7 +384,9 @@ class ResourceSyncAlgorithm(
       }
     }
     LOGGER.debug("... now children size={}", parent.children.size)
-    parent.children.subList(res.assignments.size, parent.children.size).clear()
+    if (res.assignments.size < parent.children.size) {
+      parent.children.remove(res.assignments.size, parent.children.size)
+    }
   }
 
   private fun addAssignmentNode(parentItem: TreeItem<ResourceTableNode>, assignment: ResourceAssignment, pos: Int) {
