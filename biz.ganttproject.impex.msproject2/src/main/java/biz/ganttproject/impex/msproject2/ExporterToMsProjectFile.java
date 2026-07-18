@@ -41,7 +41,7 @@ import java.util.List;
 public class ExporterToMsProjectFile extends ExporterBase {
 
   private final ObservableEnumerationOption<MsProjectFileFormat> myFileFormatOption = new ObservableEnumerationOption<>(
-    "impex.msproject.fileformat", MsProjectFileFormat.MPX, Arrays.stream(MsProjectFileFormat.values()).toList()
+    "impex.msproject.fileformat", MsProjectFileFormat.MSPDI, Arrays.stream(MsProjectFileFormat.values()).toList()
   );
   //private final LocaleOption myLanguageOption = new LocaleOption();
   private final ExportMPXLocaleOption myLanguageOption = new ExportMPXLocaleOption();
