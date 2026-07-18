@@ -7,7 +7,7 @@ jlink ^
 
 jpackage -t msi -d build -i ganttproject-builder/dist-bin/ -n %WINDOWS_APP_FOLDER_NAME% ^
   --main-class com.bardsoftware.eclipsito.Launch --main-jar eclipsito.jar ^
-  --java-options "-DversionDirs=app/plugins -Dapp=net.sourceforge.ganttproject.GanttProject -Dgpcloud=prod -Dorg.jooq.no-logo=true -Xms32m -Xmx2048m -Dsun.java2d.d3d=false -ea" ^
+  --java-options "-Duser.dir=$APPDIR -DversionDirs=plugins;~/.ganttproject.d/updates -Dapp=net.sourceforge.ganttproject.GanttProject -Dgpcloud=prod -Dorg.jooq.no-logo=true -Xms32m -Xmx2048m -Dsun.java2d.d3d=false -ea" ^
   --java-options "--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED --add-exports javafx.base/com.sun.javafx=ALL-UNNAMED --add-exports javafx.base/com.sun.javafx.event=ALL-UNNAMED" ^
   --java-options "--add-exports javafx.base/com.sun.javafx.logging=ALL-UNNAMED --add-exports javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED" ^
   --java-options "--add-exports javafx.controls/com.sun.javafx.scene.control.skin=ALL-UNNAMED --add-exports javafx.controls/com.sun.javafx.scene.control.skin.resources=ALL-UNNAMED" ^
