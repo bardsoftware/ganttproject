@@ -75,7 +75,6 @@ class ProjectFileExporter {
     myOutputProject.getProjectConfig().setAutoOutlineNumber(true);
     myOutputProject.getProjectConfig().setAutoResourceUniqueID(false);
     myOutputProject.getProjectConfig().setAutoTaskUniqueID(false);
-    myOutputProject.setDefaultCalendar(myOutputProject.addDefaultBaseCalendar());
   }
 
   ProjectFile run() throws MPXJException {
@@ -93,6 +92,9 @@ class ProjectFileExporter {
 
   private void exportCalendar() {
     ProjectCalendar calendar = myOutputProject.addDefaultBaseCalendar();
+    var calendarName = myNativeProject.getProjectName();
+    calendar.setName(calendarName);
+    myOutputProject.setDefaultCalendar(calendar);
     exportWeekends(calendar);
     exportHolidays(calendar);
   }
