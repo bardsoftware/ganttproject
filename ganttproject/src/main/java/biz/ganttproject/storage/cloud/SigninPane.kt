@@ -80,7 +80,7 @@ class SigninPane : FlowPage() {
   }
 
   fun createSigninPane(): Pane {
-    val uri = "$GPCLOUD_SIGNIN_URL?callback=${controller.httpd.listeningPort}&timeout=$SIGNIN_TIMEOUT_SECONDS"
+    val uri = "$GPCLOUD_SIGNIN_URL?callback=${controller.httpd.listeningPort}&fallback"
 
     val vboxBuilder = VBoxBuilder("signin-pane", "pane-service-contents")
     vboxBuilder.addTitle(ourLocalizer.formatText("title")).also {
@@ -172,15 +172,18 @@ class SigninPane : FlowPage() {
 
   private fun parseTokenString(rawInput: String): Map<String, String> =
     if (rawInput.isBlank()) emptyMap()
-    else rawInput.split("&").associate {
-      val parts = it.split("=", limit = 2)
-      val key = URLDecoder.decode(parts[0], Charsets.UTF_8.name())
-      key to (parts.getOrNull(1)?.let { v -> URLDecoder.decode(v, Charsets.UTF_8.name()) } ?: "")
+    else {
+      val decoded = Base64.getDecoder().decode(rawInput).toString(Charsets.UTF_8)
+      decoded.split("&").associate {
+        val parts = it.split("=", limit = 2)
+        val key = URLDecoder.decode(parts[0], Charsets.UTF_8.name())
+        key to (parts.getOrNull(1)?.let { v -> URLDecoder.decode(v, Charsets.UTF_8.name()) } ?: "")
+      }
     }
 
   private fun validateTokenString(value: String) =
     parseTokenString(value).let {
-      if (it["token"].isNullOrEmpty() || it["validity"].isNullOrEmpty() || it["userId"].isNullOrEmpty() || it["websocketToken"].isNullOrEmpty()) {
+      if (it["token"].isNullOrEmpty() || it["validity"].isNullOrEmpty() || it["userId"].isNullOrEmpty()) {
         throw ValidationException("Invalid token string")
       }
       value

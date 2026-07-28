@@ -57,6 +57,7 @@ val GPCLOUD_SCHEME = when (cloudEnvironment) {
 val GPCLOUD_HOST = when (cloudEnvironment)  {
   GPCloudEnv.EMULATOR -> "localhost"
   GPCloudEnv.LOCAL -> "ganttproject.localhost"
+  GPCloudEnv.STAGING -> "cloud.ganttproject.biz"
   else -> "ganttproject.cloud"
 }
 val GPCLOUD_PORT = when (cloudEnvironment) {
