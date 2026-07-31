@@ -80,7 +80,7 @@ class SigninPane : FlowPage() {
   }
 
   fun createSigninPane(): Pane {
-    val uri = "$GPCLOUD_SIGNIN_URL?callback=${controller.httpd.listeningPort}&fallback"
+    val uri = "$GPCLOUD_SIGNIN_URL?callback=${controller.httpd.listeningPort}&fallback=true"
 
     val vboxBuilder = VBoxBuilder("signin-pane", "pane-service-contents")
     vboxBuilder.addTitle(ourLocalizer.formatText("title")).also {
@@ -98,7 +98,7 @@ class SigninPane : FlowPage() {
     statusText.value = ourLocalizer.formatText("text.browser_opening")
 
     val copyButton = Button(ourLocalizer.formatText("button.copyLink"), FontAwesomeIconView(FontAwesomeIcon.COPY)).apply {
-      contentDisplay = ContentDisplay.RIGHT
+      contentDisplay = ContentDisplay.GRAPHIC_ONLY
       addEventHandler(ActionEvent.ACTION) {
         Clipboard.getSystemClipboard().setContent(ClipboardContent().apply {
           putString(uri)
@@ -107,7 +107,8 @@ class SigninPane : FlowPage() {
     }
 
     urlOption.value = uri
-    val submitButton = Button(ourLocalizer.formatText("button.submitToken")).apply {
+    val submitButton = Button(ourLocalizer.formatText("button.submitToken"), FontAwesomeIconView(FontAwesomeIcon.CHECK)).apply {
+      contentDisplay = ContentDisplay.GRAPHIC_ONLY
       addEventHandler(ActionEvent.ACTION) { submitToken(tokenOption.value ?: "") }
     }
 
@@ -125,6 +126,11 @@ class SigninPane : FlowPage() {
         rightNode = submitButton
         isValid.addWatcher {
           submitButton.isDisable = !it.newValue
+        }
+        tokenOption.addWatcher {
+          if (it.oldValue.isNullOrBlank()) {
+            submitButton.isDisable = isValid.value.not()
+          }
         }
         submitButton.isDisable = true
       }
