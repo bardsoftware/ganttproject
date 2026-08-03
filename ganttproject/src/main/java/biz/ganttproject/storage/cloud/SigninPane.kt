@@ -179,11 +179,16 @@ class SigninPane : FlowPage() {
   private fun parseTokenString(rawInput: String): Map<String, String> =
     if (rawInput.isBlank()) emptyMap()
     else {
-      val decoded = Base64.getDecoder().decode(rawInput).toString(Charsets.UTF_8)
-      decoded.split("&").associate {
-        val parts = it.split("=", limit = 2)
-        val key = URLDecoder.decode(parts[0], Charsets.UTF_8.name())
-        key to (parts.getOrNull(1)?.let { v -> URLDecoder.decode(v, Charsets.UTF_8.name()) } ?: "")
+      try {
+        val decoded = Base64.getDecoder().decode(rawInput).toString(Charsets.UTF_8)
+        decoded.split("&").associate {
+          val parts = it.split("=", limit = 2)
+          val key = URLDecoder.decode(parts[0], Charsets.UTF_8.name())
+          key to (parts.getOrNull(1)?.let { v -> URLDecoder.decode(v, Charsets.UTF_8.name()) } ?: "")
+        }
+      } catch (e: Exception) {
+        val msg = e.message ?: "Unknown error"
+        throw ValidationException("Invalid token string: $msg")
       }
     }
 
