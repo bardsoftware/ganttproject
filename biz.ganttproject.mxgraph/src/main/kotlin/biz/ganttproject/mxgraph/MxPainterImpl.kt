@@ -31,7 +31,7 @@ import org.w3c.dom.Element
 /**
  * This is low-level mxGraph interaction code which actually calls mxGraph API
  */
-internal class MxPainterImpl : PainterImpl {
+class MxPainterImpl : PainterImpl {
   private val graph = mxGraph()
   private val parent = graph.defaultParent
   private val codec = mxCodec()

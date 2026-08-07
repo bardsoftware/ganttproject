@@ -58,6 +58,7 @@ compileKotlin {
 }
 
 addPublishing(project)
+version = "2026-dev-json"
 publishing {
     publications {
         core(MavenPublication) {
