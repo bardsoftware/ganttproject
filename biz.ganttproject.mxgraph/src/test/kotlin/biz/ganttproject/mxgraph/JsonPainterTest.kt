@@ -25,7 +25,6 @@ import com.mxgraph.util.mxConstants
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration
 import net.sourceforge.ganttproject.gui.UIConfiguration
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.awt.Color
@@ -122,13 +121,17 @@ class JsonPainterTest {
   }
 
   @Test
-  fun `text painting is not implemented`() {
-    val canvas = Canvas()
-    canvas.createText(0, 0, "hello")
-    val impl = JsonPainterImpl()
-    val painter = MxGraphPainter(uiConfig(), impl)
-    assertThrows(NotImplementedError::class.java) {
-      painter.paint { canvas.paint(painter) }
+  fun `text is serialized with coordinates and label`() {
+    val model = render { canvas ->
+      canvas.createText(15, 25, "hello").also { it.style = "text.ganttdate" }
     }
+
+    val text = model["texts"].single()
+    assertEquals(15, text["x"].asInt())
+    assertEquals(25, text["y"].asInt())
+    assertEquals("hello", text["text"].asText())
+    // The label is available in the attributes as well, next to whatever the scene builder put there.
+    assertEquals("hello", text["attributes"]["text"].asText())
+    assertTrue(text["style"].has(mxConstants.STYLE_ALIGN))
   }
 }

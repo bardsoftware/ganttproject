@@ -31,7 +31,7 @@ internal class SummaryTaskPainter(
   override fun paint(rectangle: Canvas.Rectangle) {
     val style = Style.getStyle(props, rectangle.style)
     val mxStyle = mapOf(
-      mxConstants.STYLE_FILLCOLOR to style.getBackgroundColor(rectangle),
+      mxConstants.STYLE_FILLCOLOR to (style.hexBackgroundColor(rectangle) ?: mxConstants.NONE),
       mxConstants.STYLE_STROKECOLOR to mxConstants.NONE
     )
 

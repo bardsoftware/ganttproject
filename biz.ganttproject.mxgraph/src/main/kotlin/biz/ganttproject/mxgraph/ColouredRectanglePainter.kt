@@ -30,7 +30,7 @@ internal class ColouredRectanglePainter(
     painter.paintRectangle(
       rectangle.leftX, rectangle.topY,
       rectangle.width, rectangle.height,
-      mapOf(mxConstants.STYLE_FILLCOLOR to color), rectangle.attributes
+      mapOf(mxConstants.STYLE_FILLCOLOR to color.toHexString()), rectangle.attributes
     )
   }
 }

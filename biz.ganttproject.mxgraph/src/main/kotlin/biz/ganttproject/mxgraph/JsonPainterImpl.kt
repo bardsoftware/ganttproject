@@ -25,17 +25,19 @@ import com.fasterxml.jackson.databind.ObjectMapper
  * it accumulates the chart primitives as plain maps and serializes them to JSON. The resulting
  * JSON model is intended to be rendered on the client side.
  */
-internal class JsonPainterImpl : PainterImpl {
+class JsonPainterImpl : PainterImpl {
   private val rectangles = mutableListOf<Map<String, Any?>>()
   private val lines = mutableListOf<Map<String, Any?>>()
   private val rhombuses = mutableListOf<Map<String, Any?>>()
+  private val texts = mutableListOf<Map<String, Any?>>()
   private val mapper = ObjectMapper()
 
   fun toJson(): String {
     return mapper.writeValueAsString(linkedMapOf(
         "rectangles" to rectangles,
         "lines" to lines,
-        "rhombuses" to rhombuses
+        "rhombuses" to rhombuses,
+        "texts" to texts
     ))
   }
 
@@ -61,8 +63,19 @@ internal class JsonPainterImpl : PainterImpl {
     ))
   }
 
-  override fun paintText(leftX: Int, bottomY: Int, attributes: Map<String, String>, style: Map<String, Any?>) =
-      TODO("Text rendering is not implemented in JsonPainterImpl")
+  /**
+   * The text itself is passed in the "text" attribute by [MxTextPainter], which has already
+   * chosen the label which fits into the available space.
+   */
+  override fun paintText(leftX: Int, bottomY: Int, attributes: Map<String, String>, style: Map<String, Any?>) {
+    texts.add(linkedMapOf(
+        "x" to leftX,
+        "y" to bottomY,
+        "text" to attributes["text"],
+        "style" to style,
+        "attributes" to attributes
+    ))
+  }
 
   override fun paintRhombus(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
     rhombuses.add(linkedMapOf(
@@ -79,6 +92,7 @@ internal class JsonPainterImpl : PainterImpl {
     rectangles.clear()
     lines.clear()
     rhombuses.clear()
+    texts.clear()
   }
 
   override fun beginUpdate() {}
