@@ -24,25 +24,22 @@ import com.fasterxml.jackson.databind.ObjectMapper
  * This is the low-level counterpart of [MxPainterImpl]. Instead of building an mxGraph model,
  * it accumulates the chart primitives as plain maps and serializes them to JSON. The resulting
  * JSON model is intended to be rendered on the client side.
+ *
+ * All primitives go into a single list, in the order in which the canvas emits them, so that
+ * the client can paint them in the same order and reproduce the overlapping of the shapes.
+ * The kind of a primitive is told by its "type" property.
  */
 class JsonPainterImpl : PainterImpl {
-  private val rectangles = mutableListOf<Map<String, Any?>>()
-  private val lines = mutableListOf<Map<String, Any?>>()
-  private val rhombuses = mutableListOf<Map<String, Any?>>()
-  private val texts = mutableListOf<Map<String, Any?>>()
+  private val primitives = mutableListOf<Map<String, Any?>>()
   private val mapper = ObjectMapper()
 
   fun toJson(): String {
-    return mapper.writeValueAsString(linkedMapOf(
-        "rectangles" to rectangles,
-        "lines" to lines,
-        "rhombuses" to rhombuses,
-        "texts" to texts
-    ))
+    return mapper.writeValueAsString(linkedMapOf("primitives" to primitives))
   }
 
   override fun paintRectangle(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
-    rectangles.add(linkedMapOf(
+    primitives.add(linkedMapOf(
+        "type" to TYPE_RECTANGLE,
         "x" to leftX,
         "y" to topY,
         "width" to width,
@@ -53,7 +50,8 @@ class JsonPainterImpl : PainterImpl {
   }
 
   override fun paintLine(startX: Int, startY: Int, finishX: Int, finishY: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
-    lines.add(linkedMapOf(
+    primitives.add(linkedMapOf(
+        "type" to TYPE_LINE,
         "startX" to startX,
         "startY" to startY,
         "finishX" to finishX,
@@ -68,7 +66,8 @@ class JsonPainterImpl : PainterImpl {
    * chosen the label which fits into the available space.
    */
   override fun paintText(leftX: Int, bottomY: Int, attributes: Map<String, String>, style: Map<String, Any?>) {
-    texts.add(linkedMapOf(
+    primitives.add(linkedMapOf(
+        "type" to TYPE_TEXT,
         "x" to leftX,
         "y" to bottomY,
         "text" to attributes["text"],
@@ -78,7 +77,8 @@ class JsonPainterImpl : PainterImpl {
   }
 
   override fun paintRhombus(leftX: Int, topY: Int, width: Int, height: Int, style: Map<String, Any?>, attributes: Map<String, String>) {
-    rhombuses.add(linkedMapOf(
+    primitives.add(linkedMapOf(
+        "type" to TYPE_RHOMBUS,
         "x" to leftX,
         "y" to topY,
         "width" to width,
@@ -89,13 +89,16 @@ class JsonPainterImpl : PainterImpl {
   }
 
   override fun clear() {
-    rectangles.clear()
-    lines.clear()
-    rhombuses.clear()
-    texts.clear()
+    primitives.clear()
   }
 
   override fun beginUpdate() {}
 
   override fun endUpdate() {}
 }
+
+/** Values of the "type" property which discriminates the primitives in the JSON model. */
+const val TYPE_RECTANGLE = "rectangle"
+const val TYPE_LINE = "line"
+const val TYPE_RHOMBUS = "rhombus"
+const val TYPE_TEXT = "text"

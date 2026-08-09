@@ -6,7 +6,9 @@ finish-start dependency**.
 
 It loads the compiled UMD modules directly as classic `<script>` tags and calls the
 exported `drawChart(model, canvas)` — the model is a plain JS object with the same shape
-produced by the server-side `JsonPainterImpl` (module `biz.ganttproject.mxgraph`).
+produced by the server-side `JsonPainterImpl` (module `biz.ganttproject.mxgraph`): a single
+`primitives` list where every entry is tagged with its `type` and the entries are painted in
+the listed order.
 
 ## Run it
 

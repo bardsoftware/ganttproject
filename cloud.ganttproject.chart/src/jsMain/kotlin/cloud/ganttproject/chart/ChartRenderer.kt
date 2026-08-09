@@ -42,17 +42,23 @@ private const val ARROW_HALF_WIDTH = 4.0
  * Renders the chart [model] onto the 2D context of the [canvas] element.
  * The canvas is cleared first, so repeated calls do not stack the painting.
  *
- * The primitives are drawn grouped by kind, in the model order: rectangles first,
- * then lines, then rhombuses.
+ * The primitives are drawn in the model order, which is the order in which the canvas emitted
+ * them on the server side, so that the shapes overlap the same way as in the desktop chart.
+ * The primitive kinds which the renderer does not support yet (e.g. texts) are skipped.
  */
 @OptIn(kotlin.js.ExperimentalJsExport::class)
 @JsExport
 fun drawChart(model: ChartModel, canvas: HTMLCanvasElement) {
   val ctx = canvas.getContext("2d") as? CanvasRenderingContext2D ?: return
   ctx.clearRect(0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble())
-  model.rectangles.forEach { drawRectangle(ctx, it) }
-  model.lines.forEach { drawLine(ctx, it) }
-  model.rhombuses.forEach { drawRhombus(ctx, it) }
+  model.primitives.forEach { primitive ->
+    when (primitive.type) {
+      PrimitiveType.RECTANGLE -> drawRectangle(ctx, primitive.unsafeCast<RectanglePrimitive>())
+      PrimitiveType.LINE -> drawLine(ctx, primitive.unsafeCast<LinePrimitive>())
+      PrimitiveType.RHOMBUS -> drawRhombus(ctx, primitive.unsafeCast<RhombusPrimitive>())
+      else -> {}
+    }
+  }
 }
 
 private fun drawRectangle(ctx: CanvasRenderingContext2D, rect: RectanglePrimitive) =

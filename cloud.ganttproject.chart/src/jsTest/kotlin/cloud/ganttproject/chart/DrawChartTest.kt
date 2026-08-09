@@ -40,12 +40,9 @@ class DrawChartTest {
     return canvas
   }
 
-  private fun model(
-    rectangles: String = "[]",
-    lines: String = "[]",
-    rhombuses: String = "[]"
-  ): ChartModel = JSON.parse(
-    """{"rectangles": $rectangles, "lines": $lines, "rhombuses": $rhombuses}"""
+  /** Builds a model from a JSON array of primitives, each carrying its "type" property. */
+  private fun model(primitives: String = "[]"): ChartModel = JSON.parse(
+    """{"primitives": $primitives}"""
   )
 
   /** Returns the [r, g, b, a] channels of the pixel at ([x], [y]). */
@@ -58,8 +55,8 @@ class DrawChartTest {
   @Test
   fun `filled rectangle paints its interior only`() {
     val canvas = newCanvas()
-    val model = model(rectangles = """
-      [{"x": 10, "y": 20, "width": 100, "height": 40,
+    val model = model("""
+      [{"type": "rectangle", "x": 10, "y": 20, "width": 100, "height": 40,
         "style": {"fillColor": "#336699", "strokeColor": "none", "opacity": 100},
         "attributes": {"taskId": "42"}}]
     """)
@@ -73,8 +70,8 @@ class DrawChartTest {
   @Test
   fun `rectangle stroke paints the border only`() {
     val canvas = newCanvas()
-    val model = model(rectangles = """
-      [{"x": 10, "y": 20, "width": 100, "height": 40,
+    val model = model("""
+      [{"type": "rectangle", "x": 10, "y": 20, "width": 100, "height": 40,
         "style": {"fillColor": "none", "strokeColor": "#000000", "strokeWidth": 4},
         "attributes": {}}]
     """)
@@ -89,8 +86,8 @@ class DrawChartTest {
   @Test
   fun `shape opacity maps to the pixel alpha`() {
     val canvas = newCanvas()
-    val model = model(rectangles = """
-      [{"x": 10, "y": 20, "width": 100, "height": 40,
+    val model = model("""
+      [{"type": "rectangle", "x": 10, "y": 20, "width": 100, "height": 40,
         "style": {"fillColor": "#ff0000", "strokeColor": "none", "opacity": 40},
         "attributes": {}}]
     """)
@@ -105,8 +102,8 @@ class DrawChartTest {
   @Test
   fun `solid line with classic arrow paints the shaft and the arrow head`() {
     val canvas = newCanvas()
-    val model = model(lines = """
-      [{"startX": 10, "startY": 50, "finishX": 90, "finishY": 50,
+    val model = model("""
+      [{"type": "line", "startX": 10, "startY": 50, "finishX": 90, "finishY": 50,
         "style": {"endArrow": "classic", "strokeColor": "#ff0000", "opacity": 100, "dashed": 0},
         "attributes": {}}]
     """)
@@ -124,8 +121,8 @@ class DrawChartTest {
   fun `dashed line leaves gaps`() {
     val canvas = newCanvas()
     // The dash pattern is [3, 3] starting at x=10: segments [10,13), [16,19), ... are painted.
-    val model = model(lines = """
-      [{"startX": 10, "startY": 70, "finishX": 90, "finishY": 70,
+    val model = model("""
+      [{"type": "line", "startX": 10, "startY": 70, "finishX": 90, "finishY": 70,
         "style": {"endArrow": "none", "strokeColor": "#00ff00", "dashed": 1},
         "attributes": {}}]
     """)
@@ -140,8 +137,8 @@ class DrawChartTest {
   @Test
   fun `line without stroke color falls back to black`() {
     val canvas = newCanvas()
-    val model = model(lines = """
-      [{"startX": 10, "startY": 60, "finishX": 90, "finishY": 60,
+    val model = model("""
+      [{"type": "line", "startX": 10, "startY": 60, "finishX": 90, "finishY": 60,
         "style": {"endArrow": "none"}, "attributes": {}}]
     """)
 
@@ -155,8 +152,8 @@ class DrawChartTest {
   @Test
   fun `rhombus paints the diamond inside its bounding box`() {
     val canvas = newCanvas()
-    val model = model(rhombuses = """
-      [{"x": 30, "y": 80, "width": 20, "height": 20,
+    val model = model("""
+      [{"type": "rhombus", "x": 30, "y": 80, "width": 20, "height": 20,
         "style": {"fillColor": "#123456", "strokeColor": "none"},
         "attributes": {}}]
     """)
@@ -168,10 +165,49 @@ class DrawChartTest {
   }
 
   @Test
+  fun `primitives are painted in the model order`() {
+    val canvas = newCanvas()
+    // A line drawn before a rectangle which covers it, and a rectangle drawn before a line
+    // which crosses it: whatever comes last in the list wins.
+    val model = model("""
+      [{"type": "line", "startX": 10, "startY": 40, "finishX": 110, "finishY": 40,
+        "style": {"endArrow": "none", "strokeColor": "#ff0000"}, "attributes": {}},
+       {"type": "rectangle", "x": 10, "y": 20, "width": 100, "height": 40,
+        "style": {"fillColor": "#0000ff", "strokeColor": "none"}, "attributes": {}},
+       {"type": "line", "startX": 10, "startY": 50, "finishX": 110, "finishY": 50,
+        "style": {"endArrow": "none", "strokeColor": "#00ff00", "strokeWidth": 4}, "attributes": {}}]
+    """)
+
+    drawChart(model, canvas)
+
+    assertEquals(listOf(0x00, 0x00, 0xff, 255), pixel(canvas, 60, 40).toList(),
+        "the rectangle covers the line painted before it")
+    val overRect = pixel(canvas, 60, 50)
+    assertTrue(overRect[1] > 200 && overRect[2] < 50,
+        "the line painted after the rectangle is on top of it: ${overRect.toList()}")
+  }
+
+  @Test
+  fun `primitives of unsupported kinds are skipped`() {
+    val canvas = newCanvas()
+    val model = model("""
+      [{"type": "text", "x": 10, "y": 40, "text": "hello",
+        "style": {"fontColor": "#000000"}, "attributes": {"text": "hello"}},
+       {"type": "rectangle", "x": 10, "y": 20, "width": 100, "height": 40,
+        "style": {"fillColor": "#336699", "strokeColor": "none"}, "attributes": {}}]
+    """)
+
+    drawChart(model, canvas)
+
+    assertEquals(listOf(0x33, 0x66, 0x99, 255), pixel(canvas, 60, 40).toList(),
+        "the supported primitives are still painted")
+  }
+
+  @Test
   fun `drawChart clears the canvas before painting`() {
     val canvas = newCanvas()
-    drawChart(model(rectangles = """
-      [{"x": 0, "y": 0, "width": 200, "height": 200,
+    drawChart(model("""
+      [{"type": "rectangle", "x": 0, "y": 0, "width": 200, "height": 200,
         "style": {"fillColor": "#000000", "strokeColor": "none"}, "attributes": {}}]
     """), canvas)
     assertTrue(pixel(canvas, 60, 40)[3] > 0)

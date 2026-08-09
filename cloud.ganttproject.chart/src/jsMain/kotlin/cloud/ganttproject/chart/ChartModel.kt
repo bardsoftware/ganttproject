@@ -24,9 +24,11 @@ package cloud.ganttproject.chart
  * External declarations mirroring `chart_model.ts`, the JSON model produced by
  * JsonPainterImpl on the server side (module biz.ganttproject.mxgraph).
  *
- * The JSON model groups chart primitives by kind into separate collections. Every primitive
- * carries its geometry at the top level, a nested `style` object with the visual properties,
- * and a free-form `attributes` map that binds the primitive to a model object.
+ * The JSON model is a single flat list of chart primitives, kept in the order in which the
+ * canvas emits them to the painter, so that painting them in the same order reproduces the
+ * overlapping of the shapes. The kind of a primitive is told by its `type` property. Every
+ * primitive carries its geometry at the top level, a nested `style` object with the visual
+ * properties, and a free-form `attributes` map that binds the primitive to a model object.
  *
  * The style objects hold mxGraph style keys (see com.mxgraph.util.mxConstants). In TypeScript
  * they carry an index signature `[key: string]: StyleValue | undefined` which cannot be
@@ -38,9 +40,25 @@ external interface Attributes
 
 /** Root object serialized by JsonPainterImpl.toJson(). */
 external interface ChartModel {
-  val rectangles: Array<RectanglePrimitive>
-  val lines: Array<LinePrimitive>
-  val rhombuses: Array<RhombusPrimitive>
+  /** The primitives in the order they were emitted by the canvas: painted in this order. */
+  val primitives: Array<ChartPrimitive>
+}
+
+/**
+ * The common part of a chart primitive. The value of [type] tells which of the primitive
+ * interfaces below the object actually implements.
+ */
+external interface ChartPrimitive {
+  val type: String
+  val attributes: Attributes
+}
+
+/** Values of [ChartPrimitive.type], mirroring the constants in JsonPainterImpl. */
+object PrimitiveType {
+  const val RECTANGLE = "rectangle"
+  const val LINE = "line"
+  const val RHOMBUS = "rhombus"
+  const val TEXT = "text"
 }
 
 /** Visual style shared by filled shapes (rectangles and rhombuses). Keyed by mxGraph style names. */
@@ -69,7 +87,7 @@ external interface LineStyle {
   val strokeWidth: Double?
 }
 
-external interface RectanglePrimitive {
+external interface RectanglePrimitive : ChartPrimitive {
   /** X coordinate of the top-left corner. */
   val x: Double
   /** Y coordinate of the top-left corner. */
@@ -77,10 +95,9 @@ external interface RectanglePrimitive {
   val width: Double
   val height: Double
   val style: ShapeStyle
-  val attributes: Attributes
 }
 
-external interface RhombusPrimitive {
+external interface RhombusPrimitive : ChartPrimitive {
   /** X coordinate of the bounding box top-left corner. */
   val x: Double
   /** Y coordinate of the bounding box top-left corner. */
@@ -88,14 +105,12 @@ external interface RhombusPrimitive {
   val width: Double
   val height: Double
   val style: ShapeStyle
-  val attributes: Attributes
 }
 
-external interface LinePrimitive {
+external interface LinePrimitive : ChartPrimitive {
   val startX: Double
   val startY: Double
   val finishX: Double
   val finishY: Double
   val style: LineStyle
-  val attributes: Attributes
 }

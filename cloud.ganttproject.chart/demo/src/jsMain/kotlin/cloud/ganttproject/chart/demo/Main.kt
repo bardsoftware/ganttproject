@@ -32,40 +32,43 @@ import kotlin.js.JSON
  * and into the second task's start edge) and renders it onto a canvas via [drawChart].
  *
  * The model is expressed as JSON, exactly like the model produced by the server-side
- * JsonPainterImpl (module biz.ganttproject.mxgraph), and parsed into a [ChartModel].
+ * JsonPainterImpl (module biz.ganttproject.mxgraph), and parsed into a [ChartModel]:
+ * a single list of primitives which are painted in the listed order.
  */
 private val DEMO_MODEL_JSON = """
 {
-  "rectangles": [
+  "primitives": [
     {
+      "type": "rectangle",
       "x": 40, "y": 40, "width": 120, "height": 32,
       "style": {"fillColor": "#4a89dc", "strokeColor": "#2f5c96", "opacity": 100, "strokeWidth": 1},
       "attributes": {"name": "Task A"}
     },
     {
+      "type": "rectangle",
       "x": 240, "y": 110, "width": 150, "height": 32,
       "style": {"fillColor": "#5cb85c", "strokeColor": "#3d8b3d", "opacity": 100, "strokeWidth": 1},
       "attributes": {"name": "Task B"}
-    }
-  ],
-  "lines": [
+    },
     {
+      "type": "line",
       "startX": 160, "startY": 56, "finishX": 200, "finishY": 56,
       "style": {"endArrow": "none", "strokeColor": "#555555", "opacity": 100, "dashed": 0, "strokeWidth": 2},
-      "attributes": {"type": "finish-start"}
+      "attributes": {"dependencyType": "finish-start"}
     },
     {
+      "type": "line",
       "startX": 200, "startY": 56, "finishX": 200, "finishY": 126,
       "style": {"endArrow": "none", "strokeColor": "#555555", "opacity": 100, "dashed": 0, "strokeWidth": 2},
-      "attributes": {"type": "finish-start"}
+      "attributes": {"dependencyType": "finish-start"}
     },
     {
+      "type": "line",
       "startX": 200, "startY": 126, "finishX": 238, "finishY": 126,
       "style": {"endArrow": "classic", "strokeColor": "#555555", "opacity": 100, "dashed": 0, "strokeWidth": 2},
-      "attributes": {"type": "finish-start"}
+      "attributes": {"dependencyType": "finish-start"}
     }
-  ],
-  "rhombuses": []
+  ]
 }
 """.trimIndent()
 

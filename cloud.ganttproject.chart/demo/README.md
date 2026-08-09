@@ -5,7 +5,9 @@ and renders a small chart model with **two task rectangles connected by a finish
 dependency** (an orthogonal arrowed connector).
 
 The model is built as JSON — the same shape produced by the server-side `JsonPainterImpl`
-(module `biz.ganttproject.mxgraph`) — parsed into a `ChartModel`, and drawn with the
+(module `biz.ganttproject.mxgraph`): a single `primitives` list where every entry is tagged
+with its `type` and the entries are painted in the listed order. It is parsed into a
+`ChartModel` and drawn with the
 library's exported `drawChart(model, canvas)` function. See
 [`src/jsMain/kotlin/.../demo/Main.kt`](src/jsMain/kotlin/cloud/ganttproject/chart/demo/Main.kt).
 

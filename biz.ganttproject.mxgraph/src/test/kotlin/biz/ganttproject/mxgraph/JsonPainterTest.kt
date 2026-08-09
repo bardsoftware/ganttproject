@@ -30,9 +30,10 @@ import org.junit.jupiter.api.Test
 import java.awt.Color
 
 /**
- * Verifies that [MxGraphPainter] backed by [JsonPainterImpl] produces the expected JSON model.
- * The style objects carry mxGraph style keys, since [MxGraphPainter] resolves the styles the
- * same way regardless of the backend.
+ * Verifies that [MxGraphPainter] backed by [JsonPainterImpl] produces the expected JSON model:
+ * a single "primitives" list holding the primitives of all kinds in the order in which the
+ * canvas emits them. The style objects carry mxGraph style keys, since [MxGraphPainter]
+ * resolves the styles the same way regardless of the backend.
  */
 class JsonPainterTest {
   private val mapper = ObjectMapper()
@@ -59,11 +60,10 @@ class JsonPainterTest {
       rectangle.attributes["taskId"] = "42"
     }
 
-    val rectangles = model["rectangles"].toList()
-    assertEquals(1, rectangles.size)
-    assertTrue(model["lines"].isEmpty)
-    assertTrue(model["rhombuses"].isEmpty)
-    val rect = rectangles.single()
+    val primitives = model["primitives"].toList()
+    assertEquals(1, primitives.size)
+    val rect = primitives.single()
+    assertEquals("rectangle", rect["type"].asText())
     assertEquals(10, rect["x"].asInt())
     assertEquals(20, rect["y"].asInt())
     assertEquals(100, rect["width"].asInt())
@@ -86,8 +86,9 @@ class JsonPainterTest {
       canvas.createLine(1, 2, 3, 4).style = "dependency"
     }
 
-    val lines = model["lines"].toList()
+    val lines = model["primitives"].toList()
     assertEquals(2, lines.size)
+    assertTrue(lines.all { it["type"].asText() == "line" })
 
     val arrowLine = lines[0]
     assertEquals(0, arrowLine["startX"].asInt())
@@ -113,7 +114,8 @@ class JsonPainterTest {
       rhombus.setForegroundColor(Color(0x65, 0x43, 0x21))
     }
 
-    val rhombus = model["rhombuses"].single()
+    val rhombus = model["primitives"].single()
+    assertEquals("rhombus", rhombus["type"].asText())
     assertEquals("#123456", rhombus["style"][mxConstants.STYLE_FILLCOLOR].asText())
     // Rhombus has size derived from its diagonals.
     assertTrue(rhombus["width"].asInt() > 0)
@@ -126,12 +128,49 @@ class JsonPainterTest {
       canvas.createText(15, 25, "hello").also { it.style = "text.ganttdate" }
     }
 
-    val text = model["texts"].single()
+    val text = model["primitives"].single()
+    assertEquals("text", text["type"].asText())
     assertEquals(15, text["x"].asInt())
     assertEquals(25, text["y"].asInt())
     assertEquals("hello", text["text"].asText())
     // The label is available in the attributes as well, next to whatever the scene builder put there.
     assertEquals("hello", text["attributes"]["text"].asText())
     assertTrue(text["style"].has(mxConstants.STYLE_ALIGN))
+  }
+
+  @Test
+  fun `primitives of different kinds keep the order in which the canvas emits them`() {
+    val model = render { canvas ->
+      canvas.createLine(0, 0, 10, 10).style = "dependency"
+      canvas.createRectangle(10, 20, 100, 40).style = "task"
+      canvas.createRhombus(30, 40, 20, 20).style = "milestone"
+      canvas.createText(15, 25, "hello").also { it.style = "text.ganttdate" }
+      canvas.createLine(1, 2, 3, 4).style = "dependency"
+    }
+
+    // Canvas.paint() sends the shapes to the painter kind by kind: rectangles, rhombuses,
+    // lines and finally texts. The JSON model records exactly that order.
+    assertEquals(
+        listOf("rectangle", "rhombus", "line", "line", "text"),
+        model["primitives"].map { it["type"].asText() }
+    )
+  }
+
+  @Test
+  fun `the painter appends the primitives in the order of the paint calls`() {
+    val impl = JsonPainterImpl()
+    impl.paintLine(0, 0, 1, 1, emptyMap(), emptyMap())
+    impl.paintRectangle(0, 0, 1, 1, emptyMap(), emptyMap())
+    impl.paintText(0, 0, mapOf("text" to "hello"), emptyMap())
+    impl.paintRhombus(0, 0, 1, 1, emptyMap(), emptyMap())
+
+    val model = mapper.readTree(impl.toJson())
+    assertEquals(
+        listOf("line", "rectangle", "text", "rhombus"),
+        model["primitives"].map { it["type"].asText() }
+    )
+
+    impl.clear()
+    assertTrue(mapper.readTree(impl.toJson())["primitives"].isEmpty)
   }
 }
