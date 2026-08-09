@@ -27,7 +27,7 @@ import kotlin.js.JSON
 /**
  * A minimal demo of the cloud.ganttproject.chart library.
  *
- * It builds a small chart model with two task rectangles connected by a finish-start
+ * It builds a small chart model with two labelled task rectangles connected by a finish-start
  * dependency (an orthogonal arrowed connector going out of the first task's finish edge
  * and into the second task's start edge) and renders it onto a canvas via [drawChart].
  *
@@ -49,6 +49,18 @@ private val DEMO_MODEL_JSON = """
       "x": 240, "y": 110, "width": 150, "height": 32,
       "style": {"fillColor": "#5cb85c", "strokeColor": "#3d8b3d", "opacity": 100, "strokeWidth": 1},
       "attributes": {"name": "Task B"}
+    },
+    {
+      "type": "text",
+      "x": 100, "y": 56, "text": "Task A",
+      "style": {"align": "center", "verticalAlign": "middle", "fontColor": "#ffffff", "fontSize": 13, "fontFamily": "sans-serif", "textOpacity": 100},
+      "attributes": {"text": "Task A"}
+    },
+    {
+      "type": "text",
+      "x": 315, "y": 126, "text": "Task B",
+      "style": {"align": "center", "verticalAlign": "middle", "fontColor": "#ffffff", "fontSize": 13, "fontFamily": "sans-serif", "textOpacity": 100},
+      "attributes": {"text": "Task B"}
     },
     {
       "type": "line",

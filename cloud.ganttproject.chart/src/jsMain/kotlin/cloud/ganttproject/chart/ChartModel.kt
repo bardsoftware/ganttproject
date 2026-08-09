@@ -107,10 +107,50 @@ external interface RhombusPrimitive : ChartPrimitive {
   val style: ShapeStyle
 }
 
+/**
+ * Visual style for texts. Keyed by mxGraph style names.
+ *
+ * The alignment values tell how the label is placed relative to the (x, y) anchor point of the
+ * primitive, and the spacings are the paddings of the chart style which the alignment formulas
+ * take into account (see TextPainter in biz.ganttproject.core, the desktop reference renderer).
+ */
+external interface TextStyle {
+  /** Horizontal alignment: the mxGraph `left`, `center` or `right` value. */
+  val align: String?
+  /** Vertical alignment: the mxGraph `top`, `middle` or `bottom` value. */
+  val verticalAlign: String?
+  /** Font color as a `#rrggbb` string. Falls back to `#000000`. */
+  val fontColor: String?
+  /** Font size in pixels. */
+  val fontSize: Double?
+  /** Font family name. */
+  val fontFamily: String?
+  /** Text opacity as a percentage in the [0, 100] range. */
+  val textOpacity: Double?
+  /** Padding above the label, in pixels. */
+  val spacingTop: Double?
+  /** Padding below the label, in pixels. */
+  val spacingBottom: Double?
+  /** Padding on the left of the label, in pixels. */
+  val spacingLeft: Double?
+  /** Padding on the right of the label, in pixels. */
+  val spacingRight: Double?
+}
+
 external interface LinePrimitive : ChartPrimitive {
   val startX: Double
   val startY: Double
   val finishX: Double
   val finishY: Double
   val style: LineStyle
+}
+
+external interface TextPrimitive : ChartPrimitive {
+  /** X coordinate of the anchor point, interpreted according to [TextStyle.align]. */
+  val x: Double
+  /** Y coordinate of the anchor point, interpreted according to [TextStyle.verticalAlign]. */
+  val y: Double
+  /** The label which fits into the space available for this text. */
+  val text: String?
+  val style: TextStyle
 }

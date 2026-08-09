@@ -54,8 +54,8 @@ then open this file in a browser (double-click, or serve the module directory).
 
     // The chart model: same JSON shape produced by the server-side JsonPainterImpl. A single
     // list of primitives, each tagged with its `type`, painted in the listed order.
-    // Two task rectangles, plus an orthogonal 3-segment finish-start connector whose
-    // last segment carries the arrow head.
+    // Two task rectangles with their labels on top of them, plus an orthogonal 3-segment
+    // finish-start connector whose last segment carries the arrow head.
     const model = {
       primitives: [
         {
@@ -69,6 +69,18 @@ then open this file in a browser (double-click, or serve the module directory).
           x: 240, y: 110, width: 150, height: 32,
           style: { fillColor: '#5cb85c', strokeColor: '#3d8b3d', opacity: 100, strokeWidth: 1 },
           attributes: { name: 'Task B' }
+        },
+        {
+          type: 'text',
+          x: 100, y: 56, text: 'Task A',
+          style: { align: 'center', verticalAlign: 'middle', fontColor: '#ffffff', fontSize: 13, fontFamily: 'sans-serif', textOpacity: 100 },
+          attributes: { text: 'Task A' }
+        },
+        {
+          type: 'text',
+          x: 315, y: 126, text: 'Task B',
+          style: { align: 'center', verticalAlign: 'middle', fontColor: '#ffffff', fontSize: 13, fontFamily: 'sans-serif', textOpacity: 100 },
+          attributes: { text: 'Task B' }
         },
         {
           type: 'line',

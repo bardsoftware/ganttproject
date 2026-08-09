@@ -61,16 +61,34 @@ export interface LineStyle {
   [key: string]: StyleValue | undefined;
 }
 
-/** Visual style for texts. Keyed by mxGraph style names. */
+/**
+ * Visual style for texts. Keyed by mxGraph style names.
+ *
+ * The alignment values tell how the label is placed relative to the (x, y) anchor point of the
+ * primitive, and the spacings are the paddings of the chart style which the alignment formulas
+ * take into account (see TextPainter in biz.ganttproject.core, the desktop reference renderer).
+ */
 export interface TextStyle {
   /** Horizontal alignment: the mxGraph `left`, `center` or `right` value. */
   align?: string;
   /** Vertical alignment: the mxGraph `top`, `middle` or `bottom` value. */
   verticalAlign?: string;
-  /** Font color as a `#rrggbb` string. */
+  /** Font color as a `#rrggbb` string. Falls back to `#000000`. */
   fontColor?: string;
   /** Font size in pixels. */
   fontSize?: number;
+  /** Font family name. */
+  fontFamily?: string;
+  /** Text opacity as a percentage in the [0, 100] range. */
+  textOpacity?: number;
+  /** Padding above the label, in pixels. */
+  spacingTop?: number;
+  /** Padding below the label, in pixels. */
+  spacingBottom?: number;
+  /** Padding on the left of the label, in pixels. */
+  spacingLeft?: number;
+  /** Padding on the right of the label, in pixels. */
+  spacingRight?: number;
   [key: string]: StyleValue | undefined;
 }
 
@@ -110,9 +128,9 @@ export interface LinePrimitive {
 
 export interface TextPrimitive {
   type: 'text';
-  /** X coordinate of the text anchor point. */
+  /** X coordinate of the anchor point, interpreted according to `style.align`. */
   x: number;
-  /** Y coordinate of the text baseline. */
+  /** Y coordinate of the anchor point, interpreted according to `style.verticalAlign`. */
   y: number;
   /** The label which fits into the space available for this text. */
   text: string;

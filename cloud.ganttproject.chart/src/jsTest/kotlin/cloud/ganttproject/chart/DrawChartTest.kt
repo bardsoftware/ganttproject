@@ -45,6 +45,29 @@ class DrawChartTest {
     """{"primitives": $primitives}"""
   )
 
+  /** The bounding box of the painted pixels, in canvas coordinates, both ends inclusive. */
+  private data class InkBounds(val left: Int, val top: Int, val right: Int, val bottom: Int)
+
+  /**
+   * Returns the bounding box of everything painted on [canvas], or null if the canvas is empty.
+   * Useful for the texts, whose exact glyph shapes we do not want to assert on.
+   */
+  private fun inkBounds(canvas: HTMLCanvasElement): InkBounds? {
+    val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
+    val data = ctx.getImageData(0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble()).data
+    var left = canvas.width; var top = canvas.height; var right = -1; var bottom = -1
+    for (y in 0 until canvas.height) {
+      for (x in 0 until canvas.width) {
+        if ((data[(y * canvas.width + x) * 4 + 3].toInt() and 0xFF) == 0) continue
+        if (x < left) left = x
+        if (x > right) right = x
+        if (y < top) top = y
+        if (y > bottom) bottom = y
+      }
+    }
+    return if (right < 0) null else InkBounds(left, top, right, bottom)
+  }
+
   /** Returns the [r, g, b, a] channels of the pixel at ([x], [y]). */
   private fun pixel(canvas: HTMLCanvasElement, x: Int, y: Int): IntArray {
     val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
@@ -188,11 +211,10 @@ class DrawChartTest {
   }
 
   @Test
-  fun `primitives of unsupported kinds are skipped`() {
+  fun `primitives of unknown kinds are skipped`() {
     val canvas = newCanvas()
     val model = model("""
-      [{"type": "text", "x": 10, "y": 40, "text": "hello",
-        "style": {"fontColor": "#000000"}, "attributes": {"text": "hello"}},
+      [{"type": "textGroup", "x": 10, "y": 40, "style": {}, "attributes": {}},
        {"type": "rectangle", "x": 10, "y": 20, "width": 100, "height": 40,
         "style": {"fillColor": "#336699", "strokeColor": "none"}, "attributes": {}}]
     """)
@@ -201,6 +223,81 @@ class DrawChartTest {
 
     assertEquals(listOf(0x33, 0x66, 0x99, 255), pixel(canvas, 60, 40).toList(),
         "the supported primitives are still painted")
+  }
+
+  @Test
+  fun `text is painted in its font color above the anchor point`() {
+    val canvas = newCanvas()
+    val model = model("""
+      [{"type": "text", "x": 20, "y": 100, "text": "Hello",
+        "style": {"align": "left", "verticalAlign": "bottom", "fontColor": "#ff0000",
+                  "fontSize": 20, "fontFamily": "sans-serif", "textOpacity": 100},
+        "attributes": {"text": "Hello"}}]
+    """)
+
+    drawChart(model, canvas)
+
+    val ink = inkBounds(canvas)!!
+    assertTrue(ink.left >= 20, "the label starts at the anchor x: $ink")
+    assertTrue(ink.bottom <= 100, "the label sits above the anchor y: $ink")
+    assertTrue(ink.top > 100 - 30, "the label height is about the font size: $ink")
+    val glyph = pixel(canvas, ink.left, (ink.top + ink.bottom) / 2)
+    assertTrue(glyph[0] > 100 && glyph[1] < 100, "the glyphs are red: ${glyph.toList()}")
+  }
+
+  @Test
+  fun `text alignment places the label relative to the anchor point`() {
+    val textAt = { align: String, vAlign: String ->
+      val canvas = newCanvas()
+      drawChart(model("""
+        [{"type": "text", "x": 100, "y": 100, "text": "Hello",
+          "style": {"align": "$align", "verticalAlign": "$vAlign", "fontColor": "#000000",
+                    "fontSize": 20},
+          "attributes": {}}]
+      """), canvas)
+      inkBounds(canvas)!!
+    }
+
+    val left = textAt("left", "bottom")
+    val center = textAt("center", "bottom")
+    val right = textAt("right", "bottom")
+    assertTrue(left.left >= 100, "left-aligned label starts at the anchor: $left")
+    assertTrue(right.right <= 101, "right-aligned label ends at the anchor: $right")
+    assertTrue(center.left < 100 && center.right > 100, "centered label spans the anchor: $center")
+
+    val top = textAt("left", "top")
+    val middle = textAt("left", "middle")
+    assertTrue(top.top >= 100, "top-aligned label is below the anchor: $top")
+    assertTrue(middle.top < 100 && middle.bottom > 100, "middle-aligned label spans the anchor: $middle")
+  }
+
+  @Test
+  fun `text opacity maps to the pixel alpha`() {
+    val canvas = newCanvas()
+    drawChart(model("""
+      [{"type": "text", "x": 20, "y": 100, "text": "Hello",
+        "style": {"align": "left", "verticalAlign": "bottom", "fontColor": "#000000",
+                  "fontSize": 20, "textOpacity": 30},
+        "attributes": {}}]
+    """), canvas)
+
+    val ink = inkBounds(canvas)!!
+    val maxAlpha = (ink.left..ink.right).maxOf { x ->
+      (ink.top..ink.bottom).maxOf { y -> pixel(canvas, x, y)[3] }
+    }
+    assertTrue(maxAlpha in 60..90, "the most opaque pixel of the label is at ~30%: $maxAlpha")
+  }
+
+  @Test
+  fun `text primitive without a label paints nothing`() {
+    val canvas = newCanvas()
+    drawChart(model("""
+      [{"type": "text", "x": 20, "y": 100,
+        "style": {"align": "left", "verticalAlign": "bottom", "fontSize": 20},
+        "attributes": {}}]
+    """), canvas)
+
+    assertEquals(null, inkBounds(canvas), "nothing is painted")
   }
 
   @Test
