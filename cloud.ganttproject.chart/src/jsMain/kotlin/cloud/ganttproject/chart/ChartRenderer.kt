@@ -55,8 +55,8 @@ private const val MX_ARROW_CLASSIC = "classic"
 /** Line color fallback, see the LineStyle.strokeColor contract in chart_model.ts. */
 private const val DEFAULT_LINE_COLOR = "#000000"
 
-/** The mxGraph default dash pattern is "3 3". */
-private val DASH_PATTERN = arrayOf(3.0, 3.0)
+/** The dashes to use when the style says the line is dashed but prescribes no pattern of its own. */
+private val DEFAULT_DASH_PATTERN = arrayOf(3.0, 3.0)
 
 /** Dimensions of the `classic` arrow head, in pixels. */
 private const val ARROW_LENGTH = 10.0
@@ -124,7 +124,7 @@ private fun drawLine(ctx: CanvasRenderingContext2D, line: LinePrimitive) =
     ctx.fillStyle = stroke
     line.style.strokeWidth?.let { ctx.lineWidth = it }
     if (line.style.dashed == 1.0) {
-      ctx.setLineDash(DASH_PATTERN)
+      ctx.setLineDash(line.style.dashPattern.toDashes() ?: DEFAULT_DASH_PATTERN)
     }
     ctx.beginPath()
     ctx.moveTo(line.startX, line.startY)
@@ -232,6 +232,16 @@ private inline fun CanvasRenderingContext2D.withOpacity(opacity: Double?, block:
   globalAlpha = ((opacity ?: 100.0) / 100.0).coerceIn(0.0, 1.0)
   block()
   restore()
+}
+
+/**
+ * Parses the mxGraph dash pattern, a space-separated list of the dash and gap lengths, into the
+ * array which the canvas expects. Returns null if there is no pattern or it makes no sense.
+ */
+private fun String?.toDashes(): Array<Double>? {
+  val lengths = this?.trim()?.takeIf { it.isNotEmpty() }?.split(Regex("\\s+"))
+    ?.map { it.toDoubleOrNull() } ?: return null
+  return if (lengths.any { it == null || it < 0.0 }) null else lengths.filterNotNull().toTypedArray()
 }
 
 /** Returns the color to paint with, or null if the value is missing or is the mxGraph `none` sentinel. */

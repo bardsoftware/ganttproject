@@ -158,6 +158,41 @@ class DrawChartTest {
   }
 
   @Test
+  fun `dashed line follows the dash pattern of the style`() {
+    val canvas = newCanvas()
+    // The pattern is 10px of dash and 5px of gap, starting at x=10.
+    val model = model("""
+      [{"type": "line", "startX": 10, "startY": 70, "finishX": 90, "finishY": 70,
+        "style": {"endArrow": "none", "strokeColor": "#00ff00", "dashed": 1,
+                  "dashPattern": "10 5"},
+        "attributes": {}}]
+    """)
+
+    drawChart(model, canvas)
+
+    assertTrue(pixel(canvas, 15, 70)[3] > 0, "dash segment is painted")
+    assertEquals(0, pixel(canvas, 22, 70)[3], "gap between dashes is transparent")
+    assertTrue(pixel(canvas, 27, 70)[3] > 0, "next dash segment is painted")
+  }
+
+  @Test
+  fun `dashed line with a malformed dash pattern falls back to the default dashes`() {
+    val canvas = newCanvas()
+    val model = model("""
+      [{"type": "line", "startX": 10, "startY": 70, "finishX": 90, "finishY": 70,
+        "style": {"endArrow": "none", "strokeColor": "#00ff00", "dashed": 1,
+                  "dashPattern": "3 oops"},
+        "attributes": {}}]
+    """)
+
+    drawChart(model, canvas)
+
+    // The default pattern is [3, 3] starting at x=10: segments [10,13), [16,19), ... are painted.
+    assertTrue(pixel(canvas, 11, 70)[3] > 0, "dash segment is painted")
+    assertEquals(0, pixel(canvas, 14, 70)[3], "gap between dashes is transparent")
+  }
+
+  @Test
   fun `line without stroke color falls back to black`() {
     val canvas = newCanvas()
     val model = model("""

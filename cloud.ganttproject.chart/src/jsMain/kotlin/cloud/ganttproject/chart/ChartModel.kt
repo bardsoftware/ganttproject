@@ -69,7 +69,7 @@ external interface ShapeStyle {
   val strokeColor: String?
   /** Opacity as a percentage in the [0, 100] range. */
   val opacity: Double?
-  /** Border width in pixels. */
+  /** Border width in pixels, as prescribed by the chart style. */
   val strokeWidth: Double?
 }
 
@@ -83,7 +83,12 @@ external interface LineStyle {
   val opacity: Double?
   /** Whether the line is dashed: 1 for dashed, 0 otherwise. */
   val dashed: Double?
-  /** Line width in pixels. */
+  /**
+   * The dashes of a dashed line: the lengths of the dashes and the gaps in pixels, separated by
+   * spaces, repeated along the line. Absent if the chart style prescribes no particular dashes.
+   */
+  val dashPattern: String?
+  /** Line width in pixels, as prescribed by the chart style. */
   val strokeWidth: Double?
 }
 

@@ -25,6 +25,7 @@ import com.mxgraph.util.mxConstants
 import net.sourceforge.ganttproject.chart.ChartUIConfiguration
 import net.sourceforge.ganttproject.gui.UIConfiguration
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.awt.Color
@@ -103,6 +104,49 @@ class JsonPainterTest {
     assertEquals(mxConstants.NONE, plainLine["style"][mxConstants.STYLE_ENDARROW].asText())
     // No color set on the shape: falls back to black.
     assertEquals("#000000", plainLine["style"][mxConstants.STYLE_STROKECOLOR].asText())
+  }
+
+  @Test
+  fun `line stroke width and dashes come from the chart style`() {
+    val model = render { canvas ->
+      canvas.createLine(0, 0, 50, 0).style = "dependency.line.hard"
+      canvas.createLine(0, 10, 50, 10).style = "dependency.line.rubber"
+    }
+
+    val (solid, dashed) = model["primitives"].toList()
+    // dependency.line.hard.border = solid 1px
+    assertEquals(1.0, solid["style"][mxConstants.STYLE_STROKEWIDTH].asDouble(), 1e-6)
+    assertEquals(0, solid["style"][mxConstants.STYLE_DASHED].asInt())
+    assertFalse(solid["style"].has(mxConstants.STYLE_DASH_PATTERN))
+
+    // dependency.line.rubber.border = dashed 1px, and the dashes of the desktop chart are 2.5px.
+    assertEquals(1.0, dashed["style"][mxConstants.STYLE_STROKEWIDTH].asDouble(), 1e-6)
+    assertEquals(1, dashed["style"][mxConstants.STYLE_DASHED].asInt())
+    assertEquals("2.5", dashed["style"][mxConstants.STYLE_DASH_PATTERN].asText())
+  }
+
+  @Test
+  fun `a style without a border says nothing about the stroke width`() {
+    val model = render { canvas ->
+      canvas.createRectangle(10, 20, 100, 40).style = "task.holiday"
+      canvas.createLine(0, 0, 50, 0).style = "dependency"
+    }
+
+    val (rectangle, line) = model["primitives"].toList()
+    assertFalse(rectangle["style"].has(mxConstants.STYLE_STROKEWIDTH))
+    assertFalse(line["style"].has(mxConstants.STYLE_STROKEWIDTH))
+    assertEquals(0, line["style"][mxConstants.STYLE_DASHED].asInt())
+  }
+
+  @Test
+  fun `rectangle border width comes from the chart style`() {
+    val model = render { canvas ->
+      canvas.createRectangle(10, 20, 100, 40).style = "timeline.today"
+    }
+
+    // timeline.today.border = solid #ff0000 1px
+    val rectangle = model["primitives"].single()
+    assertEquals(1.0, rectangle["style"][mxConstants.STYLE_STROKEWIDTH].asDouble(), 1e-6)
   }
 
   @Test

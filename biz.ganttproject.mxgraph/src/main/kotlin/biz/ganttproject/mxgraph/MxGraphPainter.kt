@@ -91,20 +91,18 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration, private val painter: Painte
         mxConstants.STYLE_FILLCOLOR to (chartStyle.hexBackgroundColor(rectangle) ?: mxConstants.NONE),
         mxConstants.STYLE_STROKECOLOR to (chartStyle.hexStrokeColor(rectangle) ?: mxConstants.NONE),
         mxConstants.STYLE_OPACITY to (rectangle.opacity ?: 1f) * 100
-    )
+    ) + chartStyle.borderStroke(rectangle).toMxStrokeWidth()
     painter.paintRectangle(rectangle.leftX, rectangle.topY, rectangle.width, rectangle.height, mxStyle, rectangle.attributes)
   }
 
   override fun paint(line: Line) {
     val chartStyle = Style.getStyle(chartProperties, line.style)
-    val stroke = chartStyle.getBorder(line)?.top?.stroke
     val style = mapOf(
         mxConstants.STYLE_ENDARROW to
             if (line.arrow.length == 0 && line.arrow.width == 0) mxConstants.NONE else mxConstants.ARROW_CLASSIC,
         mxConstants.STYLE_STROKECOLOR to (chartStyle.hexStrokeColor(line) ?: Color.BLACK.toHexString()),
-        mxConstants.STYLE_OPACITY to (line.opacity ?: 1f) * 100,
-        mxConstants.STYLE_DASHED to if (stroke?.dashArray != null) 1 else 0
-    )
+        mxConstants.STYLE_OPACITY to (line.opacity ?: 1f) * 100
+    ) + chartStyle.borderStroke(line).toMxLineStroke()
     painter.paintLine(line.startX, line.startY, line.finishX, line.finishY, style, line.attributes)
   }
 
@@ -118,7 +116,7 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration, private val painter: Painte
         mxConstants.STYLE_FILLCOLOR to chartStyle.hexBackgroundColor(rhombus),
         mxConstants.STYLE_STROKECOLOR to chartStyle.hexBordersColor(rhombus),
         mxConstants.STYLE_OPACITY to (rhombus.opacity ?: 1f) * 100
-    )
+    ) + chartStyle.borderStroke(rhombus).toMxStrokeWidth()
     painter.paintRhombus(rhombus.leftX, rhombus.topY, rhombus.width, rhombus.height, style, rhombus.attributes)
   }
 

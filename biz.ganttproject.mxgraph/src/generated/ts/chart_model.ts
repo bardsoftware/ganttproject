@@ -45,6 +45,8 @@ export interface ShapeStyle {
   strokeColor?: string;
   /** Opacity as a percentage in the [0, 100] range. */
   opacity?: number;
+  /** Border width in pixels, as prescribed by the chart style. */
+  strokeWidth?: number;
   [key: string]: StyleValue | undefined;
 }
 
@@ -58,6 +60,13 @@ export interface LineStyle {
   opacity?: number;
   /** Whether the line is dashed: 1 for dashed, 0 otherwise. */
   dashed?: number;
+  /**
+   * The dashes of a dashed line: the lengths of the dashes and the gaps in pixels, separated by
+   * spaces, repeated along the line. Absent if the chart style prescribes no particular dashes.
+   */
+  dashPattern?: string;
+  /** Line width in pixels, as prescribed by the chart style. */
+  strokeWidth?: number;
   [key: string]: StyleValue | undefined;
 }
 
