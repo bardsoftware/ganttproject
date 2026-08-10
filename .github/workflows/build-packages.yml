@@ -5,10 +5,10 @@ on:
         branches: ['master', 'BRANCH*']
         paths: ['ganttproject-builder/BUILD-HISTORY-MAJOR']
 env:
-    BUILD_NUMBER: 3394
-    VERSION: 3.4.3394
-    WINDOWS_APP_FOLDER_NAME: GanttProject-3.4-Beta-IV
-    MAC_APP_NAME: GanttProject 3.4 Beta IV
+    BUILD_NUMBER: 3395
+    VERSION: 3.4.3395
+    WINDOWS_APP_FOLDER_NAME: GanttProject-3.4-Beta-V
+    MAC_APP_NAME: GanttProject 3.4 Beta V
     MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE }}
     MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_PWD }}
     MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_NAME }}

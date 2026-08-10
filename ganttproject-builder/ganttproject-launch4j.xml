@@ -31,11 +31,11 @@
     <opt>-Dgpcloud=prod -Dorg.jooq.no-logo=true</opt>
   </jre>
   <versionInfo>
-    <fileVersion>3.4.3394.0</fileVersion>
-    <txtFileVersion>GanttProject 3.4 Beta IV</txtFileVersion>
+    <fileVersion>3.4.3395.0</fileVersion>
+    <txtFileVersion>GanttProject 3.4 Beta V</txtFileVersion>
     <fileDescription>GanttProject Launcher</fileDescription>
     <copyright>Copyright (C) 2026 BarD Software s.r.o.</copyright>
-    <productVersion>3.4.3394.0</productVersion>
+    <productVersion>3.4.3395.0</productVersion>
     <txtProductVersion>GanttProject 3.4 Beta</txtProductVersion>
     <productName>GanttProject</productName>
     <companyName>BarD Software s.r.o.</companyName>
