@@ -119,6 +119,11 @@ internal class ProjectEventListenerImpl(
     }
   }
 
+  override fun projectCreated() = withLogger({ "Failed to initialize the database for a new project" }) {
+    projectDatabase.shutdown()
+    initProjectDatabase()
+  }
+
   override fun customPropertyChange(event: CustomPropertyEvent) {
     projectDatabase.onCustomColumnChange(taskManagerSupplier().customPropertyManager)
   }
