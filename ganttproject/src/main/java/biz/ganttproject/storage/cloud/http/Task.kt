@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.MissingNode
 import javafx.concurrent.Task
 import java.io.IOException
+import java.net.SocketTimeoutException
 
 /**
  * This is a task for JavaFX services which send HTTP request and expect JSON response.
@@ -57,10 +58,14 @@ class JsonTask(
     }
   }
 
-  fun execute(): JsonNode = call()
+  fun execute(): JsonNode = try {
+    call()
+  } catch (ex: SocketTimeoutException) {
+    throw JsonHttpException(-1, "Connection timed out", ex)
+  }
 }
 
-class JsonHttpException(val statusCode: Int, val statusPhrase: String) : IOException(statusPhrase)
+class JsonHttpException(val statusCode: Int, val statusPhrase: String, override val cause: Throwable? = null) : IOException(statusPhrase)
 
 private val http: GPCloudHttpClient = HttpClientBuilder.buildHttpClient()
 private val OBJECT_MAPPER = ObjectMapper()
