@@ -492,16 +492,20 @@ class DialogControllerFx(private val dialogPane: DialogPaneExt, private val dial
   }
 
   override fun toggleProgress(shown: Boolean): () -> Unit {
+    val spinner = Spinner()
     FXThread.runLater {
-      this.content.effect = BoxBlur().also { bb ->
-        bb.width = 5.0
-        bb.height = 5.0
-        bb.iterations = 2
-      }
+      this.stackPane.children.add(spinner.pane)
+      spinner.state = Spinner.State.WAITING
+//      this.content.effect = BoxBlur().also { bb ->
+//        bb.width = 5.0
+//        bb.height = 5.0
+//        bb.iterations = 2
+//      }
     }
     return {
       Platform.runLater {
-        this.content.effect = null
+        this.stackPane.children.remove(spinner.pane)
+        //this.content.effect = null
       }
     }
   }

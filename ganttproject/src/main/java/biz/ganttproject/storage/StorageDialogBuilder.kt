@@ -310,8 +310,4 @@ interface StorageUi {
   fun focus() {}
 }
 
-// Saved dimensions of the content pane, so that the dialog size was preserved after closing and opening again
-private var contentPaneWidth = 0.0
-private var contentPaneHeight = 0.0
-
 private val LOG = GPLogger.create("FileDialog")

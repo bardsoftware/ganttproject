@@ -20,6 +20,7 @@ package biz.ganttproject.resource
 
 import biz.ganttproject.app.*
 import biz.ganttproject.lib.fx.VBoxBuilder
+import biz.ganttproject.lib.fx.vbox
 import biz.ganttproject.storage.cloud.*
 import biz.ganttproject.storage.cloud.http.JsonHttpException
 import biz.ganttproject.storage.cloud.http.JsonTask
@@ -35,13 +36,17 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import java.awt.event.ActionEvent
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Just an action to plug into the application menu.
@@ -59,14 +64,17 @@ class ResourceListPage(
   private val listView: ListView<ResourceDto>,
   private val dialog: DialogController,
   private val resource2selected: MutableMap<String, BooleanProperty>,
-  private val resourceManager: HumanResourceManager
+  private val resourceManager: HumanResourceManager,
+  private val coroutineScope: CoroutineScope
 ) : FlowPage() {
+
   private lateinit var uiFlow: GPCloudUiFlow
 
   override fun createUi(): Pane =
-    VBoxBuilder("content-pane").apply {
+    vbox {
+      addClasses("content-pane")
       add(listView, alignment = null, growth = Priority.ALWAYS)
-    }.vbox
+    }
 
   override fun resetUi() {
   }
@@ -79,19 +87,25 @@ class ResourceListPage(
     set(value) {
       field = value
       if (value) {
-        GlobalScope.launch(Dispatchers.IO) {
+        coroutineScope.launch {
           val stopProgress = dialog.toggleProgress(true)
-          val allResources = try {
-            loadTeams(dialog).map {
-              async { loadTeamResources(it) }
-            }.map { it.await() }.reduce { acc, list -> acc + list }.distinctBy { it.email }
-          } catch (ex: JsonHttpException) {
-            dialog.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(ex.message ?: ""))
-            emptyList()
-          } finally {
-            stopProgress()
+          withContext(Dispatchers.IO) {
+            try {
+              loadTeams(dialog)
+                .map {
+                  async { loadTeamResources(it) }
+                }
+                .map { it.await() }
+                .reduce { acc, list -> acc + list }
+                .distinctBy { it.email }
+                .let(::fillListView)
+            } catch (ex: JsonHttpException) {
+              dialog.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(ex.message ?: ""))
+              fillListView(emptyList())
+            } finally {
+              stopProgress()
+            }
           }
-          fillListView(allResources)
         }
 
         dialog.setupButton(ButtonType.APPLY) { btn ->
@@ -113,7 +127,7 @@ class ResourceListPage(
     }
   }
 
-  private fun loadTeams(dlg: DialogController): List<String> = try {
+  private suspend fun loadTeams(dlg: DialogController): List<String> = try {
     JsonTask(
       method = HttpMethod.GET,
       uri = "/team/list",
@@ -152,9 +166,10 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
       }
     }
   }
+  val coroutineScope = CoroutineScope(EmptyCoroutineContext + SupervisorJob())
 
   fun show() {
-    dialog { dlg ->
+    dialog(id = "cloud.resource.list", title = RootLocalizer.formatText("cloud.resource.list.title")) { dlg ->
       dlg.addStyleClass("dlg-cloud-resource-list")
       dlg.addStyleSheet(
         "/biz/ganttproject/resource/GPCloudResources.css"
@@ -173,7 +188,7 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
       dlg.setContent(wrapper)
       val cloudUiFlow = GPCloudUiFlowBuilder().run {
         flowPageChanger = createFlowPageChanger(wrapper, dlg)
-        mainPage = ResourceListPage(listView, dlg, resource2selected, resourceManager)
+        mainPage = ResourceListPage(listView, dlg, resource2selected, resourceManager, coroutineScope)
         build()
       }
 
@@ -210,7 +225,7 @@ class ResourceListCell(private val resourceManager: HumanResourceManager,
           add(Label(item.name).also { it.styleClass.add("name") })
           add(Label(item.email).also { it.styleClass.add("email") })
         }.vbox.also {
-          it .onMouseClicked = EventHandler { evt ->
+          it.onMouseClicked = EventHandler { evt ->
             if (evt.clickCount == 2) {
               isChecked?.let { it.value = !it.value }
             }
