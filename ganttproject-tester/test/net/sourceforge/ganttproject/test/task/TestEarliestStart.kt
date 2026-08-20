@@ -20,15 +20,12 @@ package net.sourceforge.ganttproject.test.task
 
 import junit.framework.TestCase
 import net.sourceforge.ganttproject.TestSetupHelper
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 
 class TestEarliestStart: TaskTestCase() {
-  @BeforeEach
   override fun setUp() {
     super.setUp()
   }
-  @Test
+
   fun `test earliest start enable-disable`() {
     val monday = TestSetupHelper.newMonday()
     val tuesday = TestSetupHelper.newTuesday()
@@ -50,7 +47,7 @@ class TestEarliestStart: TaskTestCase() {
     assertEquals(0, task.thirdDateConstraint)
   }
 
-  @Test fun `test earliest start change triggers scheduler`() {
+  fun `test earliest start change triggers scheduler`() {
     val monday = TestSetupHelper.newMonday()
     val wednesday = TestSetupHelper.newWendesday()
 

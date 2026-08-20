@@ -21,11 +21,14 @@ package biz.ganttproject.impex.msproject2
 import biz.ganttproject.core.calendar.CalendarEvent
 import biz.ganttproject.core.calendar.WeekendCalendarImpl
 import biz.ganttproject.core.time.CalendarFactory
-import junit.framework.TestCase
 import net.sf.mpxj.ProjectFile
 import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.TestSetupHelper
 import net.sourceforge.ganttproject.importer.ImporterFromGanttFile
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.awt.Color
@@ -55,13 +58,13 @@ fun initLocale() {
 /**
  * Tests project calendar export and import.
  */
-class ProjectCalendarTest: TestCase() {
+class ProjectCalendarTest {
   @BeforeEach
-  override fun setUp() {
-    super.setUp()
+  fun setUp() {
     initLocale()
   }
 
+  @Test
   fun testExportCalendarEvents() {
     val calendar = WeekendCalendarImpl()
     calendar.publicHolidays = listOf<CalendarEvent>(
@@ -75,6 +78,7 @@ class ProjectCalendarTest: TestCase() {
     assertFalse(mpxjCalendar.isWorkingDate(TestSetupHelper.newMonday().time.toLocalDate()))
   }
 
+  @Test
   fun testImportCalendarEvents() {
     val project = GanttProjectImpl()
     val columns = ImporterFromGanttFile.VisibleFieldsImpl()
