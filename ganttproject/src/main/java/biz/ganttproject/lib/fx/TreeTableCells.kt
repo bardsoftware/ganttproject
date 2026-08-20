@@ -378,7 +378,7 @@ fun <S> createIntegerColumn(name: String, getValue: (S) -> Int?, setValue: (S, I
         it.isEditable = this@apply.isEditable
       }
     }
-    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toInt()) }
+    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue?.toInt() ?: 0) }
   }
 
 fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S, Double) -> Unit) =
@@ -393,7 +393,7 @@ fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S,
         it.isEditable = this@apply.isEditable
       }
     }
-    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toDouble()) }
+    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue?.toDouble() ?: 0.0) }
   }
 
 fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue: (S, BigDecimal) -> Unit) =
@@ -414,7 +414,7 @@ fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue
         it.isEditable = this@apply.isEditable
       }
     }
-    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue.toDouble().toBigDecimal()) }
+    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue?.toDouble()?.toBigDecimal() ?: BigDecimal.ZERO) }
   }
 
 fun <S, T> createIconColumn(name: String, getValue: (S) ->T?, iconFactory: (T) -> GlyphIcon<*>?, i18n: Localizer) =

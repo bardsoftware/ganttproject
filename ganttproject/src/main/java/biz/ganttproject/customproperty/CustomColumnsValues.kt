@@ -19,7 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package biz.ganttproject.customproperty
 
 import biz.ganttproject.core.time.GanttCalendar
+import biz.ganttproject.createLogger
 import biz.ganttproject.customproperty.PropertyTypeEncoder.decodeTypeAndDefaultValue
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.language.GanttLanguage
 
 /**
@@ -93,16 +95,21 @@ class CustomColumnsValues(private val customPropertyManager: CustomPropertyManag
     return result
   }
 
-  override fun addCustomProperty(definition: CustomPropertyDefinition, valueAsString: String?): CustomProperty {
-    val defStub = decodeTypeAndDefaultValue(
-        definition.typeAsString, valueAsString)
-    try {
-      setValue(definition, defStub.defaultValue!!)
-    } catch (e: CustomColumnsException) {
-      // TODO Auto-generated catch block
-      e.printStackTrace()
+  override fun addCustomProperty(definition: CustomPropertyDefinition, valueAsString: String?): CustomProperty? {
+    val defStub = decodeTypeAndDefaultValue(definition.typeAsString, valueAsString)
+    return defStub.defaultValue?.let {
+      try {
+        setValue(definition, it)
+        CustomPropertyImpl(definition, it)
+      } catch (e: CustomColumnsException) {
+        LOG.error("Failed to set the value {} of custom column {}", valueAsString ?: "", definition, exception = e)
+        e.printStackTrace()
+        null
+      }
+    } ?: run {
+      setValue(definition, null)
+      null
     }
-    return CustomPropertyImpl(definition, defStub.defaultValue!!)
   }
 
   private class CustomPropertyImpl(private val myDefinition: CustomPropertyDefinition, private val myValue: Any): CustomProperty {
@@ -143,3 +150,5 @@ class CustomColumnsValues(private val customPropertyManager: CustomPropertyManag
     }
   }
 }
+
+private val LOG = createLogger("CustomColumns")
