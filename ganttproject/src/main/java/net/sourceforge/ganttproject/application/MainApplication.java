@@ -27,11 +27,6 @@ public class MainApplication implements IPlatformRunnable {
   private final AtomicBoolean myLock = new AtomicBoolean(true);
   private final LoggerApi<?> logger = GPLogger.create("Window");
 
-  // The hack with waiting is necessary because when you
-  // launch Runtime Workbench in Eclipse, it exists as soon as
-  // GanttProject.main() method exits
-  // without Eclipse, Swing thread continues execution. So we wait until main
-  // window closes
   @Override
   public Object run(Object args) throws Exception {
     Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
@@ -100,23 +95,10 @@ public class MainApplication implements IPlatformRunnable {
     }
 
 
-    Consumer<Boolean> onApplicationQuit = withSystemExit -> {
-      synchronized(myLock) {
-        myLock.set(withSystemExit);
-        myLock.notify();
-      }
-    };
+    Consumer<Boolean> onApplicationQuit = myLock::set;
     GanttProject.setApplicationQuitCallback(onApplicationQuit);
     appBuilder.launch();
-//    try {
-//      synchronized (myLock) {
-//        logger.debug("Waiting until main window closes");
-//        myLock.wait();
-//        logger.debug("Main window has closed");
-//      }
-//    } catch (InterruptedException ex) {
-//      ex.printStackTrace();
-//    }
+
     logger.debug("Program terminated");
     GPLogger.close();
     if (myLock.get()) {
