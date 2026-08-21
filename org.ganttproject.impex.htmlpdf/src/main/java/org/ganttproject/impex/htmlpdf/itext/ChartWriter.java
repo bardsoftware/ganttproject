@@ -103,7 +103,9 @@ class ChartWriter implements ChartImageVisitor {
     Graphics2D g = getGraphics(d);
     g.setBackground(Color.WHITE);
     g.clearRect(0, 0, d.getTreeWidth(), d.getLogoHeight());
-    g.drawImage(logo, 0, 0, null);
+    if (logo != null && d.getLogoWidth() > 0 && d.getLogoHeight() > 0) {
+      g.drawImage(logo, 0, 0, d.getLogoWidth(), d.getLogoHeight(), null);
+    }
   }
 
   @Override
