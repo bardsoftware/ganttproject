@@ -100,10 +100,22 @@ public class MainApplication implements IPlatformRunnable {
     }
 
 
+    // The block below that waits on myLock is commented out, so nothing observes the notify()
+    // and launch() returns immediately. By the time the System.exit(0) further down is reached,
+    // myLock is still false and the process keeps running with its window open, even though
+    // quitApplication() has already saved the options and closed the project. Terminate here
+    // instead.
+    //
+    // withSystemExit is not always true: the updater passes false to restart rather than quit.
     Consumer<Boolean> onApplicationQuit = withSystemExit -> {
       synchronized(myLock) {
         myLock.set(withSystemExit);
         myLock.notify();
+      }
+      if (withSystemExit) {
+        logger.debug("Application quit requested, terminating");
+        GPLogger.close();
+        System.exit(0);
       }
     };
     GanttProject.setApplicationQuitCallback(onApplicationQuit);
