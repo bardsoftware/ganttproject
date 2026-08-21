@@ -21,6 +21,7 @@ package net.sourceforge.ganttproject.chart.export
 import biz.ganttproject.core.chart.grid.OffsetList
 import net.sourceforge.ganttproject.GanttExportSettings
 import net.sourceforge.ganttproject.chart.ChartModelBase
+import net.sourceforge.ganttproject.gui.UIFacade
 import java.awt.Dimension
 
 class ChartImageBuilder(
@@ -28,7 +29,7 @@ class ChartImageBuilder(
   private val myChartModel: ChartModelBase,
   private val myTreeTable: TreeTableApi
 ) {
-  private val myDimensions: ChartDimensions = ChartDimensions(mySettings, myTreeTable)
+  private val myDimensions: ChartDimensions = ChartDimensions(mySettings, myTreeTable, mySettings.logo ?: UIFacade.DEFAULT_LOGO.image)
 
   fun buildImage(visitor: ChartImageVisitor) {
     if (mySettings.zoomLevel != null) {
