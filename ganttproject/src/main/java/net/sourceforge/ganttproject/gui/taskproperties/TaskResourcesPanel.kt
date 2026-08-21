@@ -22,6 +22,7 @@ import biz.ganttproject.app.FXThread
 import biz.ganttproject.app.PropertyPane
 import biz.ganttproject.app.PropertyPaneBuilderImpl
 import biz.ganttproject.app.RootLocalizer
+import biz.ganttproject.app.removeMnemonicsPlaceholder
 import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.option.ObservableMoney
 import javafx.beans.property.SimpleBooleanProperty
@@ -102,7 +103,7 @@ class TaskResourcesPanel(
   private val costIsCalculated = ObservableBoolean("option.taskProperties.cost.calculated.label", task.cost.isCalculated)
   private val costValue = ObservableMoney("option.taskProperties.cost.value", task.cost.value)
 
-  val title: String = i18n.formatText("human")
+  val title: String = i18n.formatText("human").removeMnemonicsPlaceholder()
   private val tableAndActions = AbstractTableAndActionsComponentFx(tableView, model)
 
   val fxComponent by lazy {
