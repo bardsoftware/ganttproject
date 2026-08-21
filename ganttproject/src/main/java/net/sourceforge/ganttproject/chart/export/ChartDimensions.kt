@@ -19,9 +19,19 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart.export
 
 import net.sourceforge.ganttproject.GanttExportSettings
+import net.sourceforge.ganttproject.gui.UIFacade
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 class ChartDimensions internal constructor(settings: GanttExportSettings, treeTable: TreeTableApi) {
-  val logoHeight: Int = settings.logo.getHeight(null)
+  private val logoSourceWidth: Int = settings.logo?.getWidth(null) ?: -1
+  private val logoSourceHeight: Int = settings.logo?.getHeight(null) ?: -1
+  val logoHeight: Int =
+    if (logoSourceWidth <= 0 || logoSourceHeight <= 0) 0
+    else min(logoSourceHeight, UIFacade.DEFAULT_LOGO.iconHeight)
+  val logoWidth: Int =
+    if (logoHeight == 0) 0
+    else (logoSourceWidth.toDouble() * logoHeight / logoSourceHeight).roundToInt()
   val treeHeight: Int = treeTable.rowHeight() * settings.rowCount
   val tableHeaderHeight: Int = treeTable.tableHeaderHeight()
   val treeWidth: Int = treeTable.width(settings.isCommandLineMode)

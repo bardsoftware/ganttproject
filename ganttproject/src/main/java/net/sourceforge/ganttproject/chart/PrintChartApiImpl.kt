@@ -25,6 +25,7 @@ import net.sourceforge.ganttproject.gui.zoom.ZoomManager
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Image
+import java.awt.RenderingHints
 import java.awt.image.BufferedImage
 import java.util.*
 
@@ -70,9 +71,10 @@ internal class ChartRasterImageBuilder : ChartImageVisitor {
     val g = getGraphics(d)
     g!!.background = Color.WHITE
     g.clearRect(0, 0, d.treeWidth, d.logoHeight)
-    // Hack: by adding 35, the left part of the logo becomes visible,
-    // otherwise it gets chopped off
-    g.drawImage(logo, 0, 0, null)
+    if (logo != null && d.logoWidth > 0 && d.logoHeight > 0) {
+      g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
+      g.drawImage(logo, 0, 0, d.logoWidth, d.logoHeight, null)
+    }
   }
 
   override fun acceptTable(d: ChartDimensions, treeTable: TreeTableApi) {
