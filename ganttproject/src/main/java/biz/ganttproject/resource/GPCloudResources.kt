@@ -19,16 +19,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.resource
 
 import biz.ganttproject.app.*
-import biz.ganttproject.lib.fx.VBoxBuilder
 import biz.ganttproject.lib.fx.vbox
-import biz.ganttproject.storage.cloud.*
+import biz.ganttproject.storage.cloud.FlowPage
+import biz.ganttproject.storage.cloud.GPCloudUiFlow
+import biz.ganttproject.storage.cloud.GPCloudUiFlowBuilder
+import biz.ganttproject.storage.cloud.createFlowPageChanger
 import biz.ganttproject.storage.cloud.http.JsonHttpException
-import biz.ganttproject.storage.cloud.http.JsonTask
 import biz.ganttproject.storage.cloud.http.ResourceDto
-import biz.ganttproject.storage.cloud.http.loadTeamResources
-import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
-import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
@@ -36,7 +34,6 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import kotlinx.coroutines.*
-import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import java.awt.event.ActionEvent
@@ -58,19 +55,19 @@ class GPCloudResourceListAction(private val resourceManager: HumanResourceManage
 class ResourceListPage(
   private val dialog: DialogController,
   private val resourceManager: HumanResourceManager,
-  private val isInProject: (ResourceDto) -> Boolean,
   private val coroutineScope: CoroutineScope
 ) : FlowPage() {
 
   private val listView = ListView<ResourceDto>().apply {
-    setCellFactory {  ResourceListCell(isInProject, this@ResourceListPage::onCheckedToggle) }
+    setCellFactory {  ResourceListCell(this@ResourceListPage::onCheckedToggle) }
   }
   private fun onCheckedToggle() {
-    canAddResourcesProperty.value = listView.items.filter { it.isChecked && !isInProject(it) }.any()
+    canAddResourcesProperty.value = listView.items.any { it.isChecked && !it.isReadOnly }
   }
 
   internal val canAddResourcesProperty = SimpleBooleanProperty(false)
   private lateinit var uiFlow: GPCloudUiFlow
+  private val model = GPCloudResourceListModel(resourceManager)
 
   override fun createUi(): Pane =
     vbox {
@@ -91,52 +88,26 @@ class ResourceListPage(
       if (value) {
         coroutineScope.launch {
           val stopProgress = dialog.toggleProgress(true)
-          withContext(Dispatchers.IO) {
-            try {
-              loadTeams()
-                .map {
-                  async { loadTeamResources(it) }
-                }
-                .awaitAll()
-                .reduce { acc, list -> acc + list }
-                .distinctBy { it.email }
-                .sortedWith(
-                  compareBy<ResourceDto> { if (isInProject(it)) 0 else 1 }.thenBy { it.name }
-                )
-                .let(::fillListView)
-            } catch (ex: JsonHttpException) {
-              dialog.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(ex.message ?: ""))
-              fillListView(emptyList())
-            } finally {
-              stopProgress()
-            }
+          try {
+            model.loadResources().let(::fillListView)
+          } catch (ex: JsonHttpException) {
+            dialog.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(ex.message ?: ""))
+            fillListView(emptyList())
+          } finally {
+            stopProgress()
           }
         }
       }
     }
 
   private fun fillListView(resources: List<ResourceDto>) {
-    Platform.runLater {
-      listView.items.addAll(resources)
+    FXThread.runLater {
+      listView.items.setAll(resources)
     }
   }
 
-  private fun loadTeams(): List<String> {
-    val jsonTeams = JsonTask(
-      method = HttpMethod.GET,
-      uri = "/team/list",
-      kv = mapOf("owned" to "true", "participated" to "true"),
-      busyIndicator = {},
-      onFailure = {_, _ -> }
-    ).execute()
-
-    return if (jsonTeams.isArray) {
-      jsonTeams.elements().asSequence().map { it["refid"].asText() }.toList()
-    } else emptyList()
-  }
-
   internal fun addResourcesToProject() {
-    listView.items.filter { it.isChecked && !isInProject(it) }.forEach {
+    listView.items.filter { it.isChecked && !it.isReadOnly }.forEach {
       this.resourceManager.newResourceBuilder().withEmail(it.email).withName(it.name).withPhone(it.phone).build()
     }
   }
@@ -147,9 +118,8 @@ class ResourceListPage(
  * Builds a UI flow with the main page (resources list) and sign-in and other pages.
  */
 class GPCloudResourceListDialog(private val resourceManager: HumanResourceManager) {
-  private fun isInProject(dto: ResourceDto): Boolean = resourceManager.resources.find { it.mail == dto.email } != null
   fun show() {
-    dialog(id = "cloud.resource.list", title = RootLocalizer.formatText("cloud.resource.list.title")) { dlg ->
+    dialog(id = "cloud.resource.list", title = i18n.formatText("title")) { dlg ->
 
       fun handleAsyncException(ctx: CoroutineContext, th: Throwable) {
         dlg.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(th.message ?: ""))
@@ -161,26 +131,25 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
         "/biz/ganttproject/resource/GPCloudResources.css"
       )
       dlg.setHeader(
-        VBoxBuilder("header").apply {
-          addTitle(LocalizedString("cloud.resource.list.title", RootLocalizer)).also { hbox ->
+        vbox {
+          this.i18n = ourLocalizer
+          addClasses("header")
+          addTitle(LocalizedString("title", i18n)).also { hbox ->
             hbox.alignment = Pos.CENTER_LEFT
             hbox.isFillHeight = true
           }
-        }.vbox
+        }
       )
 
-      val resourceListPage = ResourceListPage(dlg, resourceManager, this@GPCloudResourceListDialog::isInProject, coroutineScope)
+      val resourceListPage = ResourceListPage(dlg, resourceManager, coroutineScope)
       dlg.setupButton(ButtonType.APPLY) { btn ->
-        btn.textProperty().bind(RootLocalizer.create("cloud.resource.list.btnApply"))
+        btn.textProperty().bind(i18n.create("btnApply"))
         btn.styleClass.add("btn-attention")
         btn.setOnAction {
           resourceListPage.addResourcesToProject()
         }
         btn.disableProperty().bind(resourceListPage.canAddResourcesProperty.not())
       }
-      dlg.setupButton(CancelAction.create("cancel") {
-        coroutineScope.cancel()
-      })
 
       val wrapper = BorderPane()
 
@@ -195,6 +164,9 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
         cloudUiFlow.start()
         dlg.resize()
       }
+      dlg.onClosed = {
+        coroutineScope.cancel()
+      }
     }
   }
 }
@@ -203,10 +175,15 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
  * Renders a cell in the list of resources.
  */
 private class ResourceListCell(
-  private val isInProject: (ResourceDto)-> Boolean,
   private val onCheckedToggle: ()->Unit) : ListCell<ResourceDto>() {
   private val checkBox = CheckBox()
-  private var isChecked = SimpleBooleanProperty()
+  private var isChecked = SimpleBooleanProperty().also {
+    checkBox.selectedProperty().bindBidirectional(it)
+    it.addListener { _, _, isChecked ->
+      item?.let { it.isChecked = isChecked }
+      onCheckedToggle()
+    }
+  }
 
   override fun updateItem(item: ResourceDto?, empty: Boolean) {
     super.updateItem(item, empty)
@@ -216,31 +193,23 @@ private class ResourceListCell(
       graphic = null
       return
     }
+    isChecked.value = item.isChecked || item.isReadOnly
+    this.isDisable = item.isReadOnly
 
     graphic = HBox().apply {
       styleClass.add("resource-cell")
       children.add(checkBox)
       checkBox.selectedProperty().bindBidirectional(isChecked)
       children.add(
-        VBoxBuilder("labels").apply {
+        vbox {
+          addClasses("labels")
           add(Label(item.name).also { it.styleClass.add("name") })
           add(Label(item.email).also { it.styleClass.add("email") })
-        }.vbox.also {
-          it.onMouseClicked = EventHandler { evt ->
-            if (evt.clickCount == 2 && !item.isReadOnly) {
-              isChecked.value = !isChecked.value
-              item.isChecked = isChecked.value
-              onCheckedToggle()
-            }
-          }
         }
       )
-      if (isInProject(item)) {
-        isChecked.value = true
-        this.isDisable = true
-      }
     }
   }
 }
 
 private val i18n = RootLocalizer.createWithRootKey("cloud.resource.list")
+private val ourLocalizer = i18n

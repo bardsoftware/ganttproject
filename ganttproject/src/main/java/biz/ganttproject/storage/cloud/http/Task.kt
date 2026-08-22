@@ -28,6 +28,8 @@ import com.fasterxml.jackson.databind.node.MissingNode
 import javafx.concurrent.Task
 import java.io.IOException
 import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import javax.net.ssl.SSLHandshakeException
 
 /**
  * This is a task for JavaFX services which send HTTP request and expect JSON response.
@@ -62,6 +64,12 @@ class JsonTask(
     call()
   } catch (ex: SocketTimeoutException) {
     throw JsonHttpException(-1, "Connection timed out", ex)
+  } catch (ex: UnknownHostException) {
+    throw JsonHttpException(-1, "Unknown host: ${ex.message}", ex)
+  } catch (ex: SSLHandshakeException) {
+    throw JsonHttpException(-1, "Something is wrong with the secure connection: ${ex.message}", ex)
+  } catch (ex: IOException) {
+    throw JsonHttpException(-1, "Something went wrong: ${ex.message}", ex)
   }
 }
 
