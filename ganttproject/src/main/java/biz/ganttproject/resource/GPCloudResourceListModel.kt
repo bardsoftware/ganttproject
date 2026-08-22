@@ -37,7 +37,7 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager
 internal class GPCloudResourceListModel(private val resourceManager: HumanResourceManager) {
 
   suspend fun loadResources(): List<ResourceDto> {
-    val projectEmails = resourceManager.resources.mapNotNull { it.mail.lowercase() }.toSet()
+    val projectEmails = resourceManager.resources.map { it.mail.lowercase() }.filter { it.isNotBlank()}.toSet()
     val isInProject: (ResourceDto) -> Boolean = { it.email.isNotBlank() && projectEmails.contains(it.email.lowercase()) }
 
     return withContext(Dispatchers.IO) {

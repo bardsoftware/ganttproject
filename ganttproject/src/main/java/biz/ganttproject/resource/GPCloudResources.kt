@@ -24,8 +24,10 @@ import biz.ganttproject.storage.cloud.FlowPage
 import biz.ganttproject.storage.cloud.GPCloudUiFlow
 import biz.ganttproject.storage.cloud.GPCloudUiFlowBuilder
 import biz.ganttproject.storage.cloud.createFlowPageChanger
+import biz.ganttproject.storage.cloud.http.HTTP_STATUS_CODE_UNKNOWN
 import biz.ganttproject.storage.cloud.http.JsonHttpException
 import biz.ganttproject.storage.cloud.http.ResourceDto
+import biz.ganttproject.storage.cloud.http.httpErrorLocalizer
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
@@ -89,10 +91,13 @@ private class ResourceListPage(
           try {
             model.loadResources().let(::fillListView)
           } catch (ex: Exception) {
-            if (ex is CancellationException) {
-              throw ex
+            if (ex is CancellationException) throw ex
+            val body = when {
+              ex is JsonHttpException && ex.statusCode != HTTP_STATUS_CODE_UNKNOWN ->
+                httpErrorLocalizer.formatText("status", ex.statusCode)
+              else -> ex.message ?: ex.javaClass.name
             }
-            dialog.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(ex.message ?: ""))
+            dialog.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(body))
             fillListView(emptyList())
           } finally {
             stopProgress()

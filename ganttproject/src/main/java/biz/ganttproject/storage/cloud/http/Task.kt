@@ -83,5 +83,5 @@ class JsonHttpException(val statusCode: Int, statusPhrase: String, cause: Throwa
 
 private val http: GPCloudHttpClient = HttpClientBuilder.buildHttpClient()
 private val OBJECT_MAPPER = ObjectMapper()
-private val httpErrorLocalizer = RootLocalizer.createWithRootKey("http.error")
-private val HTTP_STATUS_CODE_UNKNOWN = -1
+val httpErrorLocalizer = RootLocalizer.createWithRootKey("http.error")
+val HTTP_STATUS_CODE_UNKNOWN = -1
