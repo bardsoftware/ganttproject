@@ -27,6 +27,7 @@ import biz.ganttproject.storage.cloud.createFlowPageChanger
 import biz.ganttproject.storage.cloud.http.JsonHttpException
 import biz.ganttproject.storage.cloud.http.ResourceDto
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
@@ -66,7 +67,6 @@ class ResourceListPage(
   }
 
   internal val canAddResourcesProperty = SimpleBooleanProperty(false)
-  private lateinit var uiFlow: GPCloudUiFlow
   private val model = GPCloudResourceListModel(resourceManager)
 
   override fun createUi(): Pane =
@@ -75,12 +75,9 @@ class ResourceListPage(
       add(listView, alignment = null, growth = Priority.ALWAYS)
     }
 
-  override fun resetUi() {
-  }
+  override fun resetUi() {}
 
-  override fun setController(controller: GPCloudUiFlow) {
-    this.uiFlow = controller
-  }
+  override fun setController(controller: GPCloudUiFlow) {}
 
   override var active: Boolean = false
     set(value) {
@@ -103,6 +100,7 @@ class ResourceListPage(
   private fun fillListView(resources: List<ResourceDto>) {
     FXThread.runLater {
       listView.items.setAll(resources)
+      onCheckedToggle()
     }
   }
 
@@ -111,7 +109,6 @@ class ResourceListPage(
       this.resourceManager.newResourceBuilder().withEmail(it.email).withName(it.name).withPhone(it.phone).build()
     }
   }
-
 }
 
 /**
@@ -177,12 +174,31 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
 private class ResourceListCell(
   private val onCheckedToggle: ()->Unit) : ListCell<ResourceDto>() {
   private val checkBox = CheckBox()
-  private var isChecked = SimpleBooleanProperty().also {
+  private val isChecked = SimpleBooleanProperty().also {
     checkBox.selectedProperty().bindBidirectional(it)
-    it.addListener { _, _, isChecked ->
-      item?.let { it.isChecked = isChecked }
+    it.addListener { _, _, newValue ->
+      item?.let { it.isChecked = newValue }
       onCheckedToggle()
     }
+  }
+  private val resourceName = SimpleStringProperty()
+  private val resourceEmail = SimpleStringProperty()
+
+  private val nameBox = vbox {
+    addClasses("labels")
+    add(Label().also {
+      it.styleClass.add("name")
+      it.textProperty().bind(resourceName)
+    })
+    add(Label().also {
+      it.styleClass.add("email")
+      it.textProperty().bind(resourceEmail)
+    })
+  }
+  private val cellGraphic = HBox().apply {
+    styleClass.add("resource-cell")
+    children.add(checkBox)
+    children.add(nameBox)
   }
 
   override fun updateItem(item: ResourceDto?, empty: Boolean) {
@@ -193,21 +209,11 @@ private class ResourceListCell(
       graphic = null
       return
     }
-    isChecked.value = item.isChecked || item.isReadOnly
+    isChecked.value = item.isChecked
     this.isDisable = item.isReadOnly
-
-    graphic = HBox().apply {
-      styleClass.add("resource-cell")
-      children.add(checkBox)
-      checkBox.selectedProperty().bindBidirectional(isChecked)
-      children.add(
-        vbox {
-          addClasses("labels")
-          add(Label(item.name).also { it.styleClass.add("name") })
-          add(Label(item.email).also { it.styleClass.add("email") })
-        }
-      )
-    }
+    resourceName.value = item.name
+    resourceEmail.value = item.email
+    graphic = cellGraphic
   }
 }
 

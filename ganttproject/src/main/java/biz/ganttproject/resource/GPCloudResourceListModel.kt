@@ -39,11 +39,22 @@ internal class GPCloudResourceListModel(private val resourceManager: HumanResour
 
   suspend fun loadResources(): List<ResourceDto> = withContext(Dispatchers.IO) {
     loadTeams()
-      .map { teamRefid -> async { loadTeamResources(teamRefid) } }
+      .map { teamRefid -> async {
+        try {
+          loadTeamResources(teamRefid)
+        } catch (ex: Exception) {
+          ex.printStackTrace()
+          emptyList()
+        }
+      }}
       .awaitAll()
       .flatten()
       .distinctBy { it.email }
-      .onEach { it.isReadOnly = isInProject(it) }
+      .onEach {
+        val isInProject = isInProject(it)
+        it.isReadOnly = isInProject
+        it.isChecked = isInProject
+      }
       .sortedWith(compareBy<ResourceDto> { if (it.isReadOnly) 0 else 1 }.thenBy { it.name })
   }
 
@@ -57,7 +68,7 @@ internal class GPCloudResourceListModel(private val resourceManager: HumanResour
     ).execute()
 
     return if (jsonTeams.isArray) {
-      jsonTeams.elements().asSequence().map { it["refid"].asText() }.toList()
+      jsonTeams.elements().asSequence().mapNotNull { it["refid"]?.asText() }.toList()
     } else emptyList()
   }
 }

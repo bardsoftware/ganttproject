@@ -42,11 +42,14 @@ class JsonTask(
     private val onFailure: (JsonTask, GPCloudHttpClient.Response) -> Unit) : Task<JsonNode>() {
   override fun call(): JsonNode {
     busyIndicator(true)
-    val resp = when (this.method) {
-      HttpMethod.GET -> http.sendGet(uri, kv)
-      HttpMethod.POST -> http.sendPost(uri, kv, HttpPostEncoding.URLENCODED)
+    val resp = try {
+      when (this.method) {
+        HttpMethod.GET -> http.sendGet(uri, kv)
+        HttpMethod.POST -> http.sendPost(uri, kv, HttpPostEncoding.URLENCODED)
+      }
+    } finally {
+      busyIndicator(false)
     }
-    busyIndicator(false)
     if (resp.code == 200) {
       val jsonBody = resp.rawBody.decodeToString()
       return if (jsonBody == "") {
@@ -62,6 +65,8 @@ class JsonTask(
 
   fun execute(): JsonNode = try {
     call()
+  } catch (ex: JsonHttpException) {
+    throw ex
   } catch (ex: SocketTimeoutException) {
     throw JsonHttpException(-1, "Connection timed out", ex)
   } catch (ex: UnknownHostException) {
@@ -73,7 +78,7 @@ class JsonTask(
   }
 }
 
-class JsonHttpException(val statusCode: Int, val statusPhrase: String, override val cause: Throwable? = null) : IOException(statusPhrase)
+class JsonHttpException(val statusCode: Int, statusPhrase: String, cause: Throwable? = null) : IOException(statusPhrase, cause)
 
 private val http: GPCloudHttpClient = HttpClientBuilder.buildHttpClient()
 private val OBJECT_MAPPER = ObjectMapper()
