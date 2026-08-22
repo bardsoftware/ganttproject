@@ -106,5 +106,5 @@ private fun CustomPropertyClass.asSqlType() = when (this) {
   CustomPropertyClass.INTEGER -> "integer"
   CustomPropertyClass.DATE -> "date"
   CustomPropertyClass.BOOLEAN -> "boolean"
-  CustomPropertyClass.DOUBLE -> "numeric"
+  CustomPropertyClass.DOUBLE -> "double precision"
 }

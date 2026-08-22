@@ -176,6 +176,25 @@ class CalculatedPropertyTest {
     }
     manager.onCustomColumnChange(customPropertyManager)
   }
+
+  @Test
+  fun `decimal custom property keeps its fractional part`() {
+    val foo = customPropertyManager.createDefinition(CustomPropertyClass.DOUBLE, "foo")
+    rebuildTaskDataTable(dataSource, customPropertyManager)
+
+    val task = taskManager.newTaskBuilder().withName("task1").withStartDate(Date()).build()
+    task.customValues.setValue(foo, 12.5)
+    projectDatabase.insertTask(task)
+
+    dataSource.connection.use { conn ->
+      conn.createStatement().use { stmt ->
+        stmt.executeQuery("SELECT ${foo.id} FROM Task").use { rs ->
+          assert(rs.next())
+          assertEquals(12.5, rs.getDouble(1))
+        }
+      }
+    }
+  }
 }
 
 private fun createPropertyHolders(taskManager: TaskManager) =
