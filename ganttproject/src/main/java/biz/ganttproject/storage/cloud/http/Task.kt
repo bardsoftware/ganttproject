@@ -69,13 +69,13 @@ class JsonTask(
   } catch (ex: JsonHttpException) {
     throw ex
   } catch (ex: SocketTimeoutException) {
-    throw JsonHttpException(-1, httpErrorLocalizer.formatText("timeOut"), ex)
+    throw JsonHttpException(HTTP_STATUS_CODE_UNKNOWN, httpErrorLocalizer.formatText("timeOut"), ex)
   } catch (ex: UnknownHostException) {
-    throw JsonHttpException(-1, httpErrorLocalizer.formatText("unknownHost", ex.message ?: ""), ex)
+    throw JsonHttpException(HTTP_STATUS_CODE_UNKNOWN, httpErrorLocalizer.formatText("unknownHost", ex.message ?: ""), ex)
   } catch (ex: SSLHandshakeException) {
-    throw JsonHttpException(-1, httpErrorLocalizer.formatText("sslHandshake", ex.message ?: ""), ex)
+    throw JsonHttpException(HTTP_STATUS_CODE_UNKNOWN, httpErrorLocalizer.formatText("sslHandshake", ex.message ?: ""), ex)
   } catch (ex: IOException) {
-    throw JsonHttpException(-1, httpErrorLocalizer.formatText("generic", ex.message ?: ""), ex)
+    throw JsonHttpException(HTTP_STATUS_CODE_UNKNOWN, httpErrorLocalizer.formatText("generic", ex.message ?: ""), ex)
   }
 }
 
@@ -84,3 +84,4 @@ class JsonHttpException(val statusCode: Int, statusPhrase: String, cause: Throwa
 private val http: GPCloudHttpClient = HttpClientBuilder.buildHttpClient()
 private val OBJECT_MAPPER = ObjectMapper()
 private val httpErrorLocalizer = RootLocalizer.createWithRootKey("http.error")
+private val HTTP_STATUS_CODE_UNKNOWN = -1

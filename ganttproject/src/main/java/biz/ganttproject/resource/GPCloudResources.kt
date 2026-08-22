@@ -164,7 +164,6 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
       dlg.onClosed = {
         coroutineScope.cancel()
       }
-      dlg.setEscCloseEnabled(true)
     }
   }
 }

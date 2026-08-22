@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 
 /**
@@ -35,31 +36,35 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager
  */
 internal class GPCloudResourceListModel(private val resourceManager: HumanResourceManager) {
 
-  private fun isInProject(dto: ResourceDto): Boolean = resourceManager.resources.find { it.mail == dto.email } != null
+  suspend fun loadResources(): List<ResourceDto> {
+    val projectEmails = resourceManager.resources.mapNotNull { it.mail }.toSet()
+    val isInProject: (ResourceDto) -> Boolean = { projectEmails.contains(it.email) }
 
-  suspend fun loadResources(): List<ResourceDto> = withContext(Dispatchers.IO) {
-    val results: List<Result<List<ResourceDto>>> = loadTeams()
-      .map { teamRefid -> async {
-        runCatching {
-          loadTeamResources(teamRefid)
+    return withContext(Dispatchers.IO) {
+      val results: List<Result<List<ResourceDto>>> = loadTeams()
+        .map { teamRefid ->
+          async {
+            runCatching {
+              loadTeamResources(teamRefid)
+            }
+          }
         }
-      }}
-      .awaitAll()
-    // If all results are failures then throw the first exception.
-    results.mapNotNull { it.exceptionOrNull() }.firstOrNull()?.let {
-      if (results.all { it.isFailure }) {
-        throw it
+        .awaitAll()
+      // If all results are failures then throw the first exception.
+      results.mapNotNull { it.exceptionOrNull() }.forEach { LOG.error("Failed to load team resources", exception = it) }
+      if (results.isNotEmpty() && results.all { it.isFailure }) {
+        throw results.first().exceptionOrNull()!!
       }
+      results.mapNotNull { it.getOrNull() }
+        .flatten()
+        .distinctBy { it.email }
+        .onEach {
+          val isInProject = isInProject(it)
+          it.isReadOnly = isInProject
+          it.isChecked = isInProject
+        }
+        .sortedWith(compareBy<ResourceDto> { if (it.isReadOnly) 0 else 1 }.thenBy { it.name })
     }
-    results.mapNotNull { it.getOrNull() }
-      .flatten()
-      .distinctBy { it.email }
-      .onEach {
-        val isInProject = isInProject(it)
-        it.isReadOnly = isInProject
-        it.isChecked = isInProject
-      }
-      .sortedWith(compareBy<ResourceDto> { if (it.isReadOnly) 0 else 1 }.thenBy { it.name })
   }
 
   private fun loadTeams(): List<String> {
@@ -76,3 +81,5 @@ internal class GPCloudResourceListModel(private val resourceManager: HumanResour
     } else emptyList()
   }
 }
+
+private val LOG = GPLogger.create("Cloud.Http")
