@@ -22,6 +22,7 @@ import biz.ganttproject.storage.cloud.HttpMethod
 import biz.ganttproject.storage.cloud.http.JsonTask
 import biz.ganttproject.storage.cloud.http.ResourceDto
 import biz.ganttproject.storage.cloud.http.loadTeamResources
+import javafx.scene.control.ListView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -37,7 +38,7 @@ import net.sourceforge.ganttproject.resource.HumanResourceManager
 internal class GPCloudResourceListModel(private val resourceManager: HumanResourceManager) {
 
   suspend fun loadResources(): List<ResourceDto> {
-    val projectEmails = resourceManager.resources.map { it.mail.lowercase() }.filter { it.isNotBlank()}.toSet()
+    val projectEmails = resourceManager.resources.map { it.mail.lowercase() }.filter { it.isNotBlank() }.toSet()
     val isInProject: (ResourceDto) -> Boolean = { it.email.isNotBlank() && projectEmails.contains(it.email.lowercase()) }
 
     return withContext(Dispatchers.IO) {
@@ -57,13 +58,13 @@ internal class GPCloudResourceListModel(private val resourceManager: HumanResour
       }
       results.mapNotNull { it.getOrNull() }
         .flatten()
-        .distinctBy { it.email }
-        .onEach {
-          val isInProject = isInProject(it)
-          it.isReadOnly = isInProject
-          it.isChecked = isInProject
+        .distinctBy { it.email.ifBlank { it.name } }
+        .onEach { dto ->
+          val isInProject = isInProject(dto)
+          dto.isReadOnly = isInProject
+          dto.isChecked = isInProject
         }
-        .sortedWith(compareBy<ResourceDto> { if (it.isReadOnly) 0 else 1 }.thenBy { it.name })
+        .sortedWith(compareByDescending<ResourceDto> { it.isChecked }.thenBy { it.name })
     }
   }
 
@@ -79,6 +80,12 @@ internal class GPCloudResourceListModel(private val resourceManager: HumanResour
     return if (jsonTeams.isArray) {
       jsonTeams.elements().asSequence().mapNotNull { it["refid"]?.asText() }.toList()
     } else emptyList()
+  }
+
+  fun addResources(listView: ListView<ResourceDto>) {
+    listView.items.filter { it.isChecked && !it.isReadOnly }.forEach {
+      this.resourceManager.newResourceBuilder().withEmail(it.email).withName(it.name).withPhone(it.phone).build()
+    }
   }
 }
 

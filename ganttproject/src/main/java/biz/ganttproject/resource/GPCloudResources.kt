@@ -24,12 +24,10 @@ import biz.ganttproject.storage.cloud.FlowPage
 import biz.ganttproject.storage.cloud.GPCloudUiFlow
 import biz.ganttproject.storage.cloud.GPCloudUiFlowBuilder
 import biz.ganttproject.storage.cloud.createFlowPageChanger
-import biz.ganttproject.storage.cloud.http.HTTP_STATUS_CODE_UNKNOWN
-import biz.ganttproject.storage.cloud.http.JsonHttpException
 import biz.ganttproject.storage.cloud.http.ResourceDto
-import biz.ganttproject.storage.cloud.http.httpErrorLocalizer
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
@@ -40,15 +38,16 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.javafx.JavaFx
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.resource.HumanResourceManager
+import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.awt.event.ActionEvent
 import kotlin.coroutines.CoroutineContext
 
 /**
  * Just an action to plug into the application menu.
  */
-class GPCloudResourceListAction(private val resourceManager: HumanResourceManager) : GPAction("cloud.resource.list.action") {
+class GPCloudResourceListAction(private val resourceManager: HumanResourceManager, private val undoManager: ()->GPUndoManager) : GPAction("cloud.resource.list.action") {
   override fun actionPerformed(e: ActionEvent?) {
-    GPCloudResourceListDialog(resourceManager).show()
+    GPCloudResourceListDialog(resourceManager, undoManager()).show()
   }
 }
 
@@ -78,9 +77,13 @@ private class ResourceListPage(
       add(listView, alignment = null, growth = Priority.ALWAYS)
     }
 
-  override fun resetUi() {}
+  override fun resetUi() {
+    // Nothing to do.
+  }
 
-  override fun setController(controller: GPCloudUiFlow) {}
+  override fun setController(controller: GPCloudUiFlow) {
+    // Nothing to do.
+  }
 
   override var active: Boolean = false
     set(value) {
@@ -92,12 +95,7 @@ private class ResourceListPage(
             model.loadResources().let(::fillListView)
           } catch (ex: Exception) {
             if (ex is CancellationException) throw ex
-            val body = when {
-              ex is JsonHttpException && ex.statusCode != HTTP_STATUS_CODE_UNKNOWN ->
-                httpErrorLocalizer.formatText("status", ex.statusCode)
-              else -> ex.message ?: ex.javaClass.name
-            }
-            dialog.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(body))
+            dialog.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(ex.message ?: ex.javaClass.name))
             fillListView(emptyList())
           } finally {
             stopProgress()
@@ -114,16 +112,14 @@ private class ResourceListPage(
   }
 
   fun addResourcesToProject() {
-    listView.items.filter { it.isChecked && !it.isReadOnly }.forEach {
-      this.resourceManager.newResourceBuilder().withEmail(it.email).withName(it.name).withPhone(it.phone).build()
-    }
+    model.addResources(listView)
   }
 }
 
 /**
  * Builds a UI flow with the main page (resources list) and sign-in and other pages.
  */
-class GPCloudResourceListDialog(private val resourceManager: HumanResourceManager) {
+class GPCloudResourceListDialog(private val resourceManager: HumanResourceManager, private val undoManager: GPUndoManager) {
   fun show() {
     dialog(id = "cloud.resource.list", title = ourLocalizer.formatText("title")) { dlg ->
 
@@ -140,10 +136,11 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
         vbox {
           this.i18n = ourLocalizer
           addClasses("header")
-          addTitle(LocalizedString("title", i18n)).also { hbox ->
+          addTitle("title").also { hbox ->
             hbox.alignment = Pos.CENTER_LEFT
             hbox.isFillHeight = true
           }
+          titleHelp("titleHelp")
         }
       )
 
@@ -152,7 +149,9 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
         btn.textProperty().bind(ourLocalizer.create("btnApply"))
         btn.styleClass.add("btn-attention")
         btn.setOnAction {
-          resourceListPage.addResourcesToProject()
+          undoManager.undoableEdit(ourLocalizer.formatText("title")) {
+            resourceListPage.addResourcesToProject()
+          }
         }
         btn.disableProperty().bind(resourceListPage.canAddResourcesProperty.not())
       }
@@ -186,7 +185,7 @@ private class ResourceListCell(
   private val isChecked = SimpleBooleanProperty().also {
     checkBox.selectedProperty().bindBidirectional(it)
     it.addListener { _, _, newValue ->
-      item?.let { it.isChecked = newValue }
+      item?.isChecked = newValue
       onCheckedToggle()
     }
   }
@@ -204,10 +203,14 @@ private class ResourceListCell(
       it.textProperty().bind(resourceEmail)
     })
   }
+
   private val cellGraphic = HBox().apply {
     styleClass.add("resource-cell")
     children.add(checkBox)
     children.add(nameBox)
+    onMouseClicked = EventHandler {
+      isChecked.value = isChecked.value.not()
+    }
   }
 
   override fun updateItem(item: ResourceDto?, empty: Boolean) {

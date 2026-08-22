@@ -60,7 +60,7 @@ class JsonTask(
       }
     } else {
       onFailure(this, resp)
-      throw JsonHttpException(resp.code, resp.reason)
+      throw JsonHttpException(resp.code, httpErrorLocalizer.formatText("status", resp.code))
     }
   }
 
@@ -84,4 +84,4 @@ class JsonHttpException(val statusCode: Int, statusPhrase: String, cause: Throwa
 private val http: GPCloudHttpClient = HttpClientBuilder.buildHttpClient()
 private val OBJECT_MAPPER = ObjectMapper()
 val httpErrorLocalizer = RootLocalizer.createWithRootKey("http.error")
-val HTTP_STATUS_CODE_UNKNOWN = -1
+const val HTTP_STATUS_CODE_UNKNOWN = -1
