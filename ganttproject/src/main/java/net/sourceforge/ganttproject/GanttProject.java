@@ -705,27 +705,27 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
   // ResourceView implementation
   @Override
   public void resourceAdded(ResourceEvent event) {
-    setAskForSave(true);
+    SwingUtilities.invokeLater(this::setModified);
   }
 
   @Override
   public void resourcesRemoved(ResourceEvent event) {
-    setAskForSave(true);
+    SwingUtilities.invokeLater(this::setModified);
   }
 
   @Override
   public void resourceChanged(ResourceEvent e) {
-    setAskForSave(true);
+    SwingUtilities.invokeLater(this::setModified);
   }
 
   @Override
   public void resourceAssignmentsChanged(ResourceEvent e) {
-    setAskForSave(true);
+    SwingUtilities.invokeLater(this::setModified);
   }
 
   @Override
   public void resourceStructureChanged() {
-    setAskForSave(true);
+    SwingUtilities.invokeLater(this::setModified);
   }
 
   @Override

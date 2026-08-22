@@ -35,11 +35,11 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import kotlinx.coroutines.*
+import kotlinx.coroutines.javafx.JavaFx
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import java.awt.event.ActionEvent
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Just an action to plug into the application menu.
@@ -53,7 +53,7 @@ class GPCloudResourceListAction(private val resourceManager: HumanResourceManage
 /**
  * Pane with a list of resources fetched from GP Cloud.
  */
-class ResourceListPage(
+private class ResourceListPage(
   private val dialog: DialogController,
   private val resourceManager: HumanResourceManager,
   private val coroutineScope: CoroutineScope
@@ -66,7 +66,7 @@ class ResourceListPage(
     canAddResourcesProperty.value = listView.items.any { it.isChecked && !it.isReadOnly }
   }
 
-  internal val canAddResourcesProperty = SimpleBooleanProperty(false)
+  val canAddResourcesProperty = SimpleBooleanProperty(false)
   private val model = GPCloudResourceListModel(resourceManager)
 
   override fun createUi(): Pane =
@@ -104,7 +104,7 @@ class ResourceListPage(
     }
   }
 
-  internal fun addResourcesToProject() {
+  fun addResourcesToProject() {
     listView.items.filter { it.isChecked && !it.isReadOnly }.forEach {
       this.resourceManager.newResourceBuilder().withEmail(it.email).withName(it.name).withPhone(it.phone).build()
     }
@@ -116,12 +116,12 @@ class ResourceListPage(
  */
 class GPCloudResourceListDialog(private val resourceManager: HumanResourceManager) {
   fun show() {
-    dialog(id = "cloud.resource.list", title = i18n.formatText("title")) { dlg ->
+    dialog(id = "cloud.resource.list", title = ourLocalizer.formatText("title")) { dlg ->
 
       fun handleAsyncException(ctx: CoroutineContext, th: Throwable) {
-        dlg.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(th.message ?: ""))
+        dlg.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(th.message ?: th.javaClass.name))
       }
-      val coroutineScope = CoroutineScope(EmptyCoroutineContext + SupervisorJob() + CoroutineExceptionHandler(::handleAsyncException))
+      val coroutineScope = CoroutineScope(Dispatchers.JavaFx + SupervisorJob() + CoroutineExceptionHandler(::handleAsyncException))
 
       dlg.addStyleClass("dlg-cloud-resource-list")
       dlg.addStyleSheet(
@@ -140,7 +140,7 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
 
       val resourceListPage = ResourceListPage(dlg, resourceManager, coroutineScope)
       dlg.setupButton(ButtonType.APPLY) { btn ->
-        btn.textProperty().bind(i18n.create("btnApply"))
+        btn.textProperty().bind(ourLocalizer.create("btnApply"))
         btn.styleClass.add("btn-attention")
         btn.setOnAction {
           resourceListPage.addResourcesToProject()
@@ -164,6 +164,7 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
       dlg.onClosed = {
         coroutineScope.cancel()
       }
+      dlg.setEscCloseEnabled(true)
     }
   }
 }
@@ -217,5 +218,4 @@ private class ResourceListCell(
   }
 }
 
-private val i18n = RootLocalizer.createWithRootKey("cloud.resource.list")
-private val ourLocalizer = i18n
+private val ourLocalizer = RootLocalizer.createWithRootKey("cloud.resource.list")

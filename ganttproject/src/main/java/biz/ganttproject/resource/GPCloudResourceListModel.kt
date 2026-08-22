@@ -38,16 +38,20 @@ internal class GPCloudResourceListModel(private val resourceManager: HumanResour
   private fun isInProject(dto: ResourceDto): Boolean = resourceManager.resources.find { it.mail == dto.email } != null
 
   suspend fun loadResources(): List<ResourceDto> = withContext(Dispatchers.IO) {
-    loadTeams()
+    val results: List<Result<List<ResourceDto>>> = loadTeams()
       .map { teamRefid -> async {
-        try {
+        runCatching {
           loadTeamResources(teamRefid)
-        } catch (ex: Exception) {
-          ex.printStackTrace()
-          emptyList()
         }
       }}
       .awaitAll()
+    // If all results are failures then throw the first exception.
+    results.mapNotNull { it.exceptionOrNull() }.firstOrNull()?.let {
+      if (results.all { it.isFailure }) {
+        throw it
+      }
+    }
+    results.mapNotNull { it.getOrNull() }
       .flatten()
       .distinctBy { it.email }
       .onEach {

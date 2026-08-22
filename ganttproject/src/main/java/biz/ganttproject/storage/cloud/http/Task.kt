@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud.http
 
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.cloud.GPCloudHttpClient
 import biz.ganttproject.storage.cloud.HttpClientBuilder
 import biz.ganttproject.storage.cloud.HttpMethod
@@ -68,13 +69,13 @@ class JsonTask(
   } catch (ex: JsonHttpException) {
     throw ex
   } catch (ex: SocketTimeoutException) {
-    throw JsonHttpException(-1, "Connection timed out", ex)
+    throw JsonHttpException(-1, httpErrorLocalizer.formatText("timeOut"), ex)
   } catch (ex: UnknownHostException) {
-    throw JsonHttpException(-1, "Unknown host: ${ex.message}", ex)
+    throw JsonHttpException(-1, httpErrorLocalizer.formatText("unknownHost", ex.message ?: ""), ex)
   } catch (ex: SSLHandshakeException) {
-    throw JsonHttpException(-1, "Something is wrong with the secure connection: ${ex.message}", ex)
+    throw JsonHttpException(-1, httpErrorLocalizer.formatText("sslHandshake", ex.message ?: ""), ex)
   } catch (ex: IOException) {
-    throw JsonHttpException(-1, "Something went wrong: ${ex.message}", ex)
+    throw JsonHttpException(-1, httpErrorLocalizer.formatText("generic", ex.message ?: ""), ex)
   }
 }
 
@@ -82,3 +83,4 @@ class JsonHttpException(val statusCode: Int, statusPhrase: String, cause: Throwa
 
 private val http: GPCloudHttpClient = HttpClientBuilder.buildHttpClient()
 private val OBJECT_MAPPER = ObjectMapper()
+private val httpErrorLocalizer = RootLocalizer.createWithRootKey("http.error")
