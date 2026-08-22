@@ -18,14 +18,10 @@
  */
 package net.sourceforge.ganttproject.test.task
 
-import junit.framework.TestCase
 import net.sourceforge.ganttproject.TestSetupHelper
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 
 
 class Test2453: TaskTestCase() {
-  @BeforeEach
   override fun setUp() {
     super.setUp()
   }

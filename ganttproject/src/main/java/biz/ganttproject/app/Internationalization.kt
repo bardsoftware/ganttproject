@@ -39,8 +39,6 @@ fun setLocale(locale: Locale) {
 
 fun getCurrentLocale() = ourLocale
 
-fun String.removeMnemonicsPlaceholder(): String = this.replace("$", "")
-
 fun getNumberFormat(): NumberFormat = NumberFormat.getInstance(ourLocale)
 
 fun createDateConverter(): StringConverter<LocalDate> = LocaleBasedDateConverter(ourLocale)

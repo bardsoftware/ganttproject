@@ -21,16 +21,12 @@ package net.sourceforge.ganttproject.test.task
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.task.export
 import net.sourceforge.ganttproject.task.importFromDatabase
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 
 class TaskManagerProjectDatabaseTest: TaskTestCase() {
-  @BeforeEach
   override fun setUp() {
     super.setUp()
   }
 
-  @Test
   fun `test import from database preserves hierarchy`() {
     val supertask1 = createTask()
     val childTask1 = createTask().also { taskManager.taskHierarchy.move(it, supertask1) }

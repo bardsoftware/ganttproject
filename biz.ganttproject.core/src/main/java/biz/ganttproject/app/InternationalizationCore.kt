@@ -155,7 +155,7 @@ open class DefaultLocalizer(
     return try {
       this.currentTranslation.value?.let { tr ->
         tr.mapKey(prefixedKey)?.let { value ->
-          MessageFormat.format(value.replace("$",""), *args)
+          MessageFormat.format(value.removeMnemonicsPlaceholder(), *args)
         } ?: this.baseLocalizer().formatTextOrNull(key, *args)
       }
     } catch (ex: MissingResourceException) {
@@ -220,6 +220,8 @@ var RootLocalizer : DefaultLocalizer = DefaultLocalizer(currentTranslation = our
 fun createDefaultLocalizer(fallback: Localizer): DefaultLocalizer {
   return DefaultLocalizer(baseLocalizer = {fallback}, currentTranslation = ourCurrentTranslation)
 }
+
+fun String.removeMnemonicsPlaceholder(): String = this.replace("$", "")
 
 /**
  * Structure representing a translation with a locale and mapping function that maps translation keys to translations.

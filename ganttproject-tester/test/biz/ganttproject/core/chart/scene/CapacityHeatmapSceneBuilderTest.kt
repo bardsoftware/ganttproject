@@ -19,14 +19,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.chart.scene
 
 import biz.ganttproject.core.chart.scene.CapacityHeatmapSceneBuilder.Load
-import junit.framework.TestCase
 import org.junit.jupiter.api.Assertions.assertIterableEquals
+import org.junit.jupiter.api.Test
 import java.text.SimpleDateFormat
 
-class CapacityHeatmapSceneBuilderTest : TestCase() {
+class CapacityHeatmapSceneBuilderTest {
   private val dateFormat = SimpleDateFormat("yyyy-MM-dd")
   private val initialBorder = LoadBorder(Long.MIN_VALUE, 0f)
 
+  @Test
   fun `test zero loads are not counted`() {
     val loads = listOf(
         Load("2020-09-1".toTs(), "2020-09-11".toTs(), 0f),
@@ -39,7 +40,7 @@ class CapacityHeatmapSceneBuilderTest : TestCase() {
     assertIterableEquals(expected, calcLoadDistribution(loads))
   }
 
-
+  @Test
   fun `test nested loads`() {
     val loads = listOf(
         Load("2020-09-15".toTs(), "2020-09-17".toTs(), 4f),
@@ -55,6 +56,7 @@ class CapacityHeatmapSceneBuilderTest : TestCase() {
     assertIterableEquals(expected, calcLoadDistribution(loads))
   }
 
+  @Test
   fun `test loads intersection`() {
     val loads = listOf(
         Load("2020-09-10".toTs(), "2020-09-20".toTs(), 1f),
@@ -69,6 +71,7 @@ class CapacityHeatmapSceneBuilderTest : TestCase() {
     assertIterableEquals(expected, calcLoadDistribution(loads))
   }
 
+  @Test
   fun `test loads with matching borders`() {
     val loads = listOf(
         Load("2020-09-1".toTs(), "2020-09-20".toTs(), 1f),
