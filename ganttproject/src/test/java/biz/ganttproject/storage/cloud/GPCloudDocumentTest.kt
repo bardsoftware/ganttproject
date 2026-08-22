@@ -82,7 +82,7 @@ class GPCloudDocumentTest {
 
   private fun prepareReadCall(doc: GPCloudDocument, responseBuilder: ()->TestResponse) {
     doc.httpClientFactory = { mockHttpClient }
-    doc.offlineDocumentFactory = { path -> FileDocument(File(testMirrorFolder, path)) }
+    doc.offlineDocumentFactory = { path -> FileDocument(testMirrorFolder.resolve(path)) }
     doc.executor = MoreExecutors.newDirectExecutorService()
 
     EasyMock.reset(mockHttpClient)
@@ -282,7 +282,7 @@ class GPCloudDocumentTest {
     val executor = Executors.newSingleThreadExecutor()
     val doc = GPCloudDocument(teamRefid = "team1", teamName = "Team 1", projectRefid = "prj1", projectName = "Project 1", projectJson = null)
     doc.httpClientFactory = { mockHttpClient }
-    doc.offlineDocumentFactory = { path -> FileDocument(File(testMirrorFolder, path)) }
+    doc.offlineDocumentFactory = { path -> FileDocument(testMirrorFolder.resolve(path)) }
     doc.executor = executor
     doc.isNetworkAvailable = Callable {
       if (retryCounter.count > 0) {
