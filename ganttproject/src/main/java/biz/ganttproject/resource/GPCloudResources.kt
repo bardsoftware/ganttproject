@@ -61,6 +61,7 @@ private class ResourceListPage(
 
   private val listView = ListView<ResourceDto>().apply {
     setCellFactory {  ResourceListCell(this@ResourceListPage::onCheckedToggle) }
+    // TODO: add content for the empty list case
   }
   private fun onCheckedToggle() {
     canAddResourcesProperty.value = listView.items.any { it.isChecked && !it.isReadOnly }
@@ -87,7 +88,10 @@ private class ResourceListPage(
           val stopProgress = dialog.toggleProgress(true)
           try {
             model.loadResources().let(::fillListView)
-          } catch (ex: JsonHttpException) {
+          } catch (ex: Exception) {
+            if (ex is CancellationException) {
+              throw ex
+            }
             dialog.showAlert(RootLocalizer.create("error.channel.itemTitle"), createAlertBody(ex.message ?: ""))
             fillListView(emptyList())
           } finally {

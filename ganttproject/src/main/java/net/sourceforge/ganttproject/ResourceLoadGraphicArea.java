@@ -76,12 +76,12 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
       @Override
       public void resourceChanged(ResourceEvent e) {
-        SwingUtilities.invokeLater(() -> repaint());
+        repaint();
       }
 
       @Override
       public void resourceAssignmentsChanged(ResourceEvent e) {
-        SwingUtilities.invokeLater(() -> repaint());
+        repaint();
       }
 
       @Override
@@ -91,7 +91,7 @@ public class ResourceLoadGraphicArea extends ChartComponentBase implements Resou
 
       @Override
       public void resourceModelReset() {
-        SwingUtilities.invokeLater(() -> repaint());
+        repaint();
       }
     });
     tableConnector.getCollapseView().getExpandedCount().addWatcher(evt -> {
