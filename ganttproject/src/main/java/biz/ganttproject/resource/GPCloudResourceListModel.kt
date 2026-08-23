@@ -22,7 +22,6 @@ import biz.ganttproject.storage.cloud.HttpMethod
 import biz.ganttproject.storage.cloud.http.JsonTask
 import biz.ganttproject.storage.cloud.http.ResourceDto
 import biz.ganttproject.storage.cloud.http.loadTeamResources
-import javafx.scene.control.ListView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -82,8 +81,8 @@ internal class GPCloudResourceListModel(private val resourceManager: HumanResour
     } else emptyList()
   }
 
-  fun addResources(listView: ListView<ResourceDto>) {
-    listView.items.filter { it.isChecked && !it.isReadOnly }.forEach {
+  fun addResources(allResources: List<ResourceDto>) {
+    allResources.filter { it.isChecked && !it.isReadOnly }.forEach {
       this.resourceManager.newResourceBuilder().withEmail(it.email).withName(it.name).withPhone(it.phone).build()
     }
   }

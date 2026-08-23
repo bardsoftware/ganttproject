@@ -112,7 +112,7 @@ private class ResourceListPage(
   }
 
   fun addResourcesToProject() {
-    model.addResources(listView)
+    model.addResources(listView.items)
   }
 }
 
@@ -181,7 +181,11 @@ class GPCloudResourceListDialog(private val resourceManager: HumanResourceManage
  */
 private class ResourceListCell(
   private val onCheckedToggle: ()->Unit) : ListCell<ResourceDto>() {
-  private val checkBox = CheckBox()
+  private val checkBox = CheckBox().apply {
+    // The row-level MOUSE_CLICKED handler toggles isChecked; the check box has already
+    // toggled itself on MOUSE_RELEASED, so stop the click from bubbling and undoing it.
+    onMouseClicked = EventHandler { it.consume() }
+  }
   private val isChecked = SimpleBooleanProperty().also {
     checkBox.selectedProperty().bindBidirectional(it)
     it.addListener { _, _, newValue ->
