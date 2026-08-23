@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage.cloud.http
 
+import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.storage.cloud.GPCloudHttpClient
 import biz.ganttproject.storage.cloud.HttpClientBuilder
 import biz.ganttproject.storage.cloud.HttpMethod
@@ -27,6 +28,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.MissingNode
 import javafx.concurrent.Task
 import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import javax.net.ssl.SSLHandshakeException
 
 /**
  * This is a task for JavaFX services which send HTTP request and expect JSON response.
@@ -39,11 +43,14 @@ class JsonTask(
     private val onFailure: (JsonTask, GPCloudHttpClient.Response) -> Unit) : Task<JsonNode>() {
   override fun call(): JsonNode {
     busyIndicator(true)
-    val resp = when (this.method) {
-      HttpMethod.GET -> http.sendGet(uri, kv)
-      HttpMethod.POST -> http.sendPost(uri, kv, HttpPostEncoding.URLENCODED)
+    val resp = try {
+      when (this.method) {
+        HttpMethod.GET -> http.sendGet(uri, kv)
+        HttpMethod.POST -> http.sendPost(uri, kv, HttpPostEncoding.URLENCODED)
+      }
+    } finally {
+      busyIndicator(false)
     }
-    busyIndicator(false)
     if (resp.code == 200) {
       val jsonBody = resp.rawBody.decodeToString()
       return if (jsonBody == "") {
@@ -53,14 +60,28 @@ class JsonTask(
       }
     } else {
       onFailure(this, resp)
-      throw JsonHttpException(resp.code, resp.reason)
+      throw JsonHttpException(resp.code, httpErrorLocalizer.formatText("status", resp.code))
     }
   }
 
-  fun execute(): JsonNode = call()
+  fun execute(): JsonNode = try {
+    call()
+  } catch (ex: JsonHttpException) {
+    throw ex
+  } catch (ex: SocketTimeoutException) {
+    throw JsonHttpException(HTTP_STATUS_CODE_UNKNOWN, httpErrorLocalizer.formatText("timeOut"), ex)
+  } catch (ex: UnknownHostException) {
+    throw JsonHttpException(HTTP_STATUS_CODE_UNKNOWN, httpErrorLocalizer.formatText("unknownHost", ex.message ?: ""), ex)
+  } catch (ex: SSLHandshakeException) {
+    throw JsonHttpException(HTTP_STATUS_CODE_UNKNOWN, httpErrorLocalizer.formatText("sslHandshake", ex.message ?: ""), ex)
+  } catch (ex: IOException) {
+    throw JsonHttpException(HTTP_STATUS_CODE_UNKNOWN, httpErrorLocalizer.formatText("generic", ex.message ?: ""), ex)
+  }
 }
 
-class JsonHttpException(val statusCode: Int, val statusPhrase: String) : IOException(statusPhrase)
+class JsonHttpException(val statusCode: Int, statusPhrase: String, cause: Throwable? = null) : IOException(statusPhrase, cause)
 
 private val http: GPCloudHttpClient = HttpClientBuilder.buildHttpClient()
 private val OBJECT_MAPPER = ObjectMapper()
+val httpErrorLocalizer = RootLocalizer.createWithRootKey("http.error")
+const val HTTP_STATUS_CODE_UNKNOWN = -1

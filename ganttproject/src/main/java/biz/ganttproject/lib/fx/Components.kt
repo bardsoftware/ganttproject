@@ -115,6 +115,14 @@ class VBoxBuilder(vararg classes: String) {
     return titleBox
   }
 
+  fun titleHelp(i18nKey: String) {
+    add(Label().apply {
+      this.textProperty().bind(i18n.create(i18nKey))
+      this.styleClass.add("help")
+    })
+  }
+
+
   fun add(node: Node) {
     add(node, alignment = null, growth = null)
   }

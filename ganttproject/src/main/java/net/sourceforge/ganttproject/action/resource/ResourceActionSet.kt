@@ -27,7 +27,6 @@ import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.resource.ResourceSelectionManager
 import net.sourceforge.ganttproject.task.ResourceAssignment
-import net.sourceforge.ganttproject.undo.GPUndoManager
 import net.sourceforge.ganttproject.util.BrowserControl
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
@@ -38,7 +37,7 @@ class ResourceActionSet(
   project: IGanttProject, private val uiFacade: UIFacade
 ) {
   val resourceNewAction = ResourceNewAction(project.humanResourceManager, project.projectDatabase, project.roleManager, project.taskManager, uiFacade)
-  val cloudResourceList = GPCloudResourceListAction(project.humanResourceManager)
+  val cloudResourceList = GPCloudResourceListAction(project.humanResourceManager, uiFacade::getUndoManager)
   val resourceDeleteAction = ResourceDeleteAction2(project.humanResourceManager, selectionManager, uiFacade)
   val resourcePropertiesAction = ResourcePropertiesAction(project, selectionManager, assignmentContext, uiFacade)
   val resourceMoveUpAction = ResourceMoveUpAction2(project.humanResourceManager, selectionManager)

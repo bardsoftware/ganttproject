@@ -37,7 +37,10 @@ data class ResourceDto @JsonCreator constructor(
   var phone: String = "",
   @JsonProperty("paymentRate")
   var paymentRate: BigDecimal? = null
-)
+) {
+  var isChecked = false
+  var isReadOnly = false
+}
 
 fun loadTeamResources(teamRefid: String) : List<ResourceDto> {
   val resourcesJson = JsonTask(
@@ -48,9 +51,7 @@ fun loadTeamResources(teamRefid: String) : List<ResourceDto> {
     ),
     busyIndicator = {},
     onFailure = {_, _ -> }
-  ).let {
-    it.execute()
-  }
+  ).execute()
   return if (resourcesJson.isArray) {
     resourcesJson.map {
       OBJECT_MAPPER.treeToValue(it, ResourceDto::class.java)

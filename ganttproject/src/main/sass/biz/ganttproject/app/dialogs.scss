@@ -20,6 +20,8 @@ $default-vertical-padding: 1ex;
 $alert-background: #f8d7da;
 $alert-foreground: #721c24;
 
+@import "typography";
+
 @mixin dialog-header($bgColor) {
   -fx-spacing: 5;
   -fx-background-color: $bgColor;
@@ -29,9 +31,14 @@ $alert-foreground: #721c24;
   -fx-background-insets: 0 0 4 0;
   -fx-effect: dropshadow(gaussian, #ccc, 4, 0, 0, 4);
   .title {
-    -fx-font-size: 110%;
+    -fx-font-size: 130%;
     -fx-font-weight: bold;
   }
+  .help {
+    -fx-padding: 0 0 2ex 0;
+    @include text-secondary();
+  }
+
 }
 
 @mixin dialog-content-padding {
