@@ -150,9 +150,10 @@ public class HolidayTagHandler extends AbstractTagHandler {
       }
       clearCdata();
     } catch (IllegalArgumentException e) {
-      GPLogger.getLogger(GanttXMLOpen.class).log(Level.WARNING, String.format("Error when parsing calendar data. Raw data: %s", atts.toString()), e);
+      //GPLogger.getLogger(GanttXMLOpen.class).log(Level.WARNING, String.format("Error when parsing calendar data. Raw data: %s", atts.toString()), e);
       String message = String.format("Cannot parse a part of project file: %s", atts.toString());
-      GPLogger.log(new Exception(message, e));
+      GPLogger.logToLogger(message);
+      throw e;
     }
   }
 
