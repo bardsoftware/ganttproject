@@ -24,6 +24,7 @@ import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.customproperty.CustomPropertyManager
+import biz.ganttproject.storage.cloud.isColloboqueOn
 import biz.ganttproject.storage.db.Tables.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import kotlinx.serialization.json.Json
@@ -40,7 +41,6 @@ import org.jooq.impl.DSL.field
 import java.awt.Color
 import java.sql.Connection
 import java.sql.SQLException
-import java.util.*
 import javax.sql.DataSource
 
 typealias ShutdownHook = ()->Unit
@@ -81,8 +81,19 @@ class SqlProjectDatabaseImpl(
     externalUpdatesListener = listener
   }
 
-  override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager) =
-    customPropertyStorageManager.onCustomColumnChange(customPropertyManager)
+  override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager, tasks: List<Task>) {
+    if (customPropertyStorageManager.onCustomColumnChange(customPropertyManager) && tasks.isNotEmpty()) {
+      // The columns have been re-created, and the values of the stored custom properties are gone. Let's write
+      // them again, so that the calculated columns which use them could be evaluated.
+      val statements = mutableListOf<String>()
+      tasks.forEach { task ->
+        H2TaskUpdateBuilder(task, statements::addAll, dialect).also {
+          it.setCustomProperties(task.customValues, task.customValues)
+        }.commit()
+      }
+      executeStatements(statements)
+    }
+  }
 
   override fun updateBuiltInCalculatedColumns() {
     runScriptFromResource(dataSource, DB_UPDATE_BUILTIN_CALCULATED_COLUMNS)
@@ -554,7 +565,6 @@ class SqlTaskUpdateBuilder(private val task: Task,
 
 private fun Task.logId(): String = "${uid}:${taskID}"
 
-fun isColloboqueOn() = System.getProperty("colloboque.on", "false") == "true"
 const val SQL_PROJECT_DATABASE_OPTIONS = ";DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true"
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state$SQL_PROJECT_DATABASE_OPTIONS"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"

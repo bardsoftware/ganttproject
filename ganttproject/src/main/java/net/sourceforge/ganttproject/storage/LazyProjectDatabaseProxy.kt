@@ -162,9 +162,9 @@ class LazyProjectDatabaseProxy(
     getDatabase().addExternalUpdatesListener(listener)
   }
 
-  override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager) {
+  override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager, tasks: List<Task>) {
     if (isProjectOpen) {
-      getDatabase().onCustomColumnChange(customPropertyManager)
+      getDatabase().onCustomColumnChange(customPropertyManager, tasks)
     }
   }
 

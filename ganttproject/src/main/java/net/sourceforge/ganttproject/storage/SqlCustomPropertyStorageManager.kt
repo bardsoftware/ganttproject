@@ -38,8 +38,11 @@ class SqlCustomPropertyStorageManager(private val dataSource: DataSource) {
   /**
    * This function must be called whenever something changes in the custom property definitions,
    * e.g. a new one is created or deleted, or the existing one changes.
+   *
+   * @return true if the table columns have been re-created. The values of the stored custom properties are lost
+   * in this case and need to be written again.
    */
-  fun onCustomColumnChange(customPropertyManager: CustomPropertyManager) {
+  fun onCustomColumnChange(customPropertyManager: CustomPropertyManager): Boolean {
     val newStatements = createCustomColumnStatements(customPropertyManager)
     synchronized(customColumnStatements) {
       if (customColumnStatements != newStatements.toSet()) {
@@ -52,7 +55,9 @@ class SqlCustomPropertyStorageManager(private val dataSource: DataSource) {
         dropStatements.addAll(customPropertyManager.orderedDefinitions().asReversed().map {
           "ALTER TABLE Task DROP COLUMN ${it.id}"
         })
+        return true
       }
+      return false
     }
   }
 }

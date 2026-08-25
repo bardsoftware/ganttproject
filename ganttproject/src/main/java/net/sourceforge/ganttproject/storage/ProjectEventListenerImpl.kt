@@ -56,7 +56,8 @@ internal class ProjectEventListenerImpl(
 
   private fun initProjectDatabase() {
     projectDatabase.isProjectOpen = true
-    projectDatabase.onCustomColumnChange(taskManagerSupplier().customPropertyManager)
+    // The tasks are inserted right below, with their custom property values, so there is nothing to write again.
+    projectDatabase.onCustomColumnChange(taskManagerSupplier().customPropertyManager, emptyList())
     taskManagerSupplier().tasks.forEach(projectDatabase::insertTask)
     calculatedPropertyUpdater.update()
     filterUpdater()
@@ -124,8 +125,14 @@ internal class ProjectEventListenerImpl(
     initProjectDatabase()
   }
 
-  override fun customPropertyChange(event: CustomPropertyEvent) {
-    projectDatabase.onCustomColumnChange(taskManagerSupplier().customPropertyManager)
+  override fun customPropertyChange(event: CustomPropertyEvent) = withLogger({ "Failed to update the custom columns" }) {
+    // While the project is being opened, the custom property definitions are created one by one, and the database
+    // is initialized with all of them at once in initProjectDatabase.
+    if (projectDatabase.isProjectOpen) {
+      projectDatabase.onCustomColumnChange(taskManagerSupplier().customPropertyManager, taskManagerSupplier().tasks.toList())
+      // A newly added calculated property shall show its values immediately, without waiting for the next task update.
+      calculatedPropertyUpdater.update()
+    }
   }
 }
 

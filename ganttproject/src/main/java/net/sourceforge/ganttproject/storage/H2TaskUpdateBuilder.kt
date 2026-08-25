@@ -72,7 +72,7 @@ class H2TaskUpdateBuilder(
   private fun appendCustomProperties(customProperties: CustomPropertyHolder) {
     val id2value = customProperties.customProperties.associate { it.definition.id to it.value }
     task.manager.customPropertyManager.definitions.filter { !it.isCalculated() }.forEach { def ->
-      append(def.asField(), def.asSqlValue(id2value[def.id]))
+      append(def.asField(), def.asSqlValue(id2value[def.id] ?: def.defaultValue))
     }
   }
 

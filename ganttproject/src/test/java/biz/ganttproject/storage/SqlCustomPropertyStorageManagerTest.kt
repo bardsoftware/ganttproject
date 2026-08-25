@@ -172,6 +172,75 @@ class CalculatedPropertyTest {
   }
 
   @Test
+  fun `calculated property depends on a custom column with a default value`() {
+    val foo = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "foo", "10")
+    val bar = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar").also {
+      it.calculationMethod = SimpleSelect(it.id, "tpc0 * 2", resultClass = CustomPropertyClass.INTEGER.javaClass)
+    }
+    rebuildTaskDataTable(dataSource, customPropertyManager)
+
+    val task = taskManager.newTaskBuilder().withName("task1").withStartDate(Date()).build()
+    projectDatabase.insertTask(task)
+
+    val propertyHolders = createPropertyHolders(taskManager)
+    val updater = CalculatedPropertyUpdater(projectDatabase, { customPropertyManager }, { propertyHolders })
+
+    // The task has no own value of `foo`, so the calculation is expected to use the default value.
+    updater.update()
+    assertEquals(20, task.customValues.getValue(bar))
+
+    // Now let's write some other property through the mutator. The default value of `foo` shall survive it.
+    task.createMutator().let {
+      it.setName("task2")
+      it.commit()
+    }
+    updater.update()
+    assertEquals(20, task.customValues.getValue(bar))
+
+    // Overriding the default value shall be reflected in the calculated property.
+    task.createMutator().let {
+      it.setCustomProperties(task.customValues.copyOf().also { values -> values.setValue(foo, 21) })
+      it.commit()
+    }
+    updater.update()
+    assertEquals(42, task.customValues.getValue(bar))
+
+    // ... and clearing the own value shall bring the default value back.
+    task.createMutator().let {
+      it.setCustomProperties(task.customValues.copyOf().also { values -> values.setValue(foo, null) })
+      it.commit()
+    }
+    updater.update()
+    assertEquals(20, task.customValues.getValue(bar))
+  }
+
+  @Test
+  fun `adding a calculated property updates its values immediately`() {
+    val bar = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar", "10")
+    projectDatabase.onCustomColumnChange(customPropertyManager, taskManager.tasks.toList())
+
+    val taskWithDefaultValue = taskManager.newTaskBuilder().withName("task1").withStartDate(Date()).build()
+    val taskWithOwnValue = taskManager.newTaskBuilder().withName("task2").withStartDate(Date()).build().also {
+      it.customValues.setValue(bar, 21)
+    }
+    taskManager.tasks.forEach(projectDatabase::insertTask)
+
+    // Now let's add a calculated property which uses the values of `bar`.
+    val foo = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "foo").also {
+      it.calculationMethod = SimpleSelect(it.id, "${bar.id} * 2", resultClass = CustomPropertyClass.INTEGER.javaClass)
+    }
+    projectDatabase.onCustomColumnChange(customPropertyManager, taskManager.tasks.toList())
+
+    val propertyHolders = createPropertyHolders(taskManager)
+    CalculatedPropertyUpdater(projectDatabase, { customPropertyManager }, { propertyHolders }).update()
+
+    // Re-creating the custom columns must not lose the values of the stored properties, no matter if they are
+    // the default ones or the task own ones.
+    assertEquals(20, taskWithDefaultValue.customValues.getValue(foo))
+    assertEquals(42, taskWithOwnValue.customValues.getValue(foo))
+  }
+
+  @Test
   fun `custom property values of all the supported types are written into the task table`() {
     val text = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "text")
     val int = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "int")
