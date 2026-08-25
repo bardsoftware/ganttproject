@@ -19,6 +19,7 @@
 package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.core.chart.render.ShapePaint
+import biz.ganttproject.core.option.ColorOption
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.customproperty.CustomPropertyClass
@@ -27,7 +28,6 @@ import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.storage.db.Tables.TASK
 import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.util.ColorConvertion
 import org.jooq.Field
 import org.jooq.SQLDialect
 import org.jooq.conf.ParamType
@@ -35,7 +35,7 @@ import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import java.awt.Color
 import java.time.LocalDate
-import java.util.Calendar
+import java.util.*
 
 /**
  * Builds a single UPDATE statement that writes the changed task properties into the in-memory H2 database.
@@ -60,7 +60,7 @@ class H2TaskUpdateBuilder(
   // The new values of the task custom properties, if they have been changed in this session.
   private var newCustomProperties: CustomPropertyHolder? = null
 
-  private fun <T> append(field: Field<T>, newValue: Any?) {
+  private fun append(field: Field<*>, newValue: Any?) {
     newValues[field] = newValue
   }
 
@@ -91,7 +91,7 @@ class H2TaskUpdateBuilder(
   }
 
   override fun setColor(oldValue: Color?, newValue: Color?) =
-    append(TASK.COLOR, newValue?.let(ColorConvertion::getColor))
+    append(TASK.COLOR, newValue?.let(ColorOption.Util::getColor))
 
   override fun setCompletionPercentage(oldValue: Int, newValue: Int) = append(TASK.COMPLETION, newValue)
 
