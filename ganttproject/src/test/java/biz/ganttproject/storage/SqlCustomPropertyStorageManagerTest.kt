@@ -18,6 +18,7 @@
  */
 package biz.ganttproject.storage
 
+import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.customproperty.*
 import biz.ganttproject.storage.db.tables.Task
 import net.sourceforge.ganttproject.TestSetupHelper
@@ -30,11 +31,13 @@ import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.w3c.util.DateParser
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.sql.SQLException
 import java.util.*
 import javax.sql.DataSource
@@ -142,6 +145,71 @@ class CalculatedPropertyTest {
       assertEquals(200.0, tasks[0].cost.toDouble())
     }
 
+  }
+
+  @Test
+  fun `calculated property depends on a custom column value`() {
+    val foo = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "foo")
+    val bar = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "bar").also {
+      it.calculationMethod = SimpleSelect(it.id, "tpc0 * 2", resultClass = CustomPropertyClass.INTEGER.javaClass)
+    }
+    rebuildTaskDataTable(dataSource, customPropertyManager)
+
+    val task = taskManager.newTaskBuilder().withName("task1").withStartDate(Date()).build()
+    projectDatabase.insertTask(task)
+
+    // Change the value of the stored custom property through the mutator, the way it happens in the UI.
+    task.createMutator().let {
+      it.setCustomProperties(task.customValues.copyOf().also { values -> values.setValue(foo, 21) })
+      it.commit()
+    }
+
+    val propertyHolders = createPropertyHolders(taskManager)
+    CalculatedPropertyUpdater(projectDatabase, { customPropertyManager }, { propertyHolders }).update()
+
+    assertEquals(21, task.customValues.getValue(foo))
+    assertEquals(42, task.customValues.getValue(bar))
+  }
+
+  @Test
+  fun `custom property values of all the supported types are written into the task table`() {
+    val text = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "text")
+    val int = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "int")
+    val double = customPropertyManager.createDefinition(CustomPropertyClass.DOUBLE, "double")
+    val boolean = customPropertyManager.createDefinition(CustomPropertyClass.BOOLEAN, "boolean")
+    val date = customPropertyManager.createDefinition(CustomPropertyClass.DATE, "date")
+    rebuildTaskDataTable(dataSource, customPropertyManager)
+
+    val task = taskManager.newTaskBuilder().withName("task1").withStartDate(Date()).build()
+    projectDatabase.insertTask(task)
+
+    task.createMutator().let {
+      it.setCustomProperties(task.customValues.copyOf().also { values ->
+        values.setValue(text, "it's a text")
+        values.setValue(int, 42)
+        values.setValue(double, 3.14)
+        values.setValue(boolean, true)
+        values.setValue(date, CalendarFactory.createGanttCalendar(2024, 4, 1))
+      })
+      it.commit()
+    }
+
+    DSL.using(dataSource, SQLDialect.H2).fetchSingle("select * from Task").also { record ->
+      assertEquals("it's a text", record.get(text.id, String::class.java))
+      assertEquals(42, record.get(int.id, Int::class.java))
+      assertEquals(3.14, record.get(double.id, Double::class.java))
+      assertEquals(true, record.get(boolean.id, Boolean::class.java))
+      assertEquals(LocalDate.of(2024, 5, 1), record.get(date.id, LocalDate::class.java))
+    }
+
+    // Now clear the values and make sure that the table columns are set to NULL.
+    task.createMutator().let {
+      it.setCustomProperties(CustomColumnsValues(customPropertyManager) {})
+      it.commit()
+    }
+    DSL.using(dataSource, SQLDialect.H2).fetchSingle("select * from Task").also { record ->
+      listOf(text, int, double, boolean, date).forEach { def -> assertNull(record.get(def.id)) }
+    }
   }
 
   @Test

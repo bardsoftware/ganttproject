@@ -191,7 +191,24 @@ class SqlProjectDatabaseImpl(
 
   private val isLogStarted get() = localTxnId >= 0
 
-  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task, this::update, dialect)
+  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder =
+    // The Colloboque-aware builder writes the custom property values into the TaskCustomColumn table and generates
+    // the update DTOs. When Colloboque is switched off, we need neither, and we want the custom property values
+    // to be written into the columns of the Task table, so that the calculated columns could use them.
+    if (isColloboqueOn()) SqlTaskUpdateBuilder(task, this::update, dialect)
+    else H2TaskUpdateBuilder(task, this::executeStatements, dialect)
+
+  /** Executes the given statements against the H2 database in a single transaction. */
+  @Throws(ProjectDatabaseException::class)
+  internal fun executeStatements(statements: List<String>) = withDSL({ "Failed to update the task" }) { dsl ->
+    dsl.transaction { config ->
+      val context = DSL.using(config)
+      statements.forEach {
+        LOG.debug("SQL: {}", it)
+        context.execute(it)
+      }
+    }
+  }
 
   @Throws(ProjectDatabaseException::class)
   override fun insertTask(task: Task) {

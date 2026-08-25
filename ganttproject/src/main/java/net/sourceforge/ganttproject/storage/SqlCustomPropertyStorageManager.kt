@@ -106,5 +106,6 @@ private fun CustomPropertyClass.asSqlType() = when (this) {
   CustomPropertyClass.INTEGER -> "integer"
   CustomPropertyClass.DATE -> "date"
   CustomPropertyClass.BOOLEAN -> "boolean"
-  CustomPropertyClass.DOUBLE -> "numeric"
+  // A bare "numeric" in H2 has scale 0, so the fractional part of the double values would be lost.
+  CustomPropertyClass.DOUBLE -> "double precision"
 }
