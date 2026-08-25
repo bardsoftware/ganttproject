@@ -53,7 +53,7 @@ class ProjectDatabaseTest {
 
   @BeforeEach
   fun init() {
-    System.setProperty("colloboque.on", "true")
+    System.setProperty("enable_colloboque", "true")
     dataSource = JdbcDataSource().also {
       it.setURL("jdbc:h2:mem:test$SQL_PROJECT_DATABASE_OPTIONS")
     }
@@ -71,7 +71,7 @@ class ProjectDatabaseTest {
     dataSource.connection.use { conn ->
       conn.createStatement().execute("shutdown")
     }
-    System.setProperty("colloboque.on", "false")
+    System.setProperty("enable_colloboque", "false")
   }
 
   @Test

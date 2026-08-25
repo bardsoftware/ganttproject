@@ -528,6 +528,9 @@ class SqlTaskUpdateBuilder(private val task: Task,
   override fun setDuration(oldValue: TimeDuration, newValue: TimeDuration) =
     appendUpdate(TASK.DURATION, oldValue.length, newValue.length)
 
+  override fun setEarliestStart(oldValue: GanttCalendar?, newValue: GanttCalendar?) =
+    appendUpdate(TASK.EARLIEST_START_DATE, oldValue?.toLocalDate(), newValue?.toLocalDate())
+
   override fun setCompletionPercentage(oldValue: Int, newValue: Int) =
     appendUpdate(TASK.COMPLETION, oldValue, newValue)
 

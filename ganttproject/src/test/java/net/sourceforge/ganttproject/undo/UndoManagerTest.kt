@@ -19,20 +19,26 @@
 package net.sourceforge.ganttproject.undo
 
 import net.sourceforge.ganttproject.document.FileDocument
-import net.sourceforge.ganttproject.storage.LazyProjectDatabaseProxy
 import net.sourceforge.ganttproject.storage.SQL_PROJECT_DATABASE_OPTIONS
 import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl
 import net.sourceforge.ganttproject.storage.UndoableEditTxnImpl
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.lang.RuntimeException
 import java.nio.file.Files
 
 class UndoManagerTest {
+  @AfterEach
+  fun tearDown() {
+    // Otherwise the value of this property leaks into the other test classes running in the same JVM.
+    System.setProperty("enable_colloboque", "false")
+  }
+
   @Test
   fun `failed undoable edit closes transaction`() {
-    System.setProperty("colloboque.on", "true")
+    System.setProperty("enable_colloboque", "true")
     val dataSource = JdbcDataSource().also {
       it.setURL("jdbc:h2:mem:test$SQL_PROJECT_DATABASE_OPTIONS")
     }

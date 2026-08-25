@@ -112,6 +112,9 @@ class H2TaskUpdateBuilder(
 
   override fun setDuration(oldValue: TimeDuration, newValue: TimeDuration) = append(TASK.DURATION, newValue.length)
 
+  override fun setEarliestStart(oldValue: GanttCalendar?, newValue: GanttCalendar?) =
+    append(TASK.EARLIEST_START_DATE, newValue?.toLocalDate())
+
   override fun setMilestone(oldValue: Boolean, newValue: Boolean) = append(TASK.IS_MILESTONE, newValue)
 
   override fun setName(oldName: String?, newName: String?) = append(TASK.NAME, newName)

@@ -109,6 +109,7 @@ interface ProjectDatabase {
     fun setCritical(oldValue: Boolean, newValue: Boolean)
     fun setCustomProperties(oldCustomProperties: CustomPropertyHolder, newCustomProperties: CustomPropertyHolder)
     fun setDuration(oldValue: TimeDuration, newValue: TimeDuration)
+    fun setEarliestStart(oldValue: GanttCalendar?, newValue: GanttCalendar?)
     fun setMilestone(oldValue: Boolean, newValue: Boolean)
     fun setName(oldName: String?, newName: String?)
     fun setNotes(oldValue: String?, newValue: String?)
