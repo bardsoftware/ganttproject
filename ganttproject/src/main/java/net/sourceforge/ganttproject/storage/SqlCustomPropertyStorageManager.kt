@@ -46,24 +46,20 @@ class SqlCustomPropertyStorageManager(private val dataSource: DataSource) {
     val newStatements = createCustomColumnStatements(customPropertyManager)
     synchronized(customColumnStatements) {
       if (customColumnStatements != newStatements.toSet()) {
-        // If we successfully execute drop statements, we need to clear the list of them. If creating columns fails,
-        // we will start the next time with the empty table.
-        var dropOk = false
+        // We fill the drop list before we execute new statements to be safe if
+        // one of the new statements fails. In this case we'll have a list of idempotent
+        // DROP COLUMNSs and the next time we run this code, we will safely drop them.
         try {
           runStatements(dataSource, dropStatements)
-          dropOk = true
+          dropStatements.clear()
+          dropStatements.addAll(customPropertyManager.orderedDefinitions().asReversed().map {
+            "ALTER TABLE Task DROP COLUMN IF EXISTS ${it.id}"
+          })
           runStatements(dataSource, newStatements)
         } finally {
-          if (dropOk) {
-            dropStatements.clear()
-          }
           customColumnStatements.clear()
         }
-
         customColumnStatements.addAll(newStatements)
-        dropStatements.addAll(customPropertyManager.orderedDefinitions().asReversed().map {
-          "ALTER TABLE Task DROP COLUMN ${it.id}"
-        })
         return true
       }
       return false

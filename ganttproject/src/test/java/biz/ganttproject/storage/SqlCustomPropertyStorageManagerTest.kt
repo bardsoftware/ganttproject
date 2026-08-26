@@ -433,6 +433,37 @@ class CalculatedPropertyTest {
     }
   }
 
+  @Test
+  fun `custom columns recover after a rebuild which fails in the middle`() {
+    val manager = SqlCustomPropertyStorageManager(dataSource)
+    val stored = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "stored")
+    val calculated = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "calculated").also {
+      it.calculationMethod = SimpleSelect(it.id, "${stored.id} * 2", resultClass = it.type)
+    }
+    assertTrue(manager.onCustomColumnChange(customPropertyManager))
+
+    // Deleting the stored property leaves the calculated one dangling: the drops succeed, but adding the generated
+    // column fails because its expression refers to the column which has just been dropped.
+    customPropertyManager.deleteDefinition(stored)
+    assertThrows<ProjectDatabaseException> { manager.onCustomColumnChange(customPropertyManager) }
+
+    // The rebuild which is triggered by adding another stored property adds its column and fails on the dangling
+    // calculated one again. The added column must not be left behind as an orphan.
+    val another = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "another")
+    assertThrows<ProjectDatabaseException> { manager.onCustomColumnChange(customPropertyManager) }
+
+    // Deleting the dangling calculated property is expected to bring the columns back to the working state.
+    customPropertyManager.deleteDefinition(calculated)
+    assertTrue(manager.onCustomColumnChange(customPropertyManager))
+
+    val task = taskManager.newTaskBuilder().withName("task1").withStartDate(Date()).build()
+    task.customValues.setValue(another, 42)
+    projectDatabase.insertTask(task)
+    DSL.using(dataSource, SQLDialect.H2).fetchSingle("SELECT ${another.id} FROM Task").also {
+      assertEquals(42, it.get(another.id))
+    }
+  }
+
 }
 
 private fun createPropertyHolders(taskManager: TaskManager) =
