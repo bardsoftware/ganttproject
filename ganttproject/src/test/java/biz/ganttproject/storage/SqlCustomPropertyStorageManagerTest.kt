@@ -31,7 +31,9 @@ import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -313,6 +315,124 @@ class CalculatedPropertyTest {
     }
     manager.onCustomColumnChange(customPropertyManager)
   }
+
+  @Test
+  fun `insert writes the custom property values of all the supported types into the task table`() {
+    val text = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "text")
+    val int = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "int")
+    val double = customPropertyManager.createDefinition(CustomPropertyClass.DOUBLE, "double")
+    val boolean = customPropertyManager.createDefinition(CustomPropertyClass.BOOLEAN, "boolean")
+    val date = customPropertyManager.createDefinition(CustomPropertyClass.DATE, "date")
+    rebuildTaskDataTable(dataSource, customPropertyManager)
+
+    val task = taskManager.newTaskBuilder().withName("task1").withStartDate(Date()).build()
+    task.customValues.setValue(text, "it's a text")
+    task.customValues.setValue(int, 42)
+    task.customValues.setValue(double, 3.14)
+    task.customValues.setValue(boolean, true)
+    task.customValues.setValue(date, CalendarFactory.createGanttCalendar(2024, 4, 1))
+    projectDatabase.insertTask(task)
+
+    DSL.using(dataSource, SQLDialect.H2).fetchSingle("select * from Task").also { record ->
+      assertEquals("it's a text", record.get(text.id, String::class.java))
+      assertEquals(42, record.get(int.id, Int::class.java))
+      assertEquals(3.14, record.get(double.id, Double::class.java))
+      assertEquals(true, record.get(boolean.id, Boolean::class.java))
+      assertEquals(LocalDate.of(2024, 5, 1), record.get(date.id, LocalDate::class.java))
+    }
+  }
+
+  @Test
+  fun `insert writes the default values of the unset stored properties`() {
+    val int = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "int", "10")
+    val text = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "text")
+    rebuildTaskDataTable(dataSource, customPropertyManager)
+
+    val task = taskManager.newTaskBuilder().withName("task1").withStartDate(Date()).build()
+    projectDatabase.insertTask(task)
+
+    DSL.using(dataSource, SQLDialect.H2).fetchSingle("select * from Task").also { record ->
+      assertEquals(10, record.get(int.id, Int::class.java))
+      assertNull(record.get(text.id))
+    }
+  }
+
+  @Test
+  fun `insert does not write into the generated columns and they evaluate from the stored values`() {
+    val stored = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "stored")
+    val calculated = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "calculated").also {
+      it.calculationMethod = SimpleSelect(it.id, "${stored.id} * 2", resultClass = CustomPropertyClass.INTEGER.javaClass)
+    }
+    rebuildTaskDataTable(dataSource, customPropertyManager)
+
+    val task = taskManager.newTaskBuilder().withName("task1").withStartDate(Date()).build()
+    task.customValues.setValue(stored, 21)
+    projectDatabase.insertTask(task)
+
+    DSL.using(dataSource, SQLDialect.H2).fetchSingle("select * from Task").also { record ->
+      assertEquals(21, record.get(stored.id, Int::class.java))
+      assertEquals(42, record.get(calculated.id, Int::class.java))
+    }
+  }
+
+  @Test
+  fun `update resets the missing properties to the default values`() {
+    val stored = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "stored", "the default")
+    rebuildTaskDataTable(dataSource, customPropertyManager)
+
+    val task = taskManager.newTaskBuilder().withName("task1").withStartDate(Date()).build()
+    projectDatabase.insertTask(task)
+
+    // Setting the own value writes it into the column.
+    task.createMutator().let { mutator ->
+      mutator.setCustomProperties(task.customValues.copyOf().also { it.setValue(stored, "own value") })
+      mutator.commit()
+    }
+    DSL.using(dataSource, SQLDialect.H2).fetchSingle("select * from Task").also { record ->
+      assertEquals("own value", record.get(stored.id, String::class.java))
+    }
+
+    // Clearing the own value brings the default value back, not NULL.
+    task.createMutator().let { mutator ->
+      mutator.setCustomProperties(CustomColumnsValues(customPropertyManager) {})
+      mutator.commit()
+    }
+    DSL.using(dataSource, SQLDialect.H2).fetchSingle("select * from Task").also { record ->
+      assertEquals("the default", record.get(stored.id, String::class.java))
+    }
+  }
+
+  @Test
+  fun `update writes all the changed properties in a single statement`() {
+    val stored = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "stored")
+    val withDefault = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "int", "10")
+    val calculated = customPropertyManager.createDefinition(CustomPropertyClass.INTEGER, "calculated").also {
+      it.calculationMethod = SimpleSelect(it.id, "${withDefault.id} + 1", resultClass = CustomPropertyClass.INTEGER.javaClass)
+    }
+
+    val task = taskManager.newTaskBuilder().withName("task1").withStartDate(Date()).build()
+    val statements = mutableListOf<String>()
+    H2TaskUpdateBuilder(task, statements::addAll, SQLDialect.H2).also { builder ->
+      builder.setName("task1", "task2")
+      builder.setCustomProperties(task.customValues, CustomColumnsValues(customPropertyManager) {}.also {
+        it.setValue(stored, "new value")
+      })
+      builder.commit()
+    }
+
+    assertEquals(1, statements.size)
+    statements[0].lowercase().also { statement ->
+      assertTrue(statement.contains(stored.id)) { "Statement: $statement" }
+      assertTrue(statement.contains("'new value'")) { "Statement: $statement" }
+      // The properties missing in the holder are reset to their default values.
+      assertTrue(statement.contains(withDefault.id)) { "Statement: $statement" }
+      // The calculated properties are not written.
+      assertFalse(statement.contains(calculated.id)) { "Statement: $statement" }
+      assertTrue(statement.contains("name")) { "Statement: $statement" }
+      assertTrue(statement.contains("task2")) { "Statement: $statement" }
+    }
+  }
+
 }
 
 private fun createPropertyHolders(taskManager: TaskManager) =

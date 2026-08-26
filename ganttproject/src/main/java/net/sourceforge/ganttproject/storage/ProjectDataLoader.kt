@@ -37,7 +37,7 @@ fun buildInsertTaskQuery(dsl: DSLContext, task: Task): Insert<TaskRecord> {
     costManualValue = task.cost.manualValue
     isCostCalculated = task.cost.isCalculated
   }
-  var q = dsl
+  val q = dsl
     .insertInto(Tables.TASK)
     .set(Tables.TASK.UID, task.uid)
     .set(Tables.TASK.NUM, task.taskID)
@@ -57,17 +57,8 @@ fun buildInsertTaskQuery(dsl: DSLContext, task: Task): Insert<TaskRecord> {
     .set(Tables.TASK.COST, task.cost.value)
     .set(Tables.TASK.IS_COST_CALCULATED, isCostCalculated)
     .set(Tables.TASK.NOTES, task.externalizedNotes())
-  val customProps = mutableMapOf<Any, Any>()
-  task.manager.customPropertyManager.definitions.forEach { def ->
-    if (def.calculationMethod == null) {
-
-      task.customValues.getValue(def)?.let {
-       customProps[DSL.field(""" "${def.id}" """, def.type)] = it
-      }
-    }
-  }
-  q.set(customProps)
-  return q
+  val customProps = mapCustomPropertiesToJooq(task.manager.customPropertyManager, task.customValues)
+  return q.set(customProps)
 }
 
 fun buildInsertTaskDto(task: Task): OperationDto.InsertOperationDto {

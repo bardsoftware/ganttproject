@@ -70,10 +70,7 @@ class H2TaskUpdateBuilder(
    * of the task after the change.
    */
   private fun appendCustomProperties(customProperties: CustomPropertyHolder) {
-    val id2value = customProperties.customProperties.associate { it.definition.id to it.value }
-    task.manager.customPropertyManager.definitions.filter { !it.isCalculated() }.forEach { def ->
-      append(def.asField(), def.asSqlValue(id2value[def.id] ?: def.defaultValue))
-    }
+    newValues.putAll(mapCustomPropertiesToJooq(task.manager.customPropertyManager, customProperties))
   }
 
   @Throws(ProjectDatabaseException::class)
