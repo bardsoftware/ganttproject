@@ -46,12 +46,21 @@ class SqlCustomPropertyStorageManager(private val dataSource: DataSource) {
     val newStatements = createCustomColumnStatements(customPropertyManager)
     synchronized(customColumnStatements) {
       if (customColumnStatements != newStatements.toSet()) {
-        runStatements(dataSource, dropStatements)
-        runStatements(dataSource, newStatements)
+        // If we successfully execute drop statements, we need to clear the list of them. If creating columns fails,
+        // we will start the next time with the empty table.
+        var dropOk = false
+        try {
+          runStatements(dataSource, dropStatements)
+          dropOk = true
+          runStatements(dataSource, newStatements)
+        } finally {
+          if (dropOk) {
+            dropStatements.clear()
+          }
+          customColumnStatements.clear()
+        }
 
-        customColumnStatements.clear()
         customColumnStatements.addAll(newStatements)
-        dropStatements.clear()
         dropStatements.addAll(customPropertyManager.orderedDefinitions().asReversed().map {
           "ALTER TABLE Task DROP COLUMN ${it.id}"
         })
