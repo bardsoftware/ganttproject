@@ -24,10 +24,6 @@ import javax.sql.DataSource
  * Runs the given statements in a single transaction.
  */
 fun runStatements(dataSource: DataSource, statements: List<String>) {
-  val sqlScript = """
-    ${statements.joinToString(separator = ";\n")};
-  """.trimIndent()
-  println("Running \n $sqlScript")
   dataSource.connection.use { cnx ->
     statements.forEach { query ->
       cnx.createStatement().use { stmt ->

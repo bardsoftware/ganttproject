@@ -66,8 +66,7 @@ class H2TaskUpdateBuilder(
 
   /**
    * Appends the values of the stored (that is, not calculated) custom properties to the update statement.
-   * The properties which are missing in the holder are reset to NULL, because the holder keeps all the values
-   * of the task after the change.
+   * The properties which are missing in the holder are reset to their default values.
    */
   private fun appendCustomProperties(customProperties: CustomPropertyHolder) {
     newValues.putAll(mapCustomPropertiesToJooq(task.manager.customPropertyManager, customProperties))

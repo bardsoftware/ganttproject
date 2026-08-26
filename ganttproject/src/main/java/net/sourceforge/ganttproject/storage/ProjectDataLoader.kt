@@ -27,7 +27,6 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskImpl
 import org.jooq.DSLContext
 import org.jooq.Insert
-import org.jooq.impl.DSL
 import java.math.BigDecimal
 
 fun buildInsertTaskQuery(dsl: DSLContext, task: Task): Insert<TaskRecord> {
