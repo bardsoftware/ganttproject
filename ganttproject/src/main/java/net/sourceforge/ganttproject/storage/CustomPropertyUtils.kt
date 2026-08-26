@@ -20,7 +20,11 @@ package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.customproperty.CustomPropertyManager
+import biz.ganttproject.storage.db.Tables.TASK
 import org.jooq.Field
+import org.jooq.SQLDialect
+import org.jooq.conf.ParamType
+import org.jooq.impl.DSL
 
 
 /**
@@ -29,4 +33,13 @@ import org.jooq.Field
 internal fun mapCustomPropertiesToJooq(customPropertyManager: CustomPropertyManager, customProperties: CustomPropertyHolder): Map<Field<*>, Any?> {
   val id2value = customProperties.customProperties.associate { it.definition.id to it.value }
   return customPropertyManager.definitions.filter { !it.isCalculated() }.associate { it.asField() to it.asSqlValue(id2value[it.id] ?: it.defaultValue) }
+}
+
+internal fun createUpdateCustomValuesStatement(taskUid: String, customPropertyManager: CustomPropertyManager, customPropertyHolder: CustomPropertyHolder): String {
+  val setCustomFields = mapCustomPropertiesToJooq(customPropertyManager, customPropertyHolder)
+  return DSL.using(SQLDialect.DEFAULT)
+    .update(TASK)
+    .set(setCustomFields)
+    .where(TASK.UID.eq(taskUid))
+    .getSQL(ParamType.INLINED)
 }

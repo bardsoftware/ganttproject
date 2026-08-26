@@ -80,22 +80,6 @@ fun createCustomColumnStatements(customPropertyManager: CustomPropertyManager): 
   return addColumnStatements
 }
 
-fun createUpdateCustomValuesStatement(taskUid: String, customPropertyManager: CustomPropertyManager, customPropertyHolder: CustomPropertyHolder): String {
-  return customPropertyManager.definitions.mapNotNull { def ->
-    if (def.calculationMethod == null) {
-      val value = customPropertyHolder.customProperties.find { it.definition.id == def.id }?.value
-      "${def.id}=${generateSqlValueLiteral(def, value)}"
-    } else null
-  }.joinToString(separator = ",", prefix = "UPDATE Task SET ", postfix = " WHERE uid='$taskUid';")
-}
-
-fun generateSqlValueLiteral(def: CustomPropertyDefinition, value: Any?): String =
-  value?.let {
-    when (def.propertyClass) {
-      CustomPropertyClass.TEXT -> "'${value}'"
-      else -> "$value"
-    }
-  } ?: "NULL"
 
 // Orders the definitions so that all stored precede all calculated properties.
 private fun CustomPropertyManager.orderedDefinitions() = this.definitions.sortedWith { o1, o2 ->
