@@ -87,6 +87,7 @@ class SqlProjectDatabaseImpl(
       // them again, so that the calculated columns which use them could be evaluated.
       val statements = mutableListOf<String>()
       tasks.forEach { task ->
+        // TODO: once we get back to Colloboque, we'll probably need to build the appropriate updates for that as well.
         H2TaskUpdateBuilder(task, statements::addAll, dialect).also {
           it.setCustomProperties(task.customValues, task.customValues)
         }.commit()
