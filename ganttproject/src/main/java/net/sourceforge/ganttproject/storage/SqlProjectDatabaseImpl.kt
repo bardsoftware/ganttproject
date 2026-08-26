@@ -24,6 +24,7 @@ import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.customproperty.CustomPropertyManager
+import biz.ganttproject.storage.cloud.isColloboqueOn
 import biz.ganttproject.storage.db.Tables.*
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import kotlinx.serialization.json.Json
@@ -40,7 +41,6 @@ import org.jooq.impl.DSL.field
 import java.awt.Color
 import java.sql.Connection
 import java.sql.SQLException
-import java.util.*
 import javax.sql.DataSource
 
 typealias ShutdownHook = ()->Unit
@@ -81,8 +81,20 @@ class SqlProjectDatabaseImpl(
     externalUpdatesListener = listener
   }
 
-  override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager) =
-    customPropertyStorageManager.onCustomColumnChange(customPropertyManager)
+  override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager, tasks: List<Task>) {
+    if (customPropertyStorageManager.onCustomColumnChange(customPropertyManager) && tasks.isNotEmpty()) {
+      // The columns have been re-created, and the values of the stored custom properties are gone. Let's write
+      // them again, so that the calculated columns which use them could be evaluated.
+      val statements = mutableListOf<String>()
+      tasks.forEach { task ->
+        // TODO: once we get back to Colloboque, we'll probably need to build the appropriate updates for that as well.
+        H2TaskUpdateBuilder(task, statements::addAll, dialect).also {
+          it.setCustomProperties(task.customValues, task.customValues)
+        }.commit()
+      }
+      executeStatements(statements)
+    }
+  }
 
   override fun updateBuiltInCalculatedColumns() {
     runScriptFromResource(dataSource, DB_UPDATE_BUILTIN_CALCULATED_COLUMNS)
@@ -191,7 +203,24 @@ class SqlProjectDatabaseImpl(
 
   private val isLogStarted get() = localTxnId >= 0
 
-  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder = SqlTaskUpdateBuilder(task, this::update, dialect)
+  override fun createTaskUpdateBuilder(task: Task): TaskUpdateBuilder =
+    // The Colloboque-aware builder writes the custom property values into the TaskCustomColumn table and generates
+    // the update DTOs. When Colloboque is switched off, we need neither, and we want the custom property values
+    // to be written into the columns of the Task table, so that the calculated columns could use them.
+    if (isColloboqueOn()) SqlTaskUpdateBuilder(task, this::update, dialect)
+    else H2TaskUpdateBuilder(task, this::executeStatements, dialect)
+
+  /** Executes the given statements against the H2 database in a single transaction. */
+  @Throws(ProjectDatabaseException::class)
+  internal fun executeStatements(statements: List<String>) = withDSL({ "Failed to update the task" }) { dsl ->
+    dsl.transaction { config ->
+      val context = DSL.using(config)
+      statements.forEach {
+        LOG.debug("SQL: {}", it)
+        context.execute(it)
+      }
+    }
+  }
 
   @Throws(ProjectDatabaseException::class)
   override fun insertTask(task: Task) {
@@ -500,6 +529,9 @@ class SqlTaskUpdateBuilder(private val task: Task,
   override fun setDuration(oldValue: TimeDuration, newValue: TimeDuration) =
     appendUpdate(TASK.DURATION, oldValue.length, newValue.length)
 
+  override fun setEarliestStart(oldValue: GanttCalendar?, newValue: GanttCalendar?) =
+    appendUpdate(TASK.EARLIEST_START_DATE, oldValue?.toLocalDate(), newValue?.toLocalDate())
+
   override fun setCompletionPercentage(oldValue: Int, newValue: Int) =
     appendUpdate(TASK.COMPLETION, oldValue, newValue)
 
@@ -537,7 +569,6 @@ class SqlTaskUpdateBuilder(private val task: Task,
 
 private fun Task.logId(): String = "${uid}:${taskID}"
 
-fun isColloboqueOn() = System.getProperty("colloboque.on", "false") == "true"
 const val SQL_PROJECT_DATABASE_OPTIONS = ";DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=true"
 private const val H2_IN_MEMORY_URL = "jdbc:h2:mem:gantt-project-state$SQL_PROJECT_DATABASE_OPTIONS"
 private const val DB_INIT_SCRIPT_PATH = "/sql/init-project-database.sql"

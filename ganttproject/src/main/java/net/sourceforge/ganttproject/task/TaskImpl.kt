@@ -226,6 +226,9 @@ internal open class MutatorImpl(
           if (taskImpl.end != myEndChange.oldValue) {
             taskUpdateBuilder.setEnd(myEndChange.oldValue, taskImpl.end)
           }
+          if (taskImpl.third != myThirdChange.oldValue.startDate) {
+            taskUpdateBuilder.setEarliestStart(myThirdChange.oldValue.startDate, taskImpl.third)
+          }
         }
       }
 

@@ -109,6 +109,7 @@ interface ProjectDatabase {
     fun setCritical(oldValue: Boolean, newValue: Boolean)
     fun setCustomProperties(oldCustomProperties: CustomPropertyHolder, newCustomProperties: CustomPropertyHolder)
     fun setDuration(oldValue: TimeDuration, newValue: TimeDuration)
+    fun setEarliestStart(oldValue: GanttCalendar?, newValue: GanttCalendar?)
     fun setMilestone(oldValue: Boolean, newValue: Boolean)
     fun setName(oldName: String?, newName: String?)
     fun setNotes(oldValue: String?, newValue: String?)
@@ -181,9 +182,14 @@ interface ProjectDatabase {
    * This method should be called whenever something changes in the custom properties.
    * It updates the internal structures and tables for storing custom values as necessary.
    *
+   * Re-creating the custom property columns resets their values, so the values of the stored custom properties
+   * of the given tasks are written into the database again.
+   *
    * @param customPropertyManager an instance of the CustomPropertyManager with the actual custom property definitions.
+   * @param tasks the tasks which are already stored in the database. Pass an empty list if the tasks are going to be
+   * inserted right after this call.
    */
-  fun onCustomColumnChange(customPropertyManager: CustomPropertyManager)
+  fun onCustomColumnChange(customPropertyManager: CustomPropertyManager, tasks: List<Task>)
 
   fun updateBuiltInCalculatedColumns()
 }

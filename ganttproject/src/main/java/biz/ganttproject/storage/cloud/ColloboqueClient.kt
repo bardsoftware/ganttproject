@@ -217,7 +217,7 @@ private class TxnCommitInfo(var baseTxnId: BaseTxnId) {
     }
 }
 
-private fun isColloboqueOn() = System.getProperty("enable_colloboque", System.getenv("ENABLE_COLLOBOQUE") ?: "false").lowercase().let {
+fun isColloboqueOn() = System.getProperty("enable_colloboque", System.getenv("ENABLE_COLLOBOQUE") ?: "false").lowercase().let {
   it.toBooleanStrictOrNull() ?: false
 }
 

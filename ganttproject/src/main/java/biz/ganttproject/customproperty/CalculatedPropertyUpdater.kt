@@ -28,6 +28,7 @@ class CalculatedPropertyUpdater(
   private val propertyHolders: ()->Map<Int,CustomPropertyHolder?>) {
 
   fun update() {
+    projectDatabase.updateBuiltInCalculatedColumns()
     LOG.debug(">> updating calculated properties")
     val id2values = propertyHolders()
     val updaters = customPropertyManager().definitions.mapNotNull { def ->
@@ -40,7 +41,6 @@ class CalculatedPropertyUpdater(
     }
 
     projectDatabase.mapTasks(*(updaters.toTypedArray()))
-    projectDatabase.updateBuiltInCalculatedColumns()
     LOG.debug("<<<")
   }
 }

@@ -38,21 +38,31 @@ class SqlCustomPropertyStorageManager(private val dataSource: DataSource) {
   /**
    * This function must be called whenever something changes in the custom property definitions,
    * e.g. a new one is created or deleted, or the existing one changes.
+   *
+   * @return true if the table columns have been re-created. The values of the stored custom properties are lost
+   * in this case and need to be written again.
    */
-  fun onCustomColumnChange(customPropertyManager: CustomPropertyManager) {
+  fun onCustomColumnChange(customPropertyManager: CustomPropertyManager): Boolean {
     val newStatements = createCustomColumnStatements(customPropertyManager)
     synchronized(customColumnStatements) {
       if (customColumnStatements != newStatements.toSet()) {
-        runStatements(dataSource, dropStatements)
-        runStatements(dataSource, newStatements)
-
-        customColumnStatements.clear()
+        // We fill the drop list before we execute new statements to be safe if
+        // one of the new statements fails. In this case we'll have a list of idempotent
+        // DROP COLUMNSs and the next time we run this code, we will safely drop them.
+        try {
+          runStatements(dataSource, dropStatements)
+          dropStatements.clear()
+          dropStatements.addAll(customPropertyManager.orderedDefinitions().asReversed().map {
+            "ALTER TABLE Task DROP COLUMN IF EXISTS ${it.id}"
+          })
+          runStatements(dataSource, newStatements)
+        } finally {
+          customColumnStatements.clear()
+        }
         customColumnStatements.addAll(newStatements)
-        dropStatements.clear()
-        dropStatements.addAll(customPropertyManager.orderedDefinitions().asReversed().map {
-          "ALTER TABLE Task DROP COLUMN ${it.id}"
-        })
+        return true
       }
+      return false
     }
   }
 }
@@ -75,22 +85,6 @@ fun createCustomColumnStatements(customPropertyManager: CustomPropertyManager): 
   return addColumnStatements
 }
 
-fun createUpdateCustomValuesStatement(taskUid: String, customPropertyManager: CustomPropertyManager, customPropertyHolder: CustomPropertyHolder): String {
-  return customPropertyManager.definitions.mapNotNull { def ->
-    if (def.calculationMethod == null) {
-      val value = customPropertyHolder.customProperties.find { it.definition.id == def.id }?.value
-      "${def.id}=${generateSqlValueLiteral(def, value)}"
-    } else null
-  }.joinToString(separator = ",", prefix = "UPDATE Task SET ", postfix = " WHERE uid='$taskUid';")
-}
-
-fun generateSqlValueLiteral(def: CustomPropertyDefinition, value: Any?): String =
-  value?.let {
-    when (def.propertyClass) {
-      CustomPropertyClass.TEXT -> "'${value}'"
-      else -> "$value"
-    }
-  } ?: "NULL"
 
 // Orders the definitions so that all stored precede all calculated properties.
 private fun CustomPropertyManager.orderedDefinitions() = this.definitions.sortedWith { o1, o2 ->
@@ -106,5 +100,6 @@ private fun CustomPropertyClass.asSqlType() = when (this) {
   CustomPropertyClass.INTEGER -> "integer"
   CustomPropertyClass.DATE -> "date"
   CustomPropertyClass.BOOLEAN -> "boolean"
-  CustomPropertyClass.DOUBLE -> "numeric"
+  // A bare "numeric" in H2 has scale 0, so the fractional part of the double values would be lost.
+  CustomPropertyClass.DOUBLE -> "double precision"
 }
