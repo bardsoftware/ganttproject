@@ -66,9 +66,10 @@ public abstract class TaskActionBase extends GPAction implements TaskSelectionMa
     if (calledFromAppleScreenMenu(e)) {
       return;
     }
-    final List<Task> selection = new ArrayList<Task>(mySelection);
-    Collections.sort(selection, new Comparator<Task>() {
+    final List<Task> selection = new ArrayList<>(mySelection);
+    Collections.sort(selection, new Comparator<>() {
       private final TaskContainmentHierarchyFacade myTaskHierarchy = getTaskManager().getTaskHierarchy();
+
       @Override
       public int compare(Task o1, Task o2) {
         return myTaskHierarchy.compareDocumentOrder(o1, o2);
