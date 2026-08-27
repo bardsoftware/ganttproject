@@ -81,8 +81,10 @@ class SqlProjectDatabaseImpl(
     externalUpdatesListener = listener
   }
 
+  
   override fun onCustomColumnChange(customPropertyManager: CustomPropertyManager, tasks: List<Task>) {
-    if (customPropertyStorageManager.onCustomColumnChange(customPropertyManager) && tasks.isNotEmpty()) {
+    customPropertyStorageManager.onCustomColumnChange(customPropertyManager)
+    if (tasks.isNotEmpty()) {
       // The columns have been re-created, and the values of the stored custom properties are gone. Let's write
       // them again, so that the calculated columns which use them could be evaluated.
       val statements = mutableListOf<String>()
