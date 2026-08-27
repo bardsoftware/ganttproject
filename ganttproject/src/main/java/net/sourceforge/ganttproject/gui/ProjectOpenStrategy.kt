@@ -451,11 +451,16 @@ internal class CommandLineProjectOpenStrategy(
     val recentDocsConsumer = Consumer<List<RecentDocAsFolderItem>> { docList ->
       docList.firstOrNull()?.asDocument()?.let { lastDocument ->
         confirmOpenLastDocument(lastDocument) {
-          val stateMachine = projectUiFacade.openProject(
-            project.documentManager.getProxyDocument(lastDocument), project, null
-          )
-          stateMachine.stateFailed.await { error ->
-            error.showProjectOpenErrorDialog(lastDocument, uiFacade.notificationManager)
+          try {
+            val stateMachine = projectUiFacade.openProject(
+              project.documentManager.getProxyDocument(lastDocument), project, null
+            )
+            stateMachine.stateFailed.await { error ->
+              error.showProjectOpenErrorDialog(lastDocument, uiFacade.notificationManager)
+            }
+          } catch (e: Exception) {
+            DOCUMENT_ERROR_LOGGER.error("Failed to open the most recent document {}", lastDocument, exception = e)
+            uiFacade.showErrorDialog(RootLocalizer.formatText("openLastDocument.error", lastDocument.fileName, e.message ?: "Something went wrong"))
           }
         }
       }
