@@ -36,9 +36,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.sourceforge.ganttproject.*
 import net.sourceforge.ganttproject.action.GPAction
+import net.sourceforge.ganttproject.action.CancelAction
 import net.sourceforge.ganttproject.action.OkAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
+import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.gui.projectopen.DOCUMENT_ERROR_LOGGER
 import net.sourceforge.ganttproject.gui.projectopen.showProjectOpenErrorDialog
 import net.sourceforge.ganttproject.importer.Importer
@@ -440,23 +442,46 @@ internal class CommandLineProjectOpenStrategy(
   }
 
   // Tries to open the most recent document, if the corresponding option is switched on.
+  // Opening a document may start some lengthy and unexpected activities, e.g. signing in to GanttProject Cloud in the
+  // web browser, so we ask the user to confirm that they really want to open the last document.
   fun maybeOpenLastDocument() {
     if (!reopenLastFileOption.isChecked) {
       return
     }
     val recentDocsConsumer = Consumer<List<RecentDocAsFolderItem>> { docList ->
       docList.firstOrNull()?.asDocument()?.let { lastDocument ->
-        val stateMachine = projectUiFacade.openProject(
-          project.documentManager.getProxyDocument(lastDocument), project, null
-        )
-        stateMachine.stateFailed.await { error ->
-          error.showProjectOpenErrorDialog(lastDocument, uiFacade.notificationManager)
+        confirmOpenLastDocument(lastDocument) {
+          val stateMachine = projectUiFacade.openProject(
+            project.documentManager.getProxyDocument(lastDocument), project, null
+          )
+          stateMachine.stateFailed.await { error ->
+            error.showProjectOpenErrorDialog(lastDocument, uiFacade.notificationManager)
+          }
         }
       }
     }
     val busyIndicator = Consumer<Boolean> {  }
     val progressLabel = RootLocalizer.create("foo")
     project.documentManager.loadRecentDocs(recentDocsConsumer, busyIndicator, progressLabel)
+  }
+
+  // Asks the user if they really want to open the given document and runs onConfirmed if the answer is yes.
+  private fun confirmOpenLastDocument(document: Document, onConfirmed: () -> Unit) {
+    val documentKind = RootLocalizer.formatText(
+      when {
+        document is GPCloudDocument -> "openLastDocument.kind.cloud"
+        document is FileDocument -> "openLastDocument.kind.local"
+        else -> "openLastDocument.kind.remote"
+      }
+    )
+    uiFacade.showOptionDialog(
+      JOptionPane.QUESTION_MESSAGE,
+      RootLocalizer.formatText("openLastDocument.question", document.fileName, documentKind),
+      arrayOf(
+        OkAction.create("yes") { onConfirmed() },
+        CancelAction.create("no") {}
+      )
+    )
   }
 }
 
