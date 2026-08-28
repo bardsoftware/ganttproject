@@ -460,7 +460,7 @@ internal class CommandLineProjectOpenStrategy(
             }
           } catch (e: Exception) {
             DOCUMENT_ERROR_LOGGER.error("Failed to open the most recent document {}", lastDocument, exception = e)
-            uiFacade.showErrorDialog(RootLocalizer.formatText("openLastDocument.error", lastDocument.fileName, e.message ?: "Something went wrong"))
+            uiFacade.showErrorDialog(RootLocalizer.formatText("openLastDocument.error", lastDocument.fileName, e.cause?.message ?: "Something went wrong"))
           }
         }
       }
