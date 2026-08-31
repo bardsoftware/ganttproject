@@ -35,22 +35,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * The "coordinator" column of the resources tab is drawn with a CheckBoxTableCell. That cell does
- * not start an edit; it binds its check box bidirectionally to the value which the cell value
- * factory returned. The tests below take that very value and set it, which is exactly what a click
- * on the check box does.
+ * Tests behavior of the UI components in the task resource panel.
  */
 class TaskResourcesPanelTest {
 
-  /**
-   * Ticking "coordinator" has to reach the assignment.
-   *
-   * Red without the fix:
-   *
-   *   TaskResourcesPanelTest > ticking coordinator reaches the assignment() FAILED
-   *       org.opentest4j.AssertionFailedError: the tick did not reach the assignment ==>
-   *       expected: <true> but was: <false>
-   */
   @Test
   fun `ticking coordinator reaches the assignment`() = runBlocking {
     withContext(Dispatchers.JavaFx) {
@@ -63,15 +51,6 @@ class TaskResourcesPanelTest {
     }
   }
 
-  /**
-   * Removing the tick has to reach the assignment as well.
-   *
-   * Red without the fix:
-   *
-   *   TaskResourcesPanelTest > removing the coordinator tick reaches the assignment() FAILED
-   *       org.opentest4j.AssertionFailedError: the removed tick did not reach the assignment ==>
-   *       expected: <false> but was: <true>
-   */
   @Test
   fun `removing the coordinator tick reaches the assignment`() = runBlocking {
     withContext(Dispatchers.JavaFx) {
@@ -87,10 +66,6 @@ class TaskResourcesPanelTest {
   /**
    * The last row of the table stands for "add a new assignment" and has no assignment behind it.
    * Ticking its check box must neither throw nor touch another row.
-   *
-   * This one is a regression guard, not a witness of the defect: it is green without the fix as
-   * well, because the throw-away property of the old cell value factory was harmless to write to.
-   * It pins the null check of the new listener.
    */
   @Test
   fun `ticking coordinator in the empty last row does nothing`() = runBlocking {

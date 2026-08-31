@@ -40,13 +40,13 @@ import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.DefaultStringConverter
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponentFx
-import net.sourceforge.ganttproject.gui.TableActionsModel
 import net.sourceforge.ganttproject.gui.TableView2TableActionsModel
 import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.roles.Role
 import net.sourceforge.ganttproject.roles.RoleManager
 import net.sourceforge.ganttproject.task.CostStub
+import net.sourceforge.ganttproject.task.ResourceAssignment
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskMutator
 import org.controlsfx.control.tableview2.TableColumn2
@@ -272,20 +272,8 @@ private val i18n = RootLocalizer
 
 /**
  * The writable property behind the check box of the coordinator column.
- *
- * CheckBoxTableCell.forTableColumn(column) does not start an edit. It takes whatever the cell value
- * factory returned and, when that is a BooleanProperty, binds the check box to it bidirectionally,
- * so onEditCommit is never fired. A factory which hands out a plain SimpleBooleanProperty therefore
- * swallows the click: the tick lands in an object which nobody reads again, the dialog closes
- * without complaint and the project is saved with responsible="false".
- *
- * The listener writes the new value straight into the assignment, which is what the table model
- * does for this column as well. For an assignment which already exists this is the live object; for
- * one which has just been added in this dialog it is the mutator's stub, whose value is copied over
- * in ResourceAssignmentCollectionImpl.commit. The last row of the table is the one for adding a new
- * assignment and has no assignment behind it, so the write is a no-op there.
  */
-private fun coordinatorProperty(assignment: net.sourceforge.ganttproject.task.ResourceAssignment?): SimpleBooleanProperty =
+private fun coordinatorProperty(assignment: ResourceAssignment?): SimpleBooleanProperty =
   SimpleBooleanProperty(assignment?.isCoordinator ?: false).also { property ->
     property.addListener { _, _, isCoordinator -> assignment?.isCoordinator = isCoordinator }
   }
@@ -300,7 +288,7 @@ private class ResourceAssignmentTableModel(task: Task) {
   private val mutator = assignmentCollection.createMutator()
   private val _assignments = assignmentCollection.assignments.toMutableList()
 
-  val assignments: List<net.sourceforge.ganttproject.task.ResourceAssignment>
+  val assignments: List<ResourceAssignment>
     get() = _assignments.toList()
 
   fun setValueAt(value: Any?, row: Int, col: Int) {
@@ -373,7 +361,7 @@ private class ResourceAssignmentTableModel(task: Task) {
 /**
  * Row data class for the table.
  */
-private class ResourceAssignmentRow(val assignment: net.sourceforge.ganttproject.task.ResourceAssignment?)
+private class ResourceAssignmentRow(val assignment: ResourceAssignment?)
 
 /**
  * Custom table cell for resource selection with combo box.
