@@ -28,6 +28,8 @@ import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 
 import javax.swing.*;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,6 +62,37 @@ public class HumanResource implements CustomPropertyHolder {
   private BigDecimal myStandardPayRate;
 
   private final DefaultListModel<GanttDaysOff> myDaysOffList = new DefaultListModel<>();
+
+  {
+    // The days off list is handed out by getDaysOff(), and callers mutate it directly -- the
+    // resource properties dialog, for instance, clears it before writing the edited intervals
+    // back. Such a mutation changes the resource's load distribution just as addDaysOff() does, so
+    // it has to reset the loads and notify the listeners. Watching the list covers every caller at
+    // once, including the removal of the LAST interval, which used to notify nobody.
+    //
+    // During the copying constructor areEventsEnabled is false, so copying stays silent.
+    myDaysOffList.addListDataListener(new ListDataListener() {
+      @Override
+      public void intervalAdded(ListDataEvent e) {
+        onDaysOffChanged();
+      }
+
+      @Override
+      public void intervalRemoved(ListDataEvent e) {
+        onDaysOffChanged();
+      }
+
+      @Override
+      public void contentsChanged(ListDataEvent e) {
+        onDaysOffChanged();
+      }
+    });
+  }
+
+  private void onDaysOffChanged() {
+    resetLoads();
+    fireResourceChanged();
+  }
 
   private final List<ResourceAssignment> myAssignments = new ArrayList<>();
 
@@ -184,9 +217,9 @@ public class HumanResource implements CustomPropertyHolder {
 
   public void addDaysOff(GanttDaysOff gdo) {
     System.out.println("add day off: " + gdo.getStart() + " - " + gdo.getFinish() + "");
-    resetLoads();
+    // resetLoads() and fireResourceChanged() are done by the list listener installed above, for
+    // this call and for every other mutation of the list alike.
     myDaysOffList.addElement(gdo);
-    fireResourceChanged();
   }
 
   public DefaultListModel<GanttDaysOff> getDaysOff() {
