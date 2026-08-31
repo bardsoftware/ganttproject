@@ -54,8 +54,13 @@ class ViewSaver extends SaverBase {
     writeTimelineTasks(facade, handler);
     new OptionSaver().saveOptionList(handler, facade.getGanttChart().getTaskLabelOptions().getOptions());
     new OptionSaver().saveOptionList(handler, ganttViewProvider.getOptions());
-    writeFilters(handler, taskFilterManager);
+    // The recent colours are written here, before <filters>, so that all <option> elements of this
+    // view form a single uninterrupted run. The reader keeps only the last such run and drops
+    // whatever stands before an element of a different kind without a word. With color.recent
+    // written after <filters> that run consisted of color.recent alone, and the task label options,
+    // the view options and the divider position were lost on the next load.
     writeRecentColors(handler);
+    writeFilters(handler, taskFilterManager);
     endElement("view", handler);
 
     addAttribute("id", "resource-table", attrs);
