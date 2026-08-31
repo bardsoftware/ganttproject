@@ -222,6 +222,38 @@ public class HumanResource implements CustomPropertyHolder {
     myDaysOffList.addElement(gdo);
   }
 
+  /**
+   * Takes a single day off interval away again -- the counterpart of {@link #addDaysOff}, so that a
+   * caller does not have to reach into the list handed out by {@link #getDaysOff} to remove one.
+   *
+   * The interval is matched the way the list matches it, that is by {@code Object.equals}. Note that
+   * GanttDaysOff only overloads {@code equals(GanttDaysOff)} and does not override
+   * {@code equals(Object)}, so an interval built afresh from the same two dates is NOT the one this
+   * resource holds. Pass an instance obtained from this resource.
+   *
+   * @return true if the interval was there and has been removed, false if there was nothing to do
+   */
+  public boolean removeDaysOff(GanttDaysOff gdo) {
+    // resetLoads() and fireResourceChanged() are done by the list listener installed above, and only
+    // when something really went away: removeElement() stays silent if the interval was not there.
+    return myDaysOffList.removeElement(gdo);
+  }
+
+  /**
+   * Takes every day off interval away in one go. This is what a caller replacing the whole set needs
+   * -- the resource properties dialog does not edit single intervals, it drops all of them and
+   * writes the edited ones back.
+   *
+   * Named clearDaysOff rather than plain clear(), unlike HumanResourceManager.clear(), because a
+   * resource holds assignments and custom properties too and a bare clear() would not say which of
+   * them it means. The ...DaysOff suffix is what the two neighbouring methods already use.
+   */
+  public void clearDaysOff() {
+    // One notification for the whole removal, and none at all when there was nothing to remove --
+    // see DefaultListModel.clear(). That is exactly what a caller clearing the handed-out list got.
+    myDaysOffList.clear();
+  }
+
   public DefaultListModel<GanttDaysOff> getDaysOff() {
     return myDaysOffList;
   }

@@ -165,7 +165,7 @@ public class GanttDialogPerson {
       return null;
     });
 
-    person.getDaysOff().clear();
+    person.clearDaysOff();
     for (DateInterval interval : myDaysOffModel.getIntervals()) {
       person.addDaysOff(new GanttDaysOff(interval.getStart(), interval.getEnd()));
     }
