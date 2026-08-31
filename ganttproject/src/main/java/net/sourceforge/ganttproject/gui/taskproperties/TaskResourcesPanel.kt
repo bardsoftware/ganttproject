@@ -170,14 +170,12 @@ class TaskResourcesPanel(
         prefWidth = 80.0
       }
 
-      // Coordinator column
+      // Coordinator column. The check box is bound to the value which the cell value factory
+      // returns, so that value has to be the one which writes into the assignment. See
+      // coordinatorProperty below.
       val coordinatorCol = TableColumn2<ResourceAssignmentRow, Boolean>(i18n.formatText("coordinator")).apply {
-        setCellValueFactory { SimpleBooleanProperty(it.value.assignment?.isCoordinator ?: false) }
+        setCellValueFactory { coordinatorProperty(it.value.assignment) }
         cellFactory = CheckBoxTableCell.forTableColumn(this)
-        setOnEditCommit { event ->
-          model.setValueAt(event.newValue, event.tablePosition.row, 3)
-          model.refreshTable()
-        }
         isEditable = true
         prefWidth = 100.0
       }
@@ -271,6 +269,26 @@ class TaskResourcesPanel(
 
 // --------------------------------------------------------------------------------------------------------------------
 private val i18n = RootLocalizer
+
+/**
+ * The writable property behind the check box of the coordinator column.
+ *
+ * CheckBoxTableCell.forTableColumn(column) does not start an edit. It takes whatever the cell value
+ * factory returned and, when that is a BooleanProperty, binds the check box to it bidirectionally,
+ * so onEditCommit is never fired. A factory which hands out a plain SimpleBooleanProperty therefore
+ * swallows the click: the tick lands in an object which nobody reads again, the dialog closes
+ * without complaint and the project is saved with responsible="false".
+ *
+ * The listener writes the new value straight into the assignment, which is what the table model
+ * does for this column as well. For an assignment which already exists this is the live object; for
+ * one which has just been added in this dialog it is the mutator's stub, whose value is copied over
+ * in ResourceAssignmentCollectionImpl.commit. The last row of the table is the one for adding a new
+ * assignment and has no assignment behind it, so the write is a no-op there.
+ */
+private fun coordinatorProperty(assignment: net.sourceforge.ganttproject.task.ResourceAssignment?): SimpleBooleanProperty =
+  SimpleBooleanProperty(assignment?.isCoordinator ?: false).also { property ->
+    property.addListener { _, _, isCoordinator -> assignment?.isCoordinator = isCoordinator }
+  }
 
 // --------------------------------------------------------------------------------------------------------------------
 
