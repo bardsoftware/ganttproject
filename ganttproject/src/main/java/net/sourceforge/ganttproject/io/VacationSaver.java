@@ -36,7 +36,7 @@ class VacationSaver extends SaverBase {
     for (HumanResource p : project.getHumanResourceManager().getResources()) {
       if (p.getDaysOff() != null)
         for (int j = 0; j < p.getDaysOff().size(); j++) {
-          GanttDaysOff gdo = (GanttDaysOff) p.getDaysOff().getElementAt(j);
+          GanttDaysOff gdo = p.getDaysOff().get(j);
           addAttribute("start", gdo.getStart().toXMLString(), attrs);
           addAttribute("end", gdo.getFinish().toXMLString(), attrs);
           addAttribute("resourceid", p.getId(), attrs);
