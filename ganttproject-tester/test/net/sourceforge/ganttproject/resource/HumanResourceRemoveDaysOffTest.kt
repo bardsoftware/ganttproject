@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
@@ -149,15 +150,18 @@ class HumanResourceRemoveDaysOffTest {
 
   /**
    * The one caller in the tree, GanttDialogPerson.applyChanges(), throws all the intervals away and
-   * writes the edited ones back. This pins that going through clearDaysOff() instead of reaching
-   * into the handed-out list costs the very same number of notifications -- neither more (which
+   * writes the edited ones back. This pins the cost of that at (M > 0 ? 1 : 0) + N notifications --
+   * the very number a caller reaching into the handed-out list used to pay, neither more (which
    * would be a regression) nor zero where there used to be one.
+   *
+   * That old way is pinned too, from the other side: getDaysOff() hands out an unmodifiable view
+   * now, so reaching into it changes nothing and reports nothing.
    *
    * Red before the change:
    * e: file:///.../HumanResourceRemoveDaysOffTest.kt:157:19 Unresolved reference 'clearDaysOff'.
    */
   @Test
-  fun `the dialog's clear-all-and-rewrite costs the same notifications either way`() {
+  fun `the dialog's clear-all-and-rewrite still costs the same notifications`() {
     // M = intervals before the Ok, N = intervals in the dialog when Ok is pressed.
     for (m in 0..3) {
       for (n in 0..3) {
@@ -166,8 +170,11 @@ class HumanResourceRemoveDaysOffTest {
         val (viaList, listView) = newPersonWithView()
         repeat(m) { viaList.addDaysOff(daysOff(it + 1, it + 2)) }
         listView.changed = 0
-        viaList.daysOff.clear()
-        repeat(n) { viaList.addDaysOff(daysOff(it + 10, it + 11)) }
+        assertThrows<UnsupportedOperationException>("M=$m N=$n: the old way must be rejected") {
+          viaList.daysOff.clear()
+        }
+        assertEquals(m, viaList.daysOff.size, "M=$m N=$n: the rejected call must not have removed anything")
+        assertEquals(0, listView.changed, "M=$m N=$n: the rejected call must not have notified anybody")
 
         val (viaMethod, methodView) = newPersonWithView()
         repeat(m) { viaMethod.addDaysOff(daysOff(it + 1, it + 2)) }
@@ -175,8 +182,7 @@ class HumanResourceRemoveDaysOffTest {
         viaMethod.clearDaysOff()
         repeat(n) { viaMethod.addDaysOff(daysOff(it + 10, it + 11)) }
 
-        assertEquals(expected, listView.changed, "M=$m N=$n: the old way through the handed-out list")
-        assertEquals(expected, methodView.changed, "M=$m N=$n: the new way through clearDaysOff()")
+        assertEquals(expected, methodView.changed, "M=$m N=$n: the way through clearDaysOff()")
         assertEquals(n, viaMethod.daysOff.size, "M=$m N=$n: the rewritten intervals must be the only ones")
       }
     }

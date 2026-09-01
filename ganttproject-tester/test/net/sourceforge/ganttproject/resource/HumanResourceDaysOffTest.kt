@@ -32,9 +32,10 @@ import java.util.Locale
  * Adding and removing days off must be symmetric with respect to notification: whoever listens to
  * a resource has to learn about both, because both change the resource's load distribution.
  *
- * Adding goes through [HumanResource.addDaysOff], which resets the loads and fires. Removing has no
- * such entry point at all -- the only way is to mutate the list handed out by
- * [HumanResource.getDaysOff], and that list is not observed.
+ * Adding goes through [HumanResource.addDaysOff], which resets the loads and fires. Removing the
+ * last one used to notify nobody: there was no entry point for it, and the only way was to mutate
+ * the list handed out by [HumanResource.getDaysOff], which nothing was watching. Removing now goes
+ * through [HumanResource.clearDaysOff], which fires just as adding does.
  */
 class HumanResourceDaysOffTest {
   init {
@@ -76,7 +77,7 @@ class HumanResourceDaysOffTest {
     assertEquals(1, view.changed, "adding a day off must notify the listeners")
 
     view.changed = 0
-    person.daysOff.clear()
+    person.clearDaysOff()
     assertEquals(
       1, view.changed,
       "removing the LAST day off must notify the listeners too -- otherwise nobody recalculates"

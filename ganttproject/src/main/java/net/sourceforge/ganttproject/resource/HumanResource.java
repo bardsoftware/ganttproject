@@ -27,9 +27,6 @@ import net.sourceforge.ganttproject.roles.Role;
 import net.sourceforge.ganttproject.task.ResourceAssignment;
 import net.sourceforge.ganttproject.task.Task;
 
-import javax.swing.*;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,34 +58,21 @@ public class HumanResource implements CustomPropertyHolder {
 
   private BigDecimal myStandardPayRate;
 
-  private final DefaultListModel<GanttDaysOff> myDaysOffList = new DefaultListModel<>();
+  private final List<GanttDaysOff> myDaysOffList = new ArrayList<>();
 
-  {
-    // The days off list is handed out by getDaysOff(), and callers mutate it directly -- the
-    // resource properties dialog, for instance, clears it before writing the edited intervals
-    // back. Such a mutation changes the resource's load distribution just as addDaysOff() does, so
-    // it has to reset the loads and notify the listeners. Watching the list covers every caller at
-    // once, including the removal of the LAST interval, which used to notify nobody.
-    //
-    // During the copying constructor areEventsEnabled is false, so copying stays silent.
-    myDaysOffList.addListDataListener(new ListDataListener() {
-      @Override
-      public void intervalAdded(ListDataEvent e) {
-        onDaysOffChanged();
-      }
+  /**
+   * What getDaysOff() hands out: a view, so that a caller holding on to it keeps seeing the
+   * resource, and unmodifiable, so that the only ways in are addDaysOff, removeDaysOff and
+   * clearDaysOff. Every one of those resets the load distribution and notifies -- a caller able to
+   * mutate the list directly could change the resource behind the back of both.
+   */
+  private final List<GanttDaysOff> myDaysOffView = Collections.unmodifiableList(myDaysOffList);
 
-      @Override
-      public void intervalRemoved(ListDataEvent e) {
-        onDaysOffChanged();
-      }
-
-      @Override
-      public void contentsChanged(ListDataEvent e) {
-        onDaysOffChanged();
-      }
-    });
-  }
-
+  /**
+   * Called by every method that changes the days off, after it really changed something. A day off
+   * shifts this resource's load distribution just as an assignment does, so the cached distribution
+   * has to go and whoever watches the resource has to hear about it.
+   */
   private void onDaysOffChanged() {
     resetLoads();
     fireResourceChanged();
@@ -124,10 +108,11 @@ public class HumanResource implements CustomPropertyHolder {
     setRole(copy.getRole());
     setStandardPayRate(copy.getStandardPayRate());
     myManager = copy.myManager;
-    DefaultListModel<GanttDaysOff> copyDaysOff = copy.getDaysOff();
-    for (int i = 0; i < copyDaysOff.getSize(); i++) {
-      myDaysOffList.addElement(copyDaysOff.get(i));
-    }
+    // Straight into the list rather than through addDaysOff(): the copy is not in the manager yet
+    // and must not be announced, which is what areEventsEnabled = false above takes care of for the
+    // setters. Adding to the list directly keeps the days off out of it without depending on that
+    // flag at all, and there is no load distribution to reset on a resource being built.
+    myDaysOffList.addAll(copy.getDaysOff());
     areEventsEnabled = true;
     myCustomProperties = copy.myCustomProperties.copyOf();
   }
@@ -217,14 +202,14 @@ public class HumanResource implements CustomPropertyHolder {
 
   public void addDaysOff(GanttDaysOff gdo) {
     System.out.println("add day off: " + gdo.getStart() + " - " + gdo.getFinish() + "");
-    // resetLoads() and fireResourceChanged() are done by the list listener installed above, for
-    // this call and for every other mutation of the list alike.
-    myDaysOffList.addElement(gdo);
+    myDaysOffList.add(gdo);
+    onDaysOffChanged();
   }
 
   /**
-   * Takes a single day off interval away again -- the counterpart of {@link #addDaysOff}, so that a
-   * caller does not have to reach into the list handed out by {@link #getDaysOff} to remove one.
+   * Takes a single day off interval away again -- the counterpart of {@link #addDaysOff}. Together
+   * with {@link #clearDaysOff} it is the only way out, as {@link #getDaysOff} hands out a view that
+   * cannot be modified.
    *
    * The interval is matched the way the list matches it, that is by {@code Object.equals}. Note that
    * GanttDaysOff only overloads {@code equals(GanttDaysOff)} and does not override
@@ -234,9 +219,12 @@ public class HumanResource implements CustomPropertyHolder {
    * @return true if the interval was there and has been removed, false if there was nothing to do
    */
   public boolean removeDaysOff(GanttDaysOff gdo) {
-    // resetLoads() and fireResourceChanged() are done by the list listener installed above, and only
-    // when something really went away: removeElement() stays silent if the interval was not there.
-    return myDaysOffList.removeElement(gdo);
+    if (!myDaysOffList.remove(gdo)) {
+      // Nothing went away, so there is nothing to recalculate and nothing to report.
+      return false;
+    }
+    onDaysOffChanged();
+    return true;
   }
 
   /**
@@ -244,18 +232,28 @@ public class HumanResource implements CustomPropertyHolder {
    * -- the resource properties dialog does not edit single intervals, it drops all of them and
    * writes the edited ones back.
    *
+   * Notifies once when something was removed and not at all when the list was already empty.
+   *
    * Named clearDaysOff rather than plain clear(), unlike HumanResourceManager.clear(), because a
    * resource holds assignments and custom properties too and a bare clear() would not say which of
    * them it means. The ...DaysOff suffix is what the two neighbouring methods already use.
    */
   public void clearDaysOff() {
-    // One notification for the whole removal, and none at all when there was nothing to remove --
-    // see DefaultListModel.clear(). That is exactly what a caller clearing the handed-out list got.
+    if (myDaysOffList.isEmpty()) {
+      // Nothing to remove, so nothing to report. Skipping the empty case is what keeps the cost of
+      // the dialog's clear-all-and-rewrite at (M > 0 ? 1 : 0) + N notifications.
+      return;
+    }
     myDaysOffList.clear();
+    onDaysOffChanged();
   }
 
-  public DefaultListModel<GanttDaysOff> getDaysOff() {
-    return myDaysOffList;
+  /**
+   * @return the resource's days off as an unmodifiable view. Changes go through addDaysOff,
+   *         removeDaysOff and clearDaysOff; the returned list follows them.
+   */
+  public List<GanttDaysOff> getDaysOff() {
+    return myDaysOffView;
   }
 
   public Object getCustomField(CustomPropertyDefinition def) {
