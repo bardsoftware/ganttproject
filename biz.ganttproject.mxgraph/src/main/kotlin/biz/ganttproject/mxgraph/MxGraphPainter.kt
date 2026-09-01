@@ -29,24 +29,26 @@ import java.awt.Color
 import java.util.*
 
 /**
- * This class exports GanttProject's chart canvas to mxGraph model. The latter
- * can be serialized and rendered to SVG on the client side.
+ * This class exports GanttProject's chart canvas to a serializable model which can be rendered
+ * on the client side.
  *
- * This code mostly prepares styles for painting and delegates the real work with
- * mxGraph to MxPainterImpl.
+ * This code mostly prepares styles for painting and delegates the real work of accumulating and
+ * serializing the primitives to a [PainterImpl] instance passed to the constructor. Depending on
+ * the implementation, the same painting logic produces either an mxGraph model ([MxPainterImpl],
+ * serialized to XML) or a JSON model ([JsonPainterImpl]). The result is obtained from the
+ * [PainterImpl] instance.
  */
-class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
-  private val mxPainter = MxPainterImpl()
+class MxGraphPainter(uiConfig: ChartUIConfiguration, private val painter: PainterImpl) : Painter {
   val chartProperties = Properties().also {
     PropertiesUtil.loadProperties(it, "/resources/chart.properties")
   }
-  private val containerRectanglePainter = SummaryTaskPainter(mxPainter, chartProperties)
-  private val resourceLoadPainter = ResourceLoadPainter(mxPainter, uiConfig)
-  private val dayoffPainter = DayoffPainter(mxPainter, uiConfig)
-  private val textPainter = MxTextPainter(mxPainter, chartProperties) { Fonts.DEFAULT_CHART_FONT }
+  private val containerRectanglePainter = SummaryTaskPainter(painter, chartProperties)
+  private val resourceLoadPainter = ResourceLoadPainter(painter, uiConfig)
+  private val dayoffPainter = DayoffPainter(painter, uiConfig)
+  private val textPainter = MxTextPainter(painter, chartProperties) { Fonts.DEFAULT_CHART_FONT }
   private val styleToPainter = mapOf(
-      "task.progress" to ColouredRectanglePainter(mxPainter, Color.BLACK),
-      "task.progress.end" to ColouredRectanglePainter(mxPainter, Color.BLACK),
+      "task.progress" to ColouredRectanglePainter(painter, Color.BLACK),
+      "task.progress.end" to ColouredRectanglePainter(painter, Color.BLACK),
       "task.supertask" to containerRectanglePainter,
       "load.normal" to resourceLoadPainter,
       "load.normal.first" to resourceLoadPainter,
@@ -66,25 +68,21 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
   override fun prePaint() {}
 
   fun paint(paintFunction: () -> Unit) {
-    mxPainter.clear()
-    mxPainter.beginUpdate()
+    painter.clear()
+    painter.beginUpdate()
     try {
       paintFunction.invoke()
     } catch (exception: Exception) {
       throw exception
     } finally {
-      mxPainter.endUpdate()
+      painter.endUpdate()
     }
   }
 
-  fun getGraphXml(): String {
-    return mxPainter.toXml()
-  }
-
   override fun paint(rectangle: Rectangle) {
-    val painter = styleToPainter[rectangle.style]
-    if (painter != null) {
-      painter.paint(rectangle)
+    val rectanglePainter = styleToPainter[rectangle.style]
+    if (rectanglePainter != null) {
+      rectanglePainter.paint(rectangle)
       return
     }
 
@@ -93,21 +91,19 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
         mxConstants.STYLE_FILLCOLOR to (chartStyle.hexBackgroundColor(rectangle) ?: mxConstants.NONE),
         mxConstants.STYLE_STROKECOLOR to (chartStyle.hexStrokeColor(rectangle) ?: mxConstants.NONE),
         mxConstants.STYLE_OPACITY to (rectangle.opacity ?: 1f) * 100
-    )
-    mxPainter.paintRectangle(rectangle.leftX, rectangle.topY, rectangle.width, rectangle.height, mxStyle, rectangle.attributes)
+    ) + chartStyle.borderStroke(rectangle).toMxStrokeWidth()
+    painter.paintRectangle(rectangle.leftX, rectangle.topY, rectangle.width, rectangle.height, mxStyle, rectangle.attributes)
   }
 
   override fun paint(line: Line) {
     val chartStyle = Style.getStyle(chartProperties, line.style)
-    val stroke = chartStyle.getBorder(line)?.top?.stroke
     val style = mapOf(
         mxConstants.STYLE_ENDARROW to
             if (line.arrow.length == 0 && line.arrow.width == 0) mxConstants.NONE else mxConstants.ARROW_CLASSIC,
         mxConstants.STYLE_STROKECOLOR to (chartStyle.hexStrokeColor(line) ?: Color.BLACK.toHexString()),
-        mxConstants.STYLE_OPACITY to (line.opacity ?: 1f) * 100,
-        mxConstants.STYLE_DASHED to if (stroke?.dashArray != null) 1 else 0
-    )
-    mxPainter.paintLine(line.startX, line.startY, line.finishX, line.finishY, style, line.attributes)
+        mxConstants.STYLE_OPACITY to (line.opacity ?: 1f) * 100
+    ) + chartStyle.borderStroke(line).toMxLineStroke()
+    painter.paintLine(line.startX, line.startY, line.finishX, line.finishY, style, line.attributes)
   }
 
   override fun paint(text: Text) = textPainter.paint(text)
@@ -120,8 +116,8 @@ class MxGraphPainter(uiConfig: ChartUIConfiguration) : Painter {
         mxConstants.STYLE_FILLCOLOR to chartStyle.hexBackgroundColor(rhombus),
         mxConstants.STYLE_STROKECOLOR to chartStyle.hexBordersColor(rhombus),
         mxConstants.STYLE_OPACITY to (rhombus.opacity ?: 1f) * 100
-    )
-    mxPainter.paintRhombus(rhombus.leftX, rhombus.topY, rhombus.width, rhombus.height, style, rhombus.attributes)
+    ) + chartStyle.borderStroke(rhombus).toMxStrokeWidth()
+    painter.paintRhombus(rhombus.leftX, rhombus.topY, rhombus.width, rhombus.height, style, rhombus.attributes)
   }
 
   internal interface RectanglePainter {
