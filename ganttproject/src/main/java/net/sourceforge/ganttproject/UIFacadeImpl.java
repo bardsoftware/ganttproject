@@ -33,9 +33,14 @@ import com.google.common.collect.Maps;
 import com.sandec.mdfx.MarkdownView;
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 import com.vladsch.flexmark.util.data.MutableDataSet;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import kotlin.Unit;
@@ -308,7 +313,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
           %s
           """.formatted(message)));
       } else {
-        alert.setContentText(message);
+        alert.getDialogPane().setContent(createScrollableContent(message));
       }
 
       List<ButtonType> buttons = new ArrayList<>();
@@ -336,6 +341,95 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     });
   }
 
+  /** The preferred content width that DialogPane.createContentLabel hard-codes. */
+  private static final double CONTENT_WIDTH = 360;
+  /** Width of one leading space of indent, as a fraction of the font size. */
+  private static final double INDENT_PER_SPACE_EM = 0.538;
+  /** The share of the screen height a message may fill before it starts scrolling. */
+  private static final double MAX_CONTENT_HEIGHT_RATIO = 0.6;
+
+  /**
+   * One line of a plain-text message: how deep it is indented and its text without that indent.
+   * Kept apart from the layout so that the splitting can be tested without a toolkit.
+   */
+  record MessageLine(int indent, String text) {
+  }
+
+  /**
+   * Splits a plain-text message into lines and takes the leading spaces off each one, so that the
+   * indent can be applied as padding instead of as text.
+   */
+  static List<MessageLine> splitMessageLines(String message) {
+    var result = new ArrayList<MessageLine>();
+    for (var line : message.split("\n", -1)) {
+      var text = line.endsWith("\r") ? line.substring(0, line.length() - 1) : line;
+      var indent = 0;
+      while (indent < text.length() && text.charAt(indent) == ' ') {
+        indent++;
+      }
+      var body = text.substring(indent);
+      // A line of nothing but spaces is a blank line, not a deeply indented empty one.
+      result.add(new MessageLine(body.isEmpty() ? 0 : indent, body));
+    }
+    return result;
+  }
+
+  /**
+   * Wraps a plain-text message into a scrollable content node.
+   *
+   * <p>{@code setContentText} routes the message through {@code DialogPane.createContentLabel},
+   * which does {@code label.setPrefWidth(360)}. The dialog therefore never grows sideways: a long
+   * message only grows downwards, until the window manager clips it at the bottom of the screen,
+   * and the default ELLIPSIS overrun of the label drops the rest without saying so. Putting the
+   * text in a scroll pane keeps the familiar 360px column and makes the overflow reachable.
+   */
+  private static Node createScrollableContent(String message) {
+    var lines = new VBox();
+    // The same width createContentLabel would have asked for, so that a short message keeps the
+    // size it has today.
+    lines.setPrefWidth(CONTENT_WIDTH);
+    // modena.css pads the content label only while it is a direct child of the dialog pane. Inside
+    // a scroll pane that rule no longer matches, so the padding is restored here, in em so that it
+    // follows the font size.
+    lines.setStyle("-fx-padding: 1.333em 0.833em 0 0.833em;");
+    for (var line : splitMessageLines(message)) {
+      var label = new Label(line.text());
+      label.setWrapText(true);
+      // The indent is padding rather than the original spaces, because padding holds for the whole
+      // paragraph: a wrapped line then hangs at the depth of the line it continues instead of
+      // falling back to the left margin. Careful, -fx-padding in a style string replaces whatever
+      // setPadding() set, so the indent has to live here and nowhere else. %s rather than %f keeps
+      // the decimal point out of the hands of the default locale, which would break the CSS.
+      label.setStyle("-fx-padding: 0 0 0 %sem;".formatted(line.indent() * INDENT_PER_SPACE_EM));
+      lines.getChildren().add(label);
+    }
+
+    var maxHeight = Screen.getPrimary().getVisualBounds().getHeight() * MAX_CONTENT_HEIGHT_RATIO;
+    var scroll = new ScrollPane(lines) {
+      // DialogPane sizes itself from the preferred height of its content and pays no attention to
+      // the content maximum, so a cap only bites when it is applied to the preferred height.
+      // Without it a long message grows until the window manager clips it, buttons and all.
+      @Override
+      protected double computePrefHeight(double width) {
+        return Math.min(super.computePrefHeight(width), maxHeight);
+      }
+    };
+    // Let the text wrap to the viewport width. Not fitToHeight, which would stretch the content to
+    // the viewport and so defeat the scrolling.
+    scroll.setFitToWidth(true);
+    // A scroll pane brings a border, a background and padding of its own from modena.css. The
+    // first two would draw a box around a message that never had one, and the padding would widen
+    // the dialog past the 360px it has today. Clearing -fx-background-color takes the border and
+    // the box with it, because modena paints both from that one property.
+    // Do not reach for -fx-background here, tempting as it looks: modena derives the text colour
+    // from it, with -fx-text-background-color: ladder(-fx-background, -fx-light-text-color 45%,
+    // -fx-dark-text-color 46%, ...). Setting it to transparent puts the ladder at the dark end and
+    // every label inside the scroll pane turns white on white. The viewport keeps painting the
+    // untouched -fx-background, which is the colour the dialog pane itself uses, so leaving it
+    // alone costs nothing.
+    scroll.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+    return scroll;
+  }
 
   @Override
   public NotificationManager getNotificationManager() {
