@@ -33,9 +33,13 @@ import com.google.common.collect.Maps;
 import com.sandec.mdfx.MarkdownView;
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 import com.vladsch.flexmark.util.data.MutableDataSet;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import kotlin.Unit;
@@ -299,17 +303,25 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
       assert alert != null;
 
       alert.initOwner(myWindow);
+      Node content;
       if ((messageType & HTML_MESSAGE_FORMAT) != 0) {
-        alert.getDialogPane().setContent(new MarkdownView("""
+        content = new MarkdownView("""
           %s
-          """.formatted(FlexmarkHtmlConverter.builder(new MutableDataSet()).build().convert(message))));
+          """.formatted(FlexmarkHtmlConverter.builder(new MutableDataSet()).build().convert(message)));
       } else if ((messageType & MARKDOWN_MESSAGE_FORMAT) != 0) {
-        alert.getDialogPane().setContent(new MarkdownView("""
+        content = new MarkdownView("""
           %s
-          """.formatted(message)));
+          """.formatted(message));
       } else {
-        alert.setContentText(message);
+        var label = new Label(message);
+        label.setWrapText(true);
+        // modena.css pads the content label only while it is a direct child of the dialog pane.
+        // Inside the scroll pane that rule no longer matches, so the padding is restored here, in
+        // em so that it follows the font size.
+        label.setStyle("-fx-padding: 1.333em 0.833em 0 0.833em;");
+        content = label;
       }
+      alert.getDialogPane().setContent(makeScrollable(content));
 
       List<ButtonType> buttons = new ArrayList<>();
       for (Action action : actions) {
@@ -336,6 +348,49 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     });
   }
 
+  /** The preferred content width that DialogPane.createContentLabel hard-codes. */
+  private static final double CONTENT_WIDTH = 360;
+  /** The share of the screen height a message may fill before it starts scrolling. */
+  private static final double MAX_CONTENT_HEIGHT_RATIO = 0.6;
+
+  /**
+   * Wraps the message of an alert into a scroll pane.
+   *
+   * <p>The dialog pane never grows sideways: the content width is fixed, either by
+   * {@code DialogPane.createContentLabel}, which does {@code label.setPrefWidth(360)}, or by us
+   * below. A long message therefore only grows downwards, until the window manager clips it at the
+   * bottom of the screen and pushes the buttons off with it. Capping the height and scrolling the
+   * overflow keeps the whole message reachable.
+   */
+  private static Node makeScrollable(Node content) {
+    var maxHeight = Screen.getPrimary().getVisualBounds().getHeight() * MAX_CONTENT_HEIGHT_RATIO;
+    var scroll = new ScrollPane(content) {
+      // DialogPane sizes itself from the preferred height of its content and pays no attention to
+      // the content maximum, so a cap only bites when it is applied to the preferred height.
+      @Override
+      protected double computePrefHeight(double width) {
+        return Math.min(super.computePrefHeight(width), maxHeight);
+      }
+    };
+    // The same width createContentLabel would have asked for, so that a short plain-text message
+    // keeps the size it has today.
+    scroll.setPrefWidth(CONTENT_WIDTH);
+    // Let the text wrap to the viewport width. Not fitToHeight, which would stretch the content to
+    // the viewport and so defeat the scrolling.
+    scroll.setFitToWidth(true);
+    // A scroll pane brings a border, a background and padding of its own from modena.css. The
+    // first two would draw a box around a message that never had one, and the padding would widen
+    // the dialog past the width it has today. Clearing -fx-background-color takes the border and
+    // the box with it, because modena paints both from that one property.
+    // Do not reach for -fx-background here, tempting as it looks: modena derives the text colour
+    // from it, with -fx-text-background-color: ladder(-fx-background, -fx-light-text-color 45%,
+    // -fx-dark-text-color 46%, ...). Setting it to transparent puts the ladder at the dark end and
+    // every label inside the scroll pane turns white on white. The viewport keeps painting the
+    // untouched -fx-background, which is the colour the dialog pane itself uses, so leaving it
+    // alone costs nothing.
+    scroll.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+    return scroll;
+  }
 
   @Override
   public NotificationManager getNotificationManager() {
