@@ -32,8 +32,10 @@ import io.milton.httpclient.Host;
 import io.milton.httpclient.HttpException;
 import io.milton.httpclient.IfMatchCheck;
 import io.milton.httpclient.ProgressListener;
+import io.milton.httpclient.PropFindResponse;
 import io.milton.httpclient.Resource;
 import io.milton.httpclient.Utils.CancelledException;
+import net.sourceforge.ganttproject.GPLogger;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -45,6 +47,8 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 
+import javax.xml.namespace.QName;
+
 /**
  * Implementation which uses Milton client library.
  *
@@ -52,7 +56,24 @@ import java.util.List;
  */
 public class MiltonResourceImpl implements WebDavResource {
   private static final ProgressListener PROGRESS_LISTENER_STUB = null;
+
+  /**
+   * The ETag has to be asked for by name.
+   *
+   * Milton's default PROPFIND requests DAV:etag, which is not a WebDAV property at all - RFC 4918
+   * calls it DAV:getetag - while PropFindResponse#getEtag() reads DAV:getetag. The two never meet,
+   * so getEtag() returned null whatever the server sent, and every write went out unconditionally.
+   */
+  private static final QName ETAG_PROPERTY = new QName("DAV:", "getetag");
+
   private Resource myImpl;
+
+  /**
+   * The ETag the resource carried when it was read: the version the pending changes are based on.
+   * Null until something has been read.
+   */
+  private String myEtagAtRead;
+
   private final WebDavUri myUrl;
   private final Host myHost;
   private Boolean myExistance;
@@ -269,6 +290,28 @@ public class MiltonResourceImpl implements WebDavResource {
     return Path.path(myUrl.path).getName();
   }
 
+  /**
+   * Asks the server for the ETag which the resource carries right now.
+   *
+   * A request of its own rather than {@code myImpl.getEtag()}: the cached resource carries the
+   * value from the last listing, and that is precisely not the question here.
+   *
+   * Returns null when the question cannot be answered. The callers handle "do not know"
+   * explicitly, and an invented version would be worse than none.
+   */
+  private String fetchCurrentEtag() {
+    try {
+      List<PropFindResponse> responses =
+          getHost().propFind(Path.path(myUrl.path), 0, Collections.singletonList(ETAG_PROPERTY));
+      return (responses == null || responses.isEmpty()) ? null : responses.get(0).getEtag();
+    } catch (Exception e) {
+      // RuntimeException included: this is an extra question and must never be the reason why
+      // opening or saving fails.
+      GPLogger.log(e);
+      return null;
+    }
+  }
+
   @Override
   public void write(byte[] byteArray) throws WebDavException {
     MiltonResourceImpl parent = (MiltonResourceImpl) getParent();
@@ -280,16 +323,50 @@ public class MiltonResourceImpl implements WebDavResource {
     try {
       InputStream is = new BufferedInputStream(new ByteArrayInputStream(byteArray));
       if (myImpl != null && myImpl.getLockToken() != null) {
+        // The lock token goes out in the If: header. IfMatchCheck carries exactly one string, so
+        // a token and an ETag cannot be sent together; If-Match is needed precisely when no token
+        // is held.
         parentFolder.upload(getName(), is, Long.valueOf(byteArray.length),
             "application/xml", new IfMatchCheck(myImpl.getLockToken(), false, true), null);
       } else {
-        parentFolder.upload(getName(), is, Long.valueOf(byteArray.length), null);
+        IfMatchDecision decision =
+            IfMatchResolutionKt.resolveIfMatch(myEtagAtRead, this::fetchCurrentEtag);
+        if (decision instanceof IfMatchDecision.Conflict) {
+          throw new WebDavConflictException(MessageFormat.format(
+              "File {0} has been changed by somebody else since it was read", myUrl.path));
+        }
+        if (decision instanceof IfMatchDecision.VersioningUnavailable) {
+          // Refusing rather than writing blind. A fallback to an unconditional write would fire on
+          // every save behind a compressing proxy or a CDN, and the protection would be off
+          // without a sign of it.
+          throw new WebDavVersioningUnavailableException(MessageFormat.format(
+              "Only weak ETags are reported for {0}, so this write cannot be made conditional",
+              myUrl.path));
+        }
+        if (decision instanceof IfMatchDecision.Send) {
+          parentFolder.upload(getName(), is, Long.valueOf(byteArray.length), "application/xml",
+              new IfMatchCheck(((IfMatchDecision.Send) decision).getEtag(), true, false), null);
+        } else {
+          // Nothing remembered: a first write, with no version to be conditional on.
+          parentFolder.upload(getName(), is, Long.valueOf(byteArray.length), null);
+        }
       }
+      // Apache returns no ETag on PUT, so the new version has to be asked for. If that fails the
+      // value stays null: writing unconditionally next time is better than remembering a version
+      // against which every later comparison would fail.
+      myEtagAtRead = fetchCurrentEtag();
     } catch (NotAuthorizedException e) {
       throw new WebDavException(MessageFormat.format("User {0} is probably not authorized to access {1}", getUsername(), myUrl.hostName), e);
     } catch (BadRequestException e) {
       throw new WebDavException(MessageFormat.format("Bad request when accessing {0}", myUrl.hostName), e);
     } catch (HttpException e) {
+      // 412 is not a transport problem but the server's answer to If-Match: the file changed since
+      // it was read. Milton maps it to GenericHttpException, since processResultCode only
+      // special-cases 400/401/404/409, so the status has to be read off the exception.
+      if (e.getResult() == 412) {
+        throw new WebDavConflictException(MessageFormat.format(
+            "File {0} has been changed by somebody else since it was read", myUrl.path), e);
+      }
       throw new WebDavException(MessageFormat.format("HTTP problems when accessing {0}", myUrl.hostName), e);
     } catch (ConflictException e) {
       throw new WebDavException(MessageFormat.format("Conflict when accessing {0}", myUrl.hostName), e);
@@ -309,6 +386,17 @@ public class MiltonResourceImpl implements WebDavResource {
     File file = (File) myImpl;
     ByteArrayOutputStream content = new ByteArrayOutputStream();
     try {
+      // Remember the version the coming changes are based on, and deliberately before the
+      // download. If the file changes in between, the remembered ETag is older than the content
+      // that was read and saving reports a conflict which strictly speaking is not one. The other
+      // order - ETag newer than content - would silently overwrite somebody else's change. Of the
+      // two errors, the superfluous question is the harmless one.
+      myEtagAtRead = fetchCurrentEtag();
+      if (myEtagAtRead == null) {
+        GPLogger.log(MessageFormat.format(
+            "No ETag for {0}; the server cannot be asked to refuse a write over a concurrent"
+                + " change", myUrl.path));
+      }
       file.download(content, PROGRESS_LISTENER_STUB);
       return new ByteArrayInputStream(content.toByteArray());
     } catch (CancelledException e) {
