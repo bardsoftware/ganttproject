@@ -19,7 +19,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class WebDavOptionPageProvider extends OptionPageProviderBase {
-
+  /** Neither half of the page is squeezed below this width, so that the divider stays movable. */
+  private static final int MIN_HALF_WIDTH = 100;
 
   public WebDavOptionPageProvider() {
     super("storage.webdav");
@@ -151,12 +152,27 @@ public class WebDavOptionPageProvider extends OptionPageProviderBase {
     serversPanel.add(builder.buildPlanePage(new GPOptionGroup[] {lockingGroup}), BorderLayout.SOUTH);
 
     builder = new OptionsPageBuilder(null, OptionsPageBuilder.ONE_COLUMN_LAYOUT);
-    JPanel result = new JPanel(new BorderLayout());
-    result.add(serversPanel, BorderLayout.WEST);
     JComponent serverDetails = builder.buildPlanePage(new GPOptionGroup[] {optionGroup});
     serverDetails.setPreferredSize(new Dimension(300, 300));
-    result.add(serverDetails, BorderLayout.CENTER);
-    //result.add(Box.createHorizontalGlue());
+
+    // BorderLayout gave the server list its full preferred width and the server details only what
+    // was left, even when that was negative. On a page narrower than the list, the fields for
+    // address, user name and password were not on screen at all. A split pane leaves both halves
+    // visible and lets the user move the boundary.
+    //
+    // The resize weight of 0.5 makes both halves grow and shrink together. With the default weight
+    // of 0 the list keeps its preferred width and the details take the rest, which matches the old
+    // BorderLayout while there is room, but as soon as the page is a little too narrow the list
+    // drops to its minimum width in one step. Longer translations of the locking labels are enough
+    // to reach that point.
+    //
+    // The minimum widths are what keeps the divider movable: without them it is pinned to the
+    // list's own minimum width and cannot be dragged at all on a narrow page.
+    serversPanel.setMinimumSize(new Dimension(MIN_HALF_WIDTH, 0));
+    serverDetails.setMinimumSize(new Dimension(MIN_HALF_WIDTH, 0));
+    JSplitPane result = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, serversPanel, serverDetails);
+    result.setResizeWeight(0.5);
+    result.setBorder(BorderFactory.createEmptyBorder());
     return OptionPageProviderBase.wrapContentComponent(result, getCanonicalPageTitle(), null);
   }
 }
