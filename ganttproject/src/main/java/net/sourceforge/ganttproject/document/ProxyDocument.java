@@ -23,6 +23,7 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.table.ColumnList;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import io.milton.http.exceptions.NotAuthorizedException;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.gui.GPColorChooser;
 import net.sourceforge.ganttproject.gui.UIFacade;
@@ -39,7 +40,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -161,11 +164,33 @@ public class ProxyDocument implements Document {
       getHumanResourceManager().setEventsEnabled(false);
       doParse();
     } catch (Exception e) {
-      throw new DocumentException("Failed to parse document", e);
+      throw new DocumentException(getReadFailureMessage(e), e);
     } finally {
       getTaskManager().setEventsEnabled(true);
       getHumanResourceManager().setEventsEnabled(true);
     }
+  }
+
+  /**
+   * Picks the message for a failure which happened while reading a document. A rejected
+   * authentication and an unreachable server are the two cases which send the user to a
+   * different place than a broken file, so they get their own text; anything else keeps
+   * the generic message.
+   */
+  static String getReadFailureMessage(Throwable failure) {
+    for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
+      if (cause instanceof NotAuthorizedException) {
+        return "Authentication was rejected by the server";
+      }
+      if (cause instanceof UnknownHostException || cause instanceof ConnectException) {
+        return "The server could not be reached";
+      }
+      if (cause == cause.getCause()) {
+        // An exception which reports itself as its own cause would make this loop run forever.
+        break;
+      }
+    }
+    return "Failed to parse document";
   }
 
   public void createContents() throws IOException {
