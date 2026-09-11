@@ -219,6 +219,34 @@ public class GanttChartSceneBuilder {
     return myChartApi.getRowHeight();
   }
 
+  /**
+   * Compares a task with its state in the baseline. A task deviates from its baseline if it has
+   * moved or if its duration has changed; the equal end dates of two tasks of equal duration mean
+   * that nothing changed at all.
+   *
+   * <p>The "later" and "earlier" styles say how the duration changed. A task which only moved
+   * gets neither of them and is painted with the neutral colour.
+   *
+   * @return the styles to add to the baseline bar, or {@code null} if the task is unchanged and no
+   * baseline bar is to be drawn at all.
+   */
+  static List<String> getBaselineStyles(boolean isMilestone, float baselineDuration, float currentDuration,
+                                        Date baselineEnd, Date currentEnd) {
+    if (baselineEnd.equals(currentEnd) && currentDuration == baselineDuration) {
+      return null;
+    }
+    List<String> styles = new ArrayList<String>();
+    if (isMilestone) {
+      styles.add("milestone");
+    }
+    if (currentDuration > baselineDuration) {
+      styles.add("later");
+    } else if (currentDuration < baselineDuration) {
+      styles.add("earlier");
+    }
+    return styles;
+  }
+
   private void renderBaseline(ITaskSceneTask t, int rowNum, OffsetList defaultUnitOffsets) {
     TaskActivitiesSceneAlgorithm alg = new TaskActivitiesSceneAlgorithm(
       input.getCalendar(),
@@ -231,17 +259,11 @@ public class GanttChartSceneBuilder {
           Date startDate = taskBaseline.getStart().getTime();
           TimeDuration duration = input.createLength(taskBaseline.getDuration());
           Date endDate = input.getCalendar().shiftDate(startDate, duration);
-          if (endDate.equals(t.getEnd().getTime())) {
+          List<String> styles = getBaselineStyles(
+              t.isMilestone(), duration.getValue(), t.getDuration().getLength(duration.getTimeUnit()),
+              endDate, t.getEnd().getTime());
+          if (styles == null) {
             return;
-          }
-          List<String> styles = new ArrayList<String>();
-          if (t.isMilestone()) {
-            styles.add("milestone");
-          }
-          if (endDate.compareTo(t.getEnd().getTime()) < 0) {
-            styles.add("later");
-          } else {
-            styles.add("earlier");
           }
           List<ITaskActivity<ITaskSceneTask>> baselineActivities = new ArrayList<ITaskActivity<ITaskSceneTask>>();
           if (t.isMilestone()) {
