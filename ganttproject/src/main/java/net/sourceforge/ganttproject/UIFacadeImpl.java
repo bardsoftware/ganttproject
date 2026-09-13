@@ -704,18 +704,22 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   @Override
   public Image getLogo() {
-    if (myLogoOption.getValue() == null) {
+    var optionValue = myLogoOption.getValue();
+    if (optionValue == null || optionValue.trim().isEmpty()) {
       return DEFAULT_LOGO.getImage();
     }
-    File imageFile = new File(myLogoOption.getValue());
+    File imageFile = new File(optionValue);
     try {
-      if (imageFile.exists() && imageFile.canRead()) {
+      if (imageFile.exists() && !imageFile.isDirectory() && imageFile.canRead()) {
         return MoreObjects.firstNonNull(ImageIO.read(imageFile), DEFAULT_LOGO.getImage());
       }
-      GPLogger.logToLogger("File=" + myLogoOption.getValue() + " does not exist or is not readable");
+      GPLogger.create("App.Logo").error(
+        String.format("When reading logo file=%s: file does not exist or is not readable", optionValue), new Object[0], Collections.emptyMap(), null
+      );
     } catch (Exception e) {
-      GPLogger.logToLogger(String.format("Failed to create image from file %s", imageFile));
-      GPLogger.logToLogger(e);
+      GPLogger.create("App.Logo").error(
+        String.format("Failed to create image from file %s", imageFile), new Object[0], Collections.emptyMap(), e
+      );
     }
     return DEFAULT_LOGO.getImage();
   }
