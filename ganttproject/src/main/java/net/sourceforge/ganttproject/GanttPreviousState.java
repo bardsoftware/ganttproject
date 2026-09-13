@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -29,6 +30,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import biz.ganttproject.LoggerApi;
 import net.sourceforge.ganttproject.io.HistorySaver;
 import net.sourceforge.ganttproject.io.SaverBase;
 import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
@@ -41,6 +43,8 @@ import org.xml.sax.SAXException;
  * @author nbohn
  */
 public class GanttPreviousState {
+  private static final LoggerApi<org.slf4j.Logger> LOG = GPLogger.create("Baseline");
+
   private final List<GanttPreviousStateTask> myTasks;
 
   private String myName;
@@ -62,13 +66,18 @@ public class GanttPreviousState {
   }
 
   private class BaselineSaver extends SaverBase {
-    void save(File file, List<GanttPreviousStateTask> tasks) throws TransformerConfigurationException, SAXException {
-      StreamResult result = new StreamResult(file);
-      TransformerHandler handler = createHandler(result);
-      HistorySaver saver = new HistorySaver();
-      handler.startDocument();
-      saver.saveBaseline(myName, tasks, handler);
-      handler.endDocument();
+    void save(File file, List<GanttPreviousStateTask> tasks)
+        throws TransformerConfigurationException, SAXException, IOException {
+      // The stream is opened here and closed here. Handing the File to StreamResult instead
+      // leaves the stream that the JDK serialiser opens behind it open, and Windows refuses to
+      // delete a file that is still open, so remove() below would silently fail.
+      try (OutputStream output = new FileOutputStream(file)) {
+        TransformerHandler handler = createHandler(new StreamResult(output));
+        HistorySaver saver = new HistorySaver();
+        handler.startDocument();
+        saver.saveBaseline(myName, tasks, handler);
+        handler.endDocument();
+      }
     }
   }
 
@@ -92,8 +101,21 @@ public class GanttPreviousState {
     return myName;
   }
 
-  public void remove() {
-    myFile.delete();
+  /**
+   * Deletes the temporary file of this baseline.
+   *
+   * @return true if no file of this baseline is left on disk.
+   */
+  public boolean remove() {
+    if (myFile == null || !myFile.exists()) {
+      return true;
+    }
+    if (myFile.delete()) {
+      return true;
+    }
+    LOG.error("Failed to delete the temporary file of baseline {}: {}",
+        new Object[] {myName, myFile.getAbsolutePath()}, Collections.emptyMap(), null);
+    return false;
   }
 
   public List<GanttPreviousStateTask> load() {
