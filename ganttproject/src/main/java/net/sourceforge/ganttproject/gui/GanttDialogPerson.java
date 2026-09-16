@@ -36,6 +36,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GanttDialogPerson {
@@ -166,10 +167,14 @@ public class GanttDialogPerson {
       return null;
     });
 
-    person.clearDaysOff();
+    List<GanttDaysOff> daysOff = new ArrayList<>();
     for (DateInterval interval : myDaysOffModel.getIntervals()) {
-      person.addDaysOff(new GanttDaysOff(interval.getStart(), interval.getEnd()));
+      daysOff.add(new GanttDaysOff(interval.getStart(), interval.getEnd()));
     }
+    // One call rather than clearDaysOff() plus a loop of addDaysOff(): the listeners are interested
+    // in the intervals the user ended up with, not in the resource passing through every partial
+    // state on the way there, and each of those states used to cost a load distribution reset.
+    person.setDaysOff(daysOff);
     myAssignmentsPanel.commit();
   }
 

@@ -29,6 +29,7 @@ import net.sourceforge.ganttproject.task.Task;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -211,10 +212,9 @@ public class HumanResource implements CustomPropertyHolder {
    * with {@link #clearDaysOff} it is the only way out, as {@link #getDaysOff} hands out a view that
    * cannot be modified.
    *
-   * The interval is matched the way the list matches it, that is by {@code Object.equals}. Note that
-   * GanttDaysOff only overloads {@code equals(GanttDaysOff)} and does not override
-   * {@code equals(Object)}, so an interval built afresh from the same two dates is NOT the one this
-   * resource holds. Pass an instance obtained from this resource.
+   * The interval is matched the way the list matches it, that is by {@code Object.equals}. GanttDaysOff
+   * overrides it, so an interval built afresh from the same two dates removes the one this resource
+   * holds -- matching is by value, not by identity.
    *
    * @return true if the interval was there and has been removed, false if there was nothing to do
    */
@@ -225,6 +225,40 @@ public class HumanResource implements CustomPropertyHolder {
     }
     onDaysOffChanged();
     return true;
+  }
+
+  /**
+   * Replaces every day off interval this resource has with the given ones, sending a single
+   * notification. This is what a caller editing the whole set needs: the resource properties dialog
+   * does not edit single intervals, it hands back the list the user ended up with.
+   *
+   * Doing the same through clearDaysOff() plus a loop of addDaysOff() costs (M > 0 ? 1 : 0) + N
+   * notifications, and every one of them resets the load distribution, so the intermediate states --
+   * in which the resource has some of the new intervals but not all of them -- are announced to
+   * every listener as if they were real. This method announces the end state only.
+   *
+   * Notifies once when the new intervals differ from the current ones and not at all when they do
+   * not, which is the rule addDaysOff, removeDaysOff and clearDaysOff already follow.
+   *
+   * Takes a Collection rather than a List so that it does not pair up with {@link #getDaysOff} into
+   * a single read-write property: the getter hands out a view of the resource's own list, which is
+   * not what this setter consumes.
+   *
+   * @param daysOff the intervals the resource is to have afterwards; may be the list handed out by
+   *                {@link #getDaysOff}, which is why it is copied before anything is cleared
+   */
+  public void setDaysOff(Collection<GanttDaysOff> daysOff) {
+    // Copy first: daysOff may be the view onto myDaysOffList itself, and clearing that list would
+    // empty the argument along with it.
+    List<GanttDaysOff> replacement = new ArrayList<>(daysOff);
+    if (replacement.equals(myDaysOffList)) {
+      // Nothing changes, so there is nothing to recalculate and nothing to report. This comparison
+      // is by value and only means anything because GanttDaysOff overrides equals(Object).
+      return;
+    }
+    myDaysOffList.clear();
+    myDaysOffList.addAll(replacement);
+    onDaysOffChanged();
   }
 
   /**
