@@ -297,6 +297,11 @@ class HumanResourceDaysOffTest {
    * resets the resource's load distribution, so every partial state on the way -- the resource with
    * some of the new intervals but not all of them -- is announced to every listener as if it were
    * real. setDaysOff() announces the end state and nothing else: exactly one.
+   *
+   * The third way, reaching into the handed-out list, is checked over the same matrix: it is
+   * rejected, so it changes nothing and reports nothing. This test carries every assertion of the
+   * old HumanResourceRemoveDaysOffTest.`the dialog's clear-all-and-rewrite still costs the same
+   * notifications`, which is why that method has no separate successor here.
    */
   @Test
   fun `setDaysOff replaces the whole list and notifies exactly once`() {
@@ -304,7 +309,18 @@ class HumanResourceDaysOffTest {
       for (n in 0..3) {
         val replacement = (0 until n).map { daysOff(it + 10, it + 11) }
 
-        // The way GanttDialogPerson.applyChanges() used to write the edited intervals back.
+        // The way it was written back before there was a clearDaysOff() at all: straight into the
+        // handed-out list. That is rejected now, so it costs nothing and reports nothing.
+        val (viaList, listView) = newPersonWithView()
+        repeat(m) { viaList.addDaysOff(daysOff(it + 1, it + 2)) }
+        listView.changed = 0
+        assertThrows<UnsupportedOperationException>("M=$m N=$n: the old way must be rejected") {
+          viaList.daysOff.clear()
+        }
+        assertEquals(m, viaList.daysOff.size, "M=$m N=$n: the rejected call must not have removed anything")
+        assertEquals(0, listView.changed, "M=$m N=$n: the rejected call must not have notified anybody")
+
+        // The way GanttDialogPerson.applyChanges() wrote the edited intervals back until now.
         val (byHand, handView) = newPersonWithView()
         repeat(m) { byHand.addDaysOff(daysOff(it + 1, it + 2)) }
         handView.changed = 0
@@ -312,8 +328,9 @@ class HumanResourceDaysOffTest {
         replacement.forEach { byHand.addDaysOff(it) }
         assertEquals(
           (if (m > 0) 1 else 0) + n, handView.changed,
-          "M=$m N=$n: clearDaysOff() plus a loop of addDaysOff() costs one notification per step"
+          "M=$m N=$n: the way through clearDaysOff() costs one notification per step"
         )
+        assertEquals(n, byHand.daysOff.size, "M=$m N=$n: the rewritten intervals must be the only ones")
 
         // The way it writes them back now.
         val (atOnce, onceView) = newPersonWithView()
