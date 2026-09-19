@@ -45,7 +45,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.dependency.TaskDependency;
 import net.sourceforge.ganttproject.task.dependency.TaskDependencySlice;
 
-import javax.swing.*;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -55,6 +54,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -395,7 +395,7 @@ class ProjectFileExporter {
   }
 
   private void exportDaysOff(HumanResource hr, Resource mpxjResource) throws MPXJException {
-    DefaultListModel daysOff = hr.getDaysOff();
+    List<GanttDaysOff> daysOff = hr.getDaysOff();
     if (!daysOff.isEmpty()) {
       ProjectCalendar resourceCalendar = mpxjResource.addCalendar();
       resourceCalendar.addDefaultCalendarHours();
@@ -403,7 +403,7 @@ class ProjectFileExporter {
       resourceCalendar.setParent(myOutputProject.getDefaultCalendar());
       // resourceCalendar.setUniqueID(hr.getId());
       for (int i = 0; i < daysOff.size(); i++) {
-        GanttDaysOff dayOff = (GanttDaysOff) daysOff.get(i);
+        GanttDaysOff dayOff = daysOff.get(i);
         resourceCalendar.addCalendarException(toLocalDate(dayOff.getStart().getTime()), toLocalDate(dayOff.getFinish().getTime()));
       }
     }

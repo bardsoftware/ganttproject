@@ -20,6 +20,7 @@ package biz.ganttproject.core.calendar;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
@@ -46,8 +47,41 @@ public class GanttDaysOff {
     return (myStart + " -> " + myFinish);
   }
 
-  public boolean equals(GanttDaysOff dayOffs) {
-    return ((dayOffs.getStart().equals(myStart)) && (dayOffs.getFinish().equals(myFinish)));
+  /**
+   * Two day off intervals are the same when they start on the same day and end on the same day.
+   * Those two calendars are the only state this class has, so there is nothing else equality could
+   * be built on.
+   *
+   * This used to be an overload, {@code equals(GanttDaysOff)}, which {@code Object.equals} callers
+   * never reach: {@link java.util.List#remove} and friends call {@code equals(Object)}, so removing
+   * an interval by value quietly did nothing and an interval could only be removed by identity.
+   * Now that HumanResource delegates removal to its list, this has to be the real override.
+   */
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) {
+      return true;
+    }
+    if (!(other instanceof GanttDaysOff)) {
+      return false;
+    }
+    GanttDaysOff dayOffs = (GanttDaysOff) other;
+    return myStart.equals(dayOffs.myStart) && myFinish.equals(dayOffs.myFinish);
+  }
+
+  /**
+   * Built from the year, month and day of both ends rather than from the two calendars' own
+   * hashCodes, because GanttCalendar overrides equals(Object) -- comparing exactly those three
+   * fields -- without overriding hashCode(). It therefore inherits GregorianCalendar.hashCode(),
+   * which takes the time of day into account. Two GanttCalendars that are equal can have different
+   * hashCodes, and a GanttDaysOff delegating to them would inherit that broken contract: a day off
+   * built from a Date keeps whatever time of day that Date carried.
+   */
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        myStart.getYear(), myStart.getMonth(), myStart.getDay(),
+        myFinish.getYear(), myFinish.getMonth(), myFinish.getDay());
   }
 
   public GanttCalendar getStart() {

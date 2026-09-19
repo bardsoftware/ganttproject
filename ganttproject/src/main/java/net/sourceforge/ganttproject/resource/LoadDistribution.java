@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.swing.DefaultListModel;
-
 import biz.ganttproject.core.calendar.GanttDaysOff;
 
 import net.sourceforge.ganttproject.task.ResourceAssignment;
@@ -57,14 +55,11 @@ public class LoadDistribution {
   }
 
   private void processDaysOff(HumanResource resource) {
-    DefaultListModel daysOff = resource.getDaysOff();
-    if (daysOff != null) {
-      for (int l = 0; l < daysOff.size(); l++) {
-        GanttDaysOff dayOff = (GanttDaysOff) daysOff.get(l);
-        Date dayOffStart = dayOff.getStart().getTime();
-        Date dayOffEnd = dayOff.getFinish().getTime();
-        myTasksLoads.add(new Load(dayOffStart, dayOffEnd, -1, null));
-      }
+    // No null check: getDaysOff() hands out a final, never-null view of the resource's days off.
+    for (GanttDaysOff dayOff : resource.getDaysOff()) {
+      Date dayOffStart = dayOff.getStart().getTime();
+      Date dayOffEnd = dayOff.getFinish().getTime();
+      myTasksLoads.add(new Load(dayOffStart, dayOffEnd, -1, null));
     }
   }
 
