@@ -234,7 +234,7 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
     if (baseline == null) {
       setPreviousStateTasks(null);
     } else {
-      setPreviousStateTasks(baseline.load());
+      setPreviousStateTasks(baseline.getTasks());
     }
     myBaseline = baseline;
   }

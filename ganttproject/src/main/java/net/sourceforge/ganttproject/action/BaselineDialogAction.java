@@ -20,7 +20,6 @@ package net.sourceforge.ganttproject.action;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +37,6 @@ public class BaselineDialogAction extends GPAction {
   private final IGanttProject myProject;
   private final UIFacade myUiFacade;
   private List<GanttPreviousState> myBaselines;
-  private List<GanttPreviousState> myTrash = new ArrayList<GanttPreviousState>();
 
   public BaselineDialogAction(IGanttProject project, UIFacade uiFacade) {
     super("baseline.dialog");
@@ -61,14 +59,7 @@ public class BaselineDialogAction extends GPAction {
 
       @Override
       protected GanttPreviousState createValue(GanttPreviousState prototype) {
-        try {
-          prototype.init();
-          prototype.saveFile();
-          return prototype;
-        } catch (IOException e) {
-          myUiFacade.showErrorDialog(e);
-          return null;
-        }
+        return prototype;
       }
 
       @Override
@@ -83,12 +74,7 @@ public class BaselineDialogAction extends GPAction {
 
       @Override
       protected void deleteValue(GanttPreviousState value) {
-        for (GanttPreviousState baseline : myBaselines) {
-          if (baseline.getName().equals(value.getName())) {
-            myTrash.add(baseline);
-            break;
-          }
-        }
+        // Baselines live in memory: removing one from the list is all it takes.
       }
 
       @Override
@@ -128,9 +114,6 @@ public class BaselineDialogAction extends GPAction {
         list.stopEditing();
         myProject.getBaselines().clear();
         myProject.getBaselines().addAll(myBaselines);
-        for (GanttPreviousState trashBaseline : myTrash) {
-          trashBaseline.remove();
-        }
         myProject.setModified();
       }
     }, CancelAction.EMPTY };

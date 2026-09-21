@@ -18,26 +18,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
-
-import net.sourceforge.ganttproject.io.HistorySaver;
-import net.sourceforge.ganttproject.io.SaverBase;
-import net.sourceforge.ganttproject.parser.PreviousStateTasksTagHandler;
 import net.sourceforge.ganttproject.task.Task;
-
 import net.sourceforge.ganttproject.task.TaskManager;
-import org.xml.sax.SAXException;
 
 /**
+ * A baseline: a snapshot of every task's start, duration, milestone flag and summary flag,
+ * taken at one moment and kept in memory.
+ *
+ * <p>Baselines used to be serialized into temporary files and parsed back on every read.
+ * The snapshot is immutable once created ({@link GanttPreviousStateTask} holds plain values,
+ * and GanttCalendar has no public mutators), so the round trip through the file system bought
+ * nothing and cost a class of bugs around leaking file handles.
+ *
  * @author nbohn
  */
 public class GanttPreviousState {
@@ -45,76 +40,21 @@ public class GanttPreviousState {
 
   private String myName;
 
-  private File myFile;
-
   public GanttPreviousState(String name, List<GanttPreviousStateTask> tasks) {
     myName = name;
     myTasks = tasks;
-  }
-
-  public void init() throws IOException {
-    myFile = createTemporaryFile();
-    myFile.deleteOnExit();
   }
 
   public void setName(String name) {
     myName = name;
   }
 
-  private class BaselineSaver extends SaverBase {
-    void save(File file, List<GanttPreviousStateTask> tasks) throws TransformerConfigurationException, SAXException {
-      StreamResult result = new StreamResult(file);
-      TransformerHandler handler = createHandler(result);
-      HistorySaver saver = new HistorySaver();
-      handler.startDocument();
-      saver.saveBaseline(myName, tasks, handler);
-      handler.endDocument();
-    }
-  }
-
-  public void saveFile() throws IOException {
-    BaselineSaver saver = new BaselineSaver();
-    try {
-      saver.save(myFile, myTasks);
-    } catch (TransformerConfigurationException e) {
-      throw new IOException(e);
-    } catch (SAXException e) {
-      throw new IOException(e);
-    }
-  }
-
-  private static File createTemporaryFile() throws IOException {
-    String fileName = "_GanttProject_ps_" + (int) (10000. * Math.random());
-    return File.createTempFile(fileName, ".gan");
-  }
-
   public String getName() {
     return myName;
   }
 
-  public void remove() {
-    myFile.delete();
-  }
-
-  public List<GanttPreviousStateTask> load() {
-    ArrayList<GanttPreviousStateTask> tasks = null;
-    PreviousStateTasksTagHandler handler = new PreviousStateTasksTagHandler();
-    SAXParserFactory factory = SAXParserFactory.newInstance();
-    try {
-      SAXParser saxParser = factory.newSAXParser();
-      saxParser.parse(myFile, handler);
-    } catch (ParserConfigurationException e) {
-      e.printStackTrace();
-      return null;
-    } catch (SAXException e) {
-      e.printStackTrace();
-      return null;
-    } catch (IOException e) {
-      e.printStackTrace();
-      return null;
-    }
-    tasks = handler.getTasks();
-    return tasks;
+  public List<GanttPreviousStateTask> getTasks() {
+    return myTasks;
   }
 
   public static List<GanttPreviousStateTask> createTasks(TaskManager taskManager) {
