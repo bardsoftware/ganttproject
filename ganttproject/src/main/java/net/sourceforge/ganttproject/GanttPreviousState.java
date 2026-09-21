@@ -28,11 +28,6 @@ import net.sourceforge.ganttproject.task.TaskManager;
  * A baseline: a snapshot of every task's start, duration, milestone flag and summary flag,
  * taken at one moment and kept in memory.
  *
- * <p>Baselines used to be serialized into temporary files and parsed back on every read.
- * The snapshot is immutable once created ({@link GanttPreviousStateTask} holds plain values,
- * and GanttCalendar has no public mutators), so the round trip through the file system bought
- * nothing and cost a class of bugs around leaking file handles.
- *
  * @author nbohn
  */
 public class GanttPreviousState {
@@ -60,7 +55,7 @@ public class GanttPreviousState {
   public static List<GanttPreviousStateTask> createTasks(TaskManager taskManager) {
     List<GanttPreviousStateTask> result = new ArrayList<GanttPreviousStateTask>();
     for (Task t : taskManager.getTasks()) {
-      GanttPreviousStateTask baselineTask = new GanttPreviousStateTask(t.getTaskID(), t.getStart(),
+      GanttPreviousStateTask baselineTask = new GanttPreviousStateTask(t.getTaskID(), t.getStart().clone(),
           t.getDuration().getLength(), t.isMilestone(), taskManager.getTaskHierarchy().hasNestedTasks(t));
       result.add(baselineTask);
     }
