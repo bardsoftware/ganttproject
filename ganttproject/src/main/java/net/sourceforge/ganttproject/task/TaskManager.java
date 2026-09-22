@@ -263,6 +263,8 @@ public interface TaskManager {
 
   EnumerationOption getDependencyHardnessOption();
 
+  TaskManagerConfig getConfig();
+
   void setZeroMilestones(Boolean b);
 
   Boolean isZeroMilestones();

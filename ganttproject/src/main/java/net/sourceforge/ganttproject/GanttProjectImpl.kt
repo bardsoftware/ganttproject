@@ -203,6 +203,7 @@ class TaskManagerConfigImpl(
   private val myCalendar: GPCalendarCalc
   private val myDefaultTaskColorOption: ColorOption
   private val mySchedulerDisabledOption: BooleanOption
+  private val myCriticalPathAlwaysOnOption = DefaultBooleanOption("criticalPath.alwaysOn", true)
   override fun getDefaultColor(): Color {
     return myDefaultTaskColorOption.value!!
   }
@@ -213,6 +214,10 @@ class TaskManagerConfigImpl(
 
   override fun getSchedulerDisabledOption(): BooleanOption {
     return mySchedulerDisabledOption
+  }
+
+  override fun getCriticalPathAlwaysOnOption(): BooleanOption {
+    return myCriticalPathAlwaysOnOption
   }
 
   override fun getCalendar(): GPCalendarCalc {

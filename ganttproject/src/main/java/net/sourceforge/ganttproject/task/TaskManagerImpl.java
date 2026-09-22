@@ -785,6 +785,7 @@ public class TaskManagerImpl implements TaskManager {
       }
   }
 
+  @Override
   public TaskManagerConfig getConfig() {
     return myConfig;
   }

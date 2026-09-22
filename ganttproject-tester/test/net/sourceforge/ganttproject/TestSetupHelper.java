@@ -36,6 +36,7 @@ public class TestSetupHelper {
 
         private DefaultBooleanOption mySchedulerDisabledOption = new DefaultBooleanOption("scheduler.disabled", false);
 
+        private DefaultBooleanOption myCriticalPathAlwaysOnOption = new DefaultBooleanOption("criticalPath.alwaysOn", false);
         private TaskUpdateBuilder.Factory taskUpdateBuilderFactory = null;
 
         public TaskManagerBuilder() {
@@ -91,6 +92,11 @@ public class TestSetupHelper {
       @Override
       public BooleanOption getSchedulerDisabledOption() {
         return mySchedulerDisabledOption;
+      }
+
+      @Override
+      public BooleanOption getCriticalPathAlwaysOnOption() {
+        return myCriticalPathAlwaysOnOption;
       }
 
       public void setTaskUpdateBuilderFactory(TaskUpdateBuilder.Factory factory) {

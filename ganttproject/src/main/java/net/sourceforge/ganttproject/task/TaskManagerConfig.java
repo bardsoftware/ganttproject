@@ -39,4 +39,6 @@ public interface TaskManagerConfig {
   NotificationManager getNotificationManager();
 
   BooleanOption getSchedulerDisabledOption();
+
+  BooleanOption getCriticalPathAlwaysOnOption();
 }
