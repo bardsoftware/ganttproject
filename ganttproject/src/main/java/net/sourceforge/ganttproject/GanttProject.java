@@ -685,9 +685,6 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getTaskCustomColumnManager().reset();
     getResourceCustomPropertyManager().reset();
 
-    for (GanttPreviousState myPreviousState : myPreviousStates) {
-      myPreviousState.remove();
-    }
     myPreviousStates = new ArrayList<>();
     myCalendar.reset();
     //myFacadeInvalidator.projectClosed();

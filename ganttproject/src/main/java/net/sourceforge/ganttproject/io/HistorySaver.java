@@ -42,7 +42,7 @@ public class HistorySaver extends SaverBase {
   }
 
   public void saveBaseline(GanttPreviousState nextState, TransformerHandler handler) throws SAXException {
-    saveBaseline(nextState.getName(), nextState.load(), handler);
+    saveBaseline(nextState.getName(), nextState.getTasks(), handler);
   }
 
   public void saveBaseline(String name, List<GanttPreviousStateTask> tasks, TransformerHandler handler)

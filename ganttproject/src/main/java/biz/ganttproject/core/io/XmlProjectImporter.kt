@@ -289,7 +289,7 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
   private fun importPreviousStateTasks() = xmlProject.baselines?.baselines?.forEach { baseline ->
     val tasks = baseline.tasks?.map {
       GanttPreviousStateTask(it.id, GanttCalendar.parseXMLDate(it.startDate), it.duration, it.isMilestone, it.isSummaryTask)
-    }
+    } ?: emptyList()
     ganttProject.baselines.add(GanttPreviousState(baseline.name, tasks))
   }
 

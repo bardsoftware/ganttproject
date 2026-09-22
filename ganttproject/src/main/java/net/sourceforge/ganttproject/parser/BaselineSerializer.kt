@@ -35,11 +35,7 @@ class BaselineSerializer() {
         val isSummaryTask = xmlBaselineTask.isSummaryTask
         GanttPreviousStateTask(id, GanttCalendar.parseXMLDate(startDate), duration, isMilestone, isSummaryTask)
       }?.toList() ?: emptyList()
-      GanttPreviousState(name, tasks).also {
-        it.init()
-        it.saveFile()
-        baselines.add(it)
-      }
+      baselines.add(GanttPreviousState(name, tasks))
     }
   }
 }
