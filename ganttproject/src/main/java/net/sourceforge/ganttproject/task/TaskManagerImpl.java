@@ -18,6 +18,7 @@ import biz.ganttproject.core.time.*;
 import biz.ganttproject.customproperty.*;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -38,8 +39,11 @@ import net.sourceforge.ganttproject.task.dependency.constraint.StartFinishConstr
 import net.sourceforge.ganttproject.task.dependency.constraint.StartStartConstraintImpl;
 import net.sourceforge.ganttproject.task.event.*;
 import net.sourceforge.ganttproject.task.hierarchy.TaskHierarchyManagerImpl;
+import net.sourceforge.ganttproject.undo.GPUndoListener;
+import net.sourceforge.ganttproject.undo.UndoableEditTxn;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.event.UndoableEditEvent;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -96,6 +100,25 @@ public class TaskManagerImpl implements TaskManager {
   private final AlgorithmBase myScheduler;
 
   private boolean areEventsEnabled = true;
+  private @NotNull GPUndoListener myUndoListener = new GPUndoListener() {
+    @Override
+    public void undoOrRedoHappened() {
+      processCriticalPath(getRootTask());
+    }
+
+    @Override
+    public void undoReset() {
+    }
+
+    @Override
+    public void undoableEditHappened(UndoableEditEvent e) {
+      processCriticalPath(getRootTask());
+    }
+  };
+
+  public @NotNull GPUndoListener createUndoableEditListener() {
+    return myUndoListener;
+  }
 
   private static class TaskMap {
     private final Map<Integer, Task> myId2task = new HashMap<>();
@@ -248,32 +271,27 @@ public class TaskManagerImpl implements TaskManager {
 
       @Override
       public void taskScheduleChanged(@NotNull TaskScheduleEvent e) {
-        processCriticalPath(getRootTask());
+
       }
 
       @Override
       public void dependencyAdded(@NotNull TaskDependencyEvent e) {
-        processCriticalPath(getRootTask());
       }
 
       @Override
       public void dependencyRemoved(@NotNull TaskDependencyEvent e) {
-        processCriticalPath(getRootTask());
       }
 
       @Override
       public void taskAdded(@NotNull TaskHierarchyEvent e) {
-        processCriticalPath(getRootTask());
       }
 
       @Override
       public void taskRemoved(@NotNull TaskHierarchyEvent e) {
-        processCriticalPath(getRootTask());
       }
 
       @Override
       public void taskMoved(@NotNull TaskHierarchyEvent e) {
-        processCriticalPath(getRootTask());
       }
 
       @Override

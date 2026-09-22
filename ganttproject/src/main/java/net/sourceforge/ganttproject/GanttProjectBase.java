@@ -108,7 +108,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
 
   private final RssFeedChecker myRssChecker;
   final TaskManagerConfigImpl myTaskManagerConfig;
-  private final TaskManager myTaskManager;
+  private final TaskManagerImpl myTaskManager;
   protected final TwoPhaseBarrierImpl<UIFacade> myUiInitializationPromise = new TwoPhaseBarrierImpl<>("UI initialization");
   private Updater myUpdater;
   protected final TaskActions myTaskActions;
@@ -247,7 +247,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
 
     myProjectDatabase = databaseProxy;
     myTaskManagerConfig = new TaskManagerConfigImpl();
-    myTaskManager = TaskManager.Access.newInstance(null, myTaskManagerConfig, myProjectDatabase::createTaskUpdateBuilder);
+    myTaskManager = (TaskManagerImpl) TaskManager.Access.newInstance(null, myTaskManagerConfig, myProjectDatabase::createTaskUpdateBuilder);
     myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager, databaseProxy);
     addProjectEventListener(databaseProxy.createProjectEventListener());
     myTaskManager.addTaskListener(databaseProxy.createTaskEventListener());
@@ -308,6 +308,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     myUndoManager.addUndoableEditTxnFactory(databaseProxy.createUndoTxnFactory());
     //myUndoManager.addUndoableEditListener(databaseProxy.createUndoListener());
     myUndoManager.addUndoableEditTxnFactory(getTaskFilterManager().createUndoTxnFactory());
+    myUndoManager.addUndoableEditListener(myTaskManager.createUndoableEditListener());
     myProjectUIFacade = new ProjectUIFacadeImpl(stage, myUIFacade, myDocumentManager, myUndoManager, myProjectImpl);
     databaseProxy.setProjectOpenActivityFactory(myProjectUIFacade.getProjectOpenActivityFactory());
 
