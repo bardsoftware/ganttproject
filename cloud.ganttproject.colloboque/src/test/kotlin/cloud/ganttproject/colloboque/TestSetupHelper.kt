@@ -49,6 +49,7 @@ object TestSetupHelper {
     private val myResourceManager: HumanResourceManager
     private val myRoleManager: RoleManager
     private val myDefaultColorOption = DefaultColorOption("taskcolor", Color.CYAN)
+    private val myCriticalPathAlwaysOnOption = DefaultBooleanOption("criticalPath.alwaysOn", false)
     private val mySchedulerDisabledOption = DefaultBooleanOption("scheduler.disabled", false)
     private var taskUpdateBuilderFactory: ProjectDatabase.TaskUpdateBuilder.Factory? = null
 
@@ -92,6 +93,10 @@ object TestSetupHelper {
 
     override fun getSchedulerDisabledOption(): BooleanOption {
       return mySchedulerDisabledOption
+    }
+
+    override fun getCriticalPathAlwaysOnOption(): BooleanOption {
+      return myCriticalPathAlwaysOnOption
     }
 
     fun setTaskUpdateBuilderFactory(factory: ProjectDatabase.TaskUpdateBuilder.Factory?) {
