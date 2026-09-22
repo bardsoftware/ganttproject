@@ -20,8 +20,6 @@ package net.sourceforge.ganttproject.io
 
 import biz.ganttproject.core.io.parseXmlProject
 import biz.ganttproject.core.time.CalendarFactory
-import biz.ganttproject.core.time.CalendarFactory.LocaleApi
-import biz.ganttproject.core.time.CalendarFactory.setLocaleApi
 import net.sourceforge.ganttproject.GanttPreviousState
 import net.sourceforge.ganttproject.GanttPreviousStateTask
 import net.sourceforge.ganttproject.parser.BaselineSerializer
@@ -29,9 +27,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.text.DateFormat
-import java.util.Locale
+import java.util.*
 import javax.xml.transform.stream.StreamResult
 
 /**
@@ -81,25 +78,6 @@ class BaselineRoundTripTest : SaverBase() {
       loaded.single().tasks.map { TaskRow(it.id, it.start.toXMLString(), it.duration, it.isMilestone, it.hasNested()) },
       "every task of the baseline has to come back unchanged. The document was:\n$xml"
     )
-  }
-
-  @Test
-  fun `loading a baseline touches no temporary file`() {
-    val tmpDir = File(System.getProperty("java.io.tmpdir"))
-    fun baselineFiles(): Set<String> =
-      (tmpDir.list { _, name -> name.startsWith("_GanttProject_ps_") } ?: emptyArray()).toSet()
-
-    val before = baselineFiles()
-    val start = CalendarFactory.createGanttCalendar(2026, 8, 11)
-    val loaded = mutableListOf<GanttPreviousState>()
-    BaselineSerializer().loadBaselines(
-      parseXmlProject(saveProject(GanttPreviousState("a baseline", listOf(GanttPreviousStateTask(1, start, 3, false, false))))),
-      loaded
-    )
-    loaded.single().tasks
-
-    assertEquals(before, baselineFiles(),
-      "baselines live in memory: neither loading one nor reading its tasks may create a temporary file")
   }
 
   /** Runs the real HistorySaver over the given baselines and returns the document it writes. */

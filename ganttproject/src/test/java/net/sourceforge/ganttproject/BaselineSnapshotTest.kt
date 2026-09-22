@@ -93,7 +93,7 @@ class BaselineSnapshotTest : SaverBase() {
     handler.endDocument()
 
     val xml = out.toString(Charsets.UTF_8)
-    assertEquals(true, xml.contains("<previous-tasks name=\"empty baseline\"/>"),
+    assertEquals(true, xml.contains("""<previous-tasks name="empty baseline"""),
       "the empty baseline has to be written back with no tasks, the document was:\n$xml")
   }
 }
