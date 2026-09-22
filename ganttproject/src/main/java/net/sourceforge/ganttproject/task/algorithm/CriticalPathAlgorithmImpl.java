@@ -40,6 +40,11 @@ public class CriticalPathAlgorithmImpl extends AlgorithmBase implements Critical
     setEnabled(false);
   }
 
+  @Override
+  public boolean isEnabled() {
+    return super.isEnabled() || myTaskManager.getConfig().getCriticalPathAlwaysOnOption().isChecked();
+  }
+
   static class Node {
     private final Task task;
     private final List<Task> dependees = new ArrayList<Task>();

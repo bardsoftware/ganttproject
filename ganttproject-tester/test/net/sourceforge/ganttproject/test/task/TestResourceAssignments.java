@@ -195,6 +195,11 @@ public class TestResourceAssignments extends TestCase {
             public BooleanOption getSchedulerDisabledOption() {
                 return new DefaultBooleanOption("scheduler.disabled", false);
             }
+
+          @Override
+          public BooleanOption getCriticalPathAlwaysOnOption() {
+            return new DefaultBooleanOption("criticalPath.alwaysOn", false);
+          }
         });
     }
 

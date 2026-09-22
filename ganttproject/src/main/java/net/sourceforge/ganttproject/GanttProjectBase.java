@@ -173,7 +173,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   class TaskManagerConfigImpl implements TaskManagerConfig {
     final DefaultColorOption myDefaultColorOption = new DefaultTaskColorOption();
     final DefaultBooleanOption mySchedulerDisabledOption = new DefaultBooleanOption("scheduler.disabled", false);
-
+    final DefaultBooleanOption myCriticalPathAlwaysOnOption = new DefaultBooleanOption("criticalPath.alwaysOn", true);
     @Override
     public Color getDefaultColor() {
       return getUIFacade().getGanttChart().getTaskDefaultColorOption().getValue();
@@ -187,6 +187,11 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     @Override
     public BooleanOption getSchedulerDisabledOption() {
       return mySchedulerDisabledOption;
+    }
+
+    @Override
+    public BooleanOption getCriticalPathAlwaysOnOption() {
+      return myCriticalPathAlwaysOnOption;
     }
 
     @Override
@@ -220,7 +225,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     }
 
     GPOptionGroup getTaskOptions() {
-      return new GPOptionGroup("task", mySchedulerDisabledOption);
+      return new GPOptionGroup("task", mySchedulerDisabledOption, myCriticalPathAlwaysOnOption);
     }
   }
 
