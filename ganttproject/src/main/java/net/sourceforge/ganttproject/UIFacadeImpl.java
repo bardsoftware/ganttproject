@@ -33,9 +33,12 @@ import com.google.common.collect.Maps;
 import com.sandec.mdfx.MarkdownView;
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 import com.vladsch.flexmark.util.data.MutableDataSet;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ScrollPane;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import kotlin.Unit;
@@ -300,13 +303,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
       alert.initOwner(myWindow);
       if ((messageType & HTML_MESSAGE_FORMAT) != 0) {
-        alert.getDialogPane().setContent(new MarkdownView("""
-          %s
-          """.formatted(FlexmarkHtmlConverter.builder(new MutableDataSet()).build().convert(message))));
+        alert.getDialogPane().setContent(createFormattedContent(
+            FlexmarkHtmlConverter.builder(new MutableDataSet()).build().convert(message)));
       } else if ((messageType & MARKDOWN_MESSAGE_FORMAT) != 0) {
-        alert.getDialogPane().setContent(new MarkdownView("""
-          %s
-          """.formatted(message)));
+        alert.getDialogPane().setContent(createFormattedContent(message));
       } else {
         alert.setContentText(message);
       }
@@ -336,6 +336,71 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     });
   }
 
+  /**
+   * The widest column a formatted message is laid out in. Twice the 360px that
+   * DialogPane.createContentLabel gives a plain text message, because a formatted one may carry
+   * tables and code blocks that do not wrap. It is a fixed number rather than a share of the
+   * screen: how wide a column may be before it becomes hard to read does not depend on the monitor.
+   */
+  private static final double MAX_CONTENT_WIDTH = 720;
+  /**
+   * The share of the screen height a message may fill before it starts to scroll. This one does
+   * depend on the monitor: what is left has to hold the header and the buttons.
+   */
+  private static final double MAX_CONTENT_HEIGHT_RATIO = 0.6;
+
+  /**
+   * Wraps a Markdown message into a node that a dialog can show without growing out of the screen.
+   *
+   * <p>A MarkdownView is a VBox and asks for as much width as its longest paragraph needs, and
+   * DialogPane takes the preferred size of its content as its own. A long message therefore made
+   * the dialog as wide as the screen and taller than the screen, which pushed the buttons out of
+   * the window: the dialog could then only be closed with Escape. The scroll pane bounds both
+   * directions and makes the part that does not fit reachable.
+   *
+   * <p>The bounds are put on the preferred size and not on the maximum, because the preferred size
+   * is the only one DialogPane asks the content for.
+   */
+  static Node createFormattedContent(String markdown) {
+    var view = new MarkdownView("""
+      %s
+      """.formatted(markdown));
+    var maxHeight = Screen.getPrimary().getVisualBounds().getHeight() * MAX_CONTENT_HEIGHT_RATIO;
+    var scroll = new ScrollPane(view) {
+      @Override
+      protected double computePrefWidth(double height) {
+        return Math.min(super.computePrefWidth(height), MAX_CONTENT_WIDTH);
+      }
+
+      @Override
+      protected double computePrefHeight(double width) {
+        // Asking the view how tall it is at the width it asked for would be the wrong question:
+        // once the message is wider than the bound it is laid out in a narrower column and wraps
+        // into more lines than it planned for.
+        var insets = getInsets();
+        var columnWidth = computePrefWidth(-1) - insets.getLeft() - insets.getRight();
+        return Math.min(
+            view.prefHeight(columnWidth) + insets.getTop() + insets.getBottom(), maxHeight);
+      }
+    };
+    // Let the text wrap to the viewport width. Not fitToHeight, which would stretch the content to
+    // the viewport and so defeat the scrolling.
+    scroll.setFitToWidth(true);
+    // A scroll pane brings a border and a background of its own from modena.css, which would draw
+    // a box around a message that never had one. Clearing -fx-background-color takes both, because
+    // modena paints them from that one property.
+    // Its padding is left alone on purpose: modena gives a scroll pane the same 0.833em it gives
+    // the content of a dialog pane, so keeping it puts the text back on the pixel it was on and a
+    // short message opens exactly the dialog it opened before.
+    // Do not reach for -fx-background here, tempting as it looks: modena derives the text colour
+    // from it, with -fx-text-background-color: ladder(-fx-background, -fx-light-text-color 45%,
+    // -fx-dark-text-color 46%, ...). Setting it to transparent puts the ladder at the dark end and
+    // every label inside the scroll pane turns white on white. The viewport keeps painting the
+    // untouched -fx-background, which is the colour the dialog pane itself uses, so leaving it
+    // alone costs nothing.
+    scroll.setStyle("-fx-background-color: transparent;");
+    return scroll;
+  }
 
   @Override
   public NotificationManager getNotificationManager() {
