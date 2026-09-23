@@ -321,7 +321,7 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
         label.setStyle("-fx-padding: 1.333em 0.833em 0 0.833em;");
         content = label;
       }
-      alert.getDialogPane().setContent(makeScrollable(content));
+      alert.getDialogPane().setContent(makeScrollable(content, myWindow));
 
       List<ButtonType> buttons = new ArrayList<>();
       for (Action action : actions) {
@@ -362,8 +362,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
    * bottom of the screen and pushes the buttons off with it. Capping the height and scrolling the
    * overflow keeps the whole message reachable.
    */
-  private static Node makeScrollable(Node content) {
-    var maxHeight = Screen.getPrimary().getVisualBounds().getHeight() * MAX_CONTENT_HEIGHT_RATIO;
+  private static Node makeScrollable(Node content, Stage owner) {
+    // The dialog is centred on its owner, so cap the height against the owner's screen: on a
+    // multi-monitor setup the primary screen may be taller than the one the main window sits on.
+    var maxHeight = screenOf(owner).getVisualBounds().getHeight() * MAX_CONTENT_HEIGHT_RATIO;
     var scroll = new ScrollPane(content) {
       // DialogPane sizes itself from the preferred height of its content and pays no attention to
       // the content maximum, so a cap only bites when it is applied to the preferred height.
@@ -378,6 +380,10 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     // Let the text wrap to the viewport width. Not fitToHeight, which would stretch the content to
     // the viewport and so defeat the scrolling.
     scroll.setFitToWidth(true);
+    // A scroll pane is not focus-traversable by default, and focus goes to the default button, so
+    // a keyboard-only user could not scroll a message that overflows. Once the pane is reachable
+    // with Tab, the arrow and Page keys scroll it.
+    scroll.setFocusTraversable(true);
     // A scroll pane brings a border, a background and padding of its own from modena.css. The
     // first two would draw a box around a message that never had one, and the padding would widen
     // the dialog past the width it has today. Clearing -fx-background-color takes the border and
@@ -390,6 +396,12 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
     // alone costs nothing.
     scroll.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
     return scroll;
+  }
+
+  /** The screen that shows the given window, or the primary screen when that cannot be told. */
+  private static Screen screenOf(Stage window) {
+    return Screen.getScreensForRectangle(window.getX(), window.getY(), window.getWidth(), window.getHeight())
+        .stream().findFirst().orElse(Screen.getPrimary());
   }
 
   @Override
