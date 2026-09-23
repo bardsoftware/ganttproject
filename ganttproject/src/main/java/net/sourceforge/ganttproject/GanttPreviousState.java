@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.sourceforge.ganttproject.task.Task;
@@ -49,7 +50,7 @@ public class GanttPreviousState {
   }
 
   public List<GanttPreviousStateTask> getTasks() {
-    return myTasks;
+    return Collections.unmodifiableList(myTasks);
   }
 
   public static List<GanttPreviousStateTask> createTasks(TaskManager taskManager) {

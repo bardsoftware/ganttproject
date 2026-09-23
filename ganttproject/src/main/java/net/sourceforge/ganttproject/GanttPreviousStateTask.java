@@ -49,7 +49,7 @@ public class GanttPreviousStateTask {
   }
 
   public GanttCalendar getStart() {
-    return myStart;
+    return myStart.clone();
   }
 
   public int getDuration() {
