@@ -400,8 +400,8 @@ class UIFacadeImpl extends ProgressProvider implements UIFacade {
 
   /** The screen that shows the given window, or the primary screen when that cannot be told. */
   private static Screen screenOf(Stage window) {
-    return Screen.getScreensForRectangle(window.getX(), window.getY(), window.getWidth(), window.getHeight())
-        .stream().findFirst().orElse(Screen.getPrimary());
+    return Screen.getScreensForRectangle(window.getX() + window.getWidth() / 2, window.getY() + window.getHeight() / 2, 1, 1)
+      .stream().findFirst().orElse(Screen.getPrimary());
   }
 
   @Override
