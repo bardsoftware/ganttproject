@@ -213,7 +213,14 @@ class StoragePane internal constructor(
       WebdavStorage(it, mode, openDocument, dialogUi, cloudStorageOptions)
     }
 
-    val initialStorageId = selectedId ?: if (mode == StorageDialogBuilder.Mode.OPEN) recentProjects.id else localStorage.id
+    val initialStorageId = initialStorageId(
+      selectedId = selectedId,
+      mode = mode,
+      documentUrl = currentDocument.uri?.toString(),
+      webdavRootUrls = storageUiList.filterIsInstance<WebdavStorage>().map { it.id },
+      recentProjectsId = recentProjects.id,
+      localStorageId = localStorage.id
+    )
 
     // Iterate the list of available storages and create for each storage:
     // - a list item with optional settings button if settings are available
@@ -284,3 +291,28 @@ class StoragePane internal constructor(
 
 private val i18n = RootLocalizer.createWithRootKey("storageView")
 private val fileChooserLocalizer = RootLocalizer.createWithRootKey("storageService.local", BROWSE_PANE_LOCALIZER)
+
+/**
+ * Chooses the storage which is initially selected when the storage dialog opens.
+ *
+ * When saving, we preselect the storage where the current document lives, because "Save as" most often means
+ * "save next to the original". Hardcoding the local storage here sends a document which was opened from a WebDAV
+ * server into the local pane, where neither its name nor its path makes any sense.
+ */
+internal fun initialStorageId(
+  selectedId: String?,
+  mode: StorageDialogBuilder.Mode,
+  documentUrl: String?,
+  webdavRootUrls: List<String>,
+  recentProjectsId: String,
+  localStorageId: String
+): String =
+  selectedId ?: when (mode) {
+    StorageDialogBuilder.Mode.OPEN -> recentProjectsId
+    StorageDialogBuilder.Mode.SAVE ->
+      documentUrl?.let { url ->
+        // The identifier of a WebDAV storage is the root URL of its server. This is the same test which
+        // RecentDocAsFolderItem applies to the recently opened documents.
+        webdavRootUrls.firstOrNull { it.isNotBlank() && url.startsWith(it) }
+      } ?: localStorageId
+  }
