@@ -19,6 +19,7 @@ import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.IntegerOption;
 import biz.ganttproject.core.option.MoneyOption;
+import biz.ganttproject.core.option.PaintOption;
 import biz.ganttproject.core.option.StringOption;
 import biz.ganttproject.core.option.ValidationException;
 import biz.ganttproject.core.option.ValidatorsKt;
@@ -545,9 +546,40 @@ public class OptionsPageBuilder {
     void setOnCancelCallback(Runnable onCancel);
     void setOnOkCallback(Runnable runnable);
   }
+  /**
+   * Returns what the swatch of the given option should be filled with: the option's own
+   * {@link Paint} when it offers one, and its flat {@link Color} otherwise.
+   */
+  private static Paint getSwatchPaint(ColorOption option) {
+    if (option instanceof PaintOption) {
+      Paint paint = ((PaintOption) option).getPaint();
+      if (paint != null) {
+        return paint;
+      }
+    }
+    return option.getValue();
+  }
+
   public ColorComponent createColorComponent(final ColorOption option) {
     final JXHyperlink colorButton = new JXHyperlink();
-    final JPanel label = new JPanel();
+    final JPanel label = new JPanel() {
+      @Override
+      protected void paintComponent(Graphics g) {
+        Paint paint = getSwatchPaint(option);
+        if (paint == null || paint instanceof Color) {
+          // A flat colour is still drawn as the panel background, byte for byte as before.
+          super.paintComponent(g);
+          return;
+        }
+        Graphics2D g2 = (Graphics2D) g.create();
+        try {
+          g2.setPaint(paint);
+          g2.fillRect(0, 0, getWidth(), getHeight());
+        } finally {
+          g2.dispose();
+        }
+      }
+    };
     label.setPreferredSize(new Dimension(16, 16));
     label.setBackground(option.getValue());
 
@@ -555,6 +587,8 @@ public class OptionsPageBuilder {
       @Override
       public void changeValue(ChangeValueEvent event) {
         label.setBackground(option.getValue());
+        // The paint may have changed while the approximating colour did not.
+        label.repaint();
       }
     });
     final AtomicReference<Runnable> onOk = new AtomicReference<>();
@@ -568,6 +602,7 @@ public class OptionsPageBuilder {
           public void actionPerformed(ActionEvent arg0) {
             Color color = colorChooser.getColor();
             label.setBackground(color);
+            label.repaint();
             option.setValue(color);
             GPColorChooser.addRecentColor(color);
             if (onOk.get() != null) {
