@@ -49,8 +49,8 @@ class AlertContentHeightTest {
   private val maxContentHeightRatio = 0.6
 
   /** A message long enough to overflow any screen this test could run on. */
-  private val longMessage = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do " +
-    "eiusmod tempor incididunt ut labore et dolore magna aliqua. ".repeat(40)
+  private val longMessage = ("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do " +
+    "eiusmod tempor incididunt ut labore et dolore magna aliqua. ").repeat(120)
   private val shortMessage = "The project file could not be saved."
 
   /**
@@ -146,8 +146,16 @@ class AlertContentHeightTest {
     val cap = capFor(Screen.getPrimary())
 
     val capped = UIFacadeTestAccess.makeScrollable(messageLabel(longMessage), owner) as ScrollPane
-    // The dialog pane gives the scroll pane the height it asked for, which is the cap.
-    val root = layOut(capped, contentWidth, capped.prefHeight(contentWidth))
+    // A preferred height asked for before the style sheets have been applied is not the one the
+    // dialog pane would see, so the pane is laid out once before it is measured.
+    val root = layOut(capped, contentWidth, cap)
+    val requestedHeight = capped.prefHeight(contentWidth)
+    // And then given the height it asked for, which is what the dialog pane does.
+    root.resize(contentWidth, requestedHeight)
+    root.applyCss()
+    root.layout()
+    assertEquals(requestedHeight, capped.height, 0.5,
+      "the pane was not given the height it asked for, so nothing below is measured on it")
 
     val viewportHeight = capped.viewportBounds.height
     val contentHeight = capped.content.boundsInLocal.height
