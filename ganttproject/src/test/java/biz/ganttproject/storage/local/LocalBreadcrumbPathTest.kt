@@ -77,4 +77,52 @@ class LocalBreadcrumbPathTest {
   fun `a url without a file name falls back to the default name`() {
     assertEquals(DEFAULT_LOCAL_FILE_NAME, localFileName("https://dav.example.com/projects/"))
   }
+
+  /**
+   * A space is legal in a WebDAV resource name and the Milton client hands the name over decoded, so the URL of
+   * the current document may contain a raw space. It must not stop us from finding the name in it.
+   */
+  @Test
+  fun `the name of a webdav document may contain a space`() {
+    assertEquals("plan neu.gan", localFileName("https://dav.example.com/projects/plan neu.gan"))
+    assertEquals("plan neu.gan", localFileName("https://dav.example.com/my projects/plan neu.gan"))
+  }
+
+  @Test
+  fun `the name of a webdav document may contain a non-ascii letter`() {
+    assertEquals("plän.gan", localFileName("https://dav.example.com/projects/plän.gan"))
+  }
+
+  /**
+   * A percent sequence is left alone on purpose. The Milton client decodes the name it reads from the server, so a
+   * name which still reads "%20" here is a name which really contains those three characters.
+   */
+  @Test
+  fun `a percent sequence in the name of a webdav document is left alone`() {
+    assertEquals("plan%20neu.gan", localFileName("https://dav.example.com/projects/plan%20neu.gan"))
+  }
+
+  @Test
+  fun `a webdav url with a space is not used as a path`() {
+    assertEquals(
+      defaultFolder.toPath().resolve("plan neu.gan"),
+      localBreadcrumbPath(
+        "https://dav.example.com/projects/plan neu.gan",
+        "https://dav.example.com/projects/plan neu.gan",
+        defaultFolder
+      )
+    )
+  }
+
+  @Test
+  fun `an absolute local path with a space is used as is`() {
+    val localPath = File(defaultFolder, "plan neu.gan").absolutePath
+    assertEquals(Paths.get(localPath), localBreadcrumbPath(localPath, "plan neu.gan", defaultFolder))
+  }
+
+  @Test
+  fun `an absolute local path in a folder with a space is used as is`() {
+    val localPath = File(File(defaultFolder, "my projects"), "plan neu.gan").absolutePath
+    assertEquals(Paths.get(localPath), localBreadcrumbPath(localPath, "plan neu.gan", defaultFolder))
+  }
 }

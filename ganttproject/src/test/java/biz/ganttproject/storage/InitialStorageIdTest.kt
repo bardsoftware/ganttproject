@@ -18,8 +18,15 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.storage
 
+import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.FileDocument
+import net.sourceforge.ganttproject.document.webdav.HttpDocument
+import net.sourceforge.ganttproject.document.webdav.WebDavResource
+import org.easymock.EasyMock
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
+import java.io.File
 
 /**
  * Tests the choice of the storage which is initially selected in the storage dialog.
@@ -34,10 +41,47 @@ class InitialStorageIdTest {
       initialStorageId(
         selectedId = null,
         mode = StorageDialogBuilder.Mode.SAVE,
-        documentUrl = "https://other.example.com/dav/plan.gan",
+        currentDocument = webdavDocument("https://other.example.com/dav/plan.gan"),
         webdavRootUrls = webdavRootUrls,
         recentProjectsId = RECENT_ID,
         localStorageId = LOCAL_ID
+      )
+    )
+  }
+
+  /**
+   * A space is legal in a WebDAV resource name, and the Milton client hands it over decoded, so the URL which
+   * HttpDocument holds contains a raw space. java.net.URI rejects it, and the preselection used to go through
+   * java.net.URI.
+   */
+  @Test
+  fun `save preselects the webdav server when the document name contains a space`() {
+    val document = webdavDocument("https://dav.example.com/projects/plan neu.gan")
+    assertNull(document.uri, "precondition: HttpDocument cannot build a URI from a name with a space")
+    assertEquals(
+      "https://dav.example.com/projects",
+      initialStorageId(null, StorageDialogBuilder.Mode.SAVE, document, webdavRootUrls, RECENT_ID, LOCAL_ID)
+    )
+  }
+
+  @Test
+  fun `save preselects the webdav server when the document name is percent-encoded`() {
+    assertEquals(
+      "https://dav.example.com/projects",
+      initialStorageId(
+        null, StorageDialogBuilder.Mode.SAVE, webdavDocument("https://dav.example.com/projects/plan%20neu.gan"),
+        webdavRootUrls, RECENT_ID, LOCAL_ID
+      )
+    )
+  }
+
+  @Test
+  fun `save preselects the webdav server when the document name contains a non-ascii letter`() {
+    assertEquals(
+      "https://dav.example.com/projects",
+      initialStorageId(
+        null, StorageDialogBuilder.Mode.SAVE, webdavDocument("https://dav.example.com/projects/plän.gan"),
+        webdavRootUrls, RECENT_ID, LOCAL_ID
       )
     )
   }
@@ -46,12 +90,26 @@ class InitialStorageIdTest {
   fun `save preselects the local storage for a local document`() {
     assertEquals(
       LOCAL_ID,
-      initialStorageId(null, StorageDialogBuilder.Mode.SAVE, "file:/home/joe/plan.gan", webdavRootUrls, RECENT_ID, LOCAL_ID)
+      initialStorageId(
+        null, StorageDialogBuilder.Mode.SAVE, FileDocument(File("/home/joe/plan.gan")),
+        webdavRootUrls, RECENT_ID, LOCAL_ID
+      )
     )
   }
 
   @Test
-  fun `save preselects the local storage when the document url is unknown`() {
+  fun `save preselects the local storage for a local document whose name contains a space`() {
+    assertEquals(
+      LOCAL_ID,
+      initialStorageId(
+        null, StorageDialogBuilder.Mode.SAVE, FileDocument(File("/home/joe/plan neu.gan")),
+        webdavRootUrls, RECENT_ID, LOCAL_ID
+      )
+    )
+  }
+
+  @Test
+  fun `save preselects the local storage when there is no current document`() {
     assertEquals(
       LOCAL_ID,
       initialStorageId(null, StorageDialogBuilder.Mode.SAVE, null, webdavRootUrls, RECENT_ID, LOCAL_ID)
@@ -59,10 +117,21 @@ class InitialStorageIdTest {
   }
 
   @Test
+  fun `save preselects the local storage when the document has no location`() {
+    assertEquals(
+      LOCAL_ID,
+      initialStorageId(null, StorageDialogBuilder.Mode.SAVE, webdavDocument(""), webdavRootUrls, RECENT_ID, LOCAL_ID)
+    )
+  }
+
+  @Test
   fun `a webdav server with a blank root url matches no document`() {
     assertEquals(
       LOCAL_ID,
-      initialStorageId(null, StorageDialogBuilder.Mode.SAVE, "file:/home/joe/plan.gan", listOf(""), RECENT_ID, LOCAL_ID)
+      initialStorageId(
+        null, StorageDialogBuilder.Mode.SAVE, FileDocument(File("/home/joe/plan.gan")),
+        listOf(""), RECENT_ID, LOCAL_ID
+      )
     )
   }
 
@@ -70,7 +139,10 @@ class InitialStorageIdTest {
   fun `open preselects the recent projects no matter where the document lives`() {
     assertEquals(
       RECENT_ID,
-      initialStorageId(null, StorageDialogBuilder.Mode.OPEN, "https://dav.example.com/projects/plan.gan", webdavRootUrls, RECENT_ID, LOCAL_ID)
+      initialStorageId(
+        null, StorageDialogBuilder.Mode.OPEN, webdavDocument("https://dav.example.com/projects/plan.gan"),
+        webdavRootUrls, RECENT_ID, LOCAL_ID
+      )
     )
   }
 
@@ -78,8 +150,40 @@ class InitialStorageIdTest {
   fun `an explicitly selected storage wins over the document location`() {
     assertEquals(
       "cloud",
-      initialStorageId("cloud", StorageDialogBuilder.Mode.SAVE, "https://dav.example.com/projects/plan.gan", webdavRootUrls, RECENT_ID, LOCAL_ID)
+      initialStorageId(
+        "cloud", StorageDialogBuilder.Mode.SAVE, webdavDocument("https://dav.example.com/projects/plan.gan"),
+        webdavRootUrls, RECENT_ID, LOCAL_ID
+      )
     )
+  }
+
+  @Test
+  fun `the storage url of a webdav document is its resource url, space or no space`() {
+    assertEquals(
+      "https://dav.example.com/projects/plan.gan",
+      documentStorageUrl(webdavDocument("https://dav.example.com/projects/plan.gan"))
+    )
+    assertEquals(
+      "https://dav.example.com/projects/plan neu.gan",
+      documentStorageUrl(webdavDocument("https://dav.example.com/projects/plan neu.gan"))
+    )
+  }
+
+  @Test
+  fun `a document without a location has no storage url`() {
+    assertNull(documentStorageUrl(null))
+    assertNull(documentStorageUrl(webdavDocument("")))
+  }
+
+  /**
+   * A WebDAV document which only knows its URL, with no server behind it. The constructor of HttpDocument which
+   * takes a resource issues no requests, and neither does WebDavResource.getUrl().
+   */
+  private fun webdavDocument(url: String): Document {
+    val resource: WebDavResource = EasyMock.createNiceMock<WebDavResource>(WebDavResource::class.java)
+    EasyMock.expect(resource.url).andReturn(url).anyTimes()
+    EasyMock.replay(resource)
+    return HttpDocument(resource, "joe", "secret", HttpDocument.NO_LOCK)
   }
 }
 

@@ -216,7 +216,7 @@ class StoragePane internal constructor(
     val initialStorageId = initialStorageId(
       selectedId = selectedId,
       mode = mode,
-      documentUrl = currentDocument.uri?.toString(),
+      currentDocument = currentDocument,
       webdavRootUrls = storageUiList.filterIsInstance<WebdavStorage>().map { it.id },
       recentProjectsId = recentProjects.id,
       localStorageId = localStorage.id
@@ -302,7 +302,7 @@ private val fileChooserLocalizer = RootLocalizer.createWithRootKey("storageServi
 internal fun initialStorageId(
   selectedId: String?,
   mode: StorageDialogBuilder.Mode,
-  documentUrl: String?,
+  currentDocument: Document?,
   webdavRootUrls: List<String>,
   recentProjectsId: String,
   localStorageId: String
@@ -310,9 +310,24 @@ internal fun initialStorageId(
   selectedId ?: when (mode) {
     StorageDialogBuilder.Mode.OPEN -> recentProjectsId
     StorageDialogBuilder.Mode.SAVE ->
-      documentUrl?.let { url ->
+      documentStorageUrl(currentDocument)?.let { url ->
         // The identifier of a WebDAV storage is the root URL of its server. This is the same test which
         // RecentDocAsFolderItem applies to the recently opened documents.
         webdavRootUrls.firstOrNull { it.isNotBlank() && url.startsWith(it) }
       } ?: localStorageId
   }
+
+/**
+ * Returns the location of the given document as a plain string, to be matched against the identifiers of the
+ * available storages.
+ *
+ * Document.getURI() is of no use here. HttpDocument builds its URI with the single-argument java.net.URI
+ * constructor and returns null as soon as that constructor throws, and the constructor throws on every character
+ * which has to be percent-encoded in a URI -- a space being the common one. A space is a perfectly legal
+ * character in a WebDAV resource name, so a document whose name contains one used to look like a document with no
+ * location at all, and the dialog fell back to the local storage.
+ *
+ * Document.getPath() is a plain string which HttpDocument fills with the resource URL and which never goes
+ * through java.net.URI. It is what RecentDocAsFolderItem matches against the list of servers as well.
+ */
+internal fun documentStorageUrl(document: Document?): String? = document?.path?.ifBlank { null }
