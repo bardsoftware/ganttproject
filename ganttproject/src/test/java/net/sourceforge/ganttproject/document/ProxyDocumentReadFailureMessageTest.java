@@ -18,8 +18,14 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.document;
 
+import biz.ganttproject.app.DefaultLocalizer;
+import biz.ganttproject.app.DummyLocalizer;
+import biz.ganttproject.app.InternationalizationCoreKt;
+import biz.ganttproject.app.Localizer;
+import biz.ganttproject.app.Translation;
 import io.milton.http.exceptions.NotAuthorizedException;
 import io.milton.http.exceptions.NotFoundException;
+import javafx.beans.property.SimpleObjectProperty;
 import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavRuntimeException;
@@ -33,6 +39,7 @@ import java.net.ConnectException;
 import java.net.NoRouteToHostException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -169,6 +176,84 @@ public class ProxyDocumentReadFailureMessageTest {
   public void aFailureWhichIsItsOwnCauseDoesNotHangTheLoop() {
     assertEquals("Failed to parse document",
         ProxyDocument.getReadFailureMessage(new SelfCausedException("this exception is its own cause")));
+  }
+
+  @Test
+  public void everyMessageIsTakenFromTheTranslationWhenTheKeyIsThere() {
+    // The keys are spelled out instead of being read from the code under test: a test which asks
+    // the code for the key it uses would follow along with a renamed key and would never go red.
+    Localizer i18n = localizerWith(Map.of(
+        "document.error.read.authenticationRejected", "[authenticationRejected]",
+        "document.error.read.insecureConnection", "[insecureConnection]",
+        "document.error.read.timedOut", "[timedOut]",
+        "document.error.read.serverUnreachable", "[serverUnreachable]",
+        "document.error.read.parseFailure", "[parseFailure]"));
+
+    assertEquals("[authenticationRejected]",
+        ProxyDocument.getReadFailureMessage(new NotAuthorizedException("Unauthorized", null), i18n));
+    assertEquals("[insecureConnection]",
+        ProxyDocument.getReadFailureMessage(new SSLException("handshake_failure"), i18n));
+    assertEquals("[timedOut]",
+        ProxyDocument.getReadFailureMessage(new SocketTimeoutException("Read timed out"), i18n));
+    assertEquals("[serverUnreachable]",
+        ProxyDocument.getReadFailureMessage(new ConnectException("Connection refused"), i18n));
+    assertEquals("[parseFailure]",
+        ProxyDocument.getReadFailureMessage(new RuntimeException("something went wrong"), i18n));
+  }
+
+  @Test
+  public void aMissingKeyLeavesTheEnglishTextRatherThanTheBareKey() {
+    // The keys are not in the translation bundle yet. Until they are, the user has to be shown a
+    // sentence and not "document.error.read.serverUnreachable" or an empty line.
+    Localizer nothingTranslated = localizerWith(Map.of());
+
+    assertEquals("Authentication was rejected by the server",
+        ProxyDocument.getReadFailureMessage(new NotAuthorizedException("Unauthorized", null), nothingTranslated));
+    assertEquals("The secure connection to the server could not be established",
+        ProxyDocument.getReadFailureMessage(new SSLException("handshake_failure"), nothingTranslated));
+    assertEquals("The server did not answer in time",
+        ProxyDocument.getReadFailureMessage(new SocketTimeoutException("Read timed out"), nothingTranslated));
+    assertEquals("The server could not be reached",
+        ProxyDocument.getReadFailureMessage(new ConnectException("Connection refused"), nothingTranslated));
+    assertEquals("Failed to parse document",
+        ProxyDocument.getReadFailureMessage(new RuntimeException("something went wrong"), nothingTranslated));
+  }
+
+  @Test
+  public void aKeyWithAnEmptyValueLeavesTheEnglishTextAsWell() {
+    // The bundle does contain keys with no value at all, and an error dialog with no text in it
+    // tells the user less than an untranslated one.
+    Localizer emptyValue = localizerWith(Map.of("document.error.read.serverUnreachable", ""));
+
+    assertEquals("The server could not be reached",
+        ProxyDocument.getReadFailureMessage(new ConnectException("Connection refused"), emptyValue));
+  }
+
+  @Test
+  public void theMessageIsLookedUpInTheRootLocalizer() {
+    DefaultLocalizer savedRootLocalizer = InternationalizationCoreKt.getRootLocalizer();
+    try {
+      InternationalizationCoreKt.setRootLocalizer(
+          localizerWith(Map.of("document.error.read.serverUnreachable", "[serverUnreachable]")));
+
+      assertEquals("[serverUnreachable]",
+          ProxyDocument.getReadFailureMessage(new ConnectException("Connection refused")));
+    } finally {
+      InternationalizationCoreKt.setRootLocalizer(savedRootLocalizer);
+    }
+  }
+
+  /**
+   * A localizer which knows exactly the given keys and nothing else.
+   */
+  private static DefaultLocalizer localizerWith(Map<String, String> key2text) {
+    return new DefaultLocalizer("", () -> DummyLocalizer.INSTANCE, null,
+        new SimpleObjectProperty<Translation>()) {
+      @Override
+      public String formatTextOrNull(String key, Object... args) {
+        return key2text.get(key);
+      }
+    };
   }
 
   /**

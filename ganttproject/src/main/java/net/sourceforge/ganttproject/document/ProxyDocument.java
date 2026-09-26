@@ -18,6 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.document;
 
+import biz.ganttproject.app.InternationalizationCoreKt;
+import biz.ganttproject.app.Localizer;
 import biz.ganttproject.core.io.XmlProject;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.table.ColumnList;
@@ -181,30 +183,52 @@ public class ProxyDocument implements Document {
    * a secure connection which cannot be established. Anything else keeps the generic message.
    */
   static String getReadFailureMessage(Throwable failure) {
+    return getReadFailureMessage(failure, InternationalizationCoreKt.getRootLocalizer());
+  }
+
+  /**
+   * The same, with the localizer passed in, so that a test can see which key is asked for.
+   */
+  static String getReadFailureMessage(Throwable failure, Localizer i18n) {
     for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
       if (cause instanceof NotAuthorizedException) {
-        return "Authentication was rejected by the server";
+        return localized(i18n, "document.error.read.authenticationRejected",
+            "Authentication was rejected by the server");
       }
       if (cause instanceof SSLException) {
         // The server did answer, so this is not a reachability problem: the user has to look at the
         // certificate or at the protocol settings, not at the address.
-        return "The secure connection to the server could not be established";
+        return localized(i18n, "document.error.read.insecureConnection",
+            "The secure connection to the server could not be established");
       }
       if (cause instanceof SocketTimeoutException) {
         // The server may be reachable and merely slow, which is different advice than an
         // unreachable one: waiting and trying again can help here.
-        return "The server did not answer in time";
+        return localized(i18n, "document.error.read.timedOut", "The server did not answer in time");
       }
       if (cause instanceof UnknownHostException || cause instanceof ConnectException
           || cause instanceof NoRouteToHostException) {
-        return "The server could not be reached";
+        return localized(i18n, "document.error.read.serverUnreachable",
+            "The server could not be reached");
       }
       if (cause == cause.getCause()) {
         // An exception which reports itself as its own cause would make this loop run forever.
         break;
       }
     }
-    return "Failed to parse document";
+    return localized(i18n, "document.error.read.parseFailure", "Failed to parse document");
+  }
+
+  /**
+   * Reads a message from the translation bundle and keeps the English text as a fallback. The
+   * fallback is what the user gets until the keys reach the translation bundle; without it the
+   * bare message key would be shown instead of a sentence. An empty value falls back as well: the
+   * bundle does contain keys with no value, and for an error message nothing at all is worse than
+   * an untranslated text.
+   */
+  private static String localized(Localizer i18n, String key, String englishFallback) {
+    String translated = i18n.formatTextOrNull(key);
+    return translated == null || translated.isEmpty() ? englishFallback : translated;
   }
 
   public void createContents() throws IOException {
