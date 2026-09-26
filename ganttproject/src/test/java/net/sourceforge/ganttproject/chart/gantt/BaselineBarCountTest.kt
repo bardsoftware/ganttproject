@@ -39,6 +39,7 @@ import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.GanttPreviousStateTask
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -79,6 +80,7 @@ class BaselineBarCountTest {
   fun `a task whose end date moved gets a baseline bar`() {
     val scene = scene(baselineStart = AUG_10, baselineDuration = 5, taskStart = AUG_12, taskDuration = 5)
     assertEquals(1, scene.baselineBarCount, "the end date moved, so a baseline bar is expected")
+    assertTrue("later" in scene.baselineBarStyles, "the task now ends two days later than planned")
   }
 
   /**
@@ -97,6 +99,9 @@ class BaselineBarCountTest {
     )
     assertTrue(scene.baselineDurationDays != scene.taskDurationDays, "the scenario requires unequal durations")
     assertEquals(1, scene.baselineBarCount, "the duration changed, so a baseline bar is expected")
+    // The deadline is met, so the bar carries neither of the deviation colours.
+    assertFalse("later" in scene.baselineBarStyles, "the end date did not move, so nothing is late")
+    assertFalse("earlier" in scene.baselineBarStyles, "the end date did not move, so nothing is early")
   }
 }
 
@@ -114,6 +119,7 @@ private const val ROW_HEIGHT = 20
 /** The result of one scene build: the numbers the assertions are made on. */
 private class SceneUnderTest(
   val baselineBarCount: Int,
+  val baselineBarStyles: Set<String>,
   val baselineEnd: Date,
   val taskEnd: Date,
   val baselineDurationDays: Float,
@@ -134,8 +140,10 @@ private fun scene(baselineStart: Date, baselineDuration: Int, taskStart: Date, t
   val canvas = Canvas()
   GanttChartSceneBuilder(InputApiStub(calendar, task, baseline), canvas).render()
 
+  val bars = collectBaselineBars(canvas)
   return SceneUnderTest(
-    baselineBarCount = countBaselineBars(canvas),
+    baselineBarCount = bars.size,
+    baselineBarStyles = bars.flatMap { bar -> DEVIATION_STYLES.filter { bar.hasStyle(it) } }.toSet(),
     baselineEnd = baselineEnd,
     taskEnd = taskEnd,
     baselineDurationDays = baselineDuration.toFloat(),
@@ -148,9 +156,9 @@ private fun scene(baselineStart: Date, baselineDuration: Int, taskStart: Date, t
  * and counts the shapes which the renderer marked as a baseline bar. The style is the *primary*
  * style set with `setStyle`, which `hasStyle` does not see.
  */
-private fun countBaselineBars(canvas: Canvas): Int {
-  var count = 0
-  val counter = object : Painter {
+private fun collectBaselineBars(canvas: Canvas): List<Canvas.Shape> {
+  val bars = mutableListOf<Canvas.Shape>()
+  val collector = object : Painter {
     override fun prePaint() = Unit
     override fun paint(rectangle: Canvas.Rectangle) = tally(rectangle)
     override fun paint(line: Canvas.Line) = Unit
@@ -159,14 +167,16 @@ private fun countBaselineBars(canvas: Canvas): Int {
     override fun paint(rhombus: Canvas.Rhombus) = tally(rhombus)
     fun tally(shape: Canvas.Shape) {
       if (shape.style == "previousStateTask") {
-        count++
+        bars.add(shape)
       }
     }
   }
-  canvas.paint(counter)
-  canvas.layers.forEach { it.paint(counter) }
-  return count
+  canvas.paint(collector)
+  canvas.layers.forEach { it.paint(collector) }
+  return bars
 }
+
+private val DEVIATION_STYLES = listOf("later", "earlier", "milestone")
 
 private class SceneTaskStub(
   private val id: Int, startDate: Date, endDate: Date, private val length: TimeDuration
