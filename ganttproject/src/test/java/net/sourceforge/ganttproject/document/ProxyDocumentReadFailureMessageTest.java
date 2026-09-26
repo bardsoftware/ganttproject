@@ -26,8 +26,12 @@ import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavRuntime
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXParseException;
 
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -76,6 +80,48 @@ public class ProxyDocumentReadFailureMessageTest {
         new IOException(new ConnectException("Connection refused")));
 
     assertEquals("The server could not be reached", ProxyDocument.getReadFailureMessage(failure));
+  }
+
+  @Test
+  public void aHostWithoutARouteIsReportedAsAnUnreachableServer() {
+    Throwable failure = new DocumentException(
+        "Unable to open the file: No route to host",
+        new IOException(new NoRouteToHostException("No route to host")));
+
+    assertEquals("The server could not be reached", ProxyDocument.getReadFailureMessage(failure));
+  }
+
+  @Test
+  public void aReadTimeoutIsNotReportedAsAnUnreachableServer() {
+    // A server which is reachable but does not answer in time sends the user to a different place
+    // than one which cannot be reached at all, so it must not share the message with the latter.
+    Throwable failure = new WebDavRuntimeException(
+        "Resource /project.gan does not exist on dav.example.com",
+        new WebDavException(
+            "I/O problems when accessing dav.example.com",
+            new SocketTimeoutException("Read timed out")));
+
+    assertEquals("The server did not answer in time", ProxyDocument.getReadFailureMessage(failure));
+  }
+
+  @Test
+  public void aRejectedCertificateIsReportedAsAConnectionWhichCouldNotBeSecured() {
+    // SSLHandshakeException is the subclass which an untrusted certificate produces; the code
+    // matches the SSLException base class, so the subclass has to be recognised as well.
+    Throwable failure = new WebDavRuntimeException(
+        "Resource /project.gan does not exist on dav.example.com",
+        new WebDavException(
+            "I/O problems when accessing dav.example.com",
+            new SSLHandshakeException("PKIX path building failed: unable to find valid certification path")));
+
+    assertEquals("The secure connection to the server could not be established",
+        ProxyDocument.getReadFailureMessage(failure));
+  }
+
+  @Test
+  public void aSecureConnectionFailureIsRecognisedAtTheTopOfTheChainAsWell() {
+    assertEquals("The secure connection to the server could not be established",
+        ProxyDocument.getReadFailureMessage(new SSLException("Unsupported or unrecognized SSL message")));
   }
 
   @Test

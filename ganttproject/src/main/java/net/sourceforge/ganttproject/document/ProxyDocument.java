@@ -41,10 +41,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.net.ssl.SSLException;
 
 /**
  * @author bard
@@ -172,17 +175,28 @@ public class ProxyDocument implements Document {
   }
 
   /**
-   * Picks the message for a failure which happened while reading a document. A rejected
-   * authentication and an unreachable server are the two cases which send the user to a
-   * different place than a broken file, so they get their own text; anything else keeps
-   * the generic message.
+   * Picks the message for a failure which happened while reading a document. The failures which
+   * send the user to a different place than a broken file get their own text: a rejected
+   * authentication, a server which cannot be reached, a server which does not answer in time and
+   * a secure connection which cannot be established. Anything else keeps the generic message.
    */
   static String getReadFailureMessage(Throwable failure) {
     for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
       if (cause instanceof NotAuthorizedException) {
         return "Authentication was rejected by the server";
       }
-      if (cause instanceof UnknownHostException || cause instanceof ConnectException) {
+      if (cause instanceof SSLException) {
+        // The server did answer, so this is not a reachability problem: the user has to look at the
+        // certificate or at the protocol settings, not at the address.
+        return "The secure connection to the server could not be established";
+      }
+      if (cause instanceof SocketTimeoutException) {
+        // The server may be reachable and merely slow, which is different advice than an
+        // unreachable one: waiting and trying again can help here.
+        return "The server did not answer in time";
+      }
+      if (cause instanceof UnknownHostException || cause instanceof ConnectException
+          || cause instanceof NoRouteToHostException) {
         return "The server could not be reached";
       }
       if (cause == cause.getCause()) {
