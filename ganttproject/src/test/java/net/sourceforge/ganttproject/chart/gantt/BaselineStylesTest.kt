@@ -120,8 +120,8 @@ private fun styles(
   baselineStart: Date, baselineDuration: Int, currentStart: Date, currentDuration: Int, isMilestone: Boolean = false
 ) = GanttChartSceneBuilder.getBaselineStyles(
   isMilestone,
-  baselineDuration.toFloat(),
-  currentDuration.toFloat(),
+  baselineDuration,
+  currentDuration,
   shift(baselineStart, baselineDuration),
   shift(currentStart, currentDuration)
 )

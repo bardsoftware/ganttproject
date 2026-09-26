@@ -232,7 +232,7 @@ public class GanttChartSceneBuilder {
    * @return the styles to add to the baseline bar, or {@code null} if nothing changed and no
    * baseline bar is to be drawn.
    */
-  static List<String> getBaselineStyles(boolean isMilestone, float baselineDuration, float currentDuration,
+  static List<String> getBaselineStyles(boolean isMilestone, int baselineDuration, int currentDuration,
                                         Date baselineEnd, Date currentEnd) {
     int endComparison = baselineEnd.compareTo(currentEnd);
     if (endComparison == 0 && currentDuration == baselineDuration) {
@@ -262,8 +262,10 @@ public class GanttChartSceneBuilder {
           Date startDate = taskBaseline.getStart().getTime();
           TimeDuration duration = input.createLength(taskBaseline.getDuration());
           Date endDate = input.getCalendar().shiftDate(startDate, duration);
+          // The durations are compared as the whole units which the baseline stored, which is what
+          // GanttPreviousState.createTasks() took from the task in the first place.
           List<String> styles = getBaselineStyles(
-              t.isMilestone(), duration.getValue(), t.getDuration().getLength(duration.getTimeUnit()),
+              t.isMilestone(), taskBaseline.getDuration(), t.getDuration().getLength(),
               endDate, t.getEnd().getTime());
           if (styles == null) {
             return;

@@ -122,8 +122,8 @@ private class SceneUnderTest(
   val baselineBarStyles: Set<String>,
   val baselineEnd: Date,
   val taskEnd: Date,
-  val baselineDurationDays: Float,
-  val taskDurationDays: Float
+  val baselineDurationDays: Int,
+  val taskDurationDays: Int
 )
 
 private fun days(count: Int): TimeDuration = GPTimeUnitStack.createLength(GPTimeUnitStack.DAY, count.toFloat())
@@ -146,8 +146,8 @@ private fun scene(baselineStart: Date, baselineDuration: Int, taskStart: Date, t
     baselineBarStyles = bars.flatMap { bar -> DEVIATION_STYLES.filter { bar.hasStyle(it) } }.toSet(),
     baselineEnd = baselineEnd,
     taskEnd = taskEnd,
-    baselineDurationDays = baselineDuration.toFloat(),
-    taskDurationDays = task.duration.getLength(GPTimeUnitStack.DAY)
+    baselineDurationDays = baselineDuration,
+    taskDurationDays = task.duration.length
   )
 }
 
