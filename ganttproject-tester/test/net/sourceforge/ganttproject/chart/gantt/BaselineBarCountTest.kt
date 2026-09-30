@@ -26,7 +26,6 @@ import biz.ganttproject.core.chart.canvas.Painter
 import biz.ganttproject.core.chart.grid.Offset
 import biz.ganttproject.core.chart.grid.OffsetList
 import biz.ganttproject.core.chart.render.AlphaRenderingOption
-import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.chart.scene.gantt.TaskActivitySceneBuilder
 import biz.ganttproject.core.chart.scene.gantt.TaskLabelSceneBuilder
 import biz.ganttproject.core.time.CalendarFactory
@@ -43,7 +42,6 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.awt.Color
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Date
@@ -133,7 +131,7 @@ private fun scene(baselineStart: Date, baselineDuration: Int, taskStart: Date, t
   val taskEnd = calendar.shiftDate(taskStart, days(taskDuration))
   val baselineEnd = calendar.shiftDate(baselineStart, days(baselineDuration))
 
-  val task = SceneTaskStub(ROW_ID, taskStart, taskEnd, days(taskDuration))
+  val task = SingleActivitySceneTask(ROW_ID, taskStart, taskEnd, days(taskDuration))
   val baseline = listOf(
     GanttPreviousStateTask(ROW_ID, CalendarFactory.createGanttCalendar(baselineStart), baselineDuration, false, false)
   )
@@ -177,28 +175,6 @@ private fun collectBaselineBars(canvas: Canvas): List<Canvas.Shape> {
 }
 
 private val DEVIATION_STYLES = listOf("later", "earlier", "milestone")
-
-private class SceneTaskStub(
-  private val id: Int, startDate: Date, endDate: Date, private val length: TimeDuration
-) : ITaskSceneTask {
-  private val ownActivities: List<TaskSceneTaskActivity> =
-    listOf(TaskActivityDataImpl(true, true, 1f, this, startDate, endDate, length))
-
-  override fun getRowId(): Int = id
-  override val isCritical: Boolean get() = false
-  override val isProjectTask: Boolean get() = false
-  override val hasNestedTasks: Boolean get() = false
-  override val color: Color get() = Color.BLUE
-  override val shape: ShapePaint? get() = null
-  override val notes: String? get() = null
-  override val end: GanttCalendar = CalendarFactory.createGanttCalendar(endDate)
-  override val activities: List<TaskSceneTaskActivity> get() = ownActivities
-  override val expand: Boolean get() = true
-  override val duration: TimeDuration get() = length
-  override val completionPercentage: Int get() = 0
-  override fun isMilestone(): Boolean = false
-  override fun getProperty(propertyID: String?): String? = null
-}
 
 private class InputApiStub(
   private val calendar: GPCalendarCalc,

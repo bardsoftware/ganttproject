@@ -19,13 +19,10 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.chart;
 
 import biz.ganttproject.core.chart.canvas.Canvas;
-import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.option.DefaultFontOption;
 import biz.ganttproject.core.option.DefaultIntegerOption;
 import biz.ganttproject.core.option.FontSpec;
-import biz.ganttproject.core.time.GanttCalendar;
-import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
 import biz.ganttproject.core.time.impl.GPTimeUnitStack;
 import com.google.common.collect.Lists;
@@ -36,8 +33,6 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.test.task.TaskTestCase;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.Collections;
@@ -59,7 +54,7 @@ public class TaskRendererImplTest extends TaskTestCase {
   }
 
   private List<ITaskSceneTask> toSceneTask(List<Task> tasks) {
-    return tasks.stream().map(TaskSceneTask::new).collect(Collectors.toList());
+    return tasks.stream().map(RealTaskSceneTask::new).collect(Collectors.toList());
   }
 
   public void testVerticalPartitioningNoCollapsed() {
@@ -132,7 +127,7 @@ public class TaskRendererImplTest extends TaskTestCase {
     Task task = createTask(TestSetupHelper.newFriday(), 5);
     List<ITaskActivity<ITaskSceneTask>> taskActivities = task.getActivities().stream()
       .map((a) -> new TaskActivityDataImpl<ITaskSceneTask>(
-        a.isFirst(), a.isLast(), a.getIntensity(), new TaskSceneTask(task), a.getStart(), a.getEnd(), a.getDuration()
+        a.isFirst(), a.isLast(), a.getIntensity(), new RealTaskSceneTask(task), a.getStart(), a.getEnd(), a.getDuration()
       ))
       .collect(Collectors.toList());
     {
@@ -231,88 +226,4 @@ public class TaskRendererImplTest extends TaskTestCase {
     );
   }
 
-  private static class TaskSceneTask implements ITaskSceneTask {
-    private final Task task;
-
-    TaskSceneTask(Task task) {
-      this.task = task;
-    }
-
-    @Override
-    public int getRowId() {
-      return task.getRowId();
-    }
-
-    @Override
-    public boolean isCritical() {
-      return false;
-    }
-
-    @Override
-    public boolean isProjectTask() {
-      return false;
-    }
-
-    @Override
-    public boolean getHasNestedTasks() {
-      return false;
-    }
-
-    @NotNull
-    @Override
-    public Color getColor() {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public ShapePaint getShape() {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public String getNotes() {
-      return null;
-    }
-
-    @Override
-    public boolean isMilestone() {
-      return false;
-    }
-
-    @NotNull
-    @Override
-    public GanttCalendar getEnd() {
-      return null;
-    }
-
-    @NotNull
-    @Override
-    public List<ITaskActivity<ITaskSceneTask>> getActivities() {
-      return null;
-    }
-
-    @Override
-    public boolean getExpand() {
-      return task.getExpand();
-    }
-
-    @NotNull
-    @Override
-    public TimeDuration getDuration() {
-      return null;
-    }
-
-    @Override
-    public int getCompletionPercentage() {
-      return 0;
-    }
-
-    @Nullable
-    @Override
-    public String getProperty(@Nullable String propertyID) {
-      return null;
-    }
-  }
 }
