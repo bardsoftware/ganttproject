@@ -42,6 +42,9 @@ import org.junit.jupiter.api.Test
  *
  * A window that has never been shown has no position at all: its x, y, width and height are NaN,
  * and no screen contains that point. The screen therefore has to be picked with a fallback.
+ *
+ * The caps are compared with [assertSameHeight], which allows for the whole pixel the layout rounds
+ * a height to.
  */
 class AlertOwnerScreenTest {
   private val contentWidth = 360.0
@@ -88,8 +91,8 @@ class AlertOwnerScreenTest {
     // here that could tell the owner's screen from the primary one.
     assumeTrue(others.isNotEmpty(), "needs more than one screen")
     others.forEach { screen ->
-      assertEquals(screen.visualBounds.height * maxContentHeightRatio,
-        capOfAlertOwnedBy(ownerOn(screen)), 0.5,
+      assertSameHeight(screen.visualBounds.height * maxContentHeightRatio,
+        capOfAlertOwnedBy(ownerOn(screen)),
         "the cap of an alert owned by a window on $screen was not taken from that screen")
     }
   }
@@ -110,7 +113,7 @@ class AlertOwnerScreenTest {
   fun `an alert owned by a window that is on no screen still has a usable cap`() = onFxThread {
     val cap = capOfAlertOwnedBy(Stage())
     assertTrue(cap.isFinite() && cap > 0, "the cap of an alert without a placed owner is $cap")
-    assertEquals(Screen.getPrimary().visualBounds.height * maxContentHeightRatio, cap, 0.5,
+    assertSameHeight(Screen.getPrimary().visualBounds.height * maxContentHeightRatio, cap,
       "the fallback cap should be the same share of the primary screen")
   }
 }

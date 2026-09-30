@@ -29,7 +29,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -40,7 +39,9 @@ import org.junit.jupiter.api.Test
  *
  * The numbers below are all preferred heights asked for at the same width, the one the dialog pane
  * hard-codes for its content. A preferred height asked for without a width is measured without
- * wrapping and says nothing about a wrapped message, so the width is always passed in.
+ * wrapping and says nothing about a wrapped message, so the width is always passed in. They are
+ * compared with [assertSameHeight] and [assertHeightAtMost], which allow for the whole pixel the
+ * layout rounds a height to; see them for why that is needed and why it hides nothing.
  */
 class AlertContentHeightTest {
   /** The preferred content width that DialogPane.createContentLabel hard-codes. */
@@ -119,7 +120,7 @@ class AlertContentHeightTest {
       "the test message is too short to reach the cap: it asks for $uncappedHeight, the cap is $cap")
     assertTrue(cappedHeight <= cap,
       "a long message asks for $cappedHeight, which is more than the cap of $cap")
-    assertEquals(minOf(uncappedHeight, cap), cappedHeight, 0.5,
+    assertSameHeight(minOf(uncappedHeight, cap), cappedHeight,
       "the capped height should be the uncapped one limited to the cap")
   }
 
@@ -136,7 +137,7 @@ class AlertContentHeightTest {
     val uncappedHeight = uncapped.prefHeight(contentWidth)
     assertTrue(uncappedHeight < cap,
       "the short message should fit on the screen, but it asks for $uncappedHeight against a cap of $cap")
-    assertEquals(uncappedHeight, capped.prefHeight(contentWidth), 0.5,
+    assertSameHeight(uncappedHeight, capped.prefHeight(contentWidth),
       "a message that fits should not be changed by the cap")
   }
 
@@ -154,13 +155,13 @@ class AlertContentHeightTest {
     root.resize(contentWidth, requestedHeight)
     root.applyCss()
     root.layout()
-    assertEquals(requestedHeight, capped.height, 0.5,
+    assertSameHeight(requestedHeight, capped.height,
       "the pane was not given the height it asked for, so nothing below is measured on it")
 
     val viewportHeight = capped.viewportBounds.height
     val contentHeight = capped.content.boundsInLocal.height
 
-    assertTrue(viewportHeight <= cap + 0.5,
+    assertHeightAtMost(cap, viewportHeight,
       "the visible part is $viewportHeight high, which is more than the cap of $cap")
     // The message is laid out in full behind a smaller window onto it: that is what makes the rest
     // reachable. Were it squeezed into the viewport instead, it would be clipped, not scrollable.
@@ -175,11 +176,11 @@ class AlertContentHeightTest {
     root.layout()
     val afterScrolling = capped.content.localToScene(capped.content.boundsInLocal)
 
-    assertEquals(contentHeight - viewportHeight, beforeScrolling.minY - afterScrolling.minY, 1.0,
+    assertSameHeight(contentHeight - viewportHeight, beforeScrolling.minY - afterScrolling.minY,
       "scrolling to the end does not move the message by everything that did not fit")
     // And with that the end of the message stands inside the visible part.
     val viewport = capped.localToScene(capped.boundsInLocal)
-    assertTrue(afterScrolling.maxY <= viewport.maxY + 1.0,
+    assertHeightAtMost(viewport.maxY, afterScrolling.maxY,
       "the end of the message is at ${afterScrolling.maxY}, below the bottom of the pane at ${viewport.maxY}")
   }
 }
