@@ -26,6 +26,9 @@ import javax.swing.SwingUtilities;
 import biz.ganttproject.app.DialogKt;
 import biz.ganttproject.app.InternationalizationCoreKt;
 import biz.ganttproject.app.Localizer;
+import biz.ganttproject.app.PropertySheetKt;
+import biz.ganttproject.core.option.GPOption;
+import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.option.ObservableObject;
 import biz.ganttproject.core.option.ObservableString;
 import biz.ganttproject.core.option.ValidatorsKt;
@@ -39,9 +42,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingNode;
+import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.GanttPreviousState;
 import net.sourceforge.ganttproject.IGanttProject;
@@ -116,29 +118,24 @@ public class BaselineDialogAction extends GPAction {
               "", true),
           dialogModel, editor, ourLocalizer);
 
-      // The baseline color options are still Swing-based, so we embed them into the JavaFX dialog.
-      SwingNode colorOptionsNode = new SwingNode();
-      StackPane colorOptionsWrapper = new StackPane(colorOptionsNode);
-      colorOptionsWrapper.getStyleClass().add("swing-background");
-      SwingUtilities.invokeLater(() -> {
-        OptionsPageBuilder optionsBuilder = new OptionsPageBuilder();
-        optionsBuilder.setUiFacade(myUiFacade);
-        colorOptionsNode.setContent(
-            optionsBuilder.createGroupComponent(myUiFacade.getGanttChart().getBaselineColorOptions()));
+      // Build the baseline color options pane with the JavaFX property pane builder.
+      GPOptionGroup colorOptions = myUiFacade.getGanttChart().getBaselineColorOptions();
+      Node colorOptionsPane = PropertySheetKt.properties(ourOptionLocalizer, builder -> {
+        builder.title(InternationalizationCoreKt.getRootLocalizer().formatText(
+            OptionsPageBuilder.I18N.getCanonicalOptionGroupLabelKey(colorOptions)));
+        for (GPOption<?> option : colorOptions.getOptions()) {
+          option.visitPropertyPaneBuilder(builder);
+        }
+        return Unit.INSTANCE;
       });
 
       BorderPane contentPane = new BorderPane();
       contentPane.setCenter(dialogPane.getContentNode());
-      contentPane.setBottom(colorOptionsWrapper);
+      contentPane.setBottom(colorOptionsPane);
       dialogPane.setContentNode(contentPane);
       dialogPane.build(dlg);
 
       dlg.setupButton(new CancelAction(), btn -> Unit.INSTANCE);
-      dlg.setOnShown(() -> {
-        DialogKt.setSwingBackground(dlg);
-        dlg.resize();
-        return Unit.INSTANCE;
-      });
 
       if (currentItem != null) {
         dialogPane.getListView().getSelectionModel().select(currentItem);
@@ -243,4 +240,7 @@ public class BaselineDialogAction extends GPAction {
 
   private static final Localizer ourLocalizer = InternationalizationCoreKt.getRootLocalizer()
       .createWithRootKey("baseline.dialog", InternationalizationCoreKt.getRootLocalizer());
+  // Localizer which resolves option label keys, such as option.<optionID>.label
+  private static final Localizer ourOptionLocalizer = InternationalizationCoreKt.getRootLocalizer()
+      .createWithRootKey("option", InternationalizationCoreKt.getRootLocalizer());
 }

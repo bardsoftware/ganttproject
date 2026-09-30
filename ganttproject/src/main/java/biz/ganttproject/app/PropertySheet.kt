@@ -176,7 +176,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
       createOptionItem(property, createChoiceOptionEditor(property, options), options)
     })
   }
-  fun color(property: ObservableColor) {
+  override fun color(property: ObservableColor) {
     rowBuilders.add(createOptionItem(property, createColorOptionEditor(property)))
   }
 
