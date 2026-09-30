@@ -295,9 +295,7 @@ class ItemListDialogPane<T: Item<T>>(
       items = listItems
       cellFactory = Callback { ShowHideListCell(listItemConverter)}
       selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-        if (newValue != null) {
-          selectedItem.set(newValue, trigger = this)
-        }
+        selectedItem.set(newValue, trigger = this)
       }
       selectionModel.select(0)
     }

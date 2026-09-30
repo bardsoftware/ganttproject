@@ -49,6 +49,7 @@ open class DefaultColorOption : GPAbstractOption<Color?>, ColorOption {
     }
 
     // Sync changes from the option to the observable property.
+    // TODO(dbarashev): fix this listener leak.
     addChangeValueListener { evt ->
       val newValue = evt.newValue as Color?
       if (newValue != observableColor.value?.get()) {
