@@ -60,14 +60,13 @@ class BaselineDialog(private val myProject: IGanttProject, private val myUiFacad
       ourLocalizer
     )
 
-
     // Wire the show/hide behavior of the items which are already in the list and of those which
     // will be added later on. If the shown baseline is removed from the list, hide it in the chart.
     for (item in listItems) {
       wireItem(item, listItems, dialogModel)
     }
-    listItems.addListener(ListChangeListener { change: ListChangeListener.Change<out BaselineItem>? ->
-      while (change!!.next()) {
+    listItems.addListener(ListChangeListener { change ->
+      while (change.next()) {
         for (removed in change.getRemoved()) {
           removed.isEnabledProperty.set(false)
         }
@@ -77,14 +76,13 @@ class BaselineDialog(private val myProject: IGanttProject, private val myUiFacad
       }
     })
     dialogModel.btnApplyController.onAction = {
-      SwingUtilities.invokeLater(Runnable {
+      SwingUtilities.invokeLater {
         myProject.baselines.clear()
         for (item in listItems) {
           myProject.baselines.add(item.baseline)
         }
         myProject.setModified()
-      })
-      Unit
+      }
     }
 
     val editor = BaselineItemEditor(selectedItem, dialogModel, ourLocalizer)
@@ -123,7 +121,6 @@ class BaselineDialog(private val myProject: IGanttProject, private val myUiFacad
     contentPane.bottom = colorOptionsPane
     dialogPane.contentNode = contentPane
     dialogPane.build(dlg)
-
 
     listItems.find { it.baseline == currentBaseline }?.let { dialogPane.listView.getSelectionModel().select(it) }
   }
@@ -171,7 +168,7 @@ private class BaselineItem(val baseline: GanttPreviousState, isShown: Boolean) :
   }
 
   fun toggle(ganttChart: GanttChart, newValue: Boolean) {
-    SwingUtilities.invokeLater(Runnable {
+    SwingUtilities.invokeLater {
       if (newValue) {
         ganttChart.setBaseline(this.baseline)
         ganttChart.reset()
@@ -179,7 +176,7 @@ private class BaselineItem(val baseline: GanttPreviousState, isShown: Boolean) :
         ganttChart.setBaseline(null)
         ganttChart.reset()
       }
-    })
+    }
   }
 }
 
@@ -199,6 +196,9 @@ private class BaselineItemEditor private constructor(
     if (item != null) {
       myNameOption.value = item.title
       visibilityToggle.isSelected = item.isEnabledProperty.get()
+    } else {
+      myNameOption.value = ""
+      visibilityToggle.isSelected = false
     }
     enableControls(item != null)
   }
