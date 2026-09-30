@@ -48,7 +48,10 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 import javax.net.ssl.SSLException;
 
 /**
@@ -188,47 +191,37 @@ public class ProxyDocument implements Document {
 
   /**
    * The same, with the localizer passed in, so that a test can see which key is asked for.
+   *
+   * <p>The chain is walked with the exceptions already visited kept aside, because a cause chain
+   * may contain a loop of any length: an exception which reports itself as its own cause, but also
+   * two exceptions which report each other, or a loop which the chain only enters further down.
+   * Guava's {@code Throwables.getCausalChain} finds such a loop as well, but it answers with an
+   * {@code IllegalArgumentException} instead of a shortened chain, and this method runs while a
+   * read failure is being reported: an exception thrown here would replace the failure the user is
+   * supposed to read about with a failure of the reporting itself.
    */
   static String getReadFailureMessage(Throwable failure, Localizer i18n) {
-    for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
+    Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+    for (Throwable cause = failure; cause != null && visited.add(cause); cause = cause.getCause()) {
       if (cause instanceof NotAuthorizedException) {
-        return localized(i18n, "document.error.read.authenticationRejected",
-            "Authentication was rejected by the server");
+        return i18n.formatText("document.error.read.authenticationRejected");
       }
       if (cause instanceof SSLException) {
         // The server did answer, so this is not a reachability problem: the user has to look at the
         // certificate or at the protocol settings, not at the address.
-        return localized(i18n, "document.error.read.insecureConnection",
-            "The secure connection to the server could not be established");
+        return i18n.formatText("document.error.read.insecureConnection");
       }
       if (cause instanceof SocketTimeoutException) {
         // The server may be reachable and merely slow, which is different advice than an
         // unreachable one: waiting and trying again can help here.
-        return localized(i18n, "document.error.read.timedOut", "The server did not answer in time");
+        return i18n.formatText("document.error.read.timedOut");
       }
       if (cause instanceof UnknownHostException || cause instanceof ConnectException
           || cause instanceof NoRouteToHostException) {
-        return localized(i18n, "document.error.read.serverUnreachable",
-            "The server could not be reached");
-      }
-      if (cause == cause.getCause()) {
-        // An exception which reports itself as its own cause would make this loop run forever.
-        break;
+        return i18n.formatText("document.error.read.serverUnreachable");
       }
     }
-    return localized(i18n, "document.error.read.parseFailure", "Failed to parse document");
-  }
-
-  /**
-   * Reads a message from the translation bundle and keeps the English text as a fallback. The
-   * fallback is what the user gets until the keys reach the translation bundle; without it the
-   * bare message key would be shown instead of a sentence. An empty value falls back as well: the
-   * bundle does contain keys with no value, and for an error message nothing at all is worse than
-   * an untranslated text.
-   */
-  private static String localized(Localizer i18n, String key, String englishFallback) {
-    String translated = i18n.formatTextOrNull(key);
-    return translated == null || translated.isEmpty() ? englishFallback : translated;
+    return i18n.formatText("document.error.read.parseFailure");
   }
 
   public void createContents() throws IOException {

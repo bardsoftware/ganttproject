@@ -30,6 +30,7 @@ import net.sourceforge.ganttproject.document.Document.DocumentException;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavException;
 import net.sourceforge.ganttproject.document.webdav.WebDavResource.WebDavRuntimeException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.xml.sax.SAXParseException;
 
 import javax.net.ssl.SSLException;
@@ -40,12 +41,16 @@ import java.net.NoRouteToHostException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Tests the message which the user is shown when reading a document fails. The expected
- * strings are spelled out here on purpose: a test which asks the code under test for the
+ * Tests the message which the user is shown when reading a document fails. The message itself
+ * lives in the translation bundle, so the tests hand in a localizer which answers each of the five
+ * keys with a marker of its own: a test which expects one of those markers says both which key the
+ * code asked for and that the text really comes from the localizer. The markers are spelled out
+ * here on purpose, as are the keys they belong to: a test which asks the code under test for the
  * expected value would follow along with any change and would never go red.
  */
 public class ProxyDocumentReadFailureMessageTest {
@@ -60,13 +65,13 @@ public class ProxyDocumentReadFailureMessageTest {
             "User natalie is not authorized to access dav.example.com",
             new NotAuthorizedException("Unauthorized", null)));
 
-    assertEquals("Authentication was rejected by the server", ProxyDocument.getReadFailureMessage(failure));
+    assertEquals("[authenticationRejected]", ProxyDocument.getReadFailureMessage(failure, MARKERS));
   }
 
   @Test
   public void aRejectedAuthenticationIsRecognisedAtTheTopOfTheChainAsWell() {
-    assertEquals("Authentication was rejected by the server",
-        ProxyDocument.getReadFailureMessage(new NotAuthorizedException("Unauthorized", null)));
+    assertEquals("[authenticationRejected]",
+        ProxyDocument.getReadFailureMessage(new NotAuthorizedException("Unauthorized", null), MARKERS));
   }
 
   @Test
@@ -77,7 +82,7 @@ public class ProxyDocumentReadFailureMessageTest {
             "I/O problems when accessing dav.example.com",
             new UnknownHostException("dav.example.com")));
 
-    assertEquals("The server could not be reached", ProxyDocument.getReadFailureMessage(failure));
+    assertEquals("[serverUnreachable]", ProxyDocument.getReadFailureMessage(failure, MARKERS));
   }
 
   @Test
@@ -86,7 +91,7 @@ public class ProxyDocumentReadFailureMessageTest {
         "Unable to open the file: Connection refused",
         new IOException(new ConnectException("Connection refused")));
 
-    assertEquals("The server could not be reached", ProxyDocument.getReadFailureMessage(failure));
+    assertEquals("[serverUnreachable]", ProxyDocument.getReadFailureMessage(failure, MARKERS));
   }
 
   @Test
@@ -95,7 +100,7 @@ public class ProxyDocumentReadFailureMessageTest {
         "Unable to open the file: No route to host",
         new IOException(new NoRouteToHostException("No route to host")));
 
-    assertEquals("The server could not be reached", ProxyDocument.getReadFailureMessage(failure));
+    assertEquals("[serverUnreachable]", ProxyDocument.getReadFailureMessage(failure, MARKERS));
   }
 
   @Test
@@ -108,7 +113,7 @@ public class ProxyDocumentReadFailureMessageTest {
             "I/O problems when accessing dav.example.com",
             new SocketTimeoutException("Read timed out")));
 
-    assertEquals("The server did not answer in time", ProxyDocument.getReadFailureMessage(failure));
+    assertEquals("[timedOut]", ProxyDocument.getReadFailureMessage(failure, MARKERS));
   }
 
   @Test
@@ -121,42 +126,42 @@ public class ProxyDocumentReadFailureMessageTest {
             "I/O problems when accessing dav.example.com",
             new SSLHandshakeException("PKIX path building failed: unable to find valid certification path")));
 
-    assertEquals("The secure connection to the server could not be established",
-        ProxyDocument.getReadFailureMessage(failure));
+    assertEquals("[insecureConnection]", ProxyDocument.getReadFailureMessage(failure, MARKERS));
   }
 
   @Test
   public void aSecureConnectionFailureIsRecognisedAtTheTopOfTheChainAsWell() {
-    assertEquals("The secure connection to the server could not be established",
-        ProxyDocument.getReadFailureMessage(new SSLException("Unsupported or unrecognized SSL message")));
+    assertEquals("[insecureConnection]", ProxyDocument.getReadFailureMessage(
+        new SSLException("Unsupported or unrecognized SSL message"), MARKERS));
   }
 
   @Test
   public void aBrokenFileKeepsTheParseFailureMessage() {
     // The chain which a malformed project file produces: XmlParser turns the SAXException into
     // an IOException and doParse() wraps that into a DocumentException.
-    assertEquals("Failed to parse document", ProxyDocument.getReadFailureMessage(
+    assertEquals("[parseFailure]", ProxyDocument.getReadFailureMessage(
         new DocumentException(
             "Unable to open the file: Content is not allowed in prolog.",
-            new IOException("Content is not allowed in prolog."))));
+            new IOException("Content is not allowed in prolog.")), MARKERS));
   }
 
   @Test
   public void aParserFailureOnItsOwnKeepsTheParseFailureMessage() {
-    assertEquals("Failed to parse document", ProxyDocument.getReadFailureMessage(
-        new SAXParseException("Element type \"tsk\" must be followed by either attribute specifications, \">\" or \"/>\".", null)));
+    assertEquals("[parseFailure]", ProxyDocument.getReadFailureMessage(
+        new SAXParseException("Element type \"tsk\" must be followed by either attribute specifications, \">\" or \"/>\".", null),
+        MARKERS));
   }
 
   @Test
   public void anEmptyOrUnreadableDocumentKeepsTheParseFailureMessage() {
-    assertEquals("Failed to parse document",
-        ProxyDocument.getReadFailureMessage(new DocumentException("Can't open document")));
+    assertEquals("[parseFailure]",
+        ProxyDocument.getReadFailureMessage(new DocumentException("Can't open document"), MARKERS));
   }
 
   @Test
   public void aFailureWithoutACauseKeepsTheParseFailureMessage() {
-    assertEquals("Failed to parse document",
-        ProxyDocument.getReadFailureMessage(new RuntimeException("something went wrong")));
+    assertEquals("[parseFailure]",
+        ProxyDocument.getReadFailureMessage(new RuntimeException("something went wrong"), MARKERS));
   }
 
   @Test
@@ -169,64 +174,56 @@ public class ProxyDocumentReadFailureMessageTest {
             "Resource /project.gan is not found on dav.example.com",
             new NotFoundException("Not Found")));
 
-    assertEquals("Failed to parse document", ProxyDocument.getReadFailureMessage(failure));
+    assertEquals("[parseFailure]", ProxyDocument.getReadFailureMessage(failure, MARKERS));
   }
 
-  @Test
-  public void aFailureWhichIsItsOwnCauseDoesNotHangTheLoop() {
-    assertEquals("Failed to parse document",
-        ProxyDocument.getReadFailureMessage(new SelfCausedException("this exception is its own cause")));
-  }
+  // The four tests below walk cause chains which contain a loop. Without a guard the walk never
+  // reaches its end, so they are given a timeout which does not wait for the method to return: a
+  // same-thread timeout is only reported once the test method is over, and a test which never ends
+  // would take the whole test run with it.
 
   @Test
-  public void everyMessageIsTakenFromTheTranslationWhenTheKeyIsThere() {
-    // The keys are spelled out instead of being read from the code under test: a test which asks
-    // the code for the key it uses would follow along with a renamed key and would never go red.
-    Localizer i18n = localizerWith(Map.of(
-        "document.error.read.authenticationRejected", "[authenticationRejected]",
-        "document.error.read.insecureConnection", "[insecureConnection]",
-        "document.error.read.timedOut", "[timedOut]",
-        "document.error.read.serverUnreachable", "[serverUnreachable]",
-        "document.error.read.parseFailure", "[parseFailure]"));
-
-    assertEquals("[authenticationRejected]",
-        ProxyDocument.getReadFailureMessage(new NotAuthorizedException("Unauthorized", null), i18n));
-    assertEquals("[insecureConnection]",
-        ProxyDocument.getReadFailureMessage(new SSLException("handshake_failure"), i18n));
-    assertEquals("[timedOut]",
-        ProxyDocument.getReadFailureMessage(new SocketTimeoutException("Read timed out"), i18n));
-    assertEquals("[serverUnreachable]",
-        ProxyDocument.getReadFailureMessage(new ConnectException("Connection refused"), i18n));
+  @Timeout(value = 10, unit = TimeUnit.SECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  public void aFailureWhichIsItsOwnCauseDoesNotHangTheWalk() {
     assertEquals("[parseFailure]",
-        ProxyDocument.getReadFailureMessage(new RuntimeException("something went wrong"), i18n));
+        ProxyDocument.getReadFailureMessage(new SelfCausedException("this exception is its own cause"), MARKERS));
   }
 
   @Test
-  public void aMissingKeyLeavesTheEnglishTextRatherThanTheBareKey() {
-    // The keys are not in the translation bundle yet. Until they are, the user has to be shown a
-    // sentence and not "document.error.read.serverUnreachable" or an empty line.
-    Localizer nothingTranslated = localizerWith(Map.of());
+  @Timeout(value = 10, unit = TimeUnit.SECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  public void twoExceptionsWhichCauseEachOtherDoNotHangTheWalk() {
+    // A loop of two is not caught by comparing an exception with its own cause: neither of these
+    // two reports itself, they report each other.
+    RuntimeException first = new RuntimeException("first");
+    RuntimeException second = new RuntimeException("second", first);
+    first.initCause(second);
 
-    assertEquals("Authentication was rejected by the server",
-        ProxyDocument.getReadFailureMessage(new NotAuthorizedException("Unauthorized", null), nothingTranslated));
-    assertEquals("The secure connection to the server could not be established",
-        ProxyDocument.getReadFailureMessage(new SSLException("handshake_failure"), nothingTranslated));
-    assertEquals("The server did not answer in time",
-        ProxyDocument.getReadFailureMessage(new SocketTimeoutException("Read timed out"), nothingTranslated));
-    assertEquals("The server could not be reached",
-        ProxyDocument.getReadFailureMessage(new ConnectException("Connection refused"), nothingTranslated));
-    assertEquals("Failed to parse document",
-        ProxyDocument.getReadFailureMessage(new RuntimeException("something went wrong"), nothingTranslated));
+    assertEquals("[parseFailure]", ProxyDocument.getReadFailureMessage(first, MARKERS));
   }
 
   @Test
-  public void aKeyWithAnEmptyValueLeavesTheEnglishTextAsWell() {
-    // The bundle does contain keys with no value at all, and an error dialog with no text in it
-    // tells the user less than an untranslated one.
-    Localizer emptyValue = localizerWith(Map.of("document.error.read.serverUnreachable", ""));
+  @Timeout(value = 10, unit = TimeUnit.SECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  public void aLoopWhichTheChainOnlyEntersFurtherDownDoesNotHangTheWalk() {
+    // The exception the walk starts from is not part of the loop here, so a guard which only
+    // compares against the first exception of the chain would not find it either.
+    RuntimeException inLoop = new RuntimeException("in the loop");
+    RuntimeException alsoInLoop = new RuntimeException("also in the loop", inLoop);
+    inLoop.initCause(alsoInLoop);
 
-    assertEquals("The server could not be reached",
-        ProxyDocument.getReadFailureMessage(new ConnectException("Connection refused"), emptyValue));
+    assertEquals("[parseFailure]",
+        ProxyDocument.getReadFailureMessage(new RuntimeException("entry point", inLoop), MARKERS));
+  }
+
+  @Test
+  @Timeout(value = 10, unit = TimeUnit.SECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  public void aTransportFailureInsideALoopIsStillRecognised() {
+    // Stopping at the first exception seen twice still looks at every exception of the chain, so a
+    // loop must not cost the user the message which names the actual problem.
+    ConnectException refused = new ConnectException("Connection refused");
+    RuntimeException wrapper = new RuntimeException("wrapper", refused);
+    refused.initCause(wrapper);
+
+    assertEquals("[serverUnreachable]", ProxyDocument.getReadFailureMessage(wrapper, MARKERS));
   }
 
   @Test
@@ -242,6 +239,17 @@ public class ProxyDocumentReadFailureMessageTest {
       InternationalizationCoreKt.setRootLocalizer(savedRootLocalizer);
     }
   }
+
+  /**
+   * A localizer which answers each of the five keys of this code path with a marker of its own and
+   * knows nothing else.
+   */
+  private static final DefaultLocalizer MARKERS = localizerWith(Map.of(
+      "document.error.read.authenticationRejected", "[authenticationRejected]",
+      "document.error.read.insecureConnection", "[insecureConnection]",
+      "document.error.read.timedOut", "[timedOut]",
+      "document.error.read.serverUnreachable", "[serverUnreachable]",
+      "document.error.read.parseFailure", "[parseFailure]"));
 
   /**
    * A localizer which knows exactly the given keys and nothing else.
