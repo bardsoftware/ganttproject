@@ -42,6 +42,7 @@ import javafx.scene.control.Label
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.StackPane
 import javafx.util.Callback
@@ -129,7 +130,7 @@ interface ItemEditorPane {
 /**
  * UI for editing properties of the selected list item.
  */
-internal open class ItemEditorPaneImpl<T: Item<T>>(
+open class ItemEditorPaneImpl<T: Item<T>>(
   // Fields that need to be shown in the UI.
   fields: List<ObservableProperty<*>>,
   protected val editItem: ObservableProperty<T?>,
@@ -152,16 +153,16 @@ internal open class ItemEditorPaneImpl<T: Item<T>>(
     }
   }
 
-  internal val visibilityToggle = createToggleSwitch()
-  internal val visibilityTogglePane = HBox().also {
+  val visibilityToggle = createToggleSwitch()
+  val visibilityTogglePane = HBox().also {
     it.styleClass.add("visibility-pane")
     it.children.add(visibilityToggle)
     it.children.add(Label(localizer.formatText("visibility.label")))
   }
-  internal val propertySheetLabel = Label().also {
+  val propertySheetLabel = Label().also {
     it.styleClass.add("title")
   }
-  internal val propertySheet = PropertySheetBuilder(localizer).createPropertySheet(fields)
+  val propertySheet = PropertySheetBuilder(localizer).createPropertySheet(fields)
 
   init {
     fields.forEach { it.addWatcher { onEdit() } }
@@ -199,7 +200,7 @@ internal open class ItemEditorPaneImpl<T: Item<T>>(
    */
   protected open fun loadData(item: T?) {}
 
-  internal fun onEdit() {
+  fun onEdit() {
     if (isEditIgnored) return
     editItem.value?.let {
       saveData(it)
@@ -227,7 +228,7 @@ data class BtnController<T>(
 /**
  * The dialog model object connects the list view with the actions to add/delete items and the validation logic.
  */
-internal class ItemListDialogModel<T: Item<T>>(
+class ItemListDialogModel<T: Item<T>>(
   private val listItems: ObservableList<T>,
   private val newItemFactory: ()->T?,
   private val i18n: Localizer,
@@ -266,7 +267,7 @@ internal class ItemListDialogModel<T: Item<T>>(
 /**
  * The whole user interface.
  */
-internal class ItemListDialogPane<T: Item<T>>(
+class ItemListDialogPane<T: Item<T>>(
   // The list of items being shown.
   val listItems: ObservableList<T>,
   // The item that is currently selected and being edited.
@@ -280,11 +281,11 @@ internal class ItemListDialogPane<T: Item<T>>(
   // i18n.
   private val localizer: Localizer) {
 
-  internal val listView: ListView<T> = ListView()
+  val listView: ListView<T> = ListView()
 
   var isAddRemoveEnabled = true
   var isHeaderEnabled = true
-  var contentNode = HBox().also {
+  var contentNode: Pane = HBox().also {
     it.children.addAll(listView, editor.node)
     HBox.setHgrow(editor.node, Priority.ALWAYS)
   }
@@ -294,9 +295,7 @@ internal class ItemListDialogPane<T: Item<T>>(
       items = listItems
       cellFactory = Callback { ShowHideListCell(listItemConverter)}
       selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-        if (newValue != null) {
-          selectedItem.set(newValue, trigger = this)
-        }
+        selectedItem.set(newValue, trigger = this)
       }
       selectionModel.select(0)
     }

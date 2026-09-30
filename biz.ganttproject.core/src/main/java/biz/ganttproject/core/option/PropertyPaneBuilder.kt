@@ -54,6 +54,11 @@ interface PropertyPaneBuilder {
 
   fun radio(property: ObservableBoolean)
 
+  /**
+   * Adds a color editor for the given property.
+   */
+  fun color(property: ObservableColor)
+
   fun text(property: ObservableString, optionValues: (TextDisplayOptions.() -> Unit)? = null)
 
   /**

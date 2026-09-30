@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
  */
 package biz.ganttproject.core.option
 
+import biz.ganttproject.core.chart.render.Style
 import biz.ganttproject.core.option.ColorOption.Util.getColor
 import biz.ganttproject.core.option.ColorOption.Util.determineColor
 import biz.ganttproject.core.option.GPAbstractOption
@@ -34,5 +35,28 @@ open class DefaultColorOption : GPAbstractOption<Color?>, ColorOption {
 
   override fun loadPersistentValue(value: String) {
     resetValue(determineColor(value), true)
+  }
+
+  override fun visitPropertyPaneBuilder(builder: PropertyPaneBuilder) {
+    // Create an observable property which delegates to this option.
+    val observableColor = ObservableColor(id, value?.let { Style.Color.parse(getColor(it)) })
+
+    // Sync changes from the observable property to the option.
+    observableColor.addWatcher { evt ->
+      if (evt.newValue?.get() != value) {
+        resetValue(evt.newValue?.get(), false, evt.trigger)
+      }
+    }
+
+    // Sync changes from the option to the observable property.
+    // TODO(dbarashev): fix this listener leak.
+    addChangeValueListener { evt ->
+      val newValue = evt.newValue as Color?
+      if (newValue != observableColor.value?.get()) {
+        observableColor.set(newValue?.let { Style.Color.parse(getColor(it)) }, null)
+      }
+    }
+
+    builder.color(observableColor)
   }
 }
