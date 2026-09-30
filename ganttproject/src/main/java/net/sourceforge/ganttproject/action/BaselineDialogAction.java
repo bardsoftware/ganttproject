@@ -18,25 +18,39 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.action;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.util.Collections;
-import java.util.ArrayList;
-import java.util.List;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 
+import biz.ganttproject.app.DialogKt;
+import biz.ganttproject.app.InternationalizationCoreKt;
+import biz.ganttproject.app.Localizer;
+import biz.ganttproject.core.option.ObservableObject;
+import biz.ganttproject.core.option.ObservableString;
+import biz.ganttproject.core.option.ValidatorsKt;
+import biz.ganttproject.ganttview.Item;
+import biz.ganttproject.ganttview.ItemEditorPaneImpl;
+import biz.ganttproject.ganttview.ItemListDialogModel;
+import biz.ganttproject.ganttview.ItemListDialogPane;
+import biz.ganttproject.ganttview.ShowHideListItem;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingNode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+import kotlin.Unit;
 import net.sourceforge.ganttproject.GanttPreviousState;
 import net.sourceforge.ganttproject.IGanttProject;
-import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponent;
-import net.sourceforge.ganttproject.gui.EditableList;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 
 public class BaselineDialogAction extends GPAction {
   private final IGanttProject myProject;
   private final UIFacade myUiFacade;
-  private List<GanttPreviousState> myBaselines;
 
   public BaselineDialogAction(IGanttProject project, UIFacade uiFacade) {
     super("baseline.dialog");
@@ -46,83 +60,187 @@ public class BaselineDialogAction extends GPAction {
 
   @Override
   public void actionPerformed(ActionEvent arg0) {
-    myBaselines = new ArrayList<GanttPreviousState>(myProject.getBaselines());
-
-    final EditableList<GanttPreviousState> list = new EditableList<GanttPreviousState>(myBaselines,
-        Collections.<GanttPreviousState> emptyList()) {
-
-      @Override
-      protected GanttPreviousState updateValue(GanttPreviousState newValue, GanttPreviousState curValue) {
-        curValue.setName(newValue.getName());
-        return curValue;
-      }
-
-      @Override
-      protected GanttPreviousState createValue(GanttPreviousState prototype) {
-        return prototype;
-      }
-
-      @Override
-      protected GanttPreviousState createPrototype(Object editValue) {
-        if (editValue == null) {
-          return null;
+    DialogKt.dialog(getI18n("baseline.dialog.title"), "baseline", dlg -> {
+      GanttPreviousState currentBaseline = myUiFacade.getGanttChart().getBaseline();
+      ObservableList<BaselineItem> listItems = FXCollections.observableArrayList();
+      BaselineItem currentItem = null;
+      for (GanttPreviousState baseline : myProject.getBaselines()) {
+        BaselineItem item = new BaselineItem(baseline, baseline == currentBaseline);
+        if (baseline == currentBaseline) {
+          currentItem = item;
         }
-        GanttPreviousState newBaseline = new GanttPreviousState(String.valueOf(editValue),
-            GanttPreviousState.createTasks(myProject.getTaskManager()));
-        return newBaseline;
+        listItems.add(item);
       }
 
-      @Override
-      protected void deleteValue(GanttPreviousState value) {
-        // Baselines live in memory: removing one from the list is all it takes.
-      }
+      ObservableObject<BaselineItem> selectedItem = new ObservableObject<>("", null);
+      ItemListDialogModel<BaselineItem> dialogModel = new ItemListDialogModel<>(listItems,
+          () -> new BaselineItem(new GanttPreviousState("", GanttPreviousState.createTasks(myProject.getTaskManager())),
+              false),
+          ourLocalizer);
 
-      @Override
-      protected String getStringValue(GanttPreviousState baseline) {
-        return baseline.getName();
+      // Wire the show/hide behavior of the items which are already in the list and of those which
+      // will be added later on. If the shown baseline is removed from the list, hide it in the chart.
+      for (BaselineItem item : listItems) {
+        wireItem(item, listItems, dialogModel);
       }
-    };
-    list.setUndefinedValueLabel(getI18n("baseline.dialog.undefinedValueLabel"));
-    list.getTableAndActions().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    if (myUiFacade.getGanttChart().getBaseline() != null) {
-      int index = myBaselines.indexOf(myUiFacade.getGanttChart().getBaseline());
-      list.getTableAndActions().setSelection(index);
-    }
-    list.getTableAndActions().addSelectionListener(
-        new AbstractTableAndActionsComponent.SelectionListener<GanttPreviousState>() {
-
-          @Override
-          public void selectionChanged(List<GanttPreviousState> selection) {
-            if (selection.isEmpty()) {
-              myUiFacade.getGanttChart().setBaseline(null);
-            } else {
-              myUiFacade.getGanttChart().setBaseline(selection.get(0));
-            }
-            myUiFacade.getGanttChart().reset();
+      listItems.addListener((ListChangeListener<BaselineItem>) change -> {
+        while (change.next()) {
+          for (BaselineItem removed : change.getRemoved()) {
+            removed.isEnabledProperty().set(false);
           }
+          for (BaselineItem added : change.getAddedSubList()) {
+            wireItem(added, listItems, dialogModel);
+          }
+        }
+      });
+      dialogModel.getBtnApplyController().setOnAction(() -> {
+        SwingUtilities.invokeLater(() -> {
+          myProject.getBaselines().clear();
+          for (BaselineItem item : listItems) {
+            myProject.getBaselines().add(item.getBaseline());
+          }
+          myProject.setModified();
         });
-    list.getTableAndActions().addAction(new GPAction("baseline.dialog.hide") {
-      @Override
-      public void actionPerformed(ActionEvent actionEvent) {
-        list.getTableAndActions().setSelection(-1);
+        return Unit.INSTANCE;
+      });
+
+      BaselineItemEditor editor = new BaselineItemEditor(selectedItem, dialogModel, ourLocalizer);
+      ItemListDialogPane<BaselineItem> dialogPane = new ItemListDialogPane<>(listItems, selectedItem,
+          item -> new ShowHideListItem(
+              item::getTitle,
+              () -> item.isEnabledProperty().get(),
+              () -> {
+                item.isEnabledProperty().set(!item.isEnabledProperty().get());
+                return Unit.INSTANCE;
+              },
+              "", true),
+          dialogModel, editor, ourLocalizer);
+
+      // The baseline color options are still Swing-based, so we embed them into the JavaFX dialog.
+      SwingNode colorOptionsNode = new SwingNode();
+      StackPane colorOptionsWrapper = new StackPane(colorOptionsNode);
+      colorOptionsWrapper.getStyleClass().add("swing-background");
+      SwingUtilities.invokeLater(() -> {
+        OptionsPageBuilder optionsBuilder = new OptionsPageBuilder();
+        optionsBuilder.setUiFacade(myUiFacade);
+        colorOptionsNode.setContent(
+            optionsBuilder.createGroupComponent(myUiFacade.getGanttChart().getBaselineColorOptions()));
+      });
+
+      BorderPane contentPane = new BorderPane();
+      contentPane.setCenter(dialogPane.getContentNode());
+      contentPane.setBottom(colorOptionsWrapper);
+      dialogPane.setContentNode(contentPane);
+      dialogPane.build(dlg);
+
+      dlg.setupButton(new CancelAction(), btn -> Unit.INSTANCE);
+      dlg.setOnShown(() -> {
+        DialogKt.setSwingBackground(dlg);
+        dlg.resize();
+        return Unit.INSTANCE;
+      });
+
+      if (currentItem != null) {
+        dialogPane.getListView().getSelectionModel().select(currentItem);
       }
+      return Unit.INSTANCE;
     });
-
-    Action[] actions = new Action[] { new OkAction() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        list.stopEditing();
-        myProject.getBaselines().clear();
-        myProject.getBaselines().addAll(myBaselines);
-        myProject.setModified();
-      }
-    }, CancelAction.EMPTY };
-
-    OptionsPageBuilder optionsBuilder = new OptionsPageBuilder();
-    optionsBuilder.setUiFacade(myUiFacade);
-    JPanel contentPanel = new JPanel(new BorderLayout());
-    contentPanel.add(list.createDefaultComponent(), BorderLayout.CENTER);
-    contentPanel.add(optionsBuilder.createGroupComponent(myUiFacade.getGanttChart().getBaselineColorOptions()), BorderLayout.SOUTH);
-    myUiFacade.createDialog(contentPanel, actions, getI18n("baseline.dialog.title"), null).show();
   }
+
+  /**
+   * Adds listeners which keep the item show/hide flag in sync with the chart: at most one baseline
+   * can be shown, so showing one item hides all the others, and hiding the shown item removes
+   * the baseline from the chart.
+   */
+  private void wireItem(BaselineItem item, ObservableList<BaselineItem> allItems,
+      ItemListDialogModel<BaselineItem> dialogModel) {
+    item.isEnabledProperty().addListener((observable, oldValue, newValue) -> {
+      if (newValue) {
+        // Only one baseline can be shown in the chart.
+        for (BaselineItem other : allItems) {
+          if (other != item) {
+            other.isEnabledProperty().set(false);
+          }
+        }
+        dialogModel.getRequireRefresh().set(true);
+      }
+      SwingUtilities.invokeLater(() -> {
+        if (newValue) {
+          myUiFacade.getGanttChart().setBaseline(item.getBaseline());
+          myUiFacade.getGanttChart().reset();
+        } else if (myUiFacade.getGanttChart().getBaseline() == item.getBaseline()) {
+          myUiFacade.getGanttChart().setBaseline(null);
+          myUiFacade.getGanttChart().reset();
+        }
+      });
+    });
+  }
+
+  /**
+   * A baseline as an item of the list view. The item title is the baseline name, and the
+   * "enabled" flag indicates if the baseline is shown in the chart.
+   */
+  private static class BaselineItem implements Item<BaselineItem> {
+    private final GanttPreviousState myBaseline;
+    private final BooleanProperty myIsShownProperty = new SimpleBooleanProperty();
+
+    BaselineItem(GanttPreviousState baseline, boolean isShown) {
+      myBaseline = baseline;
+      myIsShownProperty.set(isShown);
+    }
+
+    GanttPreviousState getBaseline() {
+      return myBaseline;
+    }
+
+    @Override
+    public String getTitle() {
+      return myBaseline.getName();
+    }
+
+    @Override
+    public void setTitle(String title) {
+      myBaseline.setName(title);
+    }
+
+    @Override
+    public BooleanProperty isEnabledProperty() {
+      return myIsShownProperty;
+    }
+  }
+
+  /**
+   * Editor pane for the baseline selected in the list view. Just the baseline name can be edited.
+   */
+  private static class BaselineItemEditor extends ItemEditorPaneImpl<BaselineItem> {
+    private final ObservableString myNameOption;
+
+    BaselineItemEditor(ObservableObject<BaselineItem> editItem, ItemListDialogModel<BaselineItem> dialogModel,
+        Localizer localizer) {
+      this(new ObservableString("name", "", ValidatorsKt.getVoidValidator(), false), editItem, dialogModel, localizer);
+    }
+
+    private BaselineItemEditor(ObservableString nameOption, ObservableObject<BaselineItem> editItem,
+        ItemListDialogModel<BaselineItem> dialogModel, Localizer localizer) {
+      super(Collections.singletonList(nameOption), editItem, dialogModel, localizer);
+      myNameOption = nameOption;
+    }
+
+    @Override
+    protected void loadData(BaselineItem item) {
+      if (item != null) {
+        myNameOption.setValue(item.getTitle());
+        getVisibilityToggle().setSelected(item.isEnabledProperty().get());
+      }
+    }
+
+    @Override
+    protected void saveData(BaselineItem item) {
+      item.setTitle(myNameOption.getValue() == null ? "" : myNameOption.getValue());
+      item.isEnabledProperty().set(getVisibilityToggle().isSelected());
+    }
+  }
+
+  private static final Localizer ourLocalizer = InternationalizationCoreKt.getRootLocalizer()
+      .createWithRootKey("baseline.dialog", InternationalizationCoreKt.getRootLocalizer());
 }
