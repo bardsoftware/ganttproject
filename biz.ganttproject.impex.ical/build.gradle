@@ -10,7 +10,7 @@ dependencies {
     providedCompile project(':biz.ganttproject.app.libs')
     providedCompile project(':biz.ganttproject.core')
     providedCompile project(':ganttproject')
-    implementation 'org.mnode.ical4j:ical4j:4.0.8'
+    implementation 'org.mnode.ical4j:ical4j:4.2.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.12.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.13.2'
