@@ -256,8 +256,18 @@ abstract class FileChooserPageBase protected constructor(
       }
 
       fileFilter = createFileFilter()
-      loadPreferences()
-      tryChosenFile(fxFile.value)
+      if (allowMultipleChoice) {
+        // The page shows a list of the files chosen by the user and validates every file in it
+        // separately, so there is no single file to propose or to validate here. Proposing one
+        // would be worse than useless: the proposed path is relative to the working directory of
+        // the process, and when it does not resolve there, the resulting error message can't be
+        // cleared anymore, because the proposed file is not shown in the list and fxFile is never
+        // updated again. The wizard would stay disabled with no way out.
+        showError(null)
+      } else {
+        loadPreferences()
+        tryChosenFile(fxFile.value)
+      }
       resetCenterPane()
     }
   }
