@@ -65,7 +65,7 @@ public class ImporterFromGanttFile extends ImporterBase {
     super.setContext(project, uiFacade, preferences);
     final Preferences node = preferences.node("/instance/net.sourceforge.ganttproject/import");
     myMergeResourcesOption.lock();
-    myMergeResourcesOption.loadPersistentValue(node.get(myMergeResourcesOption.getID(), MergeResourcesEnum.BY_ID.name().toLowerCase()));
+    myMergeResourcesOption.loadPersistentValue(node.get(myMergeResourcesOption.getID(), MergeResourcesEnum.DEFAULT.name().toLowerCase()));
     myMergeResourcesOption.commit();
     myMergeResourcesOption.addChangeValueListener(new ChangeValueListener() {
       @Override

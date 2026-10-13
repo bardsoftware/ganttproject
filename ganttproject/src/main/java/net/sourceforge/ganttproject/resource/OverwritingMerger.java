@@ -75,12 +75,18 @@ public class OverwritingMerger implements HumanResourceMerger {
       return nativeMgr.getById(foreign.getId());
     }
     if (MergeResourcesEnum.BY_EMAIL.equals(myMergeOption.getSelectedValue())) {
+      if (isBlank(foreign.getMail())) {
+        return null;
+      }
       if (myCache.isEmpty()) {
         buildEmailCache(nativeMgr);
       }
       return myCache.get(foreign.getMail());
     }
     if (MergeResourcesEnum.BY_NAME.equals(myMergeOption.getSelectedValue())) {
+      if (isBlank(foreign.getName())) {
+        return null;
+      }
       if (myCache.isEmpty()) {
         buildNameCache(nativeMgr);
       }
@@ -90,17 +96,32 @@ public class OverwritingMerger implements HumanResourceMerger {
     return null;
   }
 
+  /**
+   * Two resources which both lack a name, or both lack a mail address, are not the same person.
+   * Matching them on that empty value would overwrite a resource of the target project by
+   * accident, which is exactly what the duplicate detection is supposed to avoid. Neither field is
+   * mandatory: a resource created with Ctrl+H and confirmed right away has an empty name and no
+   * mail address.
+   */
+  private static boolean isBlank(String value) {
+    return value == null || value.trim().isEmpty();
+  }
+
   private void buildNameCache(HumanResourceManager nativeMgr) {
     List<HumanResource> resources = nativeMgr.getResources();
     for (HumanResource hr : resources) {
-      myCache.put(hr.getName(), hr);
+      if (!isBlank(hr.getName())) {
+        myCache.put(hr.getName(), hr);
+      }
     }
   }
 
   private void buildEmailCache(HumanResourceManager nativeMgr) {
     List<HumanResource> resources = nativeMgr.getResources();
     for (HumanResource hr : resources) {
-      myCache.put(hr.getMail(), hr);
+      if (!isBlank(hr.getMail())) {
+        myCache.put(hr.getMail(), hr);
+      }
     }
   }
 }

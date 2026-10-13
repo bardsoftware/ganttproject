@@ -23,7 +23,22 @@ import biz.ganttproject.core.option.ObservableEnumerationOption
 import biz.ganttproject.core.option.PropertyPaneBuilder
 
 enum class MergeResourcesEnum {
-  NO, BY_ID, BY_EMAIL, BY_NAME
+  NO, BY_ID, BY_EMAIL, BY_NAME;
+
+  companion object {
+    /**
+     * The way of detecting duplicate resources which is used when the user has not chosen one.
+     *
+     * It must not be BY_ID: resource IDs start at 0 in every project file, so two files which were
+     * created independently collide on resource #0 by construction, even when they describe
+     * different people. With BY_ID the import silently replaced a resource of the target project
+     * with an imported one -- name, mail, phone, role and pay rate included -- while the
+     * assignments of the target project kept pointing at that record. BY_NAME only merges records
+     * which the user would consider the same person anyway.
+     */
+    @JvmField
+    val DEFAULT = BY_NAME
+  }
 }
 
 interface HumanResourceMerger {
@@ -32,7 +47,7 @@ interface HumanResourceMerger {
     fun findNative(foreign: HumanResource?, nativeMgr: HumanResourceManager?): HumanResource?
 
     class MergeResourcesOption : ObservableEnumerationOption<MergeResourcesEnum>("impex.mergeResources",
-      MergeResourcesEnum.BY_ID,
+      MergeResourcesEnum.DEFAULT,
       MergeResourcesEnum.entries
     ) {
       override fun visitPropertyPaneBuilder(builder: PropertyPaneBuilder) {
