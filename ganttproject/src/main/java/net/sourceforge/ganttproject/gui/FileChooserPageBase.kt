@@ -228,12 +228,19 @@ abstract class FileChooserPageBase protected constructor(
     }
   }
 
-  protected open fun loadPreferences() {
+  /**
+   * Loads the file previously saved in the settings, if any, and returns whether such a file was found.
+   * If not, it proposes a default file instead, which is not something the user has chosen or confirmed
+   * before, so the caller must not treat it as if it were.
+   */
+  protected open fun loadPreferences(): Boolean {
     val oldFile = preferences.get(PREF_SELECTED_FILE, null)
-    if (oldFile != null) {
+    return if (oldFile != null) {
       fxFile.value = updateChosenFile(File(oldFile))
+      true
     } else {
       fxFile.value = proposeChosenFile()
+      false
     }
   }
 
@@ -265,8 +272,13 @@ abstract class FileChooserPageBase protected constructor(
         // updated again. The wizard would stay disabled with no way out.
         showError(null)
       } else {
-        loadPreferences()
-        tryChosenFile(fxFile.value)
+        // Validate only a file the user chose and saved before; a self-proposed default is relative
+        // to the working directory and has nothing to do with what the user is about to pick here.
+        if (loadPreferences()) {
+          tryChosenFile(fxFile.value)
+        } else {
+          showError(null)
+        }
       }
       resetCenterPane()
     }
