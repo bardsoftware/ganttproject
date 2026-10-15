@@ -81,14 +81,27 @@ class FileChooserPageBaseTest {
   }
 
   @Test
-  fun `a single file page still reports a missing file`() = runBlocking {
+  fun `a single file page does not report an error about its own proposed file`() = runBlocking {
     withContext(Dispatchers.JavaFx) {
       val page = createPage(allowMultipleChoice = false)
 
       page.setActive(true)
 
+      assertNull(page.errorMessage.value,
+        "the page reports an error about a file it proposed itself, not one the user chose or saved before")
+    }
+  }
+
+  @Test
+  fun `a single file page still reports a previously saved file that is now missing`() = runBlocking {
+    withContext(Dispatchers.JavaFx) {
+      val page = createPage(allowMultipleChoice = false)
+      page.preferences.put(PREF_SELECTED_FILE, File(MISSING_FILE_NAME).absolutePath)
+
+      page.setActive(true)
+
       assertFalse(page.errorMessage.value.isNullOrBlank(),
-        "a single missing file must still be reported, it is shown in the UI and can be corrected")
+        "a file the user chose and saved before, which has since gone missing, must still be reported")
     }
   }
 
