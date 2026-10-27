@@ -70,7 +70,11 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
     };
     myUIfacade = uiFacade;
     getTaskManager().getDependencyHardnessOption().setValue(targetTaskManager.getDependencyHardnessOption().getValue());
-    getTaskManager().getCalendar().importCalendar(targetCalendar, new ImportCalendarOption(ImportCalendarOption.Values.REPLACE));
+    // A task manager created with TaskManager.emptyClone() shares the calendar with the target project.
+    // Replacing a calendar with itself resets it and wipes its holidays and weekends.
+    if (getTaskManager().getCalendar() != targetCalendar) {
+      getTaskManager().getCalendar().importCalendar(targetCalendar, new ImportCalendarOption(ImportCalendarOption.Values.REPLACE));
+    }
 //    myBufferResourceManager = new HumanResourceManager(RoleManager.Access.getInstance().getDefaultRole(),
 //        new CustomColumnsManager(), targetRoleManager);
   }
