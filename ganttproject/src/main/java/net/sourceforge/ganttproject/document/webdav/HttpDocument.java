@@ -31,6 +31,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class implements the interface Document for file access on HTTP-servers
@@ -41,6 +43,8 @@ import java.net.URISyntaxException;
 public class HttpDocument extends AbstractURLDocument {
 
   public static final int NO_LOCK = -1;
+
+  private static final Logger LOGGER = GPLogger.getLogger(HttpDocument.class);
 
   private String lastError;
 
@@ -56,8 +60,10 @@ public class HttpDocument extends AbstractURLDocument {
 
   private final int myTimeout;
 
-  public HttpDocument(String url, String username, String password, StringOption proxyOption) throws IOException, WebDavException {
-    this(new MiltonResourceFactory(username, password, proxyOption).createResource(new WebDavUri(url)), username, password, -1);
+  public HttpDocument(String url, String username, String password, StringOption proxyOption, int lockTimeout)
+      throws IOException, WebDavException {
+    this(new MiltonResourceFactory(username, password, proxyOption).createResource(new WebDavUri(url)), username, password,
+        lockTimeout);
   }
 
   public HttpDocument(WebDavResource webdavResource, String username, String password, int lockTimeout) throws IOException {
@@ -69,6 +75,14 @@ public class HttpDocument extends AbstractURLDocument {
 
   WebDavResource getWebdavResource() {
     return webdavResource;
+  }
+
+  /**
+   * @return the lock timeout in minutes which this document was created with. A negative
+   *         value ({@link #NO_LOCK}) means that this document never acquires a lock.
+   */
+  public int getLockTimeout() {
+    return myTimeout;
   }
 
   @Override
@@ -128,7 +142,18 @@ public class HttpDocument extends AbstractURLDocument {
 
   @Override
   public boolean acquireLock() {
-    if (locked || myTimeout < 0) {
+    if (locked) {
+      return true;
+    }
+    if (myTimeout < 0) {
+      // A negative timeout means "do not lock at all", and it is the default value of the
+      // webdav.lockTimeout option. Nothing has failed, so we still report success, but we say
+      // out loud that no lock was taken: otherwise someone who has been working without locks
+      // ever since the value was set finds no trace of it anywhere.
+      LOGGER.log(Level.WARNING, String.format(
+          "Not locking %s: the WebDAV lock timeout is %d minutes, and a negative value disables locking."
+              + " Set a non-negative webdav.lockTimeout in the settings if you want WebDAV documents to be locked.",
+          null == getWebdavResource() ? "<unknown document>" : getWebdavResource().getUrl(), myTimeout));
       return true;
     }
     if (null == getWebdavResource()) {
