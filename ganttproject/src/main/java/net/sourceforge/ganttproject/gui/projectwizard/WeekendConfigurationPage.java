@@ -142,7 +142,9 @@ public class WeekendConfigurationPage implements WizardPage {
     }
     {
       myCalendarOption = createCalendarOption(calendar);
-      myCalendarOption.setSelectedValue(calendar);
+      if (hasName(calendar)) {
+        myCalendarOption.setSelectedValue(calendar);
+      }
       panel.add(builder.createOptionLabel(null, myCalendarOption));
       panel.add(builder.createOptionComponent(null, myCalendarOption));
       panel.add(new JPanel());
@@ -196,10 +198,18 @@ public class WeekendConfigurationPage implements WizardPage {
     }
   }
 
+  private static boolean hasName(GPCalendar calendar) {
+    return calendar.getName() != null && !calendar.getName().isEmpty();
+  }
+
   private CalendarOption createCalendarOption(final GPCalendar calendar) {
     AlwaysWorkingTimeCalendarImpl emptyCalendar = new AlwaysWorkingTimeCalendarImpl();
     emptyCalendar.setName(GanttLanguage.getInstance().getText("none"));
-    List<GPCalendar> allCalendars = append(GPCalendarProvider.getInstance().getCalendars(), emptyCalendar, myCustomCalendar, calendar);
+    // The project calendar is offered as a choice only when it has a name, e.g. when the new project wizard
+    // copies the calendar of the current project. The calendar edited in the project settings has no name.
+    List<GPCalendar> allCalendars = hasName(calendar)
+        ? append(GPCalendarProvider.getInstance().getCalendars(), emptyCalendar, myCustomCalendar, calendar)
+        : append(GPCalendarProvider.getInstance().getCalendars(), emptyCalendar, myCustomCalendar);
     CalendarOption result = new CalendarOption(calendar, allCalendars);
     if (calendar.getBaseCalendarID() != null) {
       Collection<GPCalendar> filtered = Collections2.filter(allCalendars, new Predicate<GPCalendar>() {
