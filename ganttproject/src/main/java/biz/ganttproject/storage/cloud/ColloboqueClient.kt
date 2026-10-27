@@ -57,9 +57,10 @@ fun installColloboque(it: GPCloudDocument, project: IGanttProject, undoManager: 
         uiFacade
       )
       val mergeOption = HumanResourceMerger.MergeResourcesOption()
-      val importCalendarOption = ImportCalendarOption()
+      // The buffer project is filled from the project database which has no calendar, so the calendar of the buffer
+      // project is a default one. Replacing the project calendar with it would wipe its holidays and weekends.
+      val importCalendarOption = ImportCalendarOption(ImportCalendarOption.Values.NO)
       mergeOption.setSelectedValue(MergeResourcesEnum.BY_ID)
-      importCalendarOption.loadPersistentValue(ImportCalendarOption.Values.REPLACE.name)
       importBufferProject(
         project,
         bufferProject,

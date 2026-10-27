@@ -70,8 +70,9 @@ class ImportCalendarTest {
 
   private fun newBufferProject(target: GanttProjectImpl): BufferProject {
     val buffer = BufferProject(target, createNiceMock(UIFacade::class.java))
-    // This is what reading the imported file does.
+    // This is what reading the imported file does. Monday is a weekend in the imported file, Friday is not.
     buffer.activeCalendar.publicHolidays = listOf(holiday("Imported holiday", 31))
+    buffer.activeCalendar.setWeekDayType(Calendar.MONDAY, GPCalendar.DayType.WEEKEND)
     return buffer
   }
 
@@ -95,20 +96,37 @@ class ImportCalendarTest {
     importProject(target, newBufferProject(target), ImportCalendarOption.Values.NO)
     assertEquals(setOf("Target holiday"), calendar.holidayTitles())
     assertEquals(GPCalendar.DayType.WEEKEND, calendar.getWeekDayType(Calendar.FRIDAY))
+    assertEquals(GPCalendar.DayType.WORKING, calendar.getWeekDayType(Calendar.MONDAY))
   }
 
   @Test
-  fun `option REPLACE imports the holidays`() {
+  fun `option REPLACE imports the holidays and weekends`() {
     val (target, calendar) = newTargetProject()
     importProject(target, newBufferProject(target), ImportCalendarOption.Values.REPLACE)
     assertEquals(setOf("Imported holiday"), calendar.holidayTitles())
+    assertEquals(GPCalendar.DayType.WEEKEND, calendar.getWeekDayType(Calendar.MONDAY))
+    assertEquals(GPCalendar.DayType.WORKING, calendar.getWeekDayType(Calendar.FRIDAY))
   }
 
   @Test
-  fun `option MERGE adds the imported holidays`() {
+  fun `option MERGE adds the imported holidays and weekends`() {
     val (target, calendar) = newTargetProject()
     importProject(target, newBufferProject(target), ImportCalendarOption.Values.MERGE)
     assertEquals(setOf("Target holiday", "Imported holiday"), calendar.holidayTitles())
+    assertEquals(GPCalendar.DayType.WEEKEND, calendar.getWeekDayType(Calendar.FRIDAY))
+    assertEquals(GPCalendar.DayType.WEEKEND, calendar.getWeekDayType(Calendar.MONDAY))
+  }
+
+  // Mirrors the update from the project database in ColloboqueClient: the buffer project reads no calendar.
+  @Test
+  fun `refreshing tasks from the project database keeps the calendar of the target project`() {
+    val (target, calendar) = newTargetProject()
+    val buffer = BufferProject(
+      target.taskManager.emptyClone(), target.projectDatabase, target.roleManager, target.activeCalendar,
+      createNiceMock(UIFacade::class.java)
+    )
+    importProject(target, buffer, ImportCalendarOption.Values.NO)
+    assertEquals(setOf("Target holiday"), calendar.holidayTitles())
     assertEquals(GPCalendar.DayType.WEEKEND, calendar.getWeekDayType(Calendar.FRIDAY))
   }
 }
