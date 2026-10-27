@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!--
+Copyright 2026 BarD Software s.r.o
+Demo page for the cloud.ganttproject.chart rendering library.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GanttProject Chart Library — Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; color: #333; }
+    h1 { font-size: 1.25rem; }
+    .legend { margin-top: 1rem; font-size: 0.85rem; }
+    .legend span { display: inline-block; margin-right: 1.5rem; }
+    .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 0.4rem; }
+    canvas { border: 1px solid #ccc; background: #fff; }
+  </style>
+</head>
+<body>
+  <h1>Two tasks connected by a finish-start dependency</h1>
+  <canvas id="chart" width="440" height="200"></canvas>
+  <div class="legend">
+    <span><i class="swatch" style="background:#4a89dc"></i>Task A</span>
+    <span><i class="swatch" style="background:#5cb85c"></i>Task B</span>
+    <span><i class="swatch" style="background:#555555"></i>Finish → Start dependency</span>
+  </div>
+  <script src="demo.js"></script>
+</body>
+</html>
