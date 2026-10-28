@@ -248,7 +248,7 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
     myProjectDatabase = databaseProxy;
     myTaskManagerConfig = new TaskManagerConfigImpl();
     myTaskManager = (TaskManagerImpl) TaskManager.Access.newInstance(null, myTaskManagerConfig, myProjectDatabase::createTaskUpdateBuilder);
-    myProjectImpl = new GanttProjectImpl((TaskManagerImpl) myTaskManager, databaseProxy);
+    myProjectImpl = new GanttProjectImpl(myTaskManager, databaseProxy, myCalendar);
     addProjectEventListener(databaseProxy.createProjectEventListener());
     myTaskManager.addTaskListener(databaseProxy.createTaskEventListener());
     myTaskManager.getCustomPropertyManager().addListener(databaseProxy.createTaskCustomPropertyListener());

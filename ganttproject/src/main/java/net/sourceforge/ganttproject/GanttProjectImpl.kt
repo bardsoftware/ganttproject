@@ -58,13 +58,16 @@ fun interface ErrorUi {
   fun show(ex: Exception)
 }
 
-open class GanttProjectImpl(
+open class GanttProjectImpl @JvmOverloads constructor(
   taskManager: TaskManagerImpl? = null,
   override val projectDatabase: ProjectDatabase = LazyProjectDatabaseProxy(
     {error("Not supposed to be called")},
     {error("Not supposed to be called")},
     {error("Not supposed to be called")},
-  )) : IGanttProject {
+  ),
+  // The calendar of the project. A caller which supplies its own task manager must pass the calendar of that
+  // task manager, otherwise the calendar imported in importProject goes nowhere.
+  calendar: WeekendCalendarImpl = WeekendCalendarImpl()) : IGanttProject {
 
   val listeners: MutableList<ProjectEventListener> = mutableListOf()
   override val baselines: MutableList<GanttPreviousState> = ArrayList()
@@ -75,7 +78,7 @@ open class GanttProjectImpl(
   override var webLink: String = ""
 
   val language: GanttLanguage get() = GanttLanguage.getInstance()
-  private val myCalendar = WeekendCalendarImpl()
+  private val myCalendar = calendar
   final override val humanResourceManager = HumanResourceManager(
     RoleManager.Access.getInstance().defaultRole,
     CustomColumnsManager()
