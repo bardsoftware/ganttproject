@@ -68,7 +68,8 @@ class LocalStorage(
     private val myDocumentReceiver: (Document) -> Unit) : StorageUi {
   private val myMode = if (mode == StorageDialogBuilder.Mode.OPEN) StorageMode.Open() else StorageMode.Save()
   private lateinit var paneElements: BrowserPaneElements<FileAsFolderItem>
-  private val state: LocalStorageState = LocalStorageState(currentDocument, myMode, getDefaultLocalFolder())
+  private val defaultLocalFolder = getDefaultLocalFolder()
+  private val state: LocalStorageState = LocalStorageState(currentDocument, myMode, defaultLocalFolder)
   private val validator = createLocalStorageValidator(
       { this@LocalStorage.paneElements.listView.listView.items.isEmpty() },
       state
@@ -185,7 +186,7 @@ class LocalStorage(
 
     val listViewHint = SimpleStringProperty(i18n.formatText("${myMode.name.lowercase()}.listViewHint"))
 
-    val filePath = Paths.get(currentDocument.filePath) ?: Paths.get("/")
+    val filePath = localBreadcrumbPath(currentDocument.filePath, currentDocument.fileName, defaultLocalFolder)
     this.paneElements = builder.apply {
       withI18N(i18n)
       withBreadcrumbs(
@@ -222,8 +223,8 @@ class LocalStorage(
     this.paneElements.filenameInput.styleClass.add("filename-input")
     this.paneElements.filenameInput.right = btnBrowse
     if (this.mode == StorageDialogBuilder.Mode.SAVE) {
-      this.paneElements.filenameInput.text = currentDocument.fileName
-      this.state.setCurrentFile(currentDocument.fileName)
+      this.paneElements.filenameInput.text = localFileName(currentDocument.fileName)
+      this.state.setCurrentFile(localFileName(currentDocument.fileName))
       this.state.currentFile.addListener { _, _, newValue ->
         Platform.runLater { paneElements.confirmationCheckBox?.isSelected = false }
       }
@@ -247,3 +248,38 @@ class LocalStorage(
 }
 
 private val i18n = RootLocalizer.createWithRootKey("storageService.local", BROWSE_PANE_LOCALIZER)
+
+/**
+ * The name which is used when the name of the currently opened document is of no use as a local file name.
+ */
+internal const val DEFAULT_LOCAL_FILE_NAME = "project.gan"
+
+/**
+ * Returns the name of the currently opened document, to be used as a local file name.
+ *
+ * The name of a document which is not stored locally is not necessarily a file name: HttpDocument returns the
+ * whole WebDAV URL. Putting that into the file name field produces a file name with slashes in it and hence a
+ * non-existing parent folder.
+ */
+internal fun localFileName(rawName: String?): String = when {
+  rawName.isNullOrBlank() -> DEFAULT_LOCAL_FILE_NAME
+  rawName.contains("://") -> rawName.substringAfterLast('/').ifBlank { DEFAULT_LOCAL_FILE_NAME }
+  else -> rawName
+}
+
+/**
+ * Returns the path which initialises the breadcrumbs of the local storage pane.
+ *
+ * The path of the currently opened document is not necessarily a local file path either. A WebDAV URL becomes a
+ * path relative to the current working directory on Linux and throws InvalidPathException on Windows, so we
+ * accept nothing but an absolute local path and fall back to the default local folder.
+ */
+internal fun localBreadcrumbPath(rawPath: String?, fileName: String?, defaultFolder: File): java.nio.file.Path {
+  if (!rawPath.isNullOrBlank()) {
+    val asPath = runCatching { Paths.get(rawPath) }.getOrNull()
+    if (asPath != null && asPath.isAbsolute) {
+      return asPath
+    }
+  }
+  return defaultFolder.toPath().resolve(localFileName(fileName))
+}

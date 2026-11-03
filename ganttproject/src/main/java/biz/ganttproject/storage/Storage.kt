@@ -213,7 +213,14 @@ class StoragePane internal constructor(
       WebdavStorage(it, mode, openDocument, dialogUi, cloudStorageOptions)
     }
 
-    val initialStorageId = selectedId ?: if (mode == StorageDialogBuilder.Mode.OPEN) recentProjects.id else localStorage.id
+    val initialStorageId = initialStorageId(
+      selectedId = selectedId,
+      mode = mode,
+      currentDocument = currentDocument,
+      webdavRootUrls = storageUiList.filterIsInstance<WebdavStorage>().map { it.id },
+      recentProjectsId = recentProjects.id,
+      localStorageId = localStorage.id
+    )
 
     // Iterate the list of available storages and create for each storage:
     // - a list item with optional settings button if settings are available
@@ -284,3 +291,43 @@ class StoragePane internal constructor(
 
 private val i18n = RootLocalizer.createWithRootKey("storageView")
 private val fileChooserLocalizer = RootLocalizer.createWithRootKey("storageService.local", BROWSE_PANE_LOCALIZER)
+
+/**
+ * Chooses the storage which is initially selected when the storage dialog opens.
+ *
+ * When saving, we preselect the storage where the current document lives, because "Save as" most often means
+ * "save next to the original". Hardcoding the local storage here sends a document which was opened from a WebDAV
+ * server into the local pane, where neither its name nor its path makes any sense.
+ */
+internal fun initialStorageId(
+  selectedId: String?,
+  mode: StorageDialogBuilder.Mode,
+  currentDocument: Document?,
+  webdavRootUrls: List<String>,
+  recentProjectsId: String,
+  localStorageId: String
+): String =
+  selectedId ?: when (mode) {
+    StorageDialogBuilder.Mode.OPEN -> recentProjectsId
+    StorageDialogBuilder.Mode.SAVE ->
+      documentStorageUrl(currentDocument)?.let { url ->
+        // The identifier of a WebDAV storage is the root URL of its server. This is the same test which
+        // RecentDocAsFolderItem applies to the recently opened documents.
+        webdavRootUrls.firstOrNull { it.isNotBlank() && url.startsWith(it) }
+      } ?: localStorageId
+  }
+
+/**
+ * Returns the location of the given document as a plain string, to be matched against the identifiers of the
+ * available storages.
+ *
+ * Document.getURI() is of no use here. HttpDocument builds its URI with the single-argument java.net.URI
+ * constructor and returns null as soon as that constructor throws, and the constructor throws on every character
+ * which has to be percent-encoded in a URI -- a space being the common one. A space is a perfectly legal
+ * character in a WebDAV resource name, so a document whose name contains one used to look like a document with no
+ * location at all, and the dialog fell back to the local storage.
+ *
+ * Document.getPath() is a plain string which HttpDocument fills with the resource URL and which never goes
+ * through java.net.URI. It is what RecentDocAsFolderItem matches against the list of servers as well.
+ */
+internal fun documentStorageUrl(document: Document?): String? = document?.path?.ifBlank { null }
