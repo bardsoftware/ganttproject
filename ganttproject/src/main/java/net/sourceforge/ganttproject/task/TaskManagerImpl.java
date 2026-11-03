@@ -874,6 +874,11 @@ public class TaskManagerImpl implements TaskManager {
       if (getTask(that.getTaskID()) == null) {
         builder = builder.withId(that.getTaskID());
       }
+      // The UID is the primary key of the task table in the project database, so the imported task
+      // must get its own one, even if it happens to be equal to the UID of a task which is already
+      // in this project. We deliberately do not call withUid here: the builder then mints a new UID,
+      // the same way as it does for a task pasted from the clipboard with Copy (see
+      // ClipboardTaskProcessor#copyAndInsert, where only Cut keeps the original UID).
       var nextImported = builder
         .withName(that.getName())
         .withStartDate(that.getStart().getTime())
@@ -883,7 +888,6 @@ public class TaskManagerImpl implements TaskManager {
         .withWebLink(that.getWebLink())
         .withPriority(that.getPriority())
         .withParent(root)
-        .withUid(that.getUid())
         .build();
 
       nextImported.setShape(task.getShape());
