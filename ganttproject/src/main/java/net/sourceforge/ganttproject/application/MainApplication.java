@@ -59,7 +59,7 @@ public class MainApplication implements IPlatformRunnable {
     if (!appBuilder.isCli()) {
       appBuilder.withSplash();
       appBuilder.withWindowVisible();
-      appBuilder.whenWindowOpened(() -> {
+      appBuilder.whenWindowOpened((ganttProject) -> {
         AutoSaveKt.createAutosaveCleanup().run();
         return Unit.INSTANCE;
       });

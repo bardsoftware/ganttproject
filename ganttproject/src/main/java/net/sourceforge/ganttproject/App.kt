@@ -99,7 +99,7 @@ fun startUiApp(configure: (GanttProject) -> Unit = {}) {
 val APP_LOGGER: LoggerApi<Logger> = GPLogger.create("App")
 
 typealias RunBeforeUi = ()->Unit
-typealias RunAfterWindowOpened = () -> Unit
+typealias RunAfterWindowOpened = (GanttProject) -> Unit
 typealias RunAfterAppInitialized = (GanttProject) -> Unit
 typealias RunWhenDocumentReady = (IGanttProject) -> Unit
 
@@ -177,7 +177,7 @@ class AppBuilder(args: Array<String>) {
   }
 
   fun withDocument(path: String?): AppBuilder {
-    whenAppInitialized { ganttProject ->
+    whenWindowOpened { ganttProject ->
       val strategy = CommandLineProjectOpenStrategy(
         ganttProject.project, ganttProject.documentManager,
         ganttProject.taskManager as TaskManagerImpl,
@@ -216,7 +216,7 @@ class AppBuilder(args: Array<String>) {
       ganttProject.updater = org.eclipse.core.runtime.Platform.getUpdater() ?: DummyUpdater
       ganttProject.uiFacade.onWindowOpened {
         APP_LOGGER.debug("Window opened. Running afterWindowOpened commands.")
-          runAfterWindowOpenedCommands.forEach { cmd -> cmd() }
+          runAfterWindowOpenedCommands.forEach { cmd -> cmd(ganttProject) }
       }
       ganttProject.uiInitializationPromise.await {
         APP_LOGGER.debug("UI initialized. Running afterAppInitialized commands.")

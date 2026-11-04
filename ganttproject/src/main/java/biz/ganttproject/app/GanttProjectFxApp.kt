@@ -80,6 +80,15 @@ class GanttProjectFxApp : Application() {
         ganttProject.viewManager.init(ganttProject.ganttViewProvider, ganttProject.resourceViewProvider)
         APP_LOGGER.debug("onShown(): resolving the barrier...")
         ganttProject.uiFacade.windowOpenedBarrier.resolve(true)
+        Platform.runLater {
+          ganttProject.windowGeometry.let {
+            stage.x = it.leftX
+            stage.y = it.topY
+            stage.width = it.width
+            stage.height = it.height
+            stage.isMaximized = it.isMaximized
+          }
+        }
 //        ganttProject.notificationManager.addNotifications(
 //          listOf(NotificationItem(NotificationChannel.RSS, "Got some news", "Lorem ipsum dolor sit amet", NotificationManager.DEFAULT_HYPERLINK_LISTENER))
 //        )
@@ -95,14 +104,6 @@ class GanttProjectFxApp : Application() {
           }
         }
       }
-      ganttProject.windowGeometry.let {
-        stage.x = it.leftX
-        stage.y = it.topY
-        stage.width = it.width
-        stage.height = it.height
-        stage.isMaximized = it.isMaximized
-      }
-
       ganttProject.title.let {
         stage.title = it.value
         it.addListener { _, _, newValue ->
