@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Name=GanttProject
+Icon=ganttproject
+Exec=app/GanttProject %U
+MimeType=application/x-ganttproject;
+Categories=Office;
+GenericName=GanttProject
+StartupWMClass=ganttproject
+StartupNotify=true
+
