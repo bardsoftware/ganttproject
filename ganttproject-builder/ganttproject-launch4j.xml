@@ -30,11 +30,11 @@
     <maxHeapSize>2048</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>3.3.3292.0</fileVersion>
-    <txtFileVersion>GanttProject 3.3 Beta</txtFileVersion>
+    <fileVersion>3.3.3323.0</fileVersion>
+    <txtFileVersion>GanttProject 3.3</txtFileVersion>
     <fileDescription>GanttProject Launcher</fileDescription>
-    <copyright>Copyright (C) 2022 BarD Software s.r.o.</copyright>
-    <productVersion>3.3.3292.0</productVersion>
+    <copyright>Copyright (C) 2026 BarD Software s.r.o.</copyright>
+    <productVersion>3.3.3323.0</productVersion>
     <txtProductVersion>GanttProject 3.3 Beta</txtProductVersion>
     <productName>GanttProject</productName>
     <companyName>BarD Software s.r.o.</companyName>
@@ -45,8 +45,8 @@
   </versionInfo>
   <messages>
     <startupErr>GanttProject failed to start. Please visit https://help.ganttproject.biz to get support.</startupErr>
-    <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.
-        </bundledJreErr>
+    <jreNotFoundErr>This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.
+        </jreNotFoundErr>
     <jreVersionErr>GanttProject needs Java 17+ with JavaFX modules. Please visit https://help.ganttproject.biz to get support.</jreVersionErr>
     <launcherErr>Java Runtime not found or is corrupted. Please visit https://help.ganttproject.biz to get support.
         </launcherErr>
