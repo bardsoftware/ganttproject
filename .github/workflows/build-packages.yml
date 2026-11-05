@@ -19,17 +19,17 @@ jobs:
     Linux:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v7
             - name: Checkout submodules
               shell: bash
               run: |
                   git submodule sync --recursive
                   git submodule update --init --force --recursive --depth=1
                   echo "$VERSION" > ganttproject-builder/VERSION
-            - uses: actions/setup-java@v3
+            - uses: actions/setup-java@v6
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.21.0.3+5
+                  java-version: '17.0.21.0.3+5'
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
