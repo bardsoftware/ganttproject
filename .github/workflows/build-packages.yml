@@ -29,7 +29,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   distribution: 'liberica'
-                  java-version: 17.0.21
+                  java-version: 17.0.21.0.3+5
                   java-package: jdk+fx
                   cache: 'gradle'
             - name: Build GanttProject
