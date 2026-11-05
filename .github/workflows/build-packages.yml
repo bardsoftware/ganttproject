@@ -33,7 +33,7 @@ jobs:
             - uses: actions/setup-java@v6
               with:
                   distribution: 'jdkfile'
-                  jdkFile: ${{ runner.temp }}/liberica-jdk17-full.tar.gz
+                  jdk-file: ${{ runner.temp }}/liberica-jdk17-full.tar.gz
                   java-version: '17.0.21'
                   architecture: x64
                   cache: 'gradle'
@@ -77,19 +77,27 @@ jobs:
     Windows:
         runs-on: windows-latest
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v7
             - name: Checkout submodules
               shell: bash
               run: |
                   git submodule sync --recursive
                   git submodule update --init --force --recursive --depth=1
                   echo "$VERSION" > ganttproject-builder/VERSION
-            - uses: actions/setup-java@v3
+            - name: Download Liberica JDK 17 Full
+              shell: bash
+              run: |
+                  curl -fsSL -o "$RUNNER_TEMP/liberica-jdk17-full.zip" \
+                    "https://download.bell-sw.com/java/17.0.21.0.3+5/bellsoft-jdk17.0.21.0.3+5-windows-amd64-full.zip"
+            - uses: actions/setup-java@v6
               with:
-                  distribution: 'liberica'
-                  java-version: 17.0.21
-                  java-package: jdk+fx
+                  distribution: 'jdkfile'
+                  jdk-file: ${{ runner.temp }}/liberica-jdk17-full.zip
+                  java-version: '17.0.21'
+                  architecture: x64
                   cache: 'gradle'
+            - name: Print Java version
+              run: java -version
             - name: Build GanttProject
               run: |
                   ./gradlew distbin
@@ -148,19 +156,26 @@ jobs:
     macOS_silicon:
         runs-on: macos-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
             - name: Checkout submodules
               shell: bash
               run: |
                   git submodule sync --recursive
                   git submodule update --init --force --recursive --depth=1
                   echo "$VERSION" > ganttproject-builder/VERSION
-            - uses: actions/setup-java@v3
+            - name: Download Liberica JDK 17 Full
+              run: |
+                  curl -fsSL -o "$RUNNER_TEMP/liberica-jdk17-full.tar.gz" \
+                    "https://download.bell-sw.com/java/17.0.21.0.3+5/bellsoft-jdk17.0.21.0.3+5-macos-aarch64-full.tar.gz"
+            - uses: actions/setup-java@v6
               with:
-                  distribution: 'liberica'
-                  java-version: 17.0.21
-                  java-package: jdk+fx
+                  distribution: 'jdkfile'
+                  jdk-file: ${{ runner.temp }}/liberica-jdk17-full.tar.gz
+                  java-version: '17.0.21'
+                  architecture: aarch64
                   cache: 'gradle'
+            - name: Print Java version
+              run: java -version
             - name: Build GanttProject
               run: |
                   ./gradlew distbin
@@ -196,19 +211,26 @@ jobs:
     macOS_intel:
         runs-on: macos-15-intel
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v7
             - name: Checkout submodules
               shell: bash
               run: |
                   git submodule sync --recursive
                   git submodule update --init --force --recursive --depth=1
                   echo "$VERSION" > ganttproject-builder/VERSION
-            - uses: actions/setup-java@v3
+            - name: Download Liberica JDK 17 Full
+              run: |
+                  curl -fsSL -o "$RUNNER_TEMP/liberica-jdk17-full.tar.gz" \
+                    "https://download.bell-sw.com/java/17.0.21.0.3+5/bellsoft-jdk17.0.21.0.3+5-macos-amd64-full.tar.gz"
+            - uses: actions/setup-java@v6
               with:
-                  distribution: 'liberica'
-                  java-version: 17.0.21
-                  java-package: jdk+fx
+                  distribution: 'jdkfile'
+                  jdk-file: ${{ runner.temp }}/liberica-jdk17-full.tar.gz
+                  java-version: '17.0.21'
+                  architecture: x64
                   cache: 'gradle'
+            - name: Print Java version
+              run: java -version
             - name: Build GanttProject
               run: |
                   ./gradlew distbin
