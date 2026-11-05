@@ -26,12 +26,19 @@ jobs:
                   git submodule sync --recursive
                   git submodule update --init --force --recursive --depth=1
                   echo "$VERSION" > ganttproject-builder/VERSION
+            - name: Download Liberica JDK 17 Full
+              run: |
+                  wget -q -O "$RUNNER_TEMP/liberica-jdk17-full.tar.gz" \
+                    "https://download.bell-sw.com/java/17.0.21.0.3+5/bellsoft-jdk17.0.21.0.3+5-linux-amd64-full.tar.gz"
             - uses: actions/setup-java@v6
               with:
-                  distribution: 'liberica'
-                  java-version: '17.0.21.0.3'
-                  java-package: jdk+fx
+                  distribution: 'jdkfile'
+                  jdkFile: ${{ runner.temp }}/liberica-jdk17-full.tar.gz
+                  java-version: '17.0.21'
+                  architecture: x64
                   cache: 'gradle'
+            - name: Print Java version
+              run: java -version
             - name: Build GanttProject
               run: |
                   ./gradlew distbin distzip
