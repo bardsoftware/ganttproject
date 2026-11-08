@@ -123,7 +123,7 @@ class LocalStorageState(val currentDocument: Document,
   }
 
   private fun Document.asFile() =
-      this.asLocalDocument()?.file ?: defaultLocalFolder.resolve(this.fileName)
+      this.asLocalDocument()?.file ?: defaultLocalFolder.resolve(localFileName(this.fileName))
 }
 
 private val i18n = RootLocalizer.createWithRootKey("storageService.local", BROWSE_PANE_LOCALIZER)
