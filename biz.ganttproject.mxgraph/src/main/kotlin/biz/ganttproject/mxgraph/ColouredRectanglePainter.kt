@@ -23,14 +23,14 @@ import com.mxgraph.util.mxConstants
 import java.awt.Color
 
 internal class ColouredRectanglePainter(
-  private val mxPainterImpl: MxPainterImpl,
+  private val painter: PainterImpl,
   private val color: Color
 ) : MxGraphPainter.RectanglePainter  {
   override fun paint(rectangle: Canvas.Rectangle) {
-    mxPainterImpl.paintRectangle(
+    painter.paintRectangle(
       rectangle.leftX, rectangle.topY,
       rectangle.width, rectangle.height,
-      mapOf(mxConstants.STYLE_FILLCOLOR to color), rectangle.attributes
+      mapOf(mxConstants.STYLE_FILLCOLOR to color.toHexString()), rectangle.attributes
     )
   }
 }

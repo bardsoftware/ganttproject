@@ -22,6 +22,7 @@ import biz.ganttproject.core.chart.canvas.Canvas
 import biz.ganttproject.core.chart.canvas.TextMetrics
 import biz.ganttproject.core.chart.render.Style
 import com.mxgraph.util.mxConstants
+import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Font
 
@@ -34,6 +35,30 @@ internal fun Style.hexStrokeColor(shape: Canvas.Shape) = getForegroundColor(shap
 internal fun Style.hexBordersColor(shape: Canvas.Shape) = getBorder(shape)?.top?.color?.toHexString()
 
 internal fun Color.toHexString() = "#" + Integer.toHexString(rgb and 0x00ffffff).padStart(6, '0')
+
+/** The stroke which the chart style prescribes for the borders of [shape], if it defines any. */
+internal fun Style.borderStroke(shape: Canvas.Shape): BasicStroke? = getBorder(shape)?.top?.stroke
+
+/**
+ * The width of this stroke as an mxGraph style map, empty if the chart style defines no border
+ * and thus says nothing about the width.
+ */
+internal fun BasicStroke?.toMxStrokeWidth(): Map<String, Any> =
+    if (this == null) emptyMap() else mapOf(mxConstants.STYLE_STROKEWIDTH to lineWidth)
+
+/**
+ * The width and the dashing of this stroke as an mxGraph style map. The dash pattern is written
+ * as the space-separated lengths of the dashes and the gaps, the way mxGraph expects it, so that
+ * the client reproduces the very dashes of the desktop chart rather than some default ones.
+ */
+internal fun BasicStroke?.toMxLineStroke(): Map<String, Any> = buildMap {
+  putAll(toMxStrokeWidth())
+  val dashArray = this@toMxLineStroke?.dashArray
+  put(mxConstants.STYLE_DASHED, if (dashArray == null) 0 else 1)
+  if (dashArray != null) {
+    put(mxConstants.STYLE_DASH_PATTERN, dashArray.joinToString(" ") { it.toString() })
+  }
+}
 
 internal fun Canvas.HAlignment.toMxAlignment() = when(this) {
   Canvas.HAlignment.CENTER -> mxConstants.ALIGN_CENTER
