@@ -88,7 +88,7 @@ class UpdateDialogModel(
   internal val updates: List<UpdateMetadata>,
   private val visibleUpdates: List<UpdateMetadata>,
   internal val fetchError: Throwable? = null,
-  internal val installedVersion: String = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "3.4.3396",
+  internal val installedVersion: String = Eclipsito.getUpdater().installedUpdateVersions.maxOrNull() ?: "3.4.3397",
   private val restarter: AppRestarter
   ) {
 
