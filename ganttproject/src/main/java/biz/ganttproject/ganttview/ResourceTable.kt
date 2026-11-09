@@ -434,6 +434,7 @@ class ResourceTableModel(private val areChangesIgnored: ()->Boolean)
             ResourceDefaultColumn.STANDARD_RATE -> t.resource.standardPayRate
             ResourceDefaultColumn.TOTAL_COST -> t.resource.totalCost
             ResourceDefaultColumn.TOTAL_LOAD -> t.resource.totalLoad
+            ResourceDefaultColumn.HOURS_PER_DAY -> t.resource.hoursPerDay
             else -> null
           }
         }
@@ -468,6 +469,7 @@ class ResourceTableModel(private val areChangesIgnored: ()->Boolean)
         ResourceDefaultColumn.EMAIL -> node.resource.mail = "$value"
         ResourceDefaultColumn.ROLE -> node.resource.role = value as Role
         ResourceDefaultColumn.STANDARD_RATE -> (value as? Double)?.let { node.resource.standardPayRate = BigDecimal.valueOf(it) }
+        ResourceDefaultColumn.HOURS_PER_DAY -> node.resource.hoursPerDay = value.toString().trim().takeIf { it.isNotEmpty() }?.let { BigDecimal(it) }
         else -> {}
       }
     } else if (node is AssignmentNode) {
