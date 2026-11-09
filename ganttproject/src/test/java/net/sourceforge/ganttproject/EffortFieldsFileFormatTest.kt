@@ -79,6 +79,24 @@ class EffortFieldsFileFormatTest {
   }
 
   @Test
+  fun `loading the file saved before an edit brings the previous effort back`() {
+    // Undo restores the project from a document saved before the edit, so what it needs is that
+    // the saved document holds the effort as it was at that moment.
+    val project = XmlProjectImporter().import(projectXml("""effort-hours="12.5""""))
+    val before = save(project)
+
+    val task = project.taskManager.getTask(1)
+    task.createMutator().also {
+      it.setEffort(BigDecimal("20"))
+      it.commit()
+    }
+    assertEquals(BigDecimal("20"), task.effort)
+
+    val restored = XmlProjectImporter().import(before)
+    assertEquals(BigDecimal("12.5"), restored.taskManager.getTask(1).effort)
+  }
+
+  @Test
   fun `a file without the effort attributes loads with empty values`() {
     val project = XmlProjectImporter().import(projectXml())
     val task = project.taskManager.getTask(1)

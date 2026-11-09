@@ -149,6 +149,9 @@ internal class MutatorReentered(taskImpl: TaskImpl, private val delegate: Mutato
   }
 }
 
+// FieldChange treats null as "no change", so a nullable effort is wrapped to make clearing it a change.
+data class EffortValue(val effort: BigDecimal?)
+
 data class EarliestStartValue(val startDate: GanttCalendar?, val isEnabled: Boolean)
 
 internal open class MutatorImpl(
@@ -162,7 +165,7 @@ internal open class MutatorImpl(
   private val colorChange: FieldChange<Color?> = FieldChange(myPropertiesEventSender, taskImpl.color)
   private val myCompletionPercentageChange = FieldChange(myProgressEventSender, taskImpl.completionPercentage)
   private val costChange = FieldChange(myPropertiesEventSender, taskImpl.cost)
-  private val effortChange = FieldChange<BigDecimal?>(myPropertiesEventSender, taskImpl.effort)
+  private val effortChange = FieldChange(myPropertiesEventSender, EffortValue(taskImpl.effort))
   private val effortDrivenChange = FieldChange(myPropertiesEventSender, taskImpl.isEffortDriven)
   private val criticalFlagChange = FieldChange(myPropertiesEventSender, taskImpl.isCritical)
   private val customPropertiesChange = FieldChange<CustomPropertyHolder>(myPropertiesEventSender, taskImpl.customValues.copyOf())
@@ -247,7 +250,7 @@ internal open class MutatorImpl(
         taskUpdateBuilder?.setCost(costChange.oldValue, cost)
       }
       effortChange.ifChanged {
-        taskImpl.effort = it
+        taskImpl.effort = it.effort
       }
       effortDrivenChange.ifChanged {
         taskImpl.isEffortDriven = it
@@ -360,7 +363,7 @@ internal open class MutatorImpl(
 
   override fun setCost(cost: Task.Cost) { costChange.setValue(cost) }
 
-  override fun setEffort(effort: BigDecimal?) { effortChange.setValue(effort) }
+  override fun setEffort(effort: BigDecimal?) { effortChange.setValue(EffortValue(effort)) }
 
   override fun setEffortDriven(effortDriven: Boolean) { effortDrivenChange.setValue(effortDriven) }
 
