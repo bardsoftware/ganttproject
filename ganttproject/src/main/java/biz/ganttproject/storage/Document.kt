@@ -372,7 +372,8 @@ fun DocumentManager.loadRecentDocs(
         if (it.tags.containsKey(FolderItemTag.UNAVAILABLE)) {
           null
         } else {
-          this@loadRecentDocs.addToRecentDocuments(it.asDocument())
+          // Append to the tail using the original string, so that the order and the stored values are preserved.
+          this@loadRecentDocs.addToRecentDocuments(it.urlString)
           it
         }
       }

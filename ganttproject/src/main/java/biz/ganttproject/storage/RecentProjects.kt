@@ -161,7 +161,7 @@ class RecentProjects(
  * Plugs a recent document string into the folder view.
  */
 class RecentDocAsFolderItem(
-    private val urlString: String,
+    val urlString: String,
     webdabServers: GPCloudStorageOptions,
     private val documentManager: DocumentManager
   ) : FolderItem, Comparable<RecentDocAsFolderItem> {
