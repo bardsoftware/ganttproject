@@ -162,6 +162,8 @@ internal open class MutatorImpl(
   private val colorChange: FieldChange<Color?> = FieldChange(myPropertiesEventSender, taskImpl.color)
   private val myCompletionPercentageChange = FieldChange(myProgressEventSender, taskImpl.completionPercentage)
   private val costChange = FieldChange(myPropertiesEventSender, taskImpl.cost)
+  private val effortChange = FieldChange<BigDecimal?>(myPropertiesEventSender, taskImpl.effort)
+  private val effortDrivenChange = FieldChange(myPropertiesEventSender, taskImpl.isEffortDriven)
   private val criticalFlagChange = FieldChange(myPropertiesEventSender, taskImpl.isCritical)
   private val customPropertiesChange = FieldChange<CustomPropertyHolder>(myPropertiesEventSender, taskImpl.customValues.copyOf())
   private val expansionChange = FieldChange(myPropertiesEventSender, taskImpl.expand)
@@ -243,6 +245,12 @@ internal open class MutatorImpl(
       costChange.ifChanged { cost ->
         taskImpl.cost.setValue(cost)
         taskUpdateBuilder?.setCost(costChange.oldValue, cost)
+      }
+      effortChange.ifChanged {
+        taskImpl.effort = it
+      }
+      effortDrivenChange.ifChanged {
+        taskImpl.isEffortDriven = it
       }
       criticalFlagChange.ifChanged {
         taskImpl.isCritical = it
@@ -351,6 +359,10 @@ internal open class MutatorImpl(
   override fun setCritical(critical: Boolean) { criticalFlagChange.setValue(critical) }
 
   override fun setCost(cost: Task.Cost) { costChange.setValue(cost) }
+
+  override fun setEffort(effort: BigDecimal?) { effortChange.setValue(effort) }
+
+  override fun setEffortDriven(effortDriven: Boolean) { effortDrivenChange.setValue(effortDriven) }
 
   override fun setShape(shape: ShapePaint) { shapeChange.setValue(shape) }
 
