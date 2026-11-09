@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.io
 
 import biz.ganttproject.customproperty.PropertyTypeEncoder
+import biz.ganttproject.core.model.task.TaskEffort
 import biz.ganttproject.lib.fx.TreeCollapseView
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.customproperty.CustomPropertyDefinition
@@ -90,6 +91,10 @@ class TaskSaver(private val taskCollapseView: TreeCollapseView<Task>): SaverBase
     if (!(task.cost.isCalculated && task.cost.manualValue == BigDecimal.ZERO)) {
       addAttribute("cost-manual-value", task.cost.manualValue.toPlainString(), attrs)
       addAttribute("cost-calculated", task.cost.isCalculated, attrs)
+    }
+    task.effort?.let { addAttribute(TaskEffort.XML_ATTRIBUTE, it.toPlainString(), attrs) }
+    if (task.isEffortDriven) {
+      addAttribute("effort-driven", true, attrs)
     }
     startElement("task", attrs, handler)
     cdataElement("notes", task.externalizedNotes(), attrs, handler)
