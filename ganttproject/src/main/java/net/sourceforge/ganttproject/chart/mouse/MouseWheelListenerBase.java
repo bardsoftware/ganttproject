@@ -37,7 +37,7 @@ public abstract class MouseWheelListenerBase implements MouseWheelListener {
 
   @Override
   public void mouseWheelMoved(MouseWheelEvent e) {
-    if (e.getWheelRotation() == 0) {
+    if (e.getPreciseWheelRotation() == 0.0) {
       return;
     }
     String text = MouseUtil.toString(e);
@@ -67,6 +67,6 @@ public abstract class MouseWheelListenerBase implements MouseWheelListener {
   }
 
   private boolean isRotationUp(MouseWheelEvent e) {
-    return e.getWheelRotation() < 0;
+    return e.getPreciseWheelRotation() < 0;
   }
 }
