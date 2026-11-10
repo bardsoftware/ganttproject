@@ -42,6 +42,8 @@ internal fun TaskManager.TaskBuilder.setupNewTask(task: TaskImpl, manager: TaskM
     task.isMilestone = it.isMilestone
     task.isProjectTask = it.isProjectTask
     task.shape = it.shape
+    task.effort = it.effort
+    task.isEffortDriven = it.isEffortDriven
     it.customValues.customProperties.forEach { prop ->
       task.customValues.setValue(prop.definition, prop.value)
     }

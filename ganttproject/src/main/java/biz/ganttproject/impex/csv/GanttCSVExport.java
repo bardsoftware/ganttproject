@@ -216,6 +216,12 @@ public class GanttCSVExport {
             case IS_CRITICAL:
               writer.print(task.isCritical());
               break;
+            case EFFORT:
+              writer.print(task.getEffort() == null ? "" : task.getEffort().toPlainString());
+              break;
+            case EFFORT_DRIVEN:
+              writer.print(task.isEffortDriven());
+              break;
             case EARLIEST_BEGIN:
               if (task.getThirdDateConstraint() == TaskImpl.EARLIESTBEGIN && task.getThird() != null) {
                 writer.print(task.getThird());
@@ -314,6 +320,9 @@ public class GanttCSVExport {
               break;
             case TOTAL_LOAD:
               writer.print(p.getTotalLoad());
+              break;
+            case HOURS_PER_DAY:
+              writer.print(p.getHoursPerDay() == null ? "" : p.getHoursPerDay().toPlainString());
               break;
           }
         }

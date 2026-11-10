@@ -139,6 +139,8 @@ class TaskLoader(private val taskManager: TaskManager, private val treeCollapseV
       val costValue = child.costManualValue
       val isCostCalculated = child.isCostCalculated
       task.cost = CostStub(costValue ?: BigDecimal.ZERO, isCostCalculated ?: true)
+      task.effort = child.effort
+      task.isEffortDriven = child.isEffortDriven ?: false
       child.notes?.let {
         task.notes = it
       }
