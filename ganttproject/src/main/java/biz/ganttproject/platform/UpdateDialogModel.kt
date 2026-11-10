@@ -300,7 +300,8 @@ object UpdateOptions {
   // as <option id="update.forbidden" value="true"/>
   // When it is true, GanttProject neither checks the RSS feed nor fetches the updates JSON,
   // and installing updates (both from the update channel and from ZIP files) is disabled.
-  val forbiddenOption = DefaultBooleanOption("forbidden", false)
+  // It is written to the settings file only when it is true, so that regular users don't see it in their settings.
+  val forbiddenOption = SaveIfTrueBooleanOption("forbidden")
   val forbiddenOptionGroup: GPOptionGroup = GPOptionGroup("update", forbiddenOption)
   val isUpdateForbidden: Boolean get() = forbiddenOption.value
 
