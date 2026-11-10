@@ -157,7 +157,9 @@ class UpdateDialogModel(
   var installFromZip: ()->Unit = {}
 
   internal fun initState() {
-    if (hasMajorUpdates) {
+    if (UpdateOptions.isUpdateForbidden) {
+      state = ApplyAction.UP_TO_DATE
+    } else if (hasMajorUpdates) {
       state = ApplyAction.DOWNLOAD_MAJOR
     } else if (hasMinorUpdates) {
       state = ApplyAction.INSTALL_FROM_CHANNEL
@@ -187,9 +189,16 @@ class UpdateDialogModel(
 
   internal fun setupApplyButton(applyButton: Button) {
     applyButton.textProperty().bind(btnApplyText)
-    applyButton.disableProperty().bind(btnApplyDisabled)
+    if (UpdateOptions.isUpdateForbidden) {
+      applyButton.isDisable = true
+    } else {
+      applyButton.disableProperty().bind(btnApplyDisabled)
+    }
     applyButton.addEventFilter(ActionEvent.ACTION) {
       it.consume()
+      if (UpdateOptions.isUpdateForbidden) {
+        return@addEventFilter
+      }
       launchFx {
         onApplyPressed()
       }
@@ -206,8 +215,12 @@ class UpdateDialogModel(
 
   fun setupToggleSourceButton(button: Button) {
     button.textProperty().bind(btnToggleSourceText)
+    button.isDisable = UpdateOptions.isUpdateForbidden
     button.addEventFilter(ActionEvent.ACTION) {
       it.consume()
+      if (UpdateOptions.isUpdateForbidden) {
+        return@addEventFilter
+      }
       if (state in transitionToInstallFromZip) {
         state = ApplyAction.INSTALL_FROM_ZIP
       } else if (state == ApplyAction.INSTALL_FROM_ZIP) {
@@ -241,6 +254,9 @@ class UpdateDialogModel(
   }
 
   private fun applyMinorUpdates() {
+    if (UpdateOptions.isUpdateForbidden) {
+      return
+    }
     coroutineScope.launch {
       withContext(Dispatchers.JavaFx) {
         btnApplyDisabled.set(true)
@@ -279,6 +295,15 @@ object UpdateOptions {
   val latestShownVersion = DefaultStringOption("latestShownVersion")
   val updateUrl = DefaultStringOption("url", System.getProperty("platform.update.url", "https://www.ganttproject.biz/dl/updates/ganttproject-3.0.json"))
   val optionGroup: GPOptionGroup = GPOptionGroup("platform.update", isCheckEnabled, latestShownVersion, updateUrl)
+
+  // This option has no UI and is supposed to be set by system administrators directly in the settings file,
+  // as <option id="update.forbidden" value="true"/>
+  // When it is true, GanttProject neither checks the RSS feed nor fetches the updates JSON,
+  // and installing updates (both from the update channel and from ZIP files) is disabled.
+  // It is written to the settings file only when it is true, so that regular users don't see it in their settings.
+  val forbiddenOption = SaveIfTrueBooleanOption("forbidden")
+  val forbiddenOptionGroup: GPOptionGroup = GPOptionGroup("update", forbiddenOption)
+  val isUpdateForbidden: Boolean get() = forbiddenOption.value
 
 }
 

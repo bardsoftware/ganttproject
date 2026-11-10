@@ -126,6 +126,9 @@ class UpdateFromZip(private val model: UpdateDialogModel, localizer: Localizer) 
   }
 
   internal fun installUpdate(): Result<File?, Throwable> {
+    if (UpdateOptions.isUpdateForbidden) {
+      return Err(IllegalStateException("Installing updates is forbidden by the settings"))
+    }
     return fileOption.value?.let {
       runCatching {
         Eclipsito.getUpdater().installUpdate(it).join()

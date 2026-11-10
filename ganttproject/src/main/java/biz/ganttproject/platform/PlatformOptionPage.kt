@@ -35,6 +35,7 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.gui.options.OptionPageProviderBase
 import java.awt.BorderLayout
 import java.awt.Component
+import java.util.concurrent.CompletableFuture
 import javax.swing.JPanel
 import org.eclipse.core.runtime.Platform as Eclipsito
 
@@ -45,7 +46,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform"), FxUiCompo
   private var onSetActive: (() -> Unit)? = null
 
   override fun buildNode(): Node = StackPane().also {stackPane ->
-    Eclipsito.getUpdater().getUpdateMetadata(UpdateOptions.updateUrl.value).thenAccept { updateMetadata ->
+    fetchUpdateMetadata().thenAccept { updateMetadata ->
       onSetActive = {
         FXUtil.runLater {
           stackPane.children.add(createSceneContent(updateMetadata, null))
@@ -75,7 +76,7 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform"), FxUiCompo
     val jfxPanel = JFXPanel()
     val wrapper = JPanel(BorderLayout())
     wrapper.add(jfxPanel, BorderLayout.CENTER)
-    Eclipsito.getUpdater().getUpdateMetadata(UpdateOptions.updateUrl.value).thenAccept { updateMetadata ->
+    fetchUpdateMetadata().thenAccept { updateMetadata ->
       onSetActive = {
         Platform.runLater {
           jfxPanel.scene = createScene(updateMetadata, null)
@@ -99,6 +100,11 @@ class PlatformOptionPageProvider : OptionPageProviderBase("platform"), FxUiCompo
       onSetActive = null
     }
   }
+
+  // Fetches the updates JSON unless updates are forbidden in the settings.
+  private fun fetchUpdateMetadata(): CompletableFuture<List<UpdateMetadata>> =
+    if (UpdateOptions.isUpdateForbidden) CompletableFuture.completedFuture(emptyList())
+    else Eclipsito.getUpdater().getUpdateMetadata(UpdateOptions.updateUrl.value)
 
   private fun createScene(updateMetadata: List<UpdateMetadata>, ex: Throwable?): Scene {
     return Scene(createSceneContent(updateMetadata, ex))

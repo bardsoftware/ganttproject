@@ -40,7 +40,9 @@ import java.util.concurrent.CompletionException
 const val PRIVACY_URL = "https://www.ganttproject.biz/about/privacy"
 const val MINOR_UPDATES_URL = "https://www.ganttproject.biz/download/updates"
 fun checkAvailableUpdates(updater: Updater, uiFacade: UIFacade) {
-  if (UpdateOptions.isCheckEnabled.value) {
+  if (UpdateOptions.isUpdateForbidden) {
+    LOG.debug("Updates are forbidden by the settings")
+  } else if (UpdateOptions.isCheckEnabled.value) {
     LOG.debug("Fetching updates from {}", UpdateOptions.updateUrl.value)
     updater.getUpdateMetadata(UpdateOptions.updateUrl.value).thenAccept { updateMetadata ->
       if (updateMetadata.isNotEmpty()) {
@@ -164,6 +166,9 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
     errorPane.onError(null)
     model.errorText.addWatcher {
       errorPane.onError(it.newValue)
+    }
+    if (UpdateOptions.isUpdateForbidden) {
+      errorPane.warning(ourLocalizer.formatText("forbidden"))
     }
 
     dialogApi.setContent(dialogContent)
