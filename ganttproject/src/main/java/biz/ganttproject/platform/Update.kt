@@ -168,8 +168,7 @@ internal class UpdateDialog(private val model: UpdateDialogModel) {
       errorPane.onError(it.newValue)
     }
     if (UpdateOptions.isUpdateForbidden) {
-      errorPane.warning(ourLocalizer.formatTextOrNull("forbidden")
-        ?: "Checking for and installing updates is disabled by your system administrator.")
+      errorPane.warning(ourLocalizer.formatText("forbidden"))
     }
 
     dialogApi.setContent(dialogContent)
