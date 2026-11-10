@@ -189,6 +189,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.addOptions(GPCloudOptions.INSTANCE.getOptionGroup());
     options.addOptions(getRssFeedChecker().getOptions());
     options.addOptions(UpdateOptions.INSTANCE.getOptionGroup());
+    options.addOptions(UpdateOptions.INSTANCE.getForbiddenOptionGroup());
     options.addOptions(myTaskManagerConfig.getTaskOptions());
     startupLogger.debug("2. loading options");
     initOptions();

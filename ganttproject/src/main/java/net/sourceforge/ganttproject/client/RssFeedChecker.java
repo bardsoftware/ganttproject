@@ -24,6 +24,7 @@ import biz.ganttproject.core.option.DefaultBooleanOption;
 import biz.ganttproject.core.option.DefaultDateOption;
 import biz.ganttproject.core.option.DefaultEnumerationOption;
 import biz.ganttproject.core.option.GPOptionGroup;
+import biz.ganttproject.platform.UpdateOptions;
 import biz.ganttproject.storage.cloud.HttpClientOk;
 import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.gui.NotificationChannel;
@@ -90,7 +91,8 @@ public class RssFeedChecker {
   public RssFeedChecker(UIFacade uiFacade) {
     myCheckRssOption.setValue(CheckOption.UNDEFINED.toString());
     myUiFacade = uiFacade;
-    myBooleanCheckRssOption.setValue(CheckOption.YES.equals(myCheckRssOption.getSelectedValue()));
+    myBooleanCheckRssOption.setValue(CheckOption.YES.equals(myCheckRssOption.getSelectedValue()) && !isForbidden());
+    myBooleanCheckRssOption.setWritable(!isForbidden());
 
     // When user changes the option in the UI, we set a certain value of the three-state option.
     myBooleanCheckRssOption.addChangeValueListener(event -> {
@@ -105,9 +107,19 @@ public class RssFeedChecker {
     // When we read a stored three-state value from the settings file, we set the user-visible boolean value appropriately.
     myCheckRssOption.addChangeValueListener(event -> {
       if (event.getID() != RssFeedChecker.this && CheckOption.UNDEFINED != myCheckRssOption.getSelectedValue()) {
-        myBooleanCheckRssOption.setValue(CheckOption.YES == myCheckRssOption.getSelectedValue(), RssFeedChecker.this);
+        myBooleanCheckRssOption.setValue(CheckOption.YES == myCheckRssOption.getSelectedValue() && !isForbidden(), RssFeedChecker.this);
       }
     });
+    // When updates are forbidden by the system administrator, the user-visible option is switched off and disabled.
+    // We don't touch the stored three-state value, so that it is restored if the restriction is lifted.
+    UpdateOptions.INSTANCE.getForbiddenOption().addChangeValueListener(event -> {
+      myBooleanCheckRssOption.setWritable(!isForbidden());
+      myBooleanCheckRssOption.setValue(CheckOption.YES == myCheckRssOption.getSelectedValue() && !isForbidden(), RssFeedChecker.this);
+    });
+  }
+
+  private static boolean isForbidden() {
+    return UpdateOptions.INSTANCE.isUpdateForbidden();
   }
 
   private NotificationManager getNotificationManager() {
@@ -123,6 +135,10 @@ public class RssFeedChecker {
   }
 
   public void run() {
+    if (isForbidden()) {
+      GPLogger.log("RSS check is forbidden by the settings");
+      return;
+    }
     CheckOption checkOption = CheckOption.valueOf(myCheckRssOption.getValue());
     if (CheckOption.NO == checkOption) {
       return;
@@ -154,6 +170,9 @@ public class RssFeedChecker {
   }
 
   private void readRss() {
+    if (isForbidden()) {
+      return;
+    }
     var cmd = new Runnable() {
       @Override
       public void run() {

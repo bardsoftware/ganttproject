@@ -201,8 +201,13 @@ internal fun createGridPane(ourLocalizer: Localizer, model: UpdateDialogModel) =
     GridPane.setMargin(it, Insets(15.0, 10.0, 3.0, 0.0))
   }, 0, 1)
   val toggleSwitch = createToggleSwitch().also {
-    it.selectedProperty().value = UpdateOptions.isCheckEnabled.value
-    it.selectedProperty().addListener { _, _, newValue -> UpdateOptions.isCheckEnabled.value = newValue }
+    if (UpdateOptions.isUpdateForbidden) {
+      it.selectedProperty().value = false
+      it.isDisable = true
+    } else {
+      it.selectedProperty().value = UpdateOptions.isCheckEnabled.value
+      it.selectedProperty().addListener { _, _, newValue -> UpdateOptions.isCheckEnabled.value = newValue }
+    }
   }
   GridPane.setMargin(toggleSwitch, Insets(15.0, 0.0, 3.0, 0.0))
   add(toggleSwitch, 1, 1)
