@@ -79,8 +79,8 @@ internal class ResourceChartSelection(
             }
           }
         }
+        // We keep the clipboard contents, so that they could be pasted again, like in the Gantt chart.
         super.commitClipboardTransaction()
-        myClipboardContents = null
     }
 
     override fun hasOwnClipboardContents() = myClipboardContents != null

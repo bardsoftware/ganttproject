@@ -85,7 +85,9 @@ public class BufferProject extends GanttProjectImpl implements ParserFactory {
 
   @Override
   public GPParser newParser() {
-    return new GanttXMLOpen(myProjectInfo, getTaskManager(), myUIfacade);
+    // The buffer project contents are imported into the target project, and the view settings stored in the
+    // buffer document must not change the target project UI (e.g. switch to the Gantt chart when pasting resources).
+    return new GanttXMLOpen(myProjectInfo, getTaskManager(), myUIfacade, false);
   }
 
   @Override
