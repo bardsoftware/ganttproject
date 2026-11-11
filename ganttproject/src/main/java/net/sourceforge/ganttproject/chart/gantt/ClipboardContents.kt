@@ -240,6 +240,26 @@ fun getOwnClipboardContents(): ClipboardContents? {
   }
 }
 
+/**
+ * Moves the tasks which were imported from the clipboard project into the top level of the task tree, so that they
+ * become siblings of the target task, placed right after it in the same order.
+ *
+ * @param target the task after which the imported tasks are placed
+ * @param bufferProject the clipboard project
+ * @param taskMapping mapping of the clipboard project tasks to the imported tasks
+ * @return the moved tasks
+ */
+fun moveImportedTasksAfter(target: Task, bufferProject: BufferProject, taskMapping: Map<Task, Task>): List<Task> {
+  val hierarchy = target.manager.taskHierarchy
+  val container = hierarchy.getContainer(target) ?: target.manager.rootTask
+  var index = hierarchy.getTaskIndex(target) + 1
+  val bufferTaskManager = bufferProject.taskManager
+  return bufferTaskManager.taskHierarchy.getNestedTasks(bufferTaskManager.rootTask).mapNotNull { taskMapping[it] }.map {
+    hierarchy.move(it, container, index++)
+    it
+  }
+}
+
 fun onClipboardChange(listener: (Boolean)->Unit) {
   Toolkit.getDefaultToolkit().systemClipboard.addFlavorListener {
     listener(Toolkit.getDefaultToolkit().systemClipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR))

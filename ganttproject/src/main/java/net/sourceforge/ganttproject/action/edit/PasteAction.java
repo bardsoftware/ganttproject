@@ -19,10 +19,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.action.edit;
 
 import kotlin.Unit;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.ChartSelection;
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContentsKt;
+import net.sourceforge.ganttproject.chart.gantt.GanttChartSelection;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.view.GPViewManager;
@@ -30,8 +32,11 @@ import net.sourceforge.ganttproject.importer.BufferProject;
 import net.sourceforge.ganttproject.importer.BufferProjectImportKt;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.resource.MergeResourcesEnum;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.undo.GPUndoManager;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.SwingUtilities;
 import java.awt.event.ActionEvent;
 import java.util.function.Supplier;
 
@@ -78,28 +83,49 @@ public class PasteAction extends GPAction {
       return;
     }
     // The clipboard contents came from elsewhere, e.g. from another GanttProject window, or from another chart
-    // with no selection. We import them into the top level, and the user can move them afterward.
-    // See issue https://github.com/bardsoftware/ganttproject/issues/2861
+    // with no selection. We import them into the top level or, if the user chooses so, paste them after the selected
+    // task. See issue https://github.com/bardsoftware/ganttproject/issues/2861
     var clipboardProject = ClipboardContentsKt.getProjectFromClipboard(new BufferProject(myProject, myUiFacade));
-    if (clipboardProject != null) {
-      try {
-        myUndoManager.get().undoableEdit(getLocalizedName(), () -> pasteExternalDocument(clipboardProject));
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+    if (clipboardProject == null) {
+      myUiFacade.getActiveChart().focus();
+      return;
     }
-    myUiFacade.getActiveChart().focus();
+    Task pasteTarget = selection instanceof GanttChartSelection ganttChartSelection ? ganttChartSelection.getPasteTarget() : null;
+    if (pasteTarget == null || clipboardProject.getTaskManager().getTaskHierarchy().getNestedTasks(clipboardProject.getTaskManager().getRootTask()).length == 0) {
+      pasteExternalDocument(clipboardProject, null);
+      return;
+    }
+    PasteExternalDialogKt.showPasteExternalDialog(choice -> {
+      SwingUtilities.invokeLater(() -> {
+        switch (choice) {
+          case AFTER_SELECTED -> pasteExternalDocument(clipboardProject, pasteTarget);
+          case TOP_LEVEL -> pasteExternalDocument(clipboardProject, null);
+          case CANCEL -> {}
+        }
+      });
+      return Unit.INSTANCE;
+    });
   }
 
-  private void pasteExternalDocument(BufferProject clipboardProject) {
+  /**
+   * Imports the clipboard project into the top level of the task tree and, if pasteTarget is not null,
+   * moves the imported top-level tasks after the paste target.
+   */
+  private void pasteExternalDocument(BufferProject clipboardProject, @Nullable Task pasteTarget) {
     try {
-      HumanResourceMerger.MergeResourcesOption mergeOption = new HumanResourceMerger.MergeResourcesOption();
-      mergeOption.setSelectedValue(MergeResourcesEnum.NO);
-      importBufferProject(myProject, clipboardProject, BufferProjectImportKt.asImportBufferProjectApi(myUiFacade),
-          mergeOption, null, false);
+      myUndoManager.get().undoableEdit(getLocalizedName(), () -> {
+        HumanResourceMerger.MergeResourcesOption mergeOption = new HumanResourceMerger.MergeResourcesOption();
+        mergeOption.setSelectedValue(MergeResourcesEnum.NO);
+        var taskMapping = importBufferProject(myProject, clipboardProject,
+            BufferProjectImportKt.asImportBufferProjectApi(myUiFacade), mergeOption, null, false);
+        if (pasteTarget != null) {
+          ClipboardContentsKt.moveImportedTasksAfter(pasteTarget, clipboardProject, taskMapping);
+        }
+      });
     } catch (Exception e) {
-      e.printStackTrace();
+      GPLogger.log(e);
     }
+    myUiFacade.getActiveChart().focus();
   }
 
   private void pasteInternalFlavor(final ChartSelection selection) {

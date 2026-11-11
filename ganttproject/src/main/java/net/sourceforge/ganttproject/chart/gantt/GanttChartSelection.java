@@ -112,6 +112,14 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
     processor.pasteAsSibling(target, clipboardContents);
   }
 
+  /**
+   * @return the task which the clipboard contents are pasted after, or null if there is no single selected task.
+   */
+  public Task getPasteTarget() {
+    var selectedTasks = mySelectionManager.getSelectedTasks();
+    return selectedTasks.size() == 1 ? selectedTasks.getFirst() : null;
+  }
+
   @Override
   public void commitClipboardTransaction() {
     if (mySelectionManager.getSelectedTasks().size() != 1) {
