@@ -34,11 +34,13 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.util.collect.Pair
+import java.awt.GraphicsEnvironment
 import java.awt.Toolkit
 import java.io.File
 import java.io.InputStream
 import java.nio.file.Files
 import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Represents all objects which are involved into a clipboard transaction on Gantt chart: tasks, dependencies
@@ -260,10 +262,31 @@ fun moveImportedTasksAfter(target: Task, bufferProject: BufferProject, taskMappi
   }
 }
 
+private val clipboardChangeListeners = CopyOnWriteArrayList<(Boolean)->Unit>()
+
+/**
+ * Registers a listener which is called when the system clipboard changes. It is called when the set of the
+ * available data flavors changes, and when the clipboard contents are replaced in this GanttProject instance,
+ * or by someone else, even if the set of flavors remains the same (e.g. copied resources are replaced with
+ * copied tasks).
+ */
 fun onClipboardChange(listener: (Boolean)->Unit) {
   Toolkit.getDefaultToolkit().systemClipboard.addFlavorListener {
     listener(Toolkit.getDefaultToolkit().systemClipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR))
   }
+  clipboardChangeListeners.add(listener)
+}
+
+/**
+ * Notifies the clipboard change listeners that the clipboard contents owned by this GanttProject instance have
+ * changed: either we have put new contents into the system clipboard, or we lost the clipboard ownership.
+ */
+fun fireOwnClipboardChange() {
+  if (GraphicsEnvironment.isHeadless()) {
+    return
+  }
+  val isAvailable = Toolkit.getDefaultToolkit().systemClipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR)
+  clipboardChangeListeners.forEach { it(isAvailable) }
 }
 
 fun hasClipboardData() = Toolkit.getDefaultToolkit().systemClipboard.let {

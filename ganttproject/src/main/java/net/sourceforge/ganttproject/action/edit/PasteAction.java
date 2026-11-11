@@ -63,7 +63,23 @@ public class PasteAction extends GPAction {
   @Override
   public void updateAction() {
     super.updateAction();
-    setEnabled(ClipboardContentsKt.hasClipboardData() || !myViewmanager.getSelectedArtefacts().isEmpty());
+    setEnabled(canPaste(myViewmanager.getSelectedArtefacts()));
+  }
+
+  /**
+   * Paste is possible if the selection has its own clipboard contents, or if the system clipboard has data which
+   * can be pasted into the active chart. The clipboard contents copied in this GanttProject instance may be not
+   * acceptable, e.g. copied resources can't be pasted into the task table.
+   */
+  private boolean canPaste(ChartSelection selection) {
+    if (!selection.isEmpty() && selection.hasOwnClipboardContents()) {
+      return true;
+    }
+    if (!ClipboardContentsKt.hasClipboardData()) {
+      return false;
+    }
+    var ownClipboardContents = ClipboardContentsKt.getOwnClipboardContents();
+    return ownClipboardContents == null || selection.acceptsClipboardContents(ownClipboardContents);
   }
 
   @Override

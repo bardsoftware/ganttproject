@@ -83,6 +83,7 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
     clipboardContents.addTasks(selectedRoots);
     clipboardContents.copy();
     clipboard.setContents(new GPTransferable(clipboardContents), this);
+    ClipboardContentsKt.fireOwnClipboardChange();
   }
 
   @Override
@@ -153,6 +154,7 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
   @Override
   public void lostOwnership(Clipboard clipboard, Transferable contents) {
     cancelClipboardTransaction();
+    ClipboardContentsKt.fireOwnClipboardChange();
   }
 
   @Override
