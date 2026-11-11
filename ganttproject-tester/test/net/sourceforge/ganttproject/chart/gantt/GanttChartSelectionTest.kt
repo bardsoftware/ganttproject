@@ -25,7 +25,12 @@ import net.sourceforge.ganttproject.export.ConsoleUIFacade
 import net.sourceforge.ganttproject.importer.BufferProject
 import net.sourceforge.ganttproject.task.TaskSelectionManager
 import org.junit.jupiter.api.Assertions.assertEquals
+import biz.ganttproject.customproperty.CustomColumnsManager
+import net.sourceforge.ganttproject.resource.HumanResource
+import net.sourceforge.ganttproject.resource.HumanResourceManager
+import net.sourceforge.ganttproject.roles.Role
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
@@ -94,6 +99,47 @@ class GanttChartSelectionTest {
     ganttChartSelection.commitClipboardTransaction()
     assertEquals(listOf(task1, task2), taskManager.taskHierarchy.tasksInDocumentOrder)
     assertEquals(taskManager.rootTask, task1.supertask)
+  }
+
+  /**
+   * Resources copied in the resource chart must not be pasted into the Gantt chart.
+   */
+  @Test fun testAcceptsOnlyTasks() {
+    val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+    val selectionManager = TaskSelectionManager { taskManager }
+    val task1 = taskManager.newTaskBuilder().withName("task1").build()
+    val ganttChartSelection = GanttChartSelection(taskManager, selectionManager)
+
+    val resourceContents = ClipboardContents(taskManager).also {
+      it.addResource(HumanResource("Joe", 1, HumanResourceManager(null as Role?, CustomColumnsManager())))
+      it.copy()
+    }
+    assertFalse(ganttChartSelection.acceptsClipboardContents(resourceContents))
+
+    val taskContents = ClipboardContents(taskManager).also {
+      it.addTasks(listOf(task1))
+      it.copy()
+    }
+    assertTrue(ganttChartSelection.acceptsClipboardContents(taskContents))
+  }
+
+  /**
+   * The system clipboard contents put by this app instance are recognized as our own.
+   */
+  @Test fun testOwnClipboardContents() {
+    assumeTrue(!GraphicsEnvironment.isHeadless() && !isRunningOnGitHubActions(), "needs a system clipboard")
+    val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+    val selectionManager = TaskSelectionManager { taskManager }
+    val task1 = taskManager.newTaskBuilder().withName("task1").build()
+    val ganttChartSelection = GanttChartSelection(taskManager, selectionManager)
+    selectionManager.setSelectedTasks(listOf(task1), this)
+    ganttChartSelection.startCopyClipboardTransaction()
+
+    val ownContents = getOwnClipboardContents() ?: error("Own clipboard contents are null")
+    assertEquals(listOf("task1"), ownContents.tasks.map { it.name })
+
+    Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection("foo"), null)
+    assertNull(getOwnClipboardContents())
   }
 
   @Test fun testDependenciesInTheClipboardProject() {

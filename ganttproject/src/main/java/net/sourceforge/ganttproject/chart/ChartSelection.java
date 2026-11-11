@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart;
 
+import net.sourceforge.ganttproject.chart.gantt.ClipboardContents;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
@@ -41,6 +42,14 @@ public interface ChartSelection {
    */
   default boolean hasOwnClipboardContents() {
     return false;
+  }
+
+  /**
+   * @return true if the clipboard contents copied or cut in this GanttProject instance can be pasted into
+   * the chart which owns this selection. E.g. copied resources can't be pasted into the Gantt chart.
+   */
+  default boolean acceptsClipboardContents(ClipboardContents contents) {
+    return true;
   }
 
   ChartSelection EMPTY = new ChartSelection() {

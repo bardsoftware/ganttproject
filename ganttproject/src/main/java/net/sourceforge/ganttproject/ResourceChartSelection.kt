@@ -85,6 +85,8 @@ internal class ResourceChartSelection(
 
     override fun hasOwnClipboardContents() = myClipboardContents != null
 
+    override fun acceptsClipboardContents(contents: ClipboardContents) = contents.resources.isNotEmpty()
+
     override fun lostOwnership(clipboard: Clipboard, transferable: Transferable) {
         // Someone else has put its data into the system clipboard, our internal contents are obsolete.
         cancelClipboardTransaction()

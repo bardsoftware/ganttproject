@@ -217,6 +217,29 @@ fun getProjectFromClipboard(bufferProject: BufferProject): BufferProject? {
   return null
 }
 
+/**
+ * Returns the internal clipboard contents if the system clipboard contains data copied or cut in this
+ * GanttProject instance, and null otherwise (e.g. if the data was copied in another GanttProject window).
+ */
+fun getOwnClipboardContents(): ClipboardContents? {
+  val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+  return try {
+    if (!clipboard.isDataFlavorAvailable(GPTransferable.APP_INSTANCE_ID_FLAVOR)) {
+      return null
+    }
+    val appInstanceId = (clipboard.getData(GPTransferable.APP_INSTANCE_ID_FLAVOR) as? InputStream)?.use {
+      String(ByteStreams.toByteArray(it), Charsets.UTF_8)
+    }
+    if (appInstanceId != GPTransferable.APP_INSTANCE_ID) {
+      return null
+    }
+    clipboard.getData(GPTransferable.INTERNAL_DATA_FLAVOR) as? ClipboardContents
+  } catch (e: Exception) {
+    GPLogger.log(e)
+    null
+  }
+}
+
 fun onClipboardChange(listener: (Boolean)->Unit) {
   Toolkit.getDefaultToolkit().systemClipboard.addFlavorListener {
     listener(Toolkit.getDefaultToolkit().systemClipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR))

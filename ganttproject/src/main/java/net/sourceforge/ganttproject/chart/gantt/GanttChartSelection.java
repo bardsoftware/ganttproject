@@ -127,6 +127,11 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
   }
 
   @Override
+  public boolean acceptsClipboardContents(ClipboardContents contents) {
+    return !contents.getTasks().isEmpty();
+  }
+
+  @Override
   public void cancelClipboardTransaction() {
     super.cancelClipboardTransaction();
     myClipboardContents = null;

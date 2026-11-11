@@ -30,6 +30,7 @@ import java.awt.datatransfer.UnsupportedFlavorException
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import java.util.UUID
 
 /**
  * @author dbarashev@bardsoftware.com
@@ -39,6 +40,9 @@ class GPTransferable(private val myClipboardContents: ClipboardContents) : Trans
     override fun getTransferData(flavor: DataFlavor): Any {
         if (INTERNAL_DATA_FLAVOR.equals(flavor)) {
             return myClipboardContents
+        }
+        if (APP_INSTANCE_ID_FLAVOR.equals(flavor)) {
+            return ByteArrayInputStream(APP_INSTANCE_ID.toByteArray(Charsets.UTF_8))
         }
         if (EXTERNAL_TEXT_FLAVOR.equals(flavor)) {
             return createTextFlavor()
@@ -102,6 +106,15 @@ class GPTransferable(private val myClipboardContents: ClipboardContents) : Trans
         val EXTERNAL_TEXT_FLAVOR = DataFlavor("text/plain", "GanttProject Task List")
         @JvmField
         var INTERNAL_DATA_FLAVOR = DataFlavor(mimeType)
-        private var ourFlavors = ImmutableSet.of(INTERNAL_DATA_FLAVOR, EXTERNAL_DOCUMENT_FLAVOR, EXTERNAL_TEXT_FLAVOR)
+
+        /**
+         * Identifies the running GanttProject instance which has put data into the clipboard. It allows for
+         * distinguishing the clipboard contents copied in this instance from the contents copied elsewhere,
+         * e.g. in another GanttProject window.
+         */
+        val APP_INSTANCE_ID: String = UUID.randomUUID().toString()
+        val APP_INSTANCE_ID_FLAVOR = DataFlavor("application/x-ganttproject-instance-id", "GanttProject Instance ID")
+
+        private var ourFlavors = ImmutableSet.of(INTERNAL_DATA_FLAVOR, EXTERNAL_DOCUMENT_FLAVOR, EXTERNAL_TEXT_FLAVOR, APP_INSTANCE_ID_FLAVOR)
     }
 }

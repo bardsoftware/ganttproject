@@ -71,8 +71,14 @@ public class PasteAction extends GPAction {
       pasteInternalFlavor(selection);
       return;
     }
-    // The clipboard contents came from elsewhere, e.g. from another GanttProject window.
-    // We import them into the top level of the task tree, and the user can move them afterward.
+    var ownClipboardContents = ClipboardContentsKt.getOwnClipboardContents();
+    if (ownClipboardContents != null && !selection.acceptsClipboardContents(ownClipboardContents)) {
+      // The clipboard contents were copied in this GanttProject instance, but they can't be pasted into the active
+      // chart, e.g. resources copied in the resource chart and pasted into the task table.
+      return;
+    }
+    // The clipboard contents came from elsewhere, e.g. from another GanttProject window, or from another chart
+    // with no selection. We import them into the top level, and the user can move them afterward.
     // See issue https://github.com/bardsoftware/ganttproject/issues/2861
     var clipboardProject = ClipboardContentsKt.getProjectFromClipboard(new BufferProject(myProject, myUiFacade));
     if (clipboardProject != null) {
