@@ -34,6 +34,15 @@ public interface ChartSelection {
 
   void commitClipboardTransaction();
 
+  /**
+   * @return true if this selection holds clipboard contents copied or cut in this chart, which can be pasted
+   * with commitClipboardTransaction. If the system clipboard was taken over by someone else (e.g. by another
+   * GanttProject window), the internal contents are discarded and this method returns false.
+   */
+  default boolean hasOwnClipboardContents() {
+    return false;
+  }
+
   ChartSelection EMPTY = new ChartSelection() {
     @Override
     public void startMoveClipboardTransaction() {

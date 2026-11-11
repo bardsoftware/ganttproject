@@ -122,8 +122,24 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
   }
 
   @Override
+  public boolean hasOwnClipboardContents() {
+    return myClipboardContents != null;
+  }
+
+  @Override
+  public void cancelClipboardTransaction() {
+    super.cancelClipboardTransaction();
+    myClipboardContents = null;
+  }
+
+  /**
+   * Someone else (e.g. another GanttProject window or another application) has put its data into the system
+   * clipboard. Our internal clipboard contents are not what the user expects to paste anymore.
+   * See issue https://github.com/bardsoftware/ganttproject/issues/2861
+   */
+  @Override
   public void lostOwnership(Clipboard clipboard, Transferable contents) {
-    // Do nothing
+    cancelClipboardTransaction();
   }
 
   @Override

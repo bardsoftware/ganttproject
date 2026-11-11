@@ -25,11 +25,14 @@ import net.sourceforge.ganttproject.export.ConsoleUIFacade
 import net.sourceforge.ganttproject.importer.BufferProject
 import net.sourceforge.ganttproject.task.TaskSelectionManager
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import java.awt.GraphicsEnvironment
 import java.awt.Toolkit
+import java.awt.datatransfer.Clipboard
+import java.awt.datatransfer.StringSelection
 
 class GanttChartSelectionTest {
   /**
@@ -64,6 +67,33 @@ class GanttChartSelectionTest {
     val clipboardProject = getProjectFromClipboard(BufferProject(GanttProjectImpl(), ConsoleUIFacade(null))) ?: error("Clipboard project is null")
     assertEquals(1, clipboardProject.taskManager.tasks.size)
     assertEquals(setOf(task1, task2, task3), taskManager.taskHierarchy.tasksInDocumentOrder.toSet())
+  }
+
+  /**
+   * When someone else (e.g. another GanttProject window) takes over the system clipboard, the internal clipboard
+   * contents must be discarded, so that Paste action imports the external data instead.
+   * See https://github.com/bardsoftware/ganttproject/issues/2861
+   */
+  @Test fun testLostOwnershipDiscardsInternalContents_Issue2861() {
+    val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+    val selectionManager = TaskSelectionManager { taskManager }
+    val task1 = taskManager.newTaskBuilder().withName("task1").build()
+    val task2 = taskManager.newTaskBuilder().withName("task2").build()
+    val ganttChartSelection = GanttChartSelection(taskManager, selectionManager)
+    assertFalse(ganttChartSelection.hasOwnClipboardContents())
+
+    selectionManager.setSelectedTasks(listOf(task1), this)
+    ganttChartSelection.startMoveClipboardTransaction()
+    assertTrue(ganttChartSelection.hasOwnClipboardContents())
+
+    ganttChartSelection.lostOwnership(Clipboard("test"), StringSelection("foo"))
+    assertFalse(ganttChartSelection.hasOwnClipboardContents())
+
+    // Paste after losing the ownership must not move anything.
+    selectionManager.setSelectedTasks(listOf(task2), this)
+    ganttChartSelection.commitClipboardTransaction()
+    assertEquals(listOf(task1, task2), taskManager.taskHierarchy.tasksInDocumentOrder)
+    assertEquals(taskManager.rootTask, task1.supertask)
   }
 
   @Test fun testDependenciesInTheClipboardProject() {

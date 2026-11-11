@@ -67,11 +67,13 @@ public class PasteAction extends GPAction {
       return;
     }
     ChartSelection selection = myViewmanager.getSelectedArtefacts();
-    if (!selection.isEmpty()) {
+    if (!selection.isEmpty() && selection.hasOwnClipboardContents()) {
       pasteInternalFlavor(selection);
-      //myUiFacade.getViewManager().getActiveView().f
       return;
     }
+    // The clipboard contents came from elsewhere, e.g. from another GanttProject window.
+    // We import them into the top level of the task tree, and the user can move them afterward.
+    // See issue https://github.com/bardsoftware/ganttproject/issues/2861
     var clipboardProject = ClipboardContentsKt.getProjectFromClipboard(new BufferProject(myProject, myUiFacade));
     if (clipboardProject != null) {
       try {
