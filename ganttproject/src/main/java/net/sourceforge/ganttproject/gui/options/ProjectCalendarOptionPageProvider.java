@@ -18,15 +18,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
+import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.DefaultDateOption;
 import biz.ganttproject.core.option.GPOptionGroup;
 import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.TimeDuration;
 import com.google.common.collect.Lists;
+import net.sourceforge.ganttproject.GPLogger;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
+import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmException;
 import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm;
 
@@ -46,6 +50,7 @@ import java.util.List;
  */
 public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
   private WeekendsSettingsPanel myWeekendsPanel;
+  private JCheckBox myHolidaysAreWorkingDays;
   private DefaultDateOption myProjectStartOption;
   private JRadioButton myMoveAllTasks;
   private JRadioButton myMoveStartingTasks;
@@ -76,6 +81,13 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
     myWeekendsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
     myWeekendsPanel.initialize();
     result.add(myWeekendsPanel);
+
+    result.add(Box.createVerticalStrut(15));
+
+    myHolidaysAreWorkingDays = new JCheckBox(i18n.getText("project.calendar.holidaysAreWorkingDays.label"));
+    myHolidaysAreWorkingDays.setAlignmentX(Component.LEFT_ALIGNMENT);
+    myHolidaysAreWorkingDays.setSelected(getProject().getActiveCalendar().getHolidaysAreWorkingDays());
+    result.add(myHolidaysAreWorkingDays);
 
     result.add(Box.createVerticalStrut(15));
 
@@ -204,6 +216,22 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
   @Override
   public void commit() {
     myWeekendsPanel.applyChanges(false);
+    commitHolidaysAreWorkingDays();
     myProjectStartOption.commit();
+  }
+
+  private void commitHolidaysAreWorkingDays() {
+    GPCalendarCalc calendar = getProject().getActiveCalendar();
+    if (myHolidaysAreWorkingDays == null || myHolidaysAreWorkingDays.isSelected() == calendar.getHolidaysAreWorkingDays()) {
+      return;
+    }
+    calendar.setHolidaysAreWorkingDays(myHolidaysAreWorkingDays.isSelected());
+    try {
+      TaskManager taskManager = getProject().getTaskManager();
+      taskManager.getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm().run();
+      taskManager.getAlgorithmCollection().getAdjustTaskBoundsAlgorithm().adjustNestedTasks(taskManager.getRootTask());
+    } catch (TaskDependencyException e) {
+      GPLogger.log(e);
+    }
   }
 }

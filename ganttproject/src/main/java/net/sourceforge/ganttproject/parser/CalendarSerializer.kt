@@ -43,6 +43,7 @@ class CalendarSerializer(private val calendar: GPCalendarCalc) {
     calendar.setWeekDayType(7, if (xmlDayTypes.defaultWeek.sat == 1) GPCalendar.DayType.WEEKEND else GPCalendar.DayType.WORKING)
 
     calendar.onlyShowWeekends = xmlDayTypes.onlyShowWeekends.value
+    calendar.holidaysAreWorkingDays = xmlDayTypes.holidaysAreWorkingDays?.value ?: false
     xmlCalendars.events?.map { xmlEvent ->
       val month = xmlEvent.month
       val day = xmlEvent.date

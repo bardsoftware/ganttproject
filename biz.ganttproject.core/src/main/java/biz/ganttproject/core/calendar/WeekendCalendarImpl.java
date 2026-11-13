@@ -64,6 +64,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   private final DayType[] myTypes = new DayType[7];
 
   private boolean myOnlyShowWeekends = false;
+  private boolean myHolidaysAreWorkingDays = false;
 
   private int myWeekendDaysCount;
 
@@ -198,6 +199,17 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
   }
 
   @Override
+  public boolean getHolidaysAreWorkingDays() {
+    return myHolidaysAreWorkingDays;
+  }
+
+  @Override
+  public void setHolidaysAreWorkingDays(boolean holidaysAreWorkingDays) {
+    myHolidaysAreWorkingDays = holidaysAreWorkingDays;
+    fireCalendarChanged();
+  }
+
+  @Override
   public void setOnlyShowWeekends(boolean onlyShowWeekends) {
     myOnlyShowWeekends = onlyShowWeekends;
     fireCalendarChanged();
@@ -282,6 +294,9 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
     }
     if (isHoliday) {
       result |= DayMask.HOLIDAY;
+      if (myHolidaysAreWorkingDays && !isWeekend) {
+        result |= DayMask.WORKING;
+      }
       return result;
     }
     if (!isWeekend || myOnlyShowWeekends) {
@@ -348,6 +363,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
       result.setWeekDayType(i, getWeekDayType(i));
     }
     result.setOnlyShowWeekends(getOnlyShowWeekends());
+    result.setHolidaysAreWorkingDays(getHolidaysAreWorkingDays());
     result.setPublicHolidays(getPublicHolidays());
     result.setID(getID());
     result.setName(getName() == null ? getID() : getName());
@@ -377,6 +393,7 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
         setWeekDayType(i, calendar.getWeekDayType(i));
       }
       setOnlyShowWeekends(((GPCalendarCalc)calendar).getOnlyShowWeekends());
+      setHolidaysAreWorkingDays(((GPCalendarCalc)calendar).getHolidaysAreWorkingDays());
       return;
     }
     if (ImportCalendarOption.Values.MERGE.equals(importOption.getSelectedValue())) {
@@ -390,5 +407,6 @@ public class WeekendCalendarImpl extends GPCalendarBase implements GPCalendarCal
       }
     }
     setOnlyShowWeekends(((GPCalendarCalc)calendar).getOnlyShowWeekends());
+    setHolidaysAreWorkingDays(((GPCalendarCalc)calendar).getHolidaysAreWorkingDays());
   }
 }
