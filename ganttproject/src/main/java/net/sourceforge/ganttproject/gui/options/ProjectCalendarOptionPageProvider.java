@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
+import biz.ganttproject.app.InternationalizationCoreKt;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.option.DefaultDateOption;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -84,7 +85,9 @@ public class ProjectCalendarOptionPageProvider extends OptionPageProviderBase {
 
     result.add(Box.createVerticalStrut(15));
 
-    myHolidaysAreWorkingDays = new JCheckBox(i18n.getText("project.calendar.holidaysAreWorkingDays.label"));
+    // formatText falls back to the key, so that the check box is never shown without a label.
+    myHolidaysAreWorkingDays = new JCheckBox(
+        InternationalizationCoreKt.getRootLocalizer().formatText("project.calendar.holidaysAreWorkingDays.label"));
     myHolidaysAreWorkingDays.setAlignmentX(Component.LEFT_ALIGNMENT);
     myHolidaysAreWorkingDays.setSelected(getProject().getActiveCalendar().getHolidaysAreWorkingDays());
     result.add(myHolidaysAreWorkingDays);
