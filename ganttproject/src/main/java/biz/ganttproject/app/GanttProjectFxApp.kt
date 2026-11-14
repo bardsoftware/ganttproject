@@ -25,10 +25,12 @@ import javafx.application.Application
 import javafx.application.Platform
 import javafx.application.Preloader
 import javafx.event.EventHandler
+import javafx.geometry.Rectangle2D
 import javafx.scene.Scene
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import javafx.stage.Screen
 import javafx.stage.Stage
 import net.sourceforge.ganttproject.APP_LOGGER
 import net.sourceforge.ganttproject.GanttProject
@@ -72,16 +74,32 @@ class GanttProjectFxApp : Application() {
           }
         )
       }
-      val appScene = Scene(vbox)
+      val initialGeometry = ganttProject.windowGeometry.sanitized()
+      APP_LOGGER.debug("... initial window geometry: {}", initialGeometry)
+      // Giving the scene an explicit size makes the window request a proper size before it is mapped. Otherwise,
+      // on Linux, GTK may configure the window with its default 200x200 size, and that may win over our resize
+      // requests.
+      val appScene = Scene(vbox, initialGeometry.width, initialGeometry.height)
       appScene.stylesheets.add("/biz/ganttproject/app/Main.css")
       stage.setScene(appScene)
+      // The minimum size is passed to the window manager as a size hint, so it will not shrink the window below it.
+      Screen.getPrimary().visualBounds.let { screen ->
+        stage.minWidth = minOf(MIN_WINDOW_WIDTH, screen.width)
+        stage.minHeight = minOf(MIN_WINDOW_HEIGHT, screen.height)
+      }
+      stage.x = initialGeometry.leftX
+      stage.y = initialGeometry.topY
+      stage.width = initialGeometry.width
+      stage.height = initialGeometry.height
       APP_LOGGER.debug("... app scene done.")
       stage.onShown = EventHandler {
         ganttProject.viewManager.init(ganttProject.ganttViewProvider, ganttProject.resourceViewProvider)
         APP_LOGGER.debug("onShown(): resolving the barrier...")
         ganttProject.uiFacade.windowOpenedBarrier.resolve(true)
         Platform.runLater {
-          ganttProject.windowGeometry.let {
+          // Some window managers ignore the position and the maximized state requested before the window is mapped,
+          // so we apply the geometry once again.
+          initialGeometry.let {
             stage.x = it.leftX
             stage.y = it.topY
             stage.width = it.width
@@ -94,7 +112,8 @@ class GanttProjectFxApp : Application() {
 //        )
       }
       stage.onCloseRequest = EventHandler {
-        ganttProject.windowGeometry = WindowGeometry(stage.x, stage.y, stage.width, stage.height, stage.isMaximized)
+        ganttProject.windowGeometry =
+          WindowGeometry(stage.x, stage.y, stage.width, stage.height, stage.isMaximized).sanitized()
         if (ganttProject.isModified) {
           it.consume()
         }
@@ -158,3 +177,34 @@ data class WindowGeometry(
   val height: Double = 600.0,
   val isMaximized: Boolean = false
 )
+
+private const val MIN_WINDOW_WIDTH = 640.0
+private const val MIN_WINDOW_HEIGHT = 480.0
+// If less than this share of the window area is visible on the screens, we move the window to the primary screen.
+private const val MIN_VISIBLE_AREA_SHARE = 0.25
+
+/**
+ * Returns the geometry which is guaranteed to be not smaller than the minimum window size and to be reasonably
+ * visible on the available screens.
+ */
+fun WindowGeometry.sanitized(screens: List<Rectangle2D> = Screen.getScreens().map { it.visualBounds },
+                             primary: Rectangle2D = Screen.getPrimary().visualBounds): WindowGeometry {
+  fun visibleAreaOn(screen: Rectangle2D): Double {
+    val w = minOf(leftX + width, screen.maxX) - maxOf(leftX, screen.minX)
+    val h = minOf(topY + height, screen.maxY) - maxOf(topY, screen.minY)
+    return if (w > 0 && h > 0) w * h else 0.0
+  }
+  val area = width * height
+  val visibleArea = screens.sumOf(::visibleAreaOn)
+  val isTooSmall = width < MIN_WINDOW_WIDTH || height < MIN_WINDOW_HEIGHT
+  if (!isTooSmall && area > 0 && visibleArea / area >= MIN_VISIBLE_AREA_SHARE) {
+    return this
+  }
+  // Fit the window into the screen where it is mostly visible, or into the primary screen if it is not visible at all.
+  val screen = screens.maxByOrNull(::visibleAreaOn)?.takeIf { visibleArea > 0 } ?: primary
+  val fitWidth = width.coerceIn(minOf(MIN_WINDOW_WIDTH, screen.width), screen.width)
+  val fitHeight = height.coerceIn(minOf(MIN_WINDOW_HEIGHT, screen.height), screen.height)
+  val fitX = leftX.coerceIn(screen.minX, screen.maxX - fitWidth)
+  val fitY = topY.coerceIn(screen.minY, screen.maxY - fitHeight)
+  return WindowGeometry(fitX, fitY, fitWidth, fitHeight, isMaximized)
+}
