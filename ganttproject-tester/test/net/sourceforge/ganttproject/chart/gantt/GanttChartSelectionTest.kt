@@ -142,6 +142,57 @@ class GanttChartSelectionTest {
     assertNull(getOwnClipboardContents())
   }
 
+  /**
+   * Cut tasks are moved to the end of the top level if nothing is selected when pasting.
+   */
+  @Test fun testCutAndPasteWithNoSelection() {
+    val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+    val selectionManager = TaskSelectionManager { taskManager }
+    val summary = taskManager.newTaskBuilder().withName("summary").build()
+    val child = taskManager.newTaskBuilder().withName("child").withParent(summary).build()
+    taskManager.newTaskBuilder().withName("task2").build()
+    val ganttChartSelection = GanttChartSelection(taskManager, selectionManager)
+    val taskCount = taskManager.taskCount
+
+    selectionManager.setSelectedTasks(listOf(child), this)
+    ganttChartSelection.startMoveClipboardTransaction()
+    selectionManager.clear()
+    assertTrue(ganttChartSelection.hasOwnClipboardContents())
+    ganttChartSelection.commitClipboardTransaction()
+
+    val hierarchy = taskManager.taskHierarchy
+    assertEquals(listOf("summary", "task2", "child"), hierarchy.getNestedTasks(taskManager.rootTask).map { it.name })
+    assertEquals(0, hierarchy.getNestedTasks(summary).size)
+    assertEquals(taskCount, taskManager.taskCount)
+  }
+
+  /**
+   * Copied tasks are copied to the end of the top level if nothing is selected when pasting.
+   */
+  @Test fun testCopyAndPasteWithNoSelection() {
+    val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
+    val selectionManager = TaskSelectionManager { taskManager }
+    val summary = taskManager.newTaskBuilder().withName("summary").build()
+    val child = taskManager.newTaskBuilder().withName("child").withParent(summary).build()
+    taskManager.newTaskBuilder().withName("task2").build()
+    val ganttChartSelection = GanttChartSelection(taskManager, selectionManager)
+
+    // startCopyClipboardTransaction exports the tasks into the system clipboard, which is not available in headless mode.
+    assumeTrue(!GraphicsEnvironment.isHeadless() && !isRunningOnGitHubActions(), "needs a system clipboard")
+    taskManager.taskCopyNamePrefixOption.value = "{1}_copy"
+    val taskCount = taskManager.taskCount
+    selectionManager.setSelectedTasks(listOf(child), this)
+    ganttChartSelection.startCopyClipboardTransaction()
+    selectionManager.clear()
+    ganttChartSelection.commitClipboardTransaction()
+
+    val hierarchy = taskManager.taskHierarchy
+    val topLevel = hierarchy.getNestedTasks(taskManager.rootTask).toList()
+    assertEquals(listOf("summary", "task2", "child_copy"), topLevel.map { it.name })
+    assertEquals(listOf("child"), hierarchy.getNestedTasks(summary).map { it.name })
+    assertEquals(taskCount + 1, taskManager.taskCount)
+  }
+
   @Test fun testDependenciesInTheClipboardProject() {
     val taskManager = TestSetupHelper.newTaskManagerBuilder().build()
     val selectionManager = TaskSelectionManager { taskManager }

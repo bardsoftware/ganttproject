@@ -72,7 +72,7 @@ public class PasteAction extends GPAction {
    * acceptable, e.g. copied resources can't be pasted into the task table.
    */
   private boolean canPaste(ChartSelection selection) {
-    if (!selection.isEmpty() && selection.hasOwnClipboardContents()) {
+    if (selection.hasOwnClipboardContents()) {
       return true;
     }
     if (!ClipboardContentsKt.hasClipboardData()) {
@@ -88,7 +88,9 @@ public class PasteAction extends GPAction {
       return;
     }
     ChartSelection selection = myViewmanager.getSelectedArtefacts();
-    if (!selection.isEmpty() && selection.hasOwnClipboardContents()) {
+    if (selection.hasOwnClipboardContents()) {
+      // The contents were copied or cut in the active chart. We paste them no matter if something is selected or not.
+      // With no selection, the contents are pasted into the top level.
       pasteInternalFlavor(selection);
       return;
     }
@@ -98,9 +100,9 @@ public class PasteAction extends GPAction {
       // chart, e.g. resources copied in the resource chart and pasted into the task table.
       return;
     }
-    // The clipboard contents came from elsewhere, e.g. from another GanttProject window, or from another chart
-    // with no selection. We import them into the top level or, if the user chooses so, paste them after the selected
-    // task. See issue https://github.com/bardsoftware/ganttproject/issues/2861
+    // The clipboard contents came from elsewhere, e.g. from another GanttProject window. We import them into the top
+    // level or, if the user chooses so, paste them after the selected task.
+    // See issue https://github.com/bardsoftware/ganttproject/issues/2861
     var clipboardProject = ClipboardContentsKt.getProjectFromClipboard(new BufferProject(myProject, myUiFacade));
     if (clipboardProject == null) {
       myUiFacade.getActiveChart().focus();

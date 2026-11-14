@@ -25,6 +25,8 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -103,14 +105,21 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
     return result;
   }
 
-  void paste(Task target) {
+  /**
+   * Pastes the clipboard contents after the target task, or at the end of the top level if the target is null.
+   */
+  void paste(@Nullable Task target) {
     var clipboardContents = myClipboardContents;
     if (clipboardContents == null) {
       return;
     }
     ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
     processor.setTaskCopyNameOption(myTaskManager.getTaskCopyNamePrefixOption());
-    processor.pasteAsSibling(target, clipboardContents);
+    if (target == null) {
+      processor.pasteIntoRoot(clipboardContents);
+    } else {
+      processor.pasteAsSibling(target, clipboardContents);
+    }
   }
 
   /**
@@ -123,10 +132,12 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
 
   @Override
   public void commitClipboardTransaction() {
-    if (mySelectionManager.getSelectedTasks().size() != 1) {
+    var selectedTasks = mySelectionManager.getSelectedTasks();
+    if (selectedTasks.size() > 1) {
       return;
     }
-    paste(mySelectionManager.getSelectedTasks().getFirst());
+    // If nothing is selected, we paste into the top level.
+    paste(selectedTasks.isEmpty() ? null : selectedTasks.getFirst());
     super.commitClipboardTransaction();
   }
 
