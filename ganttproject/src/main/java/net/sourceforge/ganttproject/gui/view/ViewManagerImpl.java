@@ -135,6 +135,8 @@ public class ViewManagerImpl implements GPViewManager {
     var selection = selectedView.getSelection();
     myCopyAction.setEnabled(!selection.isEmpty());
     myCutAction.setEnabled(!selection.isEmpty() && selection.isDeletable().isOK());
+    // Whether the clipboard contents can be pasted depends on the active view.
+    myPasteAction.updateAction();
   }
 
   @Override

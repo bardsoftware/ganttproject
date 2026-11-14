@@ -84,6 +84,7 @@ class ViewPane(private val project: IGanttProject) {
     it.selectionModel.selectedItemProperty().subscribe { oldTab, newTab ->
       (newTab?.userData as? ViewImpl)?.let {
         it.refresh()
+        it.isActive = true
         selectedViewProperty.set(it)
       }
     }

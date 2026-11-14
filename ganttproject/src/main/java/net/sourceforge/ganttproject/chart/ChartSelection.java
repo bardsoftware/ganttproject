@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.chart;
 
+import net.sourceforge.ganttproject.chart.gantt.ClipboardContents;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
@@ -33,6 +34,23 @@ public interface ChartSelection {
   void cancelClipboardTransaction();
 
   void commitClipboardTransaction();
+
+  /**
+   * @return true if this selection holds clipboard contents copied or cut in this chart, which can be pasted
+   * with commitClipboardTransaction. If the system clipboard was taken over by someone else (e.g. by another
+   * GanttProject window), the internal contents are discarded and this method returns false.
+   */
+  default boolean hasOwnClipboardContents() {
+    return false;
+  }
+
+  /**
+   * @return true if the clipboard contents copied or cut in this GanttProject instance can be pasted into
+   * the chart which owns this selection. E.g. copied resources can't be pasted into the Gantt chart.
+   */
+  default boolean acceptsClipboardContents(ClipboardContents contents) {
+    return true;
+  }
 
   ChartSelection EMPTY = new ChartSelection() {
     @Override

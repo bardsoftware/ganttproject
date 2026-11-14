@@ -45,10 +45,20 @@ public class GanttXMLOpen implements GPParser {
 
   private UIFacade myUIFacade = null;
 
+  /**
+   * If true, the view settings stored in the document (the active view and the view date) are applied to the UI.
+   */
+  private boolean myApplyViewSettings = true;
+
   public GanttXMLOpen(PrjInfos info, TaskManager taskManager, UIFacade uiFacade) {
     this(taskManager);
     myProjectInfo = info;
     myUIFacade = uiFacade;
+  }
+
+  public GanttXMLOpen(PrjInfos info, TaskManager taskManager, UIFacade uiFacade, boolean applyViewSettings) {
+    this(info, taskManager, uiFacade);
+    myApplyViewSettings = applyViewSettings;
   }
 
   public GanttXMLOpen(TaskManager taskManager) {
@@ -118,14 +128,16 @@ public class GanttXMLOpen implements GPParser {
       myProjectInfo.setOrganization(xmlProject.getCompany());
       myProjectInfo.setDescription(xmlProject.getDescription());
       myProjectInfo.setWebLink(xmlProject.getWebLink());
-      var viewDate = xmlProject.getViewDate();
-      if (!viewDate.isBlank()) {
-        myUIFacade.getScrollingManager().scrollTo(GanttCalendar.parseXMLDate(viewDate).getTime());
-      }
-      var viewManager = myUIFacade.getViewManager();
-      var view = viewManager == null ? null : viewManager.getView(String.valueOf(xmlProject.getViewIndex()));
-      if (view != null) {
-        view.setActive(true);
+      if (myApplyViewSettings) {
+        var viewDate = xmlProject.getViewDate();
+        if (!viewDate.isBlank()) {
+          myUIFacade.getScrollingManager().scrollTo(GanttCalendar.parseXMLDate(viewDate).getTime());
+        }
+        var viewManager = myUIFacade.getViewManager();
+        var view = viewManager == null ? null : viewManager.getView(String.valueOf(xmlProject.getViewIndex()));
+        if (view != null) {
+          view.setActive(true);
+        }
       }
       myTaskManager.setZeroMilestones(xmlProject.getTasks().getEmptyMilestones());
     }

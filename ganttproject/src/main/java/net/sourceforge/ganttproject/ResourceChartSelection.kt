@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject
 
 import net.sourceforge.ganttproject.AbstractChartImplementation.ChartSelectionImpl
 import net.sourceforge.ganttproject.chart.gantt.ClipboardContents
+import net.sourceforge.ganttproject.chart.gantt.fireOwnClipboardChange
 import net.sourceforge.ganttproject.resource.ResourceSelectionManager
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
@@ -61,6 +62,7 @@ internal class ResourceChartSelection(
     private fun exportIntoSystemClipboard() {
         val clipboard = Toolkit.getDefaultToolkit().systemClipboard
         clipboard.setContents(GPTransferable(myClipboardContents!!), this)
+        fireOwnClipboardChange()
     }
 
     override fun cancelClipboardTransaction() {
@@ -79,11 +81,17 @@ internal class ResourceChartSelection(
             }
           }
         }
+        // We keep the clipboard contents, so that they could be pasted again, like in the Gantt chart.
         super.commitClipboardTransaction()
-        myClipboardContents = null
     }
 
+    override fun hasOwnClipboardContents() = myClipboardContents != null
+
+    override fun acceptsClipboardContents(contents: ClipboardContents) = contents.resources.isNotEmpty()
+
     override fun lostOwnership(clipboard: Clipboard, transferable: Transferable) {
-        // Do nothing.
+        // Someone else has put its data into the system clipboard, our internal contents are obsolete.
+        cancelClipboardTransaction()
+        fireOwnClipboardChange()
     }
 }

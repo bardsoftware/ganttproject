@@ -25,11 +25,12 @@ import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.TaskSelectionManager;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,6 +85,7 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
     clipboardContents.addTasks(selectedRoots);
     clipboardContents.copy();
     clipboard.setContents(new GPTransferable(clipboardContents), this);
+    ClipboardContentsKt.fireOwnClipboardChange();
   }
 
   @Override
@@ -103,27 +105,67 @@ public class GanttChartSelection extends ChartSelectionImpl implements Clipboard
     return result;
   }
 
-  List<Task> paste(Task target) {
-    if (myClipboardContents == null) {
-      return Collections.emptyList();
+  /**
+   * Pastes the clipboard contents after the target task, or at the end of the top level if the target is null.
+   */
+  void paste(@Nullable Task target) {
+    var clipboardContents = myClipboardContents;
+    if (clipboardContents == null) {
+      return;
     }
     ClipboardTaskProcessor processor = new ClipboardTaskProcessor(myTaskManager);
     processor.setTaskCopyNameOption(myTaskManager.getTaskCopyNamePrefixOption());
-    return processor.pasteAsSibling(target, myClipboardContents);
+    if (target == null) {
+      processor.pasteIntoRoot(clipboardContents);
+    } else {
+      processor.pasteAsSibling(target, clipboardContents);
+    }
+  }
+
+  /**
+   * @return the task which the clipboard contents are pasted after, or null if there is no single selected task.
+   */
+  public Task getPasteTarget() {
+    var selectedTasks = mySelectionManager.getSelectedTasks();
+    return selectedTasks.size() == 1 ? selectedTasks.getFirst() : null;
   }
 
   @Override
   public void commitClipboardTransaction() {
-    if (mySelectionManager.getSelectedTasks().size() != 1) {
+    var selectedTasks = mySelectionManager.getSelectedTasks();
+    if (selectedTasks.size() > 1) {
       return;
     }
-    paste(mySelectionManager.getSelectedTasks().getFirst());
+    // If nothing is selected, we paste into the top level.
+    paste(selectedTasks.isEmpty() ? null : selectedTasks.getFirst());
     super.commitClipboardTransaction();
   }
 
   @Override
+  public boolean hasOwnClipboardContents() {
+    return myClipboardContents != null;
+  }
+
+  @Override
+  public boolean acceptsClipboardContents(ClipboardContents contents) {
+    return !contents.getTasks().isEmpty();
+  }
+
+  @Override
+  public void cancelClipboardTransaction() {
+    super.cancelClipboardTransaction();
+    myClipboardContents = null;
+  }
+
+  /**
+   * Someone else (e.g. another GanttProject window or another application) has put its data into the system
+   * clipboard. Our internal clipboard contents are not what the user expects to paste anymore.
+   * See issue https://github.com/bardsoftware/ganttproject/issues/2861
+   */
+  @Override
   public void lostOwnership(Clipboard clipboard, Transferable contents) {
-    // Do nothing
+    cancelClipboardTransaction();
+    ClipboardContentsKt.fireOwnClipboardChange();
   }
 
   @Override

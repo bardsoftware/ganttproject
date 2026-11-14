@@ -79,6 +79,24 @@ public class ClipboardTaskProcessor {
     }
   }
 
+  /**
+   * Pastes the clipboard contents at the end of the top level of the task tree. The cut tasks are moved there,
+   * and the copied tasks are copied there.
+   */
+  public List<Task> pasteIntoRoot(ClipboardContents clipboardContents) {
+    var rootTask = myTaskManager.getRootTask();
+    if (clipboardContents.isCut()) {
+      List<Task> result = new ArrayList<>();
+      for (Task task : clipboardContents.getTasks()) {
+        myTaskManager.getTaskHierarchy().move(task, rootTask);
+        result.add(task);
+      }
+      return result;
+    } else {
+      return pasteAsChild(rootTask, null, clipboardContents);
+    }
+  }
+
   public List<Task> pasteAsChild(Task selectedTask, ClipboardContents clipboardContents) {
     if (clipboardContents.isCut()) {
       List<Task> result = new ArrayList<>();

@@ -34,11 +34,13 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.util.collect.Pair
+import java.awt.GraphicsEnvironment
 import java.awt.Toolkit
 import java.io.File
 import java.io.InputStream
 import java.nio.file.Files
 import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Represents all objects which are involved into a clipboard transaction on Gantt chart: tasks, dependencies
@@ -217,10 +219,74 @@ fun getProjectFromClipboard(bufferProject: BufferProject): BufferProject? {
   return null
 }
 
+/**
+ * Returns the internal clipboard contents if the system clipboard contains data copied or cut in this
+ * GanttProject instance, and null otherwise (e.g. if the data was copied in another GanttProject window).
+ */
+fun getOwnClipboardContents(): ClipboardContents? {
+  val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+  return try {
+    if (!clipboard.isDataFlavorAvailable(GPTransferable.APP_INSTANCE_ID_FLAVOR)) {
+      return null
+    }
+    val appInstanceId = (clipboard.getData(GPTransferable.APP_INSTANCE_ID_FLAVOR) as? InputStream)?.use {
+      String(ByteStreams.toByteArray(it), Charsets.UTF_8)
+    }
+    if (appInstanceId != GPTransferable.APP_INSTANCE_ID) {
+      return null
+    }
+    clipboard.getData(GPTransferable.INTERNAL_DATA_FLAVOR) as? ClipboardContents
+  } catch (e: Exception) {
+    GPLogger.log(e)
+    null
+  }
+}
+
+/**
+ * Moves the tasks which were imported from the clipboard project into the top level of the task tree, so that they
+ * become siblings of the target task, placed right after it in the same order.
+ *
+ * @param target the task after which the imported tasks are placed
+ * @param bufferProject the clipboard project
+ * @param taskMapping mapping of the clipboard project tasks to the imported tasks
+ * @return the moved tasks
+ */
+fun moveImportedTasksAfter(target: Task, bufferProject: BufferProject, taskMapping: Map<Task, Task>): List<Task> {
+  val hierarchy = target.manager.taskHierarchy
+  val container = hierarchy.getContainer(target) ?: target.manager.rootTask
+  var index = hierarchy.getTaskIndex(target) + 1
+  val bufferTaskManager = bufferProject.taskManager
+  return bufferTaskManager.taskHierarchy.getNestedTasks(bufferTaskManager.rootTask).mapNotNull { taskMapping[it] }.map {
+    hierarchy.move(it, container, index++)
+    it
+  }
+}
+
+private val clipboardChangeListeners = CopyOnWriteArrayList<(Boolean)->Unit>()
+
+/**
+ * Registers a listener which is called when the system clipboard changes. It is called when the set of the
+ * available data flavors changes, and when the clipboard contents are replaced in this GanttProject instance,
+ * or by someone else, even if the set of flavors remains the same (e.g. copied resources are replaced with
+ * copied tasks).
+ */
 fun onClipboardChange(listener: (Boolean)->Unit) {
   Toolkit.getDefaultToolkit().systemClipboard.addFlavorListener {
     listener(Toolkit.getDefaultToolkit().systemClipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR))
   }
+  clipboardChangeListeners.add(listener)
+}
+
+/**
+ * Notifies the clipboard change listeners that the clipboard contents owned by this GanttProject instance have
+ * changed: either we have put new contents into the system clipboard, or we lost the clipboard ownership.
+ */
+fun fireOwnClipboardChange() {
+  if (GraphicsEnvironment.isHeadless()) {
+    return
+  }
+  val isAvailable = Toolkit.getDefaultToolkit().systemClipboard.isDataFlavorAvailable(GPTransferable.EXTERNAL_DOCUMENT_FLAVOR)
+  clipboardChangeListeners.forEach { it(isAvailable) }
 }
 
 fun hasClipboardData() = Toolkit.getDefaultToolkit().systemClipboard.let {
