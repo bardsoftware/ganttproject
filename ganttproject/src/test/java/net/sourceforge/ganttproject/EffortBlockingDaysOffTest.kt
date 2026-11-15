@@ -226,18 +226,42 @@ class EffortBlockingDaysOffTest {
   }
 
   @Test
-  fun `levelling does not hold a task back for a day off of a resource which is not blocking`() {
+  fun `levelling holds a task back for a day off of a resource which is not blocking as well`() {
     val anna = resource("anna")
     anna.dayOff(monday, monday.plusDays(1))
     val task = effortTask("16")
     task.assign(anna)
     level()
-    assertEquals(monday, task.startDay())
-    assertEquals(4, task.days())
+    assertEquals(monday.plusDays(2), task.startDay())
+    assertEquals(2, task.days())
   }
 
   @Test
-  fun `levelling waits for every blocking resource but not for the others`() {
+  fun `levelling does not hold a task back for a day off of a resource which is neither blocking nor brings effort`() {
+    val anna = resource("anna")
+    val bob = resource("bob")
+    bob.dayOff(monday)
+    val task = effortTask("16")
+    task.assign(anna)
+    task.assign(bob, noEffort = true)
+    level()
+    assertEquals(monday, task.startDay())
+  }
+
+  @Test
+  fun `levelling holds a task back for a blocking resource which brings no effort`() {
+    val anna = resource("anna")
+    val bob = resource("bob")
+    bob.dayOff(monday)
+    val task = effortTask("16")
+    task.assign(anna)
+    task.assign(bob, blocking = true, noEffort = true)
+    level()
+    assertEquals(monday.plusDays(1), task.startDay())
+  }
+
+  @Test
+  fun `levelling waits for every resource with load, blocking or not`() {
     val anna = resource("anna")
     val bob = resource("bob")
     val carl = resource("carl")
@@ -249,7 +273,8 @@ class EffortBlockingDaysOffTest {
     task.assign(bob, blocking = true)
     task.assign(carl)
     level()
-    assertEquals(monday.plusDays(2), task.startDay())
+    // Carl is not blocking, but he brings hours, so the task waits for him too.
+    assertEquals(monday.plusDays(3), task.startDay())
   }
 
   @Test

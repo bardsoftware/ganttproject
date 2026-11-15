@@ -121,9 +121,9 @@ private fun Task.toLevelTask(
 
 /**
  * Whether a task may start on the given day. An effort driven task does not start on a day off of any of its
- * blocking resources, it starts when all of them are back; a day off later in the task lengthens it instead. An
- * assignment which is not blocking, or has no load, does not hold the task back. Every other task may start on any
- * day.
+ * resources which bring hours or are blocking, whether the absence is blocking or not; it starts when all of them are
+ * back, and a day off later in the task lengthens it instead. An assignment without load, or one which is neither
+ * blocking nor brings effort, does not hold the task back. Every other task may start on any day.
  */
 fun startAllowed(taskManager: TaskManager,
                  daysOffOf: (HumanResource) -> List<Pair<LocalDate, LocalDate>> = { it.daysOffRanges() }): (LevelTask, LocalDate) -> Boolean = { levelTask, start ->
@@ -131,7 +131,7 @@ fun startAllowed(taskManager: TaskManager,
   if (task == null || !task.isEffortDriven || task.isMilestone) {
     true
   } else {
-    task.assignments.filter { it.load > 0 && it.isBlocking }
+    task.assignments.filter { it.load > 0 && (it.contributesEffort || it.isBlocking) }
       .none { it.resource?.let(daysOffOf)?.covers(start) == true }
   }
 }

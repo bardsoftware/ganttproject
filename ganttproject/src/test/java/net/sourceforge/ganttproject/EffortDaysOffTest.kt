@@ -267,7 +267,6 @@ class EffortDaysOffTest {
     val anna = resource("anna")
     anna.dayOff(monday, monday.plusDays(1))
     val task = effortTask("16", anna)
-    blockEverybody(task)
     assertEquals(4, task.days())
     level()
     // Wednesday and Thursday, instead of Monday to Thursday with two days without hours.
@@ -291,7 +290,6 @@ class EffortDaysOffTest {
     bob.dayOff(monday.plusDays(2))
     val first = plainTask(2)
     val second = effortTask("8", bob)
-    blockEverybody(second)
     project.taskManager.dependencyCollection.createDependency(second, first)
     level()
     // The predecessor ends on Tuesday and Wednesday is the day off.
@@ -306,7 +304,6 @@ class EffortDaysOffTest {
     anna.dayOff(monday)
     bob.dayOff(monday, monday.plusDays(1))
     val task = effortTask("32", anna, bob)
-    blockEverybody(task)
     level()
     // Anna is back on Tuesday, bob on Wednesday; from Wednesday on both bring 16 hours a day.
     assertEquals(monday.plusDays(2), task.startDay())
@@ -355,9 +352,6 @@ class EffortDaysOffTest {
     )
   }
 
-  /** Only a blocking assignment holds a task back on a day off when levelling. */
-  private fun blockEverybody(task: Task) = task.assignments.forEach { it.isBlocking = true }
-
   private fun Task.assign(resource: HumanResource, load: Float) {
     assignmentCollection.addAssignment(resource).load = load
   }
@@ -381,7 +375,6 @@ class EffortDaysOffTest {
     bob.dayOff(monday)
     val task = effortTask("24", anna)
     task.assign(bob, 50f)
-    blockEverybody(task)
     level()
     // From Tuesday on anna brings 8 hours and bob 4 hours a day.
     assertEquals(monday.plusDays(1), task.startDay())
