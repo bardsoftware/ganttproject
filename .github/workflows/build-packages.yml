@@ -103,7 +103,7 @@ jobs:
                   ./gradlew distbin
                   echo "===== PLUGINS ====="
                   ls ganttproject-builder/dist-bin/plugins/base
-            - name: Build MSI installer
+            - name: Build MSI installer and app image for NSIS installer
               run: |
                   build-bin/package-win.bat
 

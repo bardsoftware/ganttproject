@@ -19,7 +19,7 @@ InstallDir $PROGRAMFILES\${APPFOLDERNAME}
 
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_RUN_TEXT "Launch GanttProject"
-!define MUI_FINISHPAGE_RUN "$INSTDIR\ganttproject.exe"
+!define MUI_FINISHPAGE_RUN "$INSTDIR\GanttProject.exe"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "LICENSE"
@@ -74,21 +74,26 @@ Section "GanttProject"
   SetOutPath $INSTDIR
 
 
+  ; Remove files left by the older launch4j-based installers if we install over them.
+  ; The application files now live in $INSTDIR\app, and ganttproject.exe is replaced with
+  ; the jpackage launcher GanttProject.exe
+  Delete "$INSTDIR\ganttproject.l4j.ini"
+  Delete "$INSTDIR\ganttproject.bat"
+  Delete "$INSTDIR\eclipsito.jar"
+  Delete "$INSTDIR\HouseBuildingSample.gan"
+  Delete "$INSTDIR\logging.properties"
+  Delete "$INSTDIR\logback.xml"
+  RMDir /r "$INSTDIR\plugins"
+  RMDir /r "$INSTDIR\lib"
+  RMDir /r "$INSTDIR\runtime"
+  RMDir /r "$INSTDIR\app"
+
   ; Put file there
   File ganttproject_16.ico
   File ganttproject.ico
-  File eclipsito.jar
-  File ganttproject.bat
-  File ganttproject.exe
-  File ganttproject.l4j.ini
-  File HouseBuildingSample.gan
   File LICENSE
-  File logging.properties
-  File logback.xml
-
-  File /r plugins
-  File /r runtime
-  File /r lib
+  ; jpackage app image: GanttProject.exe, app\ and runtime\
+  File /r "app-image\*.*"
 
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\GanttProject "Install_Dir" "$INSTDIR"
@@ -110,7 +115,7 @@ Section "GanttProject"
   WriteRegStr HKCR ".gan" "" "GanttProject File"
   WriteRegStr HKCR ".gan\shell" "" "open"
   WriteRegStr HKCR ".gan\DefaultIcon" "" "$INSTDIR\ganttproject.ico,0"
-  WriteRegStr HKCR ".gan\shell\open\command" "" '"$INSTDIR\ganttproject.exe" "%1"'
+  WriteRegStr HKCR ".gan\shell\open\command" "" '"$INSTDIR\GanttProject.exe" "%1"'
   System::Call 'Shell32::SHChange Notify(i SHCNE_ASSOCCHANGED, i SHCNF_IDLIST, i 0, i 0)'
 SectionEnd
 
@@ -120,10 +125,10 @@ Section "Start Menu Shortcuts"
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\${APPFOLDERNAME}"
   CreateShortCut "$SMPROGRAMS\${APPFOLDERNAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\${APPFOLDERNAME}\GanttProject ${VERSION}.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject.ico"
-  CreateShortCut "$SMPROGRAMS\${APPFOLDERNAME}\HouseBuildingSample.lnk" "$INSTDIR\HouseBuildingSample.gan" "" "$INSTDIR\ganttproject.ico"
-  CreateShortCut "$INSTDIR\Run GanttProject.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject.ico"
-  CreateShortCut "$DESKTOP\GanttProject $VERSION.lnk" "$INSTDIR\ganttproject.exe" "" "$INSTDIR\ganttproject.ico"
+  CreateShortCut "$SMPROGRAMS\${APPFOLDERNAME}\GanttProject ${VERSION}.lnk" "$INSTDIR\GanttProject.exe" "" "$INSTDIR\ganttproject.ico"
+  CreateShortCut "$SMPROGRAMS\${APPFOLDERNAME}\HouseBuildingSample.lnk" "$INSTDIR\app\HouseBuildingSample.gan" "" "$INSTDIR\ganttproject.ico"
+  CreateShortCut "$INSTDIR\Run GanttProject.lnk" "$INSTDIR\GanttProject.exe" "" "$INSTDIR\ganttproject.ico"
+  CreateShortCut "$DESKTOP\GanttProject $VERSION.lnk" "$INSTDIR\GanttProject.exe" "" "$INSTDIR\ganttproject.ico"
 
 SectionEnd
 
@@ -131,13 +136,13 @@ Section /o "Open Microsoft Project files with GanttProject"
   WriteRegStr HKCR ".mpp" "" "Microsoft Project File"
   WriteRegStr HKCR ".mpp\shell" "" "open"
   WriteRegStr HKCR ".mpp\DefaultIcon" "" "$INSTDIR\ganttproject.ico,0"
-  WriteRegStr HKCR ".mpp\shell\open\command" "" '"$INSTDIR\ganttproject.exe" "%1"'
+  WriteRegStr HKCR ".mpp\shell\open\command" "" '"$INSTDIR\GanttProject.exe" "%1"'
   System::Call 'Shell32::SHChangeNotify(i SHCNE_ASSOCCHANGED, i SHCNF_IDLIST, i 0, i 0)'
 
   WriteRegStr HKCR ".mpx" "" "Microsoft Project File"
   WriteRegStr HKCR ".mpx\shell" "" "open"
   WriteRegStr HKCR ".mpx\DefaultIcon" "" "$INSTDIR\ganttproject.ico,0"
-  WriteRegStr HKCR ".mpx\shell\open\command" "" '"$INSTDIR\ganttproject.exe" "%1"'
+  WriteRegStr HKCR ".mpx\shell\open\command" "" '"$INSTDIR\GanttProject.exe" "%1"'
   System::Call 'Shell32::SHChangeNotify(i SHCNE_ASSOCCHANGED, i SHCNF_IDLIST, i 0, i 0)'
 
   WriteRegStr HKCR "SOFTWARE\GanttProject" "Open_MSProject_Files" 1
