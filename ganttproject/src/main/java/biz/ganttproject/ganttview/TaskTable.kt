@@ -20,6 +20,7 @@ package biz.ganttproject.ganttview
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.*
+import biz.ganttproject.core.calendar.GPCalendar
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.BaseTreeTableComponent
 import biz.ganttproject.core.table.ColumnList
@@ -248,6 +249,9 @@ class TaskTable(
       }
     )
     initTaskEventHandlers()
+    // The end dates in the table come from the calendar, so a calendar change alters them without any task event.
+    // The chart repaints on calendar changes, and the table has to follow it.
+    refreshOnCalendarChange(project.activeCalendar, treeTable::coalescingRefresh)
     initProjectEventHandlers()
     initChartConnector()
     initKeyboardEventHandlers(taskActions.all())
@@ -692,6 +696,10 @@ private class TreeSelectionListenerImpl(
         }
     }
   }
+}
+
+internal fun refreshOnCalendarChange(calendar: GPCalendar, refresh: () -> Unit) {
+  calendar.addListener { refresh() }
 }
 
 data class TaskTableChartConnector(
