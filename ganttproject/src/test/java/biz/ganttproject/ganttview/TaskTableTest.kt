@@ -18,6 +18,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.ganttview
 
+import biz.ganttproject.core.calendar.WeekendCalendarImpl
 import javafx.scene.control.TreeItem
 import net.sourceforge.ganttproject.TestSetupHelper
 import net.sourceforge.ganttproject.task.Task
@@ -99,5 +100,17 @@ class TaskTableTest {
     assertNotNull(task2treeItem[task0])
     assertEquals(1, rootItem.children.size)
     assertEquals(2, sync2.filteredCount)
+  }
+
+  @Test
+  fun `calendar changes refresh the task table`() {
+    val calendar = WeekendCalendarImpl()
+    var refreshCount = 0
+    refreshOnCalendarChange(calendar) { refreshCount++ }
+    // Project properties, calendar page: holidays are working days, then a holiday removed.
+    calendar.setHolidaysAreWorkingDays(true)
+    assertEquals(1, refreshCount, "the table must refresh when holidays become working days")
+    calendar.publicHolidays = emptyList()
+    assertEquals(2, refreshCount, "the table must refresh when the holidays change")
   }
 }
