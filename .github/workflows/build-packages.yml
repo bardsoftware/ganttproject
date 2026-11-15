@@ -2,7 +2,7 @@ name: Build Packages
 
 on:
     push:
-        branches: ['master', 'BRANCH*']
+        branches: ['master', 'BRANCH*', 'nsis-jpackage-launcher']
         paths: ['ganttproject-builder/BUILD-HISTORY-MAJOR']
 env:
     BUILD_NUMBER: 3397
