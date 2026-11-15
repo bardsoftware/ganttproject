@@ -222,6 +222,22 @@ data class ViewComponents(val image: Pane, val splitPane: SplitPane, val table: 
       }
     }
   }
+
+  /**
+   * Fits the chart node to the room the split pane gives it. Autosizing resizes the node to the preferred size of the
+   * Swing chart, which is far smaller, and only a layout pass makes it large again. Done on the Swing thread, the
+   * layout pass sometimes never came, and the chart stayed a small rectangle until the window was resized. This runs
+   * on the JavaFX thread and lays the parent out right away, so it may be called from the Swing thread.
+   */
+  fun fitChartNode() {
+    FXUtil.runLater {
+      chartNode.autosize()
+      chartNode.parent?.let {
+        it.requestLayout()
+        it.layout()
+      }
+    }
+  }
 }
 
 fun createViewComponents(

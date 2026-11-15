@@ -160,7 +160,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
     return () -> {
       SwingUtilities.invokeLater(() -> {
         getChart().reset();
-        myViewComponents.getChartNode().autosize();
+        myViewComponents.fitChartNode();
       });
       return null;
     };
