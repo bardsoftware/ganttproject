@@ -25,8 +25,10 @@ import javafx.stage.Window
 import javafx.stage.WindowEvent
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import java.awt.GraphicsEnvironment
 import java.util.Collections
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -104,6 +106,7 @@ class BaselineNameCollisionDialogTest {
     @BeforeAll
     @JvmStatic
     fun startToolkit() {
+      assumeTrue(!GraphicsEnvironment.isHeadless(), "needs a display to show the dialog")
       try {
         Platform.startup {}
       } catch (ex: IllegalStateException) {
