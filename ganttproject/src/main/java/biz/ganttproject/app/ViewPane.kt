@@ -53,6 +53,7 @@ import net.sourceforge.ganttproject.gui.view.ViewProvider
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskSelectionManager
 import java.awt.event.ActionEvent
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
 import javax.swing.SwingUtilities
 
@@ -135,7 +136,7 @@ private val localizer = i18n {
   }
 }
 
-private class ViewImpl(
+internal class ViewImpl(
   private val tabPane: TabPane,
   private val tab: Tab,
   override val selection: ChartSelection,
@@ -146,10 +147,18 @@ private class ViewImpl(
   private val refreshFn: () -> Unit
 ): View {
 
+  // Every added task asks for a refresh, and each one lays the whole view out on the JavaFX thread. A recurrence adds
+  // a dozen tasks at once, and the view showed the old state for seconds while the layouts queued up. A refresh which
+  // is still waiting for the JavaFX thread serves the calls arriving meanwhile.
+  private val isRefreshPending = AtomicBoolean(false)
+
   override fun refresh() {
-    FXUtil.runLater {
-      refreshFn()
-      tabPane.layout()
+    if (isRefreshPending.compareAndSet(false, true)) {
+      FXUtil.runLater {
+        isRefreshPending.set(false)
+        refreshFn()
+        tabPane.layout()
+      }
     }
   }
 
