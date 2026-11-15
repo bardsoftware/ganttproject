@@ -188,6 +188,53 @@ class TaskResourcesPanelTest {
       assertTrue(replaced.isNoEffort, "the stored flag was lost with the old resource")
     }
   }
+
+  /**
+   * Undo of the dialog restores the project as it was when Ok was pressed. An assignment which the dialog deleted right
+   * away is already gone then, and undo cannot bring it back.
+   */
+  @Test
+  fun `deleting an assignment reaches the task only on commit`() = runBlocking {
+    withContext(Dispatchers.JavaFx) {
+      val fixture = Fixture()
+      val joe = fixture.assignment.resource
+
+      fixture.delete(row = 0)
+
+      assertEquals(listOf(joe), fixture.task.assignments.map { it.resource }, "the deletion must wait for commit")
+      assertEquals(1, joe.assignments.size, "the resource must keep the assignment until commit")
+      fixture.commit()
+      assertTrue(fixture.task.assignments.isEmpty(), "commit did not delete the assignment")
+      assertTrue(joe.assignments.isEmpty(), "commit did not delete the assignment of the resource")
+    }
+  }
+
+  @Test
+  fun `cancelling the dialog keeps a deleted assignment`() = runBlocking {
+    withContext(Dispatchers.JavaFx) {
+      val fixture = Fixture()
+      fixture.delete(row = 0)
+
+      fixture.reopen()
+
+      assertEquals(listOf(fixture.assignment), fixture.task.assignments.toList(), "cancelling must keep the assignment")
+    }
+  }
+
+  @Test
+  fun `a resource which is removed and picked again is assigned once`() = runBlocking {
+    withContext(Dispatchers.JavaFx) {
+      val fixture = Fixture()
+      val joe = fixture.assignment.resource
+      fixture.delete(row = 0)
+
+      fixture.addInDialog(joe)
+      fixture.commit()
+
+      assertEquals(listOf(joe), fixture.task.assignments.map { it.resource })
+      assertEquals(1, joe.assignments.size, "the resource holds the old assignment as well")
+    }
+  }
 }
 
 /**
@@ -234,6 +281,11 @@ private class Fixture(setUp: (ResourceAssignment) -> Unit = {}) {
     model().javaClass.getMethod("setValueAt", Any::class.java, Int::class.java, Int::class.java)
       .invoke(model(), value, row, col)
     refreshTable()
+  }
+
+  /** Selects the row and presses Delete. */
+  fun delete(row: Int) {
+    model().javaClass.getMethod("delete", IntArray::class.java).invoke(model(), intArrayOf(row))
   }
 
   /** Picks a resource in the empty last row. */

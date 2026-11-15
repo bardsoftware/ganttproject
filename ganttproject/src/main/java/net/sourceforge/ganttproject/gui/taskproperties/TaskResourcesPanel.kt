@@ -396,6 +396,9 @@ private class ResourceAssignmentTableModel(task: Task) {
   private val assignmentCollection = task.assignmentCollection
   private val mutator = assignmentCollection.createMutator()
   private val _assignments = assignmentCollection.assignments.toMutableList()
+  // Assignments of the task which are removed in the dialog. They are deleted in commit(), which runs inside the
+  // undoable edit of the dialog, so that cancelling keeps them and undo brings them back.
+  private val assignmentsToDelete = mutableListOf<ResourceAssignment>()
   val pendingAxes = PendingAxes()
 
   val assignments: List<ResourceAssignment>
@@ -437,14 +440,14 @@ private class ResourceAssignmentTableModel(task: Task) {
       }
       1 -> { // Resource
         if (value == null) {
-          assignment.delete()
+          deleteOnCommit(assignment)
+          pendingAxes.forget(assignment)
           _assignments.removeAt(row)
         } else if (value is HumanResource) {
           val load = assignment.load
           val coord = assignment.isCoordinator
           val actualEffort = assignment.actualEffort
-          assignment.delete()
-          mutator.deleteAssignment(assignment.resource)
+          deleteOnCommit(assignment)
           val newAssignment = mutator.addAssignment(value)
           newAssignment.load = load
           newAssignment.isCoordinator = coord
@@ -469,15 +472,29 @@ private class ResourceAssignmentTableModel(task: Task) {
   fun delete(selectedRows: IntArray) {
     val toDelete = selectedRows.filter { it < _assignments.size }.map { _assignments[it] }
     toDelete.forEach {
-      it.delete()
+      deleteOnCommit(it)
       pendingAxes.forget(it)
     }
     _assignments.removeAll(toDelete)
   }
 
+  /**
+   * An assignment which the task already has is deleted in commit(). One which was added in the dialog exists only in
+   * the mutator, deleting it there touches nothing else.
+   */
+  private fun deleteOnCommit(assignment: ResourceAssignment) {
+    if (assignment in assignmentCollection.assignments) {
+      assignmentsToDelete.add(assignment)
+    } else {
+      assignment.delete()
+    }
+  }
+
   fun commit() {
     // Before the mutator, which copies the flags of the assignments added in the dialog.
     pendingAxes.apply()
+    // Before the mutator as well: a resource which is removed and picked again gets the assignment added in the dialog.
+    assignmentsToDelete.forEach { it.delete() }
     mutator.commit()
   }
 }
