@@ -92,7 +92,7 @@ Section "GanttProject"
   File ganttproject_16.ico
   File ganttproject.ico
   File LICENSE
-  ; jpackage app image: GanttProject.exe, app\ and runtime\
+  ; jpackage app image: GanttProject.exe, app and runtime
   File /r "app-image\*.*"
 
   ; Write the installation path into the registry
@@ -183,4 +183,3 @@ Section "Uninstall"
   RMDir "$INSTDIR"
 
 SectionEnd
-

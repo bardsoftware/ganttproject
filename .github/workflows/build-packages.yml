@@ -118,10 +118,10 @@ jobs:
             - name: 'Use gcloud CLI'
               run: 'gcloud info'
 
-            - name: Upload Packages
-              run: |
-                  gsutil cp build\ganttproject-$env:VERSION.msi gs://dl.ganttproject.biz
-                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.msi
+#            - name: Upload Packages
+#              run: |
+#                  gsutil cp build\ganttproject-$env:VERSION.msi gs://dl.ganttproject.biz
+#                  gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.msi
 
             - name: Install NSIS
               run: |
@@ -137,7 +137,7 @@ jobs:
 
             - name: Prepare files for NSIS
               run: |
-                  dir build\app-image
+                  dir build\app-image\*
                   ./gradlew distwin
                   echo "===== dist-win ====="
                   ls ganttproject-builder/dist-win
