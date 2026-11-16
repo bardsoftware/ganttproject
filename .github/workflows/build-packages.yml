@@ -16,63 +16,63 @@ env:
     MACOS_NOTARIZE_PASSWORD: ${{ secrets.PROD_MACOS_NOTARIZE_PWD }}
 
 jobs:
-    Linux:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v7
-            - name: Checkout submodules
-              shell: bash
-              run: |
-                  git submodule sync --recursive
-                  git submodule update --init --force --recursive --depth=1
-                  echo "$VERSION" > ganttproject-builder/VERSION
-            - name: Download Liberica JDK 21 Full
-              run: |
-                  wget -q -O "$RUNNER_TEMP/liberica-jdk21-full.tar.gz" \
-                    "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-linux-amd64-full.tar.gz"
-            - uses: actions/setup-java@v6
-              with:
-                  distribution: 'jdkfile'
-                  jdk-file: ${{ runner.temp }}/liberica-jdk21-full.tar.gz
-                  java-version: '21.0.13'
-                  architecture: x64
-                  cache: 'gradle'
-            - name: Print Java version
-              run: java -version
-            - name: Build GanttProject
-              run: |
-                  ./gradlew distbin distzip
-                  ./gradlew -PwithJavafx distdeb
-                  echo "===== PLUGINS ====="
-                  ls ganttproject-builder/dist-bin/plugins/base
-
-                  sudo apt-get install -y desktop-file-utils
-                  wget -O appimagetool https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage
-                  chmod 755 ./appimagetool
-
-                  build-bin/package-lin.sh build/distributions
-
-                  echo "===== DISTRIBUTIONS ====="
-                  ls build/distributions
-
-            - id: 'auth'
-              uses: 'google-github-actions/auth@v1'
-              with:
-                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-
-            - name: 'Set up Cloud SDK'
-              uses: 'google-github-actions/setup-gcloud@v1'
-
-            - name: 'Use gcloud CLI'
-              run: 'gcloud info'
-
-            - name: Upload Packages
-              run: |
-                  #!/bin/sh
-                  cd build/distributions
-                  for f in *; do
-                    gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
-                  done;
+#    Linux:
+#        runs-on: ubuntu-latest
+#        steps:
+#            - uses: actions/checkout@v7
+#            - name: Checkout submodules
+#              shell: bash
+#              run: |
+#                  git submodule sync --recursive
+#                  git submodule update --init --force --recursive --depth=1
+#                  echo "$VERSION" > ganttproject-builder/VERSION
+#            - name: Download Liberica JDK 21 Full
+#              run: |
+#                  wget -q -O "$RUNNER_TEMP/liberica-jdk21-full.tar.gz" \
+#                    "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-linux-amd64-full.tar.gz"
+#            - uses: actions/setup-java@v6
+#              with:
+#                  distribution: 'jdkfile'
+#                  jdk-file: ${{ runner.temp }}/liberica-jdk21-full.tar.gz
+#                  java-version: '21.0.13'
+#                  architecture: x64
+#                  cache: 'gradle'
+#            - name: Print Java version
+#              run: java -version
+#            - name: Build GanttProject
+#              run: |
+#                  ./gradlew distbin distzip
+#                  ./gradlew -PwithJavafx distdeb
+#                  echo "===== PLUGINS ====="
+#                  ls ganttproject-builder/dist-bin/plugins/base
+#
+#                  sudo apt-get install -y desktop-file-utils
+#                  wget -O appimagetool https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage
+#                  chmod 755 ./appimagetool
+#
+#                  build-bin/package-lin.sh build/distributions
+#
+#                  echo "===== DISTRIBUTIONS ====="
+#                  ls build/distributions
+#
+#            - id: 'auth'
+#              uses: 'google-github-actions/auth@v1'
+#              with:
+#                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+#
+#            - name: 'Set up Cloud SDK'
+#              uses: 'google-github-actions/setup-gcloud@v1'
+#
+#            - name: 'Use gcloud CLI'
+#              run: 'gcloud info'
+#
+#            - name: Upload Packages
+#              run: |
+#                  #!/bin/sh
+#                  cd build/distributions
+#                  for f in *; do
+#                    gsutil cp $f gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/$f;
+#                  done;
 
     Windows:
         runs-on: windows-latest
@@ -137,6 +137,7 @@ jobs:
 
             - name: Prepare files for NSIS
               run: |
+                  dir build\app-image
                   ./gradlew distwin
                   echo "===== dist-win ====="
                   ls ganttproject-builder/dist-win
@@ -153,112 +154,112 @@ jobs:
                   gsutil cp build\ganttproject-$env:VERSION.exe gs://dl.ganttproject.biz
                   gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$env:VERSION.exe
 
-    macOS_silicon:
-        runs-on: macos-latest
-        steps:
-            - uses: actions/checkout@v7
-            - name: Checkout submodules
-              shell: bash
-              run: |
-                  git submodule sync --recursive
-                  git submodule update --init --force --recursive --depth=1
-                  echo "$VERSION" > ganttproject-builder/VERSION
-            - name: Download Liberica JDK 21 Full
-              run: |
-                  curl -fsSL -o "$RUNNER_TEMP/liberica-jdk21-full.tar.gz" \
-                    "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-macos-aarch64-full.tar.gz"
-            - uses: actions/setup-java@v6
-              with:
-                  distribution: 'jdkfile'
-                  jdk-file: ${{ runner.temp }}/liberica-jdk21-full.tar.gz
-                  java-version: '21.0.13'
-                  architecture: aarch64
-                  cache: 'gradle'
-            - name: Print Java version
-              run: java -version
-            - name: Build GanttProject
-              run: |
-                  ./gradlew distbin
-                  echo "===== PLUGINS ====="
-                  ls ganttproject-builder/dist-bin/plugins/base
-
-            - name: Build GanttProject.app
-              run: |
-                  ./build-bin/package-mac.sh
-                  ./build/GanttProject.app/Contents/MacOS/GanttProject -h || echo "failed to run"
-
-            - name: Sign GanttProject.app
-              run: |
-                  build-bin/notarize.sh $VERSION "BarD Software s.r.o" "$MACOS_NOTARIZE_PASSWORD" all
-
-            - id: 'auth'
-              uses: 'google-github-actions/auth@v1'
-              with:
-                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-
-            - name: 'Set up Cloud SDK'
-              uses: 'google-github-actions/setup-gcloud@v1'
-
-            - name: 'Use gcloud CLI'
-              run: 'gcloud info'
-
-            - uses: actions/setup-python@v5
-            - run: |
-                  pip install dmgbuild
-                  dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" ./ganttproject-$VERSION-silicon.dmg
-                  gsutil cp ./ganttproject-$VERSION-silicon.dmg gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$VERSION-silicon.dmg;
-
-    macOS_intel:
-        runs-on: macos-15-intel
-        steps:
-            - uses: actions/checkout@v7
-            - name: Checkout submodules
-              shell: bash
-              run: |
-                  git submodule sync --recursive
-                  git submodule update --init --force --recursive --depth=1
-                  echo "$VERSION" > ganttproject-builder/VERSION
-            - name: Download Liberica JDK 21 Full
-              run: |
-                  curl -fsSL -o "$RUNNER_TEMP/liberica-jdk21-full.tar.gz" \
-                    "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-macos-amd64-full.tar.gz"
-            - uses: actions/setup-java@v6
-              with:
-                  distribution: 'jdkfile'
-                  jdk-file: ${{ runner.temp }}/liberica-jdk21-full.tar.gz
-                  java-version: '21.0.13'
-                  architecture: x64
-                  cache: 'gradle'
-            - name: Print Java version
-              run: java -version
-            - name: Build GanttProject
-              run: |
-                  ./gradlew distbin
-                  echo "===== PLUGINS ====="
-                  ls ganttproject-builder/dist-bin/plugins/base
-
-            - name: Build GanttProject.app
-              run: |
-                  ./build-bin/package-mac.sh
-                  ./build/GanttProject.app/Contents/MacOS/GanttProject -h || echo "failed to run"
-
-            - name: Sign GanttProject.app
-              run: |
-                  build-bin/notarize.sh $VERSION "BarD Software s.r.o" "$MACOS_NOTARIZE_PASSWORD" all
-
-            - id: 'auth'
-              uses: 'google-github-actions/auth@v1'
-              with:
-                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-
-            - name: 'Set up Cloud SDK'
-              uses: 'google-github-actions/setup-gcloud@v1'
-
-            - name: 'Use gcloud CLI'
-              run: 'gcloud info'
-
-            - uses: actions/setup-python@v5
-            - run: |
-                  pip install dmgbuild
-                  dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" ./ganttproject-$VERSION-intel.dmg
-                  gsutil cp ./ganttproject-$VERSION-intel.dmg gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$VERSION-intel.dmg;
+#    macOS_silicon:
+#        runs-on: macos-latest
+#        steps:
+#            - uses: actions/checkout@v7
+#            - name: Checkout submodules
+#              shell: bash
+#              run: |
+#                  git submodule sync --recursive
+#                  git submodule update --init --force --recursive --depth=1
+#                  echo "$VERSION" > ganttproject-builder/VERSION
+#            - name: Download Liberica JDK 21 Full
+#              run: |
+#                  curl -fsSL -o "$RUNNER_TEMP/liberica-jdk21-full.tar.gz" \
+#                    "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-macos-aarch64-full.tar.gz"
+#            - uses: actions/setup-java@v6
+#              with:
+#                  distribution: 'jdkfile'
+#                  jdk-file: ${{ runner.temp }}/liberica-jdk21-full.tar.gz
+#                  java-version: '21.0.13'
+#                  architecture: aarch64
+#                  cache: 'gradle'
+#            - name: Print Java version
+#              run: java -version
+#            - name: Build GanttProject
+#              run: |
+#                  ./gradlew distbin
+#                  echo "===== PLUGINS ====="
+#                  ls ganttproject-builder/dist-bin/plugins/base
+#
+#            - name: Build GanttProject.app
+#              run: |
+#                  ./build-bin/package-mac.sh
+#                  ./build/GanttProject.app/Contents/MacOS/GanttProject -h || echo "failed to run"
+#
+#            - name: Sign GanttProject.app
+#              run: |
+#                  build-bin/notarize.sh $VERSION "BarD Software s.r.o" "$MACOS_NOTARIZE_PASSWORD" all
+#
+#            - id: 'auth'
+#              uses: 'google-github-actions/auth@v1'
+#              with:
+#                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+#
+#            - name: 'Set up Cloud SDK'
+#              uses: 'google-github-actions/setup-gcloud@v1'
+#
+#            - name: 'Use gcloud CLI'
+#              run: 'gcloud info'
+#
+#            - uses: actions/setup-python@v5
+#            - run: |
+#                  pip install dmgbuild
+#                  dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" ./ganttproject-$VERSION-silicon.dmg
+#                  gsutil cp ./ganttproject-$VERSION-silicon.dmg gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$VERSION-silicon.dmg;
+#
+#    macOS_intel:
+#        runs-on: macos-15-intel
+#        steps:
+#            - uses: actions/checkout@v7
+#            - name: Checkout submodules
+#              shell: bash
+#              run: |
+#                  git submodule sync --recursive
+#                  git submodule update --init --force --recursive --depth=1
+#                  echo "$VERSION" > ganttproject-builder/VERSION
+#            - name: Download Liberica JDK 21 Full
+#              run: |
+#                  curl -fsSL -o "$RUNNER_TEMP/liberica-jdk21-full.tar.gz" \
+#                    "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-macos-amd64-full.tar.gz"
+#            - uses: actions/setup-java@v6
+#              with:
+#                  distribution: 'jdkfile'
+#                  jdk-file: ${{ runner.temp }}/liberica-jdk21-full.tar.gz
+#                  java-version: '21.0.13'
+#                  architecture: x64
+#                  cache: 'gradle'
+#            - name: Print Java version
+#              run: java -version
+#            - name: Build GanttProject
+#              run: |
+#                  ./gradlew distbin
+#                  echo "===== PLUGINS ====="
+#                  ls ganttproject-builder/dist-bin/plugins/base
+#
+#            - name: Build GanttProject.app
+#              run: |
+#                  ./build-bin/package-mac.sh
+#                  ./build/GanttProject.app/Contents/MacOS/GanttProject -h || echo "failed to run"
+#
+#            - name: Sign GanttProject.app
+#              run: |
+#                  build-bin/notarize.sh $VERSION "BarD Software s.r.o" "$MACOS_NOTARIZE_PASSWORD" all
+#
+#            - id: 'auth'
+#              uses: 'google-github-actions/auth@v1'
+#              with:
+#                  credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+#
+#            - name: 'Set up Cloud SDK'
+#              uses: 'google-github-actions/setup-gcloud@v1'
+#
+#            - name: 'Use gcloud CLI'
+#              run: 'gcloud info'
+#
+#            - uses: actions/setup-python@v5
+#            - run: |
+#                  pip install dmgbuild
+#                  dmgbuild -s build-cfg/dmgbuild.py "$MAC_APP_NAME" ./ganttproject-$VERSION-intel.dmg
+#                  gsutil cp ./ganttproject-$VERSION-intel.dmg gs://dl.ganttproject.biz && gsutil acl ch -u AllUsers:R gs://dl.ganttproject.biz/ganttproject-$VERSION-intel.dmg;
