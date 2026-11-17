@@ -128,7 +128,7 @@ Section "Start Menu Shortcuts"
   CreateShortCut "$SMPROGRAMS\${APPFOLDERNAME}\GanttProject ${VERSION}.lnk" "$INSTDIR\GanttProject.exe" "" "$INSTDIR\ganttproject.ico"
   CreateShortCut "$SMPROGRAMS\${APPFOLDERNAME}\HouseBuildingSample.lnk" "$INSTDIR\app\HouseBuildingSample.gan" "" "$INSTDIR\ganttproject.ico"
   CreateShortCut "$INSTDIR\Run GanttProject.lnk" "$INSTDIR\GanttProject.exe" "" "$INSTDIR\ganttproject.ico"
-  CreateShortCut "$DESKTOP\GanttProject $VERSION.lnk" "$INSTDIR\GanttProject.exe" "" "$INSTDIR\ganttproject.ico"
+  CreateShortCut "$DESKTOP\GanttProject ${VERSION}.lnk" "$INSTDIR\GanttProject.exe" "" "$INSTDIR\ganttproject.ico"
 
 SectionEnd
 
