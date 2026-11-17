@@ -175,7 +175,7 @@ Section "Uninstall"
 
   ; Remove shortcuts, if any
   Delete "$SMPROGRAMS\${APPFOLDERNAME}\*.*"
-  Delete "$DESKTOP\GanttProject.lnk"
+  Delete "$DESKTOP\GanttProject ${VERSION}.lnk"
   Delete "$INSTDIR\Run GanttProject.lnk"
 
   ; Remove directories used
