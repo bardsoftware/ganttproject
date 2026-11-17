@@ -83,53 +83,33 @@ tasks.register('distZip', Zip) {
 }
 tasks.distZip.dependsOn distBin
 
-task distWin(dependsOn: distBin) {
+// Prepares dist-win directory for building NSIS installer with makensis.
+// The application itself is an app image built by jpackage in build-bin/package-win.bat
+// (it must be run before this task). jpackage launcher hosts JVM in its own process,
+// so that Windows taskbar shows GanttProject icon rather than javaw.exe Duke icon.
+ext.winAppImageDir = file('../build/app-image/GanttProject')
+task distWin {
     doLast {
-        println '======== Building Windows Installer ========'
-        println '= Generating NSIS script ...'
-//        exec {
-//            workingDir '.'
-//            commandLine './gen-nsis', semver, version
-//        }
-
-//        println '= Generating ganttproject.exe with launch4j ...'
-//        exec {
-//            workingDir '.'
-//            commandLine launch4j, 'ganttproject-launch4j.xml'
-//            standardOutput = devNull
-//        }
-        println '= Copying required files to dist-win...'
-        injected.fs.copy {
-            from 'dist-bin'
-            into 'dist-win'
-            include '**'
+        if (!new File(winAppImageDir, 'GanttProject.exe').exists()) {
+            throw new GradleException("jpackage app image not found in ${winAppImageDir}. Run build-bin/package-win.bat first.")
         }
+        println '======== Building Windows Installer ========'
+        injected.fs.delete { delete 'dist-win' }
+        println '= Copying jpackage app image to dist-win/app-image...'
+        injected.fs.copy {
+            from winAppImageDir
+            into 'dist-win/app-image'
+        }
+        println '= Copying installer files to dist-win...'
         injected.fs.copy {
             from '.'
             into 'dist-win'
-            include "ganttproject.l4j.ini"
             include 'ganttproject.nsi.tpl'
             include "ganttproject_16.ico"
             include "ganttproject.ico"
+            include "LICENSE"
             rename 'ganttproject.nsi.tpl', 'ganttproject.nsi'
         }
-        injected.fs.copy {
-            from '..'
-            into 'dist-win'
-            include 'runtime/**'
-        }
-//        println '= Building installer...'
-//        exec {
-//            workingDir 'dist-win'
-//            commandLine 'makensis', 'ganttproject.nsi'
-//            standardOutput = devNull
-//        }
-//        copy {
-//            from 'dist-win'
-//            into new File(buildDir, '/distributions')
-//            include "ganttproject-${version}.exe"
-//        }
-//        println "===== Windows installer is ready in ${buildDir}/distributions ====="
     }
 }
 
