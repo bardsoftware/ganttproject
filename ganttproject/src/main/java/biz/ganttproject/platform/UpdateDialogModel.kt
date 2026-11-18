@@ -243,7 +243,7 @@ class UpdateDialogModel(
         // this.restarter()
       }
       ApplyAction.DOWNLOAD_MAJOR -> {
-        openInBrowser(UPGRADE_URL)
+        openInBrowser(majorUpdate?.url?.takeIf { it.isNotBlank() } ?: UPGRADE_URL)
       }
     }
   }
