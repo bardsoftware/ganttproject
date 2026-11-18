@@ -53,6 +53,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import javax.net.ssl.SSLException;
+import org.xml.sax.SAXException;
 
 /**
  * @author bard
@@ -171,6 +172,8 @@ public class ProxyDocument implements Document {
       getTaskManager().setEventsEnabled(false);
       getHumanResourceManager().setEventsEnabled(false);
       doParse();
+    } catch (CorruptedDocumentException e) {
+      throw e;
     } catch (Exception e) {
       throw new DocumentException(getReadFailureMessage(e), e);
     } finally {
@@ -301,7 +304,23 @@ public class ProxyDocument implements Document {
         throw new DocumentException("Can't open document");
       }
     } catch (IOException e) {
+      if (e.getCause() instanceof SAXException) {
+        // The contents is not a well-formed XML. The parser failure details are already in the log, and they
+        // are not helpful for the user, so we don't add them as a cause.
+        throw new CorruptedDocumentException(
+          InternationalizationCoreKt.getRootLocalizer().formatText("document.error.read.corrupted"));
+      }
       throw new DocumentException(GanttLanguage.getInstance().getText("msg8") + ": " + e.getLocalizedMessage(), e);
+    }
+  }
+
+  /**
+   * Thrown when the document contents can't be parsed at all, e.g. because the file is corrupted or because it is
+   * not a GanttProject document.
+   */
+  public static class CorruptedDocumentException extends DocumentException {
+    CorruptedDocumentException(String msg) {
+      super(msg);
     }
   }
 

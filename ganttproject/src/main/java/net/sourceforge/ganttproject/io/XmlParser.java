@@ -132,10 +132,12 @@ public class XmlParser extends DefaultHandler2 {
         handler.process(xmlProject);
       }
     } catch (ParserConfigurationException | SAXException e) {
-      if (!GPLogger.log(e)) {
+      // We only log the failure here and leave reporting it to the user to the callers: a file which is not
+      // a valid XML may still be successfully processed in some other way, e.g. imported as a MS Project file.
+      if (!GPLogger.logToLogger(e)) {
         e.printStackTrace(System.err);
       }
-      throw new IOException(e.getMessage());
+      throw new IOException(e.getMessage(), e);
     } catch (RuntimeException e) {
       if (!GPLogger.logToLogger(e)) {
         e.printStackTrace(System.err);
