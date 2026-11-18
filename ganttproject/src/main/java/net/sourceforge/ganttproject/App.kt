@@ -38,6 +38,7 @@ import org.slf4j.Logger
 import java.io.File
 import java.lang.Thread.UncaughtExceptionHandler
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
@@ -113,6 +114,9 @@ class AppBuilder(args: Array<String>) {
   private val runAfterWindowOpenedCommands = mutableListOf<RunAfterWindowOpened>()
   private val runAfterAppInitializedCommands = mutableListOf<RunAfterAppInitialized>()
   private val runWhenDocumentReady = mutableListOf<RunWhenDocumentReady>()
+  // Completes when we are done with the startup document (if any). The update check waits for it,
+  // so that the update dialog does not pop up together with the startup document dialogs.
+  private var startupDocumentDone: CompletableFuture<Unit> = CompletableFuture.completedFuture(Unit)
 
   fun runBeforeUi(cmd: RunBeforeUi): AppBuilder {
     runBeforeUiCommands.add(cmd)
@@ -192,7 +196,7 @@ class AppBuilder(args: Array<String>) {
           barrier.await { runWhenDocumentReady.forEach { cmd -> cmd(ganttProject.project) } }
         }
       })
-      strategy.openStartupDocument(path)
+      startupDocumentDone = strategy.openStartupDocument(path)
     }
     return this
   }
@@ -217,6 +221,10 @@ class AppBuilder(args: Array<String>) {
       ganttProject.uiFacade.onWindowOpened {
         APP_LOGGER.debug("Window opened. Running afterWindowOpened commands.")
           runAfterWindowOpenedCommands.forEach { cmd -> cmd(ganttProject) }
+        startupDocumentDone.whenComplete { _, _ ->
+          APP_LOGGER.debug("Startup document is processed. Checking for updates.")
+          ganttProject.checkAvailableUpdates()
+        }
       }
       ganttProject.uiInitializationPromise.await {
         APP_LOGGER.debug("UI initialized. Running afterAppInitialized commands.")

@@ -57,6 +57,7 @@ import org.xml.sax.SAXException
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
 import java.io.File
+import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import java.util.regex.Pattern
 import javax.swing.*
@@ -376,28 +377,47 @@ internal class CommandLineProjectOpenStrategy(
   private val projectUiFacade: ProjectUIFacade,
   private val preferences: Preferences
 ) {
-  fun openStartupDocument(path: String?) {
-    if (path != null) {
-      doOpenStartupDocument(path)
-    } else {
-      maybeOpenLastDocument()
+  /**
+   * Opens the startup document: either the one passed in the command line, or the most recent one.
+   * The returned future completes when we are done with the startup document, whatever the outcome is
+   * (opened, failed, cancelled, declined by the user or nothing to open at all).
+   */
+  fun openStartupDocument(path: String?): CompletableFuture<Unit> {
+    val done = CompletableFuture<Unit>()
+    try {
+      if (path != null) {
+        doOpenStartupDocument(path, done)
+      } else {
+        maybeOpenLastDocument(done)
+      }
+    } catch (e: Exception) {
+      done.complete(Unit)
+      throw e
     }
+    return done
   }
-  private fun doOpenStartupDocument(path: String) {
+
+  private fun doOpenStartupDocument(path: String, done: CompletableFuture<Unit>) {
     DOCUMENT_LOGGER.debug(">>> openStartupDocument($path)")
     val document: Document = documentManager.getDocument(path)
     projectUiFacade.openProject(document, project, null).apply {
       stateCompleted.await {
         DOCUMENT_LOGGER.debug("<<< openStartupDocument($path)")
+        done.complete(Unit)
       }
       stateCancelled.await {
         DOCUMENT_LOGGER.debug("<<< openStartupDocument($path) cancelled")
+        done.complete(Unit)
       }
       stateFailed.await { it ->
-        if (it.throwable is Document.DocumentException) {
-          tryImportDocument(document, it.throwable)
-        } else {
-          uiFacade.showErrorDialog(it.throwable)
+        try {
+          if (it.throwable is Document.DocumentException) {
+            tryImportDocument(document, it.throwable)
+          } else {
+            uiFacade.showErrorDialog(it.throwable)
+          }
+        } finally {
+          done.complete(Unit)
         }
       }
     }
@@ -444,27 +464,43 @@ internal class CommandLineProjectOpenStrategy(
   // Tries to open the most recent document, if the corresponding option is switched on.
   // Opening a document may start some lengthy and unexpected activities, e.g. signing in to GanttProject Cloud in the
   // web browser, so we ask the user to confirm that they really want to open the last document.
-  fun maybeOpenLastDocument() {
+  private fun maybeOpenLastDocument(done: CompletableFuture<Unit>) {
     if (!reopenLastFileOption.isChecked) {
+      done.complete(Unit)
       return
     }
     val recentDocsConsumer = Consumer<List<RecentDocAsFolderItem>> { docList ->
-      docList.firstOrNull()?.asDocument()?.let { lastDocument ->
-        confirmOpenLastDocument(lastDocument) {
-          try {
-            val stateMachine = projectUiFacade.openProject(
-              project.documentManager.getProxyDocument(lastDocument), project, null
-            )
-            stateMachine.stateFailed.await { error ->
+      val lastDocument = try {
+        docList.firstOrNull()?.asDocument()
+      } catch (e: Exception) {
+        done.complete(Unit)
+        throw e
+      }
+      if (lastDocument == null) {
+        done.complete(Unit)
+        return@Consumer
+      }
+      confirmOpenLastDocument(lastDocument, onDeclined = { done.complete(Unit) }) {
+        try {
+          val stateMachine = projectUiFacade.openProject(
+            project.documentManager.getProxyDocument(lastDocument), project, null
+          )
+          stateMachine.stateCompleted.await { done.complete(Unit) }
+          stateMachine.stateCancelled.await { done.complete(Unit) }
+          stateMachine.stateFailed.await { error ->
+            try {
               error.showProjectOpenErrorDialog(lastDocument, uiFacade.notificationManager)
+            } finally {
+              done.complete(Unit)
             }
-          } catch (e: Exception) {
-            DOCUMENT_ERROR_LOGGER.error("Failed to open the most recent document {}", lastDocument, exception = e)
-            uiFacade.showErrorDialog(RootLocalizer.formatText("openLastDocument.error",
-              lastDocument.fileName,
-              e.cause?.message ?: e.message ?: RootLocalizer.formatText("error.channel.itemTitle")
-            ))
           }
+        } catch (e: Exception) {
+          done.complete(Unit)
+          DOCUMENT_ERROR_LOGGER.error("Failed to open the most recent document {}", lastDocument, exception = e)
+          uiFacade.showErrorDialog(RootLocalizer.formatText("openLastDocument.error",
+            lastDocument.fileName,
+            e.cause?.message ?: e.message ?: RootLocalizer.formatText("error.channel.itemTitle")
+          ))
         }
       }
     }
@@ -474,7 +510,7 @@ internal class CommandLineProjectOpenStrategy(
   }
 
   // Asks the user if they really want to open the given document and runs onConfirmed if the answer is yes.
-  private fun confirmOpenLastDocument(document: Document, onConfirmed: () -> Unit) {
+  private fun confirmOpenLastDocument(document: Document, onDeclined: () -> Unit, onConfirmed: () -> Unit) {
     val documentKind = RootLocalizer.formatText(
       when {
         document is GPCloudDocument -> "openLastDocument.kind.cloud"
@@ -487,7 +523,7 @@ internal class CommandLineProjectOpenStrategy(
       RootLocalizer.formatText("openLastDocument.question", document.fileName, documentKind),
       arrayOf(
         OkAction.create("yes") { onConfirmed() },
-        CancelAction.create("no") {}
+        CancelAction.create("no") { onDeclined() }
       )
     )
   }

@@ -548,7 +548,13 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
 
   protected void setUpdater(Updater updater) {
     myUpdater = updater;
-    UpdateKt.checkAvailableUpdates(updater, getUIFacade());
+  }
+
+  /** Fetches the available updates and shows the update dialog if there are any. */
+  public void checkAvailableUpdates() {
+    if (myUpdater != null) {
+      UpdateKt.checkAvailableUpdates(myUpdater, getUIFacade());
+    }
   }
 
   protected Updater getUpdater() {
