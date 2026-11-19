@@ -22,6 +22,7 @@ package biz.ganttproject.ganttview
 import biz.ganttproject.FXUtil
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.ValidationException
+import biz.ganttproject.core.option.parseDecimalOrNull
 import biz.ganttproject.core.table.TableModel
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
@@ -34,6 +35,8 @@ import net.sourceforge.ganttproject.task.CostStub
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskImpl
 import net.sourceforge.ganttproject.task.TaskProperties
+import net.sourceforge.ganttproject.task.hasAssignmentActualEffort
+import net.sourceforge.ganttproject.task.totalActualEffort
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
 import java.math.BigDecimal
@@ -65,6 +68,9 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager): T
       TaskDefaultColumn.RESOURCES      -> t.assignments.joinToString(",") { it?.resource?.name ?: "" }
       TaskDefaultColumn.EARLIEST_BEGIN -> if (t.thirdDateConstraint != 0) t.third else null
       TaskDefaultColumn.IS_CRITICAL    -> t.isCritical
+      TaskDefaultColumn.EFFORT         -> t.effort
+      TaskDefaultColumn.EFFORT_DRIVEN  -> t.isEffortDriven
+      TaskDefaultColumn.ACTUAL_EFFORT  -> t.totalActualEffort
       else -> {
         null
       }
@@ -156,13 +162,38 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager): T
         }
       }
       TaskDefaultColumn.COST -> try {
-        val cost = BigDecimal(value.toString())
+        val cost = parseDecimalOrNull(value.toString()) ?: BigDecimal.ZERO
         node.createMutator().also {
           it.setCost(CostStub(cost, false))
           it.commit()
         }
       } catch (e: NumberFormatException) {
         throw ValidationException(MessageFormat.format("Can't parse {0} as number", value))
+      }
+      TaskDefaultColumn.EFFORT -> try {
+        val effort = parseDecimalOrNull(value.toString())
+        node.createMutator().also {
+          it.setEffort(effort)
+          it.commit()
+        }
+      } catch (e: NumberFormatException) {
+        throw ValidationException(MessageFormat.format("Can't parse {0} as number", value))
+      }
+      TaskDefaultColumn.ACTUAL_EFFORT -> try {
+        if (node.hasAssignmentActualEffort) {
+          throw ValidationException("The actual effort of this task is the sum over its assignments")
+        }
+        val actualEffort = value.toString().trim().takeIf { it.isNotEmpty() }?.let { BigDecimal(it) }
+        node.createMutator().also {
+          it.setActualEffort(actualEffort)
+          it.commit()
+        }
+      } catch (e: NumberFormatException) {
+        throw ValidationException(MessageFormat.format("Can't parse {0} as number", value))
+      }
+      TaskDefaultColumn.EFFORT_DRIVEN -> node.createMutator().also {
+        it.setEffortDriven(value as Boolean)
+        it.commit()
       }
       else -> {
       }

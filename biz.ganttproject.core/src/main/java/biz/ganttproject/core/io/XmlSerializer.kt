@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.io
 
 import biz.ganttproject.core.io.XmlTasks.XmlCalculationSimpleSelect
+import biz.ganttproject.core.model.task.TaskEffort
 import com.fasterxml.jackson.annotation.*
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -260,6 +261,18 @@ data class XmlTasks(
     var isCostCalculated: Boolean? = null,
 
     @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = TaskEffort.XML_ATTRIBUTE)
+    var effort: BigDecimal? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "effort-driven")
+    var isEffortDriven: Boolean? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = TaskEffort.ACTUAL_XML_ATTRIBUTE)
+    var actualEffort: BigDecimal? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
     @get:JacksonXmlCData
     var notes: String? = null,
 
@@ -321,6 +334,9 @@ data class XmlResources(
     @get:JacksonXmlProperty(isAttribute = true, localName = "contacts") var email: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var phone: String = "",
 
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "hours-per-day") var hoursPerDay: BigDecimal? = null,
+
     @get:JsonInclude(JsonInclude.Include.NON_NULL) var rate: XmlRate? = null,
 
     @get:JacksonXmlElementWrapper(useWrapping = false)
@@ -339,13 +355,15 @@ data class XmlResources(
   }
 }
 
-@JsonPropertyOrder("task-id", "resource-id", "function", "responsible", "load")
+@JsonPropertyOrder("task-id", "resource-id", "function", "responsible", "load", TaskEffort.ACTUAL_XML_ATTRIBUTE)
 data class XmlAllocation(
   @get:JacksonXmlProperty(isAttribute = true, localName = "task-id") var taskId: Int = 0,
   @get:JacksonXmlProperty(isAttribute = true, localName = "resource-id") var resourceId: Int = 0,
   @get:JacksonXmlProperty(isAttribute = true, localName = "function") var role: String? = null,
   @get:JacksonXmlProperty(isAttribute = true, localName = "responsible") var isCoordinator: Boolean = false,
-  @get:JacksonXmlProperty(isAttribute = true) var load: Float = 0.0f
+  @get:JacksonXmlProperty(isAttribute = true) var load: Float = 0.0f,
+  @get:JsonInclude(JsonInclude.Include.NON_NULL)
+  @get:JacksonXmlProperty(isAttribute = true, localName = TaskEffort.ACTUAL_XML_ATTRIBUTE) var actualEffort: BigDecimal? = null
 )
 @JsonPropertyOrder("start", "end", "resourceid")
 data class XmlVacation(

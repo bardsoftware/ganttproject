@@ -22,6 +22,8 @@ import biz.ganttproject.app.DialogController
 import biz.ganttproject.app.ErrorPane
 import biz.ganttproject.app.dialog
 import biz.ganttproject.app.setSwingBackground
+import javafx.beans.property.BooleanProperty
+import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.embed.swing.SwingNode
 import javafx.scene.control.Tab
@@ -35,6 +37,15 @@ data class PropertiesDialogTabProvider(
   val insertTab: (TabPane)->Unit,
   val requestFocus: ()->Unit
 )
+
+/**
+ * Keeps [disabled] true while there is at least one validation error, so that a value which is marked as
+ * invalid can not be taken over with the OK button.
+ */
+fun bindDisabledToErrors(validationErrors: ObservableList<String>, disabled: BooleanProperty) {
+  disabled.set(validationErrors.isNotEmpty())
+  validationErrors.addListener(ListChangeListener { disabled.set(validationErrors.isNotEmpty()) })
+}
 
 fun swingTab(title: String, createContents: ()->JComponent): PropertiesDialogTabProvider {
   return PropertiesDialogTabProvider(
@@ -87,7 +98,9 @@ fun propertiesDialog(title: String, id: String, actions: List<GPAction>, validat
     }
 
     dialogController.setContent(tabbedPane);
-    dialogController.setupButton(actions[0]);
+    dialogController.setupButton(actions[0]) { okButton ->
+      bindDisabledToErrors(validationErrors, okButton.disableProperty())
+    }
     dialogController.setupButton(actions[1]);
     //dialogController.setButtonPaneNode(errorPane.fxNode);
     dialogController.setEscCloseEnabled(true)

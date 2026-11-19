@@ -22,6 +22,7 @@ import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.Role;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,6 +53,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
       copy.setLoad(next.getLoad());
       copy.setCoordinator(next.isCoordinator());
       copy.setRoleForAssignment(next.getRoleForAssignment());
+      copy.setActualEffort(next.getActualEffort());
       addAssignment(copy);
     }
   }
@@ -91,6 +93,11 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
   @Override
   public void deleteAssignment(HumanResource resource) {
     myAssignments.remove(resource);
+    // The resource side may have been deleted and reported before this task let go of the assignment.
+    HumanResourceManager manager = myResourceManager == null ? null : myResourceManager.get();
+    if (manager != null) {
+      manager.fireAssignmentsChanged(resource);
+    }
   }
 
   private ResourceAssignment auxAddAssignment(HumanResource resource) {
@@ -177,6 +184,16 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
     }
 
     @Override
+    public BigDecimal getActualEffort() {
+      return myAssignmentToResource.getActualEffort();
+    }
+
+    @Override
+    public void setActualEffort(BigDecimal actualEffort) {
+      myAssignmentToResource.setActualEffort(actualEffort);
+    }
+
+    @Override
     public String toString() {
       return this.getResource().getName() + " -> " + this.getTask().getName();
     }
@@ -191,6 +208,8 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
     private boolean myCoordinator;
 
     private Role myRoleForAssignment;
+
+    private BigDecimal myActualEffort;
 
     public ResourceAssignmentStub(HumanResource resource, Runnable onDelete) {
       myResource = resource;
@@ -245,6 +264,16 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
     }
 
     @Override
+    public BigDecimal getActualEffort() {
+      return myActualEffort;
+    }
+
+    @Override
+    public void setActualEffort(BigDecimal actualEffort) {
+      myActualEffort = actualEffort;
+    }
+
+    @Override
     public String toString() {
       return this.getResource().getName() + " -> " + this.getTask().getName();
     }
@@ -291,6 +320,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
           result.setLoad(next.myAssignment.getLoad());
           result.setCoordinator(next.myAssignment.isCoordinator());
           result.setRoleForAssignment(next.myAssignment.getRoleForAssignment());
+          result.setActualEffort(next.myAssignment.getActualEffort());
         }
         default:
           break;
@@ -365,6 +395,7 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
           copy.setLoad(next.getLoad());
           copy.setCoordinator(next.isCoordinator());
           copy.setRoleForAssignment(next.getRoleForAssignment());
+          copy.setActualEffort(next.getActualEffort());
           addAssignment(copy);
         }
       }

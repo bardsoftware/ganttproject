@@ -27,6 +27,7 @@ import biz.ganttproject.core.time.TimeDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.isDurationDerived
 import org.w3c.util.DateParser
 import java.time.LocalDate
 import java.util.Calendar
@@ -38,7 +39,12 @@ import java.util.Calendar
  *
  * Besides, only the start date can be enabled if a task is a milestone.
  */
-class TaskDatesController(private val task: Task, milestoneOption: ObservableBoolean, private val coroutineScope: CoroutineScope) {
+class TaskDatesController(
+  private val task: Task,
+  private val milestoneOption: ObservableBoolean,
+  private val effortDrivenOption: ObservableBoolean,
+  private val coroutineScope: CoroutineScope
+) {
   private val isMilestone = task.isMilestone()
   private val calendar = task.manager.calendar
 
@@ -52,41 +58,31 @@ class TaskDatesController(private val task: Task, milestoneOption: ObservableBoo
     CalculatedPart.entries.toTypedArray()
   )
 
-  private fun onSchedulingOptionChange(calculatedPart: CalculatedPart) {
-    when (calculatedPart) {
-      CalculatedPart.START -> {
-        startDateOption.setWritable(false)
-        displayEndDateOption.setWritable(true)
-        durationOption.setWritable(true)
-      }
-      CalculatedPart.END -> {
-        displayEndDateOption.setWritable(false)
-        startDateOption.setWritable(true)
-        durationOption.setWritable(true)
-      }
-      CalculatedPart.DURATION -> {
-        durationOption.setWritable(false)
-        startDateOption.setWritable(true)
-        displayEndDateOption.setWritable(true)
-      }
+  private var isMilestoneEdited = false
+
+  private fun updateWritable() {
+    val isDerived = isDurationDerived(effortDrivenOption.value, milestoneOption.value, task.isSupertask)
+    if (isDerived && schedulingOptions.value != CalculatedPart.END) {
+      // The duration is calculated from the effort, thus the start is what can be edited, and the end follows.
+      schedulingOptions.value = CalculatedPart.END
+      return
+    }
+    datesWritability(isMilestoneEdited, isDerived, schedulingOptions.value).let {
+      startDateOption.setWritable(it.start)
+      displayEndDateOption.setWritable(it.end)
+      durationOption.setWritable(it.duration)
+      schedulingOptions.setWritable(it.scheduling)
     }
   }
 
-
   init {
     milestoneOption.addWatcher { event ->
-      if (event.newValue) {
-        durationOption.setWritable(false)
-        displayEndDateOption.setWritable(false)
-        startDateOption.setWritable(true)
-        schedulingOptions.setWritable(false)
-      } else {
-        schedulingOptions.setWritable(true)
-        onSchedulingOptionChange(schedulingOptions.value)
-      }
+      isMilestoneEdited = event.newValue
+      updateWritable()
     }
-    schedulingOptions.addWatcher { event -> onSchedulingOptionChange(event.newValue)}
-    onSchedulingOptionChange(schedulingOptions.value)
+    effortDrivenOption.addWatcher { updateWritable() }
+    schedulingOptions.addWatcher { updateWritable() }
+    updateWritable()
 
     startDateOption.addWatcher { event ->
       if (event.trigger != this@TaskDatesController) {
@@ -186,4 +182,20 @@ class TaskDatesController(private val task: Task, milestoneOption: ObservableBoo
 
 internal enum class CalculatedPart {
   START, END, DURATION
+}
+
+internal data class DatesWritability(val start: Boolean, val end: Boolean, val duration: Boolean, val scheduling: Boolean)
+
+/**
+ * Tells which of the date fields can be edited. A milestone has the start date only, and the duration of an effort
+ * driven task is derived, so that the end is derived as well.
+ */
+internal fun datesWritability(isMilestone: Boolean, isDurationDerived: Boolean, calculatedPart: CalculatedPart) = when {
+  isMilestone -> DatesWritability(start = true, end = false, duration = false, scheduling = false)
+  isDurationDerived -> DatesWritability(start = true, end = false, duration = false, scheduling = false)
+  else -> when (calculatedPart) {
+    CalculatedPart.START -> DatesWritability(start = false, end = true, duration = true, scheduling = true)
+    CalculatedPart.END -> DatesWritability(start = true, end = false, duration = true, scheduling = true)
+    CalculatedPart.DURATION -> DatesWritability(start = true, end = true, duration = false, scheduling = true)
+  }
 }
