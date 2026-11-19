@@ -109,6 +109,21 @@ public interface Task extends MutableTask, IdentifiableRow {
 
   Cost getCost();
 
+  /** Estimated effort of this task, in the unit defined by {@code TaskEffort}. {@code null} means no effort is set. */
+  BigDecimal getEffort();
+
+  /** Whether the task duration is expected to follow from its effort and assignments. */
+  boolean isEffortDriven();
+
+  /** Latest end of this task. Resource levelling reports a task which ends later. {@code null} means no deadline. */
+  GanttCalendar getDeadline();
+
+  /** Whether this task is only waiting, such as for a delivery: it keeps its place in the plan but takes no capacity. */
+  boolean isWaitOnly();
+
+  /** Whether resource levelling must keep this task on its start date. */
+  boolean isDateFixed();
+
   TaskMutator createMutator();
 
   TaskMutator createMutatorFixingDuration();

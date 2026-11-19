@@ -91,6 +91,11 @@ class ResourceAssignmentCollectionImpl implements ResourceAssignmentCollection {
   @Override
   public void deleteAssignment(HumanResource resource) {
     myAssignments.remove(resource);
+    // The resource side may have been deleted and reported before this task let go of the assignment.
+    HumanResourceManager manager = myResourceManager == null ? null : myResourceManager.get();
+    if (manager != null) {
+      manager.fireAssignmentsChanged(resource);
+    }
   }
 
   private ResourceAssignment auxAddAssignment(HumanResource resource) {
