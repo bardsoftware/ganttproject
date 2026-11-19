@@ -180,6 +180,8 @@ public class ProxyDocument implements Document {
       getTaskManager().setEventsEnabled(true);
       getHumanResourceManager().setEventsEnabled(true);
     }
+    // Events were off while reading, so nothing has derived the durations of effort driven tasks yet.
+    getTaskManager().getAlgorithmCollection().getEffortDrivenDurationAlgorithm().run();
   }
 
   /**

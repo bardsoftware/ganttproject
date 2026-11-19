@@ -37,6 +37,7 @@ import javafx.scene.control.TreeTableColumn
 import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.task.Task
+import net.sourceforge.ganttproject.task.hasDerivedDuration
 import net.sourceforge.ganttproject.undo.GPUndoManager
 import java.util.Comparator
 
@@ -52,6 +53,12 @@ class TaskColumnBuilder(private val taskTableModel: TableModel<Task, TaskDefault
 
   //var treeColumn: TreeTableColumn<Task, Task>? = null
 
+  // The end and the duration of a task with the duration derived from effort are calculated.
+  override fun isEditableCell(node: Task, modelColumn: TaskDefaultColumn) = when (modelColumn) {
+    TaskDefaultColumn.END_DATE, TaskDefaultColumn.DURATION -> !node.hasDerivedDuration()
+    else -> true
+  }
+
   override fun createDefaultColumn(modelColumn: TaskDefaultColumn): TreeTableColumn<Task, out Any> {
     return when (modelColumn) {
       TaskDefaultColumn.DURATION -> {
@@ -63,7 +70,8 @@ class TaskColumnBuilder(private val taskTableModel: TableModel<Task, TaskDefault
             undoManager.undoableEdit("Edit properties of task ${task.name}") {
               taskTableModel.setValue(value, task, modelColumn)
             }
-          }
+          },
+          isEditableRow = { task -> isEditableCell(task, modelColumn) }
         )
       }
       TaskDefaultColumn.NAME -> {

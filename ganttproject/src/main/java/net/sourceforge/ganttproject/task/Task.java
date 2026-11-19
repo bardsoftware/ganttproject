@@ -109,6 +109,18 @@ public interface Task extends MutableTask, IdentifiableRow {
 
   Cost getCost();
 
+  /** Estimated effort of this task, in the unit defined by {@code TaskEffort}. {@code null} means no effort is set. */
+  BigDecimal getEffort();
+
+  /** Effort actually spent on this task, in the unit defined by {@code TaskEffort}. {@code null} means none was recorded. */
+  BigDecimal getActualEffort();
+
+  /** Effort this task was first estimated with, in the unit defined by {@code TaskEffort}. {@code null} means none was kept. */
+  BigDecimal getOriginalEffort();
+
+  /** Whether the task duration is expected to follow from its effort and assignments. */
+  boolean isEffortDriven();
+
   TaskMutator createMutator();
 
   TaskMutator createMutatorFixingDuration();
