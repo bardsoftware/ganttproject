@@ -18,13 +18,51 @@
  */
 package net.sourceforge.ganttproject.test.task
 
+import biz.ganttproject.core.model.task.RecurrenceOrigin
+import biz.ganttproject.core.model.task.RecurrenceRule
+import biz.ganttproject.core.model.task.RecurrenceUnit
 import biz.ganttproject.storage.db.tables.records.TaskRecord
 import net.sourceforge.ganttproject.task.export
 import net.sourceforge.ganttproject.task.importFromDatabase
+import java.time.LocalDate
 
 class TaskManagerProjectDatabaseTest: TaskTestCase() {
   override fun setUp() {
     super.setUp()
+  }
+
+  fun `test import from database restores recurrence`() {
+    val record = TaskRecord().also {
+      it.uid = "uid1"
+      it.num = 1
+      it.name = "task1"
+      it.startDate = LocalDate.of(2026, 11, 16)
+      it.duration = 1
+      it.completion = 0
+      it.isMilestone = false
+      it.recurrenceUnit = "week"
+      it.recurrenceInterval = 2
+      it.recurrenceCount = 5
+      it.recurrenceOf = 7
+      it.recurrenceDate = LocalDate.of(2026, 11, 23)
+    }
+    val plainRecord = TaskRecord().also {
+      it.uid = "uid2"
+      it.num = 2
+      it.name = "task2"
+      it.startDate = LocalDate.of(2026, 11, 16)
+      it.duration = 1
+      it.completion = 0
+      it.isMilestone = false
+    }
+    val clone = taskManager.emptyClone()
+    clone.importFromDatabase(listOf(record, plainRecord), emptyMap())
+    val task = clone.tasks.first { it.uid == "uid1" }
+    assertEquals(RecurrenceRule(RecurrenceUnit.WEEK, 2, count = 5), task.recurrenceRule)
+    assertEquals(RecurrenceOrigin(7, LocalDate.of(2026, 11, 23)), task.recurrenceOrigin)
+    val plainTask = clone.tasks.first { it.uid == "uid2" }
+    assertNull(plainTask.recurrenceRule)
+    assertNull(plainTask.recurrenceOrigin)
   }
 
   fun `test import from database preserves hierarchy`() {

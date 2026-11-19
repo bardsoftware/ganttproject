@@ -36,6 +36,8 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.customproperty.CustomColumnsManager
 import biz.ganttproject.customproperty.CustomPropertyManager
 import net.sourceforge.ganttproject.GanttPreviousStateTask
+import net.sourceforge.ganttproject.chart.ChartComparison
+import net.sourceforge.ganttproject.chart.ComparisonResult
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -124,7 +126,7 @@ private class SceneUnderTest(
   val taskDurationDays: Int
 )
 
-private fun days(count: Int): TimeDuration = GPTimeUnitStack.createLength(GPTimeUnitStack.DAY, count.toFloat())
+internal fun days(count: Int): TimeDuration = GPTimeUnitStack.createLength(GPTimeUnitStack.DAY, count.toFloat())
 
 private fun scene(baselineStart: Date, baselineDuration: Int, taskStart: Date, taskDuration: Int): SceneUnderTest {
   val calendar: GPCalendarCalc = AlwaysWorkingTimeCalendarImpl()
@@ -154,7 +156,7 @@ private fun scene(baselineStart: Date, baselineDuration: Int, taskStart: Date, t
  * and counts the shapes which the renderer marked as a baseline bar. The style is the *primary*
  * style set with `setStyle`, which `hasStyle` does not see.
  */
-private fun collectBaselineBars(canvas: Canvas): List<Canvas.Shape> {
+internal fun collectBaselineBars(canvas: Canvas): List<Canvas.Shape> {
   val bars = mutableListOf<Canvas.Shape>()
   val collector = object : Painter {
     override fun prePaint() = Unit
@@ -176,10 +178,12 @@ private fun collectBaselineBars(canvas: Canvas): List<Canvas.Shape> {
 
 private val DEVIATION_STYLES = listOf("later", "earlier", "milestone")
 
-private class InputApiStub(
+internal class InputApiStub(
   private val calendar: GPCalendarCalc,
   private val task: ITaskSceneTask,
-  private val baseline: List<GanttPreviousStateTask>
+  private val baseline: List<GanttPreviousStateTask>?,
+  private val comparison: ChartComparison = ChartComparison.DATES,
+  private val effortComparison: ComparisonResult = ComparisonResult.NO_BAND
 ) : GanttChartSceneBuilder.InputApi {
   private val timeUnitStack = GPTimeUnitStack()
   private val customPropertyManager = CustomColumnsManager()
@@ -198,7 +202,9 @@ private class InputApiStub(
   override fun getVisibleTasks(): List<ITask> = listOf()
   override fun getVisibleTaskSceneTasks(): List<ITaskSceneTask> = listOf(task)
   override fun getTasksInDocumentOrder(): List<ITaskSceneTask> = listOf(task)
-  override fun getBaseline(): List<GanttPreviousStateTask> = baseline
+  override fun getBaseline(): List<GanttPreviousStateTask>? = baseline
+  override fun getComparison(): ChartComparison = comparison
+  override fun getEffortComparison(rowId: Int): ComparisonResult = effortComparison
 
   override fun getChartApi(labelsRenderer: TaskLabelSceneBuilder<ITaskSceneTask>): TaskActivitySceneBuilder.ChartApi =
     object : TaskActivitySceneBuilder.ChartApi {

@@ -25,6 +25,7 @@ import javafx.scene.control.Tab;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.action.CancelAction;
 import net.sourceforge.ganttproject.action.OkAction;
+import net.sourceforge.ganttproject.action.resource.DaysOffPreview;
 import net.sourceforge.ganttproject.gui.resourceproperties.MainPropertiesPanel;
 import net.sourceforge.ganttproject.gui.resourceproperties.ResourceAssignmentsPanelFx;
 import net.sourceforge.ganttproject.gui.taskproperties.CustomColumnsPanel;
@@ -36,6 +37,7 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +68,7 @@ public class GanttDialogPerson {
     myTaskManager = taskManager;
     myUIFacade = uiFacade;
     this.person = person;
-    mainPropertiesPanel = new MainPropertiesPanel(person);
+    mainPropertiesPanel = new MainPropertiesPanel(person, myTaskManager.getCalendar());
     customColumnsPanel = new CustomColumnsPanel(customPropertyManager, projectDatabase, CustomColumnsPanel.Type.RESOURCE,
       myUIFacade.getUndoManager(), person, myUIFacade.getResourceColumnList());
     this.onHide = onHide;
@@ -149,7 +151,15 @@ public class GanttDialogPerson {
     if (person.getId() != -1) {
       // person ID is -1 when it is new one
       // i.e. before the Person dialog is closed
-      myUIFacade.getUndoManager().undoableEdit("Resource properties changed", this::applyChanges);
+      // Nothing is saved before the preview of the moved tasks is confirmed, if there is one.
+      new DaysOffPreview(myTaskManager,
+          (message, answer) -> myUIFacade.showOptionDialog(JOptionPane.QUESTION_MESSAGE, message, new Action[] {
+              OkAction.create("ok", () -> { answer.invoke(true); return Unit.INSTANCE; }),
+              CancelAction.create("cancel", () -> { answer.invoke(false); return Unit.INSTANCE; })
+          }),
+          LocalDate::now)
+        .confirmThen(person, collectDaysOff(),
+          () -> myUIFacade.getUndoManager().undoableEdit("Resource properties changed", this::applyChanges));
     } else {
       myUIFacade.getUndoManager().undoableEdit(GanttLanguage.getInstance().formatText("resource.new.description"), () -> {
         applyChanges();
@@ -167,15 +177,20 @@ public class GanttDialogPerson {
       return null;
     });
 
-    List<GanttDaysOff> daysOff = new ArrayList<>();
-    for (DateInterval interval : myDaysOffModel.getIntervals()) {
-      daysOff.add(new GanttDaysOff(interval.getStart(), interval.getEnd()));
-    }
+    List<GanttDaysOff> daysOff = collectDaysOff();
     // One call rather than clearDaysOff() plus a loop of addDaysOff(): the listeners are interested
     // in the intervals the user ended up with, not in the resource passing through every partial
     // state on the way there, and each of those states used to cost a load distribution reset.
     person.setDaysOff(daysOff);
     myAssignmentsPanel.commit();
+  }
+
+  private List<GanttDaysOff> collectDaysOff() {
+    List<GanttDaysOff> daysOff = new ArrayList<>();
+    for (DateInterval interval : myDaysOffModel.getIntervals()) {
+      daysOff.add(new GanttDaysOff(interval.getStart(), interval.getEnd()));
+    }
+    return daysOff;
   }
 
   private DefaultDateIntervalModel myDaysOffModel;

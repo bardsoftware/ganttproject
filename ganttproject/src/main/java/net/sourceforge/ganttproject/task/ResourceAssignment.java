@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject.task;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
 
+import java.math.BigDecimal;
+
 /**
  * Created by IntelliJ IDEA.
  * 
@@ -42,7 +44,28 @@ public interface ResourceAssignment {
 
   boolean isCoordinator();
 
+  /**
+   * The resource has to be present on every day of the task: levelling does not place the task on a day off of this
+   * resource, whatever the load. False by default.
+   */
+  void setBlocking(boolean blocking);
+
+  boolean isBlocking();
+
+  /**
+   * The resource stays on the task but brings no hours to its effort, such as a reviewer. False by default, so that
+   * a file without the flag means that every assignment contributes.
+   */
+  void setNoEffort(boolean noEffort);
+
+  boolean isNoEffort();
+
   Role getRoleForAssignment();
 
   void setRoleForAssignment(Role role);
+
+  /** Effort which the resource actually spent on the task, in the unit defined by {@code TaskEffort}. {@code null} means none was recorded. */
+  BigDecimal getActualEffort();
+
+  void setActualEffort(BigDecimal actualEffort);
 }

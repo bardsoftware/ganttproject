@@ -56,6 +56,12 @@ fun buildInsertTaskQuery(dsl: DSLContext, task: Task): Insert<TaskRecord> {
     .set(Tables.TASK.COST, task.cost.value)
     .set(Tables.TASK.IS_COST_CALCULATED, isCostCalculated)
     .set(Tables.TASK.NOTES, task.externalizedNotes())
+    .set(Tables.TASK.RECURRENCE_UNIT, task.recurrenceRule?.unit?.xmlValue)
+    .set(Tables.TASK.RECURRENCE_INTERVAL, task.recurrenceRule?.interval)
+    .set(Tables.TASK.RECURRENCE_UNTIL, task.recurrenceRule?.until)
+    .set(Tables.TASK.RECURRENCE_COUNT, task.recurrenceRule?.count)
+    .set(Tables.TASK.RECURRENCE_OF, task.recurrenceOrigin?.sourceTaskId)
+    .set(Tables.TASK.RECURRENCE_DATE, task.recurrenceOrigin?.date)
   val customProps = mapCustomPropertiesToJooq(task.manager.customPropertyManager, task.customValues)
   return q.set(customProps)
 }

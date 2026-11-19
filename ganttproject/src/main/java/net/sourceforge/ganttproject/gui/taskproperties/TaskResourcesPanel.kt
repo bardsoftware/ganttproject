@@ -24,6 +24,7 @@ import biz.ganttproject.app.PropertyPaneBuilderImpl
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.core.option.ObservableBoolean
 import biz.ganttproject.core.option.ObservableMoney
+import biz.ganttproject.core.option.ValidationException
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -39,8 +40,11 @@ import javafx.scene.layout.Region
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.DefaultStringConverter
+import biz.ganttproject.task.recurrence.toModelDate
+import net.sourceforge.ganttproject.chart.absenceSummaryForTask
 import net.sourceforge.ganttproject.gui.AbstractTableAndActionsComponentFx
 import net.sourceforge.ganttproject.gui.TableView2TableActionsModel
+import net.sourceforge.ganttproject.language.GanttLanguage
 import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.roles.Role
@@ -97,6 +101,9 @@ class TaskResourcesPanel(
     fun setValueAt(value: Any?, row: Int, col: Int) {
       innerModel.setValueAt(value, row, col)
     }
+
+    fun axisProperty(assignment: ResourceAssignment?, axis: AssignmentAxis) =
+      innerModel.pendingAxes.axisProperty(assignment, axis)
   }
 
   private val costIsCalculated = ObservableBoolean("option.taskProperties.cost.calculated.label", task.cost.isCalculated)
@@ -170,6 +177,13 @@ class TaskResourcesPanel(
         prefWidth = 80.0
       }
 
+      // Hours per day of the resource, read only. It is edited in the properties dialog of the resource.
+      val hoursPerDayCol = TableColumn2<ResourceAssignmentRow, String>(i18n.formatText("tableColResourceHoursPerDay")).apply {
+        setCellValueFactory { SimpleStringProperty(hoursPerDayText(it.value.assignment)) }
+        isEditable = false
+        prefWidth = 100.0
+      }
+
       // Coordinator column. The check box is bound to the value which the cell value factory
       // returns, so that value has to be the one which writes into the assignment. See
       // coordinatorProperty below.
@@ -201,7 +215,44 @@ class TaskResourcesPanel(
         prefWidth = 150.0
       }
 
-      columns.addAll(idCol, nameCol, unitCol, coordinatorCol, roleCol)
+      // Assignment axes. Unlike the coordinator, a tick is only noted down here and reaches the assignment
+      // in commit(), which runs inside the undoable edit of the dialog. See PendingAxes below.
+      val axisCols = AssignmentAxis.entries.map { axis ->
+        TableColumn2<ResourceAssignmentRow, Boolean>(i18n.formatText(axis.titleKey)).apply {
+          setCellValueFactory { model.axisProperty(it.value.assignment, axis) }
+          cellFactory = CheckBoxTableCell.forTableColumn(this)
+          isEditable = true
+          prefWidth = 110.0
+        }
+      }
+
+      // The days of this task on which the resource is away. Read only.
+      val absenceCol = TableColumn2<ResourceAssignmentRow, String>(i18n.formatText("taskProperties.resources.absence")).apply {
+        setCellValueFactory { row ->
+          SimpleStringProperty(row.value.assignment?.resource?.let { resource ->
+            absenceSummaryForTask(task, resource) { day ->
+              GanttLanguage.getInstance().shortDateFormat.format(day.toModelDate())
+            }
+          } ?: "")
+        }
+        isEditable = false
+        prefWidth = 160.0
+      }
+
+      // Effort which the resource actually spent on the task, in hours
+      val actualEffortCol = TableColumn2<ResourceAssignmentRow, String>(i18n.formatText("tableColActualEffort")).apply {
+        setCellValueFactory { SimpleStringProperty(actualEffortText(it.value.assignment)) }
+        setCellFactory { TextFieldTableCell(DefaultStringConverter()) }
+        setOnEditCommit { event ->
+          model.setValueAt(event.newValue, event.tablePosition.row, 5)
+          model.refreshTable()
+        }
+        isEditable = true
+        prefWidth = 100.0
+      }
+
+      columns.addAll(listOf(idCol, nameCol, unitCol, coordinatorCol, roleCol) + axisCols + absenceCol +
+        listOf(hoursPerDayCol, actualEffortCol))
     }
 
     // Create split layout with table and cost panel
@@ -278,6 +329,64 @@ private fun coordinatorProperty(assignment: ResourceAssignment?): SimpleBooleanP
     property.addListener { _, _, isCoordinator -> assignment?.isCoordinator = isCoordinator }
   }
 
+/**
+ * The two flags of a resource assignment which the dialog shows as check box columns.
+ */
+internal enum class AssignmentAxis(val titleKey: String) {
+  BLOCKING("taskProperties.resources.absenceBlocks") {
+    override fun get(assignment: ResourceAssignment) = assignment.isBlocking
+    override fun set(assignment: ResourceAssignment, value: Boolean) { assignment.isBlocking = value }
+  },
+  NO_EFFORT("taskProperties.resources.noEffort") {
+    override fun get(assignment: ResourceAssignment) = assignment.isNoEffort
+    override fun set(assignment: ResourceAssignment, value: Boolean) { assignment.isNoEffort = value }
+  };
+
+  abstract fun get(assignment: ResourceAssignment): Boolean
+  abstract fun set(assignment: ResourceAssignment, value: Boolean)
+}
+
+/**
+ * Ticks of the axis columns which are noted down but not yet applied. They reach the assignments only in apply(),
+ * so that cancelling the dialog changes nothing and the change happens inside the undoable edit.
+ */
+internal class PendingAxes {
+  private val pending = mutableMapOf<ResourceAssignment, MutableMap<AssignmentAxis, Boolean>>()
+
+  fun value(assignment: ResourceAssignment, axis: AssignmentAxis): Boolean =
+    pending[assignment]?.get(axis) ?: axis.get(assignment)
+
+  fun mark(assignment: ResourceAssignment, axis: AssignmentAxis, value: Boolean) {
+    pending.getOrPut(assignment) { mutableMapOf() }[axis] = value
+  }
+
+  /**
+   * The writable property behind the check box of an axis column. The empty last row has no assignment, and its
+   * check box writes nowhere.
+   */
+  fun axisProperty(assignment: ResourceAssignment?, axis: AssignmentAxis): SimpleBooleanProperty =
+    SimpleBooleanProperty(assignment?.let { value(it, axis) } ?: false).also { property ->
+      property.addListener { _, _, isSet -> assignment?.let { mark(it, axis, isSet) } }
+    }
+
+  /**
+   * The resource of a row was replaced by another one: the new assignment keeps the axes of the row.
+   */
+  fun moveTo(from: ResourceAssignment, to: ResourceAssignment) {
+    AssignmentAxis.entries.forEach { mark(to, it, value(from, it)) }
+    pending.remove(from)
+  }
+
+  fun forget(assignment: ResourceAssignment) {
+    pending.remove(assignment)
+  }
+
+  fun apply() {
+    pending.forEach { (assignment, axes) -> axes.forEach { (axis, value) -> axis.set(assignment, value) } }
+    pending.clear()
+  }
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -287,6 +396,10 @@ private class ResourceAssignmentTableModel(task: Task) {
   private val assignmentCollection = task.assignmentCollection
   private val mutator = assignmentCollection.createMutator()
   private val _assignments = assignmentCollection.assignments.toMutableList()
+  // Assignments of the task which are removed in the dialog. They are deleted in commit(), which runs inside the
+  // undoable edit of the dialog, so that cancelling keeps them and undo brings them back.
+  private val assignmentsToDelete = mutableListOf<ResourceAssignment>()
+  val pendingAxes = PendingAxes()
 
   val assignments: List<ResourceAssignment>
     get() = _assignments.toList()
@@ -302,6 +415,12 @@ private class ResourceAssignmentTableModel(task: Task) {
   private fun updateAssignment(value: Any?, row: Int, col: Int) {
     val assignment = _assignments[row]
     when (col) {
+      5 -> { // Actual effort
+        try {
+          assignment.actualEffort = parseDecimal(value?.toString(), BigDecimal.ZERO)
+        } catch (e: ValidationException) {
+        }
+      }
       4 -> { // Role
         if (value is Role) {
           assignment.roleForAssignment = value
@@ -321,16 +440,19 @@ private class ResourceAssignmentTableModel(task: Task) {
       }
       1 -> { // Resource
         if (value == null) {
-          assignment.delete()
+          deleteOnCommit(assignment)
+          pendingAxes.forget(assignment)
           _assignments.removeAt(row)
         } else if (value is HumanResource) {
           val load = assignment.load
           val coord = assignment.isCoordinator
-          assignment.delete()
-          mutator.deleteAssignment(assignment.resource)
+          val actualEffort = assignment.actualEffort
+          deleteOnCommit(assignment)
           val newAssignment = mutator.addAssignment(value)
           newAssignment.load = load
           newAssignment.isCoordinator = coord
+          pendingAxes.moveTo(assignment, newAssignment)
+          newAssignment.actualEffort = actualEffort
           _assignments[row] = newAssignment
         }
       }
@@ -349,14 +471,41 @@ private class ResourceAssignmentTableModel(task: Task) {
 
   fun delete(selectedRows: IntArray) {
     val toDelete = selectedRows.filter { it < _assignments.size }.map { _assignments[it] }
-    toDelete.forEach { it.delete() }
+    toDelete.forEach {
+      deleteOnCommit(it)
+      pendingAxes.forget(it)
+    }
     _assignments.removeAll(toDelete)
   }
 
+  /**
+   * An assignment which the task already has is deleted in commit(). One which was added in the dialog exists only in
+   * the mutator, deleting it there touches nothing else.
+   */
+  private fun deleteOnCommit(assignment: ResourceAssignment) {
+    if (assignment in assignmentCollection.assignments) {
+      assignmentsToDelete.add(assignment)
+    } else {
+      assignment.delete()
+    }
+  }
+
   fun commit() {
+    // Before the mutator, which copies the flags of the assignments added in the dialog.
+    pendingAxes.apply()
+    // Before the mutator as well: a resource which is removed and picked again gets the assignment added in the dialog.
+    assignmentsToDelete.forEach { it.delete() }
     mutator.commit()
   }
 }
+
+/** Hours per day of the resource of the assignment, empty if the resource has none set. */
+internal fun hoursPerDayText(assignment: ResourceAssignment?): String =
+  assignment?.resource?.hoursPerDay?.toPlainString() ?: ""
+
+/** Actual effort of the assignment, empty if none was recorded. */
+internal fun actualEffortText(assignment: ResourceAssignment?): String =
+  assignment?.actualEffort?.toPlainString() ?: ""
 
 /**
  * Row data class for the table.

@@ -28,6 +28,12 @@ public interface GanttChart extends TimelineChart {
 
   GanttPreviousState getBaseline();
 
+  /** What the band underneath the task bars compares. */
+  ChartComparison getComparison();
+
+  /** Selects what the band underneath the task bars compares and adjusts the row height. */
+  void setComparison(ChartComparison comparison);
+
   GPOptionGroup getBaselineColorOptions();
   ColorOption getTaskDefaultColorOption();
 

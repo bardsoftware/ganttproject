@@ -19,6 +19,8 @@
 package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.core.chart.render.ShapePaint
+import biz.ganttproject.core.model.task.RecurrenceOrigin
+import biz.ganttproject.core.model.task.RecurrenceRule
 import biz.ganttproject.core.option.ColorOption
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
@@ -121,6 +123,18 @@ class H2TaskUpdateBuilder(
     append(TASK.PRIORITY, newValue?.persistentValue)
 
   override fun setProjectTask(oldValue: Boolean, newValue: Boolean) = append(TASK.IS_PROJECT_TASK, newValue)
+
+  override fun setRecurrenceRule(oldValue: RecurrenceRule?, newValue: RecurrenceRule?) {
+    append(TASK.RECURRENCE_UNIT, newValue?.unit?.xmlValue)
+    append(TASK.RECURRENCE_INTERVAL, newValue?.interval)
+    append(TASK.RECURRENCE_UNTIL, newValue?.until)
+    append(TASK.RECURRENCE_COUNT, newValue?.count)
+  }
+
+  override fun setRecurrenceOrigin(oldValue: RecurrenceOrigin?, newValue: RecurrenceOrigin?) {
+    append(TASK.RECURRENCE_OF, newValue?.sourceTaskId)
+    append(TASK.RECURRENCE_DATE, newValue?.date)
+  }
 
   override fun setShape(oldValue: ShapePaint?, newValue: ShapePaint?) = append(TASK.SHAPE, newValue?.array)
 

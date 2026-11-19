@@ -22,6 +22,10 @@ import biz.ganttproject.customproperty.CustomProperty;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.IGanttProject;
+import biz.ganttproject.core.model.task.CapacityChange;
+import biz.ganttproject.core.model.task.HomeOfficePeriod;
+import biz.ganttproject.core.model.task.WorkWeekChange;
+import biz.ganttproject.core.model.task.WorkWeekScheduleKt;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -43,14 +47,60 @@ class ResourceSaver extends SaverBase {
       addAttribute("function", p.getRole().getPersistentID(), attrs);
       addAttribute("contacts", p.getMail(), attrs);
       addAttribute("phone", p.getPhone(), attrs);
+      if (p.getHoursPerDay() != null) {
+        addAttribute("hours-per-day", p.getHoursPerDay().toPlainString(), attrs);
+      }
+      if (p.getUtilization() != null) {
+        addAttribute("utilization", p.getUtilization().toString(), attrs);
+      }
       startElement("resource", attrs, handler);
       {
+        saveHoursSchedule(p, handler);
+        saveWorkWeek(p, handler);
+        saveHomeOffice(p, handler);
         saveRates(p, handler);
         saveCustomProperties(project, p, handler);
       }
       endElement("resource", handler);
     }
     endElement("resources", handler);
+  }
+
+  private void saveHoursSchedule(HumanResource p, TransformerHandler handler) throws SAXException {
+    for (CapacityChange change : p.getHoursSchedule()) {
+      AttributesImpl attrs = new AttributesImpl();
+      addAttribute("date", change.getFrom().toString(), attrs);
+      addAttribute("hours", change.getHoursPerDay().toPlainString(), attrs);
+      emptyElement("hours-change", attrs, handler);
+    }
+  }
+
+  private void saveWorkWeek(HumanResource p, TransformerHandler handler) throws SAXException {
+    for (WorkWeekChange change : p.getWorkWeek()) {
+      AttributesImpl attrs = new AttributesImpl();
+      if (change.getFrom() != null) {
+        addAttribute("date", change.getFrom().toString(), attrs);
+      }
+      addAttribute("days", WorkWeekScheduleKt.formatWeekDays(change.getDays()), attrs);
+      emptyElement("work-week", attrs, handler);
+    }
+  }
+
+  private void saveHomeOffice(HumanResource p, TransformerHandler handler) throws SAXException {
+    for (WorkWeekChange change : p.getHomeOfficeWeek()) {
+      AttributesImpl attrs = new AttributesImpl();
+      if (change.getFrom() != null) {
+        addAttribute("date", change.getFrom().toString(), attrs);
+      }
+      addAttribute("days", WorkWeekScheduleKt.formatWeekDays(change.getDays()), attrs);
+      emptyElement("home-office-week", attrs, handler);
+    }
+    for (HomeOfficePeriod period : p.getHomeOfficePeriods()) {
+      AttributesImpl attrs = new AttributesImpl();
+      addAttribute("start", period.getStart().toString(), attrs);
+      addAttribute("end", period.getEndExclusive().toString(), attrs);
+      emptyElement("home-office-period", attrs, handler);
+    }
   }
 
   private void saveRates(HumanResource p, TransformerHandler handler) throws SAXException {

@@ -35,7 +35,7 @@ class TaskDatesControllerTest {
     val coroutineScope = CoroutineScope(MoreExecutors.directExecutor().asCoroutineDispatcher())
     val task = TestSetupHelper.newTaskManagerBuilder().build().newTaskBuilder().withName("task1").build()
     val milestoneOption = ObservableBoolean("foo", false)
-    TaskDatesController(task, milestoneOption, coroutineScope).let {
+    TaskDatesController(task, milestoneOption, ObservableBoolean("effortDriven", false), coroutineScope).let {
       it.startDateOption.set(LocalDate.parse("2025-09-22"), "picker")
       assertEquals("2025-09-22", it.startDateOption.toIsoDate())
       assertEquals("2025-09-22", it.displayEndDateOption.toIsoDate())

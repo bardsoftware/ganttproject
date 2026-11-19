@@ -20,6 +20,7 @@ package biz.ganttproject.ganttview
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.*
+import biz.ganttproject.core.calendar.GPCalendar
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.table.BaseTreeTableComponent
 import biz.ganttproject.core.table.ColumnList
@@ -30,7 +31,7 @@ import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
-import biz.ganttproject.task.ancestors
+import biz.ganttproject.task.recurrence.ancestorsToOpen
 import com.sun.javafx.scene.control.behavior.CellBehaviorBase
 import de.jensd.fx.glyphs.GlyphIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -248,6 +249,9 @@ class TaskTable(
       }
     )
     initTaskEventHandlers()
+    // The end dates in the table come from the calendar, so a calendar change alters them without any task event.
+    // The chart repaints on calendar changes, and the table has to follow it.
+    refreshOnCalendarChange(project.activeCalendar, treeTable::coalescingRefresh)
     initProjectEventHandlers()
     initChartConnector()
     initKeyboardEventHandlers(taskActions.all())
@@ -453,7 +457,7 @@ class TaskTable(
       override fun selectionChanged(currentSelection: List<Task>, source: Any?) {
         if (source != this@TaskTable) {
           Platform.runLater {
-            ancestors(currentSelection, taskManager.taskHierarchy).reversed()
+            ancestorsToOpen(currentSelection, taskManager.taskHierarchy, source)
               .forEach { task2treeItem[it]?.isExpanded = true }
 
             treeTable.selectionModel.clearSelection()
@@ -559,7 +563,7 @@ class TaskTable(
     }
     if (selectionManager.selectedTasks.isNotEmpty()) {
       builder.apply {
-        items(taskActions.propertiesAction)
+        items(taskActions.propertiesAction, taskActions.recurrenceAction)
         separator()
         items(
           taskActions.unindentAction,
@@ -692,6 +696,10 @@ private class TreeSelectionListenerImpl(
         }
     }
   }
+}
+
+internal fun refreshOnCalendarChange(calendar: GPCalendar, refresh: () -> Unit) {
+  calendar.addListener { refresh() }
 }
 
 data class TaskTableChartConnector(

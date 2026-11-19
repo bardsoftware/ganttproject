@@ -18,6 +18,12 @@ create table if not exists Task (
     is_cost_calculated      boolean                     null,
     notes                   varchar                     null,
     cost                    numeric(1000, 2)            null,
+    recurrence_unit         varchar                     null,
+    recurrence_interval     integer                     null,
+    recurrence_until        date                        null,
+    recurrence_count        integer                     null,
+    recurrence_of           integer                     null,
+    recurrence_date         date                        null,
 
     CONSTRAINT task_pkey primary key (uid)
 );
@@ -70,5 +76,11 @@ CREATE VIEW TaskViewForComputedColumns AS
     cost_manual_value,
     is_cost_calculated,
     notes,
-    42.0 AS cost
+    42.0 AS cost,
+    recurrence_unit,
+    recurrence_interval,
+    recurrence_until,
+    recurrence_count,
+    recurrence_of,
+    recurrence_date
     FROM Task;

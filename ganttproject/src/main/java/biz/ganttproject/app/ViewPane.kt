@@ -53,6 +53,7 @@ import net.sourceforge.ganttproject.gui.view.ViewProvider
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskSelectionManager
 import java.awt.event.ActionEvent
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
 import javax.swing.SwingUtilities
 
@@ -136,7 +137,7 @@ private val localizer = i18n {
   }
 }
 
-private class ViewImpl(
+internal class ViewImpl(
   private val tabPane: TabPane,
   private val tab: Tab,
   override val selection: ChartSelection,
@@ -147,10 +148,18 @@ private class ViewImpl(
   private val refreshFn: () -> Unit
 ): View {
 
+  // Every added task asks for a refresh, and each one lays the whole view out on the JavaFX thread. A recurrence adds
+  // a dozen tasks at once, and the view showed the old state for seconds while the layouts queued up. A refresh which
+  // is still waiting for the JavaFX thread serves the calls arriving meanwhile.
+  private val isRefreshPending = AtomicBoolean(false)
+
   override fun refresh() {
-    FXUtil.runLater {
-      refreshFn()
-      tabPane.layout()
+    if (isRefreshPending.compareAndSet(false, true)) {
+      FXUtil.runLater {
+        isRefreshPending.set(false)
+        refreshFn()
+        tabPane.layout()
+      }
     }
   }
 
@@ -220,6 +229,22 @@ data class ViewComponents(val image: Pane, val splitPane: SplitPane, val table: 
             isDividerInitialized = true
           }
         }
+      }
+    }
+  }
+
+  /**
+   * Fits the chart node to the room the split pane gives it. Autosizing resizes the node to the preferred size of the
+   * Swing chart, which is far smaller, and only a layout pass makes it large again. Done on the Swing thread, the
+   * layout pass sometimes never came, and the chart stayed a small rectangle until the window was resized. This runs
+   * on the JavaFX thread and lays the parent out right away, so it may be called from the Swing thread.
+   */
+  fun fitChartNode() {
+    FXUtil.runLater {
+      chartNode.autosize()
+      chartNode.parent?.let {
+        it.requestLayout()
+        it.layout()
       }
     }
   }

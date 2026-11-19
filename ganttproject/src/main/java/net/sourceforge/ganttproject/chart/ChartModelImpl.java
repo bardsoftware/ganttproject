@@ -15,6 +15,7 @@ import biz.ganttproject.core.time.TimeUnitStack;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
+import net.sourceforge.ganttproject.chart.gantt.SeriesRowKt;
 import net.sourceforge.ganttproject.chart.gantt.ITaskActivity;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
@@ -23,6 +24,7 @@ import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.task.DerivedDurationKt;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
@@ -53,6 +55,8 @@ public class ChartModelImpl extends ChartModelBase {
   private Set<Task> myHiddenTasks;
 
   private List<GanttPreviousStateTask> myBaseline;
+
+  private ChartComparison myComparison = ChartComparison.DATES;
 
   public ChartModelImpl(TaskManager taskManager, TimeUnitStack timeUnitStack, final UIConfiguration projectConfig) {
     super(taskManager, timeUnitStack, projectConfig);
@@ -131,8 +135,9 @@ public class ChartModelImpl extends ChartModelBase {
         if (activity.isFirst() && rect.getLeftX() - 2 <= x && rect.getLeftX() + 2 >= x) {
           result = new TaskBoundaryChartItem(owner, true);
         }
+        // The end of a task with the duration derived from effort cannot be dragged.
         if (result == null && activity.isLast() && rect.getRightX() - 2 <= x
-            && rect.getRightX() + 2 >= x) {
+            && rect.getRightX() + 2 >= x && !DerivedDurationKt.hasDerivedDuration(owner)) {
           result = new TaskBoundaryChartItem(owner, false);
         }
         if (result == null) {
@@ -176,6 +181,11 @@ public class ChartModelImpl extends ChartModelBase {
   // }
   // return result.toArray(new GraphicPrimitiveContainer.Rectangle[0]);
   // }
+
+  /** True if the row of the task draws the bars of the members of a collapsed recurrence series. */
+  public boolean isSeriesRow(Task t) {
+    return !SeriesRowKt.collapsedSeriesMembers(t, getTaskManager().getTaskHierarchy(), getVisibleTasks()).isEmpty();
+  }
 
   public List<Task> getVisibleTasks() {
     return myVisibleTasks == null ? Collections.<Task> emptyList() : myVisibleTasks;
@@ -225,12 +235,26 @@ public class ChartModelImpl extends ChartModelBase {
     return myBaseline;
   }
 
+  public ChartComparison getComparison() {
+    return myComparison;
+  }
+
+  /**
+   * Selects what the band underneath the task bars compares and returns the new row height, like
+   * {@link #setBaseline}: some views draw a band without a baseline.
+   */
+  public int setComparison(ChartComparison comparison) {
+    myComparison = comparison;
+    return calculateRowHeight();
+  }
+
   @Override
   public ChartModelBase createCopy() {
     ChartModelImpl result = new ChartModelImpl(getTaskManager(), getTimeUnitStack(), getProjectConfig());
     super.setupCopy(result);
     result.setVisibleTasks(getVisibleTasks());
     result.setBaseline(getBaseline());
+    result.setComparison(getComparison());
     return result;
   }
 

@@ -19,6 +19,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.resource;
 
 import biz.ganttproject.core.calendar.GanttDaysOff;
+import biz.ganttproject.core.model.task.CapacityChange;
+import biz.ganttproject.core.model.task.CapacitySchedule;
+import biz.ganttproject.core.model.task.HomeOffice;
+import biz.ganttproject.core.model.task.HomeOfficePeriod;
+import biz.ganttproject.core.model.task.WorkWeekChange;
+import biz.ganttproject.core.model.task.WorkWeekSchedule;
 import biz.ganttproject.customproperty.*;
 import com.google.common.base.Strings;
 import kotlin.Unit;
@@ -58,6 +64,18 @@ public class HumanResource implements CustomPropertyHolder {
   private LoadDistribution myLoadDistribution;
 
   private BigDecimal myStandardPayRate;
+
+  private BigDecimal myHoursPerDay;
+
+  private Integer myUtilization;
+
+  private List<CapacityChange> myHoursSchedule = Collections.emptyList();
+
+  private List<WorkWeekChange> myWorkWeek = Collections.emptyList();
+
+  private List<WorkWeekChange> myHomeOfficeWeek = Collections.emptyList();
+
+  private List<HomeOfficePeriod> myHomeOfficePeriods = Collections.emptyList();
 
   private final List<GanttDaysOff> myDaysOffList = new ArrayList<>();
 
@@ -108,6 +126,12 @@ public class HumanResource implements CustomPropertyHolder {
     setPhone(copy.getPhone());
     setRole(copy.getRole());
     setStandardPayRate(copy.getStandardPayRate());
+    setHoursPerDay(copy.getHoursPerDay());
+    setUtilization(copy.getUtilization());
+    setHoursSchedule(copy.getHoursSchedule());
+    setWorkWeek(copy.getWorkWeek());
+    setHomeOfficeWeek(copy.getHomeOfficeWeek());
+    setHomeOfficePeriods(copy.getHomeOfficePeriods());
     myManager = copy.myManager;
     // Straight into the list rather than through addDaysOff(): the copy is not in the manager yet
     // and must not be announced, which is what areEventsEnabled = false above takes care of for the
@@ -404,6 +428,80 @@ public class HumanResource implements CustomPropertyHolder {
     return myStandardPayRate == null ? BigDecimal.ZERO : myStandardPayRate;
   }
 
+  /** Working hours per day of this resource, {@code null} if not set. */
+  public BigDecimal getHoursPerDay() {
+    return myHoursPerDay;
+  }
+
+  public void setHoursPerDay(BigDecimal hoursPerDay) {
+    myHoursPerDay = hoursPerDay;
+    fireResourceChanged();
+  }
+
+  /** Share of the working hours which this resource spends on the project, in percent; {@code null} means 100. */
+  public Integer getUtilization() {
+    return myUtilization;
+  }
+
+  public void setUtilization(Integer utilization) {
+    myUtilization = utilization;
+    fireResourceChanged();
+  }
+
+  /**
+   * Working hours per day which differ from {@link #getHoursPerDay()} from a date on, sorted by date. Empty if the
+   * hours per day are the same all the time.
+   */
+  public List<CapacityChange> getHoursSchedule() {
+    return myHoursSchedule;
+  }
+
+  public void setHoursSchedule(List<CapacityChange> hoursSchedule) {
+    myHoursSchedule = Collections.unmodifiableList(new CapacitySchedule(BigDecimal.ZERO, hoursSchedule).getChanges());
+    fireResourceChanged();
+  }
+
+  /**
+   * The days of the week on which this resource works, as they change over time, sorted by date. Empty if the
+   * resource works on the days of the project calendar.
+   */
+  public List<WorkWeekChange> getWorkWeek() {
+    return myWorkWeek;
+  }
+
+  public void setWorkWeek(List<WorkWeekChange> workWeek) {
+    myWorkWeek = Collections.unmodifiableList(new WorkWeekSchedule(workWeek).getChanges());
+    fireResourceChanged();
+  }
+
+  /**
+   * The days of the week on which this resource works at home, as they change over time, sorted by date. Empty if
+   * the resource never works at home on a weekly pattern.
+   */
+  public List<WorkWeekChange> getHomeOfficeWeek() {
+    return myHomeOfficeWeek;
+  }
+
+  public void setHomeOfficeWeek(List<WorkWeekChange> homeOfficeWeek) {
+    myHomeOfficeWeek = Collections.unmodifiableList(new WorkWeekSchedule(homeOfficeWeek).getChanges());
+    fireResourceChanged();
+  }
+
+  /** The periods in which this resource works at home, sorted by start. */
+  public List<HomeOfficePeriod> getHomeOfficePeriods() {
+    return myHomeOfficePeriods;
+  }
+
+  public void setHomeOfficePeriods(List<HomeOfficePeriod> homeOfficePeriods) {
+    myHomeOfficePeriods = Collections.unmodifiableList(new HomeOffice(Collections.emptyList(), homeOfficePeriods).getPeriods());
+    fireResourceChanged();
+  }
+
+  /** Where this resource works: the weekly pattern and the periods at home together. */
+  public HomeOffice getHomeOffice() {
+    return new HomeOffice(myHomeOfficeWeek, myHomeOfficePeriods);
+  }
+
   public double getTotalLoad() {
     double totalLoad = 0.0;
     for (ResourceAssignment assignment : myAssignments) {
@@ -450,7 +548,13 @@ public class HumanResource implements CustomPropertyHolder {
 
     private boolean myCoordinator;
 
+    private boolean myBlocking;
+
+    private boolean myNoEffort;
+
     private Role myRoleForAssignment;
+
+    private BigDecimal myActualEffort;
 
     private ResourceAssignmentImpl(ResourceAssignment assignmentToTask) {
       myAssignmentToTask = assignmentToTask;
@@ -494,6 +598,36 @@ public class HumanResource implements CustomPropertyHolder {
       return myCoordinator;
     }
 
+    // The flags change durations and levelling, so a change is reported. They play no part in the load distribution,
+    // which is why the cached loads are kept.
+    @Override
+    public void setBlocking(boolean blocking) {
+      if (myBlocking == blocking) {
+        return;
+      }
+      myBlocking = blocking;
+      HumanResource.this.fireAssignmentsChanged();
+    }
+
+    @Override
+    public boolean isBlocking() {
+      return myBlocking;
+    }
+
+    @Override
+    public void setNoEffort(boolean noEffort) {
+      if (myNoEffort == noEffort) {
+        return;
+      }
+      myNoEffort = noEffort;
+      HumanResource.this.fireAssignmentsChanged();
+    }
+
+    @Override
+    public boolean isNoEffort() {
+      return myNoEffort;
+    }
+
     @Override
     public Role getRoleForAssignment() {
 
@@ -503,6 +637,17 @@ public class HumanResource implements CustomPropertyHolder {
     @Override
     public void setRoleForAssignment(Role role) {
       myRoleForAssignment = role;
+    }
+
+    @Override
+    public BigDecimal getActualEffort() {
+      return myActualEffort;
+    }
+
+    @Override
+    public void setActualEffort(BigDecimal actualEffort) {
+      myActualEffort = actualEffort;
+      HumanResource.this.fireAssignmentChanged();
     }
 
     @Override

@@ -29,6 +29,7 @@ import kotlin.jvm.functions.Function1;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.CustomBalloonTip;
 import net.java.balloontip.styles.ToolTipBalloonStyle;
+import biz.ganttproject.task.recurrence.CollapsedSeriesRows;
 import net.sourceforge.ganttproject.*;
 import net.sourceforge.ganttproject.chart.*;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
@@ -49,13 +50,17 @@ import java.awt.event.MouseMotionListener;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class GanttChartController extends AbstractChartImplementation implements ChartImplementation {
+public class GanttChartController extends AbstractChartImplementation
+    implements ChartImplementation, CollapsedSeriesRows {
   private final TaskManager myTaskManager;
   private final ChartModelImpl myChartModel;
   private final ChartViewState myChartViewState;
   private final MouseListenerImpl myMouseListener;
   private final MouseMotionListenerImpl myMouseMotionListener;
   private final TaskTableChartConnector myTaskTableConnector;
+  // The task table changes its visible tasks in the FX thread while the chart is painted in the Swing thread, so the
+  // chart reads a copy which is taken in the FX thread after each change.
+  private volatile List<Task> myVisibleTasks;
   protected CustomBalloonTip myTooltip;
 
   public GanttChartController(IGanttProject project, UIFacade uiFacade, ChartModelImpl chartModel,
@@ -70,8 +75,12 @@ public class GanttChartController extends AbstractChartImplementation implements
     myMouseMotionListener = new MouseMotionListenerImpl(this, uiFacade, chartComponent);
 //    mySelection = new GanttChartSelection(myTaskManager, mySelectionManager);
     myTaskTableConnector = taskTableConnector;
+    myVisibleTasks = List.copyOf(myTaskTableConnector.getVisibleTasks());
     myTaskTableConnector.getVisibleTasks().addListener(
-        (ListChangeListener<Task>) c -> SwingUtilities.invokeLater(this::reset)
+        (ListChangeListener<Task>) c -> {
+          myVisibleTasks = List.copyOf(c.getList());
+          SwingUtilities.invokeLater(this::reset);
+        }
     );
     myTaskTableConnector.getTableScrollOffset().addListener(
         (ChangeListener<? super Number>) (wtf, old, newValue) -> SwingUtilities.invokeLater(() -> {
@@ -163,14 +172,18 @@ public class GanttChartController extends AbstractChartImplementation implements
       model.setRowHeight((int)Math.ceil(rowHeight));
       model.setTopTimeUnit(getViewState().getTopTimeUnit());
       model.setBottomTimeUnit(getViewState().getBottomTimeUnit());
-      List<Task> visibleTasks = myTaskTableConnector.getVisibleTasks();
-      model.setVisibleTasks(visibleTasks);
+      model.setVisibleTasks(myVisibleTasks);
       myChartModel.setTimelineTasks(getUIFacade().getCurrentTaskView().getTimelineTasks());
       model.paint(g);
       if (getActiveInteraction() != null) {
         getActiveInteraction().paint(g);
       }
     }
+  }
+
+  @Override
+  public boolean drawsSeriesInOneRow(Task task) {
+    return myChartModel.isSeriesRow(task);
   }
 
   @Override
@@ -205,7 +218,7 @@ public class GanttChartController extends AbstractChartImplementation implements
       @Override
       public Unit invoke(GanttExportSettings settings) {
         setupExportSettings(settings, modelCopy);
-        settings.setVisibleTasks(myTaskTableConnector.getVisibleTasks());
+        settings.setVisibleTasks(myVisibleTasks);
         return Unit.INSTANCE;
       }
     };

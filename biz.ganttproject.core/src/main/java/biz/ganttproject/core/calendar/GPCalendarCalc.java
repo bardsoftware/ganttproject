@@ -28,6 +28,18 @@ public interface GPCalendarCalc extends GPCalendar {
    */
   public void setOnlyShowWeekends(boolean onlyShowWeekends);
 
+  /**
+   * @return true when public holidays are working days. Weekends stay non-working.
+   */
+  public boolean getHolidaysAreWorkingDays();
+
+  /**
+   * @param holidaysAreWorkingDays
+   *          must be set to true if public holidays are taken into account for the
+   *          task scheduling like any other working day
+   */
+  public void setHolidaysAreWorkingDays(boolean holidaysAreWorkingDays);
+
   Date findClosestWorkingTime(Date time);
 
   /**

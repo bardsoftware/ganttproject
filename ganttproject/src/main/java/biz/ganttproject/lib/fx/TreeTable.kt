@@ -99,7 +99,10 @@ class GPTreeTableView<T>(rootItem: TreeItem<T>) : TreeTableView<T>(rootItem) {
   }
 
   fun scrollTo(item: TreeItem<T>) {
-    skin?.let { (it as GPTreeTableViewSkin<T>).scrollTo(getRow(item)) }
+    val row = getRow(item)
+    if (row >= 0) {
+      skin?.let { (it as GPTreeTableViewSkin<T>).scrollTo(row) }
+    }
   }
 
   override fun requestFocus() {
