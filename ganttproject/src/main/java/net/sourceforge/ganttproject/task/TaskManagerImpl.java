@@ -260,7 +260,8 @@ public class TaskManagerImpl implements TaskManager {
     };
     ChartBoundsAlgorithm alg5 = new ChartBoundsAlgorithm();
     var algCriticalPath = new CriticalPathAlgorithmImpl(this, getCalendar());
-    myAlgorithmCollection = new AlgorithmCollection(this, alg1, alg2, alg3, alg4, alg5, algCriticalPath, myScheduler);
+    myAlgorithmCollection = new AlgorithmCollection(this, alg1, alg2, alg3, alg4, alg5, algCriticalPath, myScheduler,
+        new EffortDrivenDurationAlgorithm(this));
     addTaskListener(new TaskListenerAdapter() {
       @Override
       public void dependencyChanged(@NotNull TaskDependencyEvent e) {

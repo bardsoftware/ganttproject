@@ -21,6 +21,7 @@ package biz.ganttproject.core.option
 import com.google.common.base.Strings
 import com.google.common.base.Supplier
 import javafx.beans.property.StringProperty
+import java.math.BigDecimal
 import java.text.DateFormat
 import java.text.ParseException
 import java.time.Duration
@@ -46,6 +47,24 @@ val doubleValidator: ValueValidator<Double> = ValueValidator { text ->
     text.toDouble()
   } catch (ex: NumberFormatException) {
     throw ValidationException(validatorI18N("validator.decimal.error.parse", arrayOf(text)))
+  }
+}
+
+/**
+ * Parses a decimal number. An empty text means "not set" and gives null.
+ * A comma as the decimal separator is accepted, as long as there is no point which could be a separator too.
+ * Throws [ValidationException] if the text is not a number.
+ */
+fun parseDecimalOrNull(text: String?): BigDecimal? {
+  val trimmed = text?.trim()
+  if (trimmed.isNullOrEmpty()) {
+    return null
+  }
+  val withDecimalPoint = if (trimmed.count { it == ',' } == 1 && '.' !in trimmed) trimmed.replace(',', '.') else trimmed
+  return try {
+    BigDecimal(withDecimalPoint)
+  } catch (e: NumberFormatException) {
+    throw ValidationException(validatorI18N("validator.decimal.error.parse", arrayOf(trimmed)))
   }
 }
 
