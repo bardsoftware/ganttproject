@@ -62,7 +62,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -199,12 +203,51 @@ public class GanttOptions extends SaverBase {
       ByteArrayOutputStream outBuffer = new ByteArrayOutputStream();
       doSave(outBuffer);
       BufferedOutputStream outFile = new BufferedOutputStream(new FileOutputStream(file));
+      // Take the settings file away from the rest of the machine before anything is written into it.
+      // A plain FileOutputStream leaves it at whatever the umask allows, which is 0644 in the
+      // ordinary case -- readable by every other user of the machine. The file holds the GP Cloud
+      // auth token, the GP Cloud user id and the WebDAV server list, so that is more than a detail.
+      //
+      // After opening the stream and before the copy, on purpose: opening creates the file empty, so
+      // at this point there is nothing in it yet. Narrowing it afterwards would leave a moment in
+      // which the finished file, token and all, stands open to everybody.
+      restrictToOwner(file);
       ByteStreams.copy(new ByteArrayInputStream(outBuffer.toByteArray()), outFile);
       outFile.flush();
       outFile.close();
     } catch (Throwable e) {
       GPLogger.log(e);
     }
+  }
+
+  /**
+   * Narrows the options file to its owner. Never fatal: the caller is in the middle of writing the
+   * options, and a file mode which could not be set is a far smaller problem than losing them.
+   *
+   * A filesystem without POSIX permissions -- Windows above all -- answers with
+   * {@link UnsupportedOperationException}. That is a normal answer there, not an error, and it is
+   * swallowed without a word; the file simply keeps the permissions the platform gives it.
+   */
+  private void restrictToOwner(File file) {
+    try {
+      setOwnerOnlyPermissions(file);
+    } catch (UnsupportedOperationException e) {
+      // No POSIX permissions on this filesystem. Nothing to do here and nothing worth reporting.
+    } catch (IOException e) {
+      // A read-only mount, a network share which ignores modes, a file which went away. Worth a
+      // line in the log, but still no reason to drop the options on the floor.
+      GPLogger.log(e);
+    }
+  }
+
+  /**
+   * The platform call on its own, so that the branch which a POSIX machine cannot reach can still
+   * be tested: a test overrides this to throw {@link UnsupportedOperationException}, which is
+   * exactly what the real call does on Windows.
+   */
+  void setOwnerOnlyPermissions(File file) throws IOException {
+    Files.setPosixFilePermissions(
+        file.toPath(), EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE));
   }
 
   private void doSave(OutputStream out) throws Exception {
