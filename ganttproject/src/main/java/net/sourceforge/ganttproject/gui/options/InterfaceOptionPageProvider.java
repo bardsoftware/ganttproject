@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.gui.options;
 
+import net.sourceforge.ganttproject.task.algorithm.LevellingOptions;
 import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.GPOptionGroup;
@@ -80,6 +81,7 @@ public class InterfaceOptionPageProvider extends OptionPageProviderBase {
     List<GPOptionGroup> groups = Lists.newArrayList();
     groups.addAll(Arrays.asList(getUiFacade().getOptions()));
     groups.add(getProject().getDocumentManager().getLocalStorageOptions());
+    groups.add(LevellingOptions.INSTANCE.getOptionGroup());
     return groups.toArray(new GPOptionGroup[0]);
   }
 
