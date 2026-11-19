@@ -177,7 +177,8 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
               getValue = { tableModel.getValueAt(it, modelColumn) as? BigDecimal? },
               setValue = { node, value ->
                   undoManager.undoableEdit("Edit properties") {
-                      tableModel.setValue(value, node, modelColumn)
+                      // An emptied cell is passed as an empty text, which the model takes as no value.
+                      tableModel.setValue(value ?: "", node, modelColumn)
                   }
               }
           )

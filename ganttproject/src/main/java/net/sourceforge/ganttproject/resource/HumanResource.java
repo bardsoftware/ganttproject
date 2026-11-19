@@ -19,6 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.resource;
 
 import biz.ganttproject.core.calendar.GanttDaysOff;
+import biz.ganttproject.core.model.task.CapacityChange;
+import biz.ganttproject.core.model.task.CapacitySchedule;
 import biz.ganttproject.customproperty.*;
 import com.google.common.base.Strings;
 import kotlin.Unit;
@@ -58,6 +60,12 @@ public class HumanResource implements CustomPropertyHolder {
   private LoadDistribution myLoadDistribution;
 
   private BigDecimal myStandardPayRate;
+
+  private BigDecimal myHoursPerDay;
+
+  private Integer myUtilization;
+
+  private List<CapacityChange> myHoursSchedule = Collections.emptyList();
 
   private final List<GanttDaysOff> myDaysOffList = new ArrayList<>();
 
@@ -108,6 +116,9 @@ public class HumanResource implements CustomPropertyHolder {
     setPhone(copy.getPhone());
     setRole(copy.getRole());
     setStandardPayRate(copy.getStandardPayRate());
+    setHoursPerDay(copy.getHoursPerDay());
+    setUtilization(copy.getUtilization());
+    setHoursSchedule(copy.getHoursSchedule());
     myManager = copy.myManager;
     // Straight into the list rather than through addDaysOff(): the copy is not in the manager yet
     // and must not be announced, which is what areEventsEnabled = false above takes care of for the
@@ -404,6 +415,39 @@ public class HumanResource implements CustomPropertyHolder {
     return myStandardPayRate == null ? BigDecimal.ZERO : myStandardPayRate;
   }
 
+  /** Working hours per day of this resource, {@code null} if not set. */
+  public BigDecimal getHoursPerDay() {
+    return myHoursPerDay;
+  }
+
+  public void setHoursPerDay(BigDecimal hoursPerDay) {
+    myHoursPerDay = hoursPerDay;
+    fireResourceChanged();
+  }
+
+  /** Share of the working hours which this resource spends on the project, in percent; {@code null} means 100. */
+  public Integer getUtilization() {
+    return myUtilization;
+  }
+
+  public void setUtilization(Integer utilization) {
+    myUtilization = utilization;
+    fireResourceChanged();
+  }
+
+  /**
+   * Working hours per day which differ from {@link #getHoursPerDay()} from a date on, sorted by date. Empty if the
+   * hours per day are the same all the time.
+   */
+  public List<CapacityChange> getHoursSchedule() {
+    return myHoursSchedule;
+  }
+
+  public void setHoursSchedule(List<CapacityChange> hoursSchedule) {
+    myHoursSchedule = Collections.unmodifiableList(new CapacitySchedule(BigDecimal.ZERO, hoursSchedule).getChanges());
+    fireResourceChanged();
+  }
+
   public double getTotalLoad() {
     double totalLoad = 0.0;
     for (ResourceAssignment assignment : myAssignments) {
@@ -450,6 +494,10 @@ public class HumanResource implements CustomPropertyHolder {
 
     private boolean myCoordinator;
 
+    private boolean myBlocking;
+
+    private boolean myNoEffort;
+
     private Role myRoleForAssignment;
 
     private ResourceAssignmentImpl(ResourceAssignment assignmentToTask) {
@@ -492,6 +540,36 @@ public class HumanResource implements CustomPropertyHolder {
     @Override
     public boolean isCoordinator() {
       return myCoordinator;
+    }
+
+    // The flags change durations and levelling, so a change is reported. They play no part in the load distribution,
+    // which is why the cached loads are kept.
+    @Override
+    public void setBlocking(boolean blocking) {
+      if (myBlocking == blocking) {
+        return;
+      }
+      myBlocking = blocking;
+      HumanResource.this.fireAssignmentsChanged();
+    }
+
+    @Override
+    public boolean isBlocking() {
+      return myBlocking;
+    }
+
+    @Override
+    public void setNoEffort(boolean noEffort) {
+      if (myNoEffort == noEffort) {
+        return;
+      }
+      myNoEffort = noEffort;
+      HumanResource.this.fireAssignmentsChanged();
+    }
+
+    @Override
+    public boolean isNoEffort() {
+      return myNoEffort;
     }
 
     @Override

@@ -45,7 +45,10 @@ public enum ResourceDefaultColumn implements BuiltinColumn {
   ROLE_IN_TASK(new ColumnList.ColumnStub("4", null, false, -1, 75), String.class, "tableColResourceRoleForTask", true),
   STANDARD_RATE(new ColumnList.ColumnStub("5", null, false, -1, 75), BigDecimal.class, "tableColResourceRate", true),
   TOTAL_COST(new ColumnList.ColumnStub("6", null, false, -1, 50), BigDecimal.class, "tableColResourceCost", false),
-  TOTAL_LOAD(new ColumnList.ColumnStub("7", null, false, -1, 50), Double.class, "tableColResourceLoad", false);
+  TOTAL_LOAD(new ColumnList.ColumnStub("7", null, false, -1, 50), Double.class, "tableColResourceLoad", false),
+  HOURS_PER_DAY(new ColumnList.ColumnStub("8", null, false, -1, 50), BigDecimal.class, "tableColResourceHoursPerDay", true),
+  UTILIZATION(new ColumnList.ColumnStub("9", null, false, -1, 50), Integer.class, "tableColResourceUtilization", true),
+  HOURS_SCHEDULE(new ColumnList.ColumnStub("10", null, false, -1, 100), String.class, "tableColResourceHoursSchedule", true);
 
   private final Column myDelegate;
   private final boolean isEditable;

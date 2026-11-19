@@ -54,6 +54,13 @@ class AssignmentSaver extends SaverBase {
     addAttribute("resource-id", String.valueOf(next.getResource().getId()), attrs);
     addAttribute("function", roleForAssignment.getPersistentID(), attrs);
     addAttribute("responsible", String.valueOf(next.isCoordinator()), attrs);
+    // Written only when set, so that a file without them stays as it was.
+    if (next.isBlocking()) {
+      addAttribute("blocking", "true", attrs);
+    }
+    if (next.isNoEffort()) {
+      addAttribute("no-effort", "true", attrs);
+    }
     addAttribute("load", String.valueOf(next.getLoad()), attrs);
     emptyElement("allocation", attrs, handler);
   }
