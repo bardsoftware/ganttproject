@@ -43,7 +43,6 @@ import javafx.scene.paint.Paint
 import javafx.scene.text.Font
 import javafx.util.Callback
 import javafx.util.StringConverter
-import javafx.util.converter.BigDecimalStringConverter
 import javafx.util.converter.DefaultStringConverter
 import javafx.util.converter.NumberStringConverter
 import net.sourceforge.ganttproject.language.GanttLanguage
@@ -396,25 +395,30 @@ fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S,
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue?.toDouble() ?: 0.0) }
   }
 
-fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue: (S, BigDecimal) -> Unit) =
+/**
+ * Converter of a decimal cell. It parses the text like the decimal fields of the dialogs do, and an empty text gives
+ * null, that is no value rather than zero.
+ */
+internal fun <S> decimalConverter() = MyStringConverter<S, BigDecimal>(
+  toString = { _, value ->
+    value?.let { getNumberFormat().format(it) } ?: ""
+  },
+  fromString = { _, value -> parseDecimalOrNull(value) }
+)
+
+fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue: (S, BigDecimal?) -> Unit) =
   TreeTableColumn<S, BigDecimal>(name).apply {
     setCellValueFactory {
       ReadOnlyObjectWrapper(getValue(it.value.value))
     }
     cellFactory = Callback {
-      val converter = MyStringConverter<S, BigDecimal>(
-        toString = { _, value ->
-          value?.let { getNumberFormat().format(it) } ?: ""
-        },
-        fromString = { _, value -> BigDecimalStringConverter().fromString(value) }
-      )
-      TextCell(converter).also {
+      TextCell(decimalConverter<S>()).also {
         it.styleClass.add("text-right")
         it.isDisable = !this@apply.isEditable
         it.isEditable = this@apply.isEditable
       }
     }
-    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue?.toDouble()?.toBigDecimal() ?: BigDecimal.ZERO) }
+    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue) }
   }
 
 fun <S, T> createIconColumn(name: String, getValue: (S) ->T?, iconFactory: (T) -> GlyphIcon<*>?, i18n: Localizer) =

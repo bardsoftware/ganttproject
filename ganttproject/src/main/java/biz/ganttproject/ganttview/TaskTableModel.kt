@@ -22,6 +22,7 @@ package biz.ganttproject.ganttview
 import biz.ganttproject.FXUtil
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.ValidationException
+import biz.ganttproject.core.option.parseDecimalOrNull
 import biz.ganttproject.core.table.TableModel
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
@@ -65,6 +66,8 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager): T
       TaskDefaultColumn.RESOURCES      -> t.assignments.joinToString(",") { it?.resource?.name ?: "" }
       TaskDefaultColumn.EARLIEST_BEGIN -> if (t.thirdDateConstraint != 0) t.third else null
       TaskDefaultColumn.IS_CRITICAL    -> t.isCritical
+      TaskDefaultColumn.EFFORT         -> t.effort
+      TaskDefaultColumn.EFFORT_DRIVEN  -> t.isEffortDriven
       else -> {
         null
       }
@@ -156,13 +159,26 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager): T
         }
       }
       TaskDefaultColumn.COST -> try {
-        val cost = BigDecimal(value.toString())
+        val cost = parseDecimalOrNull(value.toString()) ?: BigDecimal.ZERO
         node.createMutator().also {
           it.setCost(CostStub(cost, false))
           it.commit()
         }
       } catch (e: NumberFormatException) {
         throw ValidationException(MessageFormat.format("Can't parse {0} as number", value))
+      }
+      TaskDefaultColumn.EFFORT -> try {
+        val effort = parseDecimalOrNull(value.toString())
+        node.createMutator().also {
+          it.setEffort(effort)
+          it.commit()
+        }
+      } catch (e: NumberFormatException) {
+        throw ValidationException(MessageFormat.format("Can't parse {0} as number", value))
+      }
+      TaskDefaultColumn.EFFORT_DRIVEN -> node.createMutator().also {
+        it.setEffortDriven(value as Boolean)
+        it.commit()
       }
       else -> {
       }
