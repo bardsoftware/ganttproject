@@ -38,6 +38,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import net.sourceforge.ganttproject.action.BaselineDialogAction;
 import net.sourceforge.ganttproject.action.CalculateCriticalPathAction;
+import net.sourceforge.ganttproject.action.ChartComparisonAction;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.Chart;
 import net.sourceforge.ganttproject.chart.ChartSelection;
@@ -64,6 +65,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private final UIFacade myWorkbenchFacade;
   private final CalculateCriticalPathAction myCriticalPathAction;
   private final BaselineDialogAction myBaselineAction;
+  private final List<ChartComparisonAction> myComparisonActions;
   private final Supplier<TaskTable> myTaskTableSupplier;
   private final TaskActions myTaskActions;
   private final Function0<Unit> myInitializationCompleted;
@@ -93,6 +95,10 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
     myCriticalPathAction.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY);
     myBaselineAction = new BaselineDialogAction(project, workbenchFacade);
     myBaselineAction.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY);
+    myComparisonActions = ChartComparisonAction.Companion.all(workbenchFacade);
+    for (ChartComparisonAction action : myComparisonActions) {
+      action.putValue(GPAction.TEXT_DISPLAY, ContentDisplay.TEXT_ONLY);
+    }
 
     setImageHeight(() -> Double.valueOf(myViewComponents.getImage().getHeight()).intValue());
     myDividerOption.addChangeValueListener(event -> {
@@ -107,6 +113,7 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private FXToolbarBuilder createScheduleToolbar() {
     return new FXToolbarBuilder().withApplicationFont(FontKt.getApplicationFont())
       .addButton(myCriticalPathAction).addButton(myBaselineAction)
+      .addDropdown(new ArrayList<GPAction>(myComparisonActions))
       .withClasses("toolbar-common", "toolbar-small", "toolbar-chart", "align-right");
   }
 

@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject.task;
 import biz.ganttproject.core.calendar.AlwaysWorkingTimeCalendarImpl;
 import biz.ganttproject.core.calendar.GPCalendarCalc;
 import biz.ganttproject.core.chart.render.ShapePaint;
+import biz.ganttproject.core.model.task.RecurrenceOrigin;
+import biz.ganttproject.core.model.task.RecurrenceRule;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeDurationImpl;
@@ -117,6 +119,26 @@ public class TaskImpl implements Task {
 
   private final CostImpl myCost = new CostImpl();
 
+  private BigDecimal myEffort;
+
+  private BigDecimal myActualEffort;
+
+  private BigDecimal myOriginalEffort;
+
+  private boolean isEffortDriven;
+
+  private GanttCalendar myDeadline;
+
+  private boolean isWaitOnly;
+
+  private boolean isDateFixed;
+
+  private boolean isOnSiteOnly;
+
+  private RecurrenceRule myRecurrenceRule;
+
+  private RecurrenceOrigin myRecurrenceOrigin;
+
   private boolean isUnplugged = false;
 
   public final static int NONE = 0;
@@ -179,6 +201,14 @@ public class TaskImpl implements Task {
     myNotes = copy.myNotes;
     bExpand = copy.bExpand;
     myCost.setValue(copy.myCost);
+    myEffort = copy.myEffort;
+    myActualEffort = copy.myActualEffort;
+    myOriginalEffort = copy.myOriginalEffort;
+    isEffortDriven = copy.isEffortDriven;
+    myDeadline = copy.myDeadline;
+    isWaitOnly = copy.isWaitOnly;
+    isDateFixed = copy.isDateFixed;
+    isOnSiteOnly = copy.isOnSiteOnly;
 
     myDependencySlice = new TaskDependencySliceImpl(this, myManager.getDependencyCollection(), TaskDependencySlice.COMPLETE_SLICE_FXN);
     myDependencySliceAsDependant = new TaskDependencySliceAsDependant(this, myManager.getDependencyCollection());
@@ -782,6 +812,106 @@ public class TaskImpl implements Task {
   @Override
   public void setCost(Cost cost) {
     myCost.setValue(cost);
+  }
+
+  @Override
+  public BigDecimal getEffort() {
+    return myEffort;
+  }
+
+  @Override
+  public void setEffort(BigDecimal effort) {
+    myEffort = effort;
+  }
+
+  @Override
+  public BigDecimal getActualEffort() {
+    return myActualEffort;
+  }
+
+  @Override
+  public void setActualEffort(BigDecimal actualEffort) {
+    myActualEffort = actualEffort;
+  }
+
+  @Override
+  public BigDecimal getOriginalEffort() {
+    return myOriginalEffort;
+  }
+
+  @Override
+  public void setOriginalEffort(BigDecimal originalEffort) {
+    myOriginalEffort = originalEffort;
+  }
+
+  @Override
+  public boolean isEffortDriven() {
+    return isEffortDriven;
+  }
+
+  @Override
+  public void setEffortDriven(boolean effortDriven) {
+    isEffortDriven = effortDriven;
+  }
+
+  @Override
+  public GanttCalendar getDeadline() {
+    return myDeadline;
+  }
+
+  @Override
+  public void setDeadline(GanttCalendar deadline) {
+    myDeadline = deadline;
+  }
+
+  @Override
+  public boolean isWaitOnly() {
+    return isWaitOnly;
+  }
+
+  @Override
+  public void setWaitOnly(boolean waitOnly) {
+    isWaitOnly = waitOnly;
+  }
+
+  @Override
+  public boolean isDateFixed() {
+    return isDateFixed;
+  }
+
+  @Override
+  public void setDateFixed(boolean dateFixed) {
+    isDateFixed = dateFixed;
+  }
+
+  @Override
+  public boolean isOnSiteOnly() {
+    return isOnSiteOnly;
+  }
+
+  @Override
+  public void setOnSiteOnly(boolean onSiteOnly) {
+    isOnSiteOnly = onSiteOnly;
+  }
+
+  @Override
+  public RecurrenceRule getRecurrenceRule() {
+    return myRecurrenceRule;
+  }
+
+  @Override
+  public void setRecurrenceRule(RecurrenceRule rule) {
+    myRecurrenceRule = rule;
+  }
+
+  @Override
+  public RecurrenceOrigin getRecurrenceOrigin() {
+    return myRecurrenceOrigin;
+  }
+
+  @Override
+  public void setRecurrenceOrigin(RecurrenceOrigin origin) {
+    myRecurrenceOrigin = origin;
   }
 
   @Override

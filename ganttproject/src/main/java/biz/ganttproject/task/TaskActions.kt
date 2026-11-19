@@ -21,6 +21,7 @@ package biz.ganttproject.task
 import biz.ganttproject.ganttview.NewTaskActor
 import biz.ganttproject.ganttview.TaskTableActionConnector
 import biz.ganttproject.ganttview.showTaskColumnManager
+import biz.ganttproject.task.recurrence.TaskRecurrenceAction
 import net.sourceforge.ganttproject.IGanttProject
 import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.action.resource.AssignmentToggleAction
@@ -143,6 +144,7 @@ class TaskActions(private val project: IGanttProject,
   val pasteAction get() = viewManager().pasteAction
   val linkTasksAction = TaskLinkAction(project.taskManager, selectionManager, uiFacade)
   val unlinkTasksAction = TaskUnlinkAction(project.taskManager, selectionManager, uiFacade)
+  val recurrenceAction = TaskRecurrenceAction(project.taskManager, selectionManager, uiFacade)
 
   val manageColumnsAction: GPAction
     get() = GPAction.create("columns.manage.label") {

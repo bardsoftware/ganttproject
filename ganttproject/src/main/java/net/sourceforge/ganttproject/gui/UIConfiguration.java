@@ -54,6 +54,9 @@ public class UIConfiguration {
   /** Color used for days off (and holidays) */
   private Color myDayOffColor;
 
+  /** Color of the stripe which marks an absence on a task bar */
+  private Color myAbsenceColor;
+
   private boolean isRedlineOn;
 
   private boolean isCriticalPathOn;
@@ -78,6 +81,7 @@ public class UIConfiguration {
     myPreviousTaskColor = Color.LIGHT_GRAY;
     myWeekEndColor = Color.GRAY;
     myDayOffColor = new Color(0.9f, 1f, 0.17f);
+    myAbsenceColor = new Color(230, 90, 30);
     myWeekendAlphaRenderingOption = new AlphaRenderingOption();
     myAppFontSize = new Supplier<Integer>() {
       @Override
@@ -147,6 +151,14 @@ public class UIConfiguration {
 
   public Color getDayOffColor() {
     return myDayOffColor;
+  }
+
+  public Color getAbsenceColor() {
+    return myAbsenceColor;
+  }
+
+  public void setAbsenceColor(Color absenceColor) {
+    this.myAbsenceColor = absenceColor;
   }
 
   public void setWeekEndColor(Color myWeekEndColor) {

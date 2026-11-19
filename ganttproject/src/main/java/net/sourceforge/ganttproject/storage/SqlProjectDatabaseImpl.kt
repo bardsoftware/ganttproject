@@ -20,6 +20,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.core.chart.render.ShapePaint
+import biz.ganttproject.core.model.task.RecurrenceOrigin
+import biz.ganttproject.core.model.task.RecurrenceRule
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.customproperty.CustomPropertyHolder
@@ -567,6 +569,18 @@ class SqlTaskUpdateBuilder(private val task: Task,
 
   override fun setProjectTask(oldValue: Boolean, newValue: Boolean) =
     appendUpdate(TASK.IS_PROJECT_TASK, oldValue, newValue)
+
+  override fun setRecurrenceRule(oldValue: RecurrenceRule?, newValue: RecurrenceRule?) {
+    appendUpdate(TASK.RECURRENCE_UNIT, oldValue?.unit?.xmlValue, newValue?.unit?.xmlValue)
+    appendUpdate(TASK.RECURRENCE_INTERVAL, oldValue?.interval, newValue?.interval)
+    appendUpdate(TASK.RECURRENCE_UNTIL, oldValue?.until, newValue?.until)
+    appendUpdate(TASK.RECURRENCE_COUNT, oldValue?.count, newValue?.count)
+  }
+
+  override fun setRecurrenceOrigin(oldValue: RecurrenceOrigin?, newValue: RecurrenceOrigin?) {
+    appendUpdate(TASK.RECURRENCE_OF, oldValue?.sourceTaskId, newValue?.sourceTaskId)
+    appendUpdate(TASK.RECURRENCE_DATE, oldValue?.date, newValue?.date)
+  }
 }
 
 private fun Task.logId(): String = "${uid}:${taskID}"

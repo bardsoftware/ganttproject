@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.task;
 
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.scene.IdentifiableRow;
+import biz.ganttproject.core.model.task.RecurrenceOrigin;
+import biz.ganttproject.core.model.task.RecurrenceRule;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.customproperty.CustomColumnsValues;
@@ -108,6 +110,36 @@ public interface Task extends MutableTask, IdentifiableRow {
   }
 
   Cost getCost();
+
+  /** Estimated effort of this task, in the unit defined by {@code TaskEffort}. {@code null} means no effort is set. */
+  BigDecimal getEffort();
+
+  /** Effort actually spent on this task, in the unit defined by {@code TaskEffort}. {@code null} means none was recorded. */
+  BigDecimal getActualEffort();
+
+  /** Effort this task was first estimated with, in the unit defined by {@code TaskEffort}. {@code null} means none was kept. */
+  BigDecimal getOriginalEffort();
+
+  /** Whether the task duration is expected to follow from its effort and assignments. */
+  boolean isEffortDriven();
+
+  /** Latest end of this task. Resource levelling reports a task which ends later. {@code null} means no deadline. */
+  GanttCalendar getDeadline();
+
+  /** Whether this task is only waiting, such as for a delivery: it keeps its place in the plan but takes no capacity. */
+  boolean isWaitOnly();
+
+  /** Whether resource levelling must keep this task on its start date. */
+  boolean isDateFixed();
+
+  /** Whether this task needs its blocking resources on site, so that levelling keeps it off their days at home. */
+  boolean isOnSiteOnly();
+
+  /** The rule by which this task repeats, or {@code null} if it does not. */
+  RecurrenceRule getRecurrenceRule();
+
+  /** Tells which task this task was created from by a recurrence rule, or {@code null} if it was not. */
+  RecurrenceOrigin getRecurrenceOrigin();
 
   TaskMutator createMutator();
 

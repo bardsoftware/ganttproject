@@ -18,6 +18,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.ganttview
 
+import biz.ganttproject.core.model.task.formatCapacityChanges
+import biz.ganttproject.core.model.task.parseCapacityChanges
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.MenuBuilder
 import biz.ganttproject.core.table.*
@@ -434,6 +436,9 @@ class ResourceTableModel(private val areChangesIgnored: ()->Boolean)
             ResourceDefaultColumn.STANDARD_RATE -> t.resource.standardPayRate
             ResourceDefaultColumn.TOTAL_COST -> t.resource.totalCost
             ResourceDefaultColumn.TOTAL_LOAD -> t.resource.totalLoad
+            ResourceDefaultColumn.HOURS_PER_DAY -> t.resource.hoursPerDay
+            ResourceDefaultColumn.UTILIZATION -> t.resource.utilization
+            ResourceDefaultColumn.HOURS_SCHEDULE -> formatCapacityChanges(t.resource.hoursSchedule)
             else -> null
           }
         }
@@ -468,6 +473,10 @@ class ResourceTableModel(private val areChangesIgnored: ()->Boolean)
         ResourceDefaultColumn.EMAIL -> node.resource.mail = "$value"
         ResourceDefaultColumn.ROLE -> node.resource.role = value as Role
         ResourceDefaultColumn.STANDARD_RATE -> (value as? Double)?.let { node.resource.standardPayRate = BigDecimal.valueOf(it) }
+        ResourceDefaultColumn.HOURS_PER_DAY -> node.resource.hoursPerDay = value.toString().trim().takeIf { it.isNotEmpty() }?.let { BigDecimal(it) }
+        // Values out of range or unreadable are not taken, the cell keeps what it had.
+        ResourceDefaultColumn.UTILIZATION -> (value as? Int)?.takeIf { it in 1..100 }?.let { node.resource.utilization = it.takeIf { it < 100 } }
+        ResourceDefaultColumn.HOURS_SCHEDULE -> parseCapacityChanges("$value")?.let { node.resource.hoursSchedule = it }
         else -> {}
       }
     } else if (node is AssignmentNode) {

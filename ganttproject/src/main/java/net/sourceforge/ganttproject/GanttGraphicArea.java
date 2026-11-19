@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 import kotlin.Unit;
 import net.sourceforge.ganttproject.action.GPAction;
 import net.sourceforge.ganttproject.chart.*;
+import net.sourceforge.ganttproject.chart.ChartComparison;
 import net.sourceforge.ganttproject.chart.gantt.GanttChartController;
 import net.sourceforge.ganttproject.chart.item.CalendarChartItem;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
@@ -242,6 +243,19 @@ public class GanttGraphicArea extends ChartComponentBase implements GanttChart, 
   @Override
   public GanttPreviousState getBaseline() {
     return myBaseline;
+  }
+
+  @Override
+  public ChartComparison getComparison() {
+    return myChartModel.getComparison();
+  }
+
+  @Override
+  public void setComparison(ChartComparison comparison) {
+    int rowHeight = myChartModel.setComparison(comparison);
+    taskTableChartConnector.getRowHeight().setValue(Math.max(
+        rowHeight + 0.0, taskTableChartConnector.getMinRowHeight().getValue()
+    ));
   }
 
   @Override

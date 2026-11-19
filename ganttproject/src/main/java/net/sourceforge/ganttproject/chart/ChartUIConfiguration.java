@@ -216,6 +216,10 @@ public class ChartUIConfiguration {
     return myProjectConfig.getDayOffColor();
   }
 
+  public Color getAbsenceColor() {
+    return myProjectConfig.getAbsenceColor();
+  }
+
   public int getYOffSet() {
     return myYOffset;
   }
