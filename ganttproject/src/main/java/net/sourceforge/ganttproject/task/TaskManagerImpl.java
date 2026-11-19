@@ -120,6 +120,9 @@ public class TaskManagerImpl implements TaskManager {
     return myUndoListener;
   }
 
+  // Synchronized because an import adds tasks on a background thread while the task table and the
+  // chart read them. Otherwise a reader could cache the array while a task is being added and then
+  // reset isModified, and the task would be missing from getTasks() until the next change.
   private static class TaskMap {
     private final Map<Integer, Task> myId2task = new HashMap<>();
     private final TaskDocumentOrderComparator myComparator;
@@ -130,16 +133,16 @@ public class TaskManagerImpl implements TaskManager {
       myComparator = new TaskDocumentOrderComparator(taskManager);
     }
 
-    void addTask(Task task) {
+    synchronized void addTask(Task task) {
       myId2task.put(task.getTaskID(), task);
       isModified = true;
     }
 
-    Task getTask(int id) {
+    synchronized Task getTask(int id) {
       return myId2task.get(id);
     }
 
-    public Task[] getTasks() {
+    public synchronized Task[] getTasks() {
       if (isModified) {
         myArray = myId2task.values().stream().filter(t -> !t.isDeleted())
           .sorted(myComparator).toArray(Task[]::new);
@@ -148,24 +151,24 @@ public class TaskManagerImpl implements TaskManager {
       return myArray;
     }
 
-    public void clear() {
+    public synchronized void clear() {
       myId2task.clear();
       isModified = true;
     }
 
-    public int size() {
+    public synchronized int size() {
       return myId2task.size();
     }
 
-    public boolean isEmpty() {
+    public synchronized boolean isEmpty() {
       return myId2task.isEmpty();
     }
 
-    void setDirty() {
+    synchronized void setDirty() {
       isModified = true;
     }
 
-    public void removeAllTasks(Iterable<Task> tasks) {
+    public synchronized void removeAllTasks(Iterable<Task> tasks) {
       tasks.forEach(t -> myId2task.remove(t.getTaskID()));
       isModified = true;
     }

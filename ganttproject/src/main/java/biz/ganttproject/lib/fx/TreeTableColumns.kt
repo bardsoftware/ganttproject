@@ -165,9 +165,15 @@ class ColumnListImpl(
         }
         assert(currentList.subList(0, idxImported) == importedList.subList(0, idxImported))
       }
-      // Finally clear the remaining tail.
+      // Finally clear the remaining tail -- but if keepVisibleColumns is set, a column that was
+      // visible before the import and isn't mentioned by the imported list at all (not even as an
+      // invisible entry) would otherwise just be dropped here instead of merged.
       if (currentList.size > importedList.size) {
+        val tail = currentList.subList(importedList.size, currentList.size).toList()
         currentList.subList(importedList.size, currentList.size).clear()
+        if (keepVisibleColumns) {
+          currentList.addAll(tail.filter { col -> remainVisible.any { it.id == col.id } })
+        }
       }
 
       columnStorage.clear()

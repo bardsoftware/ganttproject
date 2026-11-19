@@ -6,7 +6,10 @@ import biz.ganttproject.lib.fx.BuiltinColumns
 import biz.ganttproject.lib.fx.ColumnListImpl
 import biz.ganttproject.lib.fx.copyOf
 import biz.ganttproject.customproperty.CustomColumnsManager
+import biz.ganttproject.customproperty.CustomPropertyClass
+import javafx.scene.control.TreeTableColumn
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -69,6 +72,48 @@ class ColumnListTest {
       tableColumns =  { emptyList() }, builtinColumns = builtinColumns), false)
     val col2 = currentList.columns()
     assertEquals(storage1, col2)
+  }
+
+  /**
+   * The measured gap (`2026-10-08-import-spalten-sichtbarkeit.md`): both existing cases above call
+   * `importData` with `keepVisibleColumns = false` and only built-in `tpd*` columns. The call the
+   * `.gan` import actually makes -- `keepVisibleColumns = true` together with a custom column -- was
+   * untested, and that is exactly the combination that drops a previously visible custom column the
+   * imported list does not mention at all.
+   */
+  @Test
+  fun `import with keepVisibleColumns=true does not drop a previously visible custom column`() {
+    val customPropertyManager = CustomColumnsManager()
+    val targetDef = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "Zielspalte", null)
+    val sourceDef = customPropertyManager.createDefinition(CustomPropertyClass.TEXT, "Quellspalte", null)
+
+    val targetColumn = ColumnList.ColumnStub(targetDef.id, "Zielspalte", true, 1, 75)
+    val storage = mutableListOf<ColumnList.Column>(targetColumn)
+    val fxColumn = TreeTableColumn<Any, Any>().apply {
+      isVisible = true
+      userData = targetColumn
+    }
+    val currentList = ColumnListImpl(
+      columnList = storage,
+      customPropertyManager = customPropertyManager,
+      tableColumns = { listOf(fxColumn) },
+      builtinColumns = builtinColumns
+    )
+
+    val importedSource = mutableListOf<ColumnList.Column>(
+      ColumnList.ColumnStub(sourceDef.id, "Quellspalte", true, 1, 75),
+    )
+    currentList.importData(
+      ColumnListImpl(
+        columnList = importedSource, customPropertyManager = customPropertyManager,
+        tableColumns = { emptyList() }, builtinColumns = builtinColumns
+      ),
+      true
+    )
+
+    val visibleIds = currentList.columns().filter { it.isVisible }.map { it.id }.toSet()
+    assertTrue(visibleIds.contains(targetDef.id), "Zielspalte wurde abgeschnitten statt angehaengt: $visibleIds")
+    assertEquals(setOf(targetDef.id, sourceDef.id), visibleIds)
   }
 
 }

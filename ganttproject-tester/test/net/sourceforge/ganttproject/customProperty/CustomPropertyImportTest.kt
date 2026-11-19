@@ -57,6 +57,31 @@ class CustomPropertyImportTest {
   }
 
   @Test
+  fun `import of an untyped TEXT column merges into a same-named typed column`() {
+    val target = CustomColumnsManager()
+    val existing = target.createDefinition(CustomPropertyClass.DOUBLE, "col1", null)
+
+    val source = CustomColumnsManager()
+    val incoming = source.createDefinition(CustomPropertyClass.TEXT, "col1", null)
+
+    val mapping = target.importData(source)
+    assertEquals(1, target.definitions.size)
+    assertEquals(existing, mapping[incoming])
+  }
+
+  @Test
+  fun `import of a column with a conflicting non-TEXT class creates a second column`() {
+    val target = CustomColumnsManager()
+    target.createDefinition(CustomPropertyClass.DOUBLE, "col1", null)
+
+    val source = CustomColumnsManager()
+    source.createDefinition(CustomPropertyClass.DATE, "col1", null)
+
+    target.importData(source)
+    assertEquals(2, target.definitions.size)
+  }
+
+  @Test
   fun `import preserves property id`() {
     val target = CustomColumnsManager()
     target.createDefinition("col1", CustomPropertyClass.TEXT.iD, "col1", null)
