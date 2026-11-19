@@ -35,6 +35,7 @@ import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
+import net.sourceforge.ganttproject.action.task.LevellingAction;
 import net.sourceforge.ganttproject.action.view.ViewMenu;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -61,6 +62,7 @@ import org.slf4j.Logger;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
@@ -140,6 +142,16 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     mTask.add(myTaskActions.getCreateAction());
     mTask.add(myTaskActions.getPropertiesAction());
     mTask.add(myTaskActions.getDeleteAction());
+    mTask.addSeparator();
+    mTask.add(new LevellingAction(getTaskManager(), getUndoManager(),
+        (message, answer) -> getUIFacade().showOptionDialog(JOptionPane.QUESTION_MESSAGE, message, new Action[] {
+            OkAction.create("ok", () -> { answer.invoke(true); return Unit.INSTANCE; }),
+            CancelAction.create("cancel", () -> { answer.invoke(false); return Unit.INSTANCE; })
+        }),
+        (isProblem, message) -> getUIFacade().showOptionDialog(
+            isProblem ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE, message,
+            new Action[] { OkAction.create("ok", () -> Unit.INSTANCE) }),
+        LocalDate::now));
     bar.add(mTask);
 
     JMenu mHuman = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("human"));

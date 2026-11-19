@@ -81,6 +81,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   )
   private val priorityOption = ObservableEnum<Priority>("priority", task.priority, Priority.entries.toTypedArray())
   private val progressOption = ObservableInt("progress", task.completionPercentage)
+  internal val onSiteOnlyOption = ObservableBoolean("onSiteOnly", task.isOnSiteOnly)
   private val showInTimelineOption = ObservableBoolean("showInTimeline", taskView.timelineTasks.contains(task))
   private val colorOption = ObservableColor("color", Style.Color.parse(ColorOption.Util.getColor(task.color)))
   private val notesOption = ObservableString("notes", task.notes)
@@ -163,6 +164,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
         minValue = 0
         maxValue = 100
       }
+      checkbox(onSiteOnlyOption)
 
       skip()
       title("section.view")
@@ -242,6 +244,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
 
     priorityOption.ifChanged(taskMutator::setPriority)
     progressOption.ifChanged(taskMutator::setCompletionPercentage)
+    onSiteOnlyOption.ifChanged(taskMutator::setOnSiteOnly)
     colorOption.ifChanged { color ->
       color?.let { taskMutator.setColor(it.get()) }
     }

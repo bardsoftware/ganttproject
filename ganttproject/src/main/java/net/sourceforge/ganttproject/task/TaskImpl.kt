@@ -27,6 +27,7 @@ import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.storage.ProjectDatabaseException
 import net.sourceforge.ganttproject.task.algorithm.ShiftTaskTreeAlgorithm
+import net.sourceforge.ganttproject.task.algorithm.effortDrivenProjectDays
 import java.awt.Color
 import java.math.BigDecimal
 
@@ -149,6 +150,11 @@ internal class MutatorReentered(taskImpl: TaskImpl, private val delegate: Mutato
   }
 }
 
+// FieldChange treats null as "no change", so a nullable effort is wrapped to make clearing it a change.
+data class EffortValue(val effort: BigDecimal?)
+
+data class DeadlineValue(val deadline: GanttCalendar?)
+
 data class EarliestStartValue(val startDate: GanttCalendar?, val isEnabled: Boolean)
 
 internal open class MutatorImpl(
@@ -162,6 +168,12 @@ internal open class MutatorImpl(
   private val colorChange: FieldChange<Color?> = FieldChange(myPropertiesEventSender, taskImpl.color)
   private val myCompletionPercentageChange = FieldChange(myProgressEventSender, taskImpl.completionPercentage)
   private val costChange = FieldChange(myPropertiesEventSender, taskImpl.cost)
+  private val effortChange = FieldChange(myPropertiesEventSender, EffortValue(taskImpl.effort))
+  private val effortDrivenChange = FieldChange(myPropertiesEventSender, taskImpl.isEffortDriven)
+  private val deadlineChange = FieldChange(myPropertiesEventSender, DeadlineValue(taskImpl.deadline))
+  private val waitOnlyChange = FieldChange(myPropertiesEventSender, taskImpl.isWaitOnly)
+  private val dateFixedChange = FieldChange(myPropertiesEventSender, taskImpl.isDateFixed)
+  private val onSiteOnlyChange = FieldChange(myPropertiesEventSender, taskImpl.isOnSiteOnly)
   private val criticalFlagChange = FieldChange(myPropertiesEventSender, taskImpl.isCritical)
   private val customPropertiesChange = FieldChange<CustomPropertyHolder>(myPropertiesEventSender, taskImpl.customValues.copyOf())
   private val expansionChange = FieldChange(myPropertiesEventSender, taskImpl.expand)
@@ -188,6 +200,7 @@ internal open class MutatorImpl(
       throw IllegalStateException("Mutator for task ${taskImpl.taskID} is commiting twice")
     }
     var hasActualDatesChange = false
+    deriveDurationFromEffort()
     try {
       milestoneChange.ifChanged {
         taskImpl.isMilestone = it
@@ -243,6 +256,24 @@ internal open class MutatorImpl(
       costChange.ifChanged { cost ->
         taskImpl.cost.setValue(cost)
         taskUpdateBuilder?.setCost(costChange.oldValue, cost)
+      }
+      effortChange.ifChanged {
+        taskImpl.effort = it.effort
+      }
+      effortDrivenChange.ifChanged {
+        taskImpl.isEffortDriven = it
+      }
+      deadlineChange.ifChanged {
+        taskImpl.deadline = it.deadline
+      }
+      waitOnlyChange.ifChanged {
+        taskImpl.isWaitOnly = it
+      }
+      dateFixedChange.ifChanged {
+        taskImpl.isDateFixed = it
+      }
+      onSiteOnlyChange.ifChanged {
+        taskImpl.isOnSiteOnly = it
       }
       criticalFlagChange.ifChanged {
         taskImpl.isCritical = it
@@ -304,6 +335,35 @@ internal open class MutatorImpl(
     }
   }
 
+  /**
+   * The duration of an effort driven task follows from its effort and assignments, so it is set here, in the same
+   * commit and thus in the same undo step as the change which asked for it. A duration set by hand is replaced, and
+   * so is the duration which a moved start would leave behind, because it keeps the end where it was. An end set by
+   * hand is taken back for the same reason: the end follows from the start and the derived duration.
+   */
+  private fun deriveDurationFromEffort() {
+    if (!(effortChange.hasChange() || effortDrivenChange.hasChange() || onSiteOnlyChange.hasChange() || myDurationChange.hasChange() || myStartChange.hasChange() || myEndChange.hasChange())) {
+      return
+    }
+    val isMilestone = milestoneChange.newValueOrElse { taskImpl.isMilestone }
+    if (!effortDrivenChange.newValueOrElse { taskImpl.isEffortDriven } || isMilestone || taskImpl.isSupertask) {
+      return
+    }
+    val effort = effortChange.newValueOrElse { EffortValue(taskImpl.effort) }.effort
+    effortDrivenProjectDays(effort, taskImpl.assignments, getStart().toLocalDate(), myManager.calendar,
+      requiresPresence = onSiteOnlyChange.newValueOrElse { taskImpl.isOnSiteOnly })?.let {
+      // Drop what was asked for, then ask for the derived duration the usual way, which moves the end along.
+      myDurationChange.clear()
+      myEndChange.clear()
+      val length = myManager.createLength(it)
+      setDuration(length)
+      if (myStartChange.hasChange() && !myEndChange.hasChange()) {
+        // The derived duration may be the stored one, which setDuration takes for no change and leaves the end alone.
+        setEnd(CalendarFactory.createGanttCalendar(taskImpl.shiftDate(getStart().time, length)))
+      }
+    }
+  }
+
   override fun getThird(): GanttCalendar? = myThirdChange.newValueOrElse {
     EarliestStartValue(taskImpl.myThird, taskImpl.thirdDateConstraint == 1)
   }.startDate
@@ -351,6 +411,18 @@ internal open class MutatorImpl(
   override fun setCritical(critical: Boolean) { criticalFlagChange.setValue(critical) }
 
   override fun setCost(cost: Task.Cost) { costChange.setValue(cost) }
+
+  override fun setEffort(effort: BigDecimal?) { effortChange.setValue(EffortValue(effort)) }
+
+  override fun setEffortDriven(effortDriven: Boolean) { effortDrivenChange.setValue(effortDriven) }
+
+  override fun setDeadline(deadline: GanttCalendar?) { deadlineChange.setValue(DeadlineValue(deadline)) }
+
+  override fun setWaitOnly(waitOnly: Boolean) { waitOnlyChange.setValue(waitOnly) }
+
+  override fun setDateFixed(dateFixed: Boolean) { dateFixedChange.setValue(dateFixed) }
+
+  override fun setOnSiteOnly(onSiteOnly: Boolean) { onSiteOnlyChange.setValue(onSiteOnly) }
 
   override fun setShape(shape: ShapePaint) { shapeChange.setValue(shape) }
 

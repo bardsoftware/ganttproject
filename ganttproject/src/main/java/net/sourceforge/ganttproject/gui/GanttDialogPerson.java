@@ -66,7 +66,7 @@ public class GanttDialogPerson {
     myTaskManager = taskManager;
     myUIFacade = uiFacade;
     this.person = person;
-    mainPropertiesPanel = new MainPropertiesPanel(person);
+    mainPropertiesPanel = new MainPropertiesPanel(person, myTaskManager.getCalendar());
     customColumnsPanel = new CustomColumnsPanel(customPropertyManager, projectDatabase, CustomColumnsPanel.Type.RESOURCE,
       myUIFacade.getUndoManager(), person, myUIFacade.getResourceColumnList());
     this.onHide = onHide;
