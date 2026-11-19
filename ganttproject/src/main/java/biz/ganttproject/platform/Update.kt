@@ -379,7 +379,7 @@ private class MajorUpdateUi(update: UpdateMetadata, hasMinorUpdates: Boolean, pr
   }
   val btnDownload = Button(ourLocalizer.formatText("majorUpdate.download")).apply {
     styleClass.addAll("btn", "btn-attention")
-    onAction = EventHandler { openInBrowser(UPGRADE_URL) }
+    onAction = EventHandler { openInBrowser(update.url?.takeIf { it.isNotBlank() } ?: UPGRADE_URL) }
   }
   val component = vbox {
     addClasses("major-update")
