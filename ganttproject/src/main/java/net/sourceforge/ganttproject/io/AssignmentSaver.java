@@ -25,6 +25,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import biz.ganttproject.core.model.task.TaskEffort;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
@@ -55,6 +56,9 @@ class AssignmentSaver extends SaverBase {
     addAttribute("function", roleForAssignment.getPersistentID(), attrs);
     addAttribute("responsible", String.valueOf(next.isCoordinator()), attrs);
     addAttribute("load", String.valueOf(next.getLoad()), attrs);
+    if (next.getActualEffort() != null) {
+      addAttribute(TaskEffort.ACTUAL_XML_ATTRIBUTE, next.getActualEffort().toPlainString(), attrs);
+    }
     emptyElement("allocation", attrs, handler);
   }
 }

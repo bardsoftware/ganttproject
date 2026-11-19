@@ -25,6 +25,7 @@ import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.chart.render.*;
+import net.sourceforge.ganttproject.chart.gantt.GanttChartSceneBuilder;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 
 import java.awt.*;
@@ -206,15 +207,12 @@ public class StyledPainterImpl implements Painter {
       @Override
       public void paint(Rectangle next) {
         Graphics g = myGraphics;
-        final Color c;
-        if (next.hasStyle("earlier")) {
-          c = myConfig.getEarlierPreviousTaskColor();
-        } else if (next.hasStyle("later")) {
-          c = myConfig.getLaterPreviousTaskColor();
+        Color c = getPreviousTaskColor(next);
+        if (next.hasStyle(GanttChartSceneBuilder.BAND_UPPER)) {
+          myGraphics.setPaint(new ShapePaint(ShapeConstants.THICK_BACKSLASH, c, DATES_HALF_BACKGROUND));
         } else {
-          c = myConfig.getPreviousTaskColor();
+          g.setColor(c);
         }
-        g.setColor(c);
 
         if (next.hasStyle("milestone")) {
           int middleX = (next.getWidth() <= next.getHeight()) ? next.getRightX() - next.getWidth() / 2 : next.getLeftX()
@@ -237,15 +235,25 @@ public class StyledPainterImpl implements Painter {
           int rightx = next.getLeftX() + next.getWidth();
           g.fillPolygon(new int[]{rightx - 3, rightx, rightx}, new int[]{topy, topy, topy + 3}, 3);
         } else {
-          g.fillRect(next.getLeftX(), next.getTopY(), next.getWidth(), next.getHeight());
+          // The dates and durations band paints each comparison in one half of the row.
+          int topY = next.getTopY();
+          int height = next.getHeight();
+          if (next.hasStyle(GanttChartSceneBuilder.BAND_UPPER)) {
+            height = height / 2;
+          } else if (next.hasStyle(GanttChartSceneBuilder.BAND_LOWER)) {
+            topY += height / 2;
+            height -= height / 2;
+          }
+          int bottomY = topY + height;
+          g.fillRect(next.getLeftX(), topY, next.getWidth(), height);
           g.setColor(Color.black);
-          g.drawLine(next.getLeftX(), next.getTopY(), next.getRightX(), next.getTopY());
-          g.drawLine(next.getLeftX(), next.getBottomY(), next.getRightX(), next.getBottomY());
+          g.drawLine(next.getLeftX(), topY, next.getRightX(), topY);
+          g.drawLine(next.getLeftX(), bottomY, next.getRightX(), bottomY);
           if (next.hasStyle("start")) {
-            g.drawLine(next.getLeftX(), next.getTopY(), next.getLeftX(), next.getBottomY());
+            g.drawLine(next.getLeftX(), topY, next.getLeftX(), bottomY);
           }
           if (next.hasStyle("end")) {
-            g.drawLine(next.getRightX(), next.getTopY(), next.getRightX(), next.getBottomY());
+            g.drawLine(next.getRightX(), topY, next.getRightX(), bottomY);
           }
         }
       }
@@ -346,8 +354,28 @@ public class StyledPainterImpl implements Painter {
     myTextPainter.paint(textGroup);
   }
 
+  /** The background of the hatched dates half, which tells it from the durations half. */
+  static final Color DATES_HALF_BACKGROUND = new Color(147, 112, 219);
+
+  private Color getPreviousTaskColor(Canvas.Shape shape) {
+    if (shape.hasStyle("earlier")) {
+      return myConfig.getEarlierPreviousTaskColor();
+    }
+    if (shape.hasStyle("later")) {
+      return myConfig.getLaterPreviousTaskColor();
+    }
+    return myConfig.getPreviousTaskColor();
+  }
+
   @Override
   public void paint(Canvas.Rhombus rhombus) {
+    // A milestone in a baseline band is a rhombus, which the style painters never see. Without this it would be
+    // painted in the task color instead of a baseline color.
+    if ("previousStateTask".equals(rhombus.getStyle())) {
+      myGraphics.setColor(getPreviousTaskColor(rhombus));
+      myGraphics.fillPolygon(rhombus.getPointsX(), rhombus.getPointsY(), rhombus.getPointCount());
+      return;
+    }
     myPolygonRenderer.render(rhombus);
   }
 }

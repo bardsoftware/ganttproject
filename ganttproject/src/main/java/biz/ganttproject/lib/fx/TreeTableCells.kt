@@ -43,7 +43,6 @@ import javafx.scene.paint.Paint
 import javafx.scene.text.Font
 import javafx.util.Callback
 import javafx.util.StringConverter
-import javafx.util.converter.BigDecimalStringConverter
 import javafx.util.converter.DefaultStringConverter
 import javafx.util.converter.NumberStringConverter
 import net.sourceforge.ganttproject.language.GanttLanguage
@@ -113,6 +112,8 @@ class TextCell<S, T>(
 
   private var savedGraphic: Node? = null
   var graphicSupplier: (T) -> Node? = { null }
+  /** Tells if the cell of a given row may be edited, in addition to the column being editable. */
+  var isRowEditable: (S) -> Boolean = { true }
   private val disclosureNode: Node? get() = parent?.lookup(".arrow")
 
   private val textField: TextField = createTextField().also {
@@ -151,7 +152,7 @@ class TextCell<S, T>(
     if (this.index == -1) {
       return
     }
-    if (!isEditable) {
+    if (!isEditable || tableRow?.item?.let(isRowEditable) == false) {
       onEditingCompleted()
       return
     }
@@ -341,13 +342,19 @@ class GanttCalendarStringConverter : StringConverter<GanttCalendar>() {
     CalendarFactory.createGanttCalendar(validator.parse(text))
 }
 
-fun <S> createDateColumn(name: String, getValue: (S) -> GanttCalendar?, setValue: (S, GanttCalendar) -> Unit): TreeTableColumn<S, GanttCalendar> =
+fun <S> createDateColumn(
+  name: String,
+  getValue: (S) -> GanttCalendar?,
+  setValue: (S, GanttCalendar) -> Unit,
+  isEditableRow: (S) -> Boolean = { true }
+): TreeTableColumn<S, GanttCalendar> =
   TreeTableColumn<S, GanttCalendar>(name).apply {
     setCellValueFactory {
       ReadOnlyObjectWrapper(getValue(it.value.value))
     }
     val converter = GanttCalendarStringConverter()
     cellFactory = Callback { TextCell<S, GanttCalendar>(converter.adapt()).also {
+      it.isRowEditable = isEditableRow
       it.styleClass.add("text-left")
       it.isDisable = !this@apply.isEditable
       it.isEditable = this@apply.isEditable
@@ -366,13 +373,14 @@ fun <S> createBooleanColumn(name: String, getValue: (S) -> Boolean?, setValue: (
     onEditCommit = EventHandler {event -> setValue(event.rowValue.value, event.newValue) }
   }
 
-fun <S> createIntegerColumn(name: String, getValue: (S) -> Int?, setValue: (S, Int) -> Unit) =
+fun <S> createIntegerColumn(name: String, getValue: (S) -> Int?, setValue: (S, Int) -> Unit, isEditableRow: (S) -> Boolean = { true }) =
   TreeTableColumn<S, Number>(name).apply {
     setCellValueFactory {
       ReadOnlyObjectWrapper(getValue(it.value.value))
     }
     cellFactory = Callback {
       TextCell<S, Number>(NumberStringConverter(getNumberFormat()).adapt()).also {
+        it.isRowEditable = isEditableRow
         it.styleClass.add("text-right")
         it.isDisable = !this@apply.isEditable
         it.isEditable = this@apply.isEditable
@@ -396,25 +404,30 @@ fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S,
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue?.toDouble() ?: 0.0) }
   }
 
-fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue: (S, BigDecimal) -> Unit) =
+/**
+ * Converter of a decimal cell. It parses the text like the decimal fields of the dialogs do, and an empty text gives
+ * null, that is no value rather than zero.
+ */
+internal fun <S> decimalConverter() = MyStringConverter<S, BigDecimal>(
+  toString = { _, value ->
+    value?.let { getNumberFormat().format(it) } ?: ""
+  },
+  fromString = { _, value -> parseDecimalOrNull(value) }
+)
+
+fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue: (S, BigDecimal?) -> Unit) =
   TreeTableColumn<S, BigDecimal>(name).apply {
     setCellValueFactory {
       ReadOnlyObjectWrapper(getValue(it.value.value))
     }
     cellFactory = Callback {
-      val converter = MyStringConverter<S, BigDecimal>(
-        toString = { _, value ->
-          value?.let { getNumberFormat().format(it) } ?: ""
-        },
-        fromString = { _, value -> BigDecimalStringConverter().fromString(value) }
-      )
-      TextCell(converter).also {
+      TextCell(decimalConverter<S>()).also {
         it.styleClass.add("text-right")
         it.isDisable = !this@apply.isEditable
         it.isEditable = this@apply.isEditable
       }
     }
-    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue?.toDouble()?.toBigDecimal() ?: BigDecimal.ZERO) }
+    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue) }
   }
 
 fun <S, T> createIconColumn(name: String, getValue: (S) ->T?, iconFactory: (T) -> GlyphIcon<*>?, i18n: Localizer) =

@@ -146,6 +146,7 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
     val assignment = task.assignmentCollection.addAssignment(resource)
     assignment.load = it.load
     assignment.isCoordinator = it.isCoordinator
+    assignment.actualEffort = it.actualEffort
     it.role?.let { function ->
       val role = findRole(function)
       if (role != null) {
@@ -226,6 +227,7 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
       val resource = resourceManager.create(xmlRes.name, xmlRes.id)
       resource.mail = xmlRes.email
       resource.phone = xmlRes.phone
+      resource.hoursPerDay = xmlRes.hoursPerDay
       xmlRes.props.forEach { xmlProp ->
         val prop = resCustomPropManager.definitions.find { it.id == xmlProp.definitionId }
         if (prop != null) {
@@ -274,6 +276,10 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
     xmlTask.earliestStartDate?.let { task.setThirdDate(GanttCalendar.parseXMLDate(it)) }
     task.thirdDateConstraint = xmlTask.thirdDateConstraint ?: 0
     task.cost = CostStub(xmlTask.costManualValue ?: BigDecimal.ZERO, xmlTask.isCostCalculated ?: true)
+    task.effort = xmlTask.effort
+    task.isEffortDriven = xmlTask.isEffortDriven ?: false
+    task.actualEffort = xmlTask.actualEffort
+    task.originalEffort = xmlTask.originalEffort
     xmlTask.shape?.let {
       task.shape = buildShapePaint(it, task.color)
     }

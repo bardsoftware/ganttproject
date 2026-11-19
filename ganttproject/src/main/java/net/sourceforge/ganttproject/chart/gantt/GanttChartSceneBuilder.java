@@ -30,6 +30,10 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
+import net.sourceforge.ganttproject.chart.ChartComparison;
+import net.sourceforge.ganttproject.chart.ChartComparisonKt;
+import net.sourceforge.ganttproject.chart.ComparisonResult;
+import net.sourceforge.ganttproject.chart.DatesAndDurations;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.task.*;
 
@@ -56,6 +60,10 @@ public class GanttChartSceneBuilder {
     List<ITaskSceneTask> getVisibleTaskSceneTasks();
     List<ITaskSceneTask> getTasksInDocumentOrder();
     List<GanttPreviousStateTask> getBaseline();
+    /** What the band underneath the task bars compares. */
+    ChartComparison getComparison();
+    /** The effort comparison of the task in the given row. */
+    ComparisonResult getEffortComparison(int rowId);
     TaskActivitySceneBuilder.ChartApi getChartApi(TaskLabelSceneBuilder<ITaskSceneTask> labelsRenderer);
     GPCalendarCalc getCalendar();
     Date getStartDate();
@@ -125,6 +133,12 @@ public class GanttChartSceneBuilder {
     );
 
     myLabelsRenderer = new TaskLabelSceneBuilder<>(taskLabelSceneApi, myLabelsLayer);
+    // The label below the bar goes under the band: always in the comparison views, and in the dates view
+    // when a baseline is shown, because then the baseline band lies right under the bar. Without a
+    // baseline the dates view keeps the label where it was.
+    myLabelsRenderer.setBandHeight(
+        () -> input.getComparison().getNeedsBandRoomWithoutBaseline() || input.getBaseline() != null
+            ? getRectangleHeight() : 0);
     myChartApi = input.getChartApi(myLabelsRenderer);
     this.mySplitter = new TaskActivitySplitter<ITask>(
       input::getStartDate,
@@ -207,7 +221,7 @@ public class GanttChartSceneBuilder {
         }
       }
       renderLabels(boundPolygons);
-      renderBaseline(t, rowNum, defaultUnitOffsets);
+      renderComparisonBand(t, rowNum, defaultUnitOffsets);
       rowNum++;
       Canvas.Line nextLine = getPrimitiveContainer().createLine(0, rowNum * getRowHeight(),
           input.getWidth(), rowNum * getRowHeight());
@@ -234,70 +248,197 @@ public class GanttChartSceneBuilder {
    */
   static List<String> getBaselineStyles(boolean isMilestone, int baselineDuration, int currentDuration,
                                         Date baselineEnd, Date currentEnd) {
-    int endComparison = baselineEnd.compareTo(currentEnd);
-    if (endComparison == 0 && currentDuration == baselineDuration) {
+    ComparisonResult result = ChartComparisonKt.compareDates(baselineEnd, currentEnd, baselineDuration, currentDuration);
+    if (result == ComparisonResult.NO_BAND) {
       return null;
     }
     List<String> styles = new ArrayList<String>();
     if (isMilestone) {
       styles.add("milestone");
     }
-    if (endComparison < 0) {
-      styles.add("later");
-    } else if (endComparison > 0) {
-      styles.add("earlier");
+    if (result.getStyleName() != null) {
+      styles.add(result.getStyleName());
     }
     return styles;
   }
 
+  /** Draws the band underneath the task bar which the selected {@link ChartComparison} asks for. */
+  private void renderComparisonBand(ITaskSceneTask t, int rowNum, OffsetList defaultUnitOffsets) {
+    switch (input.getComparison()) {
+      case EFFORT:
+        renderEffortBand(t, rowNum, defaultUnitOffsets);
+        break;
+      case DURATIONS:
+        renderDurationBand(t, rowNum, defaultUnitOffsets);
+        break;
+      case DATES_AND_DURATIONS:
+        renderDatesAndDurationsBand(t, rowNum, defaultUnitOffsets);
+        break;
+      default:
+        renderBaseline(t, rowNum, defaultUnitOffsets);
+        break;
+    }
+  }
+
   private void renderBaseline(ITaskSceneTask t, int rowNum, OffsetList defaultUnitOffsets) {
-    TaskActivitiesSceneAlgorithm alg = new TaskActivitiesSceneAlgorithm(
-      input.getCalendar(),
-      (Date s, Date e) -> input.createLength(t.getDuration().getTimeUnit(), s, e)
-    );
+    GanttPreviousStateTask taskBaseline = findBaselineTask(t);
+    if (taskBaseline == null) {
+      return;
+    }
+    Date startDate = taskBaseline.getStart().getTime();
+    Date endDate = getBaselineEnd(taskBaseline);
+    // The durations are compared as the whole units which the baseline stored, which is what
+    // GanttPreviousState.createTasks() took from the task in the first place.
+    List<String> styles = getBaselineStyles(
+        t.isMilestone(), taskBaseline.getDuration(), t.getDuration().getLength(),
+        endDate, t.getEnd().getTime());
+    if (styles == null) {
+      return;
+    }
+    paintBand(rowNum, defaultUnitOffsets, createBandActivities(t, startDate, endDate), styles);
+  }
+
+  /**
+   * The durations band starts where the task bar starts and is as long as the task was in the baseline, so that it
+   * sticks out by the change of the duration only. Without a baseline a neutral band lies under the bar.
+   */
+  private void renderDurationBand(ITaskSceneTask t, int rowNum, OffsetList defaultUnitOffsets) {
+    List<ITaskActivity<ITaskSceneTask>> activities = t.getActivities();
+    if (activities.isEmpty()) {
+      return;
+    }
+    GanttPreviousStateTask taskBaseline = findBaselineTask(t);
+    Integer baselineDuration = taskBaseline == null ? null : taskBaseline.getDuration();
+    ComparisonResult result = ChartComparisonKt.compareDurations(baselineDuration, t.getDuration().getLength());
+    if (result == ComparisonResult.NO_BAND) {
+      return;
+    }
+    List<ITaskActivity<ITaskSceneTask>> band = taskBaseline == null
+        ? mySplitter.split(activities, Integer.MAX_VALUE)
+        : createDurationBandActivities(t, activities, baselineDuration);
+    paintBand(rowNum, defaultUnitOffsets, band, getBandStyles(t, result, null));
+  }
+
+  /**
+   * The dates comparison in the upper half of the band, anchored at the baseline start like the dates band, and the
+   * durations comparison in the lower half, anchored at the task start like the durations band. A half with nothing
+   * to show is not drawn. A summary task keeps only the dates comparison, at full height.
+   */
+  private void renderDatesAndDurationsBand(ITaskSceneTask t, int rowNum, OffsetList defaultUnitOffsets) {
+    List<ITaskActivity<ITaskSceneTask>> activities = t.getActivities();
+    if (activities.isEmpty()) {
+      return;
+    }
+    GanttPreviousStateTask taskBaseline = findBaselineTask(t);
+    boolean isSummary = t.getHasNestedTasks();
+    if (taskBaseline == null) {
+      // Without a baseline there is no dates half, and a summary task has nothing else to show.
+      DatesAndDurations both = ChartComparisonKt.compareDatesAndDurations(
+          null, t.getEnd().getTime(), null, t.getDuration().getLength());
+      if (!isSummary && both.getDurations() != ComparisonResult.NO_BAND) {
+        paintBand(rowNum, defaultUnitOffsets, mySplitter.split(activities, Integer.MAX_VALUE),
+            getBandStyles(t, both.getDurations(), BAND_LOWER));
+      }
+      return;
+    }
+    Date baselineStart = taskBaseline.getStart().getTime();
+    Date baselineEnd = getBaselineEnd(taskBaseline);
+    DatesAndDurations both = ChartComparisonKt.compareDatesAndDurations(
+        baselineEnd, t.getEnd().getTime(), taskBaseline.getDuration(), t.getDuration().getLength());
+    if (both.getDates() != ComparisonResult.NO_BAND) {
+      paintBand(rowNum, defaultUnitOffsets, createBandActivities(t, baselineStart, baselineEnd),
+          getBandStyles(t, both.getDates(), isSummary ? null : BAND_UPPER));
+    }
+    if (!isSummary && both.getDurations() != ComparisonResult.NO_BAND) {
+      paintBand(rowNum, defaultUnitOffsets, createDurationBandActivities(t, activities, taskBaseline.getDuration()),
+          getBandStyles(t, both.getDurations(), BAND_LOWER));
+    }
+  }
+
+  /** The effort band lies exactly under the task bar: only its color tells, the calendar has no say. */
+  private void renderEffortBand(ITaskSceneTask t, int rowNum, OffsetList defaultUnitOffsets) {
+    ComparisonResult result = input.getEffortComparison(t.getRowId());
+    List<ITaskActivity<ITaskSceneTask>> activities = t.getActivities();
+    if (result == ComparisonResult.NO_BAND || activities.isEmpty()) {
+      return;
+    }
+    paintBand(rowNum, defaultUnitOffsets, mySplitter.split(activities, Integer.MAX_VALUE),
+        getBandStyles(t, result, null));
+  }
+
+  private GanttPreviousStateTask findBaselineTask(ITaskSceneTask t) {
     List<GanttPreviousStateTask> baseline = input.getBaseline();
     if (baseline != null) {
       for (GanttPreviousStateTask taskBaseline : baseline) {
         if (taskBaseline.getId() == t.getRowId()) {
-          Date startDate = taskBaseline.getStart().getTime();
-          TimeDuration duration = input.createLength(taskBaseline.getDuration());
-          Date endDate = input.getCalendar().shiftDate(startDate, duration);
-          // The durations are compared as the whole units which the baseline stored, which is what
-          // GanttPreviousState.createTasks() took from the task in the first place.
-          List<String> styles = getBaselineStyles(
-              t.isMilestone(), taskBaseline.getDuration(), t.getDuration().getLength(),
-              endDate, t.getEnd().getTime());
-          if (styles == null) {
-            return;
-          }
-          List<ITaskActivity<ITaskSceneTask>> baselineActivities = new ArrayList<ITaskActivity<ITaskSceneTask>>();
-          if (t.isMilestone()) {
-            baselineActivities.add(
-              new TaskSceneMilestoneActivity(t, startDate, endDate, input.createLength(1))
-            );
-          } else {
-            alg.recalculateActivities(t, baselineActivities, startDate, endDate);
-          }
-          List<Polygon> baselineRectangles = myBaselineActivityRenderer.renderActivities(rowNum, baselineActivities,
-              defaultUnitOffsets);
-          for (int i = 0; i < baselineRectangles.size(); i++) {
-            Polygon r = baselineRectangles.get(i);
-            r.setStyle("previousStateTask");
-            for (String s : styles) {
-              r.addStyle(s);
-            }
-            if (i == 0) {
-              r.addStyle("start");
-            }
-            if (i == baselineRectangles.size() - 1) {
-              r.addStyle("end");
-            }
-          }
-          return;
+          return taskBaseline;
         }
       }
     }
+    return null;
   }
+
+  private Date getBaselineEnd(GanttPreviousStateTask taskBaseline) {
+    TimeDuration duration = input.createLength(taskBaseline.getDuration());
+    return input.getCalendar().shiftDate(taskBaseline.getStart().getTime(), duration);
+  }
+
+  private List<ITaskActivity<ITaskSceneTask>> createDurationBandActivities(
+      ITaskSceneTask t, List<ITaskActivity<ITaskSceneTask>> activities, int baselineDuration) {
+    Date startDate = activities.get(0).getStart();
+    Date endDate = input.getCalendar().shiftDate(startDate, input.createLength(baselineDuration));
+    return createBandActivities(t, startDate, endDate);
+  }
+
+  private List<ITaskActivity<ITaskSceneTask>> createBandActivities(ITaskSceneTask t, Date startDate, Date endDate) {
+    List<ITaskActivity<ITaskSceneTask>> result = new ArrayList<ITaskActivity<ITaskSceneTask>>();
+    if (t.isMilestone()) {
+      result.add(new TaskSceneMilestoneActivity(t, startDate, endDate, input.createLength(1)));
+    } else {
+      new TaskActivitiesSceneAlgorithm(
+        input.getCalendar(),
+        (Date s, Date e) -> input.createLength(t.getDuration().getTimeUnit(), s, e)
+      ).recalculateActivities(t, result, startDate, endDate);
+    }
+    return result;
+  }
+
+  private static List<String> getBandStyles(ITaskSceneTask t, ComparisonResult result, String half) {
+    List<String> styles = new ArrayList<String>();
+    if (t.isMilestone()) {
+      styles.add("milestone");
+    }
+    if (result.getStyleName() != null) {
+      styles.add(result.getStyleName());
+    }
+    if (half != null) {
+      styles.add(half);
+    }
+    return styles;
+  }
+
+  private void paintBand(int rowNum, OffsetList defaultUnitOffsets,
+                         List<ITaskActivity<ITaskSceneTask>> activities, List<String> styles) {
+    List<Polygon> bandRectangles = myBaselineActivityRenderer.renderActivities(rowNum, activities,
+        defaultUnitOffsets);
+    for (int i = 0; i < bandRectangles.size(); i++) {
+      Polygon r = bandRectangles.get(i);
+      r.setStyle("previousStateTask");
+      for (String s : styles) {
+        r.addStyle(s);
+      }
+      if (i == 0) {
+        r.addStyle("start");
+      }
+      if (i == bandRectangles.size() - 1) {
+        r.addStyle("end");
+      }
+    }
+  }
+
+  /** Styles of the two halves of the dates and durations band, read by the painter. */
+  public static final String BAND_UPPER = "band.upper";
+  public static final String BAND_LOWER = "band.lower";
 
   private static Predicate<Polygon> REMOVE_SUPERTASK_ENDINGS = shape -> !shape.hasStyle("task.ending");
 

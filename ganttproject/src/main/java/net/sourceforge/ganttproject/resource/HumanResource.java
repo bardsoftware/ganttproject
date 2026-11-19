@@ -59,6 +59,8 @@ public class HumanResource implements CustomPropertyHolder {
 
   private BigDecimal myStandardPayRate;
 
+  private BigDecimal myHoursPerDay;
+
   private final List<GanttDaysOff> myDaysOffList = new ArrayList<>();
 
   /**
@@ -108,6 +110,7 @@ public class HumanResource implements CustomPropertyHolder {
     setPhone(copy.getPhone());
     setRole(copy.getRole());
     setStandardPayRate(copy.getStandardPayRate());
+    setHoursPerDay(copy.getHoursPerDay());
     myManager = copy.myManager;
     // Straight into the list rather than through addDaysOff(): the copy is not in the manager yet
     // and must not be announced, which is what areEventsEnabled = false above takes care of for the
@@ -404,6 +407,16 @@ public class HumanResource implements CustomPropertyHolder {
     return myStandardPayRate == null ? BigDecimal.ZERO : myStandardPayRate;
   }
 
+  /** Working hours per day of this resource, {@code null} if not set. */
+  public BigDecimal getHoursPerDay() {
+    return myHoursPerDay;
+  }
+
+  public void setHoursPerDay(BigDecimal hoursPerDay) {
+    myHoursPerDay = hoursPerDay;
+    fireResourceChanged();
+  }
+
   public double getTotalLoad() {
     double totalLoad = 0.0;
     for (ResourceAssignment assignment : myAssignments) {
@@ -451,6 +464,8 @@ public class HumanResource implements CustomPropertyHolder {
     private boolean myCoordinator;
 
     private Role myRoleForAssignment;
+
+    private BigDecimal myActualEffort;
 
     private ResourceAssignmentImpl(ResourceAssignment assignmentToTask) {
       myAssignmentToTask = assignmentToTask;
@@ -503,6 +518,17 @@ public class HumanResource implements CustomPropertyHolder {
     @Override
     public void setRoleForAssignment(Role role) {
       myRoleForAssignment = role;
+    }
+
+    @Override
+    public BigDecimal getActualEffort() {
+      return myActualEffort;
+    }
+
+    @Override
+    public void setActualEffort(BigDecimal actualEffort) {
+      myActualEffort = actualEffort;
+      HumanResource.this.fireAssignmentChanged();
     }
 
     @Override

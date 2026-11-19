@@ -121,6 +121,17 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
 
     @Override
+    public ChartComparison getComparison() {
+      return myModel.getComparison();
+    }
+
+    @Override
+    public ComparisonResult getEffortComparison(int rowId) {
+      Task task = myModel.getTaskManager().getTask(rowId);
+      return task == null ? ComparisonResult.NO_BAND : ChartComparisonKt.getEffortComparison(task);
+    }
+
+    @Override
     public TaskActivitySceneBuilder.ChartApi getChartApi(TaskLabelSceneBuilder<ITaskSceneTask> labelsRenderer) {
       return new TaskActivitySceneChartApi(myModel) {
         @Override
@@ -188,8 +199,12 @@ public class TaskRendererImpl2 extends ChartRendererBase {
   }
 
   public int calculateRowHeight() {
-    int rowHeight = chartRenderer.myLabelsRenderer.calculateRowHeight();
-    if (myModel.getBaseline() != null) {
+    TaskLabelSceneBuilder<?> labels = chartRenderer.myLabelsRenderer;
+    int rowHeight = labels.calculateRowHeight();
+    boolean needsBandRoom = myModel.getBaseline() != null || myModel.getComparison().getNeedsBandRoomWithoutBaseline();
+    // In the comparison views a label below the bar already makes room for the band underneath it.
+    boolean labelsMakeBandRoom = myModel.getComparison().getNeedsBandRoomWithoutBaseline() && labels.isTextDown();
+    if (needsBandRoom && !labelsMakeBandRoom) {
       rowHeight = rowHeight + 8;
     }
     return rowHeight;

@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject.task;
 import net.sourceforge.ganttproject.resource.HumanResource;
 import net.sourceforge.ganttproject.roles.Role;
 
+import java.math.BigDecimal;
+
 /**
  * Created by IntelliJ IDEA.
  * 
@@ -45,4 +47,9 @@ public interface ResourceAssignment {
   Role getRoleForAssignment();
 
   void setRoleForAssignment(Role role);
+
+  /** Effort which the resource actually spent on the task, in the unit defined by {@code TaskEffort}. {@code null} means none was recorded. */
+  BigDecimal getActualEffort();
+
+  void setActualEffort(BigDecimal actualEffort);
 }
