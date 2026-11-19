@@ -155,7 +155,8 @@ public class SchedulerImpl extends AlgorithmBase {
     }
     debug(".. finally, start range={}", startRange);
     if (startRange.hasLowerBound()) {
-      modifyTaskStart(node.getTask(), startRange.lowerEndpoint());
+      // An effort driven task does not start on a day off of its resources.
+      modifyTaskStart(node.getTask(), TaskLevellingKt.allowedStart(node.getTask(), startRange.lowerEndpoint()));
     }
     if (endRange.hasUpperBound()) {
       GPCalendarCalc cal = node.getTask().getManager().getCalendar();
