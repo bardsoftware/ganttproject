@@ -25,6 +25,7 @@ import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.model.task.ConstraintType.fromPersistentValue
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
+import net.sourceforge.ganttproject.parser.capacityChanges
 import net.sourceforge.ganttproject.GanttPreviousState
 import net.sourceforge.ganttproject.GanttPreviousStateTask
 import net.sourceforge.ganttproject.GanttProjectImpl
@@ -146,6 +147,8 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
     val assignment = task.assignmentCollection.addAssignment(resource)
     assignment.load = it.load
     assignment.isCoordinator = it.isCoordinator
+    assignment.isBlocking = it.isBlocking
+    assignment.isNoEffort = it.isNoEffort
     it.role?.let { function ->
       val role = findRole(function)
       if (role != null) {
@@ -226,6 +229,9 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
       val resource = resourceManager.create(xmlRes.name, xmlRes.id)
       resource.mail = xmlRes.email
       resource.phone = xmlRes.phone
+      resource.hoursPerDay = xmlRes.hoursPerDay
+      resource.utilization = xmlRes.utilization
+      resource.hoursSchedule = xmlRes.capacityChanges()
       xmlRes.props.forEach { xmlProp ->
         val prop = resCustomPropManager.definitions.find { it.id == xmlProp.definitionId }
         if (prop != null) {
@@ -274,6 +280,11 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
     xmlTask.earliestStartDate?.let { task.setThirdDate(GanttCalendar.parseXMLDate(it)) }
     task.thirdDateConstraint = xmlTask.thirdDateConstraint ?: 0
     task.cost = CostStub(xmlTask.costManualValue ?: BigDecimal.ZERO, xmlTask.isCostCalculated ?: true)
+    task.effort = xmlTask.effort
+    task.isEffortDriven = xmlTask.isEffortDriven ?: false
+    task.deadline = xmlTask.deadline?.let { GanttCalendar.parseXMLDate(it) }
+    task.isWaitOnly = xmlTask.isWaitOnly ?: false
+    task.isDateFixed = xmlTask.isDateFixed ?: false
     xmlTask.shape?.let {
       task.shape = buildShapePaint(it, task.color)
     }

@@ -65,6 +65,7 @@ class GanttProjectFxApp : Application() {
         add(
           HBox().also {
             it.children.add(ganttProject.createStatusBar().lockPanel)
+            it.children.add(LevellingDueBar(ganttProject.levellingStaleness, ganttProject::runLevellingFromMessage).node)
             val filler = Pane()
             it.children.add(filler)
             HBox.setHgrow(filler, Priority.ALWAYS)

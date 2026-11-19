@@ -35,6 +35,11 @@ import net.sourceforge.ganttproject.action.edit.EditMenu;
 import net.sourceforge.ganttproject.action.help.HelpMenu;
 import net.sourceforge.ganttproject.action.project.ProjectMenu;
 import net.sourceforge.ganttproject.action.resource.ResourceActionSet;
+import net.sourceforge.ganttproject.action.task.LevellingAction;
+import net.sourceforge.ganttproject.task.algorithm.AutoBaselines;
+import net.sourceforge.ganttproject.task.algorithm.LevellingOptions;
+import net.sourceforge.ganttproject.task.algorithm.LevellingRunNotifierKt;
+import net.sourceforge.ganttproject.task.algorithm.LevellingStaleness;
 import net.sourceforge.ganttproject.action.view.ViewMenu;
 import net.sourceforge.ganttproject.action.zoom.ZoomActionSet;
 import net.sourceforge.ganttproject.chart.GanttChart;
@@ -61,6 +66,7 @@ import org.slf4j.Logger;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
@@ -101,6 +107,24 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
 
   private ArrayList<GanttPreviousState> myPreviousStates = new ArrayList<>();
 
+  private LevellingAction myLevellingAction;
+
+  private final LevellingStaleness myLevellingStaleness =
+      new LevellingStaleness(LevellingRunNotifierKt.getLevellingRunNotifier());
+
+  public LevellingStaleness getLevellingStaleness() {
+    return myLevellingStaleness;
+  }
+
+  /** Runs the levelling menu item on the Swing thread, for the button of the status bar message. */
+  public void runLevellingFromMessage() {
+    SwingUtilities.invokeLater(() -> {
+      if (myLevellingAction != null) {
+        myLevellingAction.actionPerformed(null);
+      }
+    });
+  }
+
   private final GanttChartTabContentPanel myGanttChartTabContent;
 
   private final ResourceChartTabContentPanel myResourceChartTabContent;
@@ -140,6 +164,18 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     mTask.add(myTaskActions.getCreateAction());
     mTask.add(myTaskActions.getPropertiesAction());
     mTask.add(myTaskActions.getDeleteAction());
+    mTask.addSeparator();
+    myLevellingAction = new LevellingAction(getTaskManager(), getUndoManager(),
+        (message, answer) -> getUIFacade().showOptionDialog(JOptionPane.QUESTION_MESSAGE, message, new Action[] {
+            OkAction.create("ok", () -> { answer.invoke(true); return Unit.INSTANCE; }),
+            CancelAction.create("cancel", () -> { answer.invoke(false); return Unit.INSTANCE; })
+        }),
+        (isProblem, message) -> getUIFacade().showOptionDialog(
+            isProblem ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE, message,
+            new Action[] { OkAction.create("ok", () -> Unit.INSTANCE) }),
+        LocalDate::now,
+        new AutoBaselines(getTaskManager(), this::getBaselines));
+    mTask.add(myLevellingAction);
     bar.add(mTask);
 
     JMenu mHuman = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("human"));
@@ -166,6 +202,10 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     getProjectImpl().getHumanResourceManager().addView(this);
     myCalendar.addListener(GanttProject.this::setModified);
 
+    getTaskManager().addTaskListener(myLevellingStaleness.getTaskListener());
+    getProjectImpl().getHumanResourceManager().addView(myLevellingStaleness.getResourceView());
+    myCalendar.addListener(myLevellingStaleness.getCalendarListener());
+
     startupLogger.debug("1. loading look'n'feels");
     options = new GanttOptions(getRoleManager(), getDocumentManager(), false);
     myUIConfiguration = options.getUIConfiguration();
@@ -185,6 +225,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     options.addOptionGroups(getUIFacade().getGanttChart().getOptionGroups());
     options.addOptionGroups(getUIFacade().getResourceChart().getOptionGroups());
     options.addOptionGroups(getProjectUIFacade().getOptionGroups());
+    options.addOptionGroups(LevellingOptions.INSTANCE.getOptionGroup());
     options.addOptionGroups(getDocumentManager().getNetworkOptionGroups());
     options.addOptions(GPCloudOptions.INSTANCE.getOptionGroup());
     options.addOptions(getRssFeedChecker().getOptions());

@@ -135,6 +135,8 @@ public class ClipboardTaskProcessor {
       newAssignment.setLoad(ra.getLoad());
       newAssignment.setRoleForAssignment(ra.getRoleForAssignment());
       newAssignment.setCoordinator(ra.isCoordinator());
+      newAssignment.setBlocking(ra.isBlocking());
+      newAssignment.setNoEffort(ra.isNoEffort());
     }
   }
 
