@@ -22,8 +22,13 @@ import biz.ganttproject.core.io.XmlProject;
 import biz.ganttproject.core.table.ColumnList;
 import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.gui.zoom.ZoomManager;
+import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResourceManager;
 import net.sourceforge.ganttproject.roles.RoleManager;
+
+import kotlin.Unit;
+
+import java.util.function.Consumer;
 
 /** Class to parse the attribute of resources handler */
 public class ResourceTagHandler {
@@ -32,10 +37,22 @@ public class ResourceTagHandler {
   private final RoleManager myRoleManager;
   private final ZoomManager myZoomManager;
   private final ColumnList myResourceColumns;
+  private final Consumer<String> myProblemReporter;
 
   public ResourceTagHandler(HumanResourceManager resourceManager, RoleManager roleManager,
                             CustomPropertyManager resourceCustomPropertyManager, ZoomManager zoomManager,
                             ColumnList resourceColumns) {
+    this(resourceManager, roleManager, resourceCustomPropertyManager, zoomManager, resourceColumns, problem -> {});
+  }
+
+  /**
+   * @param problemReporter receives a localized description of every problem found in the resources, e.g. a vacation
+   *                        which covers no day.
+   */
+  public ResourceTagHandler(HumanResourceManager resourceManager, RoleManager roleManager,
+                            CustomPropertyManager resourceCustomPropertyManager, ZoomManager zoomManager,
+                            ColumnList resourceColumns, Consumer<String> problemReporter) {
+    myProblemReporter = problemReporter;
     myResourceManager = resourceManager;
     myCustomPropertyManager = resourceCustomPropertyManager;
     myRoleManager = roleManager;
@@ -44,7 +61,12 @@ public class ResourceTagHandler {
   }
 
   public void process(XmlProject xmlProject) {
-    var resourceLoader = new ResourceLoader(myResourceManager, myRoleManager, myCustomPropertyManager);
+    var resourceLoader = new ResourceLoader(myResourceManager, myRoleManager, myCustomPropertyManager,
+        (name, start, end) -> {
+          myProblemReporter.accept(
+              GanttLanguage.getInstance().formatText("resource.vacation.withoutDays", name, start.toString(), end.toString()));
+          return Unit.INSTANCE;
+        });
     resourceLoader.loadResources(xmlProject);
     ResourceLoaderKt.loadResourceView(xmlProject, myZoomManager, myResourceColumns);
   }

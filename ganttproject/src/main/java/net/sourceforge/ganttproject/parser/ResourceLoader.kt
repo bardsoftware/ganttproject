@@ -18,8 +18,13 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.parser
 
-import biz.ganttproject.core.calendar.GanttDaysOff
 import biz.ganttproject.core.io.XmlProject
+import biz.ganttproject.core.io.XmlResources
+import biz.ganttproject.core.model.task.CapacityChange
+import biz.ganttproject.core.model.task.WorkWeekChange
+import biz.ganttproject.core.model.task.parseWeekDays
+import java.time.LocalDate
+import java.time.format.DateTimeParseException
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.customproperty.CustomPropertyManager
@@ -32,13 +37,18 @@ import net.sourceforge.ganttproject.roles.RolePersistentID
 import net.sourceforge.ganttproject.roles.RoleSet
 
 class ResourceLoader(private val resourceManager: HumanResourceManager, private val roleManager: RoleManager,
-                     private val customPropertyManager: CustomPropertyManager) {
+                     private val customPropertyManager: CustomPropertyManager,
+                     private val onVacationWithoutDays: (resourceName: String, start: LocalDate, end: LocalDate) -> Unit = { _, _, _ -> }) {
   fun loadResources(xmlProject: XmlProject) {
     loadCustomPropertyDefinitions(xmlProject)
     xmlProject.resources.resources.forEach { xmlResource ->
       val resource = resourceManager.create(xmlResource.name, xmlResource.id).also { hr ->
         hr.mail = xmlResource.email
         hr.phone = xmlResource.phone
+        hr.hoursPerDay = xmlResource.hoursPerDay
+        hr.utilization = xmlResource.utilization
+        hr.hoursSchedule = xmlResource.capacityChanges()
+        hr.workWeek = xmlResource.workWeekChanges()
         val roleID = xmlResource.role
         if (roleID.isNotBlank()) {
           roleManager.findRole(roleID)?.let { hr.role = it }
@@ -73,7 +83,9 @@ class ResourceLoader(private val resourceManager: HumanResourceManager, private 
         val startDate = xmlVacation.startDate
         val endDate = xmlVacation.endDate
         if (startDate.isNotBlank() && endDate.isNotBlank()) {
-          it.addDaysOff(GanttDaysOff(GanttCalendar.parseXMLDate(startDate), GanttCalendar.parseXMLDate(endDate)))
+          it.addDaysOff(daysOffFromFile(GanttCalendar.parseXMLDate(startDate), GanttCalendar.parseXMLDate(endDate), xmlVacation.resourceid) { from, to ->
+            onVacationWithoutDays(it.name, from, to)
+          })
         }
       } ?: run {
         // LOG
@@ -106,4 +118,26 @@ fun RoleManager.findRole(id: String): Role? {
 fun loadResourceView(xmlProject: XmlProject, zoomManager: ZoomManager, resourceColumns: ColumnList) {
   val xmlView = xmlProject.views.filter { "resource-table" == it.id }.firstOrNull() ?: return
   loadView(xmlView, zoomManager, resourceColumns, ResourceDefaultColumn.getColumnStubs())
+}
+
+/** Changes of the working hours of a resource as stored in the file; an entry with an unreadable date is skipped. */
+fun XmlResources.XmlResource.capacityChanges(): List<CapacityChange> = hoursChanges.mapNotNull {
+  try {
+    CapacityChange(LocalDate.parse(it.date), it.hours)
+  } catch (e: DateTimeParseException) {
+    null
+  }
+}
+
+/**
+ * The working week of a resource as stored in the file. An entry with an unreadable date or day is skipped, the way an
+ * unreadable change of the working hours is.
+ */
+fun XmlResources.XmlResource.workWeekChanges(): List<WorkWeekChange> = workWeek.mapNotNull {
+  try {
+    val days = parseWeekDays(it.days) ?: return@mapNotNull null
+    WorkWeekChange(it.date?.takeIf { date -> date.isNotBlank() }?.let { date -> LocalDate.parse(date) }, days)
+  } catch (e: DateTimeParseException) {
+    null
+  }
 }
