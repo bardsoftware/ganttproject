@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.io
 
 import biz.ganttproject.core.io.XmlTasks.XmlCalculationSimpleSelect
+import biz.ganttproject.core.model.task.TaskEffort
 import com.fasterxml.jackson.annotation.*
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -260,6 +261,38 @@ data class XmlTasks(
     var isCostCalculated: Boolean? = null,
 
     @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = TaskEffort.XML_ATTRIBUTE)
+    var effort: BigDecimal? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "effort-driven")
+    var isEffortDriven: Boolean? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "recurrence-unit")
+    var recurrenceUnit: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "recurrence-interval")
+    var recurrenceInterval: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "recurrence-until")
+    var recurrenceUntil: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "recurrence-count")
+    var recurrenceCount: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "recurrence-of")
+    var recurrenceOf: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "recurrence-date")
+    var recurrenceDate: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
     @get:JacksonXmlCData
     var notes: String? = null,
 
@@ -320,6 +353,9 @@ data class XmlResources(
     @get:JacksonXmlProperty(isAttribute = true, localName = "function") var role: String = "",
     @get:JacksonXmlProperty(isAttribute = true, localName = "contacts") var email: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var phone: String = "",
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "hours-per-day") var hoursPerDay: BigDecimal? = null,
 
     @get:JsonInclude(JsonInclude.Include.NON_NULL) var rate: XmlRate? = null,
 

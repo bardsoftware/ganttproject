@@ -186,6 +186,7 @@ class PropertyPaneBuilderImpl(private val localizer: Localizer, private val grid
 
   private fun createOptionItem(property: ObservableProperty<*>, editor: Node, displayOptions: PropertyDisplayOptions<*>? = null): OptionRowBuilder {
     property.isWritable.addWatcher { evt -> editor.isDisable = !evt.newValue }
+    editor.isDisable = property.isWritable.value.not()
     if (onRequestFocus == null) {
       onRequestFocus = { editor.requestFocus() }
     }

@@ -19,8 +19,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.task;
 
 import java.awt.Color;
+import java.math.BigDecimal;
 
 import biz.ganttproject.core.chart.render.ShapePaint;
+import biz.ganttproject.core.model.task.RecurrenceOrigin;
+import biz.ganttproject.core.model.task.RecurrenceRule;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.customproperty.CustomColumnsException;
@@ -71,6 +74,14 @@ public interface MutableTask {
   void setProjectTask(boolean projectTask);
 
   void setCost(Task.Cost cost);
+
+  void setEffort(BigDecimal effort);
+
+  void setEffortDriven(boolean effortDriven);
+
+  void setRecurrenceRule(RecurrenceRule rule);
+
+  void setRecurrenceOrigin(RecurrenceOrigin origin);
 
   void setCustomProperties(CustomPropertyHolder customProperties) throws CustomColumnsException;
 }

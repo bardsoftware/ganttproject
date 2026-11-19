@@ -56,6 +56,7 @@ import java.util.concurrent.CountDownLatch
 import javax.swing.Action
 import javax.swing.SwingUtilities
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Some utility code for building nice dialogs. Provides the following features:
@@ -106,12 +107,18 @@ fun dialogFxBuild(owner: Window? = null, id: String? = null, contentBuilder: (Di
       dialogPane.scene.window.let { window ->
         dialogBuildApi.onShown = {
           id?.let(DialogPlacement::getBounds)?.let {
-            window.x = it.x
-            window.y = it.y
-            window.width = it.width
-            window.height = it.height
-            dialogPane.prefWidth = it.width
-            dialogPane.prefHeight = it.height
+            // The dialog may need more room than when its bounds were saved, e.g. because it shows more buttons
+            // now. The window has just been sized to its content, so we don't make it smaller than that.
+            val width = max(it.width, window.width)
+            val height = max(it.height, window.height)
+            // If it has grown, it shall still fit onto the screen where it was.
+            val screen = Screen.getScreensForRectangle(it.x, it.y, it.width, it.height).firstOrNull()?.visualBounds
+            window.x = if (width > it.width && screen != null) max(screen.minX, min(it.x, screen.maxX - width)) else it.x
+            window.y = if (height > it.height && screen != null) max(screen.minY, min(it.y, screen.maxY - height)) else it.y
+            window.width = width
+            window.height = height
+            dialogPane.prefWidth = width
+            dialogPane.prefHeight = height
           } ?: run {
             newOwner?.let {
               centerOnOwner(window, it)

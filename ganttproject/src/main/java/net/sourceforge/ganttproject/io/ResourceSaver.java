@@ -43,6 +43,9 @@ class ResourceSaver extends SaverBase {
       addAttribute("function", p.getRole().getPersistentID(), attrs);
       addAttribute("contacts", p.getMail(), attrs);
       addAttribute("phone", p.getPhone(), attrs);
+      if (p.getHoursPerDay() != null) {
+        addAttribute("hours-per-day", p.getHoursPerDay().toPlainString(), attrs);
+      }
       startElement("resource", attrs, handler);
       {
         saveRates(p, handler);

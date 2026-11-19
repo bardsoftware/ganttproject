@@ -23,6 +23,8 @@ import biz.ganttproject.core.calendar.GPCalendar
 import biz.ganttproject.core.calendar.GanttDaysOff
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.model.task.ConstraintType.fromPersistentValue
+import biz.ganttproject.core.model.task.RecurrenceOrigin
+import biz.ganttproject.core.model.task.RecurrenceRule
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import net.sourceforge.ganttproject.GanttPreviousState
@@ -226,6 +228,7 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
       val resource = resourceManager.create(xmlRes.name, xmlRes.id)
       resource.mail = xmlRes.email
       resource.phone = xmlRes.phone
+      resource.hoursPerDay = xmlRes.hoursPerDay
       xmlRes.props.forEach { xmlProp ->
         val prop = resCustomPropManager.definitions.find { it.id == xmlProp.definitionId }
         if (prop != null) {
@@ -274,6 +277,10 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
     xmlTask.earliestStartDate?.let { task.setThirdDate(GanttCalendar.parseXMLDate(it)) }
     task.thirdDateConstraint = xmlTask.thirdDateConstraint ?: 0
     task.cost = CostStub(xmlTask.costManualValue ?: BigDecimal.ZERO, xmlTask.isCostCalculated ?: true)
+    task.effort = xmlTask.effort
+    task.isEffortDriven = xmlTask.isEffortDriven ?: false
+    task.recurrenceRule = RecurrenceRule.fromXml(xmlTask.recurrenceUnit, xmlTask.recurrenceInterval, xmlTask.recurrenceUntil, xmlTask.recurrenceCount)
+    task.recurrenceOrigin = RecurrenceOrigin.fromXml(xmlTask.recurrenceOf, xmlTask.recurrenceDate)
     xmlTask.shape?.let {
       task.shape = buildShapePaint(it, task.color)
     }

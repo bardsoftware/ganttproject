@@ -20,6 +20,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.storage
 
 import biz.ganttproject.app.Localizer
+import biz.ganttproject.core.model.task.RecurrenceOrigin
+import biz.ganttproject.core.model.task.RecurrenceRule
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.TimeDuration
@@ -115,6 +117,8 @@ interface ProjectDatabase {
     fun setNotes(oldValue: String?, newValue: String?)
     fun setPriority(oldValue: Task.Priority?, newValue: Task.Priority?)
     fun setProjectTask(oldValue: Boolean, newValue: Boolean)
+    fun setRecurrenceRule(oldValue: RecurrenceRule?, newValue: RecurrenceRule?)
+    fun setRecurrenceOrigin(oldValue: RecurrenceOrigin?, newValue: RecurrenceOrigin?)
     fun setShape(oldValue: ShapePaint?, newValue: ShapePaint?)
     fun setStart(oldValue: GanttCalendar, newValue: GanttCalendar)
     fun setEnd(oldValue: GanttCalendar?, newValue: GanttCalendar)

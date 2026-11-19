@@ -29,12 +29,18 @@ import net.sourceforge.ganttproject.storage.SqlProjectDatabaseImpl
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.TaskManager
 import org.h2.jdbcx.JdbcDataSource
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import javax.sql.DataSource
+import kotlin.concurrent.thread
 
 class TaskFiltersTestCase {
   private lateinit var dataSource: DataSource
@@ -144,6 +150,49 @@ class TaskFiltersTestCase {
 
     assertTrue(filterManager.filterFxn(taskManager.rootTask, parent))
   }
+
+  // The task table calls the filter in the FX thread while an undoable edit, which runs in the Swing thread, refreshes
+  // the filter results on commit.
+  @Test
+  fun `Filter results can be read while another thread refreshes them`() {
+    val tasks = (1..2000).map { createTask() }
+    val txn = taskFilterManager.createUndoTxnFactory()()
+    txn.commit()
+
+    val failure = AtomicReference<Throwable>()
+    val missing = AtomicInteger(0)
+    val done = AtomicBoolean(false)
+    val refresher = thread {
+      try {
+        while (!done.get()) {
+          txn.commit()
+        }
+      } catch (ex: Throwable) {
+        failure.compareAndSet(null, ex)
+      }
+    }
+    val reader = thread {
+      try {
+        val deadline = System.currentTimeMillis() + 3000
+        while (System.currentTimeMillis() < deadline && failure.get() == null) {
+          tasks.forEach { task ->
+            if (!taskFilterManager.filterFxn(taskManager.rootTask, task)) {
+              missing.incrementAndGet()
+            }
+          }
+        }
+      } catch (ex: Throwable) {
+        failure.compareAndSet(null, ex)
+      } finally {
+        done.set(true)
+      }
+    }
+    reader.join()
+    refresher.join()
+    assertNull(failure.get(), { "Reading the filter results failed: ${failure.get()}, missing tasks: ${missing.get()}" })
+    assertEquals(0, missing.get(), "Tasks missing from the filter results while they were refreshed")
+  }
+
   private fun Task.shiftTask(days: Int) {
     this.createShiftMutator().also {
       it.shift(taskManager.createLength(GPTimeUnitStack.DAY, days.toFloat()))

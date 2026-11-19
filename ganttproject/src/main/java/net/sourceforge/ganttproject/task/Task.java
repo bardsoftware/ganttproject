@@ -20,6 +20,8 @@ package net.sourceforge.ganttproject.task;
 
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.chart.scene.IdentifiableRow;
+import biz.ganttproject.core.model.task.RecurrenceOrigin;
+import biz.ganttproject.core.model.task.RecurrenceRule;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.customproperty.CustomColumnsValues;
@@ -108,6 +110,18 @@ public interface Task extends MutableTask, IdentifiableRow {
   }
 
   Cost getCost();
+
+  /** Estimated effort of this task, in the unit defined by {@code TaskEffort}. {@code null} means no effort is set. */
+  BigDecimal getEffort();
+
+  /** Whether the task duration is expected to follow from its effort and assignments. */
+  boolean isEffortDriven();
+
+  /** The rule by which this task repeats, or {@code null} if it does not. */
+  RecurrenceRule getRecurrenceRule();
+
+  /** Tells which task this task was created from by a recurrence rule, or {@code null} if it was not. */
+  RecurrenceOrigin getRecurrenceOrigin();
 
   TaskMutator createMutator();
 
