@@ -5,10 +5,10 @@ on:
         branches: ['master', 'BRANCH*']
         paths: ['ganttproject-builder/BUILD-HISTORY-MAJOR']
 env:
-    BUILD_NUMBER: 3397
-    VERSION: 3.4.3397
-    WINDOWS_APP_FOLDER_NAME: GanttProject-3.4-RC-I
-    MAC_APP_NAME: GanttProject 3.4 RC I
+    BUILD_NUMBER: 3398
+    VERSION: 3.4.3398
+    WINDOWS_APP_FOLDER_NAME: GanttProject-3.4-ReleaseCandidate-II
+    MAC_APP_NAME: GanttProject 3.4 Release Candidate II
     MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE }}
     MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_PWD }}
     MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_NAME }}
@@ -26,15 +26,16 @@ jobs:
                   git submodule sync --recursive
                   git submodule update --init --force --recursive --depth=1
                   echo "$VERSION" > ganttproject-builder/VERSION
-            - name: Download Liberica JDK 21 Full
-              run: |
-                  wget -q -O "$RUNNER_TEMP/liberica-jdk21-full.tar.gz" \
-                    "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-linux-amd64-full.tar.gz"
+#           - name: Download Liberica JDK 21 Full
+#             run: |
+#                 wget -q -O "$RUNNER_TEMP/liberica-jdk21-full.tar.gz" \
+#                   "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-linux-amd64-full.tar.gz"
             - uses: actions/setup-java@v6
               with:
-                  distribution: 'jdkfile'
-                  jdk-file: ${{ runner.temp }}/liberica-jdk21-full.tar.gz
-                  java-version: '21.0.13'
+                  distribution: 'liberica'
+#                 jdk-file: ${{ runner.temp }}/liberica-jdk21-full.tar.gz
+                  java-version: '21.0.13.1'
+                  java-package: jdk+fx
                   architecture: x64
                   cache: 'gradle'
             - name: Print Java version
@@ -84,16 +85,17 @@ jobs:
                   git submodule sync --recursive
                   git submodule update --init --force --recursive --depth=1
                   echo "$VERSION" > ganttproject-builder/VERSION
-            - name: Download Liberica JDK 21 Full
-              shell: bash
-              run: |
-                  curl -fsSL -o "$RUNNER_TEMP/liberica-jdk21-full.zip" \
-                    "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-windows-amd64-full.zip"
+#           - name: Download Liberica JDK 21 Full
+#             shell: bash
+#             run: |
+#                 curl -fsSL -o "$RUNNER_TEMP/liberica-jdk21-full.zip" \
+#                   "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-windows-amd64-full.zip"
             - uses: actions/setup-java@v6
               with:
-                  distribution: 'jdkfile'
-                  jdk-file: ${{ runner.temp }}/liberica-jdk21-full.zip
-                  java-version: '21.0.13'
+                  distribution: 'liberica'
+#                 jdk-file: ${{ runner.temp }}/liberica-jdk21-full.zip
+                  java-version: '21.0.13.1'
+                  java-package: jdk+fx
                   architecture: x64
                   cache: 'gradle'
             - name: Print Java version
@@ -164,15 +166,16 @@ jobs:
                   git submodule sync --recursive
                   git submodule update --init --force --recursive --depth=1
                   echo "$VERSION" > ganttproject-builder/VERSION
-            - name: Download Liberica JDK 21 Full
-              run: |
-                  curl -fsSL -o "$RUNNER_TEMP/liberica-jdk21-full.tar.gz" \
-                    "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-macos-aarch64-full.tar.gz"
+#           - name: Download Liberica JDK 21 Full
+#             run: |
+#                 curl -fsSL -o "$RUNNER_TEMP/liberica-jdk21-full.tar.gz" \
+#                   "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-macos-aarch64-full.tar.gz"
             - uses: actions/setup-java@v6
               with:
-                  distribution: 'jdkfile'
-                  jdk-file: ${{ runner.temp }}/liberica-jdk21-full.tar.gz
-                  java-version: '21.0.13'
+                  distribution: 'liberica'
+#                 jdk-file: ${{ runner.temp }}/liberica-jdk21-full.tar.gz
+                  java-version: '21.0.13.1'
+                  java-package: jdk+fx
                   architecture: aarch64
                   cache: 'gradle'
             - name: Print Java version
@@ -219,15 +222,16 @@ jobs:
                   git submodule sync --recursive
                   git submodule update --init --force --recursive --depth=1
                   echo "$VERSION" > ganttproject-builder/VERSION
-            - name: Download Liberica JDK 21 Full
-              run: |
-                  curl -fsSL -o "$RUNNER_TEMP/liberica-jdk21-full.tar.gz" \
-                    "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-macos-amd64-full.tar.gz"
+#           - name: Download Liberica JDK 21 Full
+#             run: |
+#                 curl -fsSL -o "$RUNNER_TEMP/liberica-jdk21-full.tar.gz" \
+#                   "https://download.bell-sw.com/java/21.0.13.0.3+5/bellsoft-jdk21.0.13.0.3+5-macos-amd64-full.tar.gz"
             - uses: actions/setup-java@v6
               with:
-                  distribution: 'jdkfile'
-                  jdk-file: ${{ runner.temp }}/liberica-jdk21-full.tar.gz
-                  java-version: '21.0.13'
+                  distribution: 'liberica'
+#                 jdk-file: ${{ runner.temp }}/liberica-jdk21-full.tar.gz
+                  java-version: '21.0.13.1'
+                  java-package: jdk+fx
                   architecture: x64
                   cache: 'gradle'
             - name: Print Java version
