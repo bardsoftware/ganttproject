@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package net.sourceforge.ganttproject.task;
 
 import java.awt.Color;
+import java.math.BigDecimal;
 
 import biz.ganttproject.core.chart.render.ShapePaint;
 import biz.ganttproject.core.time.GanttCalendar;
@@ -71,6 +72,10 @@ public interface MutableTask {
   void setProjectTask(boolean projectTask);
 
   void setCost(Task.Cost cost);
+
+  void setEffort(BigDecimal effort);
+
+  void setEffortDriven(boolean effortDriven);
 
   void setCustomProperties(CustomPropertyHolder customProperties) throws CustomColumnsException;
 }

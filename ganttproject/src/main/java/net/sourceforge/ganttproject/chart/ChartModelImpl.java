@@ -23,6 +23,7 @@ import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
+import net.sourceforge.ganttproject.task.DerivedDurationKt;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
 
@@ -131,8 +132,9 @@ public class ChartModelImpl extends ChartModelBase {
         if (activity.isFirst() && rect.getLeftX() - 2 <= x && rect.getLeftX() + 2 >= x) {
           result = new TaskBoundaryChartItem(owner, true);
         }
+        // The end of a task with the duration derived from effort cannot be dragged.
         if (result == null && activity.isLast() && rect.getRightX() - 2 <= x
-            && rect.getRightX() + 2 >= x) {
+            && rect.getRightX() + 2 >= x && !DerivedDurationKt.hasDerivedDuration(owner)) {
           result = new TaskBoundaryChartItem(owner, false);
         }
         if (result == null) {

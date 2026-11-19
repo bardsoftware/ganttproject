@@ -170,6 +170,13 @@ class TaskResourcesPanel(
         prefWidth = 80.0
       }
 
+      // Hours per day of the resource, read only. It is edited in the properties dialog of the resource.
+      val hoursPerDayCol = TableColumn2<ResourceAssignmentRow, String>(i18n.formatText("tableColResourceHoursPerDay")).apply {
+        setCellValueFactory { SimpleStringProperty(hoursPerDayText(it.value.assignment)) }
+        isEditable = false
+        prefWidth = 100.0
+      }
+
       // Coordinator column. The check box is bound to the value which the cell value factory
       // returns, so that value has to be the one which writes into the assignment. See
       // coordinatorProperty below.
@@ -201,7 +208,7 @@ class TaskResourcesPanel(
         prefWidth = 150.0
       }
 
-      columns.addAll(idCol, nameCol, unitCol, coordinatorCol, roleCol)
+      columns.addAll(idCol, nameCol, unitCol, coordinatorCol, roleCol, hoursPerDayCol)
     }
 
     // Create split layout with table and cost panel
@@ -357,6 +364,10 @@ private class ResourceAssignmentTableModel(task: Task) {
     mutator.commit()
   }
 }
+
+/** Hours per day of the resource of the assignment, empty if the resource has none set. */
+internal fun hoursPerDayText(assignment: ResourceAssignment?): String =
+  assignment?.resource?.hoursPerDay?.toPlainString() ?: ""
 
 /**
  * Row data class for the table.
