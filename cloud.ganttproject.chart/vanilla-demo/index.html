@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<!--
+Copyright 2026 BarD Software s.r.o
+
+Vanilla-JS demo for the cloud.ganttproject.chart rendering library.
+
+Unlike the Kotlin `:demo` module, this page is plain HTML + JavaScript with no build
+step: it loads the *compiled* library directly as classic <script> tags and calls the
+exported `drawChart` function.
+
+Build the library once before opening this file:
+
+    ./gradlew jsBrowserProductionLibraryDistribution
+
+then open this file in a browser (double-click, or serve the module directory).
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GanttProject Chart Library — Vanilla JS Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; color: #333; }
+    h1 { font-size: 1.25rem; }
+    .legend { margin-top: 1rem; font-size: 0.85rem; }
+    .legend span { display: inline-block; margin-right: 1.5rem; }
+    .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 0.4rem; }
+    canvas { border: 1px solid #ccc; background: #fff; }
+    #error { color: #b00; margin-top: 1rem; white-space: pre-wrap; }
+  </style>
+
+  <!--
+    The compiled UMD modules, loaded as classic scripts. Order matters: the Kotlin
+    stdlib must be loaded before the chart library. Each attaches itself to
+    globalThis under its module name.
+  -->
+  <script src="../build/dist/js/productionLibrary/kotlin-kotlin-stdlib.js"></script>
+  <script src="../build/dist/js/productionLibrary/cloud.ganttproject.chart.js"></script>
+</head>
+<body>
+  <h1>Two tasks connected by a finish-start dependency (vanilla JS)</h1>
+  <canvas id="chart" width="440" height="200"></canvas>
+  <div class="legend">
+    <span><i class="swatch" style="background:#4a89dc"></i>Task A</span>
+    <span><i class="swatch" style="background:#5cb85c"></i>Task B</span>
+    <span><i class="swatch" style="background:#555555"></i>Finish → Start dependency</span>
+  </div>
+  <div id="error"></div>
+
+  <script>
+    // The library is a UMD module; loaded as a classic script it lives on globalThis
+    // under its module name. Its exported symbols are nested under the Kotlin package.
+    const lib = globalThis['cloud.ganttproject.chart'];
+    const drawChart = lib && lib.cloud.ganttproject.chart.drawChart;
+
+    // The chart model: same JSON shape produced by the server-side JsonPainterImpl. A single
+    // list of primitives, each tagged with its `type`, painted in the listed order.
+    // Two task rectangles with their labels on top of them, plus an orthogonal 3-segment
+    // finish-start connector whose last segment carries the arrow head.
+    const model = {
+      primitives: [
+        {
+          type: 'rectangle',
+          x: 40, y: 40, width: 120, height: 32,
+          style: { fillColor: '#4a89dc', strokeColor: '#2f5c96', opacity: 100, strokeWidth: 1 },
+          attributes: { name: 'Task A' }
+        },
+        {
+          type: 'rectangle',
+          x: 240, y: 110, width: 150, height: 32,
+          style: { fillColor: '#5cb85c', strokeColor: '#3d8b3d', opacity: 100, strokeWidth: 1 },
+          attributes: { name: 'Task B' }
+        },
+        {
+          type: 'text',
+          x: 100, y: 56, text: 'Task A',
+          style: { align: 'center', verticalAlign: 'middle', fontColor: '#ffffff', fontSize: 13, fontFamily: 'sans-serif', textOpacity: 100 },
+          attributes: { text: 'Task A' }
+        },
+        {
+          type: 'text',
+          x: 315, y: 126, text: 'Task B',
+          style: { align: 'center', verticalAlign: 'middle', fontColor: '#ffffff', fontSize: 13, fontFamily: 'sans-serif', textOpacity: 100 },
+          attributes: { text: 'Task B' }
+        },
+        {
+          type: 'line',
+          startX: 160, startY: 56, finishX: 200, finishY: 56,
+          style: { endArrow: 'none', strokeColor: '#555555', opacity: 100, dashed: 0, strokeWidth: 2 },
+          attributes: { dependencyType: 'finish-start' }
+        },
+        {
+          type: 'line',
+          startX: 200, startY: 56, finishX: 200, finishY: 126,
+          style: { endArrow: 'none', strokeColor: '#555555', opacity: 100, dashed: 0, strokeWidth: 2 },
+          attributes: { dependencyType: 'finish-start' }
+        },
+        {
+          type: 'line',
+          startX: 200, startY: 126, finishX: 238, finishY: 126,
+          style: { endArrow: 'classic', strokeColor: '#555555', opacity: 100, dashed: 0, strokeWidth: 2 },
+          attributes: { dependencyType: 'finish-start' }
+        }
+      ]
+    };
+
+    const errorBox = document.getElementById('error');
+    if (typeof drawChart !== 'function') {
+      errorBox.textContent =
+        "Could not find drawChart. Build the library first:\n" +
+        "  ./gradlew jsBrowserProductionLibraryDistribution";
+    } else {
+      drawChart(model, document.getElementById('chart'));
+    }
+  </script>
+</body>
+</html>
