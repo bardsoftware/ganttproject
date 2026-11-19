@@ -559,7 +559,7 @@ class TaskTable(
     }
     if (selectionManager.selectedTasks.isNotEmpty()) {
       builder.apply {
-        items(taskActions.propertiesAction)
+        items(taskActions.propertiesAction, taskActions.backfillEffortAction)
         separator()
         items(
           taskActions.unindentAction,

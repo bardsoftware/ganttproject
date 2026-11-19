@@ -20,6 +20,10 @@ package net.sourceforge.ganttproject.parser
 
 import biz.ganttproject.core.calendar.GanttDaysOff
 import biz.ganttproject.core.io.XmlProject
+import biz.ganttproject.core.io.XmlResources
+import biz.ganttproject.core.model.task.CapacityChange
+import java.time.LocalDate
+import java.time.format.DateTimeParseException
 import biz.ganttproject.core.table.ColumnList
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.customproperty.CustomPropertyManager
@@ -39,6 +43,9 @@ class ResourceLoader(private val resourceManager: HumanResourceManager, private 
       val resource = resourceManager.create(xmlResource.name, xmlResource.id).also { hr ->
         hr.mail = xmlResource.email
         hr.phone = xmlResource.phone
+        hr.hoursPerDay = xmlResource.hoursPerDay
+        hr.utilization = xmlResource.utilization
+        hr.hoursSchedule = xmlResource.capacityChanges()
         val roleID = xmlResource.role
         if (roleID.isNotBlank()) {
           roleManager.findRole(roleID)?.let { hr.role = it }
@@ -106,4 +113,13 @@ fun RoleManager.findRole(id: String): Role? {
 fun loadResourceView(xmlProject: XmlProject, zoomManager: ZoomManager, resourceColumns: ColumnList) {
   val xmlView = xmlProject.views.filter { "resource-table" == it.id }.firstOrNull() ?: return
   loadView(xmlView, zoomManager, resourceColumns, ResourceDefaultColumn.getColumnStubs())
+}
+
+/** Changes of the working hours of a resource as stored in the file; an entry with an unreadable date is skipped. */
+fun XmlResources.XmlResource.capacityChanges(): List<CapacityChange> = hoursChanges.mapNotNull {
+  try {
+    CapacityChange(LocalDate.parse(it.date), it.hours)
+  } catch (e: DateTimeParseException) {
+    null
+  }
 }

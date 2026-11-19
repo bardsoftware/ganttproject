@@ -143,6 +143,7 @@ class TaskActions(private val project: IGanttProject,
   val pasteAction get() = viewManager().pasteAction
   val linkTasksAction = TaskLinkAction(project.taskManager, selectionManager, uiFacade)
   val unlinkTasksAction = TaskUnlinkAction(project.taskManager, selectionManager, uiFacade)
+  val backfillEffortAction = TaskBackfillEffortAction(project.taskManager, selectionManager, uiFacade)
 
   val manageColumnsAction: GPAction
     get() = GPAction.create("columns.manage.label") {

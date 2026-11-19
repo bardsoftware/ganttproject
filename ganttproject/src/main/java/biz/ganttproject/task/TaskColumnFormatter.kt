@@ -52,6 +52,8 @@ class DefaultTaskColumnFormatter(private val localizer: Localizer) {
         TaskDefaultColumn.ATTACHMENTS -> null
         TaskDefaultColumn.EARLIEST_BEGIN -> if (task.thirdDateConstraint == 1) GanttLanguage.getInstance().formatShortDate(task.third) else null
         TaskDefaultColumn.IS_CRITICAL -> null
+        TaskDefaultColumn.EFFORT -> task.effort?.let { getNumberFormat().format(it) }
+        TaskDefaultColumn.EFFORT_DRIVEN -> null
       }
     } ?: run {
       if (columnId == "taskDates") {

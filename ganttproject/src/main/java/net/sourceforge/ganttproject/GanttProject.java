@@ -139,6 +139,7 @@ public class GanttProject extends GanttProjectBase implements ResourceView, Gant
     JMenu mTask = UIUtil.createTooltiplessJMenu(GPAction.createVoidAction("task"));
     mTask.add(myTaskActions.getCreateAction());
     mTask.add(myTaskActions.getPropertiesAction());
+    mTask.add(myTaskActions.getBackfillEffortAction());
     mTask.add(myTaskActions.getDeleteAction());
     bar.add(mTask);
 
