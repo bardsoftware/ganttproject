@@ -19,6 +19,7 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.io
 
 import biz.ganttproject.core.io.XmlTasks.XmlCalculationSimpleSelect
+import biz.ganttproject.core.model.task.TaskEffort
 import com.fasterxml.jackson.annotation.*
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -146,7 +147,7 @@ data class XmlCalendars(
   @get:JsonInclude(JsonInclude.Include.NON_NULL)
   var events: List<XmlCalendarEvent>? = null,
 ) {
-  @JsonPropertyOrder("day-type", "default-week", "only-show-weekends")
+  @JsonPropertyOrder("day-type", "default-week", "only-show-weekends", "holidays-are-working-days")
   data class XmlDayTypes(
     @get:JacksonXmlElementWrapper(useWrapping = false)
     @get:JacksonXmlProperty(localName = "day-type")
@@ -156,6 +157,10 @@ data class XmlCalendars(
     var defaultWeek: XmlDefaultWeek = XmlDefaultWeek(),
     @get:JacksonXmlProperty(localName = "only-show-weekends")
     var onlyShowWeekends: XmlOnlyShowWeekends = XmlOnlyShowWeekends(),
+    // Written only when set, so that files which do not use it are the same as before.
+    @get:JacksonXmlProperty(localName = "holidays-are-working-days")
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    var holidaysAreWorkingDays: XmlHolidaysAreWorkingDays? = null,
 //    @get:JacksonXmlProperty(localName = "overriden-day-types")
 //    var overridenDayTypes: String? = null, // TODO: what is that tag?
 //    var days: String? = null // TODO: what is that tag?
@@ -176,6 +181,8 @@ data class XmlCalendars(
     )
 
     data class XmlOnlyShowWeekends(@get:JacksonXmlProperty(isAttribute = true) var value: Boolean = false)
+
+    data class XmlHolidaysAreWorkingDays(@get:JacksonXmlProperty(isAttribute = true) var value: Boolean = false)
   }
 
   data class XmlCalendarEvent(
@@ -260,6 +267,62 @@ data class XmlTasks(
     var isCostCalculated: Boolean? = null,
 
     @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = TaskEffort.XML_ATTRIBUTE)
+    var effort: BigDecimal? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "effort-driven")
+    var isEffortDriven: Boolean? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "deadline")
+    var deadline: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "wait-only")
+    var isWaitOnly: Boolean? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "date-fixed")
+    var isDateFixed: Boolean? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "on-site-only")
+    var isOnSiteOnly: Boolean? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "recurrence-unit")
+    var recurrenceUnit: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "recurrence-interval")
+    var recurrenceInterval: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "recurrence-until")
+    var recurrenceUntil: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "recurrence-count")
+    var recurrenceCount: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "recurrence-of")
+    var recurrenceOf: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "recurrence-date")
+    var recurrenceDate: String? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = TaskEffort.ACTUAL_XML_ATTRIBUTE)
+    var actualEffort: BigDecimal? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = TaskEffort.ORIGINAL_XML_ATTRIBUTE)
+    var originalEffort: BigDecimal? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
     @get:JacksonXmlCData
     var notes: String? = null,
 
@@ -321,6 +384,32 @@ data class XmlResources(
     @get:JacksonXmlProperty(isAttribute = true, localName = "contacts") var email: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var phone: String = "",
 
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = "hours-per-day") var hoursPerDay: BigDecimal? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true) var utilization: Int? = null,
+
+    @get:JacksonXmlElementWrapper(useWrapping = false)
+    @get:JacksonXmlProperty(localName = "hours-change")
+    @get:JsonInclude(JsonInclude.Include.NON_EMPTY)
+    var hoursChanges: List<XmlHoursChange> = emptyList(),
+
+    @get:JacksonXmlElementWrapper(useWrapping = false)
+    @get:JacksonXmlProperty(localName = "work-week")
+    @get:JsonInclude(JsonInclude.Include.NON_EMPTY)
+    var workWeek: List<XmlWorkWeek> = emptyList(),
+
+    @get:JacksonXmlElementWrapper(useWrapping = false)
+    @get:JacksonXmlProperty(localName = "home-office-week")
+    @get:JsonInclude(JsonInclude.Include.NON_EMPTY)
+    var homeOfficeWeek: List<XmlWorkWeek> = emptyList(),
+
+    @get:JacksonXmlElementWrapper(useWrapping = false)
+    @get:JacksonXmlProperty(localName = "home-office-period")
+    @get:JsonInclude(JsonInclude.Include.NON_EMPTY)
+    var homeOfficePeriods: List<XmlHomeOfficePeriod> = emptyList(),
+
     @get:JsonInclude(JsonInclude.Include.NON_NULL) var rate: XmlRate? = null,
 
     @get:JacksonXmlElementWrapper(useWrapping = false)
@@ -332,6 +421,24 @@ data class XmlResources(
       @get:JacksonXmlProperty(isAttribute = true) var value: String = ""
     )
 
+    data class XmlHoursChange(
+      @get:JacksonXmlProperty(isAttribute = true) var date: String = "",
+      @get:JacksonXmlProperty(isAttribute = true) var hours: BigDecimal = BigDecimal(0)
+    )
+
+    // The days are ISO weekday numbers, such as "1,2,5". Without a date they apply from the beginning of the plan.
+    data class XmlWorkWeek(
+      @get:JsonInclude(JsonInclude.Include.NON_NULL)
+      @get:JacksonXmlProperty(isAttribute = true) var date: String? = null,
+      @get:JacksonXmlProperty(isAttribute = true) var days: String = ""
+    )
+
+    // As the interval of a vacation, the end is the day after the last day at home.
+    data class XmlHomeOfficePeriod(
+      @get:JacksonXmlProperty(isAttribute = true) var start: String = "",
+      @get:JacksonXmlProperty(isAttribute = true) var end: String = ""
+    )
+
     data class XmlRate(
       @get:JacksonXmlProperty(isAttribute = true) var name: String = "",
       @get:JacksonXmlProperty(isAttribute = true) var value: BigDecimal = BigDecimal(0)
@@ -339,13 +446,19 @@ data class XmlResources(
   }
 }
 
-@JsonPropertyOrder("task-id", "resource-id", "function", "responsible", "load")
+@JsonPropertyOrder("task-id", "resource-id", "function", "responsible", "blocking", "no-effort", "load", TaskEffort.ACTUAL_XML_ATTRIBUTE)
 data class XmlAllocation(
   @get:JacksonXmlProperty(isAttribute = true, localName = "task-id") var taskId: Int = 0,
   @get:JacksonXmlProperty(isAttribute = true, localName = "resource-id") var resourceId: Int = 0,
   @get:JacksonXmlProperty(isAttribute = true, localName = "function") var role: String? = null,
   @get:JacksonXmlProperty(isAttribute = true, localName = "responsible") var isCoordinator: Boolean = false,
-  @get:JacksonXmlProperty(isAttribute = true) var load: Float = 0.0f
+  // The resource has to be present on every day of the task, and the resource brings no hours to the effort. Both
+  // default to false, which is what a file without the attributes means.
+  @get:JacksonXmlProperty(isAttribute = true, localName = "blocking") var isBlocking: Boolean = false,
+  @get:JacksonXmlProperty(isAttribute = true, localName = "no-effort") var isNoEffort: Boolean = false,
+  @get:JacksonXmlProperty(isAttribute = true) var load: Float = 0.0f,
+  @get:JsonInclude(JsonInclude.Include.NON_NULL)
+  @get:JacksonXmlProperty(isAttribute = true, localName = TaskEffort.ACTUAL_XML_ATTRIBUTE) var actualEffort: BigDecimal? = null
 )
 @JsonPropertyOrder("start", "end", "resourceid")
 data class XmlVacation(

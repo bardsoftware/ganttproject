@@ -20,6 +20,9 @@ package biz.ganttproject.storage
 
 import biz.ganttproject.core.chart.render.ShapeConstants
 import biz.ganttproject.core.chart.render.ShapePaint
+import biz.ganttproject.core.model.task.RecurrenceOrigin
+import biz.ganttproject.core.model.task.RecurrenceRule
+import biz.ganttproject.core.model.task.RecurrenceUnit
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.customproperty.CustomColumnsValues
@@ -484,6 +487,79 @@ class ProjectDatabaseTest {
         fail("Wrong type of operation. Operation dto: $stmt")
       }
     }
+  }
+
+  @Test
+  fun `recurrence fields are inserted into the database`() {
+    projectDatabase.init()
+    val task = taskManager.newTaskBuilder().withUid("someuid1").withId(1).withName("Name1")
+      .withStartDate(TestSetupHelper.newMonday().time).build()
+    task.createMutator().also {
+      it.setRecurrenceRule(RecurrenceRule(RecurrenceUnit.WEEK, 2, LocalDate.of(2026, 12, 31)))
+      it.setRecurrenceOrigin(RecurrenceOrigin(7, LocalDate.of(2026, 11, 16)))
+      it.commit()
+    }
+    projectDatabase.insertTask(task)
+    val record = dsl.selectFrom(Task.TASK).where(Task.TASK.UID.eq("someuid1")).fetchSingle()
+    assertEquals("week", record.recurrenceUnit)
+    assertEquals(2, record.recurrenceInterval)
+    assertEquals(LocalDate.of(2026, 12, 31), record.recurrenceUntil)
+    assertTrue(record.recurrenceCount == null)
+    assertEquals(7, record.recurrenceOf)
+    assertEquals(LocalDate.of(2026, 11, 16), record.recurrenceDate)
+  }
+
+  @Test
+  fun `recurrence fields are updated in the database`() {
+    projectDatabase.init()
+    val task = taskManager.newTaskBuilder().withUid("someuid1").withId(1).withName("Name1")
+      .withStartDate(TestSetupHelper.newMonday().time).build()
+    projectDatabase.insertTask(task)
+    task.createMutator().also {
+      it.setRecurrenceRule(RecurrenceRule(RecurrenceUnit.MONTH, 3, count = 4))
+      it.setRecurrenceOrigin(RecurrenceOrigin(5))
+      it.commit()
+    }
+    var record = dsl.selectFrom(Task.TASK).where(Task.TASK.UID.eq("someuid1")).fetchSingle()
+    assertEquals("month", record.recurrenceUnit)
+    assertEquals(3, record.recurrenceInterval)
+    assertTrue(record.recurrenceUntil == null)
+    assertEquals(4, record.recurrenceCount)
+    assertEquals(5, record.recurrenceOf)
+    assertTrue(record.recurrenceDate == null)
+
+    task.createMutator().also {
+      it.setRecurrenceRule(null)
+      it.setRecurrenceOrigin(null)
+      it.commit()
+    }
+    record = dsl.selectFrom(Task.TASK).where(Task.TASK.UID.eq("someuid1")).fetchSingle()
+    assertTrue(record.recurrenceUnit == null)
+    assertTrue(record.recurrenceInterval == null)
+    assertTrue(record.recurrenceCount == null)
+    assertTrue(record.recurrenceOf == null)
+  }
+
+  @Test
+  fun `colloboque update builder writes and undoes recurrence fields`() {
+    val task = taskManager.newTaskBuilder().withUid("someuid1").withId(1).withName("Name1")
+      .withStartDate(TestSetupHelper.newMonday().time).build()
+    val queries = mutableListOf<SqlQuery>()
+    val undoQueries = mutableListOf<SqlUndoQuery>()
+    SqlTaskUpdateBuilder(task, { q, u -> queries.addAll(q); undoQueries.addAll(u) }, SQLDialect.H2).also {
+      it.setRecurrenceRule(null, RecurrenceRule(RecurrenceUnit.DAY, 1, count = 10))
+      it.setRecurrenceOrigin(RecurrenceOrigin(3, LocalDate.of(2026, 11, 16)), null)
+      it.commit()
+    }
+    assertEquals(1, queries.size)
+    val update = queries[0].sqlStatementH2
+    assertTrue(update.contains("recurrence_unit\" = 'day'"), update)
+    assertTrue(update.contains("recurrence_count\" = 10"), update)
+    assertTrue(update.contains("recurrence_of\" = null"), update)
+    assertEquals(1, undoQueries.size)
+    val undo = undoQueries[0].sqlStatementH2
+    assertTrue(undo.contains("recurrence_unit\" = null"), undo)
+    assertTrue(undo.contains("recurrence_of\" = 3"), undo)
   }
 
   @Test

@@ -30,7 +30,7 @@ import biz.ganttproject.core.time.TimeDuration
 import biz.ganttproject.customproperty.CustomPropertyHolder
 import biz.ganttproject.lib.fx.*
 import biz.ganttproject.task.TaskActions
-import biz.ganttproject.task.ancestors
+import biz.ganttproject.task.recurrence.ancestorsToOpen
 import com.sun.javafx.scene.control.behavior.CellBehaviorBase
 import de.jensd.fx.glyphs.GlyphIcon
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon
@@ -453,7 +453,7 @@ class TaskTable(
       override fun selectionChanged(currentSelection: List<Task>, source: Any?) {
         if (source != this@TaskTable) {
           Platform.runLater {
-            ancestors(currentSelection, taskManager.taskHierarchy).reversed()
+            ancestorsToOpen(currentSelection, taskManager.taskHierarchy, source)
               .forEach { task2treeItem[it]?.isExpanded = true }
 
             treeTable.selectionModel.clearSelection()
@@ -559,7 +559,7 @@ class TaskTable(
     }
     if (selectionManager.selectedTasks.isNotEmpty()) {
       builder.apply {
-        items(taskActions.propertiesAction)
+        items(taskActions.propertiesAction, taskActions.recurrenceAction)
         separator()
         items(
           taskActions.unindentAction,

@@ -28,6 +28,7 @@ import biz.ganttproject.core.chart.scene.IdentifiableRow;
 import biz.ganttproject.core.option.EnumerationOption;
 
 import java.util.List;
+import java.util.function.IntSupplier;
 
 /**
  * This class is responsible for rendering text labels on the sides of task bars.
@@ -65,11 +66,25 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
 
   private final TaskLabelSceneInput<T> myInputApi;
 
+  private IntSupplier myBandHeight = () -> 0;
+
   public TaskLabelSceneBuilder(TaskLabelSceneInput<T> inputApi, Canvas canvas) {
     myCanvas = canvas;
     myInputApi = inputApi;
 
     myLabelOptions = new EnumerationOption[] { inputApi.getTopLabelOption(), inputApi.getBottomLabelOption(), inputApi.getLeftLabelOption(), inputApi.getRightLabelOption() };
+  }
+
+  /**
+   * Sets the height of a band drawn right underneath the task bar. The label below the bar goes under the band, and
+   * the row makes room for it. Zero, the default, keeps the label right under the bar.
+   */
+  public void setBandHeight(IntSupplier bandHeight) {
+    myBandHeight = bandHeight;
+  }
+
+  private int getBandHeightUnderDownText() {
+    return isTextDown() ? myBandHeight.getAsInt() : 0;
   }
 
   public void renderLabels(List<Canvas.Polygon> activityRectangles) {
@@ -107,7 +122,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
 
     if (!text.isEmpty()) {
       int xOrigin = rectangle.getRightX();
-      int yOrigin = rectangle.getBottomY() + TINY_SPACE;
+      int yOrigin = rectangle.getBottomY() + getBandHeightUnderDownText() + TINY_SPACE;
       Text textPrimitive = processText(xOrigin, yOrigin, text);
       textPrimitive.setAlignment(HAlignment.RIGHT, VAlignment.TOP);
     }
@@ -180,7 +195,7 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
     } else {
       result = getFontHeight() + 2 * LARGE_SPACE;
     }
-    return result;
+    return result + getBandHeightUnderDownText();
   }
 
   /**
@@ -191,16 +206,18 @@ public class TaskLabelSceneBuilder<T extends IdentifiableRow> {
   public int getRectMidOffset() {
     boolean textUP = isTextUp();
     boolean textDOWN = isTextDown() || myInputApi.getBaseline();
+    // A band between the bar and the label below moves the bar up by half of its height.
+    int bandShift = getBandHeightUnderDownText() / 2;
     if (textUP ^ textDOWN) {
       // if we have text only from one side, the rect middle is different from the whole middle
       if (textUP) {
         return (getFontHeight() + MEDIUM_SPACE)/2;
       } else {
-        return -(getFontHeight() + MEDIUM_SPACE)/2;
+        return -(getFontHeight() + MEDIUM_SPACE)/2 - bandShift;
       }
     } else {
       // if we have no labels or labels from both sides, the rect middle is the same as the whole middle
-      return 0;
+      return -bandShift;
     }
   }
 

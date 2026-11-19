@@ -20,15 +20,21 @@ package biz.ganttproject.core.io
 
 import biz.ganttproject.core.calendar.CalendarEvent
 import biz.ganttproject.core.calendar.GPCalendar
-import biz.ganttproject.core.calendar.GanttDaysOff
 import biz.ganttproject.core.chart.render.ShapePaint
 import biz.ganttproject.core.model.task.ConstraintType.fromPersistentValue
+import biz.ganttproject.core.model.task.RecurrenceOrigin
+import biz.ganttproject.core.model.task.RecurrenceRule
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
+import net.sourceforge.ganttproject.parser.capacityChanges
+import net.sourceforge.ganttproject.parser.homeOfficePeriods
+import net.sourceforge.ganttproject.parser.homeOfficeWeekChanges
+import net.sourceforge.ganttproject.parser.workWeekChanges
 import net.sourceforge.ganttproject.GanttPreviousState
 import net.sourceforge.ganttproject.GanttPreviousStateTask
 import net.sourceforge.ganttproject.GanttProjectImpl
 import net.sourceforge.ganttproject.IGanttProject
+import net.sourceforge.ganttproject.parser.daysOffFromFile
 import net.sourceforge.ganttproject.roles.Role
 import net.sourceforge.ganttproject.roles.RolePersistentID
 import biz.ganttproject.customproperty.CustomColumnsException
@@ -97,6 +103,7 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
 
   private fun importCalendar() {
     calendar.onlyShowWeekends = xmlProject.calendars.dayTypes.onlyShowWeekends.value
+    calendar.holidaysAreWorkingDays = xmlProject.calendars.dayTypes.holidaysAreWorkingDays?.value ?: false
     calendar.baseCalendarID = xmlProject.calendars.baseId
     importHolidays()
     importDefaultWeek()
@@ -128,7 +135,7 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
 
   private fun importVacations() = xmlProject.vacations.forEach {
     val resource = resourceManager.getById(it.resourceid)
-    val daysOff = GanttDaysOff(GanttCalendar.parseXMLDate(it.startDate), GanttCalendar.parseXMLDate(it.endDate))
+    val daysOff = daysOffFromFile(GanttCalendar.parseXMLDate(it.startDate), GanttCalendar.parseXMLDate(it.endDate), it.resourceid)
     resource.addDaysOff(daysOff)
   }
 
@@ -146,6 +153,9 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
     val assignment = task.assignmentCollection.addAssignment(resource)
     assignment.load = it.load
     assignment.isCoordinator = it.isCoordinator
+    assignment.isBlocking = it.isBlocking
+    assignment.isNoEffort = it.isNoEffort
+    assignment.actualEffort = it.actualEffort
     it.role?.let { function ->
       val role = findRole(function)
       if (role != null) {
@@ -226,6 +236,12 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
       val resource = resourceManager.create(xmlRes.name, xmlRes.id)
       resource.mail = xmlRes.email
       resource.phone = xmlRes.phone
+      resource.hoursPerDay = xmlRes.hoursPerDay
+      resource.utilization = xmlRes.utilization
+      resource.hoursSchedule = xmlRes.capacityChanges()
+      resource.workWeek = xmlRes.workWeekChanges()
+      resource.homeOfficeWeek = xmlRes.homeOfficeWeekChanges()
+      resource.homeOfficePeriods = xmlRes.homeOfficePeriods()
       xmlRes.props.forEach { xmlProp ->
         val prop = resCustomPropManager.definitions.find { it.id == xmlProp.definitionId }
         if (prop != null) {
@@ -274,6 +290,16 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
     xmlTask.earliestStartDate?.let { task.setThirdDate(GanttCalendar.parseXMLDate(it)) }
     task.thirdDateConstraint = xmlTask.thirdDateConstraint ?: 0
     task.cost = CostStub(xmlTask.costManualValue ?: BigDecimal.ZERO, xmlTask.isCostCalculated ?: true)
+    task.effort = xmlTask.effort
+    task.isEffortDriven = xmlTask.isEffortDriven ?: false
+    task.deadline = xmlTask.deadline?.let { GanttCalendar.parseXMLDate(it) }
+    task.isWaitOnly = xmlTask.isWaitOnly ?: false
+    task.isDateFixed = xmlTask.isDateFixed ?: false
+    task.isOnSiteOnly = xmlTask.isOnSiteOnly ?: false
+    task.recurrenceRule = RecurrenceRule.fromXml(xmlTask.recurrenceUnit, xmlTask.recurrenceInterval, xmlTask.recurrenceUntil, xmlTask.recurrenceCount)
+    task.recurrenceOrigin = RecurrenceOrigin.fromXml(xmlTask.recurrenceOf, xmlTask.recurrenceDate)
+    task.actualEffort = xmlTask.actualEffort
+    task.originalEffort = xmlTask.originalEffort
     xmlTask.shape?.let {
       task.shape = buildShapePaint(it, task.color)
     }

@@ -65,7 +65,8 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   private val coroutineScope = CoroutineScope(Dispatchers.JavaFx)
   private val nameOption = ObservableString("name", task.name)
   private val milestoneOption = ObservableBoolean("milestone", task.isMilestone)
-  private val taskDatesController = TaskDatesController(task, milestoneOption, coroutineScope)
+  private val effortFields = TaskEffortFields(task)
+  private val taskDatesController = TaskDatesController(task, milestoneOption, effortFields.effortDrivenOption, coroutineScope)
   private val projectTaskOption = ObservableBoolean("projectTask", task.isProjectTask)
   private val hasEarliestStart = ObservableBoolean("hasEarliestStart", task.thirdDateConstraint == 1)
   private val earliestStartOption = ObservableDate("earliestBegin",
@@ -81,6 +82,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   )
   private val priorityOption = ObservableEnum<Priority>("priority", task.priority, Priority.entries.toTypedArray())
   private val progressOption = ObservableInt("progress", task.completionPercentage)
+  internal val onSiteOnlyOption = ObservableBoolean("onSiteOnly", task.isOnSiteOnly)
   private val showInTimelineOption = ObservableBoolean("showInTimeline", taskView.timelineTasks.contains(task))
   private val colorOption = ObservableColor("color", Style.Color.parse(ColorOption.Util.getColor(task.color)))
   private val notesOption = ObservableString("notes", task.notes)
@@ -109,6 +111,12 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
   }
 
   init {
+    // Milestones and summary tasks have no duration to derive from effort.
+    fun updateEffortDrivenWritable() =
+      effortFields.effortDrivenOption.setWritable(!milestoneOption.value && !task.isSupertask)
+    milestoneOption.addWatcher { updateEffortDrivenWritable() }
+    updateEffortDrivenWritable()
+
     hasEarliestStart.addWatcher { event -> onHasEarliestStartChange(event.newValue) }
 
     onHasEarliestStartChange(hasEarliestStart.value)
@@ -137,6 +145,10 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
       numeric(taskDatesController.durationOption) {
         minValue = 1
       }
+      checkbox(effortFields.effortDrivenOption)
+      text(effortFields.effortOption)
+      text(effortFields.originalEffortOption)
+      text(effortFields.actualEffortOption)
 
       skip()
       custom(earliestStartOption, 
@@ -163,6 +175,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
         minValue = 0
         maxValue = 100
       }
+      checkbox(onSiteOnlyOption)
 
       skip()
       title("section.view")
@@ -232,6 +245,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
     taskDatesController.durationOption.ifChanged { value ->
       taskMutator.setDuration(task.manager.createLength(value.toLong()))
     }
+    effortFields.save(taskMutator)
     earliestStartOption.ifChanged { value ->
       if (hasEarliestStart.value) {
         taskMutator.setThird(GanttCalendar.fromLocalDate(value), 1)
@@ -242,6 +256,7 @@ class MainPropertiesPanel(private val task: Task, private val taskView: TaskView
 
     priorityOption.ifChanged(taskMutator::setPriority)
     progressOption.ifChanged(taskMutator::setCompletionPercentage)
+    onSiteOnlyOption.ifChanged(taskMutator::setOnSiteOnly)
     colorOption.ifChanged { color ->
       color?.let { taskMutator.setColor(it.get()) }
     }
