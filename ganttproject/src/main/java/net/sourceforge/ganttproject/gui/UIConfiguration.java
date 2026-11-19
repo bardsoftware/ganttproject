@@ -54,6 +54,9 @@ public class UIConfiguration {
   /** Color used for days off (and holidays) */
   private Color myDayOffColor;
 
+  /** Colour of the hidden-tasks marker, the mark on a row seam where a view hides tasks. */
+  private Color myHiddenGapColor;
+
   private boolean isRedlineOn;
 
   private boolean isCriticalPathOn;
@@ -78,6 +81,7 @@ public class UIConfiguration {
     myPreviousTaskColor = Color.LIGHT_GRAY;
     myWeekEndColor = Color.GRAY;
     myDayOffColor = new Color(0.9f, 1f, 0.17f);
+    myHiddenGapColor = new Color(0, 62, 60);
     myWeekendAlphaRenderingOption = new AlphaRenderingOption();
     myAppFontSize = new Supplier<Integer>() {
       @Override
@@ -155,6 +159,14 @@ public class UIConfiguration {
 
   public void setDayOffColor(Color dayOffColor) {
     this.myDayOffColor = dayOffColor;
+  }
+
+  public Color getHiddenGapColor() {
+    return myHiddenGapColor;
+  }
+
+  public void setHiddenGapColor(Color hiddenGapColor) {
+    this.myHiddenGapColor = hiddenGapColor;
   }
 
   public boolean isRedlineOn() {

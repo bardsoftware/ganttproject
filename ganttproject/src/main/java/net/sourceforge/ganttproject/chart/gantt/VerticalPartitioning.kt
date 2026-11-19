@@ -30,9 +30,25 @@ import com.google.common.collect.Lists
  * @param tasksInsideViewport partition with tasks inside viewport, with hidden tasks already filtered.
  * Tasks must be ordered in their document order.
  */
-class VerticalPartitioning(
+class VerticalPartitioning @JvmOverloads constructor(
   private val insideViewport: List<ITaskSceneTask>,
-  private val areUnrelated: (ITaskSceneTask, ITaskSceneTask) -> Boolean
+  private val areUnrelated: (ITaskSceneTask, ITaskSceneTask) -> Boolean,
+  /**
+   * Tasks that the task table HIDES -- through a filter or through a named view. They belong in no
+   * partition at all, exactly like the children of a collapsed task.
+   *
+   * WHY THIS EXISTS. A hidden task that lies between the first and the last visible row falls into
+   * the skipped middle part and is correct without any help. A hidden task at the HEAD or the TAIL
+   * of the document order, however, lands in [aboveViewport] or [belowViewport], where
+   * GanttChartSceneBuilder.renderTasksAboveAndBelowViewport gives it an INVISIBLE rectangle at row
+   * -1 or row n+1. DependencySceneBuilder only drops a dependency line when BOTH ends are invisible
+   * (DependencySceneBuilder.java:153) -- so a line runs from a visible task to the edge of the
+   * chart, pointing at something that is not there.
+   *
+   * The default says "nothing is hidden", which is exactly what every caller that does not know
+   * about hiding means, so the behaviour of the class is unchanged for them.
+   */
+  private val isHidden: (ITaskSceneTask) -> Boolean = { false }
 ) {
   val aboveViewport: MutableList<ITaskSceneTask> = Lists.newArrayList()
   val belowViewport: MutableList<ITaskSceneTask> = Lists.newArrayList()
@@ -50,7 +66,20 @@ class VerticalPartitioning(
     val lastVisible = if (insideViewport.isEmpty()) null else insideViewport[insideViewport.size - 1]
     var addTo: MutableList<ITaskSceneTask>? = aboveViewport
     var collapsedRoot: ITaskSceneTask? = null
+    var hiddenRoot: ITaskSceneTask? = null
     for (nextTask in tasksInDocumentOrder) {
+      // A hidden task takes its whole subtree with it, the same way the task table does: the tree
+      // node is never created, so nothing below it can appear either.
+      if (hiddenRoot != null) {
+        if (!areUnrelated(nextTask, hiddenRoot)) {
+          continue
+        }
+        hiddenRoot = null
+      }
+      if (isHidden(nextTask)) {
+        hiddenRoot = nextTask
+        continue
+      }
       if (addTo == null) {
         if (nextTask == lastVisible) {
           addTo = belowViewport

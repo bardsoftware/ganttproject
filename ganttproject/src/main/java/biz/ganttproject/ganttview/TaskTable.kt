@@ -105,6 +105,9 @@ class TaskTable(
     projectOpenActivityFactory
   ) {
 
+  /** Named views of this project. Display only -- nothing here reaches the calculation. */
+  val viewManager: TaskViewManager get() = project.taskViewManager
+
   private val isSortedProperty = SimpleBooleanProperty()
   override val tableModel = TaskTableModel(taskManager.customPropertyManager)
   private val task2treeItem = mutableMapOf<Task, TreeItem<Task>>()
@@ -126,7 +129,10 @@ class TaskTable(
     Button(RootLocalizer.formatText("taskTable.placeholder.showHiddenTasks")).also {
       it.styleClass.add("btn-attention")
       it.onAction = EventHandler {
+        // Clears BOTH, not just the filter. This button only appears when the table is completely
+        // empty, and in that state the person cannot tell which of the two emptied it.
         filterManager.activeFilter = VOID_FILTER
+        viewManager.showAll()
       }
     }
   }
@@ -272,6 +278,8 @@ class TaskTable(
     initNewTaskActor()
 
     filterManager.sync = { this.sync() }
+    viewManager.sync = { this.sync() }
+    viewManager.onModified = { project.setModified() }
     minCellHeight.addListener { observable, oldValue, newValue ->
       if (oldValue != newValue) {
         treeTable.coalescingRefresh()
@@ -505,7 +513,13 @@ class TaskTable(
       val treeModel = taskManager.taskHierarchy
       task2treeItem.clear()
 
-      val syncAlgorithm = SyncAlgorithm(treeModel, task2treeItem, rootItem, filterManager.filterFxn, ::onCreateTreeItem, taskManager.taskCount)
+      // The active named view is a SECOND condition NEXT TO the filter, not instead of it. There is
+      // only one active filter (TaskTableFilters.kt:141), so a view built as a filter would switch
+      // off "hide completed" the moment somebody picks a view, and the other way round.
+      val filterAndView: TaskFilterFxn = { parent, child ->
+        filterManager.filterFxn(parent, child) && viewManager.viewFxn(parent, child)
+      }
+      val syncAlgorithm = SyncAlgorithm(treeModel, task2treeItem, rootItem, filterAndView, ::onCreateTreeItem, taskManager.taskCount)
       syncAlgorithm.sync()
       val visibleTasks = getExpandedTasks()
       taskTableChartConnector.visibleTasks.setAll(visibleTasks)
@@ -553,6 +567,31 @@ class TaskTable(
       taskActions.propertiesAction.actionPerformed(null)
     }
   }
+  // Created once, not per right-click: every GPAction registers itself with GanttLanguage in its
+  // constructor and is never unregistered.
+  private val hideInViewAction by lazy {
+    GPAction.create("taskView.hideTask") {
+      viewManager.hideInActiveView(selectionManager.selectedTasks.toList()) {
+        RootLocalizer.formatText("taskView.defaultName")
+      }
+    }
+  }
+  private val showInViewAction by lazy {
+    GPAction.create("taskView.showTask") {
+      viewManager.showInActiveView(selectionManager.selectedTasks.toList())
+    }
+  }
+
+  /**
+   * "Hide in this view" / "show again" for the current selection. Without an entry here a view
+   * could be switched on but never filled, and hiding would be a feature without a handle.
+   */
+  private fun viewActions(): List<GPAction> {
+    val selected = selectionManager.selectedTasks
+    val hiddenAlready = selected.isNotEmpty() && selected.all { viewManager.activeView.hides(it) }
+    return listOf(if (hiddenAlready) showInViewAction else hideInViewAction)
+  }
+
   override fun contextMenuActions(builder: MenuBuilder) {
     builder.apply {
       items(taskActions.createAction)
@@ -574,6 +613,8 @@ class TaskTable(
           taskActions.pasteAction,
           taskActions.deleteAction
         )
+        separator()
+        items(viewActions())
         if (selectionManager.selectedTasks.size == 1) {
           separator()
           submenu(RootLocalizer.formatText("assignments")) {

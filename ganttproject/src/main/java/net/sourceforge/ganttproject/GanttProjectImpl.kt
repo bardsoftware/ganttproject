@@ -33,6 +33,7 @@ import biz.ganttproject.core.time.impl.GPTimeUnitStack
 import biz.ganttproject.customproperty.CustomColumnsManager
 import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.ganttview.TaskFilterManager
+import biz.ganttproject.ganttview.TaskViewManager
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.gui.NotificationManager
@@ -89,6 +90,7 @@ open class GanttProjectImpl @JvmOverloads constructor(
   override val uIConfiguration = UIConfiguration(Color.BLUE, true)
   override val taskCustomColumnManager: CustomPropertyManager get() = taskManager.customPropertyManager
   override val taskFilterManager = TaskFilterManager(this.taskManager, this.projectDatabase)
+  override val taskViewManager = TaskViewManager()
   override val roleManager: RoleManager
     get() = RoleManager.Access.getInstance()
 

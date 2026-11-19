@@ -23,6 +23,7 @@ import biz.ganttproject.core.calendar.ImportCalendarOption
 import biz.ganttproject.core.time.TimeUnitStack
 import biz.ganttproject.customproperty.CustomPropertyManager
 import biz.ganttproject.ganttview.TaskFilterManager
+import biz.ganttproject.ganttview.TaskViewManager
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.document.DocumentManager
 import net.sourceforge.ganttproject.gui.UIConfiguration
@@ -54,6 +55,9 @@ interface IGanttProject {
   val resourceCustomPropertyManager: CustomPropertyManager
   val taskCustomColumnManager: CustomPropertyManager
   val taskFilterManager: TaskFilterManager
+
+  /** Named views: sets of tasks that the task table hides. Display only, see TaskViews.kt. */
+  val taskViewManager: TaskViewManager
   val baselines: MutableList<GanttPreviousState>
 
   val activeCalendar: GPCalendarCalc

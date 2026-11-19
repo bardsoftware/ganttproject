@@ -25,6 +25,7 @@ import biz.ganttproject.core.chart.canvas.Canvas.Text;
 import biz.ganttproject.core.chart.canvas.Canvas.TextGroup;
 import biz.ganttproject.core.chart.canvas.Painter;
 import biz.ganttproject.core.chart.render.*;
+import net.sourceforge.ganttproject.chart.gantt.HiddenTaskGapKt;
 import net.sourceforge.ganttproject.util.PropertiesUtil;
 
 import java.awt.*;
@@ -68,6 +69,18 @@ public class StyledPainterImpl implements Painter {
 
   /** Default stroke used for the primitives */
   private final static BasicStroke defaultStroke = new BasicStroke();
+
+  /** Width in pixels of the solid end cap of a hidden-tasks marker. */
+  private static final int HIDDEN_GAP_CAP_WIDTH = 2;
+
+  /** Thickness of the dashed line between the end caps of a hidden-tasks marker. */
+  private static final int HIDDEN_GAP_LINE_THICKNESS = 2;
+
+  /** Distance from the start of one dash of a hidden-tasks marker to the start of the next. */
+  private static final int HIDDEN_GAP_DASH_STEP = 9;
+
+  /** Length of one dash of a hidden-tasks marker. */
+  private static final int HIDDEN_GAP_DASH_LENGTH = 5;
 
   public StyledPainterImpl(final ChartUIConfiguration config) {
     myConfig = config;
@@ -195,6 +208,32 @@ public class StyledPainterImpl implements Painter {
       myGraphics.drawLine(next.getRightX(), next.getTopY() + margin, next.getRightX(), next.getBottomY() - margin);
     };
     myStyle2painter.put("dayoff", myDayOffPainter);
+    // A hidden-tasks marker sits on a row seam where a view hides tasks: a dashed line with a solid
+    // cap at each end, drawn opaque because nothing but the row separator lies under it.
+    RectanglePainter myHiddenGapPainter = next -> {
+      int left = next.getLeftX();
+      int top = next.getTopY();
+      int width = next.getWidth();
+      int height = next.getHeight();
+      if (width <= 0 || height <= 0) {
+        return;
+      }
+      myGraphics.setColor(myConfig.getHiddenGapColor());
+
+      // The end caps span the full height. They are clamped so that a mark narrower than two caps
+      // is one solid stub.
+      int capWidth = Math.min(HIDDEN_GAP_CAP_WIDTH, width);
+      myGraphics.fillRect(left, top, capWidth, height);
+      myGraphics.fillRect(left + width - capWidth, top, capWidth, height);
+
+      // The first dash starts on the left cap, so a very short mark still reads as a line.
+      int lineTop = top + (height - HIDDEN_GAP_LINE_THICKNESS) / 2;
+      for (int x = left; x < left + width; x += HIDDEN_GAP_DASH_STEP) {
+        int dash = Math.min(HIDDEN_GAP_DASH_LENGTH, left + width - x);
+        myGraphics.fillRect(x, lineTop, dash, HIDDEN_GAP_LINE_THICKNESS);
+      }
+    };
+    myStyle2painter.put(HiddenTaskGapKt.STYLE_HIDDEN_GAP, myHiddenGapPainter);
     myStyle2painter.put("load.underload", myResourceLoadPainter);
     myStyle2painter.put("load.underload.first", myResourceLoadPainter);
     myStyle2painter.put("load.underload.last", myResourceLoadPainter);

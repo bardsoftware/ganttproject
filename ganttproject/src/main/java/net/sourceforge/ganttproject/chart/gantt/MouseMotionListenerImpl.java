@@ -26,6 +26,8 @@ import com.google.common.base.Strings;
 import net.sourceforge.ganttproject.ChartComponentBase;
 import net.sourceforge.ganttproject.chart.item.*;
 import net.sourceforge.ganttproject.chart.mouse.MouseMotionListenerBase;
+import net.sourceforge.ganttproject.chart.gantt.HiddenTaskGap;
+import net.sourceforge.ganttproject.chart.gantt.HiddenTaskGapKt;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.task.Task;
@@ -57,7 +59,15 @@ class MouseMotionListenerImpl extends MouseMotionListenerBase {
       //myChartComponent.setDefaultCursor();
       myCursorProperty.setValue(GPCursor.Default);
 
-      if (itemUnderPoint instanceof CalendarChartItem) {
+      // A hidden-tasks marker has no task under it. The tooltip says how many tasks are hidden and
+      // between which days.
+      if (itemUnderPoint instanceof HiddenGapChartItem) {
+        HiddenTaskGap gap = ((HiddenGapChartItem) itemUnderPoint).getGap();
+        myChartController.showTooltip(e.getX(), e.getY(), HiddenTaskGapKt.hiddenGapTooltip(
+            gap, date -> GanttLanguage.getInstance().formatDate(
+                CalendarFactory.createGanttCalendar(date))));
+      }
+      else if (itemUnderPoint instanceof CalendarChartItem) {
         CalendarEvent event = findCalendarEvent(((CalendarChartItem) itemUnderPoint).getDate());
         if (event != null) {
           String tooltipText;

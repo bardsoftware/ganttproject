@@ -216,6 +216,11 @@ public class ChartUIConfiguration {
     return myProjectConfig.getDayOffColor();
   }
 
+  /** The colour of the hidden-tasks marker on a row seam. */
+  public Color getHiddenGapColor() {
+    return myProjectConfig.getHiddenGapColor();
+  }
+
   public int getYOffSet() {
     return myYOffset;
   }
