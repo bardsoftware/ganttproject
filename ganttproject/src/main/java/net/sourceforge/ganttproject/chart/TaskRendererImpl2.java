@@ -121,6 +121,12 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     }
 
     @Override
+    public List<AbsenceRun> getAbsenceRuns(int rowId) {
+      Task task = myModel.getTaskManager().getTask(rowId);
+      return task == null ? Collections.emptyList() : AbsenceStripeKt.absenceRuns(task);
+    }
+
+    @Override
     public TaskActivitySceneBuilder.ChartApi getChartApi(TaskLabelSceneBuilder<ITaskSceneTask> labelsRenderer) {
       return new TaskActivitySceneChartApi(myModel) {
         @Override

@@ -38,6 +38,7 @@ public class AlgorithmCollection {
   private final CriticalPathAlgorithm myCriticalPathAlgorithm;
 
   private final AlgorithmBase myScheduler;
+  private final EffortDrivenDurationAlgorithm myEffortDrivenDurationAlgorithm;
 
   public AlgorithmCollection(
       TaskManagerImpl taskManager,
@@ -46,7 +47,9 @@ public class AlgorithmCollection {
       AdjustTaskBoundsAlgorithm adjustTaskBoundsAlgorithm,
       RecalculateTaskCompletionPercentageAlgorithm completionPercentageAlgorithm,
       ChartBoundsAlgorithm projectBoundsAlgorithm, CriticalPathAlgorithm criticalPathAlgorithm,
-      AlgorithmBase scheduler) {
+      AlgorithmBase scheduler,
+      EffortDrivenDurationAlgorithm effortDrivenDurationAlgorithm) {
+    myEffortDrivenDurationAlgorithm = effortDrivenDurationAlgorithm;
     myScheduler = scheduler;
     this.myFindPossibleDependeesAlgorithm = myFindPossibleDependeesAlgorithm;
     myRecalculateTaskScheduleAlgorithm = recalculateTaskScheduleAlgorithm;
@@ -78,6 +81,10 @@ public class AlgorithmCollection {
 
   public CriticalPathAlgorithm getCriticalPathAlgorithm() {
     return myCriticalPathAlgorithm;
+  }
+
+  public EffortDrivenDurationAlgorithm getEffortDrivenDurationAlgorithm() {
+    return myEffortDrivenDurationAlgorithm;
   }
 
   public AlgorithmBase getScheduler() {

@@ -18,26 +18,42 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package net.sourceforge.ganttproject.gui.resourceproperties
 
+import biz.ganttproject.app.ErrorPane
 import biz.ganttproject.app.PropertySheetBuilder
 import biz.ganttproject.app.RootLocalizer
 import biz.ganttproject.app.i18n
 import biz.ganttproject.colorFromUiManager
+import biz.ganttproject.core.calendar.GPCalendar
+import biz.ganttproject.core.model.task.HomeOffice
+import biz.ganttproject.core.model.task.WorkWeekSchedule
+import biz.ganttproject.core.model.task.formatHomeOfficePeriods
+import biz.ganttproject.core.model.task.formatWorkWeek
+import biz.ganttproject.core.model.task.parseHomeOfficePeriods
+import biz.ganttproject.core.model.task.parseWorkWeek
 import biz.ganttproject.core.option.ObservableChoice
 import biz.ganttproject.core.option.ObservableDouble
 import biz.ganttproject.core.option.ObservableMoney
 import biz.ganttproject.core.option.ObservableString
+import biz.ganttproject.core.option.ValidationException
+import biz.ganttproject.core.option.ValueValidator
 import javafx.collections.FXCollections
+import javafx.collections.MapChangeListener
 import javafx.geometry.Insets
 import javafx.scene.layout.Background
 import javafx.scene.layout.BackgroundFill
 import javafx.scene.layout.CornerRadii
 import javafx.scene.layout.StackPane
+import javafx.scene.layout.VBox
 import javafx.util.StringConverter
 import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.roles.Role
 import net.sourceforge.ganttproject.roles.RoleManager
+import java.time.DayOfWeek
 
-class MainPropertiesPanel(private val resource: HumanResource) {
+class MainPropertiesPanel(private val resource: HumanResource, private val projectWeek: Set<DayOfWeek>? = null) {
+  constructor(resource: HumanResource, calendar: GPCalendar) : this(resource, projectWorkWeek(calendar))
+
+
   val title: String = RootLocalizer.formatText("general")
   val fxComponent by lazy { getFxNode() }
   val validationErrors = FXCollections.observableArrayList<String>()
@@ -47,6 +63,11 @@ class MainPropertiesPanel(private val resource: HumanResource) {
   private val emailOption = ObservableString("email", resource.mail)
   private val roleOption = ObservableChoice<Role>("role", resource.role,
     RoleManager.Access.getInstance().getEnabledRoles().toList(), roleStringConverter)
+  internal val workWeekOption = ObservableString("workWeek", formatWorkWeek(resource.workWeek), workWeekValidator)
+  internal val homeOfficeWeekOption =
+    ObservableString("homeOfficeWeek", formatWorkWeek(resource.homeOfficeWeek), homeOfficeWeekValidator)
+  internal val homeOfficePeriodsOption =
+    ObservableString("homeOfficePeriods", formatHomeOfficePeriods(resource.homeOfficePeriods), homeOfficePeriodsValidator)
   private val rateOption = ObservableMoney("standardRate", resource.standardPayRate)
   private val totalCostOption = ObservableMoney("totalCost", resource.totalCost).also {
     it.setWritable(false)
@@ -65,6 +86,9 @@ class MainPropertiesPanel(private val resource: HumanResource) {
       text(phoneOption)
       text(emailOption)
       dropdown(roleOption)
+      text(workWeekOption)
+      text(homeOfficeWeekOption)
+      text(homeOfficePeriodsOption)
 
       skip()
       title("section.rate")
@@ -72,8 +96,16 @@ class MainPropertiesPanel(private val resource: HumanResource) {
       money(totalCostOption)
       numeric(totalLoadOption)
     }
+    pane.validationErrors.addListener(MapChangeListener {
+      validationErrors.setAll(pane.validationErrors.values)
+    })
+    // A week without a working day, or without a day in common with the project, is accepted, so it is a warning below
+    // the fields, not a validation error.
+    val workWeekHint = ErrorPane()
+    workWeekOption.addWatcher { workWeekHint.message(workWeekWarning(it.newValue, projectWeek), ErrorPane.MessageType.WARNING) }
+    workWeekHint.message(workWeekWarning(workWeekOption.value, projectWeek), ErrorPane.MessageType.WARNING)
     onRequestFocus = pane::requestFocus
-    children.add(pane.node)
+    children.add(VBox(pane.node, workWeekHint.fxNode))
   }
 
   fun requestFocus() = onRequestFocus()
@@ -84,8 +116,71 @@ class MainPropertiesPanel(private val resource: HumanResource) {
     emailOption.ifChanged(resource::setMail)
     roleOption.ifChanged(resource::setRole)
     rateOption.ifChanged(resource::setStandardPayRate)
+    workWeekOption.ifChanged { text ->
+      // An unreadable week is shown as an error and keeps the stored one.
+      val workWeek = parseWorkWeek(text ?: "") ?: return@ifChanged
+      if (WorkWeekSchedule(workWeek).changes != resource.workWeek) {
+        resource.workWeek = workWeek
+      }
+    }
+    homeOfficeWeekOption.ifChanged { text ->
+      val week = parseWorkWeek(text ?: "") ?: return@ifChanged
+      if (HomeOffice(week).week.changes != resource.homeOfficeWeek) {
+        resource.homeOfficeWeek = week
+      }
+    }
+    homeOfficePeriodsOption.ifChanged { text ->
+      val periods = parseHomeOfficePeriods(text ?: "") ?: return@ifChanged
+      if (HomeOffice(emptyList(), periods).periods != resource.homeOfficePeriods) {
+        resource.homeOfficePeriods = periods
+      }
+    }
   }
 
+}
+
+private val workWeekValidator = ValueValidator { text ->
+  if (parseWorkWeek(text) == null) {
+    throw ValidationException(i18n.formatText("workWeek.error", text))
+  }
+  text
+}
+
+/** The weekdays which the project calendar sets as working days. Exceptions of single dates are not looked at. */
+internal fun projectWorkWeek(calendar: GPCalendar): Set<DayOfWeek> = DayOfWeek.values().filter {
+  // java.util.Calendar numbers Sunday as 1, java.time numbers it as 7.
+  calendar.getWeekDayType(it.value % 7 + 1) == GPCalendar.DayType.WORKING
+}.toSet()
+
+private val homeOfficeWeekValidator = ValueValidator { text ->
+  if (parseWorkWeek(text) == null) {
+    throw ValidationException(i18n.formatText("homeOfficeWeek.error", text))
+  }
+  text
+}
+
+private val homeOfficePeriodsValidator = ValueValidator { text ->
+  if (parseHomeOfficePeriods(text) == null) {
+    throw ValidationException(i18n.formatText("homeOfficePeriods.error", text))
+  }
+  text
+}
+
+/**
+ * The warning for a work week with a change on which the resource works on no day, or, if the week of the project is
+ * given, with a change whose days are all free in the project, or null. Such a week is valid: the effort driven tasks
+ * of the resource just make no progress from that date on, because a task only works on working days of the project.
+ */
+internal fun workWeekWarning(text: String?, projectWeek: Set<DayOfWeek>? = null): String? {
+  val changes = parseWorkWeek(text ?: "") ?: return null
+  changes.firstOrNull { it.days.isEmpty() }?.let { noDay ->
+    return noDay.from?.let { i18n.formatText("workWeek.warning.noDayFrom", it.toString()) }
+      ?: i18n.formatText("workWeek.warning.noDay")
+  }
+  if (projectWeek != null && changes.any { change -> change.days.none { it in projectWeek } }) {
+    return i18n.formatText("workWeek.warning.noProjectDay")
+  }
+  return null
 }
 
 private val roleStringConverter = object : StringConverter<Role>() {

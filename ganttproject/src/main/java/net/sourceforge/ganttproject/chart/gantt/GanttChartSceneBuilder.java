@@ -30,6 +30,9 @@ import biz.ganttproject.core.time.TimeDuration;
 import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
+import net.sourceforge.ganttproject.chart.AbsenceRun;
+import net.sourceforge.ganttproject.chart.AbsenceStripeKt;
+import net.sourceforge.ganttproject.chart.StripeSpan;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.task.*;
 
@@ -56,6 +59,11 @@ public class GanttChartSceneBuilder {
     List<ITaskSceneTask> getVisibleTaskSceneTasks();
     List<ITaskSceneTask> getTasksInDocumentOrder();
     List<GanttPreviousStateTask> getBaseline();
+
+    /** Days on which somebody assigned to the task is away, as disjoint ascending runs. */
+    default List<AbsenceRun> getAbsenceRuns(int rowId) {
+      return List.of();
+    }
     TaskActivitySceneBuilder.ChartApi getChartApi(TaskLabelSceneBuilder<ITaskSceneTask> labelsRenderer);
     GPCalendarCalc getCalendar();
     Date getStartDate();
@@ -138,13 +146,18 @@ public class GanttChartSceneBuilder {
         new TaskActivitySceneBuilder.Style(getRectangleHeight()));
   }
 
+  /** The vertical shift which render() puts on the canvas. */
+  private int canvasDeltaY() {
+    return input.getHeaderHeight() - input.getVerticalOffset();
+  }
+
   public Canvas render() {
     getPrimitiveContainer().clear();
     getPrimitiveContainer().getLayer(0).clear();
     getPrimitiveContainer().getLayer(1).clear();
     getPrimitiveContainer().getLayer(2).clear();
-    getPrimitiveContainer().setOffset(0, input.getHeaderHeight() - input.getVerticalOffset());
-    getPrimitiveContainer().getLayer(2).setOffset(0, input.getHeaderHeight() - input.getVerticalOffset());
+    getPrimitiveContainer().setOffset(0, canvasDeltaY());
+    getPrimitiveContainer().getLayer(2).setOffset(0, canvasDeltaY());
 
     VerticalPartitioning vp = input.getVerticalPartitioning();
     vp.build(input.getTasksInDocumentOrder());
@@ -305,6 +318,7 @@ public class GanttChartSceneBuilder {
       OffsetList defaultUnitOffsets, boolean areVisible) {
     List<Polygon> rectangles = myTaskActivityRenderer.renderActivities(rowNum, activities, defaultUnitOffsets);
     if (areVisible && !myTaskApi.hasNestedTasks(t) && !t.isMilestone() && !t.isProjectTask()) {
+      renderAbsenceStripes(t, rectangles, defaultUnitOffsets);
       renderProgressBar(rectangles.stream().filter(REMOVE_SUPERTASK_ENDINGS).toList());
     }
     if (areVisible && myTaskApi.hasNotes(t)) {
@@ -313,6 +327,35 @@ public class GanttChartSceneBuilder {
       getPrimitiveContainer().bind(notes, t);
     }
     return rectangles;
+  }
+
+  /**
+   * Draws a stripe over each part of a task bar on which somebody assigned to the task is away. The stripes are
+   * created on the base canvas right after the bars, so they lie on the bars and under the progress bar and the
+   * labels. They are not bound to the task, therefore clicks still hit the bar. Activities without work (weekends,
+   * holidays) get no stripe.
+   */
+  private void renderAbsenceStripes(ITaskSceneTask t, List<Polygon> barRectangles, OffsetList offsets) {
+    List<AbsenceRun> runs = input.getAbsenceRuns(t.getRowId());
+    if (runs.isEmpty()) {
+      return;
+    }
+    int deltaY = canvasDeltaY();
+    for (Polygon bar : barRectangles) {
+      if (!(bar instanceof Rectangle barRect) || !(bar.getModelObject() instanceof ITaskActivity<?> activity)) {
+        continue;
+      }
+      if (activity.getIntensity() == 0f) {
+        continue;
+      }
+      List<StripeSpan> spans = AbsenceStripeKt.absenceStripeSpans(
+          runs, activity.getStart(), activity.getEnd(), barRect.getLeftX(), barRect.getRightX(), offsets);
+      for (StripeSpan span : spans) {
+        Rectangle stripe = getPrimitiveContainer().createRectangle(
+            span.getLeftX(), barRect.getTopY() - deltaY, span.getWidth(), barRect.getHeight());
+        stripe.setStyle(AbsenceStripeKt.STYLE_ABSENCE);
+      }
+    }
   }
 
   private void renderLabels(List<Polygon> rectangles) {

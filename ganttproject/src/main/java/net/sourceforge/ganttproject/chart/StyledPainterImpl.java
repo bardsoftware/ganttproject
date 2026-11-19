@@ -69,6 +69,12 @@ public class StyledPainterImpl implements Painter {
   /** Default stroke used for the primitives */
   private final static BasicStroke defaultStroke = new BasicStroke();
 
+  /** Opacity of the fill of an absence stripe, out of 255. */
+  private static final int ABSENCE_ALPHA = 70;
+
+  /** Distance in pixels between two hatching lines of an absence stripe. */
+  private static final int ABSENCE_HATCH_STEP = 4;
+
   public StyledPainterImpl(final ChartUIConfiguration config) {
     myConfig = config;
     margin = myConfig.getMargin();
@@ -195,6 +201,34 @@ public class StyledPainterImpl implements Painter {
       myGraphics.drawLine(next.getRightX(), next.getTopY() + margin, next.getRightX(), next.getBottomY() - margin);
     };
     myStyle2painter.put("dayoff", myDayOffPainter);
+    // The absence stripe on a task bar: a faint fill with opaque vertical hatching, so that the bar stays legible and
+    // the stripe does not depend on the colour alone.
+    RectanglePainter myAbsencePainter = next -> {
+      int left = next.getLeftX();
+      int top = next.getTopY();
+      int width = next.getWidth();
+      int height = next.getHeight();
+      if (width <= 0 || height <= 0) {
+        return;
+      }
+      Color c = myConfig.getAbsenceColor();
+      myGraphics.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), ABSENCE_ALPHA));
+      myGraphics.fillRect(left, top, width, height);
+
+      Shape oldClip = myGraphics.getClip();
+      Stroke oldStroke = myGraphics.getStroke();
+      myGraphics.clip(new java.awt.Rectangle(left, top, width, height));
+      myGraphics.setStroke(defaultStroke);
+      myGraphics.setColor(c);
+      for (int x = left; x < left + width; x += ABSENCE_HATCH_STEP) {
+        myGraphics.drawLine(x, top, x, top + height);
+      }
+      myGraphics.setClip(oldClip);
+      myGraphics.setStroke(oldStroke);
+      myGraphics.setColor(c);
+      myGraphics.drawRect(left, top, width - 1, height);
+    };
+    myStyle2painter.put(AbsenceStripeKt.STYLE_ABSENCE, myAbsencePainter);
     myStyle2painter.put("load.underload", myResourceLoadPainter);
     myStyle2painter.put("load.underload.first", myResourceLoadPainter);
     myStyle2painter.put("load.underload.last", myResourceLoadPainter);

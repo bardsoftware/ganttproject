@@ -49,6 +49,7 @@ import net.sourceforge.ganttproject.roles.RoleManager
 import net.sourceforge.ganttproject.storage.LazyProjectDatabaseProxy
 import net.sourceforge.ganttproject.storage.ProjectDatabase
 import net.sourceforge.ganttproject.task.*
+import net.sourceforge.ganttproject.task.algorithm.EffortDrivenTrigger
 import net.sourceforge.ganttproject.task.event.createTaskListenerWithTimerBarrier
 import java.awt.Color
 import java.io.IOException
@@ -103,6 +104,7 @@ open class GanttProjectImpl @JvmOverloads constructor(
 
   init {
     myCalendar.addListener { setModified() }
+    humanResourceManager.addView(EffortDrivenTrigger(this.taskManager))
   }
 
   override fun setModified() {
