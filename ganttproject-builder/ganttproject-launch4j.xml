@@ -30,12 +30,12 @@
     <maxHeapSize>2048</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileVersion>3.3.3323.0</fileVersion>
+    <fileVersion>3.3.3330.0</fileVersion>
     <txtFileVersion>GanttProject 3.3</txtFileVersion>
     <fileDescription>GanttProject Launcher</fileDescription>
     <copyright>Copyright (C) 2026 BarD Software s.r.o.</copyright>
-    <productVersion>3.3.3323.0</productVersion>
-    <txtProductVersion>GanttProject 3.3 Beta</txtProductVersion>
+    <productVersion>3.3.3330.0</productVersion>
+    <txtProductVersion>GanttProject 3.3</txtProductVersion>
     <productName>GanttProject</productName>
     <companyName>BarD Software s.r.o.</companyName>
     <internalName>GanttProject</internalName>
