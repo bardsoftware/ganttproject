@@ -65,6 +65,8 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager): T
       TaskDefaultColumn.RESOURCES      -> t.assignments.joinToString(",") { it?.resource?.name ?: "" }
       TaskDefaultColumn.EARLIEST_BEGIN -> if (t.thirdDateConstraint != 0) t.third else null
       TaskDefaultColumn.IS_CRITICAL    -> t.isCritical
+      TaskDefaultColumn.EFFORT         -> t.effort
+      TaskDefaultColumn.EFFORT_DRIVEN  -> t.isEffortDriven
       else -> {
         null
       }
@@ -163,6 +165,19 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager): T
         }
       } catch (e: NumberFormatException) {
         throw ValidationException(MessageFormat.format("Can't parse {0} as number", value))
+      }
+      TaskDefaultColumn.EFFORT -> try {
+        val effort = value.toString().trim().takeIf { it.isNotEmpty() }?.let { BigDecimal(it) }
+        node.createMutator().also {
+          it.setEffort(effort)
+          it.commit()
+        }
+      } catch (e: NumberFormatException) {
+        throw ValidationException(MessageFormat.format("Can't parse {0} as number", value))
+      }
+      TaskDefaultColumn.EFFORT_DRIVEN -> node.createMutator().also {
+        it.setEffortDriven(value as Boolean)
+        it.commit()
       }
       else -> {
       }
