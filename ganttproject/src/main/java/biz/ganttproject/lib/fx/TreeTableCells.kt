@@ -43,7 +43,6 @@ import javafx.scene.paint.Paint
 import javafx.scene.text.Font
 import javafx.util.Callback
 import javafx.util.StringConverter
-import javafx.util.converter.BigDecimalStringConverter
 import javafx.util.converter.DefaultStringConverter
 import javafx.util.converter.NumberStringConverter
 import net.sourceforge.ganttproject.language.GanttLanguage
@@ -403,10 +402,12 @@ fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue
     }
     cellFactory = Callback {
       val converter = MyStringConverter<S, BigDecimal>(
-        toString = { _, value ->
-          value?.let { getNumberFormat().format(it) } ?: ""
+        toString = { cell, value ->
+          value?.let {
+            if (cell.isEditing) formatDecimalForEditing(it) else getNumberFormat().format(it)
+          } ?: ""
         },
-        fromString = { _, value -> BigDecimalStringConverter().fromString(value) }
+        fromString = { _, value -> parseDecimal(value) }
       )
       TextCell(converter).also {
         it.styleClass.add("text-right")
@@ -414,7 +415,7 @@ fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue
         it.isEditable = this@apply.isEditable
       }
     }
-    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue?.toDouble()?.toBigDecimal() ?: BigDecimal.ZERO) }
+    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue ?: BigDecimal.ZERO) }
   }
 
 fun <S, T> createIconColumn(name: String, getValue: (S) ->T?, iconFactory: (T) -> GlyphIcon<*>?, i18n: Localizer) =

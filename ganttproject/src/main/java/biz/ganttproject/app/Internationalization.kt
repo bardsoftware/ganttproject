@@ -18,8 +18,12 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 */
 package biz.ganttproject.app
 
+import biz.ganttproject.core.option.ValidationException
 import javafx.util.StringConverter
+import java.math.BigDecimal
+import java.text.DecimalFormat
 import java.text.NumberFormat
+import java.text.ParsePosition
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -40,6 +44,48 @@ fun setLocale(locale: Locale) {
 fun getCurrentLocale() = ourLocale
 
 fun getNumberFormat(): NumberFormat = NumberFormat.getInstance(ourLocale)
+
+/**
+ * Formats a decimal number for editing: uses the separators of the given locale, like the cell display does,
+ * but keeps all significant fraction digits, so that committing an unchanged value doesn't round it.
+ */
+fun formatDecimalForEditing(value: BigDecimal, locale: Locale = ourLocale): String {
+  val format = NumberFormat.getInstance(locale)
+  format.maximumFractionDigits = maxOf(value.stripTrailingZeros().scale(), format.maximumFractionDigits)
+  return format.format(value)
+}
+
+/**
+ * Parses a decimal number typed by the user, using the decimal and grouping separators of the given locale,
+ * e.g. "3,14" in German or Russian. Returns null if the text is blank.
+ *
+ * @throws ValidationException if the text is not a number in the given locale.
+ */
+fun parseDecimal(text: String, locale: Locale = ourLocale): BigDecimal? {
+  val format = NumberFormat.getInstance(locale)
+  var normalized = text.trim()
+  if (normalized.isEmpty()) {
+    return null
+  }
+  if (format is DecimalFormat) {
+    format.isParseBigDecimal = true
+    // Locales such as French or Russian use a non-breaking space as a grouping separator, while
+    // users type a regular space.
+    val groupingSeparator = format.decimalFormatSymbols.groupingSeparator
+    if (Character.isSpaceChar(groupingSeparator)) {
+      normalized = normalized.replace(' ', groupingSeparator)
+    }
+  }
+  val position = ParsePosition(0)
+  val result = format.parse(normalized, position)
+  if (result == null || position.index != normalized.length) {
+    throw ValidationException("Can't parse $text as a number")
+  }
+  return when (result) {
+    is BigDecimal -> result
+    else -> BigDecimal(result.toString())
+  }
+}
 
 fun createDateConverter(): StringConverter<LocalDate> = LocaleBasedDateConverter(ourLocale)
 
