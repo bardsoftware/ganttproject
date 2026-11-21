@@ -467,7 +467,11 @@ class ResourceTableModel(private val areChangesIgnored: ()->Boolean)
         ResourceDefaultColumn.PHONE -> node.resource.phone = "$value"
         ResourceDefaultColumn.EMAIL -> node.resource.mail = "$value"
         ResourceDefaultColumn.ROLE -> node.resource.role = value as Role
-        ResourceDefaultColumn.STANDARD_RATE -> (value as? Double)?.let { node.resource.standardPayRate = BigDecimal.valueOf(it) }
+        ResourceDefaultColumn.STANDARD_RATE -> when (value) {
+          is BigDecimal -> value
+          is Number -> BigDecimal.valueOf(value.toDouble())
+          else -> value.toString().toBigDecimalOrNull()
+        }?.let { node.resource.standardPayRate = it }
         else -> {}
       }
     } else if (node is AssignmentNode) {

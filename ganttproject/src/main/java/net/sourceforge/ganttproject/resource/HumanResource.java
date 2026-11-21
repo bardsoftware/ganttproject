@@ -398,6 +398,7 @@ public class HumanResource implements CustomPropertyHolder {
 
   public void setStandardPayRate(BigDecimal rate) {
     myStandardPayRate = rate;
+    fireResourceChanged();
   }
 
   public BigDecimal getStandardPayRate() {
