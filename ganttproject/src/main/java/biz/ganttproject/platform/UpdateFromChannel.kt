@@ -29,6 +29,8 @@ import com.sandec.mdfx.MDFXNode
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Insets
+import javafx.scene.Cursor
+import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ScrollPane
@@ -176,8 +178,14 @@ internal class UpdateComponentUi(ourLocalizer: Localizer, update: UpdateMetadata
   val subtitle: Label = Label(ourLocalizer.formatText("bodyItem.subtitle", update.date, update.sizeAsString())).also { l ->
     l.styleClass.add("subtitle")
   }
-  val text: MDFXNode = MDFXNode(ourLocalizer.formatText("bodyItem.description", update.description)).also { l ->
-    l.styleClass.add("par")
+  val text: MDFXNode = object : MDFXNode(ourLocalizer.formatText("bodyItem.description", update.description)) {
+    init {
+      styleClass.add("par")
+    }
+    override fun setLink(node: Node, link: String, description: String?) {
+      node.cursor = Cursor.HAND
+      node.setOnMouseClicked { openInBrowser(link.trim()) }
+    }
   }
   var progressValue: Int = -1
     set(value) {
