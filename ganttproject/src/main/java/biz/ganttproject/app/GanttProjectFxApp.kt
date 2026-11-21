@@ -96,7 +96,7 @@ class GanttProjectFxApp : Application() {
         ganttProject.viewManager.init(ganttProject.ganttViewProvider, ganttProject.resourceViewProvider)
         APP_LOGGER.debug("onShown(): resolving the barrier...")
         ganttProject.uiFacade.windowOpenedBarrier.resolve(true)
-        Platform.runLater {
+        FXThread.runLater(1000) {
           // Some window managers ignore the position and the maximized state requested before the window is mapped,
           // so we apply the geometry once again.
           initialGeometry.let {
