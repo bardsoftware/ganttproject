@@ -19,10 +19,19 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject
 
 import biz.ganttproject.core.io.XmlProjectImporter
+import biz.ganttproject.core.io.parseXmlProject
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.CalendarFactory.LocaleApi
 import biz.ganttproject.core.time.CalendarFactory.setLocaleApi
+import biz.ganttproject.lib.fx.SimpleTreeCollapseView
+import net.sourceforge.ganttproject.document.Document
+import net.sourceforge.ganttproject.document.FileDocument
 import net.sourceforge.ganttproject.io.GanttXMLSaver
+import net.sourceforge.ganttproject.parser.ResourceLoader
+import net.sourceforge.ganttproject.parser.TaskTagHandler
+import net.sourceforge.ganttproject.task.TaskManagerImpl
+import net.sourceforge.ganttproject.undo.UndoableEditImpl
+import net.sourceforge.ganttproject.undo.UndoableEditTxn
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -30,6 +39,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.math.BigDecimal
 import java.text.DateFormat
 import java.util.Locale
@@ -64,6 +74,37 @@ class EffortFieldsFileFormatTest {
     return out.toString(Charsets.UTF_8)
   }
 
+  /**
+   * An autosave document like the one the undo manager writes before and after each edit. Reading it
+   * replaces the tasks and resources of the project with the saved ones, using the same loaders
+   * as ProxyDocument does when undo restores a project.
+   */
+  private fun autosaveDocument(project: IGanttProject): Document {
+    val file = File.createTempFile("effort-undo", ".gan").also { it.deleteOnExit() }
+    return object : Document by FileDocument(file) {
+      override fun write() {
+        file.writeText(save(project))
+      }
+
+      override fun read() {
+        val xmlProject = parseXmlProject(file.readText())
+        (project.taskManager as TaskManagerImpl).projectListener.projectClosed()
+        project.humanResourceManager.clear()
+        ResourceLoader(project.humanResourceManager, project.roleManager, project.resourceCustomPropertyManager)
+          .loadResources(xmlProject)
+        TaskTagHandler(project.taskManager, SimpleTreeCollapseView()).process(xmlProject)
+      }
+    }
+  }
+
+  private val noTxn = object : UndoableEditTxn {
+    override fun start(displayName: String) {}
+    override fun commit() {}
+    override fun rollback(ex: Throwable) {}
+    override fun undo() {}
+    override fun redo() {}
+  }
+
   @Test
   fun `effort, effort-driven flag and hours per day survive a save and load`() {
     val loaded = XmlProjectImporter().import(
@@ -79,21 +120,35 @@ class EffortFieldsFileFormatTest {
   }
 
   @Test
-  fun `loading the file saved before an edit brings the previous effort back`() {
-    // Undo restores the project from a document saved before the edit, so what it needs is that
-    // the saved document holds the effort as it was at that moment.
-    val project = XmlProjectImporter().import(projectXml("""effort-hours="12.5""""))
-    val before = save(project)
-
-    val task = project.taskManager.getTask(1)
-    task.createMutator().also {
-      it.setEffort(BigDecimal("20"))
-      it.commit()
+  fun `undo of an edit brings the previous effort, flag and hours per day back`() {
+    val project = XmlProjectImporter().import(
+      projectXml("""effort-hours="12.5" effort-driven="true"""", """hours-per-day="6.5""""))
+    val edit = UndoableEditImpl(UndoableEditImpl.Args(
+      displayName = "Edit effort",
+      newAutosave = { autosaveDocument(project) },
+      restore = { it.read() },
+      txn = noTxn
+    )) {
+      project.taskManager.getTask(1).createMutator().also {
+        it.setEffort(BigDecimal("20"))
+        it.setEffortDriven(false)
+        it.commit()
+      }
+      project.humanResourceManager.getById(0).hoursPerDay = BigDecimal("8")
     }
-    assertEquals(BigDecimal("20"), task.effort)
+    assertEquals(BigDecimal("20"), project.taskManager.getTask(1).effort)
 
-    val restored = XmlProjectImporter().import(before)
-    assertEquals(BigDecimal("12.5"), restored.taskManager.getTask(1).effort)
+    edit.undo()
+    val restored = project.taskManager.getTask(1)
+    assertEquals(BigDecimal("12.5"), restored.effort)
+    assertTrue(restored.isEffortDriven)
+    assertEquals(BigDecimal("6.5"), project.humanResourceManager.getById(0).hoursPerDay)
+
+    edit.redo()
+    val redone = project.taskManager.getTask(1)
+    assertEquals(BigDecimal("20"), redone.effort)
+    assertFalse(redone.isEffortDriven)
+    assertEquals(BigDecimal("8"), project.humanResourceManager.getById(0).hoursPerDay)
   }
 
   @Test
