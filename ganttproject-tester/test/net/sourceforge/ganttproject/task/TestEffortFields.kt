@@ -106,6 +106,20 @@ class TestEffortFields {
   }
 
   @Test
+  fun `importing tasks, as pasting from the clipboard does, keeps effort and the flag`() {
+    val source = TestSetupHelper.newTaskManagerBuilder().build()
+    source.newTaskBuilder().withName("t").build().createMutator().also {
+      it.setEffort(BigDecimal("12.5"))
+      it.setEffortDriven(true)
+      it.commit()
+    }
+    taskManager.importData(source, emptyMap())
+    val imported = taskManager.tasks.single()
+    assertEquals(BigDecimal("12.5"), imported.effort)
+    assertTrue(imported.isEffortDriven)
+  }
+
+  @Test
   fun `task loader reads effort and the flag`() {
     val xmlTask = XmlTasks.XmlTask(id = 1, uid = "", name = "T", startDate = "2026-11-09").also {
       it.effort = BigDecimal("16.25")

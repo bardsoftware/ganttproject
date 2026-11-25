@@ -891,6 +891,8 @@ public class TaskManagerImpl implements TaskManager {
       nextImported.setExpand(task.getExpand());
       nextImported.setMilestone(task.isMilestone());
       nextImported.getCost().setValue(that.getCost());
+      nextImported.setEffort(that.getEffort());
+      nextImported.setEffortDriven(that.isEffortDriven());
       if (task.getThird() != null) {
         nextImported.setThirdDate(task.getThird().clone());
         nextImported.setThirdDateConstraint(task.getThirdDateConstraint());
