@@ -19,7 +19,6 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package biz.ganttproject.core.io
 
 import biz.ganttproject.core.io.XmlTasks.XmlCalculationSimpleSelect
-import biz.ganttproject.core.model.task.TaskEffort
 import com.fasterxml.jackson.annotation.*
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -28,6 +27,11 @@ import com.fasterxml.jackson.dataformat.xml.annotation.*
 import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator
 import java.math.BigDecimal
+
+/** Task effort, a decimal number of hours. */
+const val XML_TASK_EFFORT = "effort-hours"
+const val XML_TASK_IS_EFFORT_DRIVEN = "effort-driven"
+const val XML_RESOURCE_HOURS_PER_DAY = "hours-per-day"
 
 @JacksonXmlRootElement(localName = "project")
 @JsonPropertyOrder(
@@ -261,11 +265,11 @@ data class XmlTasks(
     var isCostCalculated: Boolean? = null,
 
     @get:JsonInclude(JsonInclude.Include.NON_NULL)
-    @get:JacksonXmlProperty(isAttribute = true, localName = TaskEffort.XML_ATTRIBUTE)
+    @get:JacksonXmlProperty(isAttribute = true, localName = XML_TASK_EFFORT)
     var effort: BigDecimal? = null,
 
     @get:JsonInclude(JsonInclude.Include.NON_NULL)
-    @get:JacksonXmlProperty(isAttribute = true, localName = "effort-driven")
+    @get:JacksonXmlProperty(isAttribute = true, localName = XML_TASK_IS_EFFORT_DRIVEN)
     var isEffortDriven: Boolean? = null,
 
     @get:JsonInclude(JsonInclude.Include.NON_NULL)
@@ -331,7 +335,7 @@ data class XmlResources(
     @get:JacksonXmlProperty(isAttribute = true) var phone: String = "",
 
     @get:JsonInclude(JsonInclude.Include.NON_NULL)
-    @get:JacksonXmlProperty(isAttribute = true, localName = "hours-per-day") var hoursPerDay: BigDecimal? = null,
+    @get:JacksonXmlProperty(isAttribute = true, localName = XML_RESOURCE_HOURS_PER_DAY) var hoursPerDay: BigDecimal? = null,
 
     @get:JsonInclude(JsonInclude.Include.NON_NULL) var rate: XmlRate? = null,
 
