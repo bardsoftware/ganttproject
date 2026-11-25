@@ -1,5 +1,5 @@
 /*
-Copyright 2026 BarD Software s.r.o., GanttProject Cloud OU
+Copyright 2026 BarD Software s.r.o.
 
 This file is part of GanttProject, an opensource project management tool.
 
