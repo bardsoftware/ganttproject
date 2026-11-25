@@ -9,6 +9,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.TestSetupHelper;
+import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -106,26 +107,11 @@ public class GPCsvExportTest extends TaskTestCase {
 
   }
 
-  public void testEffortColumns() throws Exception {
-    HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
-    TaskManager taskManager = getTaskManager();
-    CSVOptions csvOptions = enableOnly(TaskDefaultColumn.ID.getStub().getID(),
-        TaskDefaultColumn.EFFORT.getStub().getID(), TaskDefaultColumn.EFFORT_DRIVEN.getStub().getID());
-
-    Task task1 = createTask();
-    Task task2 = createTask();
-    task1.setEffort(new java.math.BigDecimal("12.5"));
-    task1.setEffortDriven(true);
-
-    GanttCSVExport exporter = new GanttCSVExport(taskManager, hrManager, new RoleManagerImpl(), csvOptions);
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    try (SpreadsheetWriter writer = exporter.createWriter(outputStream, CSV)) {
-      exporter.save(writer);
-    }
-    String[] lines = new String(outputStream.toByteArray(), Charsets.UTF_8.name()).split("\n");
-    assertEquals("tableColID,tableColEffort,tableColEffortDriven", lines[0].trim());
-    assertEquals("0,12.5,true", lines[1].trim());
-    assertEquals("1,,false", lines[2].trim());
+  public void testEffortColumnsAreNotExported() {
+    CSVOptions csvOptions = new CSVOptions();
+    assertFalse(csvOptions.getTaskOptions().containsKey(TaskDefaultColumn.EFFORT.getStub().getID()));
+    assertFalse(csvOptions.getTaskOptions().containsKey(TaskDefaultColumn.EFFORT_DRIVEN.getStub().getID()));
+    assertFalse(csvOptions.getResourceOptions().containsKey(ResourceDefaultColumn.HOURS_PER_DAY.getStub().getID()));
   }
 
   public void testResourceAssignments() throws Exception {

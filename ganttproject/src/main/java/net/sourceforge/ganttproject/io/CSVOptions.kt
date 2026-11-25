@@ -71,7 +71,7 @@ class CSVOptions {
       }
     }
     myResourceOptions["id"] = DefaultBooleanOption("id", true)
-    ResourceDefaultColumn.values().filter { it != ResourceDefaultColumn.ID }.map {
+    ResourceDefaultColumn.values().filter { it != ResourceDefaultColumn.ID && !ourIgnoredResourceColumns.contains(it) }.map {
       DefaultBooleanOption(it.stub.id, true)
     }.forEach { myResourceOptions[it.id] = it }
   }
@@ -84,7 +84,12 @@ class CSVOptions {
 
   companion object {
     private val ourIgnoredTaskColumns: Set<TaskDefaultColumn> = ImmutableSet.of(
-      TaskDefaultColumn.TYPE, TaskDefaultColumn.INFO
+      TaskDefaultColumn.TYPE, TaskDefaultColumn.INFO,
+      // CSV import does not read these yet, so they are not exported either.
+      TaskDefaultColumn.EFFORT, TaskDefaultColumn.EFFORT_DRIVEN
+    )
+    private val ourIgnoredResourceColumns: Set<ResourceDefaultColumn> = ImmutableSet.of(
+      ResourceDefaultColumn.HOURS_PER_DAY
     )
   }
 }
