@@ -415,6 +415,7 @@ public class HumanResource implements CustomPropertyHolder {
 
   public void setHoursPerDay(BigDecimal hoursPerDay) {
     myHoursPerDay = hoursPerDay;
+    fireResourceChanged();
   }
 
   public double getTotalLoad() {

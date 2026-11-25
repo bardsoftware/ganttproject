@@ -68,4 +68,20 @@ class ResourceTableModelTest {
     model.setValue(BigDecimal.ONE, ResourceNode(resource), ResourceDefaultColumn.STANDARD_RATE)
     assertEquals(1, changed)
   }
+
+  @Test
+  fun `hours per day change notifies resource listeners`() {
+    val resource = newResource()
+    var changed = 0
+    resourceManager.addView(object : ResourceView {
+      override fun resourceAdded(event: ResourceEvent) {}
+      override fun resourcesRemoved(event: ResourceEvent) {}
+      override fun resourceChanged(e: ResourceEvent) { changed++ }
+      override fun resourceAssignmentsChanged(e: ResourceEvent) {}
+      override fun resourceStructureChanged() {}
+      override fun resourceModelReset() {}
+    })
+    resource.hoursPerDay = BigDecimal("6")
+    assertEquals(1, changed)
+  }
 }
