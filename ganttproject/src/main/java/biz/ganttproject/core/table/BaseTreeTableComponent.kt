@@ -42,6 +42,7 @@ import net.sourceforge.ganttproject.action.GPAction
 import net.sourceforge.ganttproject.document.Document
 import net.sourceforge.ganttproject.undo.GPUndoListener
 import net.sourceforge.ganttproject.undo.GPUndoManager
+import java.math.BigDecimal
 import javax.swing.SwingUtilities
 import javax.swing.event.UndoableEditEvent
 
@@ -247,8 +248,19 @@ abstract class BaseTreeTableComponent<NodeType, BuiltinColumnType: BuiltinColumn
 interface TableModel<NodeType, DefaultColumnType: BuiltinColumn> {
   fun getValueAt(t: NodeType, defaultColumn: DefaultColumnType): Any?
   fun getValue(t: NodeType, customProperty: CustomPropertyDefinition): Any?
-  fun setValue(value: Any, node: NodeType, property: DefaultColumnType)
+  fun setValue(value: Any?, node: NodeType, property: DefaultColumnType)
   fun setValue(value: Any, node: NodeType, column: CustomPropertyDefinition)
+}
+
+/**
+ * Converts a value committed by a table cell to a decimal. Decimal cells commit a BigDecimal already,
+ * a text is parsed with [parseDecimal]. Returns null for null or a blank text.
+ */
+fun decimalValue(value: Any?): BigDecimal? = when (value) {
+  null -> null
+  is BigDecimal -> value
+  is Number -> BigDecimal(value.toString())
+  else -> parseDecimal(value.toString())
 }
 
 fun <T> GPTreeTableView<T>.reload(sync: ()->Unit, termination: OnBarrierReached? = null) {

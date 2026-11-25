@@ -24,6 +24,7 @@ import net.sourceforge.ganttproject.resource.HumanResource
 import net.sourceforge.ganttproject.resource.HumanResourceManager
 import net.sourceforge.ganttproject.roles.RoleManagerImpl
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import net.sourceforge.ganttproject.resource.ResourceEvent
 import net.sourceforge.ganttproject.resource.ResourceView
@@ -51,6 +52,15 @@ class ResourceTableModelTest {
     val resource = newResource()
     model.setValue(10.0, ResourceNode(resource), ResourceDefaultColumn.STANDARD_RATE)
     assertEquals(0, BigDecimal.TEN.compareTo(resource.standardPayRate))
+  }
+
+  @Test
+  fun `hours per day are set from the decimal value of the cell and a blank cell clears them`() {
+    val resource = newResource()
+    model.setValue(BigDecimal("6.5"), ResourceNode(resource), ResourceDefaultColumn.HOURS_PER_DAY)
+    assertEquals(BigDecimal("6.5"), resource.hoursPerDay)
+    model.setValue(null, ResourceNode(resource), ResourceDefaultColumn.HOURS_PER_DAY)
+    assertNull(resource.hoursPerDay)
   }
 
   @Test

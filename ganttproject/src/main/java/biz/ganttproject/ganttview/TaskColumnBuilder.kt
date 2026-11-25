@@ -38,6 +38,7 @@ import kotlinx.coroutines.runBlocking
 import net.sourceforge.ganttproject.GPLogger
 import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.undo.GPUndoManager
+import java.math.BigDecimal
 import java.util.Comparator
 
 /**
@@ -99,6 +100,10 @@ class TaskColumnBuilder(private val taskTableModel: TableModel<Task, TaskDefault
       else -> super.createDefaultColumn(modelColumn)
     }
   }
+
+  // A blank effort cell clears the effort rather than setting it to zero.
+  override fun getBlankDecimalValue(modelColumn: TaskDefaultColumn): BigDecimal? =
+    if (modelColumn == TaskDefaultColumn.EFFORT) null else super.getBlankDecimalValue(modelColumn)
 
   override fun postCreateDefaultColumn(
     tableColumn: TreeTableColumn<Task, Any>,

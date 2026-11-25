@@ -19,6 +19,8 @@ along with GanttProject.  If not, see <http://www.gnu.org/licenses/>.
 package net.sourceforge.ganttproject.task
 
 import biz.ganttproject.core.io.XmlTasks
+import biz.ganttproject.core.model.task.TaskDefaultColumn
+import biz.ganttproject.ganttview.TaskTableModel
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView
 import net.sourceforge.ganttproject.TestSetupHelper
 import net.sourceforge.ganttproject.parser.TaskLoader
@@ -77,6 +79,16 @@ class TestEffortFields {
     }
     assertTrue("setEffort[null, 12.5]" in calls, "calls: $calls")
     assertTrue("setEffortDriven[false, true]" in calls, "calls: $calls")
+  }
+
+  @Test
+  fun `the effort cell sets the effort and a blank cell clears it`() {
+    val model = TaskTableModel(taskManager.customPropertyManager)
+    val task = taskManager.newTaskBuilder().withName("t").build()
+    model.setValue(BigDecimal("12.5"), task, TaskDefaultColumn.EFFORT)
+    assertEquals(BigDecimal("12.5"), task.effort)
+    model.setValue(null, task, TaskDefaultColumn.EFFORT)
+    assertNull(task.effort)
   }
 
   @Test

@@ -458,7 +458,7 @@ class ResourceTableModel(private val areChangesIgnored: ()->Boolean)
     } else null
   }
 
-  override fun setValue(value: Any, node: ResourceTableNode, property: ResourceDefaultColumn) {
+  override fun setValue(value: Any?, node: ResourceTableNode, property: ResourceDefaultColumn) {
     if (areChangesIgnored()) {
       return
     }
@@ -473,7 +473,7 @@ class ResourceTableModel(private val areChangesIgnored: ()->Boolean)
           is Number -> BigDecimal.valueOf(value.toDouble())
           else -> value.toString().toBigDecimalOrNull()
         }?.let { node.resource.standardPayRate = it }
-        ResourceDefaultColumn.HOURS_PER_DAY -> node.resource.hoursPerDay = value.toString().trim().takeIf { it.isNotEmpty() }?.let { BigDecimal(it) }
+        ResourceDefaultColumn.HOURS_PER_DAY -> node.resource.hoursPerDay = decimalValue(value)
         else -> {}
       }
     } else if (node is AssignmentNode) {
@@ -504,6 +504,10 @@ class ResourceColumnBuilder(private val tableModel: ResourceTableModel,
                             undoManager: GPUndoManager)
   : ColumnBuilder<ResourceTableNode, ResourceDefaultColumn>(
   tableModel, project.humanResourceManager.customPropertyManager, undoManager, ResourceDefaultColumn::find) {
+
+  // A blank hours per day cell clears the value rather than setting it to zero.
+  override fun getBlankDecimalValue(modelColumn: ResourceDefaultColumn): BigDecimal? =
+    if (modelColumn == ResourceDefaultColumn.HOURS_PER_DAY) null else super.getBlankDecimalValue(modelColumn)
 
   override fun createDefaultColumn(modelColumn: ResourceDefaultColumn): TreeTableColumn<ResourceTableNode, out Any> {
     fun createRoleColumn(isEditableCell: (ResourceTableNode) -> Boolean) =

@@ -395,7 +395,12 @@ fun <S> createDoubleColumn(name: String, getValue: (S) -> Double?, setValue: (S,
     onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue?.toDouble() ?: 0.0) }
   }
 
-fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue: (S, BigDecimal) -> Unit) =
+/**
+ * Creates a column with decimal values, parsed with [parseDecimal]. A cell which is left blank commits [blankValue]:
+ * zero by default, null for the columns where an empty value has a meaning of its own.
+ */
+fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue: (S, BigDecimal?) -> Unit,
+                            blankValue: BigDecimal? = BigDecimal.ZERO) =
   TreeTableColumn<S, BigDecimal>(name).apply {
     setCellValueFactory {
       ReadOnlyObjectWrapper(getValue(it.value.value))
@@ -415,7 +420,7 @@ fun <S> createDecimalColumn(name: String, getValue: (S) -> BigDecimal?, setValue
         it.isEditable = this@apply.isEditable
       }
     }
-    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue ?: BigDecimal.ZERO) }
+    onEditCommit = EventHandler { event -> setValue(event.rowValue.value, event.newValue ?: blankValue) }
   }
 
 fun <S, T> createIconColumn(name: String, getValue: (S) ->T?, iconFactory: (T) -> GlyphIcon<*>?, i18n: Localizer) =
