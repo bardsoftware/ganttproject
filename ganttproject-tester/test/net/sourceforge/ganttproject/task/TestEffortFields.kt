@@ -20,6 +20,7 @@ package net.sourceforge.ganttproject.task
 
 import biz.ganttproject.core.io.XmlTasks
 import biz.ganttproject.core.model.task.TaskDefaultColumn
+import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.ganttview.TaskTableModel
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView
 import net.sourceforge.ganttproject.TestSetupHelper
@@ -28,6 +29,7 @@ import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.lang.reflect.Proxy
@@ -89,6 +91,19 @@ class TestEffortFields {
     assertEquals(BigDecimal("12.5"), task.effort)
     model.setValue(null, task, TaskDefaultColumn.EFFORT)
     assertNull(task.effort)
+  }
+
+  @Test
+  fun `the effort cell rejects negative effort`() {
+    val model = TaskTableModel(taskManager.customPropertyManager)
+    val task = taskManager.newTaskBuilder().withName("t").build()
+    model.setValue(BigDecimal("4"), task, TaskDefaultColumn.EFFORT)
+    assertThrows(ValidationException::class.java) {
+      model.setValue(BigDecimal("-0.5"), task, TaskDefaultColumn.EFFORT)
+    }
+    assertEquals(BigDecimal("4"), task.effort)
+    model.setValue(BigDecimal.ZERO, task, TaskDefaultColumn.EFFORT)
+    assertEquals(BigDecimal.ZERO, task.effort)
   }
 
   @Test

@@ -20,6 +20,7 @@ package biz.ganttproject.ganttview
 
 import biz.ganttproject.FXUtil
 import biz.ganttproject.app.MenuBuilder
+import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.table.*
 import biz.ganttproject.core.table.ColumnList.ColumnStub
 import biz.ganttproject.customproperty.CustomPropertyDefinition
@@ -473,7 +474,13 @@ class ResourceTableModel(private val areChangesIgnored: ()->Boolean)
           is Number -> BigDecimal.valueOf(value.toDouble())
           else -> value.toString().toBigDecimalOrNull()
         }?.let { node.resource.standardPayRate = it }
-        ResourceDefaultColumn.HOURS_PER_DAY -> node.resource.hoursPerDay = decimalValue(value)
+        ResourceDefaultColumn.HOURS_PER_DAY -> {
+          val hoursPerDay = decimalValue(value)
+          if (hoursPerDay != null && (hoursPerDay.signum() < 0 || hoursPerDay > HOURS_IN_DAY)) {
+            throw ValidationException("Hours per day must be between 0 and 24")
+          }
+          node.resource.hoursPerDay = hoursPerDay
+        }
         else -> {}
       }
     } else if (node is AssignmentNode) {
@@ -499,6 +506,8 @@ class ResourceTableModel(private val areChangesIgnored: ()->Boolean)
  * Column builder customized for the resource table. It creates a column with dropdown for the default role
  * property.
  */
+private val HOURS_IN_DAY = BigDecimal(24)
+
 class ResourceColumnBuilder(private val tableModel: ResourceTableModel,
                             private val project: IGanttProject,
                             undoManager: GPUndoManager)

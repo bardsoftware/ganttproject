@@ -166,6 +166,9 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager): T
       }
       TaskDefaultColumn.EFFORT -> {
         val effort = decimalValue(value)
+        if (effort != null && effort.signum() < 0) {
+          throw ValidationException("Effort can't be negative")
+        }
         node.createMutator().also {
           it.setEffort(effort)
           it.commit()
