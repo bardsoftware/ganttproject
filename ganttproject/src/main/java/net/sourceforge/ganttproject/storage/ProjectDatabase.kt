@@ -31,6 +31,7 @@ import net.sourceforge.ganttproject.task.Task
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import org.h2.jdbc.JdbcException
 import java.awt.Color
+import java.math.BigDecimal
 
 private val COLUMN_NOT_FOUND = "Column.(.*).not.found"
 private val SYNTAX_ERROR_PREFIX = """Syntax error in SQL statement """"
@@ -107,6 +108,8 @@ interface ProjectDatabase {
     fun setCompletionPercentage(oldValue: Int, newValue: Int)
     fun setCost(oldValue: Task.Cost, newValue: Task.Cost)
     fun setCritical(oldValue: Boolean, newValue: Boolean)
+    fun setEffort(oldValue: BigDecimal?, newValue: BigDecimal?)
+    fun setEffortDriven(oldValue: Boolean, newValue: Boolean)
     fun setCustomProperties(oldCustomProperties: CustomPropertyHolder, newCustomProperties: CustomPropertyHolder)
     fun setDuration(oldValue: TimeDuration, newValue: TimeDuration)
     fun setEarliestStart(oldValue: GanttCalendar?, newValue: GanttCalendar?)

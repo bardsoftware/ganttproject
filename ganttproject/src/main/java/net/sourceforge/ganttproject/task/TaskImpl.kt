@@ -251,9 +251,11 @@ internal open class MutatorImpl(
       }
       effortChange.ifChanged {
         taskImpl.effort = it.effort
+        taskUpdateBuilder?.setEffort(effortChange.oldValue.effort, it.effort)
       }
       effortDrivenChange.ifChanged {
         taskImpl.isEffortDriven = it
+        taskUpdateBuilder?.setEffortDriven(effortDrivenChange.oldValue, it)
       }
       criticalFlagChange.ifChanged {
         taskImpl.isCritical = it

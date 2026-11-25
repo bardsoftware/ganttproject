@@ -22,11 +22,13 @@ import biz.ganttproject.core.io.XmlTasks
 import biz.ganttproject.lib.fx.SimpleTreeCollapseView
 import net.sourceforge.ganttproject.TestSetupHelper
 import net.sourceforge.ganttproject.parser.TaskLoader
+import net.sourceforge.ganttproject.storage.ProjectDatabase.TaskUpdateBuilder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.lang.reflect.Proxy
 import java.math.BigDecimal
 
 class TestEffortFields {
@@ -55,6 +57,26 @@ class TestEffortFields {
       it.commit()
     }
     assertNull(task.effort, "effort has to be clearable")
+  }
+
+  @Test
+  fun `the mutator passes effort and the flag to the task update builder`() {
+    val calls = mutableListOf<String>()
+    val updateBuilder = Proxy.newProxyInstance(javaClass.classLoader, arrayOf(TaskUpdateBuilder::class.java)) { _, method, args ->
+      calls.add("${method.name}${args?.toList() ?: emptyList<Any?>()}")
+      null
+    } as TaskUpdateBuilder
+    val taskManager = TestSetupHelper.newTaskManagerBuilder().also {
+      it.setTaskUpdateBuilderFactory { updateBuilder }
+    }.build()
+    val task = taskManager.newTaskBuilder().withName("t").build()
+    task.createMutator().also {
+      it.setEffort(BigDecimal("12.5"))
+      it.setEffortDriven(true)
+      it.commit()
+    }
+    assertTrue("setEffort[null, 12.5]" in calls, "calls: $calls")
+    assertTrue("setEffortDriven[false, true]" in calls, "calls: $calls")
   }
 
   @Test
