@@ -150,7 +150,7 @@ internal class MutatorReentered(taskImpl: TaskImpl, private val delegate: Mutato
 }
 
 // FieldChange treats null as "no change", so a nullable effort is wrapped to make clearing it a change.
-data class EffortValue(val effort: BigDecimal?)
+private data class EffortValue(val effort: BigDecimal?)
 
 data class EarliestStartValue(val startDate: GanttCalendar?, val isEnabled: Boolean)
 
