@@ -39,6 +39,7 @@ import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.field
 import java.awt.Color
+import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.SQLException
 import javax.sql.DataSource
@@ -562,6 +563,14 @@ class SqlTaskUpdateBuilder(private val task: Task,
   override fun setNotes(oldValue: String?, newValue: String?) = appendUpdate(TASK.NOTES, oldValue, newValue)
 
   override fun setCritical(oldValue: Boolean, newValue: Boolean) {
+    // TODO("Not yet implemented")
+  }
+
+  override fun setEffort(oldValue: BigDecimal?, newValue: BigDecimal?) {
+    // TODO("Not yet implemented")
+  }
+
+  override fun setEffortDriven(oldValue: Boolean, newValue: Boolean) {
     // TODO("Not yet implemented")
   }
 

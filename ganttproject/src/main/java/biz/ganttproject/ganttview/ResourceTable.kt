@@ -457,7 +457,7 @@ class ResourceTableModel(private val areChangesIgnored: ()->Boolean)
     } else null
   }
 
-  override fun setValue(value: Any, node: ResourceTableNode, property: ResourceDefaultColumn) {
+  override fun setValue(value: Any?, node: ResourceTableNode, property: ResourceDefaultColumn) {
     if (areChangesIgnored()) {
       return
     }

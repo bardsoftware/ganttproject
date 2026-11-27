@@ -274,6 +274,8 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
     xmlTask.earliestStartDate?.let { task.setThirdDate(GanttCalendar.parseXMLDate(it)) }
     task.thirdDateConstraint = xmlTask.thirdDateConstraint ?: 0
     task.cost = CostStub(xmlTask.costManualValue ?: BigDecimal.ZERO, xmlTask.isCostCalculated ?: true)
+    task.effort = xmlTask.effort
+    task.isEffortDriven = xmlTask.isEffortDriven ?: false
     xmlTask.shape?.let {
       task.shape = buildShapePaint(it, task.color)
     }

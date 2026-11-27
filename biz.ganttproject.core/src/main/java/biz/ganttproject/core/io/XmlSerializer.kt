@@ -28,6 +28,10 @@ import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator
 import java.math.BigDecimal
 
+/** Task effort, a decimal number of days. Half days are allowed, e.g. effort="1.5". */
+const val XML_TASK_EFFORT = "effort"
+const val XML_TASK_IS_EFFORT_DRIVEN = "effort-driven"
+
 @JacksonXmlRootElement(localName = "project")
 @JsonPropertyOrder(
   "name", "company", "webLink", "view-date", "view-index", "gantt-divider-location", "resource-divider-location", "version", "locale",
@@ -258,6 +262,14 @@ data class XmlTasks(
 
     @get:JacksonXmlProperty(isAttribute = true, localName = "cost-calculated")
     var isCostCalculated: Boolean? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = XML_TASK_EFFORT)
+    var effort: BigDecimal? = null,
+
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JacksonXmlProperty(isAttribute = true, localName = XML_TASK_IS_EFFORT_DRIVEN)
+    var isEffortDriven: Boolean? = null,
 
     @get:JsonInclude(JsonInclude.Include.NON_NULL)
     @get:JacksonXmlCData

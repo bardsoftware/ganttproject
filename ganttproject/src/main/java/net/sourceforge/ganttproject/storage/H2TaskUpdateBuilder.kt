@@ -34,6 +34,7 @@ import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import java.awt.Color
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.*
 
@@ -95,6 +96,14 @@ class H2TaskUpdateBuilder(
     append(TASK.IS_COST_CALCULATED, newValue.isCalculated)
     append(TASK.COST_MANUAL_VALUE, newValue.manualValue)
     append(TASK.COST, newValue.value)
+  }
+
+  override fun setEffort(oldValue: BigDecimal?, newValue: BigDecimal?) {
+    // Effort is not stored in the database yet.
+  }
+
+  override fun setEffortDriven(oldValue: Boolean, newValue: Boolean) {
+    // Effort is not stored in the database yet.
   }
 
   override fun setCritical(oldValue: Boolean, newValue: Boolean) {

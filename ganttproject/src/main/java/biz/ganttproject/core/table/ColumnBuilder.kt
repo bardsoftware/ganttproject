@@ -96,6 +96,9 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
     return false
   }
 
+  /** The value which a blank cell of a decimal column commits. */
+  protected open fun getBlankDecimalValue(modelColumn: DefaultColumnType): BigDecimal? = BigDecimal.ZERO
+
   protected open fun postCreateDefaultColumn(
       tableColumn: TreeTableColumn<NodeType, Any>, modelColumn: DefaultColumnType, viewData: ColumnList.Column) {
     tableColumn.isEditable = modelColumn.isEditable(null)
@@ -179,7 +182,8 @@ open class ColumnBuilder<NodeType, DefaultColumnType: BuiltinColumn>(
                   undoManager.undoableEdit("Edit properties") {
                       tableModel.setValue(value, node, modelColumn)
                   }
-              }
+              },
+              blankValue = getBlankDecimalValue(modelColumn)
           )
       }
 

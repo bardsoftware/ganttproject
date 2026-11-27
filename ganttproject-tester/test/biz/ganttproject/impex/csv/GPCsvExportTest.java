@@ -106,6 +106,12 @@ public class GPCsvExportTest extends TaskTestCase {
 
   }
 
+  public void testEffortColumnsAreNotExported() {
+    CSVOptions csvOptions = new CSVOptions();
+    assertFalse(csvOptions.getTaskOptions().containsKey(TaskDefaultColumn.EFFORT.getStub().getID()));
+    assertFalse(csvOptions.getTaskOptions().containsKey(TaskDefaultColumn.EFFORT_DRIVEN.getStub().getID()));
+  }
+
   public void testResourceAssignments() throws Exception {
     HumanResourceManager hrManager = new HumanResourceManager(null, new CustomColumnsManager());
     TaskManager taskManager = getTaskManager();

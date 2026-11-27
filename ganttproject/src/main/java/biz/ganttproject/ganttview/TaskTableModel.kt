@@ -23,6 +23,7 @@ import biz.ganttproject.FXUtil
 import biz.ganttproject.core.model.task.TaskDefaultColumn
 import biz.ganttproject.core.option.ValidationException
 import biz.ganttproject.core.table.TableModel
+import biz.ganttproject.core.table.decimalValue
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.GanttCalendar
 import biz.ganttproject.core.time.impl.GPTimeUnitStack
@@ -37,7 +38,6 @@ import net.sourceforge.ganttproject.task.TaskProperties
 import net.sourceforge.ganttproject.task.dependency.TaskDependency
 import net.sourceforge.ganttproject.task.dependency.TaskDependencyException
 import java.math.BigDecimal
-import java.text.MessageFormat
 import java.util.function.Predicate
 import java.util.function.Supplier
 
@@ -65,6 +65,8 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager): T
       TaskDefaultColumn.RESOURCES      -> t.assignments.joinToString(",") { it?.resource?.name ?: "" }
       TaskDefaultColumn.EARLIEST_BEGIN -> if (t.thirdDateConstraint != 0) t.third else null
       TaskDefaultColumn.IS_CRITICAL    -> t.isCritical
+      TaskDefaultColumn.EFFORT         -> t.effort
+      TaskDefaultColumn.EFFORT_DRIVEN  -> t.isEffortDriven
       else -> {
         null
       }
@@ -74,7 +76,7 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager): T
     return t.customValues.getValue(customProperty)
   }
 
-  override fun setValue(value: Any, node: Task, property: TaskDefaultColumn) {
+  override fun setValue(value: Any?, node: Task, property: TaskDefaultColumn) {
     fun runInUiThread(code: ()->Unit) = FXUtil.runLater(code)
 
     when (property) {
@@ -155,14 +157,26 @@ class TaskTableModel(private val customColumnsManager: CustomPropertyManager): T
           throw ValidationException(e)
         }
       }
-      TaskDefaultColumn.COST -> try {
-        val cost = BigDecimal(value.toString())
+      TaskDefaultColumn.COST -> {
+        val cost = decimalValue(value) ?: BigDecimal.ZERO
         node.createMutator().also {
           it.setCost(CostStub(cost, false))
           it.commit()
         }
-      } catch (e: NumberFormatException) {
-        throw ValidationException(MessageFormat.format("Can't parse {0} as number", value))
+      }
+      TaskDefaultColumn.EFFORT -> {
+        val effort = decimalValue(value)
+        if (effort != null && effort.signum() < 0) {
+          throw ValidationException("Effort can't be negative")
+        }
+        node.createMutator().also {
+          it.setEffort(effort)
+          it.commit()
+        }
+      }
+      TaskDefaultColumn.EFFORT_DRIVEN -> node.createMutator().also {
+        it.setEffortDriven(value as Boolean)
+        it.commit()
       }
       else -> {
       }

@@ -84,7 +84,9 @@ class CSVOptions {
 
   companion object {
     private val ourIgnoredTaskColumns: Set<TaskDefaultColumn> = ImmutableSet.of(
-      TaskDefaultColumn.TYPE, TaskDefaultColumn.INFO
+      TaskDefaultColumn.TYPE, TaskDefaultColumn.INFO,
+      // CSV import does not read these yet, so they are not exported either.
+      TaskDefaultColumn.EFFORT, TaskDefaultColumn.EFFORT_DRIVEN
     )
   }
 }
