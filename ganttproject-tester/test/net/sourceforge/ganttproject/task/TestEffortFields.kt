@@ -64,6 +64,17 @@ class TestEffortFields {
   }
 
   @Test
+  fun `effort in working days is the stored number of days`() {
+    val task = taskManager.newTaskBuilder().withName("t").build()
+    assertNull(task.effortInWorkingDays)
+    task.createMutator().also {
+      it.setEffort(BigDecimal("1.5"))
+      it.commit()
+    }
+    assertEquals(BigDecimal("1.5"), task.effortInWorkingDays)
+  }
+
+  @Test
   fun `the mutator passes effort and the flag to the task update builder`() {
     val calls = mutableListOf<String>()
     val updateBuilder = Proxy.newProxyInstance(javaClass.classLoader, arrayOf(TaskUpdateBuilder::class.java)) { _, method, args ->

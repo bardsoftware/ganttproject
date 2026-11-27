@@ -112,6 +112,15 @@ public interface Task extends MutableTask, IdentifiableRow {
   /** Estimated effort of this task, a decimal number of days. {@code null} means no effort is set. */
   BigDecimal getEffort();
 
+  /**
+   * Effort of this task in working days, {@code null} if no effort is set. This is the one place where
+   * the stored effort is converted into working days. The stored value is a number of days already,
+   * so it is returned unchanged; a length of the working day would be applied here.
+   */
+  default BigDecimal getEffortInWorkingDays() {
+    return getEffort();
+  }
+
   /** Whether the task duration is expected to follow from its effort and assignments. */
   boolean isEffortDriven();
 
