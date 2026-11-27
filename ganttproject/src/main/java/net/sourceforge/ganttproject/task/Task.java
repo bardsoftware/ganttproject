@@ -109,7 +109,7 @@ public interface Task extends MutableTask, IdentifiableRow {
 
   Cost getCost();
 
-  /** Estimated effort of this task, a decimal number of hours. {@code null} means no effort is set. */
+  /** Estimated effort of this task, a decimal number of days. {@code null} means no effort is set. */
   BigDecimal getEffort();
 
   /** Whether the task duration is expected to follow from its effort and assignments. */

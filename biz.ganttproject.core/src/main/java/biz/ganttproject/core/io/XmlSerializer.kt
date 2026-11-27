@@ -28,8 +28,8 @@ import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator
 import java.math.BigDecimal
 
-/** Task effort, a decimal number of hours. */
-const val XML_TASK_EFFORT = "effort-hours"
+/** Task effort, a decimal number of days. Half days are allowed, e.g. effort="1.5". */
+const val XML_TASK_EFFORT = "effort"
 const val XML_TASK_IS_EFFORT_DRIVEN = "effort-driven"
 const val XML_RESOURCE_HOURS_PER_DAY = "hours-per-day"
 

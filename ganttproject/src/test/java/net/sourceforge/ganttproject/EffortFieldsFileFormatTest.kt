@@ -108,21 +108,39 @@ class EffortFieldsFileFormatTest {
   @Test
   fun `effort, effort-driven flag and hours per day survive a save and load`() {
     val loaded = XmlProjectImporter().import(
-      projectXml("""effort-hours="12.5" effort-driven="true"""", """hours-per-day="6.5""""))
+      projectXml("""effort="1.5" effort-driven="true"""", """hours-per-day="6.5""""))
     val saved = save(loaded)
 
     val reloaded = XmlProjectImporter().import(saved)
     val task = reloaded.taskManager.getTask(1)
-    assertEquals(BigDecimal("12.5"), task.effort, "effort has to be read back from the saved file:\n$saved")
+    assertEquals(BigDecimal("1.5"), task.effort, "effort has to be read back from the saved file:\n$saved")
     assertTrue(task.isEffortDriven, "effort-driven flag has to be read back from the saved file:\n$saved")
     assertEquals(BigDecimal("6.5"), reloaded.humanResourceManager.getById(0).hoursPerDay,
       "hours per day have to be read back from the saved file:\n$saved")
   }
 
   @Test
+  fun `effort of whole days is saved and loaded unchanged`() {
+    val saved = save(XmlProjectImporter().import(projectXml("""effort="2"""")))
+    assertTrue(saved.contains(""" effort="2""""), "effort has to be written as a number of days:\n$saved")
+
+    val task = XmlProjectImporter().import(saved).taskManager.getTask(1)
+    assertEquals(BigDecimal("2"), task.effort, "effort has to be read back from the saved file:\n$saved")
+  }
+
+  @Test
+  fun `effort of half a day is saved and loaded unchanged`() {
+    val saved = save(XmlProjectImporter().import(projectXml("""effort="1.5"""")))
+    assertTrue(saved.contains(""" effort="1.5""""), "effort has to be written as a number of days:\n$saved")
+
+    val task = XmlProjectImporter().import(saved).taskManager.getTask(1)
+    assertEquals(BigDecimal("1.5"), task.effort, "effort has to be read back from the saved file:\n$saved")
+  }
+
+  @Test
   fun `undo of an edit brings the previous effort, flag and hours per day back`() {
     val project = XmlProjectImporter().import(
-      projectXml("""effort-hours="12.5" effort-driven="true"""", """hours-per-day="6.5""""))
+      projectXml("""effort="1.5" effort-driven="true"""", """hours-per-day="6.5""""))
     val edit = UndoableEditImpl(UndoableEditImpl.Args(
       displayName = "Edit effort",
       newAutosave = { autosaveDocument(project) },
@@ -130,23 +148,23 @@ class EffortFieldsFileFormatTest {
       txn = noTxn
     )) {
       project.taskManager.getTask(1).createMutator().also {
-        it.setEffort(BigDecimal("20"))
+        it.setEffort(BigDecimal("2"))
         it.setEffortDriven(false)
         it.commit()
       }
       project.humanResourceManager.getById(0).hoursPerDay = BigDecimal("8")
     }
-    assertEquals(BigDecimal("20"), project.taskManager.getTask(1).effort)
+    assertEquals(BigDecimal("2"), project.taskManager.getTask(1).effort)
 
     edit.undo()
     val restored = project.taskManager.getTask(1)
-    assertEquals(BigDecimal("12.5"), restored.effort)
+    assertEquals(BigDecimal("1.5"), restored.effort)
     assertTrue(restored.isEffortDriven)
     assertEquals(BigDecimal("6.5"), project.humanResourceManager.getById(0).hoursPerDay)
 
     edit.redo()
     val redone = project.taskManager.getTask(1)
-    assertEquals(BigDecimal("20"), redone.effort)
+    assertEquals(BigDecimal("2"), redone.effort)
     assertFalse(redone.isEffortDriven)
     assertEquals(BigDecimal("8"), project.humanResourceManager.getById(0).hoursPerDay)
   }
@@ -163,7 +181,7 @@ class EffortFieldsFileFormatTest {
   @Test
   fun `attributes are not written when the values are not set`() {
     val saved = save(XmlProjectImporter().import(projectXml()))
-    assertFalse(saved.contains("effort-hours"), "no effort was set, the document was:\n$saved")
+    assertFalse(saved.contains("effort="), "no effort was set, the document was:\n$saved")
     assertFalse(saved.contains("effort-driven"), "the flag was not set, the document was:\n$saved")
     assertFalse(saved.contains("hours-per-day"), "no hours per day were set, the document was:\n$saved")
   }

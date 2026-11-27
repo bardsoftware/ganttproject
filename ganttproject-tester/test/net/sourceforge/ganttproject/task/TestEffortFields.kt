@@ -49,11 +49,11 @@ class TestEffortFields {
   fun `effort and the flag are set through the mutator`() {
     val task = taskManager.newTaskBuilder().withName("t").build()
     task.createMutator().also {
-      it.setEffort(BigDecimal("12.5"))
+      it.setEffort(BigDecimal("1.5"))
       it.setEffortDriven(true)
       it.commit()
     }
-    assertEquals(BigDecimal("12.5"), task.effort)
+    assertEquals(BigDecimal("1.5"), task.effort)
     assertTrue(task.isEffortDriven)
 
     task.createMutator().also {
@@ -75,11 +75,11 @@ class TestEffortFields {
     }.build()
     val task = taskManager.newTaskBuilder().withName("t").build()
     task.createMutator().also {
-      it.setEffort(BigDecimal("12.5"))
+      it.setEffort(BigDecimal("1.5"))
       it.setEffortDriven(true)
       it.commit()
     }
-    assertTrue("setEffort[null, 12.5]" in calls, "calls: $calls")
+    assertTrue("setEffort[null, 1.5]" in calls, "calls: $calls")
     assertTrue("setEffortDriven[false, true]" in calls, "calls: $calls")
   }
 
@@ -87,8 +87,8 @@ class TestEffortFields {
   fun `the effort cell sets the effort and a blank cell clears it`() {
     val model = TaskTableModel(taskManager.customPropertyManager)
     val task = taskManager.newTaskBuilder().withName("t").build()
-    model.setValue(BigDecimal("12.5"), task, TaskDefaultColumn.EFFORT)
-    assertEquals(BigDecimal("12.5"), task.effort)
+    model.setValue(BigDecimal("1.5"), task, TaskDefaultColumn.EFFORT)
+    assertEquals(BigDecimal("1.5"), task.effort)
     model.setValue(null, task, TaskDefaultColumn.EFFORT)
     assertNull(task.effort)
   }
@@ -110,12 +110,12 @@ class TestEffortFields {
   fun `a task created from a prototype takes effort and the flag along`() {
     val prototype = taskManager.newTaskBuilder().withName("proto").build()
     prototype.createMutator().also {
-      it.setEffort(BigDecimal("40"))
+      it.setEffort(BigDecimal("5"))
       it.setEffortDriven(true)
       it.commit()
     }
     val copy = taskManager.newTaskBuilder().withPrototype(prototype).build()
-    assertEquals(BigDecimal("40"), copy.effort)
+    assertEquals(BigDecimal("5"), copy.effort)
     assertTrue(copy.isEffortDriven)
   }
 
@@ -123,12 +123,12 @@ class TestEffortFields {
   fun `the unplugged clone keeps effort and the flag`() {
     val task = taskManager.newTaskBuilder().withName("t").build()
     task.createMutator().also {
-      it.setEffort(BigDecimal("8"))
+      it.setEffort(BigDecimal("2"))
       it.setEffortDriven(true)
       it.commit()
     }
     val clone = task.unpluggedClone()
-    assertEquals(BigDecimal("8"), clone.effort)
+    assertEquals(BigDecimal("2"), clone.effort)
     assertTrue(clone.isEffortDriven)
   }
 
@@ -136,13 +136,13 @@ class TestEffortFields {
   fun `importing tasks, as pasting from the clipboard does, keeps effort and the flag`() {
     val source = TestSetupHelper.newTaskManagerBuilder().build()
     source.newTaskBuilder().withName("t").build().createMutator().also {
-      it.setEffort(BigDecimal("12.5"))
+      it.setEffort(BigDecimal("1.5"))
       it.setEffortDriven(true)
       it.commit()
     }
     taskManager.importData(source, emptyMap())
     val imported = taskManager.tasks.single()
-    assertEquals(BigDecimal("12.5"), imported.effort)
+    assertEquals(BigDecimal("1.5"), imported.effort)
     assertTrue(imported.isEffortDriven)
   }
 
