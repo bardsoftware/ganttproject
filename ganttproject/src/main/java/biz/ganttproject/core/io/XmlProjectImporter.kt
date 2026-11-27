@@ -97,6 +97,7 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
 
   private fun importCalendar() {
     calendar.onlyShowWeekends = xmlProject.calendars.dayTypes.onlyShowWeekends.value
+    calendar.holidaysAreWorkingDays = xmlProject.calendars.dayTypes.holidaysAreWorkingDays?.value ?: false
     calendar.baseCalendarID = xmlProject.calendars.baseId
     importHolidays()
     importDefaultWeek()

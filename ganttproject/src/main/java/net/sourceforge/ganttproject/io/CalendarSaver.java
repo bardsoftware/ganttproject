@@ -62,6 +62,10 @@ public class CalendarSaver extends SaverBase {
     emptyElement("default-week", attrs, handler);
     addAttribute("value", project.getActiveCalendar().getOnlyShowWeekends(), attrs);
     emptyElement("only-show-weekends", attrs, handler);
+    if (project.getActiveCalendar().getHolidaysAreWorkingDays()) {
+      addAttribute("value", true, attrs);
+      emptyElement("holidays-are-working-days", attrs, handler);
+    }
     emptyElement("overriden-day-types", attrs, handler);
     emptyElement("days", attrs, handler);
 
