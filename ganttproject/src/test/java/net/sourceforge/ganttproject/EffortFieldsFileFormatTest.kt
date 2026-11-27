@@ -57,13 +57,13 @@ class EffortFieldsFileFormatTest {
     }
   }
 
-  private fun projectXml(taskAttrs: String = "", resourceAttrs: String = "") = """
+  private fun projectXml(taskAttrs: String = "") = """
     <project name="p">
       <tasks>
         <task id="1" uid="u1" name="T" start="2026-11-09" duration="1" $taskAttrs/>
       </tasks>
       <resources>
-        <resource id="0" name="R" function="Default:0" contacts="" phone="" $resourceAttrs/>
+        <resource id="0" name="R" function="Default:0" contacts="" phone=""/>
       </resources>
     </project>
   """.trimIndent()
@@ -106,17 +106,14 @@ class EffortFieldsFileFormatTest {
   }
 
   @Test
-  fun `effort, effort-driven flag and hours per day survive a save and load`() {
-    val loaded = XmlProjectImporter().import(
-      projectXml("""effort="1.5" effort-driven="true"""", """hours-per-day="6.5""""))
+  fun `effort and effort-driven flag survive a save and load`() {
+    val loaded = XmlProjectImporter().import(projectXml("""effort="1.5" effort-driven="true""""))
     val saved = save(loaded)
 
     val reloaded = XmlProjectImporter().import(saved)
     val task = reloaded.taskManager.getTask(1)
     assertEquals(BigDecimal("1.5"), task.effort, "effort has to be read back from the saved file:\n$saved")
     assertTrue(task.isEffortDriven, "effort-driven flag has to be read back from the saved file:\n$saved")
-    assertEquals(BigDecimal("6.5"), reloaded.humanResourceManager.getById(0).hoursPerDay,
-      "hours per day have to be read back from the saved file:\n$saved")
   }
 
   @Test
@@ -138,9 +135,8 @@ class EffortFieldsFileFormatTest {
   }
 
   @Test
-  fun `undo of an edit brings the previous effort, flag and hours per day back`() {
-    val project = XmlProjectImporter().import(
-      projectXml("""effort="1.5" effort-driven="true"""", """hours-per-day="6.5""""))
+  fun `undo of an edit brings the previous effort and flag back`() {
+    val project = XmlProjectImporter().import(projectXml("""effort="1.5" effort-driven="true""""))
     val edit = UndoableEditImpl(UndoableEditImpl.Args(
       displayName = "Edit effort",
       newAutosave = { autosaveDocument(project) },
@@ -152,7 +148,6 @@ class EffortFieldsFileFormatTest {
         it.setEffortDriven(false)
         it.commit()
       }
-      project.humanResourceManager.getById(0).hoursPerDay = BigDecimal("8")
     }
     assertEquals(BigDecimal("2"), project.taskManager.getTask(1).effort)
 
@@ -160,13 +155,11 @@ class EffortFieldsFileFormatTest {
     val restored = project.taskManager.getTask(1)
     assertEquals(BigDecimal("1.5"), restored.effort)
     assertTrue(restored.isEffortDriven)
-    assertEquals(BigDecimal("6.5"), project.humanResourceManager.getById(0).hoursPerDay)
 
     edit.redo()
     val redone = project.taskManager.getTask(1)
     assertEquals(BigDecimal("2"), redone.effort)
     assertFalse(redone.isEffortDriven)
-    assertEquals(BigDecimal("8"), project.humanResourceManager.getById(0).hoursPerDay)
   }
 
   @Test
@@ -175,7 +168,6 @@ class EffortFieldsFileFormatTest {
     val task = project.taskManager.getTask(1)
     assertNull(task.effort)
     assertFalse(task.isEffortDriven)
-    assertNull(project.humanResourceManager.getById(0).hoursPerDay)
   }
 
   @Test
@@ -183,6 +175,5 @@ class EffortFieldsFileFormatTest {
     val saved = save(XmlProjectImporter().import(projectXml()))
     assertFalse(saved.contains("effort="), "no effort was set, the document was:\n$saved")
     assertFalse(saved.contains("effort-driven"), "the flag was not set, the document was:\n$saved")
-    assertFalse(saved.contains("hours-per-day"), "no hours per day were set, the document was:\n$saved")
   }
 }

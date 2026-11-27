@@ -39,7 +39,6 @@ class ResourceLoader(private val resourceManager: HumanResourceManager, private 
       val resource = resourceManager.create(xmlResource.name, xmlResource.id).also { hr ->
         hr.mail = xmlResource.email
         hr.phone = xmlResource.phone
-        hr.hoursPerDay = xmlResource.hoursPerDay
         val roleID = xmlResource.role
         if (roleID.isNotBlank()) {
           roleManager.findRole(roleID)?.let { hr.role = it }

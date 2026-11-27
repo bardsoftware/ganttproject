@@ -18,7 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package net.sourceforge.ganttproject.io;
 
-import biz.ganttproject.core.io.XmlSerializerKt;
 import biz.ganttproject.customproperty.CustomProperty;
 import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.customproperty.CustomPropertyManager;
@@ -44,9 +43,6 @@ class ResourceSaver extends SaverBase {
       addAttribute("function", p.getRole().getPersistentID(), attrs);
       addAttribute("contacts", p.getMail(), attrs);
       addAttribute("phone", p.getPhone(), attrs);
-      if (p.getHoursPerDay() != null) {
-        addAttribute(XmlSerializerKt.XML_RESOURCE_HOURS_PER_DAY, p.getHoursPerDay().toPlainString(), attrs);
-      }
       startElement("resource", attrs, handler);
       {
         saveRates(p, handler);

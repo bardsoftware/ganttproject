@@ -31,7 +31,6 @@ import java.math.BigDecimal
 /** Task effort, a decimal number of days. Half days are allowed, e.g. effort="1.5". */
 const val XML_TASK_EFFORT = "effort"
 const val XML_TASK_IS_EFFORT_DRIVEN = "effort-driven"
-const val XML_RESOURCE_HOURS_PER_DAY = "hours-per-day"
 
 @JacksonXmlRootElement(localName = "project")
 @JsonPropertyOrder(
@@ -333,9 +332,6 @@ data class XmlResources(
     @get:JacksonXmlProperty(isAttribute = true, localName = "function") var role: String = "",
     @get:JacksonXmlProperty(isAttribute = true, localName = "contacts") var email: String = "",
     @get:JacksonXmlProperty(isAttribute = true) var phone: String = "",
-
-    @get:JsonInclude(JsonInclude.Include.NON_NULL)
-    @get:JacksonXmlProperty(isAttribute = true, localName = XML_RESOURCE_HOURS_PER_DAY) var hoursPerDay: BigDecimal? = null,
 
     @get:JsonInclude(JsonInclude.Include.NON_NULL) var rate: XmlRate? = null,
 

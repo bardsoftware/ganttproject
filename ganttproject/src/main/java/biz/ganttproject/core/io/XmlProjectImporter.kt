@@ -226,7 +226,6 @@ class XmlProjectImporter(private val ganttProject: GanttProjectImpl = GanttProje
       val resource = resourceManager.create(xmlRes.name, xmlRes.id)
       resource.mail = xmlRes.email
       resource.phone = xmlRes.phone
-      resource.hoursPerDay = xmlRes.hoursPerDay
       xmlRes.props.forEach { xmlProp ->
         val prop = resCustomPropManager.definitions.find { it.id == xmlProp.definitionId }
         if (prop != null) {

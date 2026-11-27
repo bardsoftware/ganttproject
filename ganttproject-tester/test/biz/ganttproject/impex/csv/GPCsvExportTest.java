@@ -9,7 +9,6 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import net.sourceforge.ganttproject.GanttTask;
 import net.sourceforge.ganttproject.TestSetupHelper;
-import net.sourceforge.ganttproject.ResourceDefaultColumn;
 import net.sourceforge.ganttproject.io.CSVOptions;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 import net.sourceforge.ganttproject.resource.HumanResource;
@@ -111,7 +110,6 @@ public class GPCsvExportTest extends TaskTestCase {
     CSVOptions csvOptions = new CSVOptions();
     assertFalse(csvOptions.getTaskOptions().containsKey(TaskDefaultColumn.EFFORT.getStub().getID()));
     assertFalse(csvOptions.getTaskOptions().containsKey(TaskDefaultColumn.EFFORT_DRIVEN.getStub().getID()));
-    assertFalse(csvOptions.getResourceOptions().containsKey(ResourceDefaultColumn.HOURS_PER_DAY.getStub().getID()));
   }
 
   public void testResourceAssignments() throws Exception {

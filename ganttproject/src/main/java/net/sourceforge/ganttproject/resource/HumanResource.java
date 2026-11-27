@@ -59,8 +59,6 @@ public class HumanResource implements CustomPropertyHolder {
 
   private BigDecimal myStandardPayRate;
 
-  private BigDecimal myHoursPerDay;
-
   private final List<GanttDaysOff> myDaysOffList = new ArrayList<>();
 
   /**
@@ -110,7 +108,6 @@ public class HumanResource implements CustomPropertyHolder {
     setPhone(copy.getPhone());
     setRole(copy.getRole());
     setStandardPayRate(copy.getStandardPayRate());
-    setHoursPerDay(copy.getHoursPerDay());
     myManager = copy.myManager;
     // Straight into the list rather than through addDaysOff(): the copy is not in the manager yet
     // and must not be announced, which is what areEventsEnabled = false above takes care of for the
@@ -406,16 +403,6 @@ public class HumanResource implements CustomPropertyHolder {
 
   public BigDecimal getStandardPayRate() {
     return myStandardPayRate == null ? BigDecimal.ZERO : myStandardPayRate;
-  }
-
-  /** Working hours per day of this resource, {@code null} if not set. */
-  public BigDecimal getHoursPerDay() {
-    return myHoursPerDay;
-  }
-
-  public void setHoursPerDay(BigDecimal hoursPerDay) {
-    myHoursPerDay = hoursPerDay;
-    fireResourceChanged();
   }
 
   public double getTotalLoad() {
