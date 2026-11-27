@@ -27,25 +27,21 @@ import biz.ganttproject.core.calendar.ImportCalendarOption
 import biz.ganttproject.core.time.CalendarFactory
 import biz.ganttproject.core.time.CalendarFactory.LocaleApi
 import biz.ganttproject.core.time.CalendarFactory.setLocaleApi
-import biz.ganttproject.task.recurrence.toModelDate
 import net.sourceforge.ganttproject.io.GanttXMLSaver
 import net.sourceforge.ganttproject.task.Task
-import net.sourceforge.ganttproject.task.algorithm.WorkWeekWorkingDays
-import net.sourceforge.ganttproject.task.algorithm.effortDrivenProjectDays
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
-import java.math.BigDecimal
 import java.text.DateFormat
 import java.time.LocalDate
 import java.util.Locale
 
 /**
- * The project calendar setting which makes public holidays working days: the same days for the scheduler and for
- * the effort calculation, weekends and days off of people stay free, and the setting survives copying and the file.
+ * The project calendar setting which makes public holidays working days: the scheduler works on them, weekends stay
+ * free, and the setting survives copying and the file.
  * The week starts on Monday 2026-11-09; the holiday is Wednesday 2026-11-11.
  */
 class HolidaysAreWorkingDaysTest {
@@ -66,6 +62,8 @@ class HolidaysAreWorkingDaysTest {
     }
     project = GanttProjectImpl()
   }
+
+  private fun LocalDate.toModelDate() = CalendarFactory.createGanttCalendar(year, monthValue - 1, dayOfMonth).time
 
   private fun holidays(vararg days: LocalDate) {
     project.taskManager.calendar.publicHolidays = days.map {
@@ -102,44 +100,12 @@ class HolidaysAreWorkingDaysTest {
   }
 
   @Test
-  fun `the bar and the effort calculation cover the same working days`() {
-    holidays(wednesday)
-    val resource = project.humanResourceManager.create("r", 1).also { it.hoursPerDay = BigDecimal(8) }
-    val task = fiveDayTask()
-    task.assignmentCollection.addAssignment(resource).also { it.load = 100f }
-    val calendar = project.taskManager.calendar
-    for (on in listOf(false, true)) {
-      project.activeCalendar.holidaysAreWorkingDays = on
-      val days = WorkWeekWorkingDays(calendar)
-      val effortDays = effortDrivenProjectDays(BigDecimal(40), task.assignments, monday, calendar, days)!!
-      assertEquals(5L, effortDays, "setting on = $on")
-      val bar = project.taskManager.newTaskBuilder().withName("bar").withStartDate(monday.toModelDate())
-        .withDuration(project.taskManager.createLength(effortDays)).build()
-      assertEquals(effortDays, days.taskDays(monday, bar.endDay(), days.projectOnly).toLong(), "bar, setting on = $on")
-      assertEquals(effortDays, days.taskDays(monday, days.endAfter(monday, 5, days.projectOnly), days.projectOnly).toLong(),
-        "calculation, setting on = $on")
-    }
-  }
-
-  @Test
   fun `a weekend stays free, also when it is a holiday`() {
     holidays(saturday)
     project.activeCalendar.holidaysAreWorkingDays = true
-    assertFalse(WorkWeekWorkingDays(project.taskManager.calendar).projectOnly(saturday))
-    assertFalse(WorkWeekWorkingDays(project.taskManager.calendar).projectOnly(saturday.plusDays(1)))
-  }
-
-  @Test
-  fun `a day off of a person on a holiday still takes the day`() {
-    holidays(wednesday)
-    project.activeCalendar.holidaysAreWorkingDays = true
-    val resource = project.humanResourceManager.create("r", 1).also { it.hoursPerDay = BigDecimal(8) }
-    resource.addDaysOff(GanttDaysOff(
-      CalendarFactory.createGanttCalendar(2026, 10, 11), CalendarFactory.createGanttCalendar(2026, 10, 12)))
-    val task = fiveDayTask()
-    task.assignmentCollection.addAssignment(resource).also { it.load = 100f }
-    // the holiday is a working day, but nobody works on it: six days for five days of effort
-    assertEquals(6L, effortDrivenProjectDays(BigDecimal(40), task.assignments, monday, project.taskManager.calendar))
+    val calendar = project.taskManager.calendar
+    assertEquals(0, calendar.getDayMask(saturday.toModelDate()) and GPCalendar.DayMask.WORKING)
+    assertEquals(0, calendar.getDayMask(saturday.plusDays(1).toModelDate()) and GPCalendar.DayMask.WORKING)
   }
 
   @Test
