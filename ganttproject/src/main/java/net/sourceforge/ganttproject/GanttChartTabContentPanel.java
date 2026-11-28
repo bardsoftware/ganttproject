@@ -21,6 +21,8 @@ package net.sourceforge.ganttproject;
 import biz.ganttproject.app.*;
 import biz.ganttproject.core.option.*;
 import biz.ganttproject.ganttview.TaskFilterActionSet;
+import biz.ganttproject.ganttview.TaskTableFiltersKt;
+import biz.ganttproject.ganttview.TaskViewActionSet;
 import biz.ganttproject.ganttview.TaskTable;
 import biz.ganttproject.task.TaskActions;
 import com.google.common.base.Suppliers;
@@ -31,7 +33,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import kotlin.Unit;
@@ -46,7 +48,6 @@ import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.gui.UIUtil;
 import net.sourceforge.ganttproject.gui.view.ViewProvider;
-import net.sourceforge.ganttproject.language.GanttLanguage;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -110,10 +111,23 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       .withClasses("toolbar-common", "toolbar-small", "toolbar-chart", "align-right");
   }
 
-  private final Label filterTaskLabel = new Label();
+  /**
+   * "{0} tasks hidden" -- and at the same time THE RETURN PATH.
+   *
+   * It used to be a Label. The only way back that existed was the placeholder button in the middle
+   * of the table, and that one appears solely when the table is COMPLETELY empty
+   * (TaskTable.kt:512-518). The normal case with a named view is "half of it is gone", and there
+   * the placeholder never shows up. As a Hyperlink the counter that is on display anyway becomes
+   * the way back: it is visible exactly when something is hidden.
+   */
+  private final Hyperlink filterTaskLabel = new Hyperlink();
 
   private final Supplier<TaskFilterActionSet> filterActions = Suppliers.memoize(() ->
     new TaskFilterActionSet(taskTable.getFilterManager(), taskTable.getCustomPropertyManager(), getProject().getProjectDatabase())
+  );
+
+  private final Supplier<TaskViewActionSet> viewActions = Suppliers.memoize(() ->
+    new TaskViewActionSet(getProject().getTaskViewManager())
   );
 
   private FXToolbarBuilder createToolbarBuilder() {
@@ -126,13 +140,22 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
       event.consume();
     });
 
+    Button tableViewButton = ToolbarKt.createButton(new TableButtonAction("taskTable.tableMenuViews"), true);
+    tableViewButton.setOnAction(event -> {
+      var tableViewMenu = new ContextMenu();
+      tableViewMenu.getItems().clear();
+      viewActions.get().tableViewActions(new MenuBuilderFx(tableViewMenu, null));
+      tableViewMenu.show(tableViewButton, Side.BOTTOM, 0.0, 0.0);
+      event.consume();
+    });
+
     Button tableManageColumnButton = ToolbarKt.createButton(new TableButtonAction("taskTable.tableMenuToggle"), true);
     Objects.requireNonNull(tableManageColumnButton).setOnAction(event -> {
         myTaskActions.getManageColumnsAction().actionPerformed(null);
         event.consume();
     });
 
-    HBox filterComponent = new HBox(0, filterTaskLabel, tableFilterButton, tableManageColumnButton);
+    HBox filterComponent = new HBox(0, filterTaskLabel, tableViewButton, tableFilterButton, tableManageColumnButton);
     return new FXToolbarBuilder()
         .addButton(myTaskActions.getUnindentAction().asToolbarAction())
         .addButton(myTaskActions.getIndentAction().asToolbarAction())
@@ -178,11 +201,24 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   private TaskTable setupTaskTable() {
     var taskTable = myTaskTableSupplier.get();
     taskTable.getHeaderHeightProperty().addListener((observable, oldValue, newValue) -> updateTimelineHeight());
+    filterTaskLabel.setVisible(false);
+    filterTaskLabel.setManaged(false);
+    filterTaskLabel.setOnAction(event -> {
+      // Both, not just one of the two: the counter does not say which of them hid what, so a way
+      // back that only clears one of them would leave the person pressing without an effect.
+      taskTable.getFilterManager().setActiveFilter(TaskTableFiltersKt.getVOID_FILTER());
+      getProject().getTaskViewManager().showAll();
+      event.consume();
+    });
     taskTable.getFilterManager().getHiddenTaskCount().addListener((obs,  oldValue,  newValue) -> Platform.runLater(() -> {
       if (newValue.intValue() != 0) {
-        filterTaskLabel.setText(GanttLanguage.getInstance().formatText("taskTable.toolbar.tasksHidden", newValue.intValue()));
+        filterTaskLabel.setText(InternationalizationCoreKt.getRootLocalizer().formatText("taskView.tasksHidden", newValue.intValue()));
+        filterTaskLabel.setVisible(true);
+        filterTaskLabel.setManaged(true);
       } else {
         filterTaskLabel.setText("");
+        filterTaskLabel.setVisible(false);
+        filterTaskLabel.setManaged(false);
       }
     }));
     return taskTable;
@@ -252,6 +288,10 @@ class GanttChartTabContentPanel extends ChartTabContentPanel implements ViewProv
   public List<GPOption<?>> getOptions() {
     var options = new ArrayList<GPOption<?>>();
     options.addAll(getProject().getTaskFilterManager().getOptions());
+    // ALL named views travel in this ONE option. Not one option per view: the reader matches option
+    // ids against a list built before the file is read (ProxyDocument:224), so an id it does not
+    // know is dropped without a word. See TaskViews.kt.
+    options.add(getProject().getTaskViewManager().getOption());
     options.add(myDividerOption);
     return options;
   }

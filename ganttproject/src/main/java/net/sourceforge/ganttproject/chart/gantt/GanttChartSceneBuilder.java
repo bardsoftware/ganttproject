@@ -24,6 +24,7 @@ import biz.ganttproject.core.chart.canvas.Canvas;
 import biz.ganttproject.core.chart.canvas.Canvas.Polygon;
 import biz.ganttproject.core.chart.canvas.Canvas.Rectangle;
 import biz.ganttproject.core.chart.grid.OffsetList;
+import biz.ganttproject.core.chart.grid.OffsetLookup;
 import biz.ganttproject.core.chart.scene.gantt.*;
 import biz.ganttproject.core.model.task.TaskDefaultColumn;
 import biz.ganttproject.core.time.TimeDuration;
@@ -56,6 +57,8 @@ public class GanttChartSceneBuilder {
     List<ITaskSceneTask> getVisibleTaskSceneTasks();
     List<ITaskSceneTask> getTasksInDocumentOrder();
     List<GanttPreviousStateTask> getBaseline();
+    /** The gaps that hidden tasks tear into the visible rows, in document order. */
+    List<HiddenTaskGap> getHiddenTaskGaps();
     TaskActivitySceneBuilder.ChartApi getChartApi(TaskLabelSceneBuilder<ITaskSceneTask> labelsRenderer);
     GPCalendarCalc getCalendar();
     Date getStartDate();
@@ -150,6 +153,9 @@ public class GanttChartSceneBuilder {
     vp.build(input.getTasksInDocumentOrder());
     OffsetList defaultUnitOffsets = input.getTasksUnitOffsets();
 
+    // Before the bars: within one canvas the painting order is the order of creation, so a mark can
+    // never cover a task bar.
+    renderHiddenTaskGaps(defaultUnitOffsets);
     renderVisibleTasks(input.getVisibleTaskSceneTasks(), defaultUnitOffsets);
     renderTasksAboveAndBelowViewport(vp.getAboveViewport(), vp.getBelowViewport(), defaultUnitOffsets);
     renderDependencies();
@@ -190,6 +196,26 @@ public class GanttChartSceneBuilder {
       for (Polygon nextRectangle : rectangles) {
         nextRectangle.setVisible(false);
       }
+    }
+  }
+
+  /**
+   * Renders one hidden-tasks marker per gap, on the seam between the two rows the hidden tasks were
+   * taken from. The marker is bound to the gap and not to a task, because there is no single task.
+   */
+  private void renderHiddenTaskGaps(OffsetList defaultUnitOffsets) {
+    List<HiddenTaskGap> gaps = input.getHiddenTaskGaps();
+    if (gaps.isEmpty()) {
+      return;
+    }
+    OffsetLookup lookup = new OffsetLookup();
+    for (HiddenTaskGap gap : gaps) {
+      int[] bounds = lookup.getBounds(gap.getStart(), gap.getEndExclusive(), defaultUnitOffsets);
+      HiddenGapMark mark = HiddenTaskGapKt.hiddenGapMark(gap, bounds[0], bounds[1], getRowHeight());
+      Rectangle rectangle = getPrimitiveContainer().createRectangle(
+          mark.getLeftX(), mark.getTopY(), mark.getWidth(), mark.getHeight());
+      rectangle.setStyle(HiddenTaskGapKt.STYLE_HIDDEN_GAP);
+      getPrimitiveContainer().bind(rectangle, gap);
     }
   }
 

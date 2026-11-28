@@ -17,6 +17,7 @@ import com.google.common.collect.Lists;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
 import net.sourceforge.ganttproject.chart.gantt.ITaskActivity;
 import net.sourceforge.ganttproject.chart.item.ChartItem;
+import net.sourceforge.ganttproject.chart.item.HiddenGapChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskNotesChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
@@ -24,6 +25,8 @@ import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
 import net.sourceforge.ganttproject.gui.UIConfiguration;
 import net.sourceforge.ganttproject.gui.options.OptionsPageBuilder;
 import net.sourceforge.ganttproject.task.Task;
+import net.sourceforge.ganttproject.chart.gantt.HiddenTaskGap;
+import net.sourceforge.ganttproject.chart.gantt.HiddenTaskGapKt;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 import java.util.Arrays;
@@ -81,7 +84,12 @@ public class ChartModelImpl extends ChartModelBase {
 
   @Override
   public ChartItem getChartItemWithCoordinates(int x, int y) {
-    ChartItem result = findTaskProgressItem(x, y);
+    // First: a hidden-tasks marker is bound to a HiddenTaskGap, and findTaskBoundaryItem casts
+    // every model object it finds to ITaskActivity.
+    ChartItem result = findHiddenGapItem(x, y);
+    if (result == null) {
+      result = findTaskProgressItem(x, y);
+    }
     if (result == null) {
       result = findTaskBoundaryItem(x, y);
     }
@@ -89,6 +97,17 @@ public class ChartModelImpl extends ChartModelBase {
       result = super.getChartItemWithCoordinates(x, y);
     }
     return result;
+  }
+
+  /** The hidden-tasks marker under the pointer, found by its style, or null. */
+  private ChartItem findHiddenGapItem(int x, int y) {
+    Canvas.Shape primitive = myTaskRendererImpl.getPrimitiveContainer().getPrimitive(x, y);
+    if (primitive != null
+        && HiddenTaskGapKt.STYLE_HIDDEN_GAP.equals(primitive.getStyle())
+        && primitive.getModelObject() instanceof HiddenTaskGap) {
+      return new HiddenGapChartItem((HiddenTaskGap) primitive.getModelObject());
+    }
+    return null;
   }
 
   private ChartItem findTaskProgressItem(int x, int y) {

@@ -32,6 +32,8 @@ import biz.ganttproject.core.time.TimeUnit;
 import biz.ganttproject.customproperty.CustomPropertyManager;
 import com.google.common.collect.ImmutableList;
 import net.sourceforge.ganttproject.GanttPreviousStateTask;
+import net.sourceforge.ganttproject.chart.gantt.HiddenTaskGap;
+import net.sourceforge.ganttproject.chart.gantt.HiddenTaskGapKt;
 import net.sourceforge.ganttproject.chart.gantt.*;
 import net.sourceforge.ganttproject.task.*;
 
@@ -87,9 +89,24 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     public net.sourceforge.ganttproject.chart.gantt.VerticalPartitioning getVerticalPartitioning() {
       TaskContainmentHierarchyFacade containment = myModel.getTaskManager().getTaskHierarchy();
       Map<ITaskSceneTask, Task> tasksMap = mapTaskSceneTask2Task(containment.getTasksInDocumentOrder(), myModel);
+      List<ITaskSceneTask> rows = getVisibleTaskSceneTasks();
+      // What the task table shows is exactly these rows: a filter or a named view removes a task
+      // from the tree, so it never becomes a row at all. Everything in the document order that is
+      // not a row is therefore HIDDEN and must land in no partition. Without this the tasks hidden
+      // at the head and at the tail of the document order end up in aboveViewport/belowViewport,
+      // get an invisible rectangle at row -1 or n+1 and keep their dependency lines, which then run
+      // to the edge of the chart -- see the doc of VerticalPartitioning.isHidden.
+      //
+      // THE PRECONDITION: this list is the FULL row list of the table, never a scroll window.
+      // Checked at every caller of ChartModelImpl.setVisibleTasks -- GanttChartController.paintChart,
+      // GanttChartController.asPrintChartApi and ChartImageBuilder, all fed from
+      // TaskTableChartConnector.visibleTasks. Should that ever change, this set difference would
+      // take the scrolled-away tasks for hidden ones and the two partitions would lose their point.
+      Set<ITaskSceneTask> rowSet = new HashSet<>(rows);
       return new net.sourceforge.ganttproject.chart.gantt.VerticalPartitioning(
-        getVisibleTaskSceneTasks(),
-        (ITaskSceneTask t1, ITaskSceneTask t2) -> containment.areUnrelated(tasksMap.get(t1), tasksMap.get(t2))
+        rows,
+        (ITaskSceneTask t1, ITaskSceneTask t2) -> containment.areUnrelated(tasksMap.get(t1), tasksMap.get(t2)),
+        t -> !rowSet.contains(t)
       );
     }
 
@@ -118,6 +135,16 @@ public class TaskRendererImpl2 extends ChartRendererBase {
     @Override
     public List<GanttPreviousStateTask> getBaseline() {
       return myModel.getBaseline();
+    }
+
+    @Override
+    public List<HiddenTaskGap> getHiddenTaskGaps() {
+      TaskContainmentHierarchyFacade containment = myModel.getTaskManager().getTaskHierarchy();
+      return HiddenTaskGapKt.hiddenTaskGaps(
+        containment.getTasksInDocumentOrder(),
+        myModel.getVisibleTasks(),
+        containment::getContainer
+      );
     }
 
     @Override

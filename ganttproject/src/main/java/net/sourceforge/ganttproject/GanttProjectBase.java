@@ -627,4 +627,8 @@ abstract class GanttProjectBase implements IGanttProject, UIFacade {
   public @NotNull TaskFilterManager getTaskFilterManager() {
     return myProjectImpl.getTaskFilterManager();
   }
+
+  public @NotNull TaskViewManager getTaskViewManager() {
+    return myProjectImpl.getTaskViewManager();
+  }
 }
