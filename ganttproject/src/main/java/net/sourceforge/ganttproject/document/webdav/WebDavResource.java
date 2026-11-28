@@ -38,6 +38,35 @@ public interface WebDavResource {
       super(message, cause);
     }
   }
+
+  /**
+   * Somebody else changed the resource since it was read, and the conditional write was refused.
+   *
+   * A type of its own rather than a plain {@link WebDavException} because the caller has to react
+   * differently: nothing is broken and retrying will not help, there is simply a second version.
+   */
+  class WebDavConflictException extends WebDavException {
+    public WebDavConflictException(String message) {
+      super(message);
+    }
+    public WebDavConflictException(String message, Throwable cause) {
+      super(message, cause);
+    }
+  }
+
+  /**
+   * The server cannot answer a version check because it only ever reports weak ETags, and no
+   * If-Match can be built from a weak validator.
+   *
+   * Distinct from {@link WebDavConflictException} because the cause is unrelated: in a conflict
+   * somebody changed the file, here nobody did anything and the question is merely unanswerable.
+   */
+  class WebDavVersioningUnavailableException extends WebDavException {
+    public WebDavVersioningUnavailableException(String message) {
+      super(message);
+    }
+  }
+
   class WebDavRuntimeException extends RuntimeException {
     public WebDavRuntimeException(String message) {
       super(message);
