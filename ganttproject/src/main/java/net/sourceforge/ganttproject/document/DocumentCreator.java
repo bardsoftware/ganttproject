@@ -113,7 +113,7 @@ public class DocumentCreator implements DocumentManager {
             pass = server.getPassword();
           }
         }
-        return new HttpDocument(path, user, pass, myWebDavStorage.getProxyOption());
+        return new HttpDocument(path, user, pass, myWebDavStorage.getProxyOption(), getWebDavLockTimeout());
       } catch (IOException e) {
         GPLogger.log(e);
         return null;
@@ -144,6 +144,15 @@ public class DocumentCreator implements DocumentManager {
     }
     File relativeFile = new File(relativePathRoot, path);
     return new FileDocument(relativeFile);
+  }
+
+  /**
+   * @return the value of the webdav.lockTimeout option, in minutes, or {@link HttpDocument#NO_LOCK}
+   *         if the option has no value at all.
+   */
+  private int getWebDavLockTimeout() {
+    Integer timeout = myWebDavStorage.getWebDavLockTimeoutOption().getValue();
+    return timeout == null ? HttpDocument.NO_LOCK : timeout;
   }
 
   @Override
