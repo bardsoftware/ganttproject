@@ -15,6 +15,7 @@ import biz.ganttproject.customproperty.CustomPropertyDefinition;
 import biz.ganttproject.customproperty.CustomPropertyManager;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskManager;
+import net.sourceforge.ganttproject.task.dependency.TaskDependencyException;
 
 /**
  * @author bard
@@ -115,4 +116,67 @@ public class ImportTasksTestCase extends TaskTestCase {
 
 
     }
+
+  /**
+   * The task UID is the primary key of the Task table in the project database, so two tasks in the
+   * same project must never share it. This test imports a project which happens to contain a task
+   * with the very same UID as a task in the target project, which is what happens when a user makes
+   * a copy of a project file, edits it and imports it back.
+   */
+  public void testImportedTaskGetsItsOwnUid() {
+    TaskManager importTo = getTaskManager();
+    importTo.newTaskBuilder().withUid("thesameuid").withName("here").build();
+
+    TaskManager importFrom = newTaskManager();
+    importFrom.newTaskBuilder().withUid("thesameuid").withName("there").build();
+
+    importTo.importData(importFrom, Collections.emptyMap());
+
+    var uids = new HashSet<String>();
+    for (Task task : importTo.getTasks()) {
+      assertTrue("Two tasks share UID " + task.getUid(), uids.add(task.getUid()));
+    }
+    assertEquals(2, uids.size());
+  }
+
+  /**
+   * Re-keying the imported tasks must not break the dependencies between them: the project database
+   * stores dependencies by the UIDs of their ends.
+   */
+  public void testImportedDependencyPointsAtTheImportedTasks() {
+    TaskManager importTo = getTaskManager();
+    importTo.newTaskBuilder().withUid("thesameuid").withName("here").build();
+
+    TaskManager importFrom = newTaskManager();
+    var there1 = importFrom.newTaskBuilder().withUid("thesameuid").withName("there1").build();
+    var there2 = importFrom.newTaskBuilder().withUid("anotheruid").withName("there2").build();
+    try {
+      importFrom.getDependencyCollection().createDependency(there2, there1);
+    } catch (TaskDependencyException e) {
+      throw new RuntimeException(e);
+    }
+
+    importTo.importData(importFrom, Collections.emptyMap());
+
+    var deps = importTo.getDependencyCollection().getDependencies();
+    assertEquals(1, deps.length);
+    var dependee = deps[0].getDependee();
+    var dependant = deps[0].getDependant();
+    assertEquals("there1", dependee.getName());
+    assertEquals("there2", dependant.getName());
+    // Both ends must be the tasks of the target project, addressable by their UIDs there.
+    assertSame(dependee, findByUid(importTo, dependee.getUid()));
+    assertSame(dependant, findByUid(importTo, dependant.getUid()));
+  }
+
+  private static Task findByUid(TaskManager taskManager, String uid) {
+    Task found = null;
+    for (Task task : taskManager.getTasks()) {
+      if (task.getUid().equals(uid)) {
+        assertNull("UID " + uid + " is not unique", found);
+        found = task;
+      }
+    }
+    return found;
+  }
 }
