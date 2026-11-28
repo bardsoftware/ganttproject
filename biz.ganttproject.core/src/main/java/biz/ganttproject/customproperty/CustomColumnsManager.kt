@@ -77,7 +77,10 @@ class CustomColumnsManager : CustomPropertyManager {
       val result = mutableMapOf<CustomPropertyDefinition, CustomPropertyDefinition>()
       for (thatColumn in source.definitions) {
         var thisColumn = findByName(thatColumn.name)
-        if (thisColumn == null || thisColumn.propertyClass != thatColumn.propertyClass) {
+        // TEXT is what the spreadsheet readers assign to a column they have no type information about,
+        // so a TEXT column is merged into a same-named column of any class instead of duplicating it.
+        if (thisColumn == null ||
+          (thisColumn.propertyClass != thatColumn.propertyClass && thatColumn.propertyClass != CustomPropertyClass.TEXT)) {
           thisColumn = CustomColumn(this, thatColumn.name, thatColumn.propertyClass, thatColumn.defaultValue)
           thisColumn.id = findById(thatColumn.id)?.let { createId() } ?: thatColumn.id
           thisColumn.attributes.putAll(thatColumn.attributes)

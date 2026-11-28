@@ -23,12 +23,14 @@ import biz.ganttproject.core.option.ChangeValueEvent;
 import biz.ganttproject.core.option.ChangeValueListener;
 import biz.ganttproject.core.option.GPOption;
 import biz.ganttproject.core.table.ColumnList;
+import net.sourceforge.ganttproject.GanttPreviousState;
 import net.sourceforge.ganttproject.IGanttProject;
 import net.sourceforge.ganttproject.document.Document;
 import net.sourceforge.ganttproject.document.FileDocument;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.resource.HumanResourceMerger;
 import net.sourceforge.ganttproject.resource.MergeResourcesEnum;
+import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.algorithm.AlgorithmCollection;
 import org.osgi.service.prefs.Preferences;
 
@@ -36,7 +38,11 @@ import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
+import static net.sourceforge.ganttproject.importer.BaselineImportKt.baselineNameCollisions;
+import static net.sourceforge.ganttproject.importer.BaselineImportKt.importBaselines;
 import static net.sourceforge.ganttproject.importer.BufferProjectImportKt.importBufferProject;
 
 public class ImporterFromGanttFile extends ImporterBase {
@@ -44,6 +50,8 @@ public class ImporterFromGanttFile extends ImporterBase {
   private final ImportCalendarOption myImportCalendarOption = new ImportCalendarOption();
 
   private final GPOption[] myOptions = new GPOption[]{myMergeResourcesOption, myImportCalendarOption};
+  private Function<List<String>, BaselineNameCollision> myBaselineNameCollisionQuestion =
+      BaselineNameCollisionDialogKt::askBaselineNameCollision;
 
   public ImporterFromGanttFile() {
     super("ganttprojectFiles");
@@ -75,22 +83,47 @@ public class ImporterFromGanttFile extends ImporterBase {
     });
   }
 
+  /**
+   * Replaces the dialog which asks what to do with imported baselines whose names are already
+   * taken. The function gets the taken names and returns null if the import shall be cancelled.
+   */
+  void setBaselineNameCollisionQuestion(Function<List<String>, BaselineNameCollision> question) {
+    myBaselineNameCollisionQuestion = question;
+  }
+
   @Override
   public void run() {
-    final File selectedFile = getFile();
     final IGanttProject targetProject = getProject();
+    // The files are read and the question is asked before the undoable edit starts, so that
+    // cancelling the question changes nothing and leaves no undo entry.
+    final List<BufferProject> bufferProjects = new ArrayList<>();
+    getModel().getFiles().forEach( file -> {
+      final BufferProject bufferProject = createBufferProject(targetProject, getUiFacade());
+      if (read(file, bufferProject)) {
+        bufferProjects.add(bufferProject);
+      }
+    });
+    List<List<GanttPreviousState>> sourceBaselines = new ArrayList<>();
+    bufferProjects.forEach(bufferProject -> sourceBaselines.add(bufferProject.getBaselines()));
+    List<String> collisions = baselineNameCollisions(sourceBaselines, targetProject.getBaselines());
+    final BaselineNameCollision onNameCollision;
+    if (collisions.isEmpty()) {
+      onNameCollision = BaselineNameCollision.RENAME;
+    } else {
+      onNameCollision = myBaselineNameCollisionQuestion.apply(collisions);
+      if (onNameCollision == null) {
+        return;
+      }
+    }
     getUiFacade().getUndoManager().undoableEdit("Import", new Runnable() {
       @Override
       public void run() {
-        getModel().getFiles().forEach( file -> {
-          final BufferProject bufferProject = createBufferProject(targetProject, getUiFacade());
-          ImporterFromGanttFile.this.run(file, targetProject, bufferProject);
-        });
+        bufferProjects.forEach(bufferProject -> importBuffer(targetProject, bufferProject, onNameCollision));
       }
     });
   }
 
-  private void run(File selectedFile, IGanttProject targetProject, BufferProject bufferProject) {
+  private boolean read(File selectedFile, BufferProject bufferProject) {
     try {
       Document document = bufferProject.getDocumentManager().getDocument(selectedFile.getAbsolutePath());
       AlgorithmCollection algs = getProject().getTaskManager().getAlgorithmCollection();
@@ -104,9 +137,18 @@ public class ImporterFromGanttFile extends ImporterBase {
         algs.getAdjustTaskBoundsAlgorithm().setEnabled(true);
         algs.getScheduler().setEnabled(true);
       }
+      return true;
+    } catch (Exception  e) {
+      getUiFacade().showErrorDialog(e);
+      return false;
+    }
+  }
 
-      importBufferProject(targetProject, bufferProject, BufferProjectImportKt.asImportBufferProjectApi(getUiFacade()),
-          myMergeResourcesOption, myImportCalendarOption, false);
+  private void importBuffer(IGanttProject targetProject, BufferProject bufferProject, BaselineNameCollision onNameCollision) {
+    try {
+      Map<Task, Task> taskMapping = importBufferProject(targetProject, bufferProject,
+          BufferProjectImportKt.asImportBufferProjectApi(getUiFacade()), myMergeResourcesOption, myImportCalendarOption, false);
+      importBaselines(bufferProject.getBaselines(), targetProject.getBaselines(), taskMapping, onNameCollision);
     } catch (Exception  e) {
       getUiFacade().showErrorDialog(e);
     }
